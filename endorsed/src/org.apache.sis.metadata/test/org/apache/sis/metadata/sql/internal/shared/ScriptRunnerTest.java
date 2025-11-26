@@ -64,6 +64,7 @@ public final class ScriptRunnerTest extends TestCase {
     @TestStep
     public static void testSupportedFlags(final ScriptRunner sr) {
         assertFalse(sr.isEnumTypeSupported);
+        assertFalse(sr.isCollationSupported);
     }
 
     /**
@@ -76,6 +77,7 @@ public final class ScriptRunnerTest extends TestCase {
     public static void testRegularExpressions(final ScriptRunner sr) {
         assertFalse(sr.isSupported("CREATE TYPE CI_DateTypeCode AS ENUM ('creation', 'publication')"));
         assertFalse(sr.isSupported("CREATE CAST (VARCHAR AS CI_DateTypeCode) WITH INOUT AS ASSIGNMENT"));
+        assertFalse(sr.isSupported("CREATE COLLATION \"Ignore Accent and Case\" (provider=icu, locale='und-u-kn-ks-level1')"));
         assertTrue (sr.isSupported("CREATE TABLE CI_Citation (…)"));
         assertFalse(sr.isSupported("GRANT USAGE ON SCHEMA metadata TO PUBLIC"));
         assertFalse(sr.isSupported("GRANT SELECT ON TABLE \"Coordinate Reference System\" TO PUBLIC"));

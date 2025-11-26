@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter;
 
+import org.apache.sis.filter.base.BinaryFunction;
 import java.time.DateTimeException;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
@@ -122,14 +123,13 @@ class TemporalFilter<R,T> extends BinaryFunction<R,T,T>
 
     /**
      * Returns the class of values computed by the given expression, or {@code type} if unknown.
+     *
+     * @param  e     the expression from which to get the type.
+     * @param  type  the base type, used as a default type.
      */
-    @SuppressWarnings("unchecked")
-    private static <T> Class<? extends T> getValueClass(final Expression<?,? extends T> e, final Class<T> type) {
+    private static <T> Class<? extends T> getValueClass(final Expression<?, ? extends T> e, final Class<T> type) {
         if (e instanceof FeatureExpression<?,?>) {
-            final Class<?> c = ((FeatureExpression<?, ? extends T>) e).getValueClass();
-            if (type.isAssignableFrom(c)) {
-                return (Class<? extends T>) c;
-            }
+            return ((FeatureExpression<?, ? extends T>) e).getResultClass();
         }
         return type;
     }

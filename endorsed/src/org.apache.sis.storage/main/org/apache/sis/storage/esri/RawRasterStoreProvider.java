@@ -120,7 +120,7 @@ public final class RawRasterStoreProvider extends PRJDataStore.Provider {
     }
 
     /**
-     * {@return the logger used by RAW stores}.
+     * Returns the logger used by RAW stores.
      */
     @Override
     public Logger getLogger() {

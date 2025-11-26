@@ -16,12 +16,16 @@
  */
 package org.apache.sis.storage;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.function.Consumer;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.base.WarningAdapter;
+import org.apache.sis.filter.base.WarningEvent;
 
 // Specific to the main branch:
 import org.apache.sis.feature.DefaultFeatureType;
@@ -63,15 +67,8 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
 
     /**
      * Creates a new resource which can send notifications to the given set of listeners.
-     * If {@code hidden} is {@code false} (the recommended value), then this resource will have its own set of
-     * listeners with this resource declared as the {@linkplain StoreListeners#getSource() source of events}.
-     * It will be possible to add and remove listeners independently from the set of parent listeners.
-     * Conversely if {@code hidden} is {@code true}, then the given listeners will be used directly
-     * and this resource will not appear as the source of any event.
-     *
-     * <p>In any cases, the listeners of all parents (ultimately the data store that created this resource)
-     * will always be notified, either directly if {@code hidden} is {@code true}
-     * or indirectly if {@code hidden} is {@code false}.</p>
+     * The {@code hidden} argument specifies whether the new resource should be invisible in the tree of resources.
+     * See the {@linkplain AbstractResource#AbstractResource(StoreListeners, boolean) parent constructor} for more information.
      *
      * @param  parentListeners  listeners of the parent resource, or {@code null} if none.
      *         This is usually the listeners of the {@link DataStore} that created this resource.
@@ -105,6 +102,29 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
      */
     public OptionalLong getFeatureCount() {
         return OptionalLong.empty();
+    }
+
+    /**
+     * Requests a subset of features and/or feature properties from this resource.
+     * The default implementation does the same work as the default method of the {@link FeatureSet} interface,
+     * except that warnings are redirected to the {@linkplain #listeners listeners}.
+     *
+     * @hidden
+     */
+    @Override
+    public FeatureSet subset(final Query query) throws UnsupportedQueryException, DataStoreException {
+        if (Objects.requireNonNull(query) instanceof FeatureQuery) {
+            final ThreadLocal<Consumer<WarningEvent>> context = WarningEvent.LISTENER;
+            final Consumer<WarningEvent> old = context.get();
+            try {
+                context.set(new WarningAdapter(listeners));
+                return ((FeatureQuery) query).execute(this);
+            } finally {
+                context.set(old);
+            }
+        } else {
+            throw new UnsupportedQueryException();
+        }
     }
 
     /**

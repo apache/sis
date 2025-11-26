@@ -86,6 +86,17 @@ abstract class AggregatedResource extends AbstractResource {
     }
 
     /**
+     * Creates a new concatenated resource as the child of the given resource.
+     *
+     * @param  parent  the parent resource, or {@code null} if none.
+     * @param  name    name of this aggregate, or {@code null} if none.
+     */
+    AggregatedResource(final Resource parent, final String name) {
+        super(parent);
+        this.name = name;
+    }
+
+    /**
      * Creates a new resource with the same data as given resource.
      *
      * @param  source  the resource to copy.

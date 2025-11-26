@@ -59,21 +59,21 @@ abstract class IOBase implements Closeable {
     }
 
     /**
-     * {@return the modifiers (BigTIFF, COG…) used by this reader or writer}.
+     * Returns the modifiers (BigTIFF, <abbr>COG</abbr>…) used by this reader or writer.
      *
      * @see GeoTiffStore#getModifiers()
      */
     public abstract Set<FormatModifier> getModifiers();
 
     /**
-     * {@return the resources to use for formatting error messages}.
+     * Returns the resources to use for formatting error messages.
      */
     final Errors errors() {
         return Errors.forLocale(store.getLocale());
     }
 
     /**
-     * {@return the GeoTIFF-specific resource for error messages and warnings}.
+     * Returns the GeoTIFF-specific resource for error messages and warnings.
      */
     final Resources resources() {
         return Resources.forLocale(store.getLocale());

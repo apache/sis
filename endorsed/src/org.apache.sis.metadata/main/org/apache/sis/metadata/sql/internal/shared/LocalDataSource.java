@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
+import java.util.concurrent.Callable;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Loggers;
@@ -56,8 +57,8 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
     private static final String DERBY_HOME_KEY = "derby.system.home";
 
     /**
-     * The database product to use. Currently supported values are
-     * {@link Dialect#DERBY} and {@link Dialect#HSQL}.
+     * The database product to use.
+     * Currently supported values are {@link Dialect#DERBY} and {@link Dialect#HSQL}.
      */
     private final Dialect dialect;
 
@@ -79,8 +80,9 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
     final boolean create;
 
     /**
-     * Prepares a new data source for the given database file. This construction is incomplete;
-     * after return either {@link #initialize()} shall be invoked or this {@code LocalDataSource} is discarded.
+     * Prepares a new data source for the given database file. This construction is incomplete:
+     * the {@link #initialize()} method shall be invoked after construction,
+     * unless the caller decides to discard this {@code LocalDataSource} instance.
      *
      * @param  dialect  {@link Dialect#DERBY} or {@link Dialect#HSQL}.
      * @param  dbFile   path to the database to open on the local file system.
@@ -146,7 +148,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
                  * SIS_DATA and get the impression that their setting is ignored.
                  */
                 final Path path = Path.of(home);
-                create = !Files.exists(path.resolve(database)) && Files.isDirectory(path);
+                create = Files.notExists(path.resolve(database)) && Files.isDirectory(path);
                 dbFile = database;
             } else {
                 continue;
@@ -165,23 +167,23 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
 
     /**
      * Wraps an existing data source for adding a shutdown method to it.
-     * This method is used for source of data embedded in a separated JAR file.
+     * This method is used for source of data embedded in a separated <abbr>JAR</abbr> file.
      *
-     * @param  ds  the data source, usually given by {@link Initializer#embedded()}.
+     * @param  source  the data source, usually given by {@link Initializer#embedded()}.
      * @return the data source wrapped with a shutdown method, or {@code ds}.
      */
-    static DataSource wrap(final DataSource ds) {
+    static DataSource wrap(final DataSource source) {
         final Dialect dialect;
-        final String cn = ds.getClass().getName();
+        final String cn = source.getClass().getName();
         if (cn.startsWith("org.apache.derby.")) {
             dialect = Dialect.DERBY;
         } else if (cn.startsWith("org.hsqldb.")) {
             dialect = Dialect.HSQL;
         } else {
-            return ds;
+            return source;
         }
-        final LocalDataSource local = new LocalDataSource(dialect, null, false);
-        local.source = ds;
+        final var local = new LocalDataSource(dialect, null, false);
+        local.source = source;
         return local;
     }
 
@@ -245,29 +247,36 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
     }
 
     /**
-     * Creates the database if needed. For Derby we need to explicitly allow creation.
+     * Creates the database if needed.
+     * For Derby we need to explicitly allow creation.
      * For HSQLDB the creation is enabled by default.
      */
     final void createDatabase() throws Exception {
         if (create) {
-            final Method enabler;
+            Callable<?> finisher = null;
             switch (dialect) {
+                // More cases may be added in future versions.
                 case DERBY: {
-                    enabler = source.getClass().getMethod("setCreateDatabase", String.class);
-                    enabler.invoke(source, "create");
+                    final Class<?> c = source.getClass();
+                    final Method setter = c.getMethod("setCreateDatabase", String.class);
+                    finisher = () -> setter.invoke(source, "no");      // Any value other than "create".
+                    setter.invoke(source, "create");
+                    /*
+                     * Make the database uses case-insensitive and accent-insensitive searches.
+                     * https://db.apache.org/derby/docs/10.17/devguide/tdevdvlpcaseinscoll.html
+                     */
+                    c.getMethod("setConnectionAttributes", String.class)
+                            .invoke(source, "territory=en_GB;collation=TERRITORY_BASED:PRIMARY");
                     break;
                 }
-                // More cases may be added in future versions.
-                default: enabler = null; break;
             }
             try (Connection c = source.getConnection()) {
                 for (Initializer init : Initializer.load()) {
                     init.createSchema(c);
                 }
             } finally {
-                switch (dialect) {
-                    // More cases may be added in future versions.
-                    case DERBY: enabler.invoke(source, "no"); break;        // Any value other than "create".
+                if (finisher != null) {
+                    finisher.call();
                 }
             }
         }

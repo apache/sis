@@ -16,7 +16,7 @@
  */
 
 /**
- * Partial implementation of SQLMM operations as filter expressions.
+ * Partial implementation of <abbr>SQLMM</abbr> operations as filter expressions.
  * This package supports only for the simplest types (point, line string, polygon).
  * Other types (curve, circular string, compound curve, curve polygon, triangle,
  * polyhedral surface, TIN, multi curve, multi surface) are not supported.

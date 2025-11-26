@@ -23,7 +23,7 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.storage.base.MemoryFeatureSet;
+import org.apache.sis.storage.MemoryFeatureSet;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

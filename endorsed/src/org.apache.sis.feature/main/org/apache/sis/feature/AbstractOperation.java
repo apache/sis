@@ -143,7 +143,8 @@ public abstract class AbstractOperation extends AbstractIdentifiedType
     public abstract ParameterDescriptorGroup getParameters();
 
     /**
-     * Returns the expected result type, or {@code null} if none.
+     * Returns the expected result type.
+     * This type is normally not allowed to be null, but it may happen on occasion.
      *
      * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
      * to {@code org.opengis.feature.IdentifiedType}. This change is pending GeoAPI revision.</div>
@@ -177,14 +178,14 @@ public abstract class AbstractOperation extends AbstractIdentifiedType
      * be changed to {@code org.opengis.feature.Feature} and {@code org.opengis.feature.Property} respectively.
      * This change is pending GeoAPI revision.</div>
      *
-     * @param  feature     the feature on which to execute the operation.
+     * @param  instance    the feature instance on which to execute the operation.
      *                     Can be {@code null} if the operation does not need feature instance.
      * @param  parameters  the parameters to use for executing the operation.
      *                     Can be {@code null} if the operation does not take any parameters.
      * @return the operation result, or {@code null} if this operation does not produce any result.
      */
     @Override
-    public abstract Object apply(AbstractFeature feature, ParameterValueGroup parameters);
+    public abstract Object apply(AbstractFeature instance, ParameterValueGroup parameters);
 
     /**
      * Returns the names of feature properties that this operation needs for performing its task.

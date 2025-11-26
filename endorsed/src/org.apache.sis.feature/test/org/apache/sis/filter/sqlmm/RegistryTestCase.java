@@ -28,7 +28,7 @@ import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.WraparoundMethod;
-import org.apache.sis.filter.internal.Node;
+import org.apache.sis.filter.base.Node;
 import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;

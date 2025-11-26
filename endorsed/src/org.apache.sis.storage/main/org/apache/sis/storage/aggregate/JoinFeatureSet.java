@@ -203,6 +203,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
      * @param  featureInfo  information about the {@code FeatureType} of this feature set.
      * @throws DataStoreException if an error occurred while creating the feature set.
      */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     public JoinFeatureSet(final Resource parent,
                           final FeatureSet left,  String leftAlias,
                           final FeatureSet right, String rightAlias,
@@ -234,9 +235,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
             new DefaultAssociationRole(properties(rightAlias), rightType, joinType.minimumOccurs(true),  1)
         };
         final String identifierDelimiter = Containers.property(featureInfo, "identifierDelimiter", String.class);
-        if (identifierDelimiter != null && AttributeConvention.hasIdentifier(leftType)
-                                        && AttributeConvention.hasIdentifier(rightType))
-        {
+        if (identifierDelimiter != null && hasIdentifier(leftType) && hasIdentifier(rightType)) {
             final AbstractOperation identifier = FeatureOperations.compound(
                     properties(AttributeConvention.IDENTIFIER_PROPERTY), identifierDelimiter,
                     Containers.property(featureInfo, "identifierPrefix", String.class),
@@ -248,6 +247,14 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
             featureInfo = properties(leftName.tip().toString() + '-' + rightName.tip());
         }
         type = new DefaultFeatureType(featureInfo, false, null, properties);
+    }
+
+    /**
+     * Returns whether the given feature type has a {@value AttributeConvention#IDENTIFIER} property.
+     */
+    private static boolean hasIdentifier(final DefaultFeatureType feature) {
+        return feature.hasProperty(AttributeConvention.IDENTIFIER) &&
+               feature.getProperty(AttributeConvention.IDENTIFIER) != null;
     }
 
     /**

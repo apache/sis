@@ -16,11 +16,10 @@
  */
 package org.apache.sis.filter.sqlmm;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.Set;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.filter.FunctionRegister;
-import org.apache.sis.pending.jdk.JDK16;
 
 // Specific to the main branch:
 import org.apache.sis.filter.Expression;
@@ -60,8 +59,8 @@ public final class Registry implements FunctionRegister {
      * Returns the names of all functions known to this register.
      */
     @Override
-    public Collection<String> getNames() {
-        return JDK16.toList(Arrays.stream(SQLMM.values()).map(SQLMM::name));
+    public Set<String> getNames() {
+        return Containers.namesOf(SQLMM.class);
     }
 
     /**
@@ -70,9 +69,10 @@ public final class Registry implements FunctionRegister {
      * has been cloned and does not contain null elements.
      * This method verifies only the number of parameters.
      *
-     * @param  name        name of the function to call.
-     * @param  parameters  expressions providing values for the function arguments.
-     * @return an expression which will call the specified function.
+     * @param  <R>         the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
+     * @param  name        case-sensitive name of the function to create as an expression.
+     * @param  parameters  function parameters.
+     * @return function for the given name and parameters.
      * @throws IllegalArgumentException if function name is unknown or some parameters are illegal.
      */
     @Override

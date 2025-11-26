@@ -30,9 +30,8 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.MemoryGridCoverageResource;
 import org.apache.sis.storage.base.MetadataBuilder;
-import org.apache.sis.storage.base.MemoryGridResource;
-import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
@@ -109,18 +108,18 @@ final class BandAggregateGridResource extends AggregatedResource implements Grid
      * The {@linkplain #getSampleDimensions() list of sample dimensions} of the aggregated resource
      * will be the concatenation of the lists of all sources, or a subset of this concatenation.
      *
-     * @param  parentListeners  listeners of the parent resource, or {@code null} if none.
-     * @param  aggregate        sources to aggregate together with the bands to select for each source.
-     * @param  processor        the processor to use for creating grid coverages.
+     * @param  parent     the parent resource, or {@code null} if none.
+     * @param  aggregate  sources to aggregate together with the bands to select for each source.
+     * @param  processor  the processor to use for creating grid coverages.
      * @throws BackingStoreException if an error occurred while fetching the grid geometry or sample dimensions from a resource.
      * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
      * @throws IllegalArgumentException if some band indices are duplicated or outside their range of validity.
      */
-    private BandAggregateGridResource(final StoreListeners parentListeners,
+    private BandAggregateGridResource(final Resource parent,
                                       final BandAggregateArgument<GridCoverageResource> aggregate,
                                       final GridCoverageProcessor processor)
     {
-        super(null, parentListeners, false);
+        super(parent, null);
         this.sources          = aggregate.sources();
         this.gridGeometry     = aggregate.domain(BandAggregateGridResource::domain);
         this.sampleDimensions = List.copyOf(aggregate.ranges());
@@ -149,16 +148,16 @@ final class BandAggregateGridResource extends AggregatedResource implements Grid
      * The intersection of the domain of all resources shall be non-empty,
      * and all resources shall use the same data type in their rendered image.
      *
-     * @param  parentListeners  listeners of the parent resource, or {@code null} if none.
-     * @param  sources          resources whose bands shall be aggregated, in order. At least one resource must be provided.
-     * @param  bandsPerSource   sample dimensions for each source. May be {@code null} or may contain {@code null} elements.
-     * @param  processor        the processor to use for creating grid coverages.
+     * @param  parent          the parent resource, or {@code null} if none.
+     * @param  sources         resources whose bands shall be aggregated, in order. At least one resource must be provided.
+     * @param  bandsPerSource  sample dimensions for each source. May be {@code null} or may contain {@code null} elements.
+     * @param  processor       the processor to use for creating grid coverages.
      * @return the band aggregated grid resource.
      * @throws DataStoreException if an error occurred while fetching the grid geometry or sample dimensions from a resource.
      * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
      * @throws IllegalArgumentException if some band indices are duplicated or outside their range of validity.
      */
-    static GridCoverageResource create(final StoreListeners parentListeners,
+    static GridCoverageResource create(final Resource parent,
             GridCoverageResource[] sources, int[][] bandsPerSource,
             final GridCoverageProcessor processor) throws DataStoreException
     {
@@ -168,14 +167,14 @@ final class BandAggregateGridResource extends AggregatedResource implements Grid
         for (int i=0; i<sources.length; i++) {
             final GridCoverageResource source = sources[i];
             ArgumentChecks.ensureNonNullElement("sources", i, source);
-            if (source instanceof MemoryGridResource) {
+            if (source instanceof MemoryGridCoverageResource) {
                 if (count == 0) {
                     sources = sources.clone();              // Clone when first needed.
                     bandsPerSource = (bandsPerSource != null) ? bandsPerSource.clone() : new int[sources.length][];
                 }
                 final int[] bands    = bandsPerSource[i];
                 final int numBands   = (bands != null) ? bands.length : source.getSampleDimensions().size();
-                coverages[count]     = ((MemoryGridResource) source).coverage;
+                coverages[count]     = ((MemoryGridCoverageResource) source).getGridCoverage();
                 coverageBands[count] = bands;
                 bandsPerSource[i]    = ArraysExt.range(firstBand, firstBand + numBands);
                 sources[i]           = null;        // To be replaced by the aggregated coverage.
@@ -184,13 +183,13 @@ final class BandAggregateGridResource extends AggregatedResource implements Grid
             }
         }
         /*
-         * If at least one `MemoryGridResource` has been found, apply the aggregation directly
-         * on the grid coverage, then build a single `MemoryGridResource` with the result.
+         * If at least one `MemoryGridCoverageResource` has been found, apply the aggregation directly
+         * on the grid coverage, then build a single `MemoryGridCoverageResource` with the result.
          */
         if (count != 0) {
             coverages     = ArraysExt.resize(coverages,     count);
             coverageBands = ArraysExt.resize(coverageBands, count);
-            var aggregate = new MemoryGridResource(parentListeners, null, processor.aggregateRanges(coverages, coverageBands), processor);
+            var aggregate = new MemoryGridCoverageResource(parent, null, processor.aggregateRanges(coverages, coverageBands), processor);
             for (int i=0; i<sources.length; i++) {
                 if (sources[i] == null) {
                     sources[i] = aggregate;
@@ -209,7 +208,7 @@ final class BandAggregateGridResource extends AggregatedResource implements Grid
             if (aggregate.isIdentity()) {
                 return aggregate.sources()[0];
             }
-            return new BandAggregateGridResource(parentListeners, aggregate, processor);
+            return new BandAggregateGridResource(parent, aggregate, processor);
         } catch (BackingStoreException e) {
             throw e.unwrapOrRethrow(DataStoreException.class);
         }

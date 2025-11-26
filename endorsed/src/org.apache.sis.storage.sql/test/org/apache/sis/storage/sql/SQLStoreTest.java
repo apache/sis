@@ -99,7 +99,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
     /**
      * Factory to use for creating filter objects.
      */
-    private final DefaultFilterFactory<AbstractFeature,Object,Object> FF;
+    private final DefaultFilterFactory<AbstractFeature, ?, ?> FF;
 
     /**
      * Creates a new test.
@@ -188,6 +188,8 @@ public final class SQLStoreTest extends TestOnAllDatabases {
              */
             verifySimpleQuerySorting(store);
             verifySimpleQueryWithLimit(store);
+            verifySimpleQueryWithMath(store);
+            verifyWhereResourceId(store);
             verifySimpleWhere(store);
             verifyWhereOnLink(store);
             verifyLinkInProjection(store);
@@ -383,6 +385,51 @@ public final class SQLStoreTest extends TestOnAllDatabases {
     }
 
     /**
+     * Requests features with some mathematical operations.
+     *
+     * @param  dataset  the store on which to query the features.
+     * @throws DataStoreException if an error occurred during query execution.
+     */
+    private void verifySimpleQueryWithMath(final SimpleFeatureStore dataset) throws DataStoreException {
+        final FeatureSet  cities = dataset.findResource("Cities");
+        final FeatureQuery query = new FeatureQuery();
+        query.setProjection(new FeatureQuery.NamedExpression(FF.property("english_name")),
+                            new FeatureQuery.NamedExpression(FF.function("SQRT", FF.property("population")), "value"));
+        final FeatureSet subset = cities.subset(query);
+        final var values = new HashMap<Object, Object>();
+        subset.features(false).forEach((feature) ->
+                assertNull(values.put(feature.getPropertyValue("english_name"),
+                                      feature.getPropertyValue("value"))));
+        final String[] expected = {"Montreal", "Quebec", "Paris", "Tōkyō"};
+        final int[]  population = {  1704694,   531902, 2206488, 13622267};
+        for (int i=0; i<expected.length; i++) {
+            final String city  = expected[i];
+            final double value = assertInstanceOf(Double.class, values.remove(city), city);
+            assertEquals(population[i], value * value, 0.1, city);
+        }
+        // Try again with a function returning a boolean value and with a function name which is an alias.
+        query.setProjection(new FeatureQuery.NamedExpression(FF.function("isNaN", FF.property("population")), "flag"));
+        cities.subset(query).features(false).forEach((feature) -> assertEquals(Boolean.FALSE, feature.getPropertyValue("flag")));
+    }
+
+    /**
+     * Requests a new set of features filtered by an identifier.
+     *
+     * @param  dataset  the store on which to query the features.
+     * @throws DataStoreException if an error occurred during query execution.
+     */
+    private void verifyWhereResourceId(final SimpleFeatureStore dataset) throws Exception {
+        final FeatureQuery query = new FeatureQuery();
+        query.setSelection(FF.resourceId("FRA"));
+        final Object[] result;
+        final FeatureSet countries = dataset.findResource("Countries");
+        try (Stream<AbstractFeature> features = countries.subset(query).features(false)) {
+            result = features.map(f -> f.getPropertyValue("native_name")).toArray();
+        }
+        assertArrayEquals(new String[] {"France"}, result);
+    }
+
+    /**
      * Requests a new set of features filtered by an arbitrary condition,
      * and verifies that we get only the expected values.
      *
@@ -390,26 +437,19 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      * @throws DataStoreException if an error occurred during query execution.
      */
     private void verifySimpleWhere(final SimpleFeatureStore dataset) throws Exception {
-        /*
-         * Property that we are going to request and expected result.
-         */
-        final String   desiredProperty = "native_name";
-        final String[] expectedValues  = {
-            "Montréal", "Québec"
-        };
-        /*
-         * Build the query and get a new set of features. The values returned by the database can be in any order,
-         * so we use `assertSetEquals(…)` for making the test insensitive to feature order. An alternative would be
-         * to add a `query.setSortBy(…)` call, but we avoid that for making this test only about the `WHERE` clause.
-         */
-        final FeatureSet   cities = dataset.findResource("Cities");
-        final FeatureQuery query  = new FeatureQuery();
+        final FeatureQuery query = new FeatureQuery();
         query.setSelection(FF.equal(FF.property("country"), FF.literal("CAN")));
-        final Object[] names;
+        /*
+         * The values returned by the database can be in any order, so we use `assertSetEquals(…)` for making
+         * the test insensitive to feature order. An alternative would be to add a `query.setSortBy(…)` call,
+         * but we avoid that for making this test only about the `WHERE` clause.
+         */
+        final Object[] result;
+        final FeatureSet cities = dataset.findResource("Cities");
         try (Stream<AbstractFeature> features = cities.subset(query).features(false)) {
-            names = features.map(f -> f.getPropertyValue(desiredProperty)).toArray();
+            result = features.map(f -> f.getPropertyValue("native_name")).toArray();
         }
-        assertSetEquals(Arrays.asList(expectedValues), Arrays.asList(names));
+        assertSetEquals(Arrays.asList("Montréal", "Québec"), Arrays.asList(result));
     }
 
     /**
@@ -467,8 +507,8 @@ public final class SQLStoreTest extends TestOnAllDatabases {
 
     /**
      * Checks that operations stacked on feature stream are well executed.
-     * This test focuses on mapping and peeking actions overloaded by SQL streams.
-     * Operations used here are meaningless; we just want to ensure that the pipeline does not skip any operation.
+     * This test focuses on mapping and peeking actions overloaded by <abbr>SQL</abbr> streams.
+     * Operations used here are meaningless, we just want to ensure that the pipeline does not skip any operation.
      *
      * @param  cities  a feature set containing all cities defined for the test class.
      */

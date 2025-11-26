@@ -394,7 +394,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
-     * {@return whether this coordinate system has the same axes as the specified CS, ignoring axis order}.
+     * Returns whether this coordinate system has the same axes as the specified CS, ignoring axis order.
      * If true, then the two coordinate systems have the same number of dimensions and the same set of axes.
      * Axis instances are compared by the identity operator ({@code ==}), not by {@code equals(Object)}.
      *
@@ -402,7 +402,8 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * This method can be invoked after a call to {@link #forConvention(AxesConvention)} for checking if that
      * method changed only the axis order, with no change to axis directions, axis ranges or units of measurement.
      *
-     * @param  other  the other coordinate system to compare with this CS.
+     * @param  other  the other coordinate system to compare with this <abbr>CS</abbr>.
+     * @return whether this coordinate system has the same axes as the specified <abbr>CS</abbr>.
      *
      * @since 1.5
      */

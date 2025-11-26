@@ -21,11 +21,13 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.OptionalInt;
 import java.util.ServiceLoader;
+import java.util.Spliterator;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
-import org.apache.sis.util.internal.shared.SetOfUnknownSize;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
+import org.apache.sis.util.collection.SetOfUnknownSize;
 
 
 /**
@@ -160,11 +162,11 @@ final class OperationMethodSet extends SetOfUnknownSize<OperationMethod> {
     }
 
     /**
-     * Returns {@code true} if the {@link #size()} method is cheap.
+     * Returns number of codes if this information is already known.
      */
     @Override
-    protected synchronized boolean isSizeKnown() {
-        return methodIterator == null;
+    protected synchronized OptionalInt sizeIfKnown() {
+        return (methodIterator == null) ? OptionalInt.of(cachedMethods.size()) : OptionalInt.empty();
     }
 
     /**
@@ -256,5 +258,13 @@ final class OperationMethodSet extends SetOfUnknownSize<OperationMethod> {
          * However, this choice may be revisited in any future SIS version if necessary.
          */
         return super.contains(object);
+    }
+
+    /**
+     * Declares that this set is immutable and excludes the null element.
+     */
+    @Override
+    protected int characteristics() {
+        return Spliterator.DISTINCT | Spliterator.NONNULL | Spliterator.IMMUTABLE;
     }
 }

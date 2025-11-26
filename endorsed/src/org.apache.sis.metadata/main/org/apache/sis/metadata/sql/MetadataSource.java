@@ -468,7 +468,7 @@ public class MetadataSource implements AutoCloseable {
                 return;
             }
         }
-        final Installer installer = new Installer(connection);
+        final var installer = new Installer(connection);
         installer.run();
     }
 

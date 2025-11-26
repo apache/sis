@@ -18,26 +18,38 @@ package org.apache.sis.filter;
 
 import java.util.List;
 import java.util.Collection;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.filter.internal.Node;
+import java.util.Objects;
+import org.apache.sis.filter.base.Node;
+import org.apache.sis.filter.base.XPathSource;
+import org.apache.sis.feature.Features;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
+import org.apache.sis.feature.DefaultFeatureType;
 
 
 /**
- * Filter features using a set of predefined identifiers and discarding features
- * whose identifier is not in the set.
+ * Filter features using a set of predefined identifiers.
+ * Features without identifiers are discarded.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class IdentifierFilter extends Node implements Optimization.OnFilter<AbstractFeature> {
+final class IdentifierFilter extends Node
+        implements Filter<AbstractFeature>, XPathSource, Optimization.OnFilter<AbstractFeature>
+{
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 1404452049863376235L;
+    private static final long serialVersionUID = 5917022442937908715L;
+
+    /**
+     * Name of the property which contains the identifier.
+     * The initial value is {@value AttributeConvention#IDENTIFIER},
+     * but this name may be replaced by a more direct target if known.
+     */
+    private final String property;
 
     /**
      * The identifier of features to retain.
@@ -45,11 +57,11 @@ final class IdentifierFilter extends Node implements Optimization.OnFilter<Abstr
     private final String identifier;
 
     /**
-     * Creates a new filter using the given identifier.
+     * Creates a new filter for filtering features having the given identifier.
      */
-    IdentifierFilter(final String identifier) {
-        ArgumentChecks.ensureNonEmpty("identifier", identifier);
-        this.identifier = identifier;
+    public IdentifierFilter(final String identifier) {
+        this.property   = AttributeConvention.IDENTIFIER;
+        this.identifier = Objects.requireNonNull(identifier);
     }
 
     @Override
@@ -58,11 +70,28 @@ final class IdentifierFilter extends Node implements Optimization.OnFilter<Abstr
     }
 
     /**
-     * Nothing to optimize here. The {@code Optimization.OnFilter} interface
-     * is implemented for inheriting the AND, OR and NOT methods overriding.
+     * Creates a new filter searching for the same identifier than the original filter,
+     * but looking in a different property.
+     */
+    private IdentifierFilter(final IdentifierFilter original, final String property) {
+        this.property   = property;
+        this.identifier = original.identifier;
+    }
+
+    /**
+     * If the evaluated property is a link, replaces this filter by a more direct reference to the target property.
+     * This optimization helps {@code SQLStore} to put the column name in the <abbr>SQL</abbr> {@code WHERE} clause.
+     * It can make the difference between using or not the database index.
      */
     @Override
     public Filter<AbstractFeature> optimize(Optimization optimization) {
+        final DefaultFeatureType type = optimization.getFeatureType();
+        if (type != null) try {
+            return Features.getLinkTarget(type.getProperty(property)).map((n) -> new IdentifierFilter(this, n)).orElse(this);
+        } catch (IllegalArgumentException e) {
+            warning(e, true);
+            return Filter.exclude();
+        }
         return this;
     }
 
@@ -75,10 +104,11 @@ final class IdentifierFilter extends Node implements Optimization.OnFilter<Abstr
     }
 
     /**
-     * Returns the identifiers of feature instances to accept.
+     * Returns the path to the property which will be used by the {@code test(R)} method.
      */
-    public String getIdentifier() {
-        return identifier;
+    @Override
+    public String getXPath() {
+        return property;
     }
 
     /**
@@ -95,7 +125,7 @@ final class IdentifierFilter extends Node implements Optimization.OnFilter<Abstr
      */
     @Override
     protected Collection<?> getChildren() {
-        return List.of(identifier);
+        return List.of(property, identifier);
     }
 
     /**
@@ -104,10 +134,12 @@ final class IdentifierFilter extends Node implements Optimization.OnFilter<Abstr
      */
     @Override
     public boolean test(final AbstractFeature object) {
-        if (object == null) {
-            return false;
+        if (object != null) try {
+            Object id = object.getPropertyValue(property);
+            if (id != null) return identifier.equals(id.toString());
+        } catch (IllegalArgumentException e) {
+            warning(e, false);
         }
-        final Object id = object.getValueOrFallback(AttributeConvention.IDENTIFIER, null);
-        return (id != null) && identifier.equals(id.toString());
+        return false;
     }
 }

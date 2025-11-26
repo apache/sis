@@ -73,7 +73,7 @@ import org.apache.sis.feature.internal.Resources;
  * @author  Travis L. Pinney
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see DefaultFeatureType#newInstance()
  *
@@ -367,14 +367,10 @@ public abstract class AbstractFeature implements Serializable {
 
     /**
      * Returns the value for the property of the given name if that property exists, or a fallback value otherwise.
-     * This method is equivalent to the following code, but potentially more efficient when the property does not exist:
+     * This method is equivalent to the following code, but potentially more efficient:
      *
      * {@snippet lang="java" :
-     *     try {
-     *         return getPropertyValue(name);
-     *     } catch (IllegalArgumentException ignore) {
-     *         return missingPropertyFallback
-     *     }
+     *     return type.hasProperty(name) ? getPropertyValue(name) : missingPropertyFallback;
      *     }
      *
      * Note that if a property of the given name exists but has no value, then this method returns the
@@ -388,8 +384,13 @@ public abstract class AbstractFeature implements Serializable {
      *         if no attribute or association of that name exists. This value may be {@code null}.
      *
      * @since 1.1
+     *
+     * @deprecated Experience suggests that this method encourage bugs in user's code that stay unnoticed.
      */
-    public abstract Object getValueOrFallback(final String name, Object missingPropertyFallback);
+    @Deprecated(since = "1.5", forRemoval = true)
+    public Object getValueOrFallback(final String name, Object missingPropertyFallback) {
+        return type.hasProperty(name) ? getPropertyValue(name) : missingPropertyFallback;
+    }
 
     /**
      * Executes the parameterless operation of the given name and returns the value of its result.
@@ -592,6 +593,27 @@ public abstract class AbstractFeature implements Serializable {
     }
 
     /**
+     * Returns the default characteristic values as specified in the feature type.
+     * This method is invoked when an individual property cannot have characteristic.
+     * It happens with {@link DenseFeature} and {@link SparseFeature} subclasses,
+     * which have optimization for the case where a feature contains only values
+     * without the other information related to properties (such as characteristics).
+     *
+     * @param  property        name of the property for which to get a characteristic.
+     * @param  characteristic  name of the characteristic of the property of the given name.
+     * @return default value of the specified characteristic on the specified property.
+     * @throws PropertyNotFoundException if the {@code property} argument is not the name of a property.
+     */
+    final Optional<?> getDefaultCharacteristicValue(final String property, final String characteristic) {
+        final AbstractIdentifiedType p = type.getProperty(property);
+        if (p instanceof DefaultAttributeType<?>) {
+            return Optional.ofNullable(((DefaultAttributeType<?>) p).characteristics().get(characteristic))
+                    .map(DefaultAttributeType::getDefaultValue);
+        }
+        return Optional.empty();
+    }
+
+    /**
      * Returns {@code true} if the caller can skip the call to {@link #verifyPropertyValue(String, Object)}.
      * This is a slight optimization for the case when we replaced an attribute value by a new value of
      * the same class. Since the type check has already been done by the previous assignation, we do not
@@ -791,7 +813,7 @@ public abstract class AbstractFeature implements Serializable {
     private static String illegalFeatureType(
             final DefaultAssociationRole association, final FeatureType expected, final FeatureType actual)
     {
-        return Resources.format(Resources.Keys.IllegalFeatureType_3,
+        return Resources.format(Resources.Keys.IllegalFeatureType_4, 0,
                                 association.getName(), expected.getName(), actual.getName());
     }
 

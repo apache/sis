@@ -32,7 +32,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
-import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.pending.geoapi.filter.LogicalOperator;
 
 
@@ -42,11 +41,12 @@ import org.apache.sis.pending.geoapi.filter.LogicalOperator;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class LogicalFilterTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
-    private final DefaultFilterFactory<AbstractFeature,Object,?> factory;
+    private final DefaultFilterFactory<AbstractFeature, ?, ?> factory;
 
     /**
      * Creates a new test case.
@@ -258,7 +258,7 @@ public final class LogicalFilterTest extends TestCase {
 
         final var property = assertInstanceOf(PropertyValue.class, optimized.getParameters().get(0));
         assertEquals(String.class, property.getSourceClass());
-        assertEquals(Number.class, property.getValueClass());
+        assertEquals(Number.class, property.getResultClass());
     }
 
     /**

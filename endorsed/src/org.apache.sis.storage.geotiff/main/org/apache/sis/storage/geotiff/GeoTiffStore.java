@@ -19,11 +19,9 @@ package org.apache.sis.storage.geotiff;
 import java.util.Set;
 import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.Optional;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.time.ZoneId;
+import java.util.OptionalInt;
+import java.util.Spliterator;
 import java.net.URI;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -69,7 +67,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.internal.shared.Constants;
-import org.apache.sis.util.internal.shared.ListOfUnknownSize;
+import org.apache.sis.util.collection.ListOfUnknownSize;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.iso.DefaultNameFactory;
@@ -120,18 +118,6 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * which is about formatting error messages. A null value means "unlocalized", which is usually English.
      */
     final Locale dataLocale;
-
-    /**
-     * The timezone for the date and time parsing, or {@code null} for the default.
-     */
-    private final ZoneId timezone;
-
-    /**
-     * The object to use for parsing and formatting dates. Created when first needed.
-     *
-     * @see #getDateFormat()
-     */
-    private transient DateFormat dateFormat;
 
     /**
      * The {@link GeoTiffStoreProvider#LOCATION} parameter value, or {@code null} if none.
@@ -261,7 +247,6 @@ public class GeoTiffStore extends DataStore implements Aggregate {
 
         compression = connector.getOption(Compression.OPTION_KEY);
         dataLocale  = connector.getOption(OptionKey.LOCALE);
-        timezone    = connector.getOption(OptionKey.TIMEZONE);
         location    = connector.getStorageAs(URI.class);
         path        = connector.getStorageAs(Path.class);
         try {
@@ -499,19 +484,6 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
-     * {@return the object to use for parsing and formatting dates}.
-     */
-    final DateFormat getDateFormat() {
-        if (dateFormat == null) {
-            dateFormat = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.US);
-            if (timezone != null) {
-                dateFormat.setTimeZone(TimeZone.getTimeZone(timezone));
-            }
-        }
-        return dateFormat;
-    }
-
-    /**
      * Returns the reader if it is not closed, or throws an exception otherwise.
      *
      * @return the reader, potentially created when first needed.
@@ -598,10 +570,15 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         Components() {
         }
 
-        /** Returns the size or -1 if not yet known. */
-        @Override protected int sizeIfKnown() {
+        /** Declares that this list has no duplicated elements and excludes null. */
+        @Override protected int characteristics() {
+            return Spliterator.ORDERED | Spliterator.NONNULL | Spliterator.DISTINCT;
+        }
+
+        /** Returns the size or empty if not yet known. */
+        @Override protected OptionalInt sizeIfKnown() {
             synchronized (GeoTiffStore.this) {
-                return size;
+                return (size >= 0) ? OptionalInt.of(size) : OptionalInt.empty();
             }
         }
 
@@ -625,8 +602,8 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         }
 
         /** Returns whether the given index is valid. */
-        @Override protected boolean exists(final int index) {
-            return (index >= 0) && getImageFileDirectory(index) != null;
+        @Override protected boolean isValidIndex(final int index) {
+            return (index >= 0) && (size >= 0 ? index < size : getImageFileDirectory(index) != null);
         }
 
         /** Returns element at the given index or throw {@link IndexOutOfBoundsException}. */

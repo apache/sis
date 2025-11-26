@@ -192,7 +192,7 @@ public class GpkgStoreProvider extends DataStoreProvider {
         if (source != null) {
             try (Connection connection = source.getConnection()) {
                 final DatabaseMetaData metadata = connection.getMetaData();
-                final String table = SQLUtilities.escape(Content.TABLE_NAME, metadata.getSearchStringEscape());
+                final String table = SQLUtilities.escapeWildcards(Content.TABLE_NAME, metadata.getSearchStringEscape());
                 try (ResultSet r = metadata.getColumns(null, null, table, "%")) {
                     boolean hasTable = false, hasType = false;
                     while (r.next()) {

@@ -22,12 +22,13 @@ import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.filter.DefaultFilterFactory;
-import org.apache.sis.filter.internal.shared.XPath;
+import org.apache.sis.filter.base.XPath;
 import org.apache.sis.setup.GeometryLibrary;
 
 // Specific to the main branch:
@@ -99,7 +100,7 @@ import org.apache.sis.filter.Expression;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   0.7
  */
 public final class FeatureOperations {
@@ -319,7 +320,7 @@ public final class FeatureOperations {
      *
      * @since 1.4
      */
-    public static <V> AbstractOperation function(final Map<String,?> identification,
+    public static <V> AbstractOperation function(final Map<String, ?> identification,
                                          final Function<? super AbstractFeature, ? extends V> expression,
                                          final DefaultAttributeType<? super V> resultType)
     {
@@ -348,11 +349,58 @@ public final class FeatureOperations {
      *
      * @since 1.4
      */
-    public static <V> AbstractOperation expression(final Map<String,?> identification,
+    public static <V> AbstractOperation expression(final Map<String, ?> identification,
                                            final Expression<? super AbstractFeature, ?> expression,
                                            final DefaultAttributeType<V> resultType)
     {
         return function(identification, expression.toValueType(resultType.getValueClass()), resultType);
+    }
+
+    /**
+     * Creates an operation with the same identification and result type than the given operation,
+     * but evaluated using the given expression. For example, if the given operation is the result
+     * of a previous call to {@link #expression expression(…)}, then invoking this method is equivalent
+     * to invoking {@code expression(…)} again with the same arguments except for {@code expression}.
+     *
+     * @param  operation   the operation to evaluate in a different way.
+     * @param  expression  the new expression to use for evaluating the operation.
+     * @return the new operation. May be the given operation if the expression is the same.
+     * @throws IllegalArgumentException if the {@linkplain AbstractOperation#getResult() result type}
+     *         of the given operation is not an {@code AttributeType}.
+     *
+     * @since 1.6
+     */
+    public static AbstractOperation replace(final AbstractIdentifiedType property, final Expression<? super AbstractFeature, ?> expression) {
+        final DefaultAttributeType<?> resultType;
+        if (property instanceof ExpressionOperation<?>) {
+            var operation = (ExpressionOperation) property;
+            if (operation.expression.equals(expression)) {
+                return operation;
+            }
+            resultType = operation.resultType;
+        } else if (property instanceof DefaultAttributeType<?>) {
+            resultType = (DefaultAttributeType<?>) property;
+        } else if (property instanceof AbstractOperation) {
+            final AbstractIdentifiedType type = ((AbstractOperation) property).getResult();
+            if (type instanceof DefaultAttributeType<?>) {
+                resultType = (DefaultAttributeType<?>) type;
+            } else {
+                throw illegalResultType(Errors.Keys.IllegalPropertyValueClass_3, property.getName(), DefaultAttributeType.class, type);
+            }
+        } else {
+            throw illegalResultType(Errors.Keys.IllegalArgumentClass_2, "property", property);
+        }
+        return expression(Map.of(AbstractIdentifiedType.INHERIT_FROM_KEY, property), expression, resultType);
+    }
+
+    /**
+     * Returns the exception to throw for an illegal result type.
+     * The last argument will be replaced by the class or interface of that argument.
+     */
+    private static IllegalArgumentException illegalResultType(final short key, final Object... arguments) {
+        final int last = arguments.length - 1;
+        arguments[last] = Classes.getStandardType(Classes.getClass(arguments[last]));
+        return new IllegalArgumentException(Errors.format(key, arguments));
     }
 
     /**

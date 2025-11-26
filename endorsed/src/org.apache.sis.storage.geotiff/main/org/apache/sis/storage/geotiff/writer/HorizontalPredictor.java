@@ -82,7 +82,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
     }
 
     /**
-     * {@return the size of sample values in number of bytes}.
+     * Returns the size of sample values in number of bytes.
      */
     abstract int sampleSize();
 

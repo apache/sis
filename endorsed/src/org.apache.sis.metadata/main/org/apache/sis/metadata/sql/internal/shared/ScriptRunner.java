@@ -56,6 +56,26 @@ import org.apache.sis.util.resources.Errors;
  */
 public class ScriptRunner implements AutoCloseable {
     /**
+     * The <abbr>SQL</abbr> {@value} keyword. In the current {@code ScriptRunner} implementation,
+     * this keyword must be last before the comma in the declaration of a column. Example:
+     *
+     * {@snippet lang="sql" :
+     * coord_sys_name VARCHAR(254) NOT NULL COLLATE "Ignore Accent and Case",
+     * }
+     *
+     * @see #editTableCreation(StringBuilder)
+     */
+    private static final String COLLATE = "COLLATE";
+
+    /**
+     * The <abbr>SQL</abbr> {@value} keyword. In the current {@code ScriptRunner} implementation,
+     * this keyword must be last before the end of a {@code CREATE TABLE} statement.
+     *
+     * @see #editTableCreation(StringBuilder)
+     */
+    private static final String INHERITS = "INHERITS";
+
+    /**
      * The sequence for SQL comments. Leading lines starting by those characters will be ignored.
      */
     private static final String COMMENT = "--";
@@ -98,7 +118,7 @@ public class ScriptRunner implements AutoCloseable {
     protected final String identifierQuote;
 
     /**
-     * {@code true} if the database supports enums.
+     * {@code true} if the database supports enumerations in the way used by Apache <abbr>SIS</abbr>.
      * Example:
      *
      * {@snippet lang="sql" :
@@ -118,6 +138,17 @@ public class ScriptRunner implements AutoCloseable {
     protected final boolean isEnumTypeSupported;
 
     /**
+     * {@code true} if the database supports collations in the way used by Apache <abbr>SIS</abbr>.
+     * The way to use collations vary a lot between databases, so the "<abbr>SIS</abbr> way" is the
+     * PostgreSQL way for now. A value of {@code false} does not necessarily means that the database
+     * does not support collations at all, but the database does not support {@code CREATE COLLATION}
+     * statements and collations declared in column definitions.
+     *
+     * @see #statementsToSkip
+     */
+    protected final boolean isCollationSupported;
+
+    /**
      * The maximum number of rows allowed per {@code "INSERT"} statement.
      * This is 1 if the database does not support multi-rows insertion.
      * For other database, this is set to an arbitrary "reasonable" value since attempts to insert
@@ -131,12 +162,13 @@ public class ScriptRunner implements AutoCloseable {
     private final Statement statement;
 
     /**
-     * If non-null, the SQL statements to skip (typically because not supported by the database).
+     * If non-null, the <abbr>SQL</abbr> statements to skip (typically because not supported by the database).
      * The matcher is built as an alternation of many regular expressions separated by the pipe symbol.
      * The list of statements to skip depends on which {@code is*Supported} fields are set to {@code true}:
      *
      * <ul>
      *   <li>{@link #isEnumTypeSupported} for {@code "CREATE TYPE …"} or {@code "CREATE CAST …"} statements.</li>
+     *   <li>{@link #isCollationSupported} for {@code "CREATE COLLATION …"} statements.</li>
      *   <li>{@link Dialect#supportsGrantUsageOnSchema} for {@code "GRANT USAGE ON SCHEMA …"} statements.</li>
      *   <li>{@link Dialect#supportsGrantSelectOnTable} for {@code "GRANT SELECT ON TABLE …"} statements.</li>
      *   <li>{@link Dialect#supportsComment} for {@code "COMMENT ON …"} statements.</li>
@@ -208,16 +240,19 @@ public class ScriptRunner implements AutoCloseable {
         statement = connection.createStatement();
         switch (dialect) {
             default: {
-                isEnumTypeSupported = false;
+                isEnumTypeSupported  = false;
+                isCollationSupported = false;
                 break;
             }
             case POSTGRESQL: {
                 final int version = metadata.getDatabaseMajorVersion();
-                isEnumTypeSupported = (version == 8) ? metadata.getDatabaseMinorVersion() >= 4 : version >= 8;
+                isEnumTypeSupported  = (version >=  9);
+                isCollationSupported = (version >= 15);     // Version when ICU collation provider is available.
                 break;
             }
             case HSQL: {
-                isEnumTypeSupported = false;
+                isEnumTypeSupported  = false;
+                isCollationSupported = false;
                 /*
                  * HSQLDB stores tables in memory by default. For storing the tables on files, we have to
                  * use "CREATE CACHED TABLE" statement, which is HSQL-specific. For avoiding SQL dialect,
@@ -236,6 +271,9 @@ public class ScriptRunner implements AutoCloseable {
          */
         if (!isEnumTypeSupported) {
             addStatementToSkip("CREATE\\s+(?:TYPE|CAST)\\s+.*");
+        }
+        if (!isCollationSupported) {
+            addStatementToSkip("CREATE\\s+COLLATION\\s+.*");
         }
         if (!dialect.supportsAllGrants()) {
             addStatementToSkip("GRANT\\s+\\w+\\s+ON\\s+");
@@ -271,6 +309,7 @@ public class ScriptRunner implements AutoCloseable {
      *
      * <ul>
      *   <li>{@code "CREATE TYPE …"} or {@code "CREATE CAST …"} if {@link #isEnumTypeSupported} is {@code false}.</li>
+     *   <li>{@code "CREATE COLLATION …"} if {@link #isCollationSupported} is {@code false}.</li>
      *   <li>{@code "GRANT USAGE ON SCHEMA …"} if {@link Dialect#supportsGrantUsageOnSchema} is {@code false}.</li>
      *   <li>{@code "GRANT SELECT ON TABLE …"} if {@link Dialect#supportsGrantSelectOnTable} is {@code false}.</li>
      *   <li>{@code "COMMENT ON …"} if {@link Dialect#supportsComment} is {@code false}.</li>
@@ -567,7 +606,7 @@ parseLine:  while (pos < length) {
      * @param  to    index after the last character of the fragment.
      * @return whether the given fragment seems outside quotes.
      */
-    private static boolean isOutsideQuotes(final CharSequence sql, int from, final int to) {
+    private static boolean isOutsideQuotes(final StringBuilder sql, int from, final int to) {
         int nq = 0, ni = 0;
         while (from < to) {
             switch (sql.charAt(from++)) {
@@ -586,6 +625,60 @@ parseLine:  while (pos < length) {
             }
         }
         return ((nq | ni) & 1) == 0;
+    }
+
+    /**
+     * Invoked for each {@code CREATE TABLE} statement.
+     * The default implementation removes the declarations listed below if they are unsupported.
+     *
+     * <h4>Table inheritance</h4>
+     * Removes {@code INHERITS} declarations if they are unsupported by the target database.
+     * This method expects <abbr>SQL</abbr> statements for a PostgreSQL database like below.
+     * The {@code INHERITS} fragment must be last because everything after may be ignored:
+     *
+     * {@snippet lang="sql" :
+     *   CREATE TABLE metadata."Organisation" (
+     *     "ID"   VARCHAR(15) NOT NULL PRIMARY KEY,
+     *     "name" VARCHAR(120))
+     *     INHERITS (metadata."Party");
+     *   }
+     *
+     * <h4>Collation</h4>
+     * Removes {@code COLLATE} declarations if they are unsupported by the target database.
+     * This method expects <abbr>SQL</abbr> statements for a PostgreSQL database like below.
+     * The {@code COLLATE} fragment must be last before the comma because everything between
+     * the keyword and the comma will be ignored:
+     *
+     * {@snippet lang="sql" :
+     *   CREATE TABLE "Coordinate System" (
+     *     coord_sys_code INTEGER NOT NULL,
+     *     coord_sys_name VARCHAR(254) NOT NULL COLLATE "Ignore Accent and Case",
+     *     CONSTRAINT pk_coordinatesystem PRIMARY KEY (coord_sys_code))
+     *   }
+     *
+     * @param sql the statement from where to remove {@code COLLATE} declarations.
+     */
+    protected void editTableCreation(final StringBuilder sql) {
+        if (!dialect.supportsTableInheritance()) {
+            final int i = sql.lastIndexOf(INHERITS);
+            if (i >= 0 && isOutsideQuotes(sql, i + INHERITS.length(), sql.length())) {
+                sql.setLength(CharSequences.skipTrailingWhitespaces(sql, 0, i));
+            }
+        }
+        if (!isCollationSupported) {
+            int i = sql.length();
+            while ((i = sql.lastIndexOf(COLLATE, i - 1)) > 0) {
+                final int w = i + COLLATE.length();
+                final int s = sql.indexOf(",", w);
+                if (s > w && isOutsideQuotes(sql, w, s)) {
+                    if (Character.isWhitespace(sql.codePointAt(w)) &&
+                        Character.isWhitespace(sql.codePointBefore(i)))
+                    {
+                        sql.delete(i, s);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -613,13 +706,12 @@ parseLine:  while (pos < length) {
     }
 
     /**
-     * Executes the given SQL statement.
+     * Executes the given <abbr>SQL</abbr> statement.
      * This method performs the following choices:
      *
      * <ul>
      *   <li>If {@link #isSupported(CharSequence)} returns {@code false}, then this method does nothing.</li>
-     *   <li>If the statement is {@code CREATE TABLE ... INHERITS ...} but the database does not support
-     *       table inheritance, then this method drops the {@code INHERITS ...} part.</li>
+     *   <li>If the statement starts with {@code CREATE TABLE}, invokes {@link #editTableCreation(StringBuilder)}.</li>
      *   <li>If the {@code maxRowsPerInsert} argument given at construction time was zero,
      *       then this method skips {@code "INSERT INTO"} statements but executes all other.</li>
      *   <li>Otherwise this method executes the given statement with the following modification:
@@ -631,7 +723,7 @@ parseLine:  while (pos < length) {
      * Subclasses that override this method can freely edit the {@link StringBuilder} content before
      * to invoke this method.
      *
-     * @param  sql  the SQL statement to execute.
+     * @param  sql  the <abbr>SQL</abbr> statement to execute.
      * @return the number of rows added or modified as a result of the statement execution.
      * @throws SQLException if an error occurred while executing the SQL statement.
      * @throws IOException if an I/O operation was required and failed.
@@ -640,15 +732,11 @@ parseLine:  while (pos < length) {
         if (!isSupported(sql)) {
             return 0;
         }
-        String subSQL = currentSQL = CharSequences.trimWhitespaces(sql).toString();
-        if (!dialect.supportsTableInheritance() && subSQL.startsWith("CREATE TABLE")) {
-            final int s = sql.lastIndexOf("INHERITS");
-            if (s >= 0 && isOutsideQuotes(sql, s+8, sql.length())) {             // 8 is the length of "INHERITS".
-                sql.setLength(CharSequences.skipTrailingWhitespaces(sql, 0, s));
-                subSQL = currentSQL = sql.toString();
-            }
+        if (CharSequences.startsWith(sql, "CREATE TABLE", true)) {
+            editTableCreation(sql);
         }
         int count = 0;
+        String subSQL = currentSQL = CharSequences.trimWhitespaces(sql).toString();
         /*
          * The scripts usually do not contain any SELECT statement. One exception is the creation
          * of geometry columns in a PostGIS database, which use "SELECT AddGeometryColumn(…)".

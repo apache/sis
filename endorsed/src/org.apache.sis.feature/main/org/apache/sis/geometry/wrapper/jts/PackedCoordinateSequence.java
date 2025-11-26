@@ -39,29 +39,27 @@ abstract class PackedCoordinateSequence implements CoordinateSequence, Serializa
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 6323915437380051705L;
+    private static final long serialVersionUID = -3374522920399590093L;
 
     /**
      * Number of dimensions for this coordinate sequence.
+     * Values are restricted to 2, 3 or 4.
      *
      * @see #getDimension()
      */
-    protected final int dimension;
+    final byte dimension;
 
     /**
-     * Whether this coordinate sequence has <var>z</var> and/or <var>M</var> coordinate values.
-     * This is a combination of {@link #Z_MASK} and {@link #M_MASK} bit masks.
-     *
-     * @see #hasZ()
-     * @see #hasM()
+     * Whether this coordinate sequence has <var>z</var> coordinate values.
+     * If {@code true}, exactly one <var>z</var> value is present per coordinate tuple.
      */
-    private final int hasZM;
+    final boolean hasZ;
 
     /**
-     * Bit to set to 1 in the {@link #hasZM} mask if this coordinate sequence
-     * has <var>z</var> and/or <var>M</var> coordinate values.
+     * Whether this coordinate sequence has <var>M</var> coordinate values.
+     * If {@code true}, one or more <var>M</var> values are present per coordinate tuple.
      */
-    private static final int Z_MASK = 1, M_MASK = 2;      // Z_MASK must be 1 for bit twiddling reason.
+    final boolean hasM;
 
     /**
      * Creates a new sequence initialized to a copy of the given sequence.
@@ -69,7 +67,8 @@ abstract class PackedCoordinateSequence implements CoordinateSequence, Serializa
      */
     PackedCoordinateSequence(final PackedCoordinateSequence original) {
         dimension = original.dimension;
-        hasZM     = original.hasZM;
+        hasZ      = original.hasZ;
+        hasM      = original.hasM;
     }
 
     /**
@@ -79,28 +78,19 @@ abstract class PackedCoordinateSequence implements CoordinateSequence, Serializa
      * @param  measures   number of <var>M</var> coordinates.
      */
     PackedCoordinateSequence(final int dimension, final int measures) {
-        ArgumentChecks.ensurePositive("measures", measures);
-        ArgumentChecks.ensureBetween("dimension", Factory.BIDIMENSIONAL + measures,
-                       Math.addExact(Factory.TRIDIMENSIONAL, measures), dimension);
-        this.dimension = dimension;
-        int hasZM = (measures == 0) ? 0 : M_MASK;
-        if ((dimension - measures) >= Factory.TRIDIMENSIONAL) {
-            hasZM |= Z_MASK;
-        }
-        this.hasZM = hasZM;
+        ArgumentChecks.ensureBetween("measures", 0, 100, measures);     // Arbitrary upper limit.
+        ArgumentChecks.ensureBetween("dimension",
+                Factory.BIDIMENSIONAL  + measures,
+                Factory.TRIDIMENSIONAL + measures,
+                dimension);
+        this.dimension = (byte) dimension;
+        this.hasM = (measures != 0);
+        this.hasZ = (dimension - measures) >= Factory.TRIDIMENSIONAL;
     }
 
     /**
-     * Returns the number of spatial dimensions,
-     * which is {@value Factory#BIDIMENSIONAL} or {@value Factory#TRIDIMENSIONAL}.
-     */
-    private static int getSpatialDimension(final int hasZM) {
-        return Factory.BIDIMENSIONAL | (hasZM & Z_MASK);
-    }
-
-    /**
-     * Returns the number of dimensions for all coordinates in this sequence,
-     * including {@linkplain #getMeasures() measures}.
+     * Returns the number of dimensions for all coordinates in this sequence.
+     * This value includes the number of {@linkplain #getMeasures() measures}.
      */
     @Override
     public final int getDimension() {
@@ -112,27 +102,32 @@ abstract class PackedCoordinateSequence implements CoordinateSequence, Serializa
      */
     @Override
     public final int getMeasures() {
-        return dimension - getSpatialDimension(hasZM);
+        return dimension - (hasZ ? Factory.TRIDIMENSIONAL : Factory.BIDIMENSIONAL);
     }
 
     /**
      * Returns whether this coordinate sequence has <var>z</var> coordinate values.
+     * If {@code true}, exactly one <var>z</var> value is present per coordinate tuple.
      */
     @Override
     public final boolean hasZ() {
-        return (hasZM & Z_MASK) != 0;
+        return hasZ;
     }
 
     /**
      * Returns whether this coordinate sequence has <var>M</var> coordinate values.
+     * If {@code true}, one or more <var>M</var> values are present per coordinate tuple.
      */
     @Override
     public final boolean hasM() {
-        return (hasZM & M_MASK) != 0;
+        return hasM;
     }
 
     /**
      * Returns the <var>x</var> coordinate value for the tuple at the given index.
+     * For performance reasons, this method does not check the validity of the {@code index} argument.
+     *
+     * @throws ArrayIndexOutOfBoundsException if the given index is out of bounds (not always detected).
      */
     @Override
     public final double getX(final int index) {
@@ -141,6 +136,9 @@ abstract class PackedCoordinateSequence implements CoordinateSequence, Serializa
 
     /**
      * Returns the <var>y</var> coordinate value for the tuple at the given index.
+     * For performance reasons, this method does not check the validity of the {@code index} argument.
+     *
+     * @throws ArrayIndexOutOfBoundsException if the given index is out of bounds (not always detected).
      */
     @Override
     public final double getY(final int index) {
@@ -148,66 +146,65 @@ abstract class PackedCoordinateSequence implements CoordinateSequence, Serializa
     }
 
     /**
-     * Returns the <var>z</var> coordinate value for the tuple at the given index,
-     * or {@link java.lang.Double.NaN} if this sequence has no <var>z</var> coordinates.
+     * Returns the <var>z</var> coordinate value for the tuple at the given index.
+     * If this sequence has no <var>z</var> coordinates, returns {@link java.lang.Double.NaN}.
+     * For performance reasons, this method does not check the validity of the {@code index} argument.
+     *
+     * @throws ArrayIndexOutOfBoundsException if the given index is out of bounds (not always detected).
      */
     @Override
     public final double getZ(final int index) {
-        return (hasZM & Z_MASK) != 0 ? coordinate(index * dimension + Z) : java.lang.Double.NaN;
+        return hasZ ? coordinate(index * dimension + Z) : java.lang.Double.NaN;
     }
 
     /**
-     * Returns the first <var>M</var> coordinate value for the tuple at the given index,
-     * or {@link java.lang.Double.NaN} if this sequence has no <var>M</var> coordinates.
+     * Returns the first <var>M</var> coordinate value for the tuple at the given index.
+     * If this sequence has no <var>M</var> coordinates, returns {@link java.lang.Double.NaN}.
+     * For performance reasons, this method does not check the validity of the {@code index} argument.
+     *
+     * @throws ArrayIndexOutOfBoundsException if the given index is out of bounds (not always detected).
      */
     @Override
     public final double getM(final int index) {
-        switch (hasZM) {
-            default:              return java.lang.Double.NaN;
-            case M_MASK:          return coordinate(index * dimension + Z);
-            case M_MASK | Z_MASK: return coordinate(index * dimension + M);
-        }
+        return hasM ? coordinate(index * dimension + (hasZ ? M : Z)) : java.lang.Double.NaN;
     }
 
     /**
      * Returns the coordinate tuple at the given index.
+     * For performance reasons, this method does not check the validity of the {@code index} argument.
      *
      * @param  index  index of the coordinate tuple.
      * @return coordinate tuple at the given index.
-     * @throws ArrayIndexOutOfBoundsException if the given index is out of bounds.
+     * @throws ArrayIndexOutOfBoundsException if the given index is out of bounds (not always detected).
      */
     @Override
     public final Coordinate getCoordinate(int index) {
         index *= dimension;
         final double x = coordinate(  index);
         final double y = coordinate(++index);
-        switch (hasZM) {
-            default:              return new Coordinate    (x,y);
-            case 0:               return new CoordinateXY  (x,y);
-            case Z_MASK:          return new Coordinate    (x,y, coordinate(++index));
-            case M_MASK:          return new CoordinateXYM (x,y, coordinate(++index));
-            case Z_MASK | M_MASK: return new CoordinateXYZM(x,y, coordinate(++index), coordinate(++index));
+        if (!(hasZ | hasM)) {
+            return new CoordinateXY(x, y);   // Most common case.
         }
+        final double z = coordinate(++index);
+        if (!hasM) return new Coordinate   (x, y, z);
+        if (!hasZ) return new CoordinateXYM(x, y, z);
+        return new CoordinateXYZM(x, y, z, coordinate(++index));
     }
 
     /**
      * Copies the coordinate tuple at the given index into the specified target.
      *
-     * @param  index     index of the coordinate tuple.
-     * @param  dest  where to copy the coordinates.
-     * @throws ArrayIndexOutOfBoundsException if the given index is out of bounds.
+     * @param  index  index of the coordinate tuple.
+     * @param  dest   where to copy the coordinates.
+     * @throws ArrayIndexOutOfBoundsException if the given index is out of bounds (not always detected).
      */
     @Override
-    @SuppressWarnings("fallthrough")
     public final void getCoordinate(int index, final Coordinate dest) {
         index *= dimension;
         dest.x = coordinate(  index);
         dest.y = coordinate(++index);
-        switch (hasZM) {
-            case Z_MASK:          dest.setZ(coordinate(++index)); break;
-            case Z_MASK | M_MASK: dest.setZ(coordinate(++index)); // Fall through
-            case M_MASK:          dest.setM(coordinate(++index)); break;
-        }
+        if (hasZ) dest.setZ(coordinate(++index));
+        if (hasM) dest.setM(coordinate(++index));
     }
 
     /**
@@ -215,7 +212,7 @@ abstract class PackedCoordinateSequence implements CoordinateSequence, Serializa
      *
      * @param  index  index of the coordinate tuple.
      * @return coordinate tuple at the given index.
-     * @throws ArrayIndexOutOfBoundsException if the given index is out of bounds.
+     * @throws ArrayIndexOutOfBoundsException if the given index is out of bounds (not always detected).
      */
     @Override
     public final Coordinate getCoordinateCopy(int index) {
@@ -224,11 +221,12 @@ abstract class PackedCoordinateSequence implements CoordinateSequence, Serializa
 
     /**
      * Returns a coordinate value from the coordinate tuple at the given index.
-     * For performance reasons, this method does not check {@code dim} validity.
+     * For performance reasons, this method does not check arguments validity.
      *
      * @param  index  index of the coordinate tuple.
      * @param  dim    index of the coordinate value in the tuple.
      * @return value of the specified value in the coordinate tuple.
+     * @throws ArrayIndexOutOfBoundsException if the given index is out of bounds (not always detected).
      */
     @Override
     public final double getOrdinate(final int index, final int dim) {
@@ -304,10 +302,14 @@ abstract class PackedCoordinateSequence implements CoordinateSequence, Serializa
         /** Sets all coordinates in this sequence. */
         @Override void setCoordinates(final Coordinate[] values) {
             int t = 0;
+            int skip = getMeasures();
+            if (hasM) skip--;
             for (final Coordinate c : values) {
-                for (int i=0; i<dimension; i++) {
-                    coordinates[t++] = c.getOrdinate(i);
-                }
+                /*always*/coordinates[t++] = c.getX();
+                /*always*/coordinates[t++] = c.getY();
+                if (hasZ) coordinates[t++] = c.getZ();
+                if (hasM) coordinates[t++] = c.getM();
+                t += skip;
             }
             assert t == coordinates.length;
         }
@@ -392,10 +394,14 @@ abstract class PackedCoordinateSequence implements CoordinateSequence, Serializa
         /** Sets all coordinates in this sequence. */
         @Override void setCoordinates(final Coordinate[] values) {
             int t = 0;
+            int skip = getMeasures();
+            if (hasM) skip--;
             for (final Coordinate c : values) {
-                for (int i=0; i<dimension; i++) {
-                    coordinates[t++] = (float) c.getOrdinate(i);
-                }
+                /*always*/coordinates[t++] = (float) c.getX();
+                /*always*/coordinates[t++] = (float) c.getY();
+                if (hasZ) coordinates[t++] = (float) c.getZ();
+                if (hasM) coordinates[t++] = (float) c.getM();
+                t += skip;
             }
             assert t == coordinates.length;
         }
@@ -438,7 +444,7 @@ abstract class PackedCoordinateSequence implements CoordinateSequence, Serializa
      */
     @Override
     public final Coordinate[] toCoordinateArray() {
-        final Coordinate[] coordinates = new Coordinate[size()];
+        final var coordinates = new Coordinate[size()];
         for (int i=0; i < coordinates.length; i++) {
             coordinates[i] = getCoordinate(i);
         }
@@ -458,7 +464,7 @@ abstract class PackedCoordinateSequence implements CoordinateSequence, Serializa
      */
     @Override
     public int hashCode() {
-        return (37 * dimension) ^ hasZM;
+        return (37 * dimension) ^ (hasZ ? 3 : 7) ^ (hasM ? 11 : 17);
     }
 
     /**
@@ -467,8 +473,8 @@ abstract class PackedCoordinateSequence implements CoordinateSequence, Serializa
     @Override
     public boolean equals(final Object obj) {
         if (obj != null && obj.getClass() == getClass()) {
-            final PackedCoordinateSequence other = (PackedCoordinateSequence) obj;
-            return other.dimension == dimension && other.hasZM == hasZM;
+            final var other = (PackedCoordinateSequence) obj;
+            return other.dimension == dimension && other.hasZ == hasZ && other.hasM == hasM;
         }
         return false;
     }

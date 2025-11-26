@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.regex.Pattern;
-import org.apache.sis.filter.internal.Node;
+import org.apache.sis.filter.base.Node;
 
 // Specific to the main branch:
 import org.apache.sis.pending.geoapi.filter.ComparisonOperatorName;

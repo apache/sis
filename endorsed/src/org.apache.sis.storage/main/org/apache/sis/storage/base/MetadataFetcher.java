@@ -60,10 +60,8 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
  * API of this class may change in any future SIS versions.
  *
  * @author  Martin Desruisseaux (Geomatys)
- *
- * @param  <T>  type of temporal objects.
  */
-public abstract class MetadataFetcher<T> {
+public class MetadataFetcher {
     /**
      * Types of date to accept as a date of last update, in preference order.
      */
@@ -112,7 +110,7 @@ public abstract class MetadataFetcher<T> {
      *
      * <p>Path: {@code metadata/identificationInfo/citation/date}</p>
      */
-    public List<T> creationDate;
+    public List<Temporal> creationDate;
 
     /**
      * Dates of the last update, or {@code null} if none.
@@ -121,7 +119,7 @@ public abstract class MetadataFetcher<T> {
      *
      * @see #lastUpdate(Metadata)
      */
-    public List<T> lastUpdate;
+    public List<Temporal> lastUpdate;
 
     /**
      * Type of the {@link #lastUpdate} values as an index in the {@link #LAST_UPDATE_TYPES} array.
@@ -186,7 +184,7 @@ public abstract class MetadataFetcher<T> {
      * @param  accept    the method to invoke for each element.
      * @param  elements  the collection of elements, or {@code null} if none.
      */
-    private <E> void forEach(final BiPredicate<MetadataFetcher<T>,E> accept, final Iterable<? extends E> elements) {
+    private <E> void forEach(final BiPredicate<MetadataFetcher, E> accept, final Iterable<? extends E> elements) {
         if (elements != null) {
             for (final E info : elements) {
                 if (info != null && accept.test(this, info)) break;
@@ -437,8 +435,7 @@ public abstract class MetadataFetcher<T> {
      * @param  clear   whether to clear the list before to add the date.
      * @return the collection where the date was added.
      */
-    private List<T> addDate(List<T> target, final CitationDate value, final boolean clear) {
-        @SuppressWarnings("deprecation")
+    private List<Temporal> addDate(List<Temporal> target, final CitationDate value, final boolean clear) {
         final Date date = value.getDate();
         if (date != null) {
             if (target == null) {
@@ -446,20 +443,10 @@ public abstract class MetadataFetcher<T> {
             } else if (clear) {
                 target.clear();
             }
-            target.add(convertDate(date));
+            target.add(TemporalDate.toTemporal(date));
         }
         return target;
     }
-
-    /**
-     * Converts the given date into the object to store.
-     * The {@code <T>} type may be for example {@code <String>}
-     * with a string representation specified by the format implemented by the store.
-     *
-     * @param  date  the date to convert.
-     * @return subclass-dependent object representing the given date.
-     */
-    protected abstract T convertDate(final Date date);
 
     /**
      * Returns the first date of type {@link DateType#LAST_UPDATE}.

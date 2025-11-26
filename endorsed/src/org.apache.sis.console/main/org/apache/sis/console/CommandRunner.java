@@ -263,9 +263,11 @@ abstract class CommandRunner {
     }
 
     /**
-     * {@return a non-null timezone, either the specified timezone or the default one}.
+     * Returns a non-null timezone, either the specified timezone or the default one.
      * This method is invoked when a null {@link #timezone} would be interpreted as UTC,
      * but the {@linkplain TimeZone#getDefault() default timezone} is preferred instead.
+     *
+     * @return the timezone to use.
      */
     protected final TimeZone getTimeZone() {
         return (timezone != null) ? TimeZone.getTimeZone(timezone) : TimeZone.getDefault();

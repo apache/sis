@@ -28,7 +28,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.feature.internal.shared.FeatureExpression;
 import org.apache.sis.feature.internal.shared.FeatureProjectionBuilder;
-import org.apache.sis.filter.internal.Node;
+import org.apache.sis.filter.base.Node;
 import org.apache.sis.math.FunctionProperty;
 
 // Specific to the main branch:
@@ -76,6 +76,18 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
         return Set.of();
     }
 
+    /**
+     * Returns a literal which always returns {@code null}.
+     *
+     * @param  <R>  ignored.
+     * @param  <V>  ignored.
+     * @return a literal for {@code null}.
+     */
+    @SuppressWarnings("unchecked")
+    protected static <R,V> Literal<R,V> NULL() {
+        return (Literal) Literal.NULL;
+    }
+
 
 
 
@@ -93,6 +105,9 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
 
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -8383113218490957822L;
+
+        /** A predefined literal which always returns {@code null}. */
+        private static Literal<?,?> NULL = new Literal<>(null);
 
         /** The constant value to be returned by {@link #getValue()}. */
         @SuppressWarnings("serial")         // Not statically typed as Serializable.
@@ -119,8 +134,8 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
         }
 
         /** Returns the type of values computed by this expression. */
-        @Override public Class<?> getValueClass() {
-            return (value != null) ? value.getClass() : Object.class;
+        @Override public Class<? extends V> getResultClass() {
+            return Classes.getClass(value);
         }
 
         /** Expression evaluation, which just returns the constant value. */
@@ -141,14 +156,30 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
          */
         @Override
         @SuppressWarnings("unchecked")
-        public <N> Expression<R,N> toValueType(final Class<N> target) {
+        public final <N> Expression<R,N> toValueType(final Class<N> target) {
             try {
                 final N c = ObjectConverters.convert(value, target);
-                return (c != value) ? new Literal<>(c) : (Literal<R,N>) this;
+                if (c == null)  return (Literal<R,N>) NULL;
+                if (c == value) return (Literal<R,N>) this;
+                return new Literal<>(c);
             } catch (UnconvertibleObjectException e) {
-                throw (ClassCastException) new ClassCastException(Errors.format(
-                        Errors.Keys.CanNotConvertValue_2, getFunctionName(), target)).initCause(e);
+                return unconvertibleValue(target, e);
             }
+        }
+
+        /**
+         * Invoked when {@link #toValueType(Class)} failed to find a converter to the given class.
+         * This method gives a chance to provide a fallback.
+         *
+         * @param  <N>     compile-time value of {@code target}.
+         * @param  target  the target class requested by the user.
+         * @param  cause   the exception that occurred.
+         * @return the fallback.
+         * @throws ClassCastException if there is no fallback.
+         */
+        protected <N> Expression<R,N> unconvertibleValue(final Class<N> target, UnconvertibleObjectException cause) {
+            throw (ClassCastException) new ClassCastException(Errors.format(
+                    Errors.Keys.CanNotConvertValue_2, getFunctionName(), target)).initCause(cause);
         }
 
         /**
@@ -161,7 +192,10 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
          */
         @Override
         public FeatureProjectionBuilder.Item expectedType(final FeatureProjectionBuilder addTo) {
-            final Class<?> valueType = getValueClass();
+            Class<?> valueType = getResultClass();
+            if (valueType == null) {
+                valueType = Object.class;
+            }
             DefaultAttributeType<?> propertyType;
             synchronized (TYPES) {
                 propertyType = TYPES.get(valueType);
@@ -230,26 +264,19 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
         }
 
         /**
-         * Converts the transformed value if possible, or the original value as a fallback.
-         *
-         * @throws ClassCastException if values cannot be provided as instances of the specified class.
+         * Invoked when {@link #toValueType(Class)} failed to find a converter to the given class.
+         * This method tries to apply the same operation on the original value as a fallback.
          */
         @Override
-        @SuppressWarnings("unchecked")
-        public <N> Expression<R,N> toValueType(final Class<N> target) {
-            // Same implementation as `super.toValueType(type)` except for exception handling.
+        protected <N> Expression<R,N> unconvertibleValue(final Class<N> target, UnconvertibleObjectException cause) {
             try {
-                final N c = ObjectConverters.convert(value, target);
-                return (c != value) ? new Literal<>(c) : (Literal<R,N>) this;
-            } catch (UnconvertibleObjectException e) {
+                return original.toValueType(target);
+            } catch (RuntimeException bis) {
                 try {
-                    return original.toValueType(target);
-                } catch (RuntimeException bis) {
-                    final var c = new ClassCastException(Errors.format(
-                            Errors.Keys.CanNotConvertValue_2, getFunctionName(), target));
-                    c.initCause(e);
-                    c.addSuppressed(bis);
-                    throw c;
+                    return super.unconvertibleValue(target, cause);     // For creating the main exception.
+                } catch (RuntimeException e) {
+                    e.addSuppressed(bis);
+                    throw e;
                 }
             }
         }

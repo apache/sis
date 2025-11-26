@@ -36,7 +36,8 @@ import java.time.chrono.ChronoZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
 import org.apache.sis.math.Fraction;
-import org.apache.sis.filter.internal.Node;
+import org.apache.sis.filter.base.Node;
+import org.apache.sis.filter.base.BinaryFunction;
 
 // Specific to the main branch:
 import org.apache.sis.pending.geoapi.filter.MatchAction;

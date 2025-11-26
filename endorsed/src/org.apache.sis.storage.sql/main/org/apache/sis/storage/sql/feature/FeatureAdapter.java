@@ -38,9 +38,9 @@ import org.apache.sis.feature.DefaultFeatureType;
 
 /**
  * Converter of {@link ResultSet} rows to {@code Feature} instances.
- * Each {@code FeatureAdapter} instance is specific to the set of rows given by a SQL query,
+ * Each {@code FeatureAdapter} instance is specific to the set of rows given by a <abbr>SQL</abbr> query,
  * ignoring {@code DISTINCT}, {@code ORDER BY} and filter conditions in the {@code WHERE} clause.
- * This class does not hold JDBC resources; {@link ResultSet} must be provided by the caller.
+ * This class does not hold <abbr>JDBC</abbr> resources. Instead, the {@link ResultSet} is given by the caller.
  * This object can be prepared once and reused every time the query needs to be executed.
  *
  * <h2>Multi-threading</h2>
@@ -176,7 +176,7 @@ final class FeatureAdapter {
             if (column.getGeometryType().isPresent()) {
                 function = table.database.getGeometryEncodingFunction(column);
             }
-            appendColumn(sql, table.database, function, column.label, columnIndices);
+            appendColumn(sql, table.database, function, column, column.label, columnIndices);
         }
         /*
          * Collect information about associations in local arrays before to assign
@@ -278,23 +278,29 @@ final class FeatureAdapter {
      * @param  sql            the SQL statement where to add column identifiers after the {@code SELECT} clause.
      * @param  database       the database. May be {@code null} if {@code function} is null.
      * @param  function       a function for which the column is an argument, or {@code null} if none.
-     * @param  column         name of the column to add.
+     * @param  column         the object that provide the definition of the column, or {@code null} if none.
+     * @param  columnName     name of the column to add.
      * @param  columnIndices  map where to add the mapping from column name to 1-based column index.
      */
     private static int appendColumn(final SQLBuilder sql, final Database<?> database, final String function,
-            final String column, final Map<String,Integer> columnIndices) throws InternalDataStoreException
+            final Column column, final String columnName, final Map<String,Integer> columnIndices)
+            throws InternalDataStoreException
     {
         int columnCount = columnIndices.size();
         if (columnCount != 0) sql.append(", ");
         if (function != null) {
             sql.appendIdentifier(database.catalogOfSpatialTables, database.schemaOfSpatialTables, function, false).append('(');
         }
-        sql.appendIdentifier(column);
+        if (column instanceof ComputedColumn) {
+            sql.append(((ComputedColumn) column).sql);
+        } else {
+            sql.appendIdentifier(columnName);
+        }
         if (function != null) {
             sql.append(')');
         }
-        if (columnIndices.put(column, ++columnCount) == null) return columnCount;
-        throw new InternalDataStoreException(Resources.format(Resources.Keys.DuplicatedColumn_1, column));
+        if (columnIndices.put(columnName, ++columnCount) == null) return columnCount;
+        throw new InternalDataStoreException(Resources.format(Resources.Keys.DuplicatedColumn_1, columnName));
     }
 
     /**
@@ -315,7 +321,7 @@ final class FeatureAdapter {
         final int[] indices = new int[columns.size()];
         for (final String column : columns) {
             final Integer pos = columnIndices.get(column);
-            indices[i++] = (pos != null) ? pos : appendColumn(sql, null, null, column, columnIndices);
+            indices[i++] = (pos != null) ? pos : appendColumn(sql, null, null, null, column, columnIndices);
         }
         return indices;
     }
@@ -337,7 +343,7 @@ final class FeatureAdapter {
      */
     final AbstractFeature createFeature(final InfoStatements stmts, final ResultSet result) throws Exception {
         final AbstractFeature feature = featureType.newInstance();
-        for (int i=0; i<attributes.length; i++) {
+        for (int i=0; i < attributes.length; i++) {
             final Column column = attributes[i];
             final Object value = column.valueGetter.getValue(stmts, result, i+1);
             if (value != null) {

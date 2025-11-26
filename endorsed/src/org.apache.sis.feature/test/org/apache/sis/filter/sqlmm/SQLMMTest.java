@@ -47,7 +47,7 @@ public final class SQLMMTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
-    private final DefaultFilterFactory<AbstractFeature,Object,?> factory;
+    private final DefaultFilterFactory<AbstractFeature, ?, ?> factory;
 
     /**
      * Creates a new test case.

@@ -267,7 +267,7 @@ public final class Dependency {
     }
 
     /**
-     * {@return a hash code for this dependency}.
+     * Returns a hash code for this dependency.
      */
     @Override
     public int hashCode() {

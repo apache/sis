@@ -34,11 +34,12 @@ import org.apache.sis.pending.geoapi.filter.BetweenComparisonOperator;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ComparisonFilterTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
-    private final DefaultFilterFactory<AbstractFeature,Object,?> factory;
+    private final DefaultFilterFactory<AbstractFeature, ?, ?> factory;
 
     /**
      * Expressions used as constant for the tests.

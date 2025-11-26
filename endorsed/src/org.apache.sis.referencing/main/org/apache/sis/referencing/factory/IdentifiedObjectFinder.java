@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Spliterator;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -475,6 +476,11 @@ public class IdentifiedObjectFinder {
             mode     = source.getComparisonMode();
             existing = new HashSet<>();
             this.object = object;
+        }
+
+        /** Declares that this set excludes null. */
+        @Override protected int characteristics() {
+            return Spliterator.DISTINCT | Spliterator.NONNULL;
         }
 
         /**

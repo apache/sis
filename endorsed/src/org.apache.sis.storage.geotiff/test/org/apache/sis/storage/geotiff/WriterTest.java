@@ -464,7 +464,7 @@ public final class WriterTest extends TestCase {
     }
 
     /**
-     * {@return the uncompressed size in bytes of each tile}.
+     * Returns the uncompressed size in bytes of each tile.
      */
     private int[] expectedTileByteCounts() {
         final SampleModel sm = image.getSampleModel();

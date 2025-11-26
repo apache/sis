@@ -170,14 +170,6 @@ final class ExpandedFeature extends AbstractFeature {
     }
 
     /**
-     * Synonymous of {@link #getPropertyValue(String)} since we do not check property existence.
-     */
-    @Override
-    public Object getValueOrFallback(final String name, final Object missingPropertyFallback) {
-        return getPropertyValue(name);
-    }
-
-    /**
      * Unsupported operation.
      */
     @Override

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Objects;
+import java.util.Spliterator;
 import java.lang.reflect.Array;
 import javax.measure.Unit;
 import org.opengis.util.GenericName;
@@ -32,8 +33,8 @@ import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.collection.SetOfUnknownSize;
 import org.apache.sis.util.internal.shared.CollectionsExt;
-import org.apache.sis.util.internal.shared.SetOfUnknownSize;
 import org.apache.sis.util.internal.shared.AbstractIterator;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
@@ -564,6 +565,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
         return new SetOfUnknownSize<AttributeRole>() {
             @Override public Iterator<AttributeRole> iterator() {return new RoleIter();}
             @Override public boolean add(AttributeRole role)    {return addRole(role);}
+            @Override protected int characteristics()           {return Spliterator.DISTINCT | Spliterator.NONNULL;}
         };
     }
 

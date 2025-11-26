@@ -24,16 +24,15 @@ import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.feature.internal.shared.FeatureProjectionBuilder;
-import org.apache.sis.filter.internal.shared.XPath;
+import org.apache.sis.filter.base.XPath;
+import org.apache.sis.filter.base.XPathSource;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the main branch:
-import org.opengis.util.ScopedName;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.DefaultFeatureType;
-import org.apache.sis.pending.geoapi.filter.Name;
 import org.apache.sis.pending.geoapi.filter.ValueReference;
 
 
@@ -50,7 +49,7 @@ import org.apache.sis.pending.geoapi.filter.ValueReference;
  * @see AssociationValue
  */
 abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
-        implements ValueReference<AbstractFeature,V>, Optimization.OnExpression<AbstractFeature,V>
+        implements ValueReference<AbstractFeature,V>, XPathSource, Optimization.OnExpression<AbstractFeature,V>
 {
     /**
      * For cross-version compatibility.
@@ -59,7 +58,7 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
 
     /**
      * Name of the property from which to retrieve the value.
-     * This is the argument to give in calls to {@link Feature#getProperty(String)}
+     * This is the argument to give in calls to {@link AbstractFeature#getProperty(String)}
      */
     protected final String name;
 
@@ -81,11 +80,6 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
     protected PropertyValue(final String name, final boolean isVirtual) {
         this.name = name;
         this.isVirtual = isVirtual;
-    }
-
-    @Override
-    public final ScopedName getFunctionName() {
-        return Name.VALUE_REFERENCE;
     }
 
     /**
@@ -165,7 +159,7 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
 
     /**
      * Returns the type of values fetched from {@link AbstractFeature} instance.
-     * This is the type before conversion to the {@linkplain #getValueClass() target type}.
+     * This is the type before conversion to the {@linkplain #getResultClass() target type}.
      * The type is always {@link Object} on newly created expression because the type of feature property
      * values is unknown, but may become a specialized type after {@link Optimization} has been applied.
      */
@@ -182,7 +176,8 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
      * @see #expectedType(FeatureProjectionBuilder)
      */
     final FeatureProjectionBuilder.Item defaultType(final FeatureProjectionBuilder addTo) {
-        return addTo.addComputedProperty(addTo.addAttribute(getValueClass()).setMinimumOccurs(0).setName(name), true);
+        // `getResultClass()` should never return null with our subtypes of `PropertyValue`.
+        return addTo.addComputedProperty(addTo.addAttribute(getResultClass()).setMinimumOccurs(0).setName(name), true);
     }
 
     /**
@@ -191,14 +186,17 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
     @Override
     @SuppressWarnings("unchecked")
     public final <N> PropertyValue<N> toValueType(final Class<N> target) {
-        if (target.equals(getValueClass())) {
+        // `getResultClass()` should never return null with our subtypes of `PropertyValue`.
+        if (target == getResultClass()) {
             return (PropertyValue<N>) this;
+        } else if (target == Object.class) {
+            return (PropertyValue<N>) new AsObject(name, isVirtual);
         }
         final Class<?> source = getSourceClass();
-        if (target == Object.class) {
-            return (PropertyValue<N>) new AsObject(name, isVirtual);
-        } else if (source == Object.class) {
+        if (source == Object.class) {
             return new Converted<>(target, name, isVirtual);
+        } else if (target.isAssignableFrom(source)) {
+            return new Unsafe<>(source, target, name, isVirtual);
         } else {
             return new CastedAndConverted<>(source, target, name, isVirtual);
         }
@@ -211,7 +209,7 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
      * using or not the database index.
      */
     @Override
-    public abstract PropertyValue<V> optimize(Optimization optimization);
+    public abstract Expression<AbstractFeature, V> optimize(Optimization optimization);
 
 
 
@@ -231,28 +229,42 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
         }
 
         /**
+         * Returns the type of objects returned by this expression.
+         */
+        @Override
+        public Class<Object> getResultClass() {
+            return Object.class;
+        }
+
+        /**
          * Returns the value of the property of the name given at construction time.
          * If no value is found for the given feature, then this method returns {@code null}.
          */
         @Override
         public Object apply(final AbstractFeature instance) {
-            return (instance != null) ? instance.getValueOrFallback(name, null) : null;
+            if (instance != null) try {
+                return instance.getPropertyValue(name);
+            } catch (IllegalArgumentException e) {
+                warning(e, false);
+            }
+            return null;
         }
 
         /**
          * If the evaluated property is a link, replaces this expression by a more direct reference
          * to the target property. This optimization is important for allowing {@code SQLStore} to
-         * put the column name in the SQL {@code WHERE} clause. It makes the difference between
-         * using or not the database index.
+         * put the column name in the <abbr>SQL</abbr> {@code WHERE} clause.
+         * It makes the difference between using or not the database index.
          */
         @Override
-        public PropertyValue<Object> optimize(final Optimization optimization) {
+        public Expression<AbstractFeature, Object> optimize(final Optimization optimization) {
             final DefaultFeatureType type = optimization.getFeatureType();
             if (type != null) try {
                 return Features.getLinkTarget(type.getProperty(name))
                         .map((rename) -> new AsObject(rename, isVirtual)).orElse(this);
             } catch (IllegalArgumentException e) {
                 warning(e, true);
+                return NULL();
             }
             return this;
         }
@@ -263,7 +275,7 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
 
     /**
      * An expression fetching property values as an object of specified type.
-     * The value is converted from {@link Object} to the specified type.
+     * The value is converted from an arbitrary {@link Object} to an instance of the specified type.
      *
      * @param  <V>  the type of value computed by the expression.
      */
@@ -276,6 +288,8 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
 
         /**
          * Creates a new expression retrieving values from a property of the given name.
+         * The {@code type} argument should never be {@code Object.class}, otherwise an
+         * {@link AsObject} should have been constructed instead.
          *
          * @param  type  the desired type for the expression result.
          * @param  name  the name of the property to fetch.
@@ -287,9 +301,10 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
 
         /**
          * Returns the type of values computed by this expression.
+         * Should be a subtype of {@link Object}, never {@code Object} itself.
          */
         @Override
-        public final Class<V> getValueClass() {
+        public final Class<V> getResultClass() {
             return type;
         }
 
@@ -300,7 +315,7 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
         @Override
         public V apply(final AbstractFeature instance) {
             if (instance != null) try {
-                return ObjectConverters.convert(instance.getValueOrFallback(name, null), type);
+                return ObjectConverters.convert(instance.getPropertyValue(name), type);
             } catch (UnconvertibleObjectException e) {
                 warning(e, false);
             } catch (IllegalArgumentException e) {
@@ -316,7 +331,7 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
          * then a specialized expression is returned. Otherwise this method returns {@code this}.
          */
         @Override
-        public final PropertyValue<V> optimize(final Optimization optimization) {
+        public final Expression<AbstractFeature, V> optimize(final Optimization optimization) {
             final DefaultFeatureType featureType = optimization.getFeatureType();
             if (featureType != null) try {
                 /*
@@ -347,12 +362,15 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
                 if (!(rename.equals(name) && source.equals(original))) {
                     if (source == Object.class) {
                         return new Converted<>(type, rename, isVirtual);
+                    } else if (type.isAssignableFrom(source)) {
+                        return new Unsafe<>(source, type, rename, isVirtual);
                     } else {
                         return new CastedAndConverted<>(source, type, rename, isVirtual);
                     }
                 }
             } catch (IllegalArgumentException e) {
                 warning(e, true);
+                return NULL();
             }
             return this;
         }
@@ -360,9 +378,11 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
         /**
          * Provides the expected type of values produced by this expression.
          * If the converted {@linkplain #type} is a generalization of the attribute type,
-         * the original attribute type is kept unchanged because {@link #apply(Feature)}
+         * the original attribute type is kept unchanged because {@link #apply(AbstractFeature)}
          * does not convert those values.
          *
+         * @param  addTo  where to add the type of the property evaluated by this expression.
+         * @return handler of the added property (never {@code null}).
          * @throws UnconvertibleObjectException if the property default value cannot be converted to {@link #type}.
          */
         @Override
@@ -383,9 +403,9 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
      * in which case the link operation is kept. It may force {@code FeatureProjectionBuilder} to add also
      * the dependencies (targets) of the link.
      *
-     * @param  addTo  where to add the type of properties evaluated by this expression.
-     * @return builder of the added property, or {@code null} if this method cannot add a property.
-     * @throws IllegalArgumentException if this method cannot determine the property type for the given feature type.
+     * @param  addTo  where to add the type of the property evaluated by this expression.
+     * @return handler of the added property (never {@code null}).
+     * @throws IllegalArgumentException if the property was not found in {@code addTo.source()}.
      */
     @Override
     public FeatureProjectionBuilder.Item expectedType(final FeatureProjectionBuilder addTo) {
@@ -424,7 +444,11 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
         @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         private final ObjectConverter<? super S, ? extends V> converter;
 
-        /** Creates a new expression retrieving values from a property of the given name. */
+        /**
+         * Creates a new expression retrieving values from a property of the given name.
+         * The {@code type} argument should never be {@code Object.class}, otherwise an
+         * {@link AsObject} should have been constructed instead.
+         */
         CastedAndConverted(final Class<S> source, final Class<V> type, final String xpath, final boolean isVirtual) {
             super(type, xpath, isVirtual);
             this.source = source;
@@ -446,9 +470,59 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
         @Override
         public V apply(final AbstractFeature instance) {
             if (instance != null) try {
-                return converter.apply(source.cast(instance.getValueOrFallback(name, null)));
-            } catch (ClassCastException | UnconvertibleObjectException e) {
+                return converter.apply(source.cast(instance.getPropertyValue(name)));
+            } catch (IllegalArgumentException | ClassCastException e) {
                 warning(e, false);
+            }
+            return null;
+        }
+    }
+
+
+
+    /**
+     * An expression skipping the conversion step because the features already provide instances of the desired type.
+     * This variant is said "unsafe" because it trusts that the feature instances guarantee that the property values
+     * are instances of the class declared in the {@code FeatureType}. If this assumption is wrong (which would be a
+     * bug in the caller's code rather than this class), a {@link ClassCastException} will probably be thrown anyway
+     * but later, possibly in a bridge method generated by the compiler for generic types.
+     *
+     * @param  <S>  the type of source value before conversion.
+     * @param  <V>  the type of value computed by the expression.
+     */
+    private static final class Unsafe<S,V> extends Converted<V> {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = -223028669950189532L;
+
+        /** The type of values fetched from the feature instance. */
+        private final Class<S> source;
+
+        /**
+         * Creates a new expression retrieving values from a property of the given name.
+         * The {@code type} argument should never be {@code Object.class}, otherwise an
+         * {@link AsObject} should have been constructed instead.
+         */
+        Unsafe(final Class<S> source, final Class<V> type, final String xpath, final boolean isVirtual) {
+            super(type, xpath, isVirtual);
+            this.source = source;
+        }
+
+        /** Returns the type of values fetched from {@link AbstractFeature} instance. */
+        @Override
+        protected Class<S> getSourceClass() {
+            return source;
+        }
+
+        /**
+         * Returns the value of the property of the given name, or {@code null} if none.
+         * For performance reason, this method does not verify the value type on the
+         * assumption that the type will be verified again by the caller anyway.
+         */
+        @Override
+        @SuppressWarnings("unchecked")
+        public V apply(final AbstractFeature instance) {
+            if (instance != null) try {
+                return (V) instance.getPropertyValue(name);
             } catch (IllegalArgumentException e) {
                 warning(e, true);
             }

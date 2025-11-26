@@ -110,6 +110,6 @@ public final class CheckedHashSet<E> extends LinkedHashSet<E> implements Checked
     }
 
     /*
-     * No need to override 'addAll', since it is implemented on top of 'add'.
+     * No need to override `addAll(…)` since it is implemented on top of `add(…)`.
      */
 }

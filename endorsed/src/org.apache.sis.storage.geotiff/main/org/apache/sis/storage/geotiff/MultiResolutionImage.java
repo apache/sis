@@ -40,6 +40,7 @@ import org.apache.sis.storage.base.GridResourceWrapper;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.internal.shared.DirectPositionView;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import static org.apache.sis.storage.geotiff.reader.GridGeometryBuilder.BIDIMENSIONAL;
 
 
 /**
@@ -150,7 +151,9 @@ final class MultiResolutionImage extends GridResourceWrapper implements StoreRes
     }
 
     /**
-     * Returns the resolution (in units of CRS axes) for the given level.
+     * Returns the resolution (in units of <abbr>CRS</abbr> axes) for the given level.
+     * If there is a temporal dimension, its resolution is set to NaN because we don't
+     * know the duration.
      *
      * @param  level  the desired resolution level, numbered from finest to coarsest resolution.
      * @return resolution at the specified level, not cloned (caller shall not modify).
@@ -158,17 +161,12 @@ final class MultiResolutionImage extends GridResourceWrapper implements StoreRes
     private double[] resolution(final int level) throws DataStoreException {
         double[] resolution = resolutions[level];
         if (resolution == null) try {
-            final ImageFileDirectory image      = getImageFileDirectory(level);
-            final ImageFileDirectory base       = getImageFileDirectory(0);
-            final GridGeometry       geometry   = base.getGridGeometry();
-            final GridExtent         fullExtent = geometry.getExtent();
-            final GridExtent         subExtent  = image.getExtent();
-            final double[] scales = new double[fullExtent.getDimension()];
-            for (int i=0; i<scales.length; i++) {
-                scales[i] = fullExtent.getSize(i, false) / subExtent.getSize(i, false);
-            }
-            image.initReducedResolution(base, scales);
+            final ImageFileDirectory image = getImageFileDirectory(level);
+            final ImageFileDirectory base  = getImageFileDirectory(0);
+            final double[] scales = image.initReducedResolution(base);
+            final GridGeometry geometry = base.getGridGeometry();
             if (geometry.isDefined(GridGeometry.GRID_TO_CRS)) {
+                final GridExtent fullExtent = geometry.getExtent();
                 DirectPosition poi = new DirectPositionView.Double(fullExtent.getPointOfInterest(PixelInCell.CELL_CENTER));
                 MatrixSIS gridToCRS = MatrixSIS.castOrCopy(geometry.getGridToCRS(PixelInCell.CELL_CENTER).derivative(poi));
                 resolution = gridToCRS.multiply(scales);
@@ -176,7 +174,10 @@ final class MultiResolutionImage extends GridResourceWrapper implements StoreRes
                 // Assume an identity transform for the `gridToCRS` of full resolution image.
                 resolution = scales;
             }
-            for (int i=0; i<resolution.length; i++) {
+            // Set to NaN only after all matrix multiplications are done.
+            int i = Math.min(BIDIMENSIONAL, resolution.length);
+            Arrays.fill(scales, BIDIMENSIONAL, i, Double.NaN);
+            while (--i >= 0) {
                 resolution[i] = Math.abs(resolution[i]);
             }
             resolutions[level] = resolution;
@@ -257,7 +258,7 @@ final class MultiResolutionImage extends GridResourceWrapper implements StoreRes
         synchronized (getSynchronizationLock()) {
 finer:      while (--level > 0) {
                 final double[] resolution = resolution(level);
-                for (int i=0; i<request.length; i++) {
+                for (int i = Math.min(request.length, BIDIMENSIONAL); --i >= 0;) {
                     if (!(request[i] >= resolution[i])) {            // Use `!` for catching NaN.
                         continue finer;
                     }

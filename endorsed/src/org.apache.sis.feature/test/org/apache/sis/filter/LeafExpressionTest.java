@@ -35,11 +35,12 @@ import org.apache.sis.pending.geoapi.filter.ValueReference;
  *
  * @author  Johann Sorel (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class LeafExpressionTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
-    private final DefaultFilterFactory<AbstractFeature,Object,?> factory;
+    private final DefaultFilterFactory<AbstractFeature, ?, ?> factory;
 
     /**
      * Creates a new test case.

@@ -34,10 +34,10 @@ import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.MemoryGridCoverageResource;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.WritableAggregate;
-import org.apache.sis.storage.base.MemoryGridResource;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 
@@ -132,7 +132,7 @@ public class CoverageJsonStoreTest {
             gcb.setValues(image);
             final GridCoverage coverage = gcb.build();
 
-            final GridCoverageResource gcr = new MemoryGridResource(null, null, coverage, null);
+            final GridCoverageResource gcr = new MemoryGridCoverageResource(null, null, coverage, null);
 
             aggregate.add(gcr);
 

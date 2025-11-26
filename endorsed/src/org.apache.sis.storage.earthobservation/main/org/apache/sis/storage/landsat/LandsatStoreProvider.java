@@ -226,7 +226,7 @@ public class LandsatStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * {@return the logger used by Landsat stores}.
+     * Returns the logger used by Landsat stores.
      */
     @Override
     public Logger getLogger() {

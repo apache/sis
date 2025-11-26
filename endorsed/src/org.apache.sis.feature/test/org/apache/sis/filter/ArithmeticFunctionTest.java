@@ -31,11 +31,12 @@ import org.apache.sis.feature.AbstractFeature;
  *
  * @author  Johann Sorel (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ArithmeticFunctionTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
-    private final DefaultFilterFactory<AbstractFeature,Object,?> factory;
+    private final DefaultFilterFactory<AbstractFeature, ?, ?> factory;
 
     /**
      * Creates a new test case.

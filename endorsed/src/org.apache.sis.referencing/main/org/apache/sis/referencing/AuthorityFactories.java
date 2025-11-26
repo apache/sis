@@ -18,6 +18,7 @@ package org.apache.sis.referencing;
 
 import java.util.Set;
 import java.util.Iterator;
+import java.util.Spliterator;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -108,6 +109,14 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
      */
     private AuthorityFactories(final Class<T> type) {
         service = type;
+    }
+
+    /**
+     * Declares that this set excludes the null element.
+     */
+    @Override
+    protected int characteristics() {
+        return Spliterator.DISTINCT | Spliterator.NONNULL;
     }
 
     /**

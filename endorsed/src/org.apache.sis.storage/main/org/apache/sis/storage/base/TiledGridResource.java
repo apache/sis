@@ -45,7 +45,6 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.RasterLoadingStrategy;
-import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.shared.Numerics;
@@ -156,19 +155,6 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      */
     protected TiledGridResource(final Resource parent) {
         super(parent);
-    }
-
-    /**
-     * Creates a new resource.
-     *
-     * @param  parent  listeners of the parent resource, or {@code null} if none.
-     *         This is usually the listeners of the {@link org.apache.sis.storage.DataStore}
-     *         that created this resource.
-     * @param  hidden  {@code false} if this resource shall use its own {@link StoreListeners}
-     *         with the specified parent, or {@code true} for using {@code parentListeners} directly.
-     */
-    protected TiledGridResource(final StoreListeners parent, final boolean hidden) {
-        super(parent, hidden);
     }
 
     /**

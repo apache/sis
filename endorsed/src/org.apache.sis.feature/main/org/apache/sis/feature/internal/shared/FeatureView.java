@@ -121,8 +121,11 @@ final class FeatureView extends AbstractFeature {
      * @param  name  the property name.
      * @param  missingPropertyFallback  the value to return if no attribute or association of the given name exists.
      * @return value or default value of the specified property, or {@code missingPropertyFallback}.
+     *
+     * @deprecated Experience suggests that this method encourage bugs in user's code that stay unnoticed.
      */
     @Override
+    @Deprecated(since = "1.5", forRemoval = true)
     public Object getValueOrFallback(final String name, final Object missingPropertyFallback) {
         return source.getValueOrFallback(name, missingPropertyFallback);
     }

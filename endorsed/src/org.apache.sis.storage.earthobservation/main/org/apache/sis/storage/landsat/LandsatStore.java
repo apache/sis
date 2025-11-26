@@ -251,7 +251,7 @@ public class LandsatStore extends DataStore implements Aggregate {
         } catch (FactoryException e) {
             throw new DataStoreReferencingException(e.getMessage(), e);
         }
-        final BandGroup[] bands = BandGroup.group(listeners, resources, count);
+        final BandGroup[] bands = BandGroup.group(this, resources, count);
         for (final BandGroup c : bands) {
             c.identifier = factory.createLocalName(scope, c.group.name());
         }

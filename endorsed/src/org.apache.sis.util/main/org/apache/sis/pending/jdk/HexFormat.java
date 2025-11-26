@@ -31,7 +31,7 @@ public final class HexFormat {
     }
 
     /**
-     * {@return the singleton instance}.
+     * Returns the singleton instance.
      */
     public static HexFormat of() {
         return INSTANCE;
@@ -57,7 +57,7 @@ public final class HexFormat {
     }
 
     /**
-     * {@return the numerical value of the given hexadecimal digit}.
+     * Returns the numerical value of the given hexadecimal digit.
      * The hexadecimal digit can be the decimal digits 0 to 9, or the letters A to F ignoring case.
      *
      * <h4>Implementation note</h4>
@@ -65,6 +65,7 @@ public final class HexFormat {
      * range of Unicode characters, which is a wider scope than what is intended here.
      *
      * @param  c  the hexadecimal digit.
+     * @return numerical value of the given hexadecimal digit.
      * @throws NumberFormatException if the given character is not a hexadecimal digit.
      */
     public static int fromHexDigit(final int c) {

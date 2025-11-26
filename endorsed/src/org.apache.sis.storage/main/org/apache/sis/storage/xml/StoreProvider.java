@@ -91,7 +91,7 @@ public final class StoreProvider extends AbstractProvider {
     }
 
     /**
-     * {@return the logger used by XML stores}.
+     * Returns the logger used by <abbr>XML</abbr> stores.
      */
     @Override
     public Logger getLogger() {

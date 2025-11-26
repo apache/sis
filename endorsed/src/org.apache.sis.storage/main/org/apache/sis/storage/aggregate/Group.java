@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.stream.Stream;
+import org.apache.sis.util.Localized;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.storage.base.ArrayOfLongs;
 import org.apache.sis.storage.event.StoreListeners;
@@ -39,7 +40,7 @@ abstract class Group<E> {
     /**
      * The name of this group, or {@code null} if not yet computed.
      *
-     * @see #getName(StoreListeners)
+     * @see #getName(Localized)
      */
     private String name;
 
@@ -96,12 +97,12 @@ abstract class Group<E> {
     /**
      * Returns the name of this group.
      *
-     * @param  listeners  listeners from which to get the locale, or {@code null} for the default.
+     * @param  parent  the parent resource, or {@code null} if none.
      * @return a name which can be used as aggregation name.
      */
-    final String getName(final StoreListeners listeners) {
+    final String getName(final Localized parent) {
         if (name == null) {
-            name = createName(listeners == null ? null : listeners.getLocale());
+            name = createName(parent != null ? parent.getLocale() : null);
         }
         return name;
     }

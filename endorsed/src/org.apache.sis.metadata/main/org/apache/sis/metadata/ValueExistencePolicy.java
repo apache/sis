@@ -186,7 +186,7 @@ public enum ValueExistencePolicy {
     };
 
     /**
-     * {@return whether this policy accepts nil values}.
+     * Returns whether this policy accepts nil values.
      */
     final boolean acceptNilValues() {
         return ordinal() < NON_NIL.ordinal();

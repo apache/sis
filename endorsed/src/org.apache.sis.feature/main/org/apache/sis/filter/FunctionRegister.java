@@ -16,7 +16,7 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Collection;
+import java.util.Set;
 
 
 /**
@@ -30,7 +30,7 @@ import java.util.Collection;
  * Checks against name collisions may be added in a future version.</p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   1.5
  */
 public interface FunctionRegister {
@@ -43,18 +43,16 @@ public interface FunctionRegister {
 
     /**
      * Returns the names of all functions that this factory can create.
-     * It is currently implementer responsibility to ensure that there are no name collisions with
-     * functions provided by other factories (this problem may be improved in future SIS release).
      *
      * @return set of supported function names.
      */
-    Collection<String> getNames();
+    Set<String> getNames();
 
     /**
-     * Creates a new function of the given name with given parameters.
+     * Creates a new function of the given name with the given parameters.
      *
      * @param  <R>         the type of resources (e.g. {@code Feature}) used as inputs.
-     * @param  name        name of the function to create (not null).
+     * @param  name        case-sensitive name of the function to create as an expression.
      * @param  parameters  function parameters.
      * @return function for the given name and parameters.
      * @throws IllegalArgumentException if function name is unknown or some parameters are illegal.

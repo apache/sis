@@ -101,7 +101,7 @@ public final class TemporalAccessor {
             startTime = endTime;
             endTime = null;
         }
-        final Instant[] times = new Instant[(endTime != null) ? 2 : 1];
+        final var times = new Instant[(endTime != null) ? 2 : 1];
         switch (times.length) {
             default: times[1] = endTime;        // Fall through.
             case 1:  times[0] = startTime;      // Fall through.

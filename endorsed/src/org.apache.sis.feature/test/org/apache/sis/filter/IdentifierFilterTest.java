@@ -16,13 +16,18 @@
  */
 package org.apache.sis.filter;
 
+import java.util.function.Consumer;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.filter.base.WarningEvent;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Specific to the main branch:
@@ -36,11 +41,17 @@ import org.apache.sis.feature.DefaultFeatureType;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class IdentifierFilterTest extends TestCase {
+@SuppressWarnings("exports")
+public final class IdentifierFilterTest extends TestCase implements Consumer<WarningEvent> {
     /**
      * The factory to use for creating the objects to test.
      */
-    private final DefaultFilterFactory<AbstractFeature,Object,?> factory;
+    private final DefaultFilterFactory<AbstractFeature, ?, ?> factory;
+
+    /**
+     * The warning that occurred while executing a filter or expression.
+     */
+    private WarningEvent warning;
 
     /**
      * Creates a new test case.
@@ -50,11 +61,39 @@ public final class IdentifierFilterTest extends TestCase {
     }
 
     /**
+     * Setup a listener for warnings that may occur during expression or filter execution.
+     */
+    @BeforeEach
+    public void registerWarningListener() {
+        WarningEvent.LISTENER.set(this);
+    }
+
+    /**
+     * Removes the listener.
+     */
+    @AfterEach
+    public void unregisterWarningListener() {
+        WarningEvent.LISTENER.remove();
+    }
+
+    /**
+     * Invoked when a warning occurred. We expect at most one warning per test.
+     *
+     * @param  event  the warning that occurred.
+     */
+    @Override
+    public void accept(final WarningEvent event) {
+        assertNull(warning);
+        warning = event;
+    }
+
+    /**
      * Tests construction and serialization.
      */
     @Test
     public void testSerialize() {
         assertSerializedEquals(factory.resourceId("abc"));
+        assertNull(warning);
     }
 
     /**
@@ -80,9 +119,11 @@ public final class IdentifierFilterTest extends TestCase {
 
         final Filter<AbstractFeature> id = factory.resourceId("123");
         assertEquals(AbstractFeature.class, id.getResourceClass());
-        assertTrue (id.test(f1));
-        assertTrue (id.test(f2));
-        assertFalse(id.test(f3));
+        assertTrue (id.test(f1)); assertNull(warning);
+        assertTrue (id.test(f2)); assertNull(warning);
+        assertFalse(id.test(f3)); assertNotNull(warning);
+        var e = assertInstanceOf(IllegalArgumentException.class, warning.exception);
+        assertMessageContains(e, "sis:identifier", "Test 3");
     }
 
     /**
@@ -103,8 +144,8 @@ public final class IdentifierFilterTest extends TestCase {
                 factory.resourceId("123"));
 
         assertEquals(AbstractFeature.class, id.getResourceClass());
-        assertTrue (id.test(f1));
-        assertTrue (id.test(f2));
-        assertFalse(id.test(f3));
+        assertTrue (id.test(f1)); assertNull(warning);
+        assertTrue (id.test(f2)); assertNull(warning);
+        assertFalse(id.test(f3)); assertNull(warning);
     }
 }

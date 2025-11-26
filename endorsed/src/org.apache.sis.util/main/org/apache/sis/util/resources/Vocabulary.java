@@ -1015,6 +1015,11 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short Plugins = 160;
 
         /**
+         * {0} + dependencies
+         */
+        public static final short PlusDependencies_1 = 281;
+
+        /**
          * Preprocessing
          */
         public static final short Preprocessing = 161;

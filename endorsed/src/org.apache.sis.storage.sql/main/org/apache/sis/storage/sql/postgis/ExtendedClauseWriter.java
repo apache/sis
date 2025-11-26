@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.sql.postgis;
 
+import java.sql.JDBCType;
 import org.apache.sis.storage.sql.feature.SelectionClauseWriter;
 
 // Specific to the main branch:
@@ -43,28 +44,33 @@ final class ExtendedClauseWriter extends SelectionClauseWriter {
      * Creates a new converter from filters/expressions to SQL.
      */
     private ExtendedClauseWriter() {
-        super(DEFAULT);
+        super(DEFAULT, true, false);
         setFilterHandler(SpatialOperatorName.BBOX, (f,sql) -> {
             writeBinaryOperator(sql, f, " && ");
+            sql.declareFunction(JDBCType.BOOLEAN);
         });
     }
 
     /**
      * Creates a new converter initialized to the same handlers as the specified converter.
      *
-     * @param  source  the converter from which to copy the handlers.
+     * @param  source           the converter from which to copy the handlers.
+     * @param  copyFilters      whether to copy the map of filter handlers.
+     * @param  copyExpressions  whether to copy the map of expression handlers.
      */
-    private ExtendedClauseWriter(ExtendedClauseWriter source) {
-        super(source);
+    private ExtendedClauseWriter(ExtendedClauseWriter source, boolean copyFilters, boolean copyExpressions) {
+        super(source, copyFilters, copyExpressions);
     }
 
     /**
      * Creates a new converter of the same class as {@code this} and initialized with the same data.
      *
+     * @param  copyFilters      whether to copy the map of filter handlers.
+     * @param  copyExpressions  whether to copy the map of expression handlers.
      * @return a converter initialized to a copy of {@code this}.
      */
     @Override
-    protected SelectionClauseWriter duplicate() {
-        return new ExtendedClauseWriter(this);
+    protected SelectionClauseWriter duplicate(boolean copyFilters, boolean copyExpressions) {
+        return new ExtendedClauseWriter(this, copyFilters, copyExpressions);
     }
 }

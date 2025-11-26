@@ -290,7 +290,7 @@ public final class StoreProvider extends DataStoreProvider {
     }
 
     /**
-     * {@return the logger used by folder stores}.
+     * Returns the logger used by folder stores.
      */
     @Override
     public Logger getLogger() {

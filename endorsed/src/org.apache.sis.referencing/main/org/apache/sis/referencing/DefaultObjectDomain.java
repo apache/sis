@@ -81,7 +81,9 @@ public class DefaultObjectDomain extends FormattableObject implements LenientCom
         }
 
         /**
-         * {@return a reason saying that the extent is unknown}.
+         * Returns a reason saying that the extent is unknown.
+         *
+         * @return reason why the extent is unknown.
          */
         @Override
         public NilReason getNilReason() {
@@ -116,7 +118,9 @@ public class DefaultObjectDomain extends FormattableObject implements LenientCom
         }
 
         /**
-         * {@return a reason saying that the extent is unknown}.
+         * Returns a reason saying that the extent is unknown.
+         *
+         * @return reason why the extent is unknown.
          */
         @Override
         public NilReason getNilReason() {

@@ -16,13 +16,11 @@
  */
 
 /**
- * {@linkplain org.apache.sis.storage.DataStore Data store} base types for retrieving and saving geospatial data
- * in various storage formats.
- *
- * <p>{@code DataStore} provides the methods for reading or writing geospatial data in a given storage.
+ * Data store base types for retrieving and saving geospatial data in various storage formats.
+ * {@link org.apache.sis.storage.DataStore} provides the methods for reading or writing geospatial data in a given storage.
  * A storage may be a file, a directory, a connection to a database or any other implementation specific mechanism.
  * Suitable {@code DataStore} implementation for a given storage can be discovered and opened by the static methods
- * provided in {@link org.apache.sis.storage.DataStores}.</p>
+ * provided in {@link org.apache.sis.storage.DataStores}.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

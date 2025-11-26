@@ -30,7 +30,6 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.AbstractFeatureSet;
-import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.base.MetadataBuilder;
 
 // Specific to the main branch:
@@ -68,17 +67,6 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
      */
     protected AggregatedFeatureSet(final Resource parent) {
         super(parent);
-    }
-
-    /**
-     * Creates a new aggregated feature set.
-     *
-     * @param  parent  listeners of the parent resource, or {@code null} if none.
-     *         This is usually the listeners of the {@link org.apache.sis.storage.DataStore}
-     *         that created this resource.
-     */
-    protected AggregatedFeatureSet(final StoreListeners parent) {
-        super(parent, false);
     }
 
     /**

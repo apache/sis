@@ -25,7 +25,6 @@ import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import org.opengis.referencing.IdentifiedObject;
-import org.apache.sis.metadata.sql.internal.shared.SQLUtilities;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.IntegerList;
 import org.apache.sis.util.internal.shared.AbstractMap;
@@ -162,31 +161,21 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
         }
         sql[ALL_CODES] = buffer.append(" ORDER BY ").append(table.codeColumn).toString();
         /*
-         * Build the SQL query for fetching the codes of object having a name matching a pattern.
+         * Build the SQL query for fetching the codes of object having the given name.
          * It is of the form:
          *
-         *     SELECT code FROM table WHERE name LIKE ? AND DEPRECATED=FALSE ORDER BY code;
+         *     SELECT code FROM table WHERE name=? AND DEPRECATED=FALSE ORDER BY code;
          */
-        if (NUM_QUERIES > CODES_FOR_NAME) {
-            sql[CODES_FOR_NAME] = buffer.insert(conditionStart, table.nameColumn + " LIKE ? AND ").toString();
-            /*
-             * Workaround for Derby bug. See `SQLUtilities.filterFalsePositive(…)`.
-             */
-            String t = sql[CODES_FOR_NAME];
-            t = t.substring(0, columnNameEnd) + ", " + table.nameColumn + t.substring(columnNameEnd);
-            sql[CODES_FOR_NAME] = t;
-        }
+        sql[CODES_FOR_NAME] = buffer.insert(conditionStart, table.nameColumn + "=? AND ").toString();
         /*
          * Build the SQL query for fetching the name of a single object for a given code.
          * This query will also be used for testing object existence. It is of the form:
          *
          *     SELECT name FROM table WHERE code = ?
          */
-        if (NUM_QUERIES > NAME_FOR_CODE) {
-            buffer.setLength(conditionStart);
-            buffer.replace(columnNameStart, columnNameEnd, table.nameColumn);
-            sql[NAME_FOR_CODE] = buffer.append(table.codeColumn).append(" = ?").toString();
-        }
+        buffer.setLength(conditionStart);
+        buffer.replace(columnNameStart, columnNameEnd, table.nameColumn);
+        sql[NAME_FOR_CODE] = buffer.append(table.codeColumn).append("=?").toString();
         for (int i=0; i<NUM_QUERIES; i++) {
             sql[i] = factory.translator.apply(sql[i]);
         }
@@ -217,19 +206,18 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
     /**
      * Puts codes associated to the given name in the given collection.
      *
-     * @param  pattern  the {@code LIKE} pattern of the name to search.
-     * @param  name     the original name. This is a temporary workaround for a Derby bug (see {@code filterFalsePositive(…)}).
-     * @param  addTo    the collection where to add the codes.
+     * @param  name   the name of the object to search.
+     * @param  addTo  the collection where to add the codes.
      * @throws SQLException if an error occurred while querying the database.
      */
-    final void findCodesFromName(final String pattern, final String name, final Collection<Integer> addTo) throws SQLException {
+    final void findCodesFromName(final String name, final Collection<Integer> addTo) throws SQLException {
         synchronized (factory) {
             final PreparedStatement statement = prepareStatement(CODES_FOR_NAME);
-            statement.setString(1, pattern);
+            statement.setString(1, name);
             try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) {
                     final int code = result.getInt(1);
-                    if (!result.wasNull() && SQLUtilities.filterFalsePositive(name, result.getString(2))) {
+                    if (!result.wasNull()) {
                         addTo.add(code);
                     }
                 }

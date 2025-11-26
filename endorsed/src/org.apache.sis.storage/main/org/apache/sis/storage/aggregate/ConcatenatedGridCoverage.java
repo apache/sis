@@ -28,9 +28,9 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.DisjointExtentException;
+import org.apache.sis.storage.MemoryGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.internal.Resources;
-import org.apache.sis.storage.base.MemoryGridResource;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.internal.shared.Numerics;
@@ -135,8 +135,8 @@ final class ConcatenatedGridCoverage extends GridCoverage {
         if (opposite == null) {
             List<SampleDimension> sampleDimensions = null;
             for (final GridSlice slice : locator.slices) {
-                if (slice.resource instanceof MemoryGridResource) {
-                    GridCoverage coverage = ((MemoryGridResource) slice.resource).coverage;
+                if (slice.resource instanceof MemoryGridCoverageResource) {
+                    GridCoverage coverage = ((MemoryGridCoverageResource) slice.resource).getGridCoverage();
                     coverage = coverage.forConvertedValues(converted);
                     sampleDimensions = coverage.getSampleDimensions();
                     break;

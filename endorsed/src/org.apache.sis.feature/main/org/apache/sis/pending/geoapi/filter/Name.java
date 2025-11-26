@@ -18,7 +18,7 @@ package org.apache.sis.pending.geoapi.filter;
 
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
-import org.apache.sis.filter.internal.shared.FunctionNames;
+import org.apache.sis.filter.visitor.FunctionNames;
 import org.apache.sis.util.iso.Names;
 
 

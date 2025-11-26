@@ -574,9 +574,31 @@ public enum CommonCRS {
      * their datum can be arbitrary.</p>
      *
      * @return the default two-dimensional geographic CRS with (<var>longitude</var>, <var>latitude</var>) axis order.
+     *
+     * @see #defaultTemporal()
      */
     public static GeographicCRS defaultGeographic() {
         return DEFAULT.normalizedGeographic();
+    }
+
+    /**
+     * Returns the default temporal <abbr>CRS</abbr> used by the Apache <abbr>SIS</abbr> library.
+     * The current implementation uses {@linkplain Temporal#TRUNCATED_JULIAN truncated Julian days},
+     * which are the number of days elapsed since May 24, 1968 at 00:00 <abbr>UTC</abbr>.
+     * However, this default <abbr>CRS</abbr> may change in any future <abbr>SIS</abbr> version.
+     * For handling the coordinate values in a way independent of <abbr>CRS</abbr> changes,
+     * the can be converted with {@link DefaultTemporalCRS#toInstant(double)}.
+     *
+     * @return the default temporal <abbr>CRS</abbr>.
+     *
+     * @see #defaultGeographic()
+     * @see Temporal#TRUNCATED_JULIAN
+     * @see DefaultTemporalCRS#toInstant(double)
+     *
+     * @since 1.6
+     */
+    public static TemporalCRS defaultTemporal() {
+        return Temporal.TRUNCATED_JULIAN.crs();
     }
 
     /**
@@ -1555,6 +1577,7 @@ public enum CommonCRS {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.5
      *
+     * @see #defaultTemporal()
      * @see Engineering#TIME
      *
      * @since 0.4
@@ -1620,7 +1643,7 @@ public enum CommonCRS {
          * (by contrast, the IUGS definition is only about duration).
          *
          * <h4>Application to geodesy</h4>
-         * The tropical year is the unit of measurement used in EPSG geodetic database for year duration.
+         * The tropical year is the unit of measurement used in the <abbr>EPSG</abbr> geodetic dataset for year duration.
          * It it used for rate of changes such as "centimeters per year". Its identifier is EPSG:1029.
          *
          * @see Units#TROPICAL_YEAR

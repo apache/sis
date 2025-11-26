@@ -212,12 +212,14 @@ search: if (crs instanceof CoordinateReferenceSystem) {
      * Provides the type of values produced by this expression.
      * This is the value computed by the parent class except for the <abbr>SRID</abbr>.
      *
-     * @param  addTo  where to add the type of properties evaluated by this expression.
-     * @return handler of type resulting from expression evaluation (never null).
+     * @param  addTo  where to add the type of the property evaluated by this expression.
+     * @return handler of the added property, or {@code null} if the property cannot be added.
      */
     @Override
     public FeatureProjectionBuilder.Item expectedType(final FeatureProjectionBuilder addTo) {
         // We must unconditionally overwrite the CRS set by the parent class.
-        return super.expectedType(addTo).setCRS(literalCRS ? targetCRS : null);
+        FeatureProjectionBuilder.Item item = super.expectedType(addTo);
+        if (item != null) item.setCRS(literalCRS ? targetCRS : null);
+        return item;
     }
 }

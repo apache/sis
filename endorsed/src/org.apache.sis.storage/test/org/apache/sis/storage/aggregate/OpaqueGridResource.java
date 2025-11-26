@@ -18,13 +18,13 @@ package org.apache.sis.storage.aggregate;
 
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.MemoryGridCoverageResource;
 import org.apache.sis.storage.base.GridResourceWrapper;
-import org.apache.sis.storage.base.MemoryGridResource;
 
 
 /**
  * Wraps a grid coverage resource without changing anything. This is used for disabling optimizations,
- * in order to test different code paths that what would be used with {@code MemoryGridResource}.
+ * in order to test different code paths that what would be used with {@code MemoryGridCoverageResource}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -38,7 +38,7 @@ final class OpaqueGridResource extends GridResourceWrapper {
      * Creates a new wrapper for the given coverage.
      */
     OpaqueGridResource(final GridCoverage source) {
-        this.source = new MemoryGridResource(null, null, source, null);
+        this.source = new MemoryGridCoverageResource(null, null, source, null);
     }
 
     /**

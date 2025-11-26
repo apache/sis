@@ -18,7 +18,6 @@ package org.apache.sis.geometry.wrapper.jts;
 
 import java.io.Serializable;
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Coordinates;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.CoordinateSequenceFactory;
 
@@ -61,23 +60,20 @@ final class PackedCoordinateSequenceFactory implements CoordinateSequenceFactory
      */
     @Override
     public CoordinateSequence create(final Coordinate[] coordinates) {
-        int dimension = Factory.TRIDIMENSIONAL;
-        int measures  = 0;
-        int size      = 0;
-        boolean first = true;
+        int size = 0;
+        boolean noZ = true;
+        boolean noM = true;
         if (coordinates != null) {
             size = coordinates.length;
             for (final Coordinate c : coordinates) {
-                final int m = Coordinates.measures(c);
-                dimension = Math.min(dimension, Coordinates.dimension(c) - m);
-                if (first | m < measures) {
-                    measures = m;
-                    first = false;
-                }
+                if (noZ) noZ = Double.isNaN(c.getZ());
+                if (noM) noM = Double.isNaN(c.getM());
+                if (noZ & noM) break;   // Shortcut.
             }
         }
-        dimension += measures;
-        final PackedCoordinateSequence cs = create(size, dimension, measures);
+        int measures  = noM ? 0 : 1;
+        int dimension = noZ ? Factory.BIDIMENSIONAL : Factory.TRIDIMENSIONAL;
+        final PackedCoordinateSequence cs = create(size, dimension + measures, measures);
         if (size != 0) {
             cs.setCoordinates(coordinates);
         }
@@ -101,7 +97,7 @@ final class PackedCoordinateSequenceFactory implements CoordinateSequenceFactory
             measures  = original.getMeasures();
             size      = original.size();
         } else {
-            dimension = Factory.TRIDIMENSIONAL;
+            dimension = Factory.BIDIMENSIONAL;
             measures  = 0;
             size      = 0;
         }

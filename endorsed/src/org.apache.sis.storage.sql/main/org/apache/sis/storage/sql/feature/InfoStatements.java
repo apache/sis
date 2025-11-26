@@ -46,7 +46,6 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.internal.shared.DefinitionVerifier;
 import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
-import org.apache.sis.metadata.sql.internal.shared.SQLUtilities;
 import org.apache.sis.metadata.sql.internal.shared.SQLBuilder;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.system.CommonExecutor;
@@ -149,7 +148,7 @@ public class InfoStatements implements Localized, AutoCloseable {
     private PreparedStatement sridForUnknownTable;
 
     /**
-     * The statement for fetching a SRID from a CRS and its set of authority codes.
+     * The statement for fetching a <abbr>SRID</abbr> from a <abbr>CRS</abbr> and its set of authority codes.
      * Created when first needed.
      *
      * @see #findOrAddCRS(CoordinateReferenceSystem)
@@ -484,7 +483,7 @@ public class InfoStatements implements Localized, AutoCloseable {
         appendFrom(sql, schema.crsTable);
         sql.append(search).append("=?");
         if (byAuthorityCode) {
-            sql.append(" AND LOWER(").append(schema.crsAuthorityNameColumn).append(") LIKE ?");
+            sql.append(" AND ").append(schema.crsAuthorityNameColumn).append("=?");
         }
         return connection.prepareStatement(sql.toString());
     }
@@ -822,23 +821,21 @@ public class InfoStatements implements Localized, AutoCloseable {
                     sridFromCRS = prepareSearchCRS(true);
                 }
                 sridFromCRS.setInt(1, code);
-                sridFromCRS.setString(2, SQLUtilities.toLikePattern(authority, true, database.wildcardEscape));
+                sridFromCRS.setString(2, authority);
                 try (ResultSet result = sridFromCRS.executeQuery()) {
                     while (result.next()) {
-                        if (SQLUtilities.filterFalsePositive(authority, result.getString(1))) {
-                            final int srid = result.getInt(2);
-                            if (sridFounInUse.add(srid)) try {
-                                final Object parsed = parseDefinition(result, 3);
-                                if (Utilities.equalsApproximately(parsed, crs)) {
-                                    search.srid = srid;
-                                    return search;
-                                }
-                            } catch (ParseException e) {
-                                if (error == null) error = e;
-                                else error.addSuppressed(e);
+                        final int srid = result.getInt(2);
+                        if (sridFounInUse.add(srid)) try {
+                            final Object parsed = parseDefinition(result, 3);
+                            if (Utilities.equalsApproximately(parsed, crs)) {
+                                search.srid = srid;
+                                return search;
                             }
-                            done.put(search, Boolean.FALSE);    // Declare this "authority:code" pair as not available.
+                        } catch (ParseException e) {
+                            if (error == null) error = e;
+                            else error.addSuppressed(e);
                         }
+                        done.put(search, Boolean.FALSE);    // Declare this "authority:code" pair as not available.
                     }
                 }
             }

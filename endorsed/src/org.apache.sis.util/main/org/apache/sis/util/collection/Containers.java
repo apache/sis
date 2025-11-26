@@ -16,25 +16,27 @@
  */
 package org.apache.sis.util.collection;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.List;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.function.Function;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 
 /**
- * Static methods working on {@link Collection} or {@link CheckedContainer} objects.
- * Unless otherwise noted in the javadoc, every collections returned by the methods
- * in this class implement the {@code CheckedContainer} interface.
+ * Static methods working on various types of objects that can be viewed as collections.
+ * The types include {@link Collection}, {@link CheckedContainer} or {@code Class<Enum>}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.6
  * @since   0.3
  */
 public final class Containers {
@@ -123,10 +125,40 @@ public final class Containers {
     }
 
     /**
+     * Returns a list whose elements are derived <i>on-the-fly</i> from the given list.
+     * Conversions from the original elements to the derived elements are performed when needed
+     * by invoking the {@link Function#apply(Object)} method on the given converter.
+     * Those conversions are repeated every time that a {@code List} method needs to access values.
+     * Consequently, any change in the original list is immediately visible in the derived list.
+     *
+     * <p>The returned list can be serialized if the given list and converter are serializable.
+     * The returned list is not synchronized by itself, but is nevertheless thread-safe if the
+     * given list (including its iterator) and converter are thread-safe.</p>
+     *
+     * <p>The returned list does <em>not</em> implement {@link CheckedContainer}.</p>
+     *
+     * @param  <S>        the type of elements in the storage (original) list.
+     * @param  <E>        the type of elements in the derived list.
+     * @param  storage    the storage list containing the original elements, or {@code null}.
+     * @param  converter  the converter from the elements in the storage list to the elements in the derived list.
+     * @return a view over the {@code storage} list containing all elements converted by the given converter,
+     *         or {@code null} if {@code storage} was null.
+     *
+     * @since 1.6
+     */
+    public static <S,E> List<E> derivedList(final List<S> storage, final Function<S,E> converter) {
+        ArgumentChecks.ensureNonNull("converter", converter);
+        if (storage == null) {
+            return null;
+        }
+        return new DerivedList<>(storage, converter);
+    }
+
+    /**
      * Returns a set whose elements are derived <i>on-the-fly</i> from the given set.
      * Conversions from the original elements to the derived elements are performed when needed
      * by invoking the {@link ObjectConverter#apply(Object)} method on the given converter.
-     * Those conversions are repeated every time a {@code Set} method is invoked; there is no cache.
+     * Those conversions are repeated every time that a {@code Set} method needs to access values.
      * Consequently, any change in the original set is immediately visible in the derived set,
      * and conversely.
      *
@@ -166,7 +198,7 @@ public final class Containers {
      * Returns a map whose keys and values are derived <i>on-the-fly</i> from the given map.
      * Conversions from the original entries to the derived entries are performed when needed
      * by invoking the {@link ObjectConverter#apply(Object)} method on the given converters.
-     * Those conversions are repeated every time a {@code Map} method is invoked; there is no cache.
+     * Those conversions are repeated every time that a {@code Map} method needs to access values.
      * Consequently, any change in the original map is immediately visible in the derived map,
      * and conversely.
      *
@@ -211,6 +243,20 @@ public final class Containers {
             return null;
         }
         return DerivedMap.create(storage, keyConverter, valueConverter);
+    }
+
+    /**
+     * Returns in an unmodifiable set the names of all enumeration values of the given type.
+     * The names are obtained by {@link Enum#name()}, which guarantees that there is no duplicated values.
+     * The iteration order is the declaration order of the enumeration values.
+     *
+     * @param  type  type of the enumeration for which to get the names.
+     * @return the names viewed as an unmodifiable set.
+     *
+     * @since 1.6
+     */
+    public static Set<String> namesOf(final Class<? extends Enum<?>> type) {
+        return CollectionsExt.viewAsSet(derivedList(Arrays.asList(type.getEnumConstants()), Enum::name));
     }
 
     /**

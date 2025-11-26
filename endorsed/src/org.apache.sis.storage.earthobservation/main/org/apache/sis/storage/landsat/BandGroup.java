@@ -31,7 +31,6 @@ import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStore;
-import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.util.ArraysExt;
@@ -69,10 +68,10 @@ final class BandGroup extends AbstractResource implements Aggregate, StoreResour
      * Creates a new aggregate for the specified group.
      * This constructor will copy only the resources for that group from the given array.
      */
-    private BandGroup(final StoreListeners parent, final BandGroupName group,
+    private BandGroup(final Resource parent, final BandGroupName group,
                       final Band[] resources, final int count)
     {
-        super(parent, false);
+        super(parent);
         this.group = group;
         int n = 0;
         Band[] components = new Band[resources.length];
@@ -88,7 +87,7 @@ final class BandGroup extends AbstractResource implements Aggregate, StoreResour
     /**
      * Creates aggregates for the given bands.
      */
-    static BandGroup[] group(final StoreListeners parent, final Band[] resources, final int count) {
+    static BandGroup[] group(final Resource parent, final Band[] resources, final int count) {
         final BandGroupName[] groups = BandGroupName.values();
         final BandGroup[] aggregates = new BandGroup[groups.length];
         int n = 0;

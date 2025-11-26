@@ -135,7 +135,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
         final class DummyResource extends AbstractResource {
             /** Creates a dummy resource without parent. */
             DummyResource() {
-                super(null, false);
+                super(null);
             }
 
             /** Makes listeners accessible to this package. */

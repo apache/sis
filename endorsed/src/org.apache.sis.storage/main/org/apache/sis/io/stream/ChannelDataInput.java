@@ -148,8 +148,10 @@ public class ChannelDataInput extends ChannelData implements DataInput {
     }
 
     /**
-     * {@return the wrapped channel where data are read}.
+     * Returns the wrapped channel from which the data are read.
      * This is the {@link #channel} field value.
+     *
+     * @return the channel from which the data are read.
      *
      * @see #channel
      */

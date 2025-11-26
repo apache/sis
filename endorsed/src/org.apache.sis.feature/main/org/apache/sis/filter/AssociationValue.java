@@ -104,6 +104,14 @@ final class AssociationValue<V> extends LeafExpression<AbstractFeature, V>
     }
 
     /**
+     * Returns the type of values computed by this expression.
+     */
+    @Override
+    public Class<? extends V> getResultClass() {
+        return accessor.getResultClass();
+    }
+
+    /**
      * Returns the manner in which values are computed from given resources.
      * This method assumes an initially empty set of properties, then adds the transitive properties.
      * This method does not inherit directly the properties of the {@linkplain #accessor} because it
@@ -176,7 +184,7 @@ walk:   if (specifiedType != null) try {
              * Delegate the final property optimization to `accessor` which may not only resolve
              * links but also tune the `ObjectConverter`.
              */
-            final PropertyValue<V> converted;
+            final Expression<AbstractFeature, V> converted;
             optimization.setFeatureType(type);
             try {
                 converted = accessor.optimize(optimization);
@@ -184,7 +192,12 @@ walk:   if (specifiedType != null) try {
                 optimization.setFeatureType(specifiedType);
             }
             if (converted != accessor || direct != path) {
-                return new AssociationValue<>(direct, converted);
+                if (converted instanceof PropertyValue<?>) {
+                    return new AssociationValue<>(direct, (PropertyValue<V>) converted);
+                } else {
+                    // If not a `PropertyValue`, then it should be a `Literal`.
+                    return converted;
+                }
             }
         } catch (IllegalArgumentException e) {
             warning(e, true);

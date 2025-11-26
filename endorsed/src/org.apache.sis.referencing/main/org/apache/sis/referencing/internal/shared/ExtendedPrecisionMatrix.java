@@ -55,10 +55,11 @@ public interface ExtendedPrecisionMatrix extends Matrix {
     }
 
     /**
-     * {@return an extended-precision view of the given matrix}.
+     * Returns an extended-precision view of the given matrix.
      * The returned matrix should be assumed read-only.
      *
      * @param m  the matrix to cast or wrap.
+     * @eturn an extended-precision view of the matrix.
      *
      * @see org.apache.sis.referencing.operation.matrix.MatrixSIS#asExtendedPrecision(Matrix)
      */

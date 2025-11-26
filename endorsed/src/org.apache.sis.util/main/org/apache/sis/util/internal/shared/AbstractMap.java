@@ -22,8 +22,10 @@ import java.util.Objects;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Spliterator;
 import java.util.NoSuchElementException;
 import org.apache.sis.io.TableAppender;
+import org.apache.sis.util.collection.SetOfUnknownSize;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -418,6 +420,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * @return a view of the keys in this map.
      */
     @Override
+    @SuppressWarnings("element-type-mismatch")
     public Set<K> keySet() {
         return new SetOfUnknownSize<K>() {
             @Override public void        clear()            {       AbstractMap.this.clear();}
@@ -429,6 +432,11 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
             @Override public Iterator<K> iterator() {
                 final EntryIterator<K,V> it = entryIterator();
                 return (it != null) ? new Keys<>(it) : Collections.emptyIterator();
+            }
+
+            /** Declares that this set excludes null. */
+            @Override protected int characteristics() {
+                return Spliterator.DISTINCT | Spliterator.NONNULL;
             }
 
             /** Overridden for the same reason as {@link AbstractMap#equals(Object). */
@@ -494,6 +502,11 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
             @Override public void    clear()   {       AbstractMap.this.clear();}
             @Override public boolean isEmpty() {return AbstractMap.this.isEmpty();}
             @Override public int     size()    {return AbstractMap.this.size();}
+
+            /** Declares that this set excludes null. */
+            @Override protected int characteristics() {
+                return Spliterator.DISTINCT | Spliterator.NONNULL;
+            }
 
             /** Returns {@code true} if the map contains the given (key, value) pair. */
             @Override public boolean contains(final Object e) {

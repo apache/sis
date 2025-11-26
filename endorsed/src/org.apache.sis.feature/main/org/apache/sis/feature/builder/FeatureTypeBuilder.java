@@ -39,6 +39,7 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.resources.Errors;
 
@@ -615,11 +616,11 @@ public class FeatureTypeBuilder extends TypeBuilder {
 
     /**
      * Returns a view of all attributes and associations added to the {@code FeatureType} to build.
-     * This list contains only properties declared explicitly to this builder;
-     * it does not include properties inherited from {@linkplain #getSuperTypes() super-types}.
+     * This list contains only properties declared explicitly to this builder.
+     * It does not include properties inherited from {@linkplain #getSuperTypes() super-types}.
      * The returned list is <em>live</em>: changes in this builder are reflected in that list and conversely.
-     * However, the returned list allows only {@linkplain List#remove(Object) remove} operations;
-     * new attributes or associations can be added only by calls to one of the {@code addAttribute(…)}
+     * However, the returned list allows only {@linkplain List#remove(Object) remove} operations.
+     * New attributes or associations can be added only by calls to one of the {@code addAttribute(…)}
      * or {@code addAssociation(…)} methods. Removal operations never affect the super-types.
      *
      * @return a live list over the properties declared to this builder.
@@ -658,6 +659,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * @return property of the given name, or {@code null} if none.
      * @throws IllegalArgumentException if the given name is ambiguous.
      */
+    @OptionalCandidate
     public PropertyTypeBuilder getProperty(final String name) {
         return forName(properties, name, true);
     }

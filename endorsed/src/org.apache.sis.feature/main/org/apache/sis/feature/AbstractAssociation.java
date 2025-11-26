@@ -189,7 +189,7 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
     final void ensureValid(final DefaultFeatureType base, final DefaultFeatureType type) {
         if (base != type && !DefaultFeatureType.maybeAssignableFrom(base, type)) {
             throw new IllegalArgumentException(
-                    Resources.format(Resources.Keys.IllegalFeatureType_3, getName(), base.getName(), type.getName()));
+                    Resources.format(Resources.Keys.IllegalFeatureType_4, 0, getName(), base.getName(), type.getName()));
         }
     }
 

@@ -16,23 +16,39 @@
  */
 package org.apache.sis.feature.internal.shared;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.LinkedHashMap;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
+import org.opengis.util.GenericName;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
-import org.apache.sis.filter.internal.shared.ListingPropertyVisitor;
+import org.apache.sis.pending.jdk.Record;
+import org.apache.sis.pending.jdk.JDK19;
+import org.apache.sis.feature.Features;
+import org.apache.sis.feature.FeatureOperations;
+import org.apache.sis.feature.AbstractOperation;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.feature.builder.PropertyTypeBuilder;
+import org.apache.sis.filter.visitor.ListingPropertyVisitor;
 import org.apache.sis.io.TableAppender;
 
 // Specific to the main branch:
 import org.apache.sis.filter.Expression;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
+import org.apache.sis.feature.AbstractIdentifiedType;
+import org.apache.sis.pending.geoapi.filter.Literal;
 import org.apache.sis.pending.geoapi.filter.ValueReference;
 
 
@@ -44,11 +60,19 @@ import org.apache.sis.pending.geoapi.filter.ValueReference;
  * @author Guilhem Legal (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */
-public final class FeatureProjection implements UnaryOperator<AbstractFeature> {
+public final class FeatureProjection extends Record implements UnaryOperator<AbstractFeature> {
     /**
      * The type of features with the properties explicitly requested by the user.
      * The property names may differ from the properties of the {@link FeatureProjectionBuilder#source() source}
-     * features if aliases were specified by calls to {@link FeatureProjectionBuilder.Item#setName(GenericName)}.
+     * features if aliases were specified by {@link FeatureProjectionBuilder.Item#setPreferredName(GenericName)}.
+     *
+     * <h4>Relationship with {@code typeWithDependencies}</h4>
+     * The property <em>names</em> of {@code typeRequested} shall be a subset of the property names of
+     * {@link #typeWithDependencies}. However, a property of the same name may be an {@link AbstractOperation}
+     * in {@code typeWithDependencies} and replaced by {@link OperationView} in {@code typeRequested}.
+     * This replacement is done by {@link FeatureProjectionBuilder.Item#replaceIfMissingDependency()}.
+     * It is necessary because the {@link org.apache.sis.feature.DefaultFeatureType} constructor
+     * verifies that all dependencies of all operations exist.
      */
     public final DefaultFeatureType typeRequested;
 
@@ -56,6 +80,14 @@ public final class FeatureProjection implements UnaryOperator<AbstractFeature> {
      * The requested type augmented with dependencies required for the execution of operations such as links.
      * If there is no need for additional properties, then this value is the same as {@link #typeRequested}.
      * The property names are the same as {@link #typeRequested} (i.e., may be aliases).
+     * However, some operations may be wrapped in {@link OperationView}.
+     *
+     * <p>This is <em>not</em> a container listing the properties of the source feature that are required.
+     * This type still assume that the {@link #apply(AbstractFeature)} method will receive complete source features.
+     * This type may differ from {@link #typeRequested} only when the latter contains operation that have not
+     * been converted to stored attributes.</p>
+     *
+     * @see #requiredSourceProperties()
      */
     public final DefaultFeatureType typeWithDependencies;
 
@@ -81,6 +113,28 @@ public final class FeatureProjection implements UnaryOperator<AbstractFeature> {
     private final boolean createInstance;
 
     /**
+     * Creates a new projection with the given properties.
+     *
+     * @param typeRequested         type of features with the properties explicitly requested by the user.
+     * @param typeWithDependencies  requested type augmented with dependencies required for the execution of operations.
+     * @param propertiesToCopy      names of the properties to be stored in the feature instances created by this object.
+     * @param expressions           expressions to apply on the source feature for fetching the property values.
+     * @param createInstance        whether the {@link #apply(AbstractFeature)} method shall create the feature instances.
+     */
+    private FeatureProjection(final DefaultFeatureType typeRequested,
+                              final DefaultFeatureType typeWithDependencies,
+                              final String[]    propertiesToCopy,
+                              final Expression<? super AbstractFeature, ?>[] expressions,
+                              final boolean createInstance)
+    {
+        this.typeRequested        = typeRequested;
+        this.typeWithDependencies = typeWithDependencies;
+        this.propertiesToCopy     = propertiesToCopy;
+        this.expressions          = expressions;
+        this.createInstance       = createInstance;
+    }
+
+    /**
      * Creates a new projection with the given properties specified by a builder.
      * The {@link #apply(AbstractFeature)} method will copy the properties of the given
      * features into new instances of {@link #typeWithDependencies}.
@@ -94,21 +148,21 @@ public final class FeatureProjection implements UnaryOperator<AbstractFeature> {
         this.createInstance       = true;
         this.typeRequested        = typeRequested;
         this.typeWithDependencies = typeWithDependencies;
-        int storedCount = 0;
 
         // Expressions to apply on the source feature for fetching the property values of the projected feature.
         @SuppressWarnings({"LocalVariableHidesMemberVariable", "unchecked", "rawtypes"})
-        final Expression<? super AbstractFeature,?>[] expressions = new Expression[projection.size()];
+        final Expression<? super AbstractFeature, ?>[] expressions = new Expression[projection.size()];
 
         // Names of the properties to be stored in the attributes of the target features.
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final String[] propertiesToCopy = new String[expressions.length];
 
+        int storedCount = 0;
         for (final FeatureProjectionBuilder.Item item : projection) {
             final var expression = item.attributeValueGetter();
             if (expression != null) {
                 expressions[storedCount] = expression;
-                propertiesToCopy[storedCount++] = item.getName();
+                propertiesToCopy[storedCount++] = item.getPreferredName();
             }
         }
         this.propertiesToCopy = ArraysExt.resize(propertiesToCopy, storedCount);
@@ -116,48 +170,166 @@ public final class FeatureProjection implements UnaryOperator<AbstractFeature> {
     }
 
     /**
-     * Creates a new projection with a subset of the properties of another projection.
-     * This constructor is invoked when the caller handles itself some of the properties.
-     *
-     * <h4>behavioral change</h4>
-     * Projections created by this constructor assumes that the feature instances given to the
-     * {@link #apply(AbstractFeature)} method are already instances of {@link #typeWithDependencies}
-     * and can be modified (if needed) in place. This constructor is designed for cases where
-     * the caller does itself a part of the {@code FeatureProjection} work.
-     *
-     * @param  parent     the projection from which to inherit the types and expressions.
-     * @param  remaining  index of the properties that still need to be copied after the caller did its processing.
-     *
-     * @see #afterPreprocessing(int[])
-     */
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private FeatureProjection(final FeatureProjection parent, final int[] remaining) {
-        createInstance       = false;
-        typeRequested        = parent.typeRequested;
-        typeWithDependencies = parent.typeWithDependencies;
-        expressions          = new Expression[remaining.length];
-        propertiesToCopy     = new String[remaining.length];
-        for (int i=0; i<remaining.length; i++) {
-            final int index = remaining[i];
-            propertiesToCopy[i] = parent.propertiesToCopy[index];
-            expressions[i] = parent.expressions[index];
-        }
-    }
-
-    /**
      * Returns a variant of this projection where the caller has created the target feature instance itself.
-     * The callers is may have set some property values itself, and the {@code remaining} argument gives the
+     * The callers may have set some property values itself, and the {@code remaining} argument gives the
      * indexes of the properties that still need to be copied after caller's processing.
+     *
+     * <h4>Recommendation</h4>
+     * Caller should ensure that the {@code remaining} array does not contain indexes <var>i</var>
+     * where {@code expressions[i]} is equivalent to {@code FilterFactory.property(propertiesToCopy[i])}
+     * because it would be a useless operation. This method does not perform that verification by itself
+     * on the assumption that it would duplicate work already done by the caller.
      *
      * @param  remaining  index of the properties that still need to be copied after the caller did its processing.
      * @return a variant of this projection which only completes the projection done by the caller,
      *         or {@code null} if there is nothing left to complete.
      */
-    public FeatureProjection afterPreprocessing(final int[] remaining) {
+    public FeatureProjection forPreexistingFeatureInstances(final int[] remaining) {
         if (remaining.length == 0 && typeRequested == typeWithDependencies) {
             return null;
         }
-        return new FeatureProjection(this, remaining);
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        final Expression<? super AbstractFeature, ?>[] filteredExpressions = new Expression[remaining.length];
+        final String[] filteredProperties = new String[remaining.length];
+        for (int i=0; i<remaining.length; i++) {
+            final int index = remaining[i];
+            filteredProperties [i] = propertiesToCopy[index];
+            filteredExpressions[i] = expressions[index];
+        }
+        return new FeatureProjection(typeRequested, typeWithDependencies, filteredProperties, filteredExpressions, false);
+    }
+
+    /**
+     * Creates a new projection with the same properties as the source projection, but modified expressions.
+     * The modifications are specified by the given {@code mapper}, which should return values of the same
+     * type as the previous expressions. The new expressions shall not introduce new dependencies.
+     *
+     * <h4>Purpose</h4>
+     * This method is used when the caller can replace some expressions by <abbr>SQL</abbr> statements.
+     *
+     * @param mapper  a function receiving in arguments the property name and the expression fetching the property value,
+     *                and returning the expression to use in replacement of the function given in argument.
+     * @return the feature projection with modified expressions. May be {@code this} if there is no change.
+     */
+    public FeatureProjection replaceExpressions(
+            final BiFunction<String, Expression<? super AbstractFeature, ?>, Expression<? super AbstractFeature, ?>> mapper)
+    {
+        final Map<String, Expression<? super AbstractFeature, ?>> filtered = JDK19.newLinkedHashMap(expressions.length);
+        for (int i = 0; i < expressions.length; i++) {
+            final String property = propertiesToCopy[i];
+            if (filtered.put(property, mapper.apply(property, expressions[i])) != null) {
+                throw new CorruptedObjectException(Errors.format(Errors.Keys.DuplicatedElement_1, property));
+            }
+        }
+        /*
+         * The above loop replaced the expressions used for fetching values from the source feature instances
+         * and storing them as attributes. But expressions may also be used in an indirect way, as operations.
+         * Note that operations have no corresponding entries in the `propertiesToCopy` array.
+         */
+        final var builder = new FeatureTypeBuilder(typeWithDependencies);
+        for (final PropertyTypeBuilder property : builder.properties().toArray(PropertyTypeBuilder[]::new)) {
+            filtered.computeIfAbsent(property.getName().toString(), (name) -> {
+                final AbstractIdentifiedType type = property.build();
+                Expression<? super AbstractFeature, ?> expression = FeatureOperations.expressionOf(type);
+                if (!expression.equals(expression = mapper.apply(name, expression))) {
+                    property.replaceBy(builder.addProperty(FeatureOperations.replace(type, expression)));
+                    return expression;
+                }
+                return null;    // No change, keep the current operation.
+            });
+        }
+        /*
+         * Some expressions may become unnecessary if the new expression only fetches a property value, then stores
+         * that value unchanged in the same feature instance. Note that we will need to remove only the expression,
+         * not the property in the `FeatureType`.
+         */
+        if (!createInstance) {
+            for (final var it = filtered.entrySet().iterator(); it.hasNext();) {
+                final var entry = it.next();
+                final var expression = entry.getValue();
+                if (expression instanceof ValueReference<?,?>) {
+                    final String name = ((ValueReference<?,?>) expression).getXPath();
+                    if (name.equals(entry.getKey())) {
+                        // The expression reads and stores a property of the same name in the same feature instance.
+                        final PropertyTypeBuilder property = builder.getProperty(name);
+                        if (property != null) {     // A null value would probably be a bug, but check anyway.
+                            property.remove();
+                            it.remove();
+                        }
+                    }
+                }
+            }
+        }
+        /*
+         * Maybe the new expressions have less dependencies than the old expressions. It happens if `mapper` replaced
+         * a pure Java filter by a SQL expression such as `SQRT(x*x + y*y)`, in which case the `x` and `y` properties
+         * are used by the database and do not need anymore to be forwarded to the Java code.
+         */
+        if (typeWithDependencies != typeRequested) {
+            final var unnecessary = new HashSet<>(Features.getPropertyNames(typeWithDependencies));
+            unnecessary.removeAll(Features.getPropertyNames(typeRequested));
+            for (var property : builder.properties()) {
+                final AbstractIdentifiedType type = property.build();
+                if (type instanceof AbstractOperation) {
+                    unnecessary.removeAll(((AbstractOperation) type).getDependencies());
+                }
+            }
+            for (final String name : unnecessary) {
+                final PropertyTypeBuilder property = builder.getProperty(name);
+                // A `false` value below would be a bug, but check anyway.
+                if (property != null && filtered.remove(name) != null) {
+                    property.remove();
+                }
+            }
+        }
+        /*
+         * Remove any remaining operations. The remaining entries shall be only expressions
+         * for fetching the values to store in attributes, not values computed on-the-fly.
+         */
+        filtered.keySet().removeIf((name) -> {
+            final PropertyTypeBuilder property = builder.getProperty(name);
+            return (property != null) && (property.build() instanceof AbstractOperation);
+        });
+        /*
+         * Create the new feature types with the modified expressions.
+         * Check if we can reuse the existing feature types.
+         */
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        final Expression<? super AbstractFeature, ?>[] filteredExpressions = filtered.values().toArray(Expression[]::new);
+        String[] filteredProperties = filtered.keySet().toArray(String[]::new);
+        if (Arrays.equals(filteredProperties, propertiesToCopy)) {
+            filteredProperties = propertiesToCopy;  // Share existing instances (common case).
+        }
+        DefaultFeatureType withDeps = builder.build();
+        boolean modified = builder.setName(typeRequested.getName()).properties().removeIf(
+                (property) -> !typeRequested.hasProperty(property.getName().toString()));
+        DefaultFeatureType filteredType = builder.build();
+        if (filteredType.equals(typeRequested)) {
+            filteredType = typeRequested;
+        }
+        if (!modified) {
+            withDeps = filteredType;
+        } else if (withDeps.equals(typeWithDependencies)) {
+            withDeps = typeWithDependencies;
+        }
+        var p = new FeatureProjection(filteredType, withDeps, filteredProperties, filteredExpressions, createInstance);
+        if (equals(p)) p = this;
+        return p;
+    }
+
+    /**
+     * Returns {@code true} if this projection contains at least one expression
+     * which is not a value reference or a literal.
+     *
+     * @return whether this projection is presumed to perform some operations.
+     */
+    public final boolean hasOperations() {
+        for (final var expression : expressions) {
+            if (!(expression instanceof ValueReference<?,?> || expression instanceof Literal<?,?>)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -169,6 +341,16 @@ public final class FeatureProjection implements UnaryOperator<AbstractFeature> {
      */
     public final List<String> propertiesToCopy() {
         return UnmodifiableArrayList.wrap(propertiesToCopy);
+    }
+
+    /**
+     * Returns the expression which is executed for fetching the property value at the given index.
+     *
+     * @param  index  index of the stored property for which to get the expression for fething the value.
+     * @return the expression which is executed for fetching the property value at the given index.
+     */
+    public final Expression<? super AbstractFeature, ?> expression(final int index) {
+        return expressions[index];
     }
 
     /**
@@ -191,11 +373,15 @@ public final class FeatureProjection implements UnaryOperator<AbstractFeature> {
     /**
      * Returns all dependencies used, directly or indirectly, by all expressions used in this projection.
      * The set includes transitive dependencies (expressions with operands that are other expressions).
-     * The elements are XPaths.
+     * The elements are XPaths to properties in the <em>source</em> features.
      *
-     * @return all dependencies (including transitive dependencies) as XPaths.
+     * <p>This method does not search for operations in {@link #typeWithDependencies} because the operation
+     * dependencies are references to {@link #typeWithDependencies} properties instead of properties of the
+     * source features. The property names may differ.</p>
+     *
+     * @return all dependencies (including transitive dependencies) from source features, as XPaths.
      */
-    public Set<String> dependencies() {
+    public Set<String> requiredSourceProperties() {
         Set<String> references = null;
         for (var expression : expressions) {
             references = ListingPropertyVisitor.xpaths(expression, references);
@@ -205,13 +391,14 @@ public final class FeatureProjection implements UnaryOperator<AbstractFeature> {
 
     /**
      * Derives a new projected feature instance from the given source.
-     * The feature type of the returned feature instance will be be {@link #typeRequested}.
+     * The given source feature should be of type {@link #typeWithDependencies}.
+     * The type of the returned feature instance will be {@link #typeRequested}.
      * This method performs the following steps:
      *
      * <ol class="verbose">
-     *   <li>If this projection was created by {@link #afterPreprocessing(int[])}, then the given feature
-     *     shall be an instances of {@link #typeWithDependencies} and may be modified in-place. Otherwise,
-     *     this method creates a new instance of {@link #typeWithDependencies}.</li>
+     *   <li>If this projection was created by {@link #forPreexistingFeatureInstances(int[])},
+     *     then the given feature shall be an instance of {@link #typeWithDependencies} and may be modified.
+     *     Otherwise, this method creates a new instance of {@link #typeWithDependencies}.</li>
      *   <li>This method executes all expressions for fetching values from {@code source}
      *     and stores the results in the feature instance of above step.</li>
      *   <li>If {@link #typeWithDependencies} is different than {@link #typeRequested}, then the feature
@@ -337,5 +524,33 @@ public final class FeatureProjection implements UnaryOperator<AbstractFeature> {
          * Type: stored, operation or dependency.
          */
         private String type;
+    }
+
+    /**
+     * Computes a hash code value for the projection.
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(typeRequested, typeWithDependencies, createInstance)
+                + 97 * (Arrays.hashCode(propertiesToCopy) + 97 * Arrays.hashCode(expressions));
+    }
+
+    /**
+     * Compares this projection with the given object for equality.
+     *
+     * @param  obj  the object to compare with this projection.
+     * @return whether the two objects are equal.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj instanceof FeatureProjection) {
+            final var other = (FeatureProjection) obj;
+            return (createInstance == other.createInstance)
+                    && typeRequested.equals(other.typeRequested)
+                    && typeWithDependencies.equals(other.typeWithDependencies)
+                    && Arrays.equals(propertiesToCopy, other.propertiesToCopy)
+                    && Arrays.equals(expressions, other.expressions);
+        }
+        return false;
     }
 }

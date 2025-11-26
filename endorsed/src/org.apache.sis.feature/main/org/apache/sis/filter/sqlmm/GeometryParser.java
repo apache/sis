@@ -100,7 +100,7 @@ abstract class GeometryParser<R,G> extends GeometryConstructor<R,G> {
                     case ST_BdMPolyFromText: break;
                     default: warning(new IllegalArgumentException(Errors.format(
                                             Errors.Keys.IllegalArgumentClass_3, inputName(),
-                                            getValueClass(),
+                                            getResultClass(),
                                             Classes.getClass(library.getGeometry(result)))), true);
                 }
             }

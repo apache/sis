@@ -1403,16 +1403,19 @@ class CoordinateOperationRegistry {
     }
 
     /**
-     * {@return the localized resources for error messages}.
+     * Returns the localized resources for error messages.
+     *
+     * @return localized resources for errors.
      */
     final Resources resources() {
         return Resources.forLocale(locale);
     }
 
     /**
-     * {@return a label for identifying the given object in error message}.
+     * Returns a label for identifying the given object in error message.
      *
      * @param object the object of identify.
+     * @return label identifying the given object.
      */
     final String label(final IdentifiedObject object) {
         return CRSPair.label(object, locale);

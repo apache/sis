@@ -302,7 +302,7 @@ public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> e
     }
 
     /**
-     * {@return a string representation of this grid for debugging purpose}.
+     * Returns a string representation of this grid for debugging purpose.
      * If this grid has children, then they will be formatted as a tree.
      */
     @Override

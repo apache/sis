@@ -18,7 +18,6 @@ package org.apache.sis.storage;
 
 import java.util.Locale;
 import java.util.Optional;
-import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
@@ -43,7 +42,7 @@ import org.apache.sis.xml.NilReason;
  * Subclasses should override the following methods:
  *
  * <ul>
- *   <li>{@link #getIdentifier()} (strongly recommended)</li>
+ *   <li>{@link #getIdentifier()} (recommended)</li>
  *   <li>{@link #getEnvelope()} (recommended)</li>
  *   <li>{@link #createMetadata()} (optional)</li>
  *   <li>{@link #getSynchronizationLock()} (optional)</li>
@@ -54,7 +53,7 @@ import org.apache.sis.xml.NilReason;
  * Synchronization, when needed, uses {@link #getSynchronizationLock()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.6
  * @since   1.2
  */
 public abstract class AbstractResource implements Resource {
@@ -77,6 +76,8 @@ public abstract class AbstractResource implements Resource {
     /**
      * Creates a new resource, potentially as a child of another resource.
      * The parent resource is typically, but not necessarily, an {@link Aggregate}.
+     * Invoking this constructor is equivalent (except for null checks) to invoking
+     * <code>{@link #AbstractResource(StoreListeners, boolean) AbstractResource}(parent.listeners, false)</code>.
      *
      * @param  parent  the parent resource, or {@code null} if none.
      *
@@ -94,12 +95,17 @@ public abstract class AbstractResource implements Resource {
     }
 
     /**
-     * Creates a new resource which can send notifications to the given set of listeners.
-     * If {@code hidden} is {@code false} (the recommended value), then this resource will have its own set of
-     * listeners with this resource declared as the {@linkplain StoreListeners#getSource() source of events}.
-     * It will be possible to add and remove listeners independently from the set of parent listeners.
-     * Conversely if {@code hidden} is {@code true}, then the given listeners will be used directly
-     * and this resource will not appear as the source of any event.
+     * Creates a new resource which will send notifications, directly or indirectly, to the given set of listeners.
+     * The {@code hidden} argument specifies whether the new resource should be invisible in the tree of resources.
+     * The caller may want to hide a resource if, for example, it is a decorator that delegates most of its work to
+     * the real resource.
+     *
+     * <p>The {@code hidden} argument works as below:
+     * if {@code true}, then the {@code parentListeners} argument will be assigned directly to the {@link #listeners}
+     * field, unless that argument is {@code null}. Consequently, any event sent by this resources will appear to the
+     * users as if the event was sent by the parent resource. Conversely if {@code false}, then this resource will have
+     * its own set of listeners with this resource declared as the {@linkplain StoreListeners#getSource() source of events}.
+     * In the latter case, listeners can be added or removed independently from the listeners of the parent resource.</p>
      *
      * <p>In any cases, the listeners of all parents (ultimately the data store that created this resource)
      * will always be notified, either directly if {@code hidden} is {@code true}
@@ -117,23 +123,6 @@ public abstract class AbstractResource implements Resource {
         } else {
             listeners = new StoreListeners(parentListeners, this);
         }
-    }
-
-    /**
-     * Returns the resource persistent identifier if available.
-     * The default implementation returns an empty value.
-     * Subclasses are strongly encouraged to override if they can provide a value.
-     *
-     * <h4>Relationship with metadata</h4>
-     * The default implementation of {@link #createMetadata()} uses this identifier for initializing
-     * the {@code metadata/identificationInfo/citation/title} property.
-     *
-     * @return a persistent identifier unique within the data store.
-     * @throws DataStoreException if an error occurred while fetching the identifier.
-     */
-    @Override
-    public Optional<GenericName> getIdentifier() throws DataStoreException {
-        return Optional.empty();
     }
 
     /**

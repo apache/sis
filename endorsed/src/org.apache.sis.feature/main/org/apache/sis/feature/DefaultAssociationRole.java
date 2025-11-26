@@ -403,10 +403,8 @@ public class DefaultAssociationRole extends FieldType {
      */
     private static String searchTitleProperty(final DefaultFeatureType ft) {
         String fallback = null;
-        try {
+        if (ft.hasProperty(AttributeConvention.IDENTIFIER)) {
             return ft.getProperty(AttributeConvention.IDENTIFIER).getName().toString();
-        } catch (IllegalArgumentException e) {
-            // Ignore.
         }
         for (final AbstractIdentifiedType type : ft.getProperties(true)) {
             if (type instanceof DefaultAttributeType<?>) {

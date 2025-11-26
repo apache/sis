@@ -36,6 +36,7 @@ import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.filter.Optimization;
 import org.apache.sis.util.ArgumentCheckByAssertion;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.internal.shared.Strings;
@@ -64,6 +65,8 @@ import org.apache.sis.pending.geoapi.filter.ValueReference;
  * but they will receive no special treatment.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ *
+ * @see #project()
  */
 public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
     /**
@@ -104,8 +107,9 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
      * in automatically generated names.
      *
      * <p>Note that the keys are not necessarily the values of {@link Item#sourceName}.
-     * Keys are rather the values of {@code Item.builder.getName()}, except that the
-     * latter may not be valid before {@link Item#validateName()} is invoked.</p>
+     * Keys are rather the values of {@code Item.builder.getPreferredName()},
+     * except that the latter may not be valid before {@link Item#finish(Optimization)}
+     * has been invoked.</p>
      *
      * @see #reserve(GenericName, Item)
      */
@@ -114,12 +118,10 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
     /**
      * Whether at least one item is modified compared to the original property in the source feature type.
      * A modified item may be an item with a name different than the property in {@linkplain #source}.
-     * If {@code true}, then the projection cannot be an {@linkplain #isIdentity() identity} operation.
      * Result of operations such as links may also need to be fetched in advance,
      * because operations cannot be executed anymore after the name of a dependency changed.
      *
-     * @see Item#setName(GenericName)
-     * @see #isIdentity()
+     * @see Item#setPreferredName(GenericName)
      */
     private boolean hasModifiedProperties;
 
@@ -130,7 +132,7 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
     private int unnamedNumber;
 
     /**
-     * Names of {@linkplain #source} properties that are dependencies found in operations.
+     * Names of {@linkplain #source} properties that are dependencies (arguments) of feature operations.
      * The most common cases are the targets of {@code "sis:identifier"} and {@code "sis:geometry"} links.
      * Values are the items having this dependency. Many items may share the same dependency.
      *
@@ -141,15 +143,17 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
     private final Map<String, List<Item>> dependencies;
 
     /**
-     * Whether to store operations as attributes. By default, when a {@linkplain #addSourceProperty source
-     * property is added in the projection}, operation are forwarded as given (with their dependencies).
-     * But if this flag is set to {@code true}, then operations are replaced by an attribute.
-     * Then, it will be caller's responsibility to store the value.
+     * Whether to store operations as attributes. By default, when {@linkplain #addSourceProperty source
+     * properties are added in the projection}, operations are forwarded as given (with their dependencies).
+     * But if this flag is set to {@code true}, then operations are replaced by attributes.
+     * In such case, it will be caller's responsibility to store the value.
      */
     private boolean operationResultAsAttribute;
 
     /**
      * Creates a new builder instance using the default factories.
+     * This constructor does <em>not</em> inherits the name of the given feature type.
+     * Callers need to invoke a {@code setName(…)} method after construction.
      *
      * @todo provides a way to specify the factories used by the data store.
      *
@@ -225,8 +229,8 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
      * Adds the given property, replacing operation by an attribute storing the operation result.
      * This method may return {@code null} if it cannot resolve the property type, in which case
      * the caller should throw an exception (throwing an exception is left to the caller because
-     * it can produces a better error message). Operation's dependencies, if any, are added into
-     * the given {@code deferred} set.
+     * it can produce a better error message). Operation's dependencies, if any, are added into
+     * the given {@code deferred} collection.
      *
      * @param  property  the {@linkplain #source} property to add.
      * @param  deferred  where to add operation's dependencies, or {@code null} for not collecting dependencies.
@@ -248,7 +252,7 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
                     }
                 }
                 final AbstractIdentifiedType result = ((AbstractOperation) property).getResult();
-                if (result != property && result instanceof AbstractIdentifiedType) {
+                if (result != property) {
                     property = result;
                 } else if (result instanceof DefaultFeatureType) {
                     return addAssociation((DefaultFeatureType) result).setName(name);
@@ -268,12 +272,9 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
      *
      * @param  property  the property type, usually as one of the properties of {@link #source()}.
      * @param  named     whether the {@code property} name can be used as a default name.
-     * @return handler for the given item, or {@code null} if the given property cannot be resolved.
+     * @return handler for the given item (never {@code null}).
      */
     public Item addSourceProperty(final AbstractIdentifiedType property, final boolean named) {
-        if (property == null) {
-            return null;
-        }
         final PropertyTypeBuilder builder;
         final Collection<String> deferred;
         if (sourceIsDependency) {
@@ -299,11 +300,22 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
             builder = addPropertyResult(property, deferred);
         }
         final var item = new Item(named ? property.getName() : null, builder);
+        declareDependencies(item, deferred);
         requested.add(item);
+        return item;
+    }
+
+    /**
+     * Declares that the {@code deferred} elements are dependencies of the given item.
+     * This information will be used by {@link #resolveDependencies(List)}.
+     *
+     * @param item      the item having dependencies.
+     * @param deferred  the item dependencies.
+     */
+    private void declareDependencies(final Item item, final Collection<String> deferred) {
         for (String dependency : deferred) {
             dependencies.computeIfAbsent(dependency, (key) -> new ArrayList<>(2)).add(item);
         }
-        return item;
     }
 
     /**
@@ -316,15 +328,12 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
      * It also verifies that no {@link Item} have been created for that builder yet.
      * For performance reasons, those verifications are performed only if assertions are enabled.
      *
-     * @param  builder  builder for the computed property, or {@code null}.
+     * @param  builder  builder for the computed property.
      * @param  named    whether the {@code builder} name can be used as a default name.
-     * @return handler for the given item, or {@code null} if the given builder was null.
+     * @return handler for the given item (should never be {@code null}).
      */
     @ArgumentCheckByAssertion
     public Item addComputedProperty(final PropertyTypeBuilder builder, final boolean named) {
-        if (builder == null) {
-            return null;
-        }
         assert properties().contains(builder) : builder;
         assert requested.stream().noneMatch((item) -> item.builder == builder) : builder;
         final var item = new Item(named ? builder.getName() : null, builder);
@@ -333,8 +342,57 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
     }
 
     /**
+     * Adds dependencies. This method adds into the {@code deferred} list any transitive
+     * dependencies which may need to be added in a second pass after this method call.
+     * The elements added into {@code deferred} are {@linkplain #source} properties.
+     *
+     * @param  deferred  where to add missing transitive dependencies (source properties).
+     * @return whether there is no dependency to resolve (i.e., all dependencies are already resolved).
+     * @throws UnsupportedOperationException if there is an attempt to rename a property which is used by an operation.
+     */
+    private boolean resolveDependencies(final List<AbstractIdentifiedType> deferred) {
+        final Iterator<Map.Entry<String, List<Item>>> it = dependencies.entrySet().iterator();
+        while (it.hasNext()) {
+            final Map.Entry<String, List<Item>> entry = it.next();
+            final AbstractIdentifiedType property = source.getProperty(entry.getKey());
+            final GenericName sourceName = property.getName();
+            final Item item = reservedNames.get(sourceName);
+            if (item != null) {
+                if (!sourceName.equals(item.sourceName)) {
+                    throw new UnsupportedOperationException(Resources.forLocale(getLocale())
+                            .getString(Resources.Keys.CannotRenameDependency_2, item.sourceName, sourceName));
+                }
+            } else {
+                for (Item dependent : entry.getValue()) {
+                    dependent.hasMissingDependency = true;
+                }
+                deferred.add(property);
+            }
+            it.remove();
+        }
+        return deferred.isEmpty();
+    }
+
+    /**
+     * Declares that the given name is reserved. If this class needs to generate a default name,
+     * it will ensure that any automatically generated name do not conflict with reserved names.
+     *
+     * @param  name   name to reserve for a projected property type, or {@code null} if none.
+     * @param  owner  the builder using that name, or {@code null} if none.
+     */
+    private void reserve(GenericName name, final Item owner) {
+        if (name != null) {
+            // By `putIfAbsent` method contract, non-null values have precedence over null values.
+            reservedNames.putIfAbsent(name, owner);
+            if (name != (name = name.tip())) {              // Shortcut for a majority of cases.
+                reservedNames.putIfAbsent(name, owner);
+            }
+        }
+    }
+
+    /**
      * Handler for a property inherited from the source feature type. The property is initially unnamed.
-     * A name can be specified explicitly after construction by a call to {@link #setName(GenericName)}.
+     * A name can be specified explicitly after construction by {@link #setPreferredName(GenericName)}.
      * If no name is specified, the default name will be the same as in the source feature type if that
      * name is available, or a default name otherwise.
      */
@@ -383,6 +441,15 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
         private Expression<? super AbstractFeature, ?> attributeValueGetter;
 
         /**
+         * Whether the {@link #attributeValueGetter} should be executed only when the property value is requested.
+         * If {@code false} (the default), the value is computed from the source feature exactly once, when the
+         * {@link FeatureProjection#apply(AbstractFeature)} method is invoked, and the result is stored as an attribute.
+         * If {@code true}, then the expression is wrapped in an {@link AbstractOperation} and evaluated when
+         * the property value is requested.
+         */
+        private boolean isDeferredValueGetter;
+
+        /**
          * Creates a new handle for the property created by the given builder.
          *
          * @param  sourceName  the property name in the {@linkplain #source() source} feature, or {@code null}.
@@ -400,9 +467,10 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
         public String toString() {
             return Strings.toString(getClass(),
                     "sourceName", (sourceName != null) ? sourceName.toString() : null,
-                    "targetName", isNamed ? getName() : null,
-                    "valueClass", (builder instanceof AttributeTypeBuilder<?>) ? ((AttributeTypeBuilder<?>) builder).getValueClass() : null,
-                    null, hasMissingDependency ? "hasMissingDependency" : null);
+                    "targetName", isNamed ? getPreferredName() : null,
+                    "valueClass", getValueClass(),
+                    null, hasMissingDependency  ? "hasMissingDependency"  : null,
+                    null, isDeferredValueGetter ? "isDeferredValueGetter" : null);
         }
 
         /**
@@ -418,7 +486,7 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
          * Use the dedicated methods in this class instead:
          *
          * <ul>
-         *   <li>Set the name: use {@link #setName(GenericName)}.</li>
+         *   <li>Set the name: use {@link #setPreferredName(GenericName)}.</li>
          *   <li>Set the value class: use {@link #replaceValueClass(UnaryOperator)}.</li>
          * </ul>
          *
@@ -430,18 +498,20 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
         }
 
         /**
-         * Replaces this property by a stored attribute if at least one dependency is not in the list of properties
-         * requested by the user. This method should be invoked only for preparing the user requested feature type.
-         * This method should not be invoked for preparing the feature type with dependencies, because the latter
-         * should contain the missing dependencies.
+         * Replaces this property by a view that will not block the creation of {@code DefaultFeatureType}
+         * when a dependency is missing. This method should be invoked only for creating the feature type
+         * to be shown to users through {@link FeatureView}.
          */
         private void replaceIfMissingDependency() {
             if (hasMissingDependency) {
                 hasMissingDependency = false;
                 hasModifiedProperties = true;
-                final var old = builder;
-                builder = addPropertyResult(old.build(), null);   // `old.build()` returns the existing operation.
-                old.replaceBy(builder);
+                final PropertyTypeBuilder old = builder;
+                final AbstractIdentifiedType property = old.build();  // `old.build()` returns the existing operation.
+                if (property instanceof AbstractOperation) {
+                    builder = addProperty(new OperationView((AbstractOperation) property, getName()));
+                    old.replaceBy(builder);
+                }
             }
         }
 
@@ -451,16 +521,21 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
          * class of attribute values), then this method sets the new attribute value class to the specified
          * type and returns {@code true}. Otherwise, this method returns {@code false}.
          *
+         * <p>Note that when {@code type.apply(valueClass)} is invoked, returning {@code null} is not the same
+         * as returning the {@code valueClass} unchanged, even if this {@code Item} is unchanged in both cases.
+         * This method returns {@code false} in the former case while it returns {@code true} if the latter case.</p>
+         *
          * @param  type  a converter from current class to the new class of attribute values.
-         * @return whether the value class has been set to the value returned by {@code type}.
+         * @return whether the value returned by {@code type} has been accepted (not necessarily causing a change of state).
          * @throws UnconvertibleObjectException if the default value cannot be converted to the given type.
          */
         public boolean replaceValueClass(final UnaryOperator<Class<?>> type) {
             if (builder instanceof AttributeTypeBuilder<?>) {
                 final var ab = (AttributeTypeBuilder<?>) builder;
-                final Class<?> r = type.apply(ab.getValueClass());
-                if (r != null) {
-                    if (builder != (builder = ab.setValueClass(r))) {
+                final Class<?> oldType = ab.getValueClass();
+                final Class<?> newType = type.apply(oldType);
+                if (newType != null) {
+                    if (builder != (builder = ab.setValueClass(newType))) {
                         hasModifiedProperties = true;
                     }
                     return true;
@@ -477,18 +552,18 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
                      */
                     final var result = ((AbstractOperation) property).getResult();
                     if (result instanceof DefaultAttributeType<?>) {
-                        final Class<?> c = ((DefaultAttributeType<?>) result).getValueClass();
-                        final Class<?> r = type.apply(c);
-                        if (r != null) {
+                        final Class<?> oldType = ((DefaultAttributeType<?>) result).getValueClass();
+                        final Class<?> newType = type.apply(oldType);
+                        if (newType != null) {
                             /*
                              * We can be lenient for link operation, but must be strict for other operations.
                              * Example: a link to a geometry, but relaxing the `Polygon` type to `Geometry`.
                              */
-                            if (Features.getLinkTarget(property).isPresent() ? r.isAssignableFrom(c) : r.equals(c)) {
+                            if (Features.getLinkTarget(property).isPresent() ? newType.isAssignableFrom(oldType) : newType.equals(oldType)) {
                                 return true;
                             }
                             throw new UnconvertibleObjectException(Errors.forLocale(getLocale())
-                                        .getString(Errors.Keys.CanNotConvertFromType_2, c, r));
+                                        .getString(Errors.Keys.CanNotConvertFromType_2, oldType, newType));
                         }
                     }
                 }
@@ -497,46 +572,29 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
         }
 
         /**
+         * Returns the class of attribute values currently configured in the builder, or {@code null} if none.
+         */
+        private Class<?> getValueClass() {
+            return (builder instanceof AttributeTypeBuilder<?>) ? ((AttributeTypeBuilder<?>) builder).getValueClass() : null;
+        }
+
+        /**
          * Sets the expression to use for evaluating the property value.
          * If {@code stored} is {@code true} (the usual case), then the expression will be evaluated early
          * and its result will be stored as an attribute value, unless this property is not an attribute.
-         * If {@code stored} is {@code false}, this method replaces the attribute by an operation wrapping
-         * the given expression. In other words, the evaluation of the expression will be deferred.
-         * The latter case is possible only if the {@code FeatureType} contains all dependencies
-         * that the operation needs.
+         * If {@code stored} is {@code false}, this expression will be wrapped in an operation which will
+         * be executed when the property value is requested. Note that in the latter case, this builder
+         * may have to retain more dependencies than what the user specified.
          *
          * @param  expression  the expression to be evaluated by the operation.
+         * @param  stored      {@code true} for evaluating the expression immediately after feature instances
+         *                     are known, or {@code false} for wrapping the expression in a feature operation.
          */
         public void setValueGetter(final Expression<? super AbstractFeature, ?> expression, final boolean stored) {
+            // Modify only direct value references, not link (or other operations).
             if (builder instanceof AttributeTypeBuilder<?>) {
-                if (stored) {
-                    attributeValueGetter = expression;
-                } else {
-                    final var atb = (AttributeTypeBuilder<?>) builder;
-                    /*
-                     * Optimization: we could compute `storedType = atb.build()` unconditionally,
-                     * which creates an attribute with the final name in the target feature type.
-                     * However, in the particular case of links, we are better to use the name of
-                     * the property in the source feature type, because it allows an optimization
-                     * in `ExpressionOperation.create(…)` (a replacement by a `LinkOperation`).
-                     */
-                    DefaultAttributeType<?> storedType = null;
-                    if (expression instanceof ValueReference<?,?>) {
-                        var candidate = source.getProperty(((ValueReference<?,?>) expression).getXPath());
-                        if (candidate instanceof DefaultAttributeType<?>) {
-                            storedType = (DefaultAttributeType<?>) candidate;
-                        }
-                    }
-                    if (storedType == null) {
-                        storedType = atb.build();   // Same name as in the `identification` map below.
-                    }
-                    final var identification = Map.of(AbstractOperation.NAME_KEY, builder.getName());
-                    builder = addProperty(FeatureOperations.expression(identification, expression, storedType));
-                    atb.replaceBy(builder);
-                    hasModifiedProperties = true;
-                }
-            } else {
-                // The property is an operation, usually a link. Leave it as-is.
+                attributeValueGetter = expression;
+                isDeferredValueGetter = !stored;
             }
         }
 
@@ -571,8 +629,6 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
          *
          * @param  property  the property to compare.
          * @return whether this item builds a property equivalent to the given one.
-         *
-         * @see #isIdentity()
          */
         private boolean equivalent(final AbstractIdentifiedType property) {
             return builder.getName().equals(property.getName());
@@ -581,11 +637,11 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
         /**
          * Returns the name of the projected property.
          * This is initially the name of the property given at construction time,
-         * but can be changed later by a call to {@link #setName(GenericName)}.
+         * but can be changed later by a call to {@link #setPreferredName(GenericName)}.
          *
          * @return the name of the projected property.
          */
-        public String getName() {
+        public String getPreferredName() {
             return builder.getName().toString();
         }
 
@@ -598,7 +654,7 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
          *
          * @param  targetName  the desired name in the projected feature, or {@code null} if unspecified.
          */
-        public void setName(final GenericName targetName) {
+        public void setPreferredName(final GenericName targetName) {
             if (targetName == null) {
                 reserve(sourceName, null);      // Will use that name only if not owned by another item.
                 preferCurrentName = true;
@@ -614,12 +670,19 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
         }
 
         /**
+         * Completes and optimizes this item before construction of the final {@link FeatureProjection}.
+         *
+         * <h4>Naming</h4>
          * If this item has not received an explicit name, infers a default name.
-         * This method should be invoked only after {@link #setName(GenericName)}
-         * has been invoked for all items, for allowing this class to know which
-         * names are reserved.
+         * This method should be invoked only after {@link #setPreferredName(GenericName)}
+         * has been invoked for all items, for allowing this class to know which names are reserved.
+         *
+         * <h4>Optimization</h4>
+         * This method ensures that the {@link #attributeValueGetter} expression produces a value of the type
+         * expected by {@link FeatureProjection#typeWithDependencies}, adding a conversion step if needed.
+         * Then this method simplifies the expression, which may remove the conversion added just before.
          */
-        private void validateName() {
+        final void finish(final Optimization optimizer) {
             if (!isNamed) {
                 final Item owner = reservedNames.get(sourceName);
                 if (owner != this) {
@@ -634,81 +697,44 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
                 }
                 isNamed = true;
             }
-        }
-    }
-
-    /**
-     * Declares the given name as reserved. If this class needs to generate a default name,
-     * it will ensure that automatically generated names do not conflict with reserved names.
-     *
-     * @param  name   name to reserve for a projected property type, or {@code null} if none.
-     * @param  owner  the builder using that name, or {@code null} if none.
-     */
-    private void reserve(GenericName name, final Item owner) {
-        if (name != null) {
-            // By `putIfAbsent` method contract, non-null values have precedence over null values.
-            reservedNames.putIfAbsent(name, owner);
-            if (name != (name = name.tip())) {              // Shortcut for a majority of cases.
-                reservedNames.putIfAbsent(name, owner);
-            }
-        }
-    }
-
-    /**
-     * Adds dependencies. This method adds in the {@code deferred} list any transitive
-     * dependencies which may need to be added in a second pass after this method call.
-     * The elements added into {@code deferred} are {@linkplain #source} properties.
-     *
-     * @param  deferred  where to add missing transitive dependencies (source properties).
-     * @throws UnsupportedOperationException if there is an attempt to rename a property which is used by an operation.
-     */
-    private void resolveDependencies(final List<AbstractIdentifiedType> deferred) {
-        final var it = dependencies.entrySet().iterator();
-        while (it.hasNext()) {
-            final Map.Entry<String, List<Item>> entry = it.next();
-            final AbstractIdentifiedType property = source.getProperty(entry.getKey());
-            final GenericName sourceName = property.getName();
-            Item item = reservedNames.get(sourceName);
-            if (item != null) {
-                if (!sourceName.equals(item.sourceName)) {
-                    throw new UnsupportedOperationException(Resources.forLocale(getLocale())
-                            .getString(Resources.Keys.CannotRenameDependency_2, item.sourceName, sourceName));
+            if (attributeValueGetter != null) {
+                final Class<?> valueClass = getValueClass();
+                if (valueClass != null) {
+                    attributeValueGetter = attributeValueGetter.toValueType(valueClass);
                 }
-            } else {
-                for (Item dependent : entry.getValue()) {
-                    dependent.hasMissingDependency = true;
+                attributeValueGetter = optimizer.apply(attributeValueGetter);
+                if (isDeferredValueGetter) {
+                    // Following cast should never fail because it was verified in `setValueGetter(…)`.
+                    final var atb = (AttributeTypeBuilder<?>) builder;
+                    /*
+                     * Optimization: we could compute `storedType = atb.build()` unconditionally,
+                     * which creates an attribute with the final name in the target feature type.
+                     * However, in the particular case of links, we are better to use the name of
+                     * the property in the source feature type, because it allows an optimization
+                     * (a replacement by a `LinkOperation`) in `ExpressionOperation.create(…)`.
+                     */
+                    DefaultAttributeType<?> storedType = null;
+                    if (attributeValueGetter instanceof ValueReference<?,?>) {
+                        var candidate = source.getProperty(((ValueReference<?,?>) attributeValueGetter).getXPath());
+                        if (candidate instanceof DefaultAttributeType<?>) {
+                            storedType = (DefaultAttributeType<?>) candidate;
+                        }
+                    }
+                    if (storedType == null) {
+                        storedType = atb.build();   // Same name as in the `identification` map below.
+                    }
+                    final Map<String, ?> identification = Map.of(AbstractOperation.NAME_KEY, atb.getName());
+                    final var operation = FeatureOperations.expression(identification, attributeValueGetter, storedType);
+                    if (operation != null) {   // Should always be the case, but be safe.
+                        declareDependencies(this, operation.getDependencies());
+                        builder = addProperty(operation);
+                        atb.replaceBy(builder);
+                        hasModifiedProperties = true;
+                        attributeValueGetter = null;
+                    }
                 }
-                deferred.add(property);
-            }
-            it.remove();
-        }
-    }
-
-    /**
-     * Returns {@code true} if the feature to be built should be equivalent to the source feature.
-     *
-     * @return whether the {@linkplain #source} feature type can be used directly.
-     */
-    private boolean isIdentity() {
-        if (hasModifiedProperties) {
-            return false;
-        }
-        final Iterator<Item> it = requested.iterator();
-        for (AbstractIdentifiedType property : source.getProperties(true)) {
-            if (!(it.hasNext() && it.next().equivalent(property))) {
-                return false;
             }
         }
-        return !it.hasNext();
-    }
-
-    /**
-     * Returns the feature type described by this builder. This method may return the
-     * {@linkplain #source() source} directly if this projection performs no operation.
-     */
-    @Override
-    public DefaultFeatureType build() {
-        return isIdentity() ? source : super.build();
     }
 
     /**
@@ -728,42 +754,65 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
      * @throws UnsupportedOperationException if there is an attempt to rename a property which is used by an operation.
      */
     public Optional<FeatureProjection> project() {
-        requested.forEach(Item::validateName);
+        final var optimizer = new Optimization();
+        optimizer.setFeatureType(source);
+        requested.forEach((item) -> item.finish(optimizer));
         /*
          * Add properties for all dependencies that are required by operations but are not already present.
-         * If there is no need to add anything, `typeWithDependencies` will be directly the feature type to return.
+         * If there is no need to add anything, `typeWithDependencies` will be directly `typeRequested`.
          */
+        final DefaultFeatureType typeRequested, typeWithDependencies;
         final List<PropertyTypeBuilder> properties = properties();
         final int count = properties.size();
         final var deferred = new ArrayList<AbstractIdentifiedType>();
-        resolveDependencies(deferred);
-        /*
-         * If there is no dependencies, the requested type and the type with dependencies are the same.
-         * Otherwise, we need to resolve transitive dependencies before to build each type.
-         */
-        final DefaultFeatureType typeRequested, typeWithDependencies;
-        if (deferred.isEmpty()) {
+        while (!resolveDependencies(deferred)) {
+            for (AbstractIdentifiedType property : deferred) {
+                final Item item = addSourceProperty(property, true);
+                if (item != null) {
+                    item.setValueGetter(FeatureOperations.expressionOf(property), true);
+                    item.finish(optimizer);
+                }
+            }
+            deferred.clear();
+        }
+        final List<PropertyTypeBuilder> added = properties.subList(count, properties.size());
+        if (added.isEmpty()) {
             typeRequested = typeWithDependencies = build();
         } else {
-            do {
-                for (AbstractIdentifiedType property : deferred) {
-                    final Item item = addSourceProperty(property, true);
-                    if (item != null) {
-                        item.validateName();
-                        item.setValueGetter(FeatureOperations.expressionOf(property), true);
-                    }
-                }
-                deferred.clear();
-                resolveDependencies(deferred);
-            } while (!deferred.isEmpty());
-            typeWithDependencies = build();
-            properties.subList(count, properties.size()).clear();     // Keep only the properties requested by user.
+            final GenericName name = getName();
+            typeWithDependencies = setName(
+                    Vocabulary.formatInternational(
+                            Vocabulary.Keys.PlusDependencies_1,
+                            name.tip().toInternationalString()))
+                    .build();
+
+            added.clear();     // Keep only the properties requested by user.
             requested.forEach(Item::replaceIfMissingDependency);
-            typeRequested = build();
+            typeRequested = setName(name).build();
         }
-        if (source.equals(typeRequested) && source.equals(typeWithDependencies)) {
+        if (typeRequested.equals(source)) {
             return Optional.empty();
         }
         return Optional.of(new FeatureProjection(typeRequested, typeWithDependencies, requested));
+    }
+
+    /**
+     * Returns the feature type described by this builder. This method may return the
+     * {@linkplain #source() source} directly if this projection performs no operation.
+     *
+     * <p>Users should not invoke this method directly. Use {@link #project()} instead.</p>
+     */
+    @Override
+    public DefaultFeatureType build() {
+        if (hasModifiedProperties) {
+            return super.build();
+        }
+        final Iterator<Item> it = requested.iterator();
+        for (AbstractIdentifiedType property : source.getProperties(true)) {
+            if (!(it.hasNext() && it.next().equivalent(property))) {
+                return super.build();
+            }
+        }
+        return it.hasNext() ? super.build() : source;
     }
 }

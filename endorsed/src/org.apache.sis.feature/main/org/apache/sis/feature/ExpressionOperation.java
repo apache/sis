@@ -23,8 +23,8 @@ import java.util.Collection;
 import java.util.function.Function;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.filter.internal.shared.FunctionNames;
-import org.apache.sis.filter.internal.shared.Visitor;
+import org.apache.sis.filter.visitor.FunctionNames;
+import org.apache.sis.filter.visitor.Visitor;
 
 // Specific to the main branch:
 import org.apache.sis.filter.Filter;
@@ -62,7 +62,7 @@ final class ExpressionOperation<V> extends AbstractOperation {
     /**
      * The type of result of evaluating the expression.
      */
-    private final DefaultAttributeType<V> resultType;
+    final DefaultAttributeType<V> resultType;
 
     /**
      * The name of all feature properties that are known to be read by the expression.

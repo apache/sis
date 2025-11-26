@@ -16,10 +16,7 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Collection;
-import java.util.ServiceLoader;
 import java.util.Optional;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
@@ -29,10 +26,12 @@ import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.filter.sqlmm.Registry;
+import org.apache.sis.filter.base.UnaryFunction;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.internal.shared.Strings;
+import org.apache.sis.util.internal.shared.LazyCandidate;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
@@ -55,7 +54,7 @@ import org.apache.sis.pending.geoapi.filter.DistanceOperatorName;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @param  <R>  the type of resources (e.g. {@link AbstractFeature}) to use as inputs.
  * @param  <G>  base class of geometry objects. The implementation-neutral type is GeoAPI {@link Geometry},
@@ -88,7 +87,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory {
      *
      * @see #function(String, Expression...)
      */
-    private final Map<String,FunctionRegister> availableFunctions;
+    @LazyCandidate
+    private final Capabilities availableFunctions;
 
     /**
      * Creates a new factory for geometries and temporal objects of the given types.
@@ -128,7 +128,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory {
         }
         this.temporal = temporal;
         this.wraparound = wraparound;
-        availableFunctions = new HashMap<>();
+        availableFunctions = new Capabilities(library);
     }
 
     /**
@@ -167,7 +167,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory {
     }
 
     /**
-     * A filter factory operating on {@link AbstractFeature} instances.
+     * A filter factory operating on {@link Feature} instances.
      *
      * @param  <G>  base class of geometry objects. The implementation-neutral type is GeoAPI {@link Geometry},
      *              but this factory allows the use of other implementations such as JTS
@@ -180,8 +180,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory {
          *
          * @see #forFeatures()
          */
-        static final DefaultFilterFactory<AbstractFeature,Object,Object> DEFAULT =
-                new Features<>(Object.class, Object.class, WraparoundMethod.SPLIT);
+        static final Features<Object,Object> DEFAULT = new Features<>(Object.class, Object.class, WraparoundMethod.SPLIT);
 
         /**
          * Creates a new factory operating on {@link AbstractFeature} instances.
@@ -287,6 +286,9 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory {
      * @return a literal for the given value.
      */
     public <V> Expression<R,V> literal(final V value) {
+        if (value == null) {
+            return LeafExpression.NULL();
+        }
         return new LeafExpression.Literal<>(value);
     }
 
@@ -929,39 +931,6 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory {
     }
 
     /**
-     * Returns the provider for the function of the given name.
-     * If the given name is {@code null}, then this method only
-     * ensures that {@link #availableFunctions} is initialized.
-     *
-     * @param  name  name of the function to get, or {@code null} if none.
-     * @return the register for the given function, or {@code null} if none.
-     */
-    private FunctionRegister register(final String name) {
-        final FunctionRegister register;
-        synchronized (availableFunctions) {
-            if (availableFunctions.isEmpty()) {
-                /*
-                 * Load functions when first needed or if the module path changed since last invocation.
-                 * The SQLMM factory is hard-coded because it is considered as a basic service to
-                 * be provided by all DefaultFilterFactory implementations, and for avoiding the
-                 * need to make SQLMM registry class public.
-                 */
-                final Registry r = new Registry(library);
-                for (final String fn : r.getNames()) {
-                    availableFunctions.put(fn, r);
-                }
-                for (final FunctionRegister er : ServiceLoader.load(FunctionRegister.class)) {
-                    for (final String fn : er.getNames()) {
-                        availableFunctions.putIfAbsent(fn, er);
-                    }
-                }
-            }
-            register = availableFunctions.get(name);
-        }
-        return register;
-    }
-
-    /**
      * Creates an implementation-specific function.
      *
      * @param  name        name of the function to call.
@@ -977,10 +946,23 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory {
         for (int i=0; i<parameters.length; i++) {
             ArgumentChecks.ensureNonNullElement("parameters", i, parameters[i]);
         }
-        final FunctionRegister register = register(name);
-        if (register == null) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.UnknownFunction_1, name));
+        final Expression<R,?> expression = availableFunctions.createFunction(name, parameters);
+        if (expression != null) {
+            return expression;
         }
-        return register.create(name, parameters);
+        throw new IllegalArgumentException(Resources.format(Resources.Keys.UnknownFunction_1, name));
+    }
+
+    /**
+     * Returns a string representation of this factory for debugging purposes.
+     * The string returned by this method may change in any future version.
+     *
+     * @return a string representation for debugging purposes.
+     *
+     * @since 1.5
+     */
+    @Override
+    public String toString() {
+        return Strings.toString(getClass(), "spatial", library.library, "temporal", temporal.getSimpleName());
     }
 }

@@ -16,7 +16,9 @@
  */
 package org.apache.sis.pending.geoapi.filter;
 
+import java.util.List;
 import org.apache.sis.filter.Expression;
+import org.opengis.util.ScopedName;
 
 
 /**
@@ -26,4 +28,14 @@ import org.apache.sis.filter.Expression;
 @SuppressWarnings("doclint:missing")
 public interface ValueReference<R,V> extends Expression<R,V> {
     String getXPath();
+
+    @Override
+    default ScopedName getFunctionName() {
+        return Name.VALUE_REFERENCE;
+    }
+
+    @Override
+    default List<Expression<R,?>> getParameters() {
+        return List.of();
+    }
 }

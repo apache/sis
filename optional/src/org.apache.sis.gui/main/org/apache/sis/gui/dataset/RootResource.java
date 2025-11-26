@@ -19,14 +19,10 @@ package org.apache.sis.gui.dataset;
 import java.util.AbstractList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import javafx.scene.control.TreeItem;
 import org.opengis.metadata.Metadata;
-import org.opengis.util.GenericName;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.event.StoreEvent;
-import org.apache.sis.storage.event.StoreListener;
 
 
 /**
@@ -110,14 +106,6 @@ final class RootResource implements Aggregate {
     }
 
     /**
-     * Returns empty optional since this resource has no identifier.
-     */
-    @Override
-    public Optional<GenericName> getIdentifier() {
-        return Optional.empty();
-    }
-
-    /**
      * Returns null since this resource has no metadata. Returning null is normally
      * not allowed for this method, but {@link ResourceTree} is robust to this case.
      */
@@ -125,8 +113,4 @@ final class RootResource implements Aggregate {
     public Metadata getMetadata() {
         return null;
     }
-
-    /** Ignored since this class does not emit any event. */
-    @Override public <T extends StoreEvent> void    addListener(Class<T> eventType, StoreListener<? super T> listener) {}
-    @Override public <T extends StoreEvent> void removeListener(Class<T> eventType, StoreListener<? super T> listener) {}
 }

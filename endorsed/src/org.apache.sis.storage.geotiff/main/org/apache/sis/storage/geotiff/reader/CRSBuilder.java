@@ -82,7 +82,6 @@ import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.storage.event.StoreListeners;
@@ -179,14 +178,14 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
 
     /**
      * Suggested value for a general description of the transformation form grid coordinates to "real world" coordinates.
-     * This is computed by {@link #build(Vector, Vector, String)} and made available as additional information to the caller.
+     * This is computed by {@link #build(GeoKeysLoader)} and made available as additional information to the caller.
      */
     public String description;
 
     /**
      * {@code POINT} if {@link GeoKeys#RasterType} is {@link GeoCodes#RasterPixelIsPoint},
      * {@code AREA} if it is {@link GeoCodes#RasterPixelIsArea}, or null if unspecified.
-     * This is computed by {@link #build(Vector, Vector, String)} and made available to the caller.
+     * This is computed by {@link #build(GeoKeysLoader)} and made available to the caller.
      */
     public CellGeometry cellGeometry;
 
@@ -512,6 +511,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
      * @throws ClassCastException if an object defined by an EPSG code is not of the expected type.
      * @throws FactoryException if an error occurred during objects creation with the factories.
      */
+    @SuppressWarnings("UseSpecificCatch")
     public CoordinateReferenceSystem build(final GeoKeysLoader source) throws FactoryException {
         try {
             source.logger = this;
