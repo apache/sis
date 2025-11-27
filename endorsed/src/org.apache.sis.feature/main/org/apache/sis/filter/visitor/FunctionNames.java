@@ -16,9 +16,11 @@
  */
 package org.apache.sis.filter.visitor;
 
-import org.opengis.util.CodeList;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.filter.sqlmm.SQLMM;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.util.CodeList;
 
 
 /**

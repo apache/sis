@@ -16,19 +16,19 @@
  */
 package org.apache.sis.filter.sqlmm;
 
-import java.util.EnumMap;
 import java.util.Optional;
 import javax.measure.Quantity;
 import org.opengis.geometry.Envelope;
-import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.filter.visitor.FunctionIdentifier;
 import static org.apache.sis.geometry.wrapper.GeometryType.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.EnumMap;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.capability.AvailableFunction;
+import org.apache.sis.setup.GeometryLibrary;
 
 
 /**

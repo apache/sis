@@ -32,13 +32,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import org.apache.sis.filter.Optimization;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.SortByComparator;
 import org.apache.sis.metadata.sql.internal.shared.SQLBuilder;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.stream.DeferredStream;
 import org.apache.sis.util.stream.PaginedStream;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.feature.internal.shared.FeatureProjection;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

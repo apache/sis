@@ -20,11 +20,11 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveComparator;
 import org.apache.sis.geometries.math.NDArrays;
+import org.apache.sis.geometries.math.Array;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.geometries.math.Array;
 
 
 /**

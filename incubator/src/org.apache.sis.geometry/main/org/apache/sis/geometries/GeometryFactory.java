@@ -26,6 +26,7 @@ import org.apache.sis.geometries.conics.Circle;
 import org.apache.sis.geometries.conics.CircularString;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.NDArrays;
+import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.internal.shared.ArraySequence;
 import org.apache.sis.geometries.internal.shared.DefaultGeometryCollection;
 import org.apache.sis.geometries.internal.shared.DefaultLineString;
@@ -43,7 +44,6 @@ import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.geometries.math.Array;
 
 
 /**

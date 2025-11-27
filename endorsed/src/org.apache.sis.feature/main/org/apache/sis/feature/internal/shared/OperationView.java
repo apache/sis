@@ -16,24 +16,24 @@
  */
 package org.apache.sis.feature.internal.shared;
 
-import java.util.Optional;
-import java.io.Serializable;
 import org.opengis.util.GenericName;
-import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.feature.AbstractOperation;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.util.Deprecable;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Optional;
+import java.io.Serializable;
+import org.opengis.util.InternationalString;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureOperationException;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.Operation;
 import org.opengis.feature.Property;
 import org.opengis.feature.PropertyNotFoundException;
+import org.apache.sis.util.Deprecable;
 
 
 /**

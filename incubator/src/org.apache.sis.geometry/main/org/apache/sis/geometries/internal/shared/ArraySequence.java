@@ -31,9 +31,9 @@ import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.geometries.math.Cursor;
 import org.apache.sis.geometries.math.Array;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**

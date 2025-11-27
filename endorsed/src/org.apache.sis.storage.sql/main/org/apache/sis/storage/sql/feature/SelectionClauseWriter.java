@@ -27,7 +27,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.apache.sis.filter.base.XPathSource;
 import org.apache.sis.filter.visitor.FunctionIdentifier;
 import org.apache.sis.filter.visitor.FunctionNames;
 import org.apache.sis.filter.visitor.Visitor;
@@ -47,6 +46,7 @@ import org.opengis.filter.BinaryComparisonOperator;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.BetweenComparisonOperator;
 import org.opengis.filter.ResourceId;
+import org.apache.sis.filter.base.XPathSource;
 
 
 /**

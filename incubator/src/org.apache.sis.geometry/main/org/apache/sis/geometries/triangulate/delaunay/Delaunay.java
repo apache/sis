@@ -32,10 +32,10 @@ import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.math.Vectors;
+import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.geometries.math.Array;
 
 
 /**

@@ -58,6 +58,7 @@ import org.apache.sis.util.internal.shared.AbstractIterator;
 import org.apache.sis.util.internal.shared.DefinitionURI;
 import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.collection.SetOfUnknownSize;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.metadata.internal.shared.NameMeaning;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -68,7 +69,6 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.collection.BackingStoreException;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.Identifier;

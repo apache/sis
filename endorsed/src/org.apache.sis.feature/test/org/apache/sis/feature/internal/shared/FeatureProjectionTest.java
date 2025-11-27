@@ -23,19 +23,19 @@ import org.apache.sis.util.iso.Names;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.filter.DefaultFilterFactory;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
-import org.opengis.feature.AttributeType;
-import org.opengis.feature.Operation;
-import org.opengis.filter.FilterFactory;
-
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 import org.apache.sis.test.TestCase;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.AttributeType;
+import org.opengis.feature.Operation;
+import org.opengis.filter.FilterFactory;
 
 
 /**

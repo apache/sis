@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.csg;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)
