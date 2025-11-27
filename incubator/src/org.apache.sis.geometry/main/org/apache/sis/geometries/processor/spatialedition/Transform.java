@@ -29,12 +29,12 @@ import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.math.Vectors;
+import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.operation.GeometryOperations;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.internal.shared.ArraySequence;
 import org.apache.sis.geometries.processor.Processor;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.geometries.math.Array;
 
 
 /**

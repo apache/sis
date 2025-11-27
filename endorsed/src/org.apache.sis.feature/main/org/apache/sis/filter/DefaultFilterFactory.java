@@ -30,6 +30,7 @@ import org.apache.sis.filter.base.UnaryFunction;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.internal.shared.LazyCandidate;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -37,7 +38,6 @@ import java.time.Instant;
 import org.opengis.filter.*;
 import org.opengis.feature.Feature;
 import org.opengis.filter.capability.FilterCapabilities;
-import org.apache.sis.util.internal.shared.Strings;
 
 
 /**

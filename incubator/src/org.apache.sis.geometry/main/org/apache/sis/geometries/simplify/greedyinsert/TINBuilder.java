@@ -36,10 +36,10 @@ import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.NDArrays;
+import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.geometries.math.Array;
 
 
 /**

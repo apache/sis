@@ -54,12 +54,12 @@ import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.math.Vector1D;
 import org.apache.sis.geometries.math.Vector3D;
 import org.apache.sis.geometries.math.Vectors;
+import org.apache.sis.geometries.math.Cursor;
+import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
-import org.apache.sis.geometries.math.Cursor;
-import org.apache.sis.geometries.math.Array;
 
 
 /**

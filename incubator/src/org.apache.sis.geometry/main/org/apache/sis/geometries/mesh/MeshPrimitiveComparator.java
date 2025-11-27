@@ -28,8 +28,8 @@ import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.geometries.math.Array;
+import org.apache.sis.referencing.CRS;
 
 
 /**

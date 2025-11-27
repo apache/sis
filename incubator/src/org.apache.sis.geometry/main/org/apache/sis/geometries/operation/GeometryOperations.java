@@ -43,6 +43,7 @@ import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.NDArrays;
+import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.operation.spatialanalysis2d.Buffer;
@@ -68,7 +69,6 @@ import org.apache.sis.geometries.operation.spatialrelations2d.Relate;
 import org.apache.sis.geometries.operation.spatialrelations2d.Touches;
 import org.apache.sis.geometries.operation.spatialrelations2d.Within;
 import org.apache.sis.geometries.processor.Processor;
-import org.apache.sis.geometries.math.Array;
 
 
 /**

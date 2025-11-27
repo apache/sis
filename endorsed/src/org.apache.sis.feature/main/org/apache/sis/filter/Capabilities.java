@@ -16,26 +16,23 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.Collection;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.ServiceLoader;
-import java.util.Optional;
-import org.opengis.util.LocalName;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.collection.CodeListSet;
-import org.apache.sis.util.internal.shared.AbstractMap;
 import org.apache.sis.referencing.internal.shared.LazySet;
-import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.filter.sqlmm.Registry;
 import org.apache.sis.system.Reflect;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Map;
+import java.util.Set;
+import java.util.Collection;
+import java.util.Optional;
+import org.opengis.util.LocalName;
 import org.opengis.filter.Expression;
 import org.opengis.filter.ComparisonOperatorName;
 import org.opengis.filter.capability.Conformance;
@@ -45,6 +42,9 @@ import org.opengis.filter.capability.FilterCapabilities;
 import org.opengis.filter.capability.ScalarCapabilities;
 import org.opengis.filter.capability.SpatialCapabilities;
 import org.opengis.filter.capability.TemporalCapabilities;
+import org.apache.sis.util.collection.CodeListSet;
+import org.apache.sis.util.internal.shared.AbstractMap;
+import org.apache.sis.feature.internal.shared.AttributeConvention;
 
 
 /**

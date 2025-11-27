@@ -28,10 +28,10 @@ import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Vector2D;
+import org.apache.sis.geometries.math.Array;
 import static org.apache.sis.geometries.math.Vectors.*;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.geometries.math.Array;
 
 
 /**

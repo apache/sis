@@ -22,8 +22,8 @@ import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometries.math.Array;
+import org.apache.sis.geometry.GeneralEnvelope;
 
 
 /**

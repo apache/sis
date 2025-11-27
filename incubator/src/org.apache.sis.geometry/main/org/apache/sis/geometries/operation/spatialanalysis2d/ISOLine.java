@@ -31,9 +31,9 @@ import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Vector3D;
 import org.apache.sis.geometries.math.Vectors;
+import org.apache.sis.geometries.math.Array;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.geometries.math.Array;
 
 
 /**

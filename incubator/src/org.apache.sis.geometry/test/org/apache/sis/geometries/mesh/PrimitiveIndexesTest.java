@@ -22,11 +22,11 @@ import java.util.List;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveIndexes;
 import org.apache.sis.geometries.math.NDArrays;
+import org.apache.sis.geometries.math.Array;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
-import org.apache.sis.geometries.math.Array;
 
 
 /**

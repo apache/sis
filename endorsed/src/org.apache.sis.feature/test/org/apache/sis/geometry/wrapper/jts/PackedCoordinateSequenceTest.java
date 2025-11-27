@@ -17,12 +17,12 @@
 package org.apache.sis.geometry.wrapper.jts;
 
 import java.util.function.DoubleFunction;
+import static java.lang.Double.NaN;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateXY;
 import org.locationtech.jts.geom.CoordinateXYM;
 import org.locationtech.jts.geom.CoordinateXYZM;
 import org.locationtech.jts.geom.CoordinateSequence;
-import static java.lang.Double.NaN;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

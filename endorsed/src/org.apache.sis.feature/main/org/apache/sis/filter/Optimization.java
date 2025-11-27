@@ -23,13 +23,13 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
 import java.util.function.Predicate;
-import org.opengis.util.CodeList;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.filter.base.Node;
 import org.apache.sis.util.internal.shared.CollectionsExt;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.util.CodeList;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Literal;
 import org.opengis.filter.Expression;

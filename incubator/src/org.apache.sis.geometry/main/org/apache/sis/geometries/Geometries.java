@@ -50,6 +50,8 @@ import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.math.Vector3D;
 import org.apache.sis.geometries.math.Vectors;
+import org.apache.sis.geometries.math.Cursor;
+import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.internal.shared.ArraySequence;
@@ -66,8 +68,6 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.geometries.math.Cursor;
-import org.apache.sis.geometries.math.Array;
 
 
 /**

@@ -17,12 +17,12 @@
 package org.apache.sis.geometries;
 
 import org.apache.sis.geometries.math.NDArrays;
+import org.apache.sis.geometries.math.Array;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
-import org.apache.sis.geometries.math.Array;
 
 
 /**
