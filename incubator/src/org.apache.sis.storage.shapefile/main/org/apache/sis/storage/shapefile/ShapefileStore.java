@@ -113,6 +113,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.storage.base.WarningAdapter;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
@@ -127,7 +128,6 @@ import org.apache.sis.pending.geoapi.filter.LogicalOperator;
 import org.apache.sis.pending.geoapi.filter.LogicalOperatorName;
 import org.apache.sis.pending.geoapi.filter.SpatialOperatorName;
 import org.apache.sis.pending.geoapi.filter.ValueReference;
-import org.apache.sis.storage.base.WarningAdapter;
 
 
 /**

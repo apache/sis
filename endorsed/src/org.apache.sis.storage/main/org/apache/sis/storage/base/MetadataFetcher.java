@@ -17,7 +17,6 @@
 package org.apache.sis.storage.base;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -49,6 +48,7 @@ import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.temporal.TemporalDate;
 
 // Specific to the main branch:
+import java.util.Date;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 

@@ -17,8 +17,8 @@
 package org.apache.sis.pending.geoapi.filter;
 
 import java.util.List;
-import org.apache.sis.filter.Expression;
 import org.opengis.util.ScopedName;
+import org.apache.sis.filter.Expression;
 
 
 /**

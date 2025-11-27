@@ -29,9 +29,9 @@ import java.util.function.UnaryOperator;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.pending.jdk.Record;
 import org.apache.sis.pending.jdk.JDK19;
@@ -44,10 +44,10 @@ import org.apache.sis.filter.visitor.ListingPropertyVisitor;
 import org.apache.sis.io.TableAppender;
 
 // Specific to the main branch:
-import org.apache.sis.filter.Expression;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.AbstractIdentifiedType;
+import org.apache.sis.filter.Expression;
 import org.apache.sis.pending.geoapi.filter.Literal;
 import org.apache.sis.pending.geoapi.filter.ValueReference;
 

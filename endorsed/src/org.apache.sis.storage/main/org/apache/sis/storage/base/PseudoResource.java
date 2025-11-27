@@ -17,10 +17,10 @@
 package org.apache.sis.storage.base;
 
 import java.util.Locale;
+import org.opengis.metadata.Metadata;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.Localized;
-import org.opengis.metadata.Metadata;
 
 
 /**

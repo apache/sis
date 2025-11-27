@@ -20,13 +20,13 @@ import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.feature.AbstractOperation;
+import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.internal.Resources;
 
 // Specific to the main branch:
 import java.util.Map;
 import java.util.Set;
 import org.apache.sis.feature.AbstractFeature;
-import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.AbstractIdentifiedType;
 
 

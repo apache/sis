@@ -23,19 +23,18 @@ import org.apache.sis.util.iso.Names;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.filter.DefaultFilterFactory;
 
-// Specific to the main branch:
-import org.apache.sis.feature.AbstractFeature;
-import org.apache.sis.feature.DefaultFeatureType;
-import org.apache.sis.feature.DefaultAttributeType;
-import org.apache.sis.feature.DefaultAttributeType;
-import org.apache.sis.feature.AbstractOperation;
-
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 import org.apache.sis.test.TestCase;
+
+// Specific to the main branch:
+import org.apache.sis.feature.AbstractFeature;
+import org.apache.sis.feature.DefaultFeatureType;
+import org.apache.sis.feature.DefaultAttributeType;
+import org.apache.sis.feature.AbstractOperation;
 
 
 /**
