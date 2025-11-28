@@ -33,7 +33,6 @@ import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
-import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.metadata.internal.shared.ImplementationHelper;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ComparisonMode;
@@ -364,22 +363,22 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      * of the nested operation from the source/target CRS of the enclosing pass-through operation.
      */
     @Override
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     final void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
         super.afterUnmarshal(unmarshaller, parent);
         /*
          * State validation. The `missing` string will be used in exception message
          * at the end of this method if a required component is reported missing.
          */
-        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final int[] modifiedCoordinates = this.modifiedCoordinates;
         FactoryException cause = null;
         String missing = "modifiedCoordinate";
         if (modifiedCoordinates.length != 0) {
             missing = "sourceCRS";
-            final CoordinateReferenceSystem sourceCRS = super.getSourceCRS();
+            final CoordinateReferenceSystem sourceCRS = super.sourceCRS;
             if (sourceCRS != null) {
                 missing = "targetCRS";
-                final CoordinateReferenceSystem targetCRS = super.getTargetCRS();
+                final CoordinateReferenceSystem targetCRS = super.targetCRS;
                 if (targetCRS != null) {
                     missing = "coordOperation";
                     if (operation != null) {
@@ -401,8 +400,8 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
                             }
                         }
                         if (subTransform != null) {
-                            transform = MathTransforms.passThrough(modifiedCoordinates, subTransform,
-                                                        ReferencingUtilities.getDimension(sourceCRS));
+                            final int resultDim = sourceCRS.getCoordinateSystem().getDimension();
+                            transform = MathTransforms.passThrough(modifiedCoordinates, subTransform, resultDim);
                             return;
                         }
                     }

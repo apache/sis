@@ -1604,7 +1604,7 @@ search:     for (;;) {
      */
     @Override
     public String toString() {
-        final StringJoiner buffer = new StringJoiner(", ", "[", "]");
+        final var buffer = new StringJoiner(", ", "[", "]");
         final int length = size();
         for (int i=0; i<length; i++) {
             buffer.add(stringValue(i));

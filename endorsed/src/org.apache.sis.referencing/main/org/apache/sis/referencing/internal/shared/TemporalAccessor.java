@@ -21,6 +21,7 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.geometry.AbstractEnvelope;
@@ -77,7 +78,7 @@ public final class TemporalAccessor {
                 if (accessor != null) {
                     return accessor;
                 }
-                dim += ReferencingUtilities.getDimension(component);
+                dim += CRS.getDimensionOrZero(component);
             }
         }
         return null;

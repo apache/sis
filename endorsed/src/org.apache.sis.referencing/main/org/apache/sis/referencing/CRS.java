@@ -159,6 +159,11 @@ public final class CRS {
     static final Logger LOGGER = Logger.getLogger(Modules.REFERENCING);
 
     /**
+     * The {@value} value, for identifying code that assume two-dimensional objects.
+     */
+    static final int BIDIMENSIONAL = 2;
+
+    /**
      * Do not allow instantiation of this class.
      */
     private CRS() {
@@ -1047,6 +1052,30 @@ public final class CRS {
     }
 
     /**
+     * Returns the number of dimensions of the given <abbr>CRS</abbr>, or 0 if {@code null}.
+     * This method also returns 0 if the <abbr>CRS</abbr> is associated to a null coordinate system.
+     *
+     * <p>This is convenience method for cases such as <abbr>CRS</abbr> separated in optional components.
+     * For example, a class may have an optional {@link VerticalCRS} component allowed to be {@code null}.
+     * When computing the total number of dimensions, it is sometime convenient to handle null components
+     * as a component of dimension zero.</p>
+     *
+     * @param  crs  the <abbr>CRS</abbr> from which to get the number of dimensions, or {@code null}.
+     * @return the number of dimensions, or 0 if the given <abbr>CRS</abbr> or its coordinate system is null.
+     *
+     * @since 1.6
+     */
+    public static int getDimensionOrZero(final CoordinateReferenceSystem crs) {
+        if (crs != null) {
+            final CoordinateSystem cs = crs.getCoordinateSystem();
+            if (cs != null) {   // Should never be null, but let be safe.
+                return cs.getDimension();
+            }
+        }
+        return 0;
+    }
+
+    /**
      * Creates a compound coordinate reference system from an ordered list of CRS components.
      * A CRS is inferred from the given components and the domain of validity is set to the
      * {@linkplain org.apache.sis.metadata.iso.extent.DefaultExtent#intersect intersection}
@@ -1114,25 +1143,22 @@ public final class CRS {
      *
      * @since 1.3
      */
-    public static CoordinateReferenceSystem selectDimensions(final CoordinateReferenceSystem crs,
-            final int... dimensions) throws FactoryException
+    public static CoordinateReferenceSystem selectDimensions(final CoordinateReferenceSystem crs, final int... dimensions)
+            throws FactoryException
     {
         final var components = selectComponents(crs, dimensions);
-        if (components.isEmpty()) {
-            return null;
-        }
-        return compound(components.toArray(CoordinateReferenceSystem[]::new));
+        return components.isEmpty() ? null : compound(components.toArray(CoordinateReferenceSystem[]::new));
     }
 
     /**
-     * Gets or creates CRS components for a subset of the dimensions of the given CRS.
+     * Gets or creates CRS components for a subset of the dimensions of the given <abbr>CRS</abbr>.
      * The method performs the same work as {@link #selectDimensions(CoordinateReferenceSystem, int...)}
      * except that it does not build new {@link CompoundCRS} instances when the specified dimensions span
      * more than one {@linkplain DefaultCompoundCRS#getComponents() component}.
      * Instead, the components are returned directly.
      *
-     * <p>While this method does not create new {@code CompoundCRS} instances, it still may create other
-     * kinds of CRS for handling ellipsoidal height as documented in the {@code selectDimensions(…)} method.</p>
+     * <p>While this method does not create new {@code CompoundCRS} instances, it may create other kinds
+     * of CRS for handling ellipsoidal height as documented in the {@code selectDimensions(…)} method.</p>
      *
      * @param  crs         the CRS from which to get a subset of the components, or {@code null} if none.
      * @param  dimensions  the dimensions to retain. The dimensions will be taken in increasing order, ignoring duplicated values.
@@ -1144,28 +1170,24 @@ public final class CRS {
      *
      * @since 1.4
      */
-    public static List<CoordinateReferenceSystem> selectComponents(final CoordinateReferenceSystem crs,
-            final int... dimensions) throws FactoryException
+    public static List<CoordinateReferenceSystem> selectComponents(final CoordinateReferenceSystem crs, final int... dimensions)
+            throws FactoryException
     {
         ArgumentChecks.ensureNonNull("dimensions", dimensions);
-        if (crs == null) {
-            return List.of();
-        }
-        final int dimension = ReferencingUtilities.getDimension(crs);
+        final int dimension = getDimensionOrZero(crs);
         long selected = 0;
-        for (final int d : dimensions) {
-            if (d < 0 || d >= dimension) {
-                throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, d));
+        if (crs != null) {
+            for (final int d : dimensions) {
+                if (Objects.checkIndex(d, dimension) >= Long.SIZE) {
+                    throw new ArithmeticException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, d+1));
+                }
+                selected |= (1L << d);
             }
-            if (d >= Long.SIZE) {
-                throw new ArithmeticException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, d+1));
+            if (selected == 0) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "dimensions"));
             }
-            selected |= (1L << d);
         }
-        if (selected == 0) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "dimensions"));
-        }
-        final List<CoordinateReferenceSystem> components = new ArrayList<>(Long.bitCount(selected));
+        final var components = new ArrayList<CoordinateReferenceSystem>(Long.bitCount(selected));
         reduce(0, crs, dimension, selected, components);
         return components;
     }
@@ -1182,7 +1204,8 @@ public final class CRS {
      * @return new bitmask after removal of dimensions of the components added to {@code addTo}.
      */
     private static long reduce(int previous, final CoordinateReferenceSystem crs, int dimension, long selected,
-            final List<CoordinateReferenceSystem> addTo) throws FactoryException
+                               final List<CoordinateReferenceSystem> addTo)
+            throws FactoryException
     {
         final long current = (Numerics.bitmask(dimension) - 1) << previous;
         final long intersect = selected & current;
@@ -1192,7 +1215,7 @@ choice: if (intersect != 0) {
                 selected &= ~current;
             } else if (crs instanceof CompoundCRS) {
                 for (final CoordinateReferenceSystem component : ((CompoundCRS) crs).getComponents()) {
-                    dimension = ReferencingUtilities.getDimension(component);
+                    dimension = getDimensionOrZero(component);
                     selected = reduce(previous, component, dimension, selected, addTo);
                     if ((selected & current) == 0) break;           // Stop if it would be useless to continue.
                     previous += dimension;
@@ -1248,7 +1271,7 @@ choice: if (intersect != 0) {
      * @category information
      */
     public static boolean isHorizontalCRS(final CoordinateReferenceSystem crs) {
-        return horizontalCode(crs) == 2;
+        return horizontalCode(crs) == BIDIMENSIONAL;
     }
 
     /**
@@ -1267,14 +1290,14 @@ choice: if (intersect != 0) {
         if (isGeodetic || crs instanceof ProjectedCRS || (isEngineering = (crs instanceof EngineeringCRS))) {
             final CoordinateSystem cs = crs.getCoordinateSystem();
             final int dim = cs.getDimension();
-            if ((dim & ~1) == 2 && (!isGeodetic || (cs instanceof EllipsoidalCS))) {
+            if ((dim & ~1) == BIDIMENSIONAL && (!isGeodetic || (cs instanceof EllipsoidalCS))) {
                 if (isEngineering) {
                     int n = 0;
                     for (int i=0; i<dim; i++) {
                         if (AxisDirections.isCompass(cs.getAxis(i).getDirection())) n++;
                     }
                     // If we don't have exactly 2 east, north, etc. directions, consider as non-horizontal.
-                    if (n != 2) return 0;
+                    if (n != BIDIMENSIONAL) return 0;
                 }
                 return dim;
             }
@@ -1333,7 +1356,7 @@ choice: if (intersect != 0) {
              * We don't need to check if crs is an instance of SingleCRS since all
              * CRS accepted by horizontalCode(…) are SingleCRS.
              */
-            case 2: {
+            case BIDIMENSIONAL: {
                 return (SingleCRS) crs;
             }
             case 3: {
@@ -1347,7 +1370,7 @@ choice: if (intersect != 0) {
                         return !AxisDirections.isVertical(axis.getDirection());
                     }
                 });
-                if (cs.getDimension() != 2) break;
+                if (cs.getDimension() != BIDIMENSIONAL) break;
                 /*
                  * Most of the time, the CRS to rebuild will be geodetic. In such case we known that the
                  * coordinate system is ellipsoidal because (i.e. the CRS is geographic) because it was
@@ -1578,7 +1601,7 @@ choice: if (intersect != 0) {
     @OptionalCandidate
     public static CoordinateReferenceSystem getComponentAt(CoordinateReferenceSystem crs, int lower, int upper) {
         if (crs == null) return null;     // Skip bounds check.
-        int dimension = ReferencingUtilities.getDimension(crs);
+        int dimension = getDimensionOrZero(crs);
         Objects.checkFromToIndex(lower, upper, dimension);
 check:  while (lower != 0 || upper != dimension) {
             if (crs instanceof CompoundCRS) {

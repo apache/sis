@@ -68,7 +68,6 @@ import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.operation.provider.PseudoPlateCarree;
 import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.referencing.internal.shared.AffineTransform2D;
-import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.netcdf.internal.Resources;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -791,7 +790,8 @@ final class GridMapping {
         MathTransform implicitG2C = gridToCRS(variable);
         CoordinateReferenceSystem implicitCRS = crs;
         if (implicitG2C != null) {
-            final int tgtDim = ReferencingUtilities.getOptionalDimension(implicitCRS).orElse(srcDim);
+            int tgtDim = CRS.getDimensionOrZero(implicitCRS);
+            if (tgtDim == 0) tgtDim = srcDim;
             MathTransform step1 = changeOfDimension(srcDim, implicitG2C.getSourceDimensions());
             MathTransform step3 = changeOfDimension(implicitG2C.getTargetDimensions(), tgtDim);
             implicitG2C = MathTransforms.concatenate(step1, implicitG2C, step3);

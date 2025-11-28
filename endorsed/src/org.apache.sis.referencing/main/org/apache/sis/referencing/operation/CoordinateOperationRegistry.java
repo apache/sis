@@ -68,7 +68,6 @@ import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.shared.CoordinateOperations;
 import org.apache.sis.referencing.internal.shared.EllipsoidalHeightCombiner;
-import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.system.Semaphores;
@@ -889,7 +888,7 @@ class CoordinateOperationRegistry {
          * (e.g. as in the "geographic 3D to geographic 2D" conversion) because ALLOW_VARIANT mode
          * still requires a matching number of dimensions.
          */
-        assert ReferencingUtilities.getDimension(sourceCRS) != ReferencingUtilities.getDimension(targetCRS)
+        assert CRS.getDimensionOrZero(sourceCRS) != CRS.getDimensionOrZero(targetCRS)
                 || Utilities.deepEquals(sourceCRS, targetCRS, ComparisonMode.ALLOW_VARIANT);
         final Matrix m = CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(), targetCRS.getCoordinateSystem());
         return (m.isIdentity()) ? null : mtFactory.createAffineTransform(m);

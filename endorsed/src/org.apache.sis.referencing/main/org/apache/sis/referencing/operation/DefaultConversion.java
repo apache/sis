@@ -31,6 +31,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
@@ -39,7 +40,6 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
@@ -229,7 +229,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                               final MathTransformFactory factory) throws FactoryException
     {
         super(definition);
-        int interpDim = ReferencingUtilities.getDimension(super.getInterpolationCRS().orElse(null));
+        int interpDim = CRS.getDimensionOrZero(super.getInterpolationCRS().orElse(null));
         if (transform == null) {
             /*
              * If the user did not specify explicitly a MathTransform, we will need to create it from the parameters.

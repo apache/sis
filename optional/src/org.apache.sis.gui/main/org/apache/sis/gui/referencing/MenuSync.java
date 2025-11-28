@@ -33,12 +33,12 @@ import javafx.scene.control.ToggleGroup;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
-import org.apache.sis.gui.internal.GUIUtilities;
-import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.referencing.gazetteer.GazetteerFactory;
 import org.apache.sis.referencing.gazetteer.GazetteerException;
+import org.apache.sis.gui.internal.GUIUtilities;
+import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 
@@ -166,7 +166,7 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
     private void initialize() {
         for (final ReferenceSystem system : recentSystems) {
             if (system instanceof CoordinateReferenceSystem) {
-                if (ReferencingUtilities.getDimension((CoordinateReferenceSystem) system) == BIDIMENSIONAL) {
+                if (CRS.getDimensionOrZero((CoordinateReferenceSystem) system) == BIDIMENSIONAL) {
                     set(system);
                     break;
                 }

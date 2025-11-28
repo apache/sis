@@ -403,7 +403,7 @@ public final class MathTransforms {
      */
     public static MathTransform passThrough(final int[] modifiedCoordinates, final MathTransform subTransform, final int resultDim) {
         ArgumentChecks.ensureNonNull("modifiedCoordinates", modifiedCoordinates);
-        final BitSet bitset = new BitSet();
+        final var bitset = new BitSet();
         int previous = -1;
         for (int i=0; i < modifiedCoordinates.length; i++) {
             final int dim = modifiedCoordinates[i];

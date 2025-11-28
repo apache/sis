@@ -49,6 +49,7 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.Builder;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -655,8 +656,8 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     public CoordinateReferenceSystem replaceComponent(final CoordinateReferenceSystem source,
             final int firstDimension, final CoordinateReferenceSystem replacement) throws FactoryException
     {
-        final int srcDim = ReferencingUtilities.getDimension(source);
-        final int repDim = ReferencingUtilities.getDimension(replacement);
+        final int srcDim = CRS.getDimensionOrZero(source);
+        final int repDim = CRS.getDimensionOrZero(replacement);
         if (firstDimension == 0 && srcDim == repDim) {
             /*
              * conceptually return the replacement. But returning the original instance if applicable
@@ -695,7 +696,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
                     components[i] = nc;
                     return createCompoundCRS(components);
                 }
-                lower += ReferencingUtilities.getDimension(c);
+                lower += CRS.getDimensionOrZero(c);
             }
         }
         throw new IllegalArgumentException(Resources.forLocale(locale).getString(

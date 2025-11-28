@@ -49,7 +49,7 @@ final class IntegerList {
      * @param array the integer values as a Java array.
      */
     public IntegerList(final Object array) {
-        final StringJoiner builder = new StringJoiner(" ");
+        final var builder = new StringJoiner(" ");
         final int length = Array.getLength(array);
         for (int i=0; i<length; i++) {
             builder.add(String.valueOf(Array.get(array, i)));

@@ -21,7 +21,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.StringJoiner;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -603,11 +602,7 @@ public class LogViewer extends Widget {
                 path.add(item.getValue());
                 item = item.getParent();
             }
-            final var joiner = new StringJoiner(".");
-            for (int i = path.size(); --i >= 0;) {
-                joiner.add(path.get(i));
-            }
-            return joiner.toString();
+            return String.join(".", path.reversed());
         });
         dialog.setResizable(true);
         final DialogPane pane = dialog.getDialogPane();

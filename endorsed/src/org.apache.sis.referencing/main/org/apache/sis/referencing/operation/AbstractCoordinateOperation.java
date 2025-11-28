@@ -59,6 +59,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -66,7 +67,6 @@ import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.shared.CoordinateOperations;
-import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.referencing.internal.shared.WKTUtilities;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.metadata.internal.shared.ImplementationHelper;
@@ -355,7 +355,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final MathTransform transform = this.transform;                     // Protect from changes.
         if (transform != null) {
-            final int interpDim = ReferencingUtilities.getDimension(interpolationCRS);
+            final int interpDim = CRS.getDimensionOrZero(interpolationCRS);
 check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 == target check.
                 final CoordinateReferenceSystem crs;    // Will determine the expected dimensions.
                 int actual;                             // The MathTransform number of dimensions.
@@ -364,7 +364,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                     case 1: crs = targetCRS; actual = transform.getTargetDimensions(); break;
                     default: break check;
                 }
-                int expected = ReferencingUtilities.getDimension(crs);
+                int expected = CRS.getDimensionOrZero(crs);
                 if (interpDim != 0) {
                     if (actual == expected || actual < interpDim) {
                         // This check is not strictly necessary as the next check below would catch the error,

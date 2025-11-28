@@ -339,7 +339,7 @@ public final class XMLMetadata implements Filter {
                 }
             }
         }
-        final StringJoiner buffer = new StringJoiner("");
+        final var buffer = new StringJoiner("");
         while (reader.hasNext()) {
             final XMLEvent event = reader.nextEvent();
             if (event.isStartElement()) {
@@ -470,7 +470,7 @@ public final class XMLMetadata implements Filter {
                 final Attribute a = start.getAttributeByName(name);
                 if (a != null) attribute = a.getValue();
             }
-            final StringJoiner buffer = new StringJoiner("");
+            final var buffer = new StringJoiner("");
             while (reader.hasNext()) {
                 final XMLEvent event = reader.nextEvent();
                 if (event.isEndElement()) {
