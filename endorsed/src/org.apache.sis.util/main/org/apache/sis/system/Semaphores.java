@@ -16,23 +16,29 @@
  */
 package org.apache.sis.system;
 
+import java.util.EnumSet;
+import java.util.logging.Level;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.pending.jdk.ScopedValue;
 
 
 /**
- * Thread-local booleans that need to be shared across different packages. Each thread has its own set of booleans.
- * The {@link #clear(int)} method <strong>must</strong> be invoked after the {@link #queryAndSet(int)} method in
- * a {@code try ... finally} block.
+ * Thread-local flags that need to be shared across different packages. Each thread has its own set of flags.
+ * The {@link #clear()} method must be invoked after {@link #set()} in a {@code try} … {@code finally} block.
+ * The {@link #execute(Supplier)} method can also be invoked instead.
+ *
+ * <p>This class duplicates a little bit the service provided by {@link ScopedValue}.
+ * We may delete or refactor this class when we will be allowed to target Java 25.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class Semaphores {
+public enum Semaphores {
     /**
      * A flag to indicate that empty collections should be returned as {@code null}. Returning null
      * collections is not a recommended practice, but is useful in some situations like marshalling
      * a XML document with JAXB, when we want to omit empty XML blocks.
      */
-    public static final int NULL_COLLECTION = 1;
+    NULL_FOR_EMPTY_COLLECTION,
 
     /**
      * A flag to indicate that only metadata are desired and that there is no need to create costly objects.
@@ -41,7 +47,7 @@ public final class Semaphores {
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-327">SIS-327</a>
      */
-    public static final int METADATA_ONLY = 2;
+    METADATA_ONLY,
 
     /**
      * A lock for avoiding never-ending recursion in the {@code equals} method of {@code AbstractDerivedCRS}
@@ -50,14 +56,14 @@ public final class Semaphores {
      * {@code AbstractDerivedCRS} objects contain a {@code conversionFromBase} field, which contains a
      * {@code DefaultConversion.targetCRS} field referencing back the {@code AbstractDerivedCRS} object.
      */
-    public static final int CONVERSION_AND_CRS = 4;
+    COMPARING_CONVERSION_OR_DERIVED_CRS,
 
     /**
      * A flag to indicate that {@link org.apache.sis.referencing.operation.AbstractCoordinateOperation}
      * is querying parameters of a {@code MathTransform} enclosed in the operation. This is often at the
-     * time of formatting the WKT of a {@code "ProjectedCRS"} element.
+     * time of formatting the <abbr>WKT</abbr> of a {@code "ProjectedCRS"} element.
      */
-    public static final int ENCLOSED_IN_OPERATION = 8;
+    TRANSFORM_ENCLOSED_IN_OPERATION,
 
     /**
      * A flag to indicate that a parameter value outside its domain of validity should not cause an exception
@@ -68,81 +74,109 @@ public final class Semaphores {
      * <p><b>Example:</b> EPSG:3752 was a Mercator (variant A) projection but set the latitude of origin to 41°S.</p>
      */
     @Workaround(library = "EPSG:3752", version = "8.9")        // Deprecated in 2007 but still present in 2016.
-    public static final int SUSPEND_PARAMETER_CHECK = 16;
+    SUSPEND_PARAMETER_CHECK,
 
     /**
      * A flag to indicate that a finer logging level should be used for reporting geodetic object creations.
      * This flag is used during operations that potentially create a large number of CRSs, for example when
      * trying many CRS candidates in search for a CRS compliant with some criteria.
      */
-    public static final int FINER_OBJECT_CREATION_LOGS = 32;
+    FINER_LOG_LEVEL_FOR_OBJECTS_CREATION,
+
+    /**
+     * A flag to indicate that a finer logging level should be used for reporting the use of deprecated codes.
+     * This flag is used during operations creating an object which is known to be deprecated.
+     */
+    FINER_LOG_LEVEL_FOR_DEPRECATION;
 
     /**
      * The flags per running thread.
      */
-    private static final ThreadLocal<Semaphores> FLAGS = new ThreadLocal<>();
+    private static final ThreadLocal<EnumSet<Semaphores>> FLAGS = new ThreadLocal<>();
 
     /**
-     * The bit flags.
+     * Returns the log level to use during the creation of an object.
+     * This is used with {@link #FINER_LOG_LEVEL_FOR_OBJECTS_CREATION}
+     * and {@link #FINER_LOG_LEVEL_FOR_DEPRECATION}.
+     *
+     * @param  usual  the log level that would normally be used.
+     * @return the log level to use.
      */
-    private int flags;
-
-    /**
-     * For internal use only.
-     */
-    private Semaphores() {
+    public final Level getLogLevel(final Level usual) {
+        return get() ? Level.FINER : usual;
     }
 
     /**
-     * Returns {@code true} if the given flag is set.
+     * Returns {@code true} if this flag is set.
      *
-     * @param  flag  one of {@link #CONVERSION_AND_CRS}, {@link #ENCLOSED_IN_OPERATION} or other constants.
-     * @return {@code true} if the given flag is set.
+     * @return {@code true} if this flag is set.
      */
-    public static boolean query(final int flag) {
-        final Semaphores s = FLAGS.get();
-        return (s != null) && (s.flags & flag) != 0;
+    public final boolean get() {
+        final EnumSet<Semaphores> s = FLAGS.get();
+        return (s != null) && s.contains(this);
     }
 
     /**
-     * Sets the given flag.
+     * Sets this flag.
      *
-     * @param  flag  one of {@link #CONVERSION_AND_CRS}, {@link #ENCLOSED_IN_OPERATION} or other constants.
-     * @return {@code true} if the given flag was already set.
+     * @return whether the status of this flag changed as a result of this method call.
      */
-    public static boolean queryAndSet(final int flag) {
-        Semaphores s = FLAGS.get();
-        if (s == null) {
-            s = new Semaphores();
-            FLAGS.set(s);
-        }
-        final boolean isSet = ((s.flags & flag) != 0);
-        s.flags |= flag;
-        return isSet;
-    }
-
-    /**
-     * Clears the given flag.
-     *
-     * @param  flag  one of {@link #CONVERSION_AND_CRS}, {@link #ENCLOSED_IN_OPERATION} or other constants.
-     */
-    public static void clear(final int flag) {
-        final Semaphores s = FLAGS.get();
+    public final boolean set() {
+        final EnumSet<Semaphores> s = FLAGS.get();
         if (s != null) {
-            s.flags &= ~flag;
+            return s.add(this);
+        }
+        FLAGS.set(EnumSet.of(this));
+        return true;
+    }
+
+    /**
+     * Clears this flag.
+     */
+    public final void clear() {
+        final EnumSet<Semaphores> s = FLAGS.get();
+        if (s != null && s.remove(this) && s.isEmpty()) {
+            FLAGS.remove();
         }
     }
 
     /**
-     * Clears the given flag only if it was previously cleared.
-     * This is a convenience method for a common pattern with {@code try … finally} blocks.
+     * Clears this flag if the given value is {@code true}.
+     * This is a convenience method for a common pattern with {@code try} … {@code finally} blocks.
      *
-     * @param  flag      one of {@link #CONVERSION_AND_CRS}, {@link #ENCLOSED_IN_OPERATION} or other constants.
-     * @param  previous  value returned by {@link #queryAndSet(int)}.
+     * @param  reset  value returned by {@link #set()}.
      */
-    public static void clearIfFalse(final int flag, final boolean previous) {
-        if (!previous) {
-            clear(flag);
+    public final void clearIfTrue(final boolean reset) {
+        if (reset) clear();
+    }
+
+    /**
+     * Executes the given method in a block with this flag set.
+     * This is an alternative to the use of {@link #set()} and {@link #clearIfTrue(boolean)}.
+     * In Apache <abbr>SIS</abbr> code, we use this method only for small blocks of code and
+     * the above alternatives for larger blocks.
+     *
+     * @param  <R>     type of value returned by the supplier.
+     * @param  <X>     type of exception thrown by the supplier.
+     * @param  method  the method to invoke for getting the value.
+     * @return value computed by the given method.
+     * @throws X exception thrown by the supplier.
+     */
+    public final <R, X extends Throwable> R execute(final ScopedValue.CallableOp<R, X> method) throws X {
+        EnumSet<Semaphores> s = FLAGS.get();
+        if (s == null) {
+            s = EnumSet.of(this);
+            FLAGS.set(s);
+        } else if (!s.add(this)) {
+            return method.call();
+        }
+        try {
+            return method.call();
+        } finally {
+            s.remove(this);
+            if (s.isEmpty()) {
+                FLAGS.remove();
+            }
         }
     }
 }

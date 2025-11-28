@@ -1341,7 +1341,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                     EPSGDataAccess.class,
                     "create".concat(source.type.getSimpleName()),
                     Resources.forLocale(locale).createLogRecord(
-                            Level.WARNING,
+                            Semaphores.FINER_LOG_LEVEL_FOR_DEPRECATION.getLogLevel(Level.WARNING),
                             Resources.Keys.DeprecatedCode_3,
                             Constants.EPSG + Constants.DEFAULT_SEPARATOR + code,
                             replacedBy,
@@ -1730,7 +1730,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                  * because the `properties` map will be overwritten by calls to `createDatum` and
                  * similar methods. Instead, remember the constructor to invoke later.
                  */
-                final FactoryCall<CRSFactory, CoordinateReferenceSystem> constructor;
+                FactoryCall<CRSFactory, CoordinateReferenceSystem> constructor;
                 /*
                  * The following switch statement should have a case for all "CRS Kind" values enumerated
                  * in the `Prepare.sql` file, except that the values in this Java code are in lower cases.
@@ -1831,28 +1831,27 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                         final CartesianCS cs = owner.createCartesianCS(csCode);
                         constructor = (factory, metadata) -> {
                             /*
-                             * The crsFactory method calls will indirectly create a parameterized MathTransform.
-                             * Their constructor will try to verify the parameter validity. But some deprecated
-                             * CRS had invalid parameter values (they were deprecated precisely for that reason).
-                             * If and only if we are creating a deprecated CRS, temporarily suspend the parameter
-                             * checks.
+                             * For a ProjectedCRS, the baseCRS is usually geodetic. However, geocentric CRS
+                             * is also allowed, but not yet supported in the code below. We could also have
+                             * a ProjectedCRS derived from another ProjectedCRS.
                              */
-                            final boolean old = !deprecated || Semaphores.queryAndSet(Semaphores.SUSPEND_PARAMETER_CHECK);
-                            try {
-                                /*
-                                 * For a ProjectedCRS, the baseCRS is usually geodetic. However, geocentric CRS
-                                 * is also allowed, but not yet supported in the code below. We could also have
-                                 * a ProjectedCRS derived from another ProjectedCRS.
-                                 */
-                                if (baseCRS instanceof GeodeticCRS) {
-                                    return factory.createProjectedCRS(metadata, (GeodeticCRS) baseCRS, fromBase, cs);
-                                } else {
-                                    return factory.createDerivedCRS(metadata, baseCRS, fromBase, cs);
-                                }
-                            } finally {
-                                Semaphores.clearIfFalse(Semaphores.SUSPEND_PARAMETER_CHECK, old);
+                            if (baseCRS instanceof GeodeticCRS) {
+                                return factory.createProjectedCRS(metadata, (GeodeticCRS) baseCRS, fromBase, cs);
+                            } else {
+                                return factory.createDerivedCRS(metadata, baseCRS, fromBase, cs);
                             }
                         };
+                        /*
+                         * The crsFactory method calls will indirectly create a parameterized MathTransform.
+                         * Their constructor will try to verify the parameter validity. But some deprecated
+                         * CRS had invalid parameter values (they were deprecated precisely for that reason).
+                         * If and only if we are creating a deprecated CRS, temporarily suspend the parameter
+                         * checks.
+                         */
+                        if (deprecated) {
+                            final var c = constructor;
+                            constructor = (factory, metadata) -> Semaphores.SUSPEND_PARAMETER_CHECK.execute(() -> c.create(factory, metadata));
+                        }
                         break;
                     }
                     /* ──────────────────────────────────────────────────────────────────────
@@ -3505,7 +3504,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                  */
                 final OperationMethod     operationMethod;
                 final ParameterValueGroup parameterValues;
-                final boolean isDeferred = Semaphores.query(Semaphores.METADATA_ONLY);
+                final boolean isDeferred = Semaphores.METADATA_ONLY.get();
                 if (methodCode != null && !isDeferred) {
                     final OperationMethod generic = owner.createOperationMethod(methodCode.toString());
                     final List<Parameter> values = createParameterValues(epsg, methodCode);
@@ -3690,7 +3689,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
          * Before to return the set, tests the creation of 1 object in order to report early (i.e. now)
          * any problems with SQL statements. Remaining operations will be created only when first needed.
          */
-        if (!Semaphores.query(Semaphores.METADATA_ONLY)) {
+        if (!Semaphores.METADATA_ONLY.get()) {
             set.resolve(1);
         }
         return set;

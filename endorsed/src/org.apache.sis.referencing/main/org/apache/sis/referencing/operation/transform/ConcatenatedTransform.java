@@ -506,7 +506,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     private Parameterized getParameterised() {
         Parameterized param = null;
         final List<Object> transforms = getPseudoSteps();
-        if (transforms.size() == 1 || Semaphores.query(Semaphores.ENCLOSED_IN_OPERATION)) {
+        if (transforms.size() == 1 || Semaphores.TRANSFORM_ENCLOSED_IN_OPERATION.get()) {
             for (final Object candidate : transforms) {
                 /*
                  * Search for non-linear parameters only, ignoring affine transforms and the matrices

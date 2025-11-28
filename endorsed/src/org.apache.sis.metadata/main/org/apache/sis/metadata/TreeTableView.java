@@ -141,20 +141,16 @@ final class TreeTableView implements TreeTable, TreeFormatCustomization, Seriali
     @Override
     public String toString() {
         /*
-         * The NULL_COLLECTION semaphore prevents creation of new empty collections by getter methods
+         * The NULL_FOR_EMPTY_COLLECTION semaphore prevents creation of new empty collections by getter methods
          * (a consequence of lazy instantiation). The intent is to avoid creation of unnecessary objects
          * for all unused properties. Users should not see behavioral difference, except if they override
-         * some getters with an implementation invoking other getters. However in such cases, users would
-         * have been exposed to null values at XML marshalling time anyway.
+         * some getters with an implementation invoking other getters.
          */
-        final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
-        try {
+        return Semaphores.NULL_FOR_EMPTY_COLLECTION.execute(() -> {
             synchronized (MetadataFormat.INSTANCE) {
                 return MetadataFormat.INSTANCE.format(this);
             }
-        } finally {
-            Semaphores.clearIfFalse(Semaphores.NULL_COLLECTION, allowNull);
-        }
+        });
     }
 
     /**

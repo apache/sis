@@ -1083,18 +1083,15 @@ public class MetadataStandard implements Serializable {
         final Set<ObjectPair> inProgress = ObjectPair.CURRENT.get();
         if (inProgress.add(pair)) {
             /*
-             * The NULL_COLLECTION semaphore prevents creation of new empty collections by getter methods
+             * The NULL_FOR_EMPTY_COLLECTION semaphore prevents creation of new empty collections by getter methods
              * (a consequence of lazy instantiation). The intent is to avoid creation of unnecessary objects
              * for all unused properties. Users should not see behavioral difference, except if they override
-             * some getters with an implementation invoking other getters. However in such cases, users would
-             * have been exposed to null values at XML marshalling time anyway.
+             * some getters with an implementation invoking other getters.
              */
-            final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
             try {
-                return accessor.equals(metadata1, metadata2, mode);
+                return Semaphores.NULL_FOR_EMPTY_COLLECTION.execute(() -> accessor.equals(metadata1, metadata2, mode));
             } finally {
                 inProgress.remove(pair);
-                Semaphores.clearIfFalse(Semaphores.NULL_COLLECTION, allowNull);
             }
         } else {
             /*

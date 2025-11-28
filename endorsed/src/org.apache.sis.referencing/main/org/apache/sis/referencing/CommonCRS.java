@@ -73,6 +73,7 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.system.SystemListener;
+import org.apache.sis.system.Semaphores;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.ArgumentChecks;
@@ -676,7 +677,8 @@ public enum CommonCRS {
         if (object == null) {
             final GeodeticAuthorityFactory factory = factory();
             if (factory != null) try {
-                cached = object = factory.createGeographicCRS(String.valueOf(geographic));
+                cached = object = Semaphores.FINER_LOG_LEVEL_FOR_DEPRECATION.execute(
+                        () -> factory.createGeographicCRS(String.valueOf(geographic)));
                 return object;
             } catch (FactoryException e) {
                 failure(this, "geographic", e, geographic);
@@ -887,7 +889,8 @@ public enum CommonCRS {
         if (object == null) {
             final GeodeticAuthorityFactory factory = factory();
             if (factory != null) try {
-                cached = object = factory.createGeodeticDatum(String.valueOf(datum));
+                cached = object = Semaphores.FINER_LOG_LEVEL_FOR_DEPRECATION.execute(
+                        () -> factory.createGeodeticDatum(String.valueOf(datum)));
                 return object;
             } catch (FactoryException e) {
                 failure(this, "datum", e, datum);

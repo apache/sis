@@ -602,7 +602,7 @@ class CoordinateOperationRegistry {
                  * The non-public Semaphores.METADATA_ONLY mechanism instructs EPSGDataAccess to
                  * instantiate DeferredCoordinateOperation instead of full coordinate operations.
                  */
-                final boolean mdOnly = Semaphores.queryAndSet(Semaphores.METADATA_ONLY);
+                final boolean needFlagReset = Semaphores.METADATA_ONLY.set();
                 try {
                     Collection<CoordinateOperation> authoritatives;
                     try {
@@ -639,24 +639,22 @@ class CoordinateOperationRegistry {
                      * the first deprecated one (assuming that deprecated operations are sorted last).
                      * Deprecated operations are kept only if there are no non-deprecated operations.
                      */
-                    try {
-                        for (final CoordinateOperation candidate : authoritatives) {
-                            if (candidate != null) {                                    // Paranoiac check.
-                                if ((candidate instanceof Deprecable) && ((Deprecable) candidate).isDeprecated()) {
-                                    if (!useDeprecatedOperations && !operations.isEmpty()) break;
-                                    useDeprecatedOperations = true;
-                                } else if (useDeprecatedOperations) {
-                                    useDeprecatedOperations = false;
-                                    operations.clear();              // Replace deprecated operations by non-deprecated ones.
-                                }
-                                operations.add(candidate);
+                    for (final CoordinateOperation candidate : authoritatives) {
+                        if (candidate != null) {                                    // Paranoiac check.
+                            if ((candidate instanceof Deprecable) && ((Deprecable) candidate).isDeprecated()) {
+                                if (!useDeprecatedOperations && !operations.isEmpty()) break;
+                                useDeprecatedOperations = true;
+                            } else if (useDeprecatedOperations) {
+                                useDeprecatedOperations = false;
+                                operations.clear();              // Replace deprecated operations by non-deprecated ones.
                             }
+                            operations.add(candidate);
                         }
-                    } catch (BackingStoreException exception) {
-                        throw exception.unwrapOrRethrow(FactoryException.class);
                     }
+                } catch (BackingStoreException exception) {
+                    throw exception.unwrapOrRethrow(FactoryException.class);
                 } finally {
-                    Semaphores.clearIfFalse(Semaphores.METADATA_ONLY, mdOnly);
+                    Semaphores.METADATA_ONLY.clearIfTrue(needFlagReset);
                 }
             }
         }

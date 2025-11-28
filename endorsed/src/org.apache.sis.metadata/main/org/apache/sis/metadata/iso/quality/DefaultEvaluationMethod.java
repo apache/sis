@@ -438,7 +438,7 @@ public class DefaultEvaluationMethod extends ISOMetadata implements EvaluationMe
     @XmlElement(name = "dateTime")
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Collection<Temporal> getDates() {
-        if (Semaphores.query(Semaphores.NULL_COLLECTION)) {
+        if (Semaphores.NULL_FOR_EMPTY_COLLECTION.get()) {
             return isNullOrEmpty(dates) ? null : dates;
         }
         if (dates == null) {

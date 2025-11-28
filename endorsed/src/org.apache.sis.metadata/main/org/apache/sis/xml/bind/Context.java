@@ -106,7 +106,8 @@ public final class Context extends MarshalContext {
     public static final int LENIENT_UNMARSHAL = 0x40;
 
     /**
-     * Bit where to store whether {@link #finish()} shall invoke {@code Semaphores.clear(Semaphores.NULL_COLLECTION)}.
+     * Bit where to store whether {@link #finish()} shall invoke
+     * {@code Semaphores.NULL_FOR_EMPTY_COLLECTION.clear()}.
      */
     private static final int CLEAR_SEMAPHORE = 0x80;
 
@@ -319,7 +320,7 @@ public final class Context extends MarshalContext {
              * will not fail with an OutOfMemoryError. This is preferable for allowing the
              * caller to invoke finish() in a finally block.
              */
-            if (!Semaphores.queryAndSet(Semaphores.NULL_COLLECTION)) {
+            if (Semaphores.NULL_FOR_EMPTY_COLLECTION.set()) {
                 bitMasks |= CLEAR_SEMAPHORE;
             }
         }
@@ -890,7 +891,7 @@ public final class Context extends MarshalContext {
      */
     public final void finish() {
         if ((bitMasks & CLEAR_SEMAPHORE) != 0) {
-            Semaphores.clear(Semaphores.NULL_COLLECTION);
+            Semaphores.NULL_FOR_EMPTY_COLLECTION.clear();
         }
         if (previous != null) {
             CURRENT.set(previous);

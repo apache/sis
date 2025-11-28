@@ -201,11 +201,11 @@ final class Verifier {
                 error.convertRange(converter);
                 final String name = getDisplayName(descriptor);
                 final String message = error.message(null, name, value);
-                if (!Semaphores.query(Semaphores.SUSPEND_PARAMETER_CHECK)) {
-                    throw new InvalidParameterValueException(message, name, value);
-                } else {
+                if (Semaphores.SUSPEND_PARAMETER_CHECK.get()) {
                     Logging.completeAndLog(DefaultParameterValue.LOGGER, DefaultParameterValue.class,
                                            "setValue", new LogRecord(Level.WARNING, message));
+                } else {
+                    throw new InvalidParameterValueException(message, name, value);
                 }
             }
         }

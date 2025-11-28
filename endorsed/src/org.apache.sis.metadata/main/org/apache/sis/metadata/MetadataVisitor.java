@@ -28,9 +28,9 @@ import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 /**
  * A visitor of metadata properties with a safety against infinite recursion.
- * The visitor may compute a result, for example a hash code value or a boolean
+ * The visitor may compute a result, for example a hash code value or a Boolean
  * testing whether the metadata is empty. Each {@code MetadataVisitor} instance
- * is used by one thread; this class does not need to be thread-safe.
+ * is used by one thread, so this class does not need to be thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
@@ -71,21 +71,20 @@ abstract class MetadataVisitor<R> {
 
     /**
      * Count of nested calls to {@link #walk(MetadataStandard, Class, Object, boolean)} method.
-     * When this count reach zero, the visitor should be removed from the thread local variable.
+     * When this count reaches zero, the visitor should be removed from the thread local variable.
      *
      * @see #creator()
      */
     private int nestedCount;
 
     /**
-     * Value of the {@link Semaphores#NULL_COLLECTION} flag when we started the walk.
-     * The {@code NULL_COLLECTION} flag prevents creation of new empty collections by getter methods
+     * Whether to clear the {@link Semaphores#NULL_FOR_EMPTY_COLLECTION} flag after the walk of whole tree.
+     * The {@code NULL_FOR_EMPTY_COLLECTION} flag prevents creation of empty collections by getter methods
      * (a consequence of lazy instantiation). The intent is to avoid creation of unnecessary objects
      * for all unused properties. Users should not see behavioral difference, except if they override
-     * some getters with an implementation invoking other getters. However in such cases, users would
-     * have been exposed to null values at XML marshalling time anyway.
+     * some getters with an implementation invoking other getters.
      */
-    private boolean allowNull;
+    private boolean needFlagReset;
 
     /**
      * Creates a new visitor.
@@ -169,14 +168,7 @@ abstract class MetadataVisitor<R> {
                     propertyPath = Arrays.copyOf(propertyPath, nestedCount * 2);
                 }
                 if (nestedCount++ == 0) {
-                    /*
-                     * The NULL_COLLECTION semaphore prevents creation of new empty collections by getter methods
-                     * (a consequence of lazy instantiation). The intent is to avoid creation of unnecessary objects
-                     * for all unused properties. Users should not see behavioral difference, except if they override
-                     * some getters with an implementation invoking other getters. However in such cases, users would
-                     * have been exposed to null values at XML marshalling time anyway.
-                     */
-                    allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
+                    needFlagReset = Semaphores.NULL_FOR_EMPTY_COLLECTION.set();
                 }
                 /*
                  * Actual visiting. The `accessor.walk(this, metadata)` method calls below will callback the abstract
@@ -197,9 +189,9 @@ abstract class MetadataVisitor<R> {
                     if (--nestedCount == 0) {
                         /*
                          * We are back to the root metadata (i.e. we finished walking through all children).
-                         * Clear thread local variables, which should restore them to their initial value.
+                         * Restore thread local variables to their initial state.
                          */
-                        Semaphores.clearIfFalse(Semaphores.NULL_COLLECTION, allowNull);
+                        Semaphores.NULL_FOR_EMPTY_COLLECTION.clearIfTrue(needFlagReset);
                         final ThreadLocal<? extends MetadataVisitor<?>> creator = creator();
                         if (creator != null) creator.remove();
                     }

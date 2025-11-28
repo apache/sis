@@ -301,7 +301,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     private <T extends AbstractIdentifiedObject> T unique(final String caller, final T object) {
         final T c = pool.unique(object);
         if (c == object) {
-            final Level level = Semaphores.query(Semaphores.FINER_OBJECT_CREATION_LOGS) ? Level.FINER : Level.FINE;
+            final Level level = Semaphores.FINER_LOG_LEVEL_FOR_OBJECTS_CREATION.getLogLevel(Level.FINE);
             if (LOGGER.isLoggable(level)) {
                 final String id = IdentifiedObjects.toString(IdentifiedObjects.getIdentifier(c, null));
                 final LogRecord record = Messages.forLocale(null).createLogRecord(level,
