@@ -22,7 +22,6 @@ import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -43,7 +42,7 @@ final class GridError extends VBox {
     /**
      * The background for error boxes.
      */
-    private static final Background BACKGROUND = new Background(new BackgroundFill(Color.FLORALWHITE, null, null));
+    private static final Background BACKGROUND = Background.fill(Color.FLORALWHITE);
 
     /**
      * The tile in error.

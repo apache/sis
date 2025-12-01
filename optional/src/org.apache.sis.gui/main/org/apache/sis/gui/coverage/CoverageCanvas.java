@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.concurrent.Future;
 import java.util.logging.LogRecord;
 import java.io.IOException;
+import java.io.InputStream;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -32,16 +33,16 @@ import java.awt.image.RenderedImage;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Rectangle2D;
-import javafx.scene.paint.Color;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
 import javafx.beans.DefaultProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
+import javafx.scene.image.Image;
+import javafx.scene.layout.BackgroundImage;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
@@ -99,6 +100,22 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  */
 @DefaultProperty("coverage")
 public class CoverageCanvas extends MapCanvasAWT {
+    /**
+     * The default background for this canvas.
+     */
+    private static final Background BACKGROUND;
+    static {
+        Background background = null;
+        try (InputStream in = CoverageCanvas.class.getResourceAsStream("Background.png")) {
+            if (in != null) {
+                background = new Background(new BackgroundImage(new Image(in), null, null, null, null));
+            }
+        } catch (IOException e) {
+            Logging.unexpectedException(LOGGER, CoverageCanvas.class, "BACKGROUND", e);
+        }
+        BACKGROUND = background;
+    }
+
     /**
      * An arbitrary safety margin (in number of pixels) for avoiding integer overflow situation.
      * This margin shall be larger than any reasonable widget width or height, and much smaller
@@ -278,6 +295,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         coverageProperty     .addListener((p,o,n) -> onPropertySpecified(null, n, resourceProperty, null));
         sliceExtentProperty  .addListener((p,o,n) -> onPropertySpecified(getResource(), getCoverage(), null, null));
         interpolationProperty.addListener((p,o,n) -> onInterpolationSpecified(n));
+        fixedPane.setBackground(BACKGROUND);
     }
 
     /**
@@ -458,13 +476,6 @@ public class CoverageCanvas extends MapCanvasAWT {
     final void stylingChanged() {
         resampledImage = null;
         requestRepaint();
-    }
-
-    /**
-     * Sets the background, as a color for now but more patterns may be allowed in a future version.
-     */
-    final void setBackground(final Color color) {
-        fixedPane.setBackground(new Background(new BackgroundFill(color, null, null)));
     }
 
     /**

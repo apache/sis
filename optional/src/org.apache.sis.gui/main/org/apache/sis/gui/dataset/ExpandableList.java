@@ -30,7 +30,6 @@ import javafx.scene.text.TextAlignment;
 import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.TransformationList;
 import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
 import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.gui.internal.Styles;
 
@@ -54,8 +53,7 @@ final class ExpandableList extends TransformationList<Feature,Feature>
     /**
      * The background of {@linkplain #expansion} rows header.
      */
-    private static final Background EXPANSION_HEADER =
-            new Background(new BackgroundFill(Styles.EXPANDED_ROW, null, null));
+    private static final Background EXPANSION_HEADER = Background.fill(Styles.EXPANDED_ROW);
 
     /**
      * The icon for rows that can be expanded.
