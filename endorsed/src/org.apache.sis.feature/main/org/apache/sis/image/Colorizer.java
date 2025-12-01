@@ -245,9 +245,9 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
      *
      * @see ImageProcessor#visualize(RenderedImage)
      */
-    public static Colorizer forRanges(final Map<NumberRange<?>,Color[]> colors) {
-        final var list = new ArrayList<Map.Entry<NumberRange<?>,Color[]>>(colors.size());
-        for (final Map.Entry<NumberRange<?>,Color[]> entry : colors.entrySet()) {
+    public static Colorizer forRanges(final Map<NumberRange<?>, Color[]> colors) {
+        final var list = new ArrayList<Map.Entry<NumberRange<?>, Color[]>>(colors.size());
+        for (final Map.Entry<NumberRange<?>, Color[]> entry : colors.entrySet()) {
             var range = entry.getKey();
             var value = entry.getValue();
             if (value != null) {
@@ -310,7 +310,7 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
      *
      * @see ImageProcessor#visualize(RenderedImage)
      */
-    public static Colorizer forCategories(final Function<Category,Color[]> colors) {
+    public static Colorizer forCategories(final Function<Category, Color[]> colors) {
         ArgumentChecks.ensureNonNull("colors", colors);
         return (target) -> {
             if (target instanceof Visualization.Target) {

@@ -244,9 +244,9 @@ final class Visualization extends ResampledImage {
                 if (source instanceof ImageAdapter) {
                     source = ((ImageAdapter) source).source;
                 } else if (source instanceof ResampledImage) {
-                    final ResampledImage r = (ResampledImage) source;
-                    toSource = MathTransforms.concatenate(toSource, r.toSource);
-                    source   = r.getSource();
+                    final var resampled = (ResampledImage) source;
+                    toSource = MathTransforms.concatenate(toSource, resampled.toSource);
+                    source   = resampled.getSource();
                 } else {
                     break;
                 }

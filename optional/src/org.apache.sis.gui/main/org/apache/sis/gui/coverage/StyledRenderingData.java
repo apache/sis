@@ -67,7 +67,7 @@ final class StyledRenderingData extends RenderingData {
     final RenderedImage recolor() throws DataStoreException {
         RenderedImage image = getSourceImage();
         if (selectedDerivative != Stretching.NONE) {
-            final Map<String,Object> modifiers = statistics();
+            final Map<String, Object> modifiers = statistics();
             if (selectedDerivative == Stretching.AUTOMATIC) {
                 modifiers.put("multStdDev", 3);
             }
