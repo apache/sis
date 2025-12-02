@@ -22,16 +22,14 @@ import java.util.Set;
 /**
  * A factory of {@code org.opengis.filter} functions identified by their names.
  * Each factory can provide an arbitrary number of functions, enumerated by {@link #getNames()}.
- * The {@link org.apache.sis.filter.DefaultFilterFactory#function(String, Expression...)} method
- * delegates to this interface for creating the function implementation for a given name.
- *
- * <p><b>Warning:</b> there is currently no mechanism for avoiding name collision.
- * It is implementer responsibility to keep trace of the whole universe of functions and avoid collision.
- * Checks against name collisions may be added in a future version.</p>
+ * The {@link DefaultFilterFactory#function(String, Expression[])} method delegates to this interface
+ * for creating the function implementation for a given name.
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.6
  * @since   1.5
+ *
+ * @see DefaultFilterFactory#function(String, Expression[])
  */
 public interface FunctionRegister {
     /**

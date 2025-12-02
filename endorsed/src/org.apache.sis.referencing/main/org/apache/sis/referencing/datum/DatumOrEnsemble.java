@@ -519,6 +519,8 @@ public final class DatumOrEnsemble {
      *
      * @param  crs  the coordinate reference system for which to get the ellipsoid.
      * @return the ellipsoid, or an empty value if none or not equivalent for all members of the ensemble.
+     *
+     * @see org.apache.sis.referencing.CRS#getGeodeticReferenceFrame(CoordinateReferenceSystem)
      */
     public static Optional<Ellipsoid> getEllipsoid(final CoordinateReferenceSystem crs) {
         return Optional.ofNullable(getProperty(crs, GeodeticDatum.class, GeodeticDatum::getEllipsoid, Objects::nonNull));
@@ -531,6 +533,7 @@ public final class DatumOrEnsemble {
      * @param  crs  the coordinate reference system for which to get the prime meridian.
      * @return the prime meridian, or an empty value if none or not equivalent for all members of the ensemble.
      *
+     * @see org.apache.sis.referencing.CRS#getGeodeticReferenceFrame(CoordinateReferenceSystem)
      * @see org.apache.sis.referencing.CRS#getGreenwichLongitude(GeodeticCRS)
      */
     public static Optional<PrimeMeridian> getPrimeMeridian(final CoordinateReferenceSystem crs) {

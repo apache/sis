@@ -83,9 +83,9 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory {
     /**
      * All functions identified by a name like {@code "cos"}, {@code "hypot"}, <i>etc</i>.
      * The actual function creations is delegated to an external factory such as SQLMM registry.
-     * The factories are fetched by {@link #function(String, Expression...)} when first needed.
+     * The factories are fetched by {@link #function(String, Expression[])} when first needed.
      *
-     * @see #function(String, Expression...)
+     * @see #function(String, Expression[])
      */
     @LazyCandidate
     private final Capabilities availableFunctions;

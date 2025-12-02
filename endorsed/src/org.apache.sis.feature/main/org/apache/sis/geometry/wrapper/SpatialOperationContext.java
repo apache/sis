@@ -144,7 +144,7 @@ public final class SpatialOperationContext implements Serializable {
      * that {@link ReferencingUtilities#getUnit(CoordinateSystem)} returns {@code null}.
      */
     private static CoordinateReferenceSystem to2D(CoordinateReferenceSystem crs) {
-        if (ReferencingUtilities.getDimension(crs) > BIDIMENSIONAL) {
+        if (CRS.getDimensionOrZero(crs) > BIDIMENSIONAL) {
             crs = CRS.getComponentAt(crs, 0, BIDIMENSIONAL);
         }
         return crs;

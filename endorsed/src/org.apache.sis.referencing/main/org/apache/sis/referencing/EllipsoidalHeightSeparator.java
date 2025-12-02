@@ -30,7 +30,6 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.referencing.internal.shared.AxisDirections;
-import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.AxisFilter;
 import org.apache.sis.referencing.operation.DefaultConversion;
@@ -151,7 +150,7 @@ final class EllipsoidalHeightSeparator implements AxisFilter {
          */
         if (crs instanceof ProjectedCRS) {
             GeographicCRS baseCRS = ((ProjectedCRS) crs).getBaseCRS();
-            if (ReferencingUtilities.getDimension(baseCRS) != 2) {
+            if (CRS.getDimensionOrZero(baseCRS) != CRS.BIDIMENSIONAL) {
                 baseCRS = (GeographicCRS) separate(baseCRS);
             }
             Conversion projection = ((ProjectedCRS) crs).getConversionFromBase();

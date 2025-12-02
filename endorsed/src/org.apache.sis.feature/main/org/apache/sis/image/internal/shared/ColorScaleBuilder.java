@@ -111,7 +111,7 @@ public final class ColorScaleBuilder {
      * Applies a gray scale to quantitative category and transparent colors to qualitative categories.
      * This is a possible argument for the {@link #ColorScaleBuilder(Function, ColorModel, boolean)} constructor.
      */
-    public static final Function<Category,Color[]> GRAYSCALE =
+    public static final Function<Category, Color[]> GRAYSCALE =
             (category) -> category.isQuantitative() ? new Color[] {Color.BLACK, Color.WHITE} : null;
 
     /**
@@ -126,7 +126,7 @@ public final class ColorScaleBuilder {
      * the default colors for that category will be the same as {@link #GRAYSCALE}:
      * grayscale for quantitative categories and transparent for qualitative categories.
      */
-    private final Function<Category,Color[]> colors;
+    private final Function<Category, Color[]> colors;
 
     /**
      * The colors to use for each range of values in the source image.
@@ -187,11 +187,11 @@ public final class ColorScaleBuilder {
      * @param  inherited  the colors to use as fallback if some ranges have undefined colors, or {@code null}.
      *                    Should be non-null only for styling an exiting image before visualization.
      */
-    public ColorScaleBuilder(final Collection<Map.Entry<NumberRange<?>,Color[]>> colors, final ColorModel inherited) {
+    public ColorScaleBuilder(final Collection<Map.Entry<NumberRange<?>, Color[]>> colors, final ColorModel inherited) {
         entries = ColorsForRange.list(colors, inherited);
         inheritedColors = inherited;
         this.colors = GRAYSCALE;
-        for (final Map.Entry<NumberRange<?>,Color[]> entry : colors) {
+        for (final Map.Entry<NumberRange<?>, Color[]> entry : colors) {
             final NumberRange<?> range = entry.getKey();
             if (range.getMinDouble() < 0 || range.getMaxDouble() >= MAX_VALUE + 1) {
                 compact = true;
@@ -216,7 +216,7 @@ public final class ColorScaleBuilder {
      *                    Should be non-null only for styling an exiting image before visualization.
      * @param  compact    Whether to rescale the range of sample values to the {@link #TYPE_COMPACT} range.
      */
-    public ColorScaleBuilder(final Function<Category,Color[]> colors, final ColorModel inherited, final boolean compact) {
+    public ColorScaleBuilder(final Function<Category, Color[]> colors, final ColorModel inherited, final boolean compact) {
         this.colors = (colors != null) ? colors : GRAYSCALE;
         inheritedColors = inherited;
         this.compact = compact;
@@ -256,39 +256,40 @@ public final class ColorScaleBuilder {
      */
     public boolean initialize(final SampleModel model, final SampleDimension source) {
         checkInitializationStatus(false);
-        if (source != null) {
-            this.source = source;
-            final List<Category> categories = source.getCategories();
-            if (!categories.isEmpty()) {
-                boolean isUndefined = true;
-                boolean missingNodata = true;
-
-                @SuppressWarnings("LocalVariableHidesMemberVariable")
-                ColorsForRange[] entries = new ColorsForRange[categories.size()];
-                for (int i=0; i<entries.length; i++) {
-                    final var range = new ColorsForRange(categories.get(i), colors, inheritedColors);
-                    isUndefined &= range.isUndefined();
-                    missingNodata &= range.isData;
-                    entries[i] = range;
-                }
-                if (!isUndefined) {
-                    /*
-                     * If the model uses floating point values and there is no "no data" category, add one.
-                     * We force a "no data" category because floating point values may be NaN.
-                     */
-                    if (missingNodata && (model == null || !DataType.isInteger(model))) {
-                        final int count = entries.length;
-                        entries = Arrays.copyOf(entries, count + 1);
-                        entries[count] = new ColorsForRange(TRANSPARENT,
-                                NumberRange.create(Float.class, Float.NaN), null, false, inheritedColors);
-                    }
-                    // Leave `target` to null. It will be computed by `compact()` if needed.
-                    this.entries = entries;
-                    return true;
-                }
-            }
+        if (source == null) {
+            return false;
         }
-        return false;
+        this.source = source;
+        final List<Category> categories = source.getCategories();
+        if (categories.isEmpty()) {
+            return false;
+        }
+        boolean isUndefined   = true;
+        boolean missingNodata = true;
+        ColorsForRange[] ranges = new ColorsForRange[categories.size()];
+        for (int i=0; i < ranges.length; i++) {
+            final var range = new ColorsForRange(categories.get(i), colors, inheritedColors);
+            isUndefined   &= range.isUndefined();
+            missingNodata &= range.isData;
+            ranges[i]      = range;
+        }
+        if (isUndefined || (!missingNodata && ranges.length <= 1)) {
+            // No color specified, or only a single NaN value.
+            return false;
+        }
+        /*
+         * If the model uses floating point values and there is no "no data" category, add one.
+         * We force a "no data" category because floating point values may be NaN.
+         */
+        if (missingNodata && (model == null || !DataType.isInteger(model))) {
+            final int count = ranges.length;
+            ranges = Arrays.copyOf(ranges, count + 1);
+            ranges[count] = new ColorsForRange(TRANSPARENT,
+                    NumberRange.create(Float.class, Float.NaN), null, false, inheritedColors);
+        }
+        // Leave `target` to null. It will be computed by `compact()` if needed.
+        entries = ranges;
+        return true;
     }
 
     /**
@@ -425,7 +426,7 @@ public final class ColorScaleBuilder {
         final List<Category> categories = target.getCategories();
 
         @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final ColorsForRange[] entries = new ColorsForRange[categories.size()];
+        final var entries = new ColorsForRange[categories.size()];
         for (int i=0; i<entries.length; i++) {
             final Category category = categories.get(i);
             final var range = new ColorsForRange(category.forConvertedValues(true), colors, inheritedColors);

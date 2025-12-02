@@ -180,6 +180,7 @@ final class MaskedImage extends SourceAlignedImage {
     private synchronized ByteBuffer getMask() {
         ByteBuffer mask;
         if (maskRef == null || (mask = maskRef.get()) == null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final Rectangle maskBounds = this.maskBounds;
             int size = ceilDiv(maskBounds.width, Byte.SIZE) * maskBounds.height;
             final int r = size & (Long.BYTES - 1);
@@ -250,6 +251,7 @@ final class MaskedImage extends SourceAlignedImage {
          * Tile may intersect the mask. Computation is necessary, but we may discover at
          * the end of this method that the result is still an empty tile or source tile.
          */
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Rectangle maskBounds = this.maskBounds;
         final LongBuffer mask = getMask().asLongBuffer();
         final int xmax   = xmin + source.getTileWidth();
@@ -466,7 +468,7 @@ complete:   for (int border = 0; ; border++) {
     @Override
     public boolean equals(final Object object) {
         if (super.equals(object)) {
-            final MaskedImage other = (MaskedImage) object;
+            final var other = (MaskedImage) object;
             return clip.equals(other.clip) && fillValues.equals(other.fillValues);
         }
         return false;

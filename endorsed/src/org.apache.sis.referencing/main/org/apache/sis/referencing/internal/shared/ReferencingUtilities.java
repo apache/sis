@@ -145,22 +145,6 @@ public final class ReferencingUtilities {
     }
 
     /**
-     * Returns the number of dimensions of the given CRS, or 0 if {@code null}.
-     *
-     * @param  crs  the CRS from which to get the number of dimensions, or {@code null}.
-     * @return the number of dimensions, or 0 if the given CRS or its coordinate system is null.
-     */
-    public static int getDimension(final CoordinateReferenceSystem crs) {
-        if (crs != null) {
-            final CoordinateSystem cs = crs.getCoordinateSystem();
-            if (cs != null) {                                               // Paranoiac check.
-                return cs.getDimension();
-            }
-        }
-        return 0;
-    }
-
-    /**
      * Returns the GeoAPI interface implemented by the given object, or the implementation class
      * if the interface is unknown. This method can be used when the base type (CRS, CS, Datum…)
      * is unknown, for example when preparing an error message. If the base type is known, then

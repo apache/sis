@@ -122,7 +122,7 @@ public class ResampledImage extends ComputedImage {
 
     /**
      * Same as {@link #toSource} but with the addition of a shift for taking in account the number of pixels required
-     * for interpolations. For example if a bicubic interpolation needs 4×4 pixels, then the source coordinates that
+     * for interpolations. For example, if a bicubic interpolation needs 4×4 pixels, then the source coordinates that
      * we need are not the coordinates of the pixel we want to interpolate, but 1 or 2 pixels before for making room
      * for interpolation support.
      *
@@ -186,7 +186,7 @@ public class ResampledImage extends ComputedImage {
     /**
      * Creates a new image which will resample the given image. The resampling operation is defined
      * by a potentially non-linear transform from <em>this</em> image to the specified <em>source</em> image.
-     * That transform should map {@linkplain org.apache.sis.coverage.grid.PixelInCell#CELL_CENTER pixel centers}.
+     * That transform shall map {@linkplain org.apache.sis.coverage.grid.PixelInCell#CELL_CENTER pixel centers}.
      *
      * <p>The {@code sampleModel} determines the tile size and the target data type. This is often the same sample
      * model than the one used by the {@code source} image, but may also be different for forcing a different tile
@@ -197,7 +197,7 @@ public class ResampledImage extends ComputedImage {
      *
      * <p>If a pixel in this image cannot be mapped to a pixel in the source image, then the sample values are set
      * to {@code fillValues}. If the given array is {@code null}, or if any element in the given array is {@code null},
-     * then the default fill value is NaN for floating point data types or zero for integer data types.
+     * then the default fill value is {@link Float#NaN} for floating point data types or zero for integer data types.
      * If the array is shorter than the number of bands, then above-cited default values are used for missing values.
      * If longer than the number of bands, extraneous values are ignored.</p>
      *

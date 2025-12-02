@@ -37,9 +37,14 @@ public final class ExtensionTest {
 
     /**
      * Verifies the <abbr>UUID</abbr> declared in extensions.
+     * Some identifiers were defined in previous <abbr>GIMI</abbr> versions
+     * and are supported by <abbr>SIS</abbr> for compatibility reasons.
      */
     @Test
     public void verifyUUIDs() {
         assertEquals(UUID.fromString("4a66efa7-e541-526c-9427-9e77617feb7d"), UnknownProperty.EXTENDED_TYPE);
+        assertEquals(UUID.fromString("137a1742-75ac-4747-82bc-659576e8675b"), ModelCRS.EXTENDED_TYPE);
+        assertEquals(UUID.fromString("c683364f-d6a4-48b8-a76b-17a30af40c10"), ModelTiePoint.EXTENDED_TYPE);
+        assertEquals(UUID.fromString("763cf838-b630-440b-84f8-be44bf9910af"), ModelTransformation.EXTENDED_TYPE);
     }
 }

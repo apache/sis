@@ -244,8 +244,11 @@ public class ImageLayout {
         if (Objects.equals(sampleModel, model) && width == preferredTileWidth && height == preferredTileHeight) {
             return this;
         }
-        return new ImageLayout(model, new Dimension(width, height),
-                isTileSizeAdjustmentAllowed, isImageBoundsAdjustmentAllowed, isPartialTilesAllowed,
+        return new ImageLayout(model,
+                new Dimension(width, height),
+                isTileSizeAdjustmentAllowed,
+                isImageBoundsAdjustmentAllowed,
+                isPartialTilesAllowed,
                 getPreferredMinTile());
     }
 
@@ -259,9 +262,14 @@ public class ImageLayout {
      * @see #isTileSizeAdjustmentAllowed
      */
     public ImageLayout allowTileSizeAdjustments(boolean allowed) {
-        if (isTileSizeAdjustmentAllowed == allowed) return this;
+        if (isTileSizeAdjustmentAllowed == allowed) {
+            return this;
+        }
         return new ImageLayout(sampleModel,
-                getPreferredTileSize(), allowed, isImageBoundsAdjustmentAllowed, isPartialTilesAllowed,
+                getPreferredTileSize(),
+                allowed,
+                isImageBoundsAdjustmentAllowed,
+                isPartialTilesAllowed,
                 getPreferredMinTile());
     }
 
@@ -275,9 +283,14 @@ public class ImageLayout {
      * @see #isImageBoundsAdjustmentAllowed
      */
     public ImageLayout allowImageBoundsAdjustments(boolean allowed) {
-        if (isImageBoundsAdjustmentAllowed == allowed) return this;
+        if (isImageBoundsAdjustmentAllowed == allowed) {
+            return this;
+        }
         return new ImageLayout(sampleModel,
-                getPreferredTileSize(), isTileSizeAdjustmentAllowed, allowed, isPartialTilesAllowed,
+                getPreferredTileSize(),
+                isTileSizeAdjustmentAllowed,
+                allowed,
+                isPartialTilesAllowed,
                 getPreferredMinTile());
     }
 
@@ -291,9 +304,14 @@ public class ImageLayout {
      * @see #isPartialTilesAllowed
      */
     public ImageLayout allowPartialTiles(boolean allowed) {
-        if (isPartialTilesAllowed == allowed) return this;
+        if (isPartialTilesAllowed == allowed) {
+            return this;
+        }
         return new ImageLayout(sampleModel,
-                getPreferredTileSize(), isTileSizeAdjustmentAllowed, isImageBoundsAdjustmentAllowed, allowed,
+                getPreferredTileSize(),
+                isTileSizeAdjustmentAllowed,
+                isImageBoundsAdjustmentAllowed,
+                allowed,
                 getPreferredMinTile());
     }
 
@@ -319,7 +337,10 @@ public class ImageLayout {
             return this;
         }
         return new ImageLayout(sampleModel,
-                preferredTileSize, isTileSizeAdjustmentAllowed, isImageBoundsAdjustmentAllowed, isPartialTilesAllowed,
+                preferredTileSize,
+                isTileSizeAdjustmentAllowed,
+                isImageBoundsAdjustmentAllowed,
+                isPartialTilesAllowed,
                 preferredMinTile);
     }
 
@@ -337,8 +358,11 @@ public class ImageLayout {
             return this;
         }
         return new ImageLayout(sampleModel,
-                size, isTileSizeAdjustmentAllowed, isImageBoundsAdjustmentAllowed,
-                isPartialTilesAllowed, getPreferredMinTile());
+                size,
+                isTileSizeAdjustmentAllowed,
+                isImageBoundsAdjustmentAllowed,
+                isPartialTilesAllowed,
+                getPreferredMinTile());
     }
 
     /**
@@ -506,6 +530,11 @@ public class ImageLayout {
          * Optionally adjust the image bounds for making it divisible by the tile size.
          */
         if (isImageBoundsAdjustmentAllowed && bounds != null && !bounds.isEmpty()) {
+            /*
+             * If we wanted to clip to the source image size, it would be done here.
+             * But we don't do that because we don't know if the caller wants to apply a scale
+             * factor between the source image and the image for which we create a sample model.
+             */
             final int sx = sizeToAdd(bounds.width,  tileWidth);
             final int sy = sizeToAdd(bounds.height, tileHeight);
             if ((bounds.width  += sx) < 0) bounds.width  -= tileWidth;     // if (overflow) reduce to valid range.
@@ -585,6 +614,12 @@ public class ImageLayout {
      *         have the same number of bands as the given {@code numBands} argument.
      */
     public SampleModel createSampleModel(final DataType dataType, final Rectangle bounds, final int numBands) {
+        /*
+         * Note: there is no `RenderedImage` argument (we assume a null `image` argument value) because
+         * this method is used for creating sample model that are practically independent of the source
+         * image. For example, the new color model may support transparency, which makes the check done
+         * by `suggestTileSize(…)` for `image` opacity undesirable.
+         */
         ArgumentChecks.ensureNonNull("bounds", bounds);
         if (sampleModel != null) {
             checkBandCount(numBands);

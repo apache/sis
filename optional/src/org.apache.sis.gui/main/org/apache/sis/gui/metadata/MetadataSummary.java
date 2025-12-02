@@ -353,7 +353,7 @@ public class MetadataSummary extends Widget {
      * Returns all code lists in a comma-separated list.
      */
     final String string(final Collection<? extends CodeList<?>> codes) {
-        final StringJoiner buffer = new StringJoiner(", ");
+        final var buffer = new StringJoiner(", ");
         for (final CodeList<?> c : codes) {
             final String text = string(Types.getCodeTitle(c));
             if (text != null) buffer.add(text);

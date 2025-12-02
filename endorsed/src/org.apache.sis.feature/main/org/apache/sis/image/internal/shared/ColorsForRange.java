@@ -97,7 +97,7 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
      * @param  inherited  the original colors to use as fallback, or {@code null} if none.
      *                    Should be non-null only for styling an exiting image before visualization.
      */
-    ColorsForRange(final Category category, final Function<Category,Color[]> colors, final ColorModel inherited) {
+    ColorsForRange(final Category category, final Function<Category, Color[]> colors, final ColorModel inherited) {
         this.name        = category.getName();
         this.sampleRange = category.getSampleRange();
         this.isData      = category.isQuantitative();

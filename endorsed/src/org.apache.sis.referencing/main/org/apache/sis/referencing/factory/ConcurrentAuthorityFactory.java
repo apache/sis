@@ -394,6 +394,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * @return Data Access Object (DAO) to use in {@code createFoo(String)} methods.
      * @throws FactoryException if the Data Access Object creation failed.
      */
+    @SuppressWarnings("UseSpecificCatch")
     private DAO getDataAccess() throws FactoryException {
         /*
          * First checks if the current thread is already using a factory. If yes, we will
@@ -485,7 +486,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 time = usage.timestamp - time;
             }
             /*
-             * Log the event. Note: there is no need to check for `Semaphores.FINER_OBJECT_CREATION_LOGS`
+             * Log the event. Note: there is no need to check for `Semaphores.FINER_LOG_LEVEL_FOR_OBJECTS_CREATION`
              * because this method is not invoked, or is invoked with `type = null`, during execution of
              * `IdentifiedObjectFinder` search operations. The only new information in this log compared
              * to `GeodeticObjectFactory` logs is the creation duration, not useful if too close to zero
@@ -1981,7 +1982,12 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         private Set<IdentifiedObject> cache(final IdentifiedObject object, Set<IdentifiedObject> result, final int index) {
             final Map<IdentifiedObject, Set<IdentifiedObject>[]> findPool = factory().findPool;
             synchronized (findPool) {
-                final Set<IdentifiedObject>[] entry = findPool.computeIfAbsent(object, Finder::createCacheEntry);
+                /*
+                 * The array is of length `DOMAIN_COUNT × 4`. There is a first ×2 for distinguishing whether axes
+                 * are ignored or not, and another ×2 for whether a singleton is searched instead of the collection.
+                 */
+                @SuppressWarnings({"unchecked", "rawtypes"})            // Generic array creation.
+                final Set<IdentifiedObject>[] entry = findPool.computeIfAbsent(object, (key) -> new Set[DOMAIN_COUNT * 4]);
                 final Set<IdentifiedObject> existing = entry[index];
                 if (existing != null) {
                     return existing;
@@ -1995,22 +2001,6 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 entry[index] = result;
             }
             return result;
-        }
-
-        /**
-         * Creates an initially empty cache entry for the given object.
-         * Used in lambda expression and defined as a separated method because of generic type.
-         * The {@code object} argument is present only for having the required method signature.
-         *
-         * <p>The array length is {@value #DOMAIN_COUNT} × 2 for whether axes are ignored or not,
-         * and ×2 again for whether a singleton is searched instead of the collection.</p>
-         *
-         * @param  object  the user-specified object which was searched.
-         * @return a new array to use as a cache for the specified object.
-         */
-        @SuppressWarnings({"unchecked", "rawtypes"})            // Generic array creation.
-        private static Set<IdentifiedObject>[] createCacheEntry(IdentifiedObject object) {
-            return new Set[DOMAIN_COUNT * 4];
         }
 
         /**

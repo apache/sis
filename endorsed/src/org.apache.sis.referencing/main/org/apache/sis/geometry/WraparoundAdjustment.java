@@ -29,7 +29,6 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.metadata.internal.shared.ReferencingServices;
-import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.referencing.internal.shared.WraparoundAxesFinder;
 import org.apache.sis.util.logging.Logging;
 
@@ -243,9 +242,8 @@ public class WraparoundAdjustment {
                 if (crs != null && resultCRS != null) {
                     inputToResult = findOperation(crs, resultCRS).getMathTransform();
                 } else {
-                    inputToResult = MathTransforms.identity(
-                            (crs != null) ? ReferencingUtilities.getDimension(crs)
-                                          : domainOfValidity.getDimension());
+                    final int dim = CRS.getDimensionOrZero(crs);
+                    inputToResult = MathTransforms.identity(dim != 0 ? dim : domainOfValidity.getDimension());
                 }
             }
             /*

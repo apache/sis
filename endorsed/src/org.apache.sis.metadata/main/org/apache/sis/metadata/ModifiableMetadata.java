@@ -711,8 +711,8 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * performing a {@code equals}, {@code isEmpty} or {@code prune} operation
      * (for avoiding creating unnecessary collections).
      */
-    private static boolean emptyCollectionAsNull() {
-        return Semaphores.query(Semaphores.NULL_COLLECTION);
+    private static boolean nullForEmptyCollection() {
+        return Semaphores.NULL_FOR_EMPTY_COLLECTION.get();
     }
 
     /**
@@ -726,9 +726,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      */
     protected final <E> List<E> nonNullList(final List<E> current, final Class<E> elementType) {
         if (current != null) {
-            return current.isEmpty() && emptyCollectionAsNull() ? null : current;
+            return current.isEmpty() && nullForEmptyCollection() ? null : current;
         }
-        if (emptyCollectionAsNull()) {
+        if (nullForEmptyCollection()) {
             return null;
         }
         if (state < FREEZING) {
@@ -748,9 +748,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      */
     protected final <E> Set<E> nonNullSet(final Set<E> current, final Class<E> elementType) {
         if (current != null) {
-            return current.isEmpty() && emptyCollectionAsNull() ? null : current;
+            return current.isEmpty() && nullForEmptyCollection() ? null : current;
         }
-        if (emptyCollectionAsNull()) {
+        if (nullForEmptyCollection()) {
             return null;
         }
         if (state < FREEZING) {
@@ -775,9 +775,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      */
     protected final <E> Collection<E> nonNullCollection(final Collection<E> current, final Class<E> elementType) {
         if (current != null) {
-            return current.isEmpty() && emptyCollectionAsNull() ? null : current;
+            return current.isEmpty() && nullForEmptyCollection() ? null : current;
         }
-        if (emptyCollectionAsNull()) {
+        if (nullForEmptyCollection()) {
             return null;
         }
         final boolean isModifiable = (state < FREEZING);
@@ -810,9 +810,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      */
     protected final <K,V> Map<K,V> nonNullMap(final Map<K,V> current, final Class<K> keyType) {
         if (current != null) {
-            return current.isEmpty() && emptyCollectionAsNull() ? null : current;
+            return current.isEmpty() && nullForEmptyCollection() ? null : current;
         }
-        if (emptyCollectionAsNull()) {
+        if (nullForEmptyCollection()) {
             return null;
         }
         if (state < FREEZING) {

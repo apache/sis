@@ -702,13 +702,14 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      *
      * @since 1.5
      */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     public synchronized GridCoverageResource append(final RenderedImage image, final GridGeometry grid, final Metadata metadata)
             throws DataStoreException
     {
         final int index;
         try {
-            @SuppressWarnings("LocalVariableHidesMemberVariable") final Writer writer = writer();
-            @SuppressWarnings("LocalVariableHidesMemberVariable") final Reader reader = this.reader;
+            final Reader reader = this.reader;
+            final Writer writer = writer();
             writer.synchronize(reader, false);
             final long offsetIFD;
             try {

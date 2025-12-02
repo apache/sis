@@ -29,9 +29,9 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationMethod;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.internal.shared.CoordinateOperations;
-import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
@@ -145,7 +145,7 @@ public final class DefaultConversionTest extends TestCase {
          * from the parameters. But we don't do the normal steps here because this class is a unit test:
          * we want to test DefaultConversion in isolation of MathTransformFactory.
          */
-        final int interpDim = ReferencingUtilities.getDimension(interpolationCRS);
+        final int interpDim = CRS.getDimensionOrZero(interpolationCRS);
         final int sourceDim = sourceCRS.getCoordinateSystem().getDimension();
         final int targetDim = targetCRS.getCoordinateSystem().getDimension();
         final OperationMethod method = DefaultOperationMethodTest.create(

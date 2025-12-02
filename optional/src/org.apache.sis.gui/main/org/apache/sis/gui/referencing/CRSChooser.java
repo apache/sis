@@ -56,8 +56,8 @@ import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationMethod;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.IdentityValueFactory;
@@ -383,7 +383,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
             expected = 0;
         }
         String text = Vocabulary.forLocale(locale).getString(key);
-        final int     dimension = ReferencingUtilities.getDimension(crs);
+        final int     dimension = CRS.getDimensionOrZero(crs);
         final boolean addDimension = (dimension != expected && expected != 0);
         final boolean isProjection = (crs instanceof GeneralDerivedCRS);
         if (addDimension | isProjection) {

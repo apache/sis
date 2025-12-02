@@ -253,7 +253,7 @@ public final class PositionTransformer extends GeneralDirectPosition {
 
     /**
      * Transforms this point to the default CRS and stores the result in the given array, and returns the derivative.
-     * The {@code target} array length should be {@code ReferencingUtilities.getDimension(defaultCRS)}.
+     * The {@code target} array length should be {@code CRS.getDimensionOrZero(defaultCRS)}.
      *
      * @param  target  where to store the transformed coordinates.
      * @return the derivative (Jacobian matrix) at the location of this point.

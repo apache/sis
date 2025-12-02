@@ -475,7 +475,7 @@ final class GridViewSkin extends SkinBase<GridView> implements EventHandler<Mous
 
     /**
      * Resizes the given array of cells. If the array become longer, new labels are created.
-     * This is an helper method for {@link #layoutChildren(double, double, double, double)}.
+     * This is a helper method for {@link #layoutChildren(double, double, double, double)}.
      *
      * @param  cells   the array to resize.
      * @param  count   the desired number of elements.

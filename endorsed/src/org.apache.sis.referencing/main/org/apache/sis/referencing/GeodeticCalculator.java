@@ -353,7 +353,7 @@ public class GeodeticCalculator {
     private PositionTransformer geographic(final double φ, final double λ) {
         userToGeodetic.setCoordinate(0, toDegrees(φ));
         userToGeodetic.setCoordinate(1, toDegrees(λ));
-        for (int i=userToGeodetic.getDimension(); --i >= 2;) {
+        for (int i = userToGeodetic.getDimension(); --i >= CRS.BIDIMENSIONAL;) {
             userToGeodetic.setCoordinate(i, 0);                   // Set height to ellipsoid surface.
         }
         return userToGeodetic;
@@ -941,7 +941,7 @@ public class GeodeticCalculator {
          * Creates a builder for the given tolerance at equator in metres.
          */
         PathBuilder(final double εx) {
-            super(ReferencingUtilities.getDimension(userToGeodetic.defaultCRS));
+            super(CRS.getDimensionOrZero(userToGeodetic.defaultCRS));
             φf        = φ2;
             λf        = λ2;
             msinαf    = msinα2;

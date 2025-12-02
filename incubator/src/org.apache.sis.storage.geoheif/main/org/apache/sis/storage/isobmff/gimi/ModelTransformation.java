@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.isobmff.gimi;
 
+import java.util.UUID;
 import java.io.IOException;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -46,6 +47,29 @@ public final class ModelTransformation extends FullBox {
     @Override
     public final int type() {
         return BOXTYPE;
+    }
+
+    /**
+     * The most significant bits of the <abbr>UUID</abbr> as a long integer.
+     * It was used in an older version of the <abbr>GIMI</abbr> specification.
+     * Should not be used anymore, but nevertheless kept for compatibility.
+     */
+    public static final long UUID_HIGH_BITS = 0x763cf838_b630_440bL;
+
+    /**
+     * The <abbr>UUID</abbr> that identify this extension.
+     * It was used in an older version of the <abbr>GIMI</abbr> specification.
+     * Should not be used anymore, but nevertheless kept for compatibility.
+     */
+    public static final UUID EXTENDED_TYPE = new UUID(UUID_HIGH_BITS, 0x84f8_be44bf9910afL);
+
+    /**
+     * Returns the identifier of this extension.
+     * This value is fixed to {@link #EXTENDED_TYPE}.
+     */
+    @Override
+    public final UUID extendedType() {
+        return EXTENDED_TYPE;
     }
 
     /**

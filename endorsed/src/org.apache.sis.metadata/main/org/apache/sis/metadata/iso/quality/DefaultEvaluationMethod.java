@@ -400,7 +400,7 @@ public class DefaultEvaluationMethod extends ISOMetadata {
     @UML(identifier="dateTime", obligation=OPTIONAL, specification=UNSPECIFIED)
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Collection<Temporal> getDates() {
-        if (Semaphores.query(Semaphores.NULL_COLLECTION)) {
+        if (Semaphores.NULL_FOR_EMPTY_COLLECTION.get()) {
             return isNullOrEmpty(dates) ? null : dates;
         }
         if (dates == null) {

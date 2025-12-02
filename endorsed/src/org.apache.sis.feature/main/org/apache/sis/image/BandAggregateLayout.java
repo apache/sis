@@ -110,7 +110,7 @@ final class BandAggregateLayout {
     /**
      * Whether to allow the sharing of data buffers (instead of copying) if possible.
      * This flag depends on the {@link ImageProcessor} configuration. Its purpose is
-     * to express <em>user intend</em>, not whether sharing is effectively enabled.
+     * to express <em>user's intent</em>, not whether sharing is effectively enabled.
      *
      * <h4>Design note</h4>
      * This flag is not the result of the modification done in {@code BandAggregateLayout} constructor

@@ -537,17 +537,25 @@ abstract class Transferer {
      * Suggests a strategy for transferring data from the given source image to the given target.
      * This method assumes that the source image uses the same pixel coordinate system than the
      * target raster (i.e. that pixels at the same coordinates are at the same location on Earth).
-     * It also assumes that the target tile is fully included in the bounds of a single source tile.
-     * That later condition is met if the target grid tiles has been created by {@link ImageLayout}.
+     *
+     * <p>The target tile should be fully included in the bounds of a single source image's tile.
+     * That later condition is met if the target tile matrix was computed by {@link ImageLayout}.
+     * However, the target tile may be larger in the last row and last column of the tile matrix
+     * if {@link ImageLayout#isImageBoundsAdjustmentAllowed} was {@code true}. This method clips
+     * the area of interest for that reason. Note that there is no need to write fill values in
+     * the area outside the clip, because this method is invoked in contexts where area outside
+     * the clip should be area outside the bounds of the target image.</p>
      *
      * @param  source  image from which to read sample values.
      * @param  target  image tile where to write sample values after processing.
      * @return object to use for applying the operation.
      */
     static Transferer create(final RenderedImage source, final WritableRaster target) {
+        final Rectangle aoi = target.getBounds();
+        ImageUtilities.clipBounds(source, aoi);
         int tileX = ImageUtilities.pixelToTileX(source, target.getMinX());
         int tileY = ImageUtilities.pixelToTileY(source, target.getMinY());
-        return create(source.getTile(tileX, tileY), target, target.getBounds());
+        return create(source.getTile(tileX, tileY), target, aoi);
     }
 
     /**

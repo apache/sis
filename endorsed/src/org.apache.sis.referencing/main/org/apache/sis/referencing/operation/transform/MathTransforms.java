@@ -203,8 +203,8 @@ public final class MathTransforms {
                     case 1: {
                         final MatrixSIS m = MatrixSIS.castOrCopy(matrix);
                         return LinearTransform1D.create(
-                                DoubleDouble.of(m.getNumber(0,0), true),
-                                DoubleDouble.of(m.getNumber(0,1), true));
+                                DoubleDouble.of(m.getNumber(0, 0), true),
+                                DoubleDouble.of(m.getNumber(0, 1), true));
                     }
                     case 2: {
                         return AffineTransform2D.create(matrix);
@@ -401,7 +401,7 @@ public final class MathTransforms {
      */
     public static MathTransform passThrough(final int[] modifiedCoordinates, final MathTransform subTransform, final int resultDim) {
         ArgumentChecks.ensureNonNull("modifiedCoordinates", modifiedCoordinates);
-        final BitSet bitset = new BitSet();
+        final var bitset = new BitSet();
         int previous = -1;
         for (int i=0; i < modifiedCoordinates.length; i++) {
             final int dim = modifiedCoordinates[i];
