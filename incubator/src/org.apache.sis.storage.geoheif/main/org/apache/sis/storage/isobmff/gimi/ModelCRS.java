@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.isobmff.gimi;
 
+import java.util.UUID;
 import java.io.IOException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -46,6 +47,29 @@ public final class ModelCRS extends FullBox {
     @Override
     public final int type() {
         return BOXTYPE;
+    }
+
+    /**
+     * The most significant bits of the <abbr>UUID</abbr> as a long integer.
+     * It was used in an older version of the <abbr>GIMI</abbr> specification.
+     * Should not be used anymore, but nevertheless kept for compatibility.
+     */
+    public static final long UUID_HIGH_BITS = 0x137a1742_75ac_4747L;
+
+    /**
+     * The <abbr>UUID</abbr> that identify this extension.
+     * It was used in an older version of the <abbr>GIMI</abbr> specification.
+     * Should not be used anymore, but nevertheless kept for compatibility.
+     */
+    public static final UUID EXTENDED_TYPE = new UUID(UUID_HIGH_BITS, 0x82bc_659576e8675bL);
+
+    /**
+     * Returns the identifier of this extension.
+     * This value is fixed to {@link #EXTENDED_TYPE}.
+     */
+    @Override
+    public final UUID extendedType() {
+        return EXTENDED_TYPE;
     }
 
     /**
