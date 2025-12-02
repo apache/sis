@@ -67,7 +67,8 @@ final class CRSMerger extends GeodeticObjectBuilder {
                 explicit = AbstractCRS.castOrCopy(explicit).forConvention(AxesConvention.POSITIVE_RANGE);
             }
         }
-        final CoordinateReferenceSystem result = super.replaceComponent(implicit, firstDimension, explicit);
-        return CRS.equivalent(implicit, result) ? implicit : result;
+        CoordinateReferenceSystem result = super.replaceComponent(implicit, firstDimension, explicit);
+        if (CRS.equivalent(implicit, result)) result = implicit;
+        return result;
     }
 }

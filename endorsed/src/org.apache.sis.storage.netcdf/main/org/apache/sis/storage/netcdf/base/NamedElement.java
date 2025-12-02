@@ -70,7 +70,7 @@ public abstract class NamedElement {
      * @return a name for an object composed of the given components.
      */
     protected static String listNames(final NamedElement[] components, final int count, final String delimiter) {
-        final StringJoiner joiner = new StringJoiner(delimiter);
+        final var joiner = new StringJoiner(delimiter);
         for (int i=0; i<count; i++) {
             joiner.add(components[i].getName());
         }

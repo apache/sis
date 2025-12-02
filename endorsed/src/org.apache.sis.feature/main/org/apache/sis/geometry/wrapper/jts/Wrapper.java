@@ -47,7 +47,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransform;
-import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -219,7 +219,7 @@ final class Wrapper extends GeometryWrapper {
             if (!Double.isNaN(z)) {
                 return new GeneralDirectPosition(c.x, c.y, z);
             }
-        } else if (ReferencingUtilities.getDimension(crs) != Factory.BIDIMENSIONAL) {
+        } else if (CRS.getDimensionOrZero(crs) != Factory.BIDIMENSIONAL) {
             final var point = new GeneralDirectPosition(crs);
             point.setCoordinate(0, c.x);
             point.setCoordinate(1, c.y);

@@ -428,7 +428,7 @@ public class Canvas extends Observable implements Localized {
      * Subclasses may override for a little bit more efficiency.
      */
     int getDisplayDimensions() {
-        return ReferencingUtilities.getDimension(getDisplayCRS());
+        return CRS.getDimensionOrZero(getDisplayCRS());
     }
 
     /**

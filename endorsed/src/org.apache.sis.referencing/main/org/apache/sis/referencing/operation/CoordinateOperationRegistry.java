@@ -68,7 +68,6 @@ import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.shared.CoordinateOperations;
 import org.apache.sis.referencing.internal.shared.EllipsoidalHeightCombiner;
-import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.system.Semaphores;
@@ -612,7 +611,7 @@ class CoordinateOperationRegistry {
                  * The non-public Semaphores.METADATA_ONLY mechanism instructs EPSGDataAccess to
                  * instantiate DeferredCoordinateOperation instead of full coordinate operations.
                  */
-                final boolean mdOnly = Semaphores.queryAndSet(Semaphores.METADATA_ONLY);
+                final boolean needFlagReset = Semaphores.METADATA_ONLY.set();
                 try {
                     Collection<CoordinateOperation> authoritatives;
                     try {
@@ -649,24 +648,22 @@ class CoordinateOperationRegistry {
                      * the first deprecated one (assuming that deprecated operations are sorted last).
                      * Deprecated operations are kept only if there are no non-deprecated operations.
                      */
-                    try {
-                        for (final CoordinateOperation candidate : authoritatives) {
-                            if (candidate != null) {                                    // Paranoiac check.
-                                if ((candidate instanceof Deprecable) && ((Deprecable) candidate).isDeprecated()) {
-                                    if (!useDeprecatedOperations && !operations.isEmpty()) break;
-                                    useDeprecatedOperations = true;
-                                } else if (useDeprecatedOperations) {
-                                    useDeprecatedOperations = false;
-                                    operations.clear();              // Replace deprecated operations by non-deprecated ones.
-                                }
-                                operations.add(candidate);
+                    for (final CoordinateOperation candidate : authoritatives) {
+                        if (candidate != null) {                                    // Paranoiac check.
+                            if ((candidate instanceof Deprecable) && ((Deprecable) candidate).isDeprecated()) {
+                                if (!useDeprecatedOperations && !operations.isEmpty()) break;
+                                useDeprecatedOperations = true;
+                            } else if (useDeprecatedOperations) {
+                                useDeprecatedOperations = false;
+                                operations.clear();              // Replace deprecated operations by non-deprecated ones.
                             }
+                            operations.add(candidate);
                         }
-                    } catch (BackingStoreException exception) {
-                        throw exception.unwrapOrRethrow(FactoryException.class);
                     }
+                } catch (BackingStoreException exception) {
+                    throw exception.unwrapOrRethrow(FactoryException.class);
                 } finally {
-                    Semaphores.clearIfFalse(Semaphores.METADATA_ONLY, mdOnly);
+                    Semaphores.METADATA_ONLY.clearIfTrue(needFlagReset);
                 }
             }
         }
@@ -901,7 +898,7 @@ class CoordinateOperationRegistry {
          * (e.g. as in the "geographic 3D to geographic 2D" conversion) because ALLOW_VARIANT mode
          * still requires a matching number of dimensions.
          */
-        assert ReferencingUtilities.getDimension(sourceCRS) != ReferencingUtilities.getDimension(targetCRS)
+        assert CRS.getDimensionOrZero(sourceCRS) != CRS.getDimensionOrZero(targetCRS)
                 || Utilities.deepEquals(sourceCRS, targetCRS, ComparisonMode.ALLOW_VARIANT);
         final Matrix m = CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(), targetCRS.getCoordinateSystem());
         return (m.isIdentity()) ? null : mtFactory.createAffineTransform(m);

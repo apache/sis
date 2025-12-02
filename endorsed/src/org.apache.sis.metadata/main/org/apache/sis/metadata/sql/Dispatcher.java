@@ -214,14 +214,15 @@ final class Dispatcher implements InvocationHandler {
         Object value = null;
         final long nullBit = Numerics.bitmask(info.asIndexMap(source.standard).get(method.getName()));     // Okay even if overflow.
         /*
-         * The NULL_COLLECTION semaphore prevents creation of new empty collections by getter methods
+         * The NULL_FOR_EMPTY_COLLECTION flag prevents creation of empty collections by getter methods
          * (a consequence of lazy instantiation). The intent is to avoid creation of unnecessary objects
          * for all unused properties. Users should not see behavioral difference.
          */
         if ((nullValues & nullBit) == 0) {
             final Class<?> type = info.getMetadataType();
-            final boolean allowNull = Semaphores.queryAndSet(Semaphores.NULL_COLLECTION);
+            final boolean needFlagReset = Semaphores.NULL_FOR_EMPTY_COLLECTION.set();
             try {
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
                 Object cache = this.cache;
                 if (cache != null) {
                     synchronized (cache) {
@@ -283,7 +284,7 @@ final class Dispatcher implements InvocationHandler {
                     }
                 }
             } finally {
-                Semaphores.clearIfFalse(Semaphores.NULL_COLLECTION, allowNull);
+                Semaphores.NULL_FOR_EMPTY_COLLECTION.clearIfTrue(needFlagReset);
             }
         }
         if (value == null) {

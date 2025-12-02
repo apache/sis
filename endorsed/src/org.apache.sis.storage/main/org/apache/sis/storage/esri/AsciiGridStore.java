@@ -18,7 +18,6 @@ package org.apache.sis.storage.esri;
 
 import java.util.Map;
 import java.util.List;
-import java.util.StringJoiner;
 import java.io.IOException;
 import java.nio.file.StandardOpenOption;
 import java.awt.image.RenderedImage;
@@ -319,9 +318,7 @@ cellsize:       if (value != null) {
              * We list all properties in a single message.
              */
             if (!header.isEmpty()) {
-                final StringJoiner joiner = new StringJoiner(", ");
-                header.keySet().forEach(joiner::add);
-                listeners.warning(messageForProperty(Errors.Keys.UnexpectedProperty_2, joiner.toString()));
+                listeners.warning(messageForProperty(Errors.Keys.UnexpectedProperty_2, String.join(", ", header.keySet())));
             }
         } catch (DataStoreException e) {
             closeOnError(e);

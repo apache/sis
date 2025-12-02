@@ -20,6 +20,7 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.MathTransform;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 
@@ -54,7 +55,7 @@ public final class WraparoundAxesFinder {
             preferredToSpecified = p.getConversionFromBase().getMathTransform();
         } else {
             // TODO: we should handle the case of CompoundCRS before to fallback on identity.
-            preferredToSpecified = MathTransforms.identity(ReferencingUtilities.getDimension(crs));
+            preferredToSpecified = MathTransforms.identity(CRS.getDimensionOrZero(crs));
         }
         preferredCRS = crs;
     }

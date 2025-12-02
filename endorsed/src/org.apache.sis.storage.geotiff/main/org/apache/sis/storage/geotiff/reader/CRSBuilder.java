@@ -283,7 +283,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
         if (value != null) {
             if (value.getClass().isArray()) {
                 final int length = Array.getLength(value);
-                final StringJoiner buffer = new StringJoiner(", ");
+                final var buffer = new StringJoiner(", ");
                 for (int i=0; i<length; i++) {
                     buffer.add(String.valueOf(Array.get(value, i)));
                 }
@@ -574,7 +574,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
          * Emits a warning for unprocessed GeoTIFF tags. A single warning is emitted for all ignored tags.
          */
         if (!geoKeys.isEmpty()) {
-            final StringJoiner joiner = new StringJoiner(", ");
+            final var joiner = new StringJoiner(", ");
             final Short[] keys = geoKeys.keySet().toArray(Short[]::new);
             Arrays.sort(keys);
             for (final short key : keys) {

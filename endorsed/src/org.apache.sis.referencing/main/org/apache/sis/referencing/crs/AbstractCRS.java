@@ -58,7 +58,7 @@ import org.opengis.metadata.Identifier;
 /**
  * Coordinate reference system, defined by a {@linkplain AbstractCS coordinate system}
  * and (usually) a {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum}.
- * A coordinate reference system (CRS) consists of an ordered sequence of
+ * A coordinate reference system (<abbr>CRS</abbr>) consists of an ordered sequence of
  * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis coordinate system axes}
  * that are related to the earth through the datum.
  * Most coordinate reference system do not move relative to the earth, except for

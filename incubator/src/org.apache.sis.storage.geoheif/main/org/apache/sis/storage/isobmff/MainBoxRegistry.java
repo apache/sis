@@ -170,6 +170,24 @@ final class MainBoxRegistry extends BoxRegistry {
     @Override
     public Box create(final Reader reader, final UUID extension) throws IOException, DataStoreException {
         switch ((int) extension.getMostSignificantBits()) {
+            case (int) ModelCRS.UUID_HIGH_BITS: {
+                if (extension.equals(ModelCRS.EXTENDED_TYPE)) {
+                    return new ModelCRS(reader);
+                }
+                break;
+            }
+            case (int) ModelTiePoint.UUID_HIGH_BITS: {
+                if (extension.equals(ModelTiePoint.EXTENDED_TYPE)) {
+                    return new ModelTiePoint(reader);
+                }
+                break;
+            }
+            case (int) ModelTransformation.UUID_HIGH_BITS: {
+                if (extension.equals(ModelTransformation.EXTENDED_TYPE)) {
+                    return new ModelTransformation(reader);
+                }
+                break;
+            }
             case (int) UnknownProperty.UUID_HIGH_BITS: {
                 if (extension.equals(UnknownProperty.EXTENDED_TYPE)) {
                     return new UnknownProperty(reader);

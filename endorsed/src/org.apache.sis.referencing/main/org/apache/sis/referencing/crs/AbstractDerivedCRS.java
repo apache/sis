@@ -236,23 +236,16 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
             return true;
         }
         if (super.equals(object, mode)) {
-            final boolean strict = (mode == ComparisonMode.STRICT);
-            /*
-             * Avoid never-ending recursion: Conversion has a `targetCRS` field (inherited from
-             * the AbstractCoordinateOperation super-class) that is set to this AbstractDerivedCRS.
-             *
-             * Do NOT compare the baseCRS explicitly. This is done implicitely in the comparison of the Conversion
-             * objects, since (this.baseCRS == Conversion.sourceCRS) in Apache SIS.  The reason why we delegate the
-             * comparison of that CRS to the Conversion object is because we want to ignore the baseCRS axes if the
-             * mode said to ignore metadata, but ignoring axis order and units has implication on the MathTransform
-             * instances to compare.  The AbstractCoordinateOperation.equals(…) method implementation handles those
-             * cases.
-             */
-            if (Semaphores.queryAndSet(Semaphores.CONVERSION_AND_CRS)) {
-                return true;
-            } else try {
+            if (Semaphores.COMPARING_CONVERSION_OR_DERIVED_CRS.set()) try {
+                /*
+                 * Do NOT compare the `baseCRS` explicitly. This is done implicitely in the comparison of `Conversion`,
+                 * since `this.baseCRS == Conversion.sourceCRS` in Apache SIS. We delegate the comparison of that CRS
+                 * to the `Conversion` object because we want to ignore the `baseCRS` axes if requested by the `mode`,
+                 * but ignoring axis order and axis units requires special handling during `MathTransform` comparison.
+                 * The `AbstractCoordinateOperation.equals(…)` method implementation handles those cases.
+                 */
                 final Conversion op1, op2;
-                if (strict) {
+                if (mode == ComparisonMode.STRICT) {
                     op1 = conversionFromBase;
                     op2 = ((AbstractDerivedCRS) object).conversionFromBase;
                 } else {
@@ -261,7 +254,10 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
                 }
                 return Utilities.deepEquals(op1, op2, mode);
             } finally {
-                Semaphores.clear(Semaphores.CONVERSION_AND_CRS);
+                Semaphores.COMPARING_CONVERSION_OR_DERIVED_CRS.clear();
+            } else {
+                // Avoid never-ending recursion when the comparison was started by `AbstractCoordinateOperation`.
+                return true;
             }
         }
         return false;

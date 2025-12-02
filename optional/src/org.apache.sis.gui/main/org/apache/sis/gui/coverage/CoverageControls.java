@@ -28,7 +28,6 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Priority;
 import javafx.collections.ObservableList;
-import javafx.scene.paint.Color;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.GridCoverageResource;
@@ -96,7 +95,6 @@ final class CoverageControls extends ViewAndControls {
         final Vocabulary vocabulary = Vocabulary.forLocale(locale);
 
         view = new CoverageCanvas(this, locale);
-        view.setBackground(Color.BLACK);
         status.track(view);
         final MapMenu menu = new MapMenu(view);
         menu.addReferenceSystems(owner.referenceSystems);

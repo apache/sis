@@ -287,7 +287,7 @@ final class IdentificationInfo extends Section<Identification> {
          * is formatted as "codespace:code" or only "code" if there is no codespace.
          */
         if (citation != null) {
-            final StringJoiner buffer = new StringJoiner(", ");
+            final var buffer = new StringJoiner(", ");
             for (final Identifier id : citation.getIdentifiers()) {
                 buffer.add(IdentifiedObjects.toString(id));
             }

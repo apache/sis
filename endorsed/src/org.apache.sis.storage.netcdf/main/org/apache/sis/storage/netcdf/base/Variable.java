@@ -574,8 +574,8 @@ public abstract class Variable extends Node {
          * the variable has a vertical or temporal axis which has not been decimated contrarily
          * to longitude and latitude axes. Note that this map is recycled later for other use.
          */
-        final List<Variable> axes = new ArrayList<>();
-        final Map<Object,Dimension> domain = new HashMap<>();
+        final var axes = new ArrayList<Variable>();
+        final var domain = new HashMap<Object, Dimension>();
         for (final Variable candidate : decoder.getVariables()) {
             if (candidate.getRole() == VariableRole.AXIS) {
                 axes.add(candidate);
@@ -750,7 +750,7 @@ public abstract class Variable extends Node {
                         GridExtent extent = grid.getExtent();
                         final var sizes = new long[extent.getDimension()];
                         boolean needsResize = false;
-                        for (int i=sizes.length; --i >= 0;) {
+                        for (int i = sizes.length; --i >= 0;) {
                             final int d = (sizes.length - 1) - i;               // Convert "natural order" index into netCDF index.
                             sizes[i] = dimensions.get(d).length();
                             if (!needsResize) {

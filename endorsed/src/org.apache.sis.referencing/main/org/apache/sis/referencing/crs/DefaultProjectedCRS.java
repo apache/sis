@@ -149,7 +149,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      */
     @Workaround(library="JDK", version="1.7")
     private static GeodeticCRS checkDimensions(final GeodeticCRS baseCRS, final CartesianCS derivedCS) {
-        int n = ReferencingUtilities.getDimension(baseCRS);
+        int n = baseCRS.getCoordinateSystem().getDimension();
         if (derivedCS != null) {
             n = Math.max(n, derivedCS.getDimension());
         }

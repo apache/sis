@@ -50,7 +50,7 @@ public final class CRSParserTest extends WKTParserTest {
      * This is done for avoiding race conditions logging the same message many times.
      */
     static {
-        // Will do nothing, the intend is only to force class initialization.
+        // Will do nothing, the intent is only to force class initialization.
         TestCase.out.flush();
     }
 

@@ -62,6 +62,7 @@ import org.apache.sis.system.Modules;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.shared.CloneAccess;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.measure.Quantities;
@@ -657,7 +658,16 @@ public class RenderingData implements CloneAccess {
         MathTransforms.getDomain(cornerToDisplay).ifPresent((domain) -> {
             Shapes2D.intersect(bounds, domain, 0, 1);
         });
-        Shapes2D.transform(MathTransforms.bidimensional(cornerToDisplay), bounds, bounds);
+        /*
+         * For computing the bounds of the resampled image, we need to round to a smaller rectangle.
+         * Otherwise, interpolation will require coordinates slightly outside the source image bounds,
+         * which produce NaN values (often rendered as black borders) in that target image.
+         */
+        final Rectangle2D resampled = Shapes2D.transform(MathTransforms.bidimensional(cornerToDisplay), bounds, null);
+        bounds.x      = (int)  Math.ceil (resampled.getMinX() - Numerics.COMPARISON_THRESHOLD);
+        bounds.y      = (int)  Math.ceil (resampled.getMinY() - Numerics.COMPARISON_THRESHOLD);
+        bounds.width  = (int) (Math.floor(resampled.getMaxX() + Numerics.COMPARISON_THRESHOLD) - bounds.x);
+        bounds.height = (int) (Math.floor(resampled.getMaxY() + Numerics.COMPARISON_THRESHOLD) - bounds.y);
         /*
          * Verify if wraparound is really necessary. We do this check because the `displayToCenter` transform
          * may be used for every pixels, so it is worth to make that transform more efficient if possible.
@@ -894,6 +904,8 @@ public class RenderingData implements CloneAccess {
     /**
      * Returns a string representation for debugging purposes.
      * The string content may change in any future version.
+     *
+     * @return a string representation for debugging purposes.
      */
     @Override
     public String toString() {

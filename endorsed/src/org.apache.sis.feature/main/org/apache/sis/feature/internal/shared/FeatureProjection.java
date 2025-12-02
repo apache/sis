@@ -347,7 +347,7 @@ public final class FeatureProjection extends Record implements UnaryOperator<Fea
     /**
      * Returns the expression which is executed for fetching the property value at the given index.
      *
-     * @param  index  index of the stored property for which to get the expression for fething the value.
+     * @param  index  index of the stored property for which to get the expression for fetching the value.
      * @return the expression which is executed for fetching the property value at the given index.
      */
     public final Expression<? super Feature, ?> expression(final int index) {

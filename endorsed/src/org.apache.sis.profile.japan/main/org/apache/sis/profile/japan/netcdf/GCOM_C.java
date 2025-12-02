@@ -412,7 +412,7 @@ public final class GCOM_C extends Convention {
     };
 
     /**
-     * Returns the <i>grid to CRS</i> transform for the given node.
+     * Returns the <i>grid corners to CRS</i> transform for the given node.
      * This method is invoked after call to {@link #projection(Node)} resulted in creation of a projected CRS.
      * The {@linkplain ProjectedCRS#getBaseCRS() base CRS} shall have (latitude, longitude) axes in degrees.
      *

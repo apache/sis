@@ -25,8 +25,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.resources.Messages;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.metadata.sql.internal.shared.ScriptRunner;
 import org.apache.sis.metadata.sql.internal.shared.SQLUtilities;
@@ -157,7 +159,7 @@ final class EPSGInstaller extends ScriptRunner {
                 return false;
             }
         }
-        InstallationScriptProvider.log(Messages.forLocale(locale).createLogRecord(
+        log(Messages.forLocale(locale).createLogRecord(
                 Level.INFO,
                 Messages.Keys.CreatingSchema_2,
                 Constants.EPSG,
@@ -173,12 +175,20 @@ final class EPSGInstaller extends ScriptRunner {
             }
         }
         time = System.nanoTime() - time;
-        InstallationScriptProvider.log(Messages.forLocale(locale).createLogRecord(
+        log(Messages.forLocale(locale).createLogRecord(
                 PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS),
                 Messages.Keys.InsertDuration_2,
                 numRows,
                 time / (float) Constants.NANOS_PER_SECOND));
         return true;
+    }
+
+    /**
+     * Logs the given record. This method pretends that the record has been logged by
+     * {@code EPSGFactory.install(…)} because it is the public API using this class.
+     */
+    private static void log(final LogRecord record) {
+        Logging.completeAndLog(EPSGDataAccess.LOGGER, EPSGFactory.class, "install", record);
     }
 
     /**

@@ -505,7 +505,7 @@ public class IdentifiedObjectFinder {
          */
         @Override
         public IdentifiedObject apply(final String code) {
-            final boolean finer = Semaphores.queryAndSet(Semaphores.FINER_OBJECT_CREATION_LOGS);
+            final boolean needFlagReset = Semaphores.FINER_LOG_LEVEL_FOR_OBJECTS_CREATION.set();
             try {
                 final var candidate = (IdentifiedObject) proxy.createFromAPI(factory, code);
                 if (match(candidate, object, mode, proxy) && existing.add(candidate)) {
@@ -520,7 +520,7 @@ public class IdentifiedObjectFinder {
             } catch (FactoryException e) {
                 exceptionOccurred(e);
             } finally {
-                Semaphores.clearIfFalse(Semaphores.FINER_OBJECT_CREATION_LOGS, finer);
+                Semaphores.FINER_LOG_LEVEL_FOR_OBJECTS_CREATION.clearIfTrue(needFlagReset);
             }
             return null;
         }
@@ -542,13 +542,10 @@ public class IdentifiedObjectFinder {
     final IdentifiedObject createAndFilter(final AuthorityFactory factory, final String code, final IdentifiedObject object)
             throws FactoryException
     {
-        final boolean finer = Semaphores.queryAndSet(Semaphores.FINER_OBJECT_CREATION_LOGS);
-        try {
+        return Semaphores.FINER_LOG_LEVEL_FOR_OBJECTS_CREATION.execute(() -> {
             final var candidate = (IdentifiedObject) proxy.createFromAPI(factory, code);
             return match(candidate, object, getComparisonMode(), proxy) ? candidate : null;
-        } finally {
-            Semaphores.clearIfFalse(Semaphores.FINER_OBJECT_CREATION_LOGS, finer);
-        }
+        });
     }
 
     /**

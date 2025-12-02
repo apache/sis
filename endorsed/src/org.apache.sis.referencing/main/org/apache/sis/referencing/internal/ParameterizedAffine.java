@@ -97,6 +97,14 @@ public final class ParameterizedAffine extends AffineTransform2D {
     }
 
     /**
+     * Whether the {@link #parameters} can be shown to user as an accurate description of this transform.
+     * See {@link #getParameterValues()} for a discussion about when the parameters are shown.
+     */
+    private boolean showParameters() {
+        return isDefinitive || Semaphores.TRANSFORM_ENCLOSED_IN_OPERATION.get();
+    }
+
+    /**
      * Returns the parameter descriptors for this map projection.
      *
      * @return the map projection parameters if they are an accurate description of this transform,
@@ -104,17 +112,16 @@ public final class ParameterizedAffine extends AffineTransform2D {
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return isDefinitive || Semaphores.query(Semaphores.ENCLOSED_IN_OPERATION)  // See comment in getParameterValues().
-               ? parameters.getDescriptor() : super.getParameterDescriptors();
+        return showParameters() ? parameters.getDescriptor() : super.getParameterDescriptors();
     }
 
     /**
      * Returns the parameter values for this map projection.
      *
-     * <p><b>Hack:</b> this method normally returns the matrix parameters in case of doubt. However, if
-     * {@link Semaphores#ENCLOSED_IN_OPERATION} is set, then this method returns the map projection parameters
-     * even if they are not a complete description of this math transform. This internal hack shall be used
-     * only by {@link org.apache.sis.referencing.operation.AbstractCoordinateOperation}.</p>
+     * <p><b>Hack:</b> this method normally returns the matrix parameters in case of doubt.
+     * However, if {@link Semaphores#TRANSFORM_ENCLOSED_IN_OPERATION} is set, then this method returns
+     * the map projection parameters even if they are not a complete description of this math transform.
+     * This hack shall be used only by {@link org.apache.sis.referencing.operation.AbstractCoordinateOperation}.</p>
      *
      * <p><b>Use case of above hack:</b> consider an "Equidistant Cylindrical (Spherical)" map projection
      * from a {@code GeographiCRS} base using (latitude, longitude) axis order. We need to concatenate an
@@ -132,16 +139,15 @@ public final class ParameterizedAffine extends AffineTransform2D {
      *     has been applied.</li>
      * </ul>
      *
-     * The {@code Semaphores.ENCLOSED_IN_OPERATION} flag is SIS internal mechanism for distinguish the two above-cited
-     * cases.
+     * The {@code Semaphores.TRANSFORM_ENCLOSED_IN_OPERATION} flag is <abbr>SIS</abbr> internal mechanism
+     * for distinguish the two above-cited cases.
      *
      * @return the map projection parameters if they are an accurate description of this transform,
      *         or the generic affine parameters in case of doubt.
      */
     @Override
     public ParameterValueGroup getParameterValues() {
-        return isDefinitive || Semaphores.query(Semaphores.ENCLOSED_IN_OPERATION)
-               ? parameters : super.getParameterValues();
+        return showParameters() ? parameters : super.getParameterValues();
     }
 
     /**

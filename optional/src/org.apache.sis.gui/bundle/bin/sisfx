@@ -89,6 +89,7 @@ shopt -u nullglob
 # Execute SIS with any optional JAR that the user may put in the `lib` directory.
 #
 java -splash:"$BASE_DIR/lib/logo.jpg" \
+     --enable-native-access javafx.graphics \
      --module-path "$PATH_TO_FX:$BASE_DIR/lib:$BASE_DIR/lib/app/org.apache.sis.gui.jar" \
      -Djava.util.logging.config.class="org.apache.sis.util.logging.Initializer" \
      -Djava.util.logging.config.file="$BASE_DIR/conf/logging.properties" \

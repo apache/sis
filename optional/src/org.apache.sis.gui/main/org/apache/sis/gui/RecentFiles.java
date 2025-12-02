@@ -155,7 +155,7 @@ final class RecentFiles implements EventHandler<ActionEvent> {
         } while (++i < MAX_COUNT-1);
         System.arraycopy(allFiles, 0, allFiles, 1, i);
         allFiles[0] = file;
-        final StringJoiner s = new StringJoiner(System.lineSeparator());
+        final var s = new StringJoiner(System.lineSeparator());
         for (final File f : allFiles) {
             if (f == null) break;
             s.add(f.getPath());

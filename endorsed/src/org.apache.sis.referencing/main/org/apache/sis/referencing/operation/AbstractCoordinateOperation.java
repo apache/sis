@@ -59,6 +59,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -66,7 +67,6 @@ import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.shared.CoordinateOperations;
-import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.referencing.internal.shared.WKTUtilities;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.metadata.internal.shared.ImplementationHelper;
@@ -358,7 +358,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final MathTransform transform = this.transform;                     // Protect from changes.
         if (transform != null) {
-            final int interpDim = ReferencingUtilities.getDimension(interpolationCRS);
+            final int interpDim = CRS.getDimensionOrZero(interpolationCRS);
 check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 == target check.
                 final CoordinateReferenceSystem crs;    // Will determine the expected dimensions.
                 int actual;                             // The MathTransform number of dimensions.
@@ -367,7 +367,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                     case 1: crs = targetCRS; actual = transform.getTargetDimensions(); break;
                     default: break check;
                 }
-                int expected = ReferencingUtilities.getDimension(crs);
+                int expected = CRS.getDimensionOrZero(crs);
                 if (interpDim != 0) {
                     if (actual == expected || actual < interpDim) {
                         // This check is not strictly necessary as the next check below would catch the error,
@@ -735,13 +735,12 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         while (transform != null) {
             if (transform instanceof Parameterized) {
                 final ParameterDescriptorGroup param;
-                if (Semaphores.queryAndSet(Semaphores.ENCLOSED_IN_OPERATION)) {
-                    throw new AssertionError();                                     // Should never happen.
-                }
-                try {
+                if (Semaphores.TRANSFORM_ENCLOSED_IN_OPERATION.set()) try {
                     param = ((Parameterized) transform).getParameterDescriptors();
                 } finally {
-                    Semaphores.clear(Semaphores.ENCLOSED_IN_OPERATION);
+                    Semaphores.TRANSFORM_ENCLOSED_IN_OPERATION.clear();
+                } else {
+                    throw new AssertionError();     // Should never happen.
                 }
                 if (param != null) {
                     return param;
@@ -769,13 +768,12 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         while (mt != null) {
             if (mt instanceof Parameterized) {
                 final ParameterValueGroup param;
-                if (Semaphores.queryAndSet(Semaphores.ENCLOSED_IN_OPERATION)) {
-                    throw new AssertionError();                                     // Should never happen.
-                }
-                try {
+                if (Semaphores.TRANSFORM_ENCLOSED_IN_OPERATION.set()) try {
                     param = ((Parameterized) mt).getParameterValues();
                 } finally {
-                    Semaphores.clear(Semaphores.ENCLOSED_IN_OPERATION);
+                    Semaphores.TRANSFORM_ENCLOSED_IN_OPERATION.clear();
+                } else {
+                    throw new AssertionError();     // Should never happen.
                 }
                 if (param != null) {
                     return param;
@@ -876,13 +874,13 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                     Objects.equals(transform,                   that.transform)        &&
                     Objects.equals(coordinateOperationAccuracy, that.coordinateOperationAccuracy))
                 {
-                    // Check against never-ending recursion with DerivedCRS.
-                    if (Semaphores.queryAndSet(Semaphores.CONVERSION_AND_CRS)) {
-                        return true;
-                    } else try {
+                    if (Semaphores.COMPARING_CONVERSION_OR_DERIVED_CRS.set()) try {
                         return Objects.equals(targetCRS, that.targetCRS);
                     } finally {
-                        Semaphores.clear(Semaphores.CONVERSION_AND_CRS);
+                        Semaphores.COMPARING_CONVERSION_OR_DERIVED_CRS.clear();
+                    } else {
+                        // Avoid never-ending recursion when the comparison was started by `AbstractDerivedCRS`.
+                        return true;
                     }
                 }
             } else {
@@ -914,17 +912,17 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                      * sourceCRS axis order if the mode is ComparisonMode.IGNORE_METADATA.
                      */
                     boolean debug = false;
-                    if (Semaphores.queryAndSet(Semaphores.CONVERSION_AND_CRS)) {
-                        if (mode.isIgnoringMetadata()) {
-                            debug = (mode == ComparisonMode.DEBUG);
-                            mode = ComparisonMode.ALLOW_VARIANT;
-                        }
-                    } else try {
+                    if (Semaphores.COMPARING_CONVERSION_OR_DERIVED_CRS.set()) try {
                         if (!deepEquals(getTargetCRS(), that.getTargetCRS(), mode)) {
                             return false;
                         }
                     } finally {
-                        Semaphores.clear(Semaphores.CONVERSION_AND_CRS);
+                        Semaphores.COMPARING_CONVERSION_OR_DERIVED_CRS.clear();
+                    } else {
+                        if (mode.isIgnoringMetadata()) {
+                            debug = (mode == ComparisonMode.DEBUG);
+                            mode = ComparisonMode.ALLOW_VARIANT;
+                        }
                     }
                     /*
                      * Now compare the sourceCRS, potentially with a relaxed ComparisonMode (see above comment).

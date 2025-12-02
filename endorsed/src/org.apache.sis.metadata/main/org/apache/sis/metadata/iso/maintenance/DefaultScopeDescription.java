@@ -237,7 +237,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
             if (property == code) {
                 return cast(value, type);
             } else if (!(value instanceof Set) || !((Set<?>) value).isEmpty()) {
-                return Semaphores.query(Semaphores.NULL_COLLECTION)
+                return Semaphores.NULL_FOR_EMPTY_COLLECTION.get()
                        ? null : new ExcludedSet<>(NAMES[code-1], NAMES[property-1]);
             }
         }

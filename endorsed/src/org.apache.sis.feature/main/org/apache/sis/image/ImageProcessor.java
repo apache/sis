@@ -1115,9 +1115,9 @@ public class ImageProcessor implements Cloneable {
             ArgumentChecks.ensureNonNullElement("converters", i, converters[i]);
         }
         final ImageLayout layout;
-        final Colorizer colorizer;
+        final Colorizer   colorizer;
         synchronized (this) {
-            layout = this.layout;
+            layout    = this.layout;
             colorizer = this.colorizer;
         }
         // No need to clone `sourceRanges` because it is not stored by `BandedSampleConverter`.

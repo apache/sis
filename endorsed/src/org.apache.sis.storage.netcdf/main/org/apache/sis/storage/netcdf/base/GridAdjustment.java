@@ -184,19 +184,19 @@ public final class GridAdjustment {
     /**
      * Creates a new grid geometry with a scale factor applied in grid coordinates before the "grid to CRS" conversion.
      *
-     * @param  grid               the grid geometry to scale.
+     * @param  geometry           the grid geometry to scale.
      * @param  extent             the extent to allocate to the new grid geometry.
      * @param  anchor             the transform to adjust: "center to CRS" or "corner to CRS".
      * @param  dataToGridIndices  value of {@link #dataToGridIndices()}.
      * @return scaled grid geometry.
      */
-    static GridGeometry scale(final GridGeometry grid, final GridExtent extent, final PixelInCell anchor,
+    static GridGeometry scale(final GridGeometry geometry, final GridExtent extent, final PixelInCell anchor,
                               final double[] dataToGridIndices)
     {
-        MathTransform gridToCRS = grid.getGridToCRS(anchor);
+        MathTransform gridToCRS = geometry.getGridToCRS(anchor);
         final LinearTransform scale = MathTransforms.scale(dataToGridIndices);
         gridToCRS = MathTransforms.concatenate(scale, gridToCRS);
         return new GridGeometry(extent, anchor, gridToCRS,
-                grid.isDefined(GridGeometry.CRS) ? grid.getCoordinateReferenceSystem() : null);
+                geometry.isDefined(GridGeometry.CRS) ? geometry.getCoordinateReferenceSystem() : null);
     }
 }

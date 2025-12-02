@@ -115,14 +115,16 @@ class BandedSampleConverter extends WritableComputedImage {
      *                      If this array was a user-provided parameter, should be cloned by caller.
      * @param  sampleDimensions  description of conversion result, or {@code null} if unknown.
      */
-    private BandedSampleConverter(final RenderedImage source,  final BandedSampleModel sampleModel,
-                                  final ColorModel colorModel, final NumberRange<?>[] ranges,
-                                  final MathTransform1D[] converters,
+    private BandedSampleConverter(final RenderedImage         source,
+                                  final BandedSampleModel     sampleModel,
+                                  final ColorModel            colorModel,
+                                  final NumberRange<?>[]      ranges,
+                                  final MathTransform1D[]     converters,
                                   final List<SampleDimension> sampleDimensions)
     {
         super(sampleModel, source);
-        this.colorModel = colorModel;
-        this.converters = converters;
+        this.colorModel       = colorModel;
+        this.converters       = converters;
         this.sampleDimensions = sampleDimensions;
         ensureCompatible(sampleModel, colorModel);
         /*
@@ -201,9 +203,12 @@ class BandedSampleConverter extends WritableComputedImage {
      *
      * @see ImageProcessor#convert(RenderedImage, NumberRange[], MathTransform1D[], DataType)
      */
-    static BandedSampleConverter create(RenderedImage source, final ImageLayout layout,
-            final NumberRange<?>[] sourceRanges, final MathTransform1D[] converters,
-            final DataType targetType, final Colorizer colorizer)
+    static BandedSampleConverter create(RenderedImage     source,
+                                  final ImageLayout       layout,
+                                  final NumberRange<?>[]  sourceRanges,
+                                  final MathTransform1D[] converters,
+                                  final DataType          targetType,
+                                  final Colorizer         colorizer)
     {
         /*
          * Since this operation applies its own ColorModel anyway, skip operation that was doing nothing else
@@ -250,7 +255,8 @@ class BandedSampleConverter extends WritableComputedImage {
             for (int i=0; i<numBands; i++) {
                 inverses[i] = converters[i].inverse();
             }
-            return new Writable((WritableRenderedImage) source, sampleModel, colorModel, sourceRanges, converters, inverses, sampleDimensions);
+            return new Writable((WritableRenderedImage) source, sampleModel, colorModel,
+                                sourceRanges, converters, inverses, sampleDimensions);
         } catch (NoninvertibleTransformException e) {
             Logging.recoverableException(LOGGER, ImageProcessor.class, "convert", e);
         }
@@ -424,9 +430,12 @@ class BandedSampleConverter extends WritableComputedImage {
         /**
          * Creates a new writable image which will compute values using the given converters.
          */
-        Writable(final WritableRenderedImage source,  final BandedSampleModel sampleModel,
-                 final ColorModel colorModel, final NumberRange<?>[] ranges,
-                 final MathTransform1D[] converters, final MathTransform1D[] inverses,
+        Writable(final WritableRenderedImage source,
+                 final BandedSampleModel     sampleModel,
+                 final ColorModel            colorModel,
+                 final NumberRange<?>[]      ranges,
+                 final MathTransform1D[]     converters,
+                 final MathTransform1D[]     inverses,
                  final List<SampleDimension> sampleDimensions)
         {
             super(source, sampleModel, colorModel, ranges, converters, sampleDimensions);

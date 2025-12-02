@@ -81,7 +81,7 @@ import org.apache.sis.measure.Units;
  * which is a {@linkplain Axis#abbreviation controlled vocabulary} for this implementation.
  *
  * <h2>Exception handling</h2>
- * {@link FactoryException} is handled as a warning by {@linkplain the caller Grid#getCoordinateReferenceSystem},
+ * {@link FactoryException} is handled as a warning by {@linkplain Grid#getCRSFromAxes the caller},
  * while {@link DataStoreException} is handled as a fatal error. Warnings are stored in {@link #warnings} field.
  *
  * @author  Martin Desruisseaux (Geomatys)

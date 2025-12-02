@@ -18,7 +18,6 @@ package org.apache.sis.referencing.factory.sql;
 
 import java.util.Set;
 import java.util.Objects;
-import java.util.logging.LogRecord;
 import java.sql.Connection;
 import java.io.BufferedReader;
 import java.io.LineNumberReader;
@@ -29,7 +28,6 @@ import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.setup.InstallationResources;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.internal.shared.Constants;
@@ -215,12 +213,4 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      * @throws IOException if an error occurred while opening the file.
      */
     protected abstract InputStream openStream(final String name) throws IOException;
-
-    /**
-     * Logs the given record. This method pretend that the record has been logged by
-     * {@code EPSGFactory.install(…)} because it is the public API using this class.
-     */
-    static void log(final LogRecord record) {
-        Logging.completeAndLog(EPSGDataAccess.LOGGER, EPSGFactory.class, "install", record);
-    }
 }
