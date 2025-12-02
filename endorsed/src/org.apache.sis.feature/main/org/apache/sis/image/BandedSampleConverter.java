@@ -36,7 +36,6 @@ import org.apache.sis.coverage.internal.shared.SampleDimensions;
 import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.image.internal.shared.TileOpExecutor;
 import org.apache.sis.image.internal.shared.ColorScaleBuilder;
-import org.apache.sis.image.internal.shared.FillValues;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.logging.Logging;
@@ -106,12 +105,6 @@ class BandedSampleConverter extends WritableComputedImage {
     private final double[] sampleResolutions;
 
     /**
-     * Values to assign to the pixels outside source image.
-     * Can be {@code null} if the target image is fully contained inside the source image.
-     */
-    private final FillValues fillValues;
-
-    /**
      * Creates a new image which will compute values using the given converters.
      *
      * @param  source       the image for which to convert sample values.
@@ -121,29 +114,19 @@ class BandedSampleConverter extends WritableComputedImage {
      * @param  converters   the transfer functions to apply on each band of the source image.
      *                      If this array was a user-provided parameter, should be cloned by caller.
      * @param  sampleDimensions  description of conversion result, or {@code null} if unknown.
-     * @param  fillValues   values to assign to pixels outside source image, or {@code null} for default values.
      */
     private BandedSampleConverter(final RenderedImage         source,
                                   final BandedSampleModel     sampleModel,
                                   final ColorModel            colorModel,
                                   final NumberRange<?>[]      ranges,
                                   final MathTransform1D[]     converters,
-                                  final List<SampleDimension> sampleDimensions,
-                                  final Number[]              fillValues)
+                                  final List<SampleDimension> sampleDimensions)
     {
         super(sampleModel, source);
         this.colorModel       = colorModel;
         this.converters       = converters;
         this.sampleDimensions = sampleDimensions;
         ensureCompatible(sampleModel, colorModel);
-        FillValues fill = null;
-        if (!ImageUtilities.getBounds(source).contains(super.getBounds())) {
-            fill = new FillValues(sampleModel, fillValues, true);
-            if (fill.isFullyZero) {
-                fill = null;
-            }
-        }
-        this.fillValues = fill;
         /*
          * Get an estimation of the resolution, arbitrarily looking in the middle of the range of values.
          * If the converters are linear (which is the most common case), the middle value does not matter
@@ -216,7 +199,6 @@ class BandedSampleConverter extends WritableComputedImage {
      * @param  converters    the transfer functions to apply on each band of the source image.
      * @param  targetType    the type of this image resulting from conversion of given image.
      * @param  colorizer     provider of color model for the expected range of values, or {@code null}.
-     * @param  fillValues    values to assign to pixels outside source image, or {@code null} for default values.
      * @return the image which compute converted values from the given source.
      *
      * @see ImageProcessor#convert(RenderedImage, NumberRange[], MathTransform1D[], DataType)
@@ -226,8 +208,7 @@ class BandedSampleConverter extends WritableComputedImage {
                                   final NumberRange<?>[]  sourceRanges,
                                   final MathTransform1D[] converters,
                                   final DataType          targetType,
-                                  final Colorizer         colorizer,
-                                  final Number[]          fillValues)
+                                  final Colorizer         colorizer)
     {
         /*
          * Since this operation applies its own ColorModel anyway, skip operation that was doing nothing else
@@ -275,11 +256,11 @@ class BandedSampleConverter extends WritableComputedImage {
                 inverses[i] = converters[i].inverse();
             }
             return new Writable((WritableRenderedImage) source, sampleModel, colorModel,
-                                sourceRanges, converters, inverses, sampleDimensions, fillValues);
+                                sourceRanges, converters, inverses, sampleDimensions);
         } catch (NoninvertibleTransformException e) {
             Logging.recoverableException(LOGGER, ImageProcessor.class, "convert", e);
         }
-        return new BandedSampleConverter(source, sampleModel, colorModel, sourceRanges, converters, sampleDimensions, fillValues);
+        return new BandedSampleConverter(source, sampleModel, colorModel, sourceRanges, converters, sampleDimensions);
     }
 
     /**
@@ -416,7 +397,7 @@ class BandedSampleConverter extends WritableComputedImage {
         if (target == null) {
             target = createTile(tileX, tileY);
         }
-        Transferer.create(getSource(), target, fillValues).compute(converters);
+        Transferer.create(getSource(), target).compute(converters);
         return target;
     }
 
@@ -455,10 +436,9 @@ class BandedSampleConverter extends WritableComputedImage {
                  final NumberRange<?>[]      ranges,
                  final MathTransform1D[]     converters,
                  final MathTransform1D[]     inverses,
-                 final List<SampleDimension> sampleDimensions,
-                 final Number[]              fillValues)
+                 final List<SampleDimension> sampleDimensions)
         {
-            super(source, sampleModel, colorModel, ranges, converters, sampleDimensions, fillValues);
+            super(source, sampleModel, colorModel, ranges, converters, sampleDimensions);
             this.inverses = inverses;
         }
 

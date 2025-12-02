@@ -71,7 +71,7 @@ public final class BandedSampleConverterTest extends ImageTestCase {
         source.initializeAllTiles(0);
         image = BandedSampleConverter.create(source, ImageLayout.DEFAULT, null,
                 new MathTransform1D[] {(MathTransform1D) MathTransforms.linear(scale, 0)},
-                targetType, null, null);
+                targetType, null);
     }
 
     /**

@@ -29,7 +29,6 @@ import java.awt.image.RasterFormatException;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.internal.shared.ImageUtilities;
-import org.apache.sis.image.internal.shared.FillValues;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.internal.shared.Numerics;
@@ -543,19 +542,17 @@ abstract class Transferer {
      * That later condition is met if the target tile matrix was computed by {@link ImageLayout}.
      * However, the target tile may be larger in the last row and last column of the tile matrix
      * if {@link ImageLayout#isImageBoundsAdjustmentAllowed} was {@code true}. This method clips
-     * the area of interest for that reason.</p>
+     * the area of interest for that reason. Note that there is no need to write fill values in
+     * the area outside the clip, because this method is invoked in contexts where area outside
+     * the clip should be area outside the bounds of the target image.</p>
      *
-     * @param  source      image from which to read sample values.
-     * @param  target      image tile where to write sample values after processing.
-     * @param  fillValues  the fill values, or {@code null} if none.
+     * @param  source  image from which to read sample values.
+     * @param  target  image tile where to write sample values after processing.
      * @return object to use for applying the operation.
      */
-    static Transferer create(final RenderedImage source, final WritableRaster target, final FillValues fillValues) {
+    static Transferer create(final RenderedImage source, final WritableRaster target) {
         final Rectangle aoi = target.getBounds();
         ImageUtilities.clipBounds(source, aoi);
-        if (fillValues != null && (aoi.width != target.getWidth() || aoi.height != target.getHeight())) {
-            fillValues.fill(target);
-        }
         int tileX = ImageUtilities.pixelToTileX(source, target.getMinX());
         int tileY = ImageUtilities.pixelToTileY(source, target.getMinY());
         return create(source.getTile(tileX, tileY), target, aoi);
