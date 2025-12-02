@@ -529,7 +529,7 @@ final class Visualization extends ResampledImage {
             tile = createTile(tileX, tileY);
         }
         // Conversion only, when no resampling is needed.
-        Transferer.create(getSource(), tile).compute(converters);
+        Transferer.create(getSource(), tile, null).compute(converters);
         return tile;
     }
 

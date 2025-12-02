@@ -32,6 +32,7 @@ import static org.apache.sis.feature.Assertions.assertValuesEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class BandedSampleConverterTest extends ImageTestCase {
     /**
      * Size of tiles in this test. The width should be different than the height
@@ -70,7 +71,7 @@ public final class BandedSampleConverterTest extends ImageTestCase {
         source.initializeAllTiles(0);
         image = BandedSampleConverter.create(source, ImageLayout.DEFAULT, null,
                 new MathTransform1D[] {(MathTransform1D) MathTransforms.linear(scale, 0)},
-                targetType, null);
+                targetType, null, null);
     }
 
     /**
