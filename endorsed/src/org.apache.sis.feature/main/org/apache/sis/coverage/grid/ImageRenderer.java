@@ -60,6 +60,7 @@ import org.apache.sis.math.Vector;
 import static org.apache.sis.image.PlanarImage.XY_DIMENSIONS_KEY;
 import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
 import static org.apache.sis.image.PlanarImage.SAMPLE_DIMENSIONS_KEY;
+import static org.apache.sis.coverage.grid.GridCoverage.BIDIMENSIONAL;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.coordinate.MismatchedDimensionException;
@@ -123,7 +124,7 @@ public class ImageRenderer {
 
     /**
      * The dimensions to select in the grid coverage for producing an image. This is an array of length
-     * {@value GridCoverage2D#BIDIMENSIONAL} obtained by {@link GridExtent#getSubspaceDimensions(int)}.
+     * {@value GridCoverage#BIDIMENSIONAL} obtained by {@link GridExtent#getSubspaceDimensions(int)}.
      * The array content is almost always {0,1}, but this class should work with other dimensions too.
      *
      * @see #getXYDimensions()
@@ -318,7 +319,7 @@ public class ImageRenderer {
         } else {
             sliceExtent = source;
         }
-        gridDimensions  = sliceExtent.getSubspaceDimensions(GridCoverage2D.BIDIMENSIONAL);
+        gridDimensions  = sliceExtent.getSubspaceDimensions(BIDIMENSIONAL);
         final int  xd   = gridDimensions[0];
         final int  yd   = gridDimensions[1];
         final long xcov = source.getLow(xd);
@@ -451,7 +452,7 @@ public class ImageRenderer {
      */
     public GridGeometry getImageGeometry(final int dimCRS) {
         GridGeometry ig = imageGeometry;
-        if (ig == null || dimCRS != GridCoverage2D.BIDIMENSIONAL) {
+        if (ig == null || dimCRS != BIDIMENSIONAL) {
             if (imageUseSameGeometry(dimCRS)) {
                 ig = geometry;
             } else try {
@@ -460,7 +461,7 @@ public class ImageRenderer {
             } catch (FactoryException e) {
                 throw SliceGeometry.canNotCompute(e);
             }
-            if (dimCRS == GridCoverage2D.BIDIMENSIONAL) {
+            if (dimCRS == BIDIMENSIONAL) {
                 imageGeometry = ig;
             }
         }
@@ -486,7 +487,7 @@ public class ImageRenderer {
     public Object getProperty(final String key) {
         switch (key) {
             case XY_DIMENSIONS_KEY:     return getXYDimensions();
-            case GRID_GEOMETRY_KEY:     return getImageGeometry(GridCoverage2D.BIDIMENSIONAL);
+            case GRID_GEOMETRY_KEY:     return getImageGeometry(BIDIMENSIONAL);
             case SAMPLE_DIMENSIONS_KEY: return bands.clone();
         }
         return (properties != null) ? properties.get(key) : null;
@@ -529,7 +530,7 @@ public class ImageRenderer {
      */
     private boolean imageUseSameGeometry(final int dimCRS) {
         final int tgtDim = geometry.getTargetDimension();
-        ArgumentChecks.ensureBetween("dimCRS", GridCoverage2D.BIDIMENSIONAL, tgtDim, dimCRS);
+        ArgumentChecks.ensureBetween("dimCRS", BIDIMENSIONAL, tgtDim, dimCRS);
         if (tgtDim == dimCRS && geometry.getDimension() == gridDimensions.length) {
             final GridExtent extent = geometry.extent;
             if (sliceExtent == null) {
@@ -773,7 +774,7 @@ public class ImageRenderer {
         }
         SliceGeometry supplier = null;
         if (imageGeometry == null) {
-            if (imageUseSameGeometry(GridCoverage2D.BIDIMENSIONAL)) {
+            if (imageUseSameGeometry(BIDIMENSIONAL)) {
                 imageGeometry = geometry;
             } else {
                 supplier = new SliceGeometry(geometry, sliceExtent, gridDimensions, mtFactory);

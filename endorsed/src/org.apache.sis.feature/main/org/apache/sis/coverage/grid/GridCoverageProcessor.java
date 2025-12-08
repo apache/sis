@@ -346,7 +346,7 @@ public class GridCoverageProcessor implements Cloneable {
         if (value instanceof GridGeometry) {
             return (GridGeometry) value;
         }
-        return new ImageRenderer(coverage, null).getImageGeometry(GridCoverage2D.BIDIMENSIONAL);
+        return new ImageRenderer(coverage, null).getImageGeometry(GridCoverage.BIDIMENSIONAL);
     }
 
     /**

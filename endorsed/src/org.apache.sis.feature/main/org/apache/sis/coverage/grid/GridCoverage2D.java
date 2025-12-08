@@ -96,12 +96,6 @@ import org.opengis.coverage.PointOutsideCoverageException;
  */
 public class GridCoverage2D extends GridCoverage {
     /**
-     * A constant for identifying code that relying on having 2 dimensions.
-     * This is the minimal number of dimension required for this coverage.
-     */
-    static final int BIDIMENSIONAL = 2;
-
-    /**
      * The sample values stored as a {@code RenderedImage}.
      */
     private final RenderedImage data;

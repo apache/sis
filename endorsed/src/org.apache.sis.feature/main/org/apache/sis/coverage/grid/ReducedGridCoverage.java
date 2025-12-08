@@ -96,7 +96,7 @@ final class ReducedGridCoverage extends DerivedGridCoverage {
          * The slice where to perform evaluation, or {@code null} if not yet computed.
          * This is the cached value of {@link #getDefaultSlice()}.
          */
-        private Map<Integer,Long> slice;
+        private Map<Integer, Long> slice;
 
         /**
          * Creates a new evaluator wrapping the given source coverage evaluator.
@@ -123,9 +123,9 @@ final class ReducedGridCoverage extends DerivedGridCoverage {
          */
         @Override
         @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Because the map is unmodifiable.
-        public Map<Integer,Long> getDefaultSlice() {
+        public Map<Integer, Long> getDefaultSlice() {
             if (slice == null) {
-                final var copy = new TreeMap<Integer,Long>();
+                final var copy = new TreeMap<Integer, Long>();
                 super.getDefaultSlice().forEach((dim, coord) -> {
                     dim = reduction.toReducedDimension(dim);
                     if (dim >= 0) copy.put(dim, coord);
@@ -141,12 +141,12 @@ final class ReducedGridCoverage extends DerivedGridCoverage {
          * @throws IllegalArgumentException if the map contains an illegal dimension or grid coordinate value.
          */
         @Override
-        public void setDefaultSlice(Map<Integer,Long> slice) {
+        public void setDefaultSlice(Map<Integer, Long> slice) {
             if (slice == null) {
                 GridGeometry origin = ReducedGridCoverage.this.source.getGridGeometry();
                 slice = origin.getExtent().getSliceCoordinates();
             } else {
-                final var copy = new TreeMap<Integer,Long>();
+                final var copy = new TreeMap<Integer, Long>();
                 slice.forEach((dim, coord) -> copy.put(reduction.toSourceDimension(dim), coord));
                 slice = copy;
             }

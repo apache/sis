@@ -62,6 +62,12 @@ import org.opengis.coverage.CannotEvaluateException;
  */
 public abstract class GridCoverage extends BandedCoverage {
     /**
+     * A constant for making easier to identify codes working on two dimensional data.
+     * This is the minimal number of dimension required for {@link GridCoverage2D}.
+     */
+    static final int BIDIMENSIONAL = 2;
+
+    /**
      * The processor to use in calls to {@link #convert(RenderedImage, DataType, MathTransform1D[], ImageProcessor)}.
      * Wrapped in a class for lazy instantiation.
      */

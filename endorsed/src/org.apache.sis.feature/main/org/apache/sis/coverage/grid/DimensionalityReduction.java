@@ -136,7 +136,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
      * @see #getSliceCoordinates()
      */
     @SuppressWarnings("serial")                                 // Map.of(…) are serializable.
-    private final Map<Integer,Long> sliceCoordinates;
+    private final Map<Integer, Long> sliceCoordinates;
 
     /**
      * A cache of {@link #gridAxesToPass} for all combinations of axes to retain in the first four dimensions.
@@ -280,7 +280,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
      * @param  source  the dimensionality reduction to copy.
      * @param  slice   coordinates of the slice in removed dimensions.
      */
-    private DimensionalityReduction(final DimensionalityReduction source, final Map<Integer,Long> slice) {
+    private DimensionalityReduction(final DimensionalityReduction source, final Map<Integer, Long> slice) {
         sourceGeometry     = source.sourceGeometry;
         reducedGeometry    = source.reducedGeometry;
         gridAxesToPass     = source.gridAxesToPass;
@@ -548,7 +548,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
      * @see GridCoverage.Evaluator#setDefaultSlice(Map)
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Map is immutable.
-    public Map<Integer,Long> getSliceCoordinates() {
+    public Map<Integer, Long> getSliceCoordinates() {
         return sliceCoordinates;
     }
 
@@ -941,7 +941,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
         final GridExtent extent = sourceGeometry.getExtent();
         final int sourceDim = extent.getDimension();
         ArgumentChecks.ensureDimensionMatches("slicePoint", sourceDim, extent);
-        final Map<Integer,Long> slices = new HashMap<>();
+        final Map<Integer, Long> slices = new HashMap<>();
         for (int dim=0; dim < sourceDim; dim++) {
             final long low   = extent.getLow (dim);
             final long high  = extent.getHigh(dim);
@@ -951,7 +951,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
                 b = b.substring(1, b.length() - 1);   // Remove brackets.
                 throw new PointOutsideCoverageException(Resources.format(
                         Resources.Keys.GridCoordinateOutsideCoverage_4,
-                        extent.getAxisIdentification(dim,dim), low, high, b));
+                        extent.getAxisIdentification(dim, dim), low, high, b));
             }
             if (low != high && toReducedDimension(dim) < 0) {
                 slices.put(dim, value);
@@ -980,7 +980,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
         ArgumentChecks.ensureBetween("ratio", 0, 1, ratio);
         final GridExtent extent = sourceGeometry.getExtent();
         final int sourceDim = extent.getDimension();
-        final Map<Integer,Long> slices = new HashMap<>();
+        final Map<Integer, Long> slices = new HashMap<>();
         for (int dim=0; dim < sourceDim; dim++) {
             if (toReducedDimension(dim) < 0 && extent.getLow(dim) != extent.getHigh(dim)) {
                 slices.put(dim, extent.getRelative(dim, ratio));
