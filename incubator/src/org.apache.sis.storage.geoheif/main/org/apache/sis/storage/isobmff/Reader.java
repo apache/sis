@@ -202,7 +202,7 @@ public final class Reader implements Cloneable {
         } catch (DataStoreException cause) {
             box = null;
             if (isNewWarning(type, Classes.getClass(cause))) {
-                var record = new LogRecord(Level.WARNING, "Cannot read the \"" + Box.formatFourCC(type) + "\" box.");
+                var record = new LogRecord(Level.WARNING, "Cannot read the “" + Box.formatFourCC(type) + "” box.");
                 record.setThrown(cause);
                 listeners.warning(record);
             }
@@ -339,7 +339,7 @@ public final class Reader implements Cloneable {
             if (type instanceof Integer fourCC) {
                 type = Box.formatFourCC(fourCC);
             }
-            var record = new LogRecord(Level.FINE, "The \"" + type + "\" type of box is unrecognized.");
+            var record = new LogRecord(Level.WARNING, "The “" + type + "” type of box is unrecognized.");
             listeners.warning(record);
         }
     }
@@ -355,7 +355,7 @@ public final class Reader implements Cloneable {
     public final void unexpectedChildType(final int container, final int child) {
         if (isNewWarning(container, child)) {
             final var message = new StringBuilder("Container box “").append(Box.formatFourCC(container))
-                    .append("” cannot contain children of type “").append(Box.formatFourCC(child)).append("\".");
+                    .append("” cannot contain children of type “").append(Box.formatFourCC(child)).append("”.");
             listeners.warning(message.toString());
         }
     }
