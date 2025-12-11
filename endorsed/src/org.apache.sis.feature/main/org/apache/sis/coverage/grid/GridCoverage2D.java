@@ -33,6 +33,7 @@ import static java.lang.Math.min;
 import static java.lang.Math.addExact;
 import static java.lang.Math.subtractExact;
 import static java.lang.Math.toIntExact;
+import static java.lang.Math.round;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
@@ -91,7 +92,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   1.1
  */
 public class GridCoverage2D extends GridCoverage {
@@ -503,7 +504,14 @@ public class GridCoverage2D extends GridCoverage {
          * Creates a new evaluator for the enclosing coverage.
          */
         PixelAccessor() {
-            super(GridCoverage2D.this);
+        }
+
+        /**
+         * Returns the coverage from which this evaluator is fetching sample values.
+         */
+        @Override
+        public final GridCoverage getCoverage() {
+            return GridCoverage2D.this;
         }
 
         /**
@@ -513,25 +521,33 @@ public class GridCoverage2D extends GridCoverage {
          */
         @Override
         public double[] apply(final DirectPosition point) throws CannotEvaluateException {
+            RuntimeException cause = null;
             try {
-                final FractionalGridCoordinates gc = toGridPosition(point);
-                try {
-                    final int x = toIntExact(addExact(gc.getCoordinateValue(xDimension), gridToImageX));
-                    final int y = toIntExact(addExact(gc.getCoordinateValue(yDimension), gridToImageY));
-                    return evaluate(data, x, y);
-                } catch (ArithmeticException | IndexOutOfBoundsException | DisjointExtentException ex) {
-                    if (isNullIfOutside()) {
-                        return null;
+                final double[] gridCoords = toGridPosition(point);
+                final double cx = gridCoords[xDimension];
+                final double cy = gridCoords[yDimension];
+                if (cx >= ValuesAtPointIterator.DOMAIN_MINIMUM && cx <= ValuesAtPointIterator.DOMAIN_MAXIMUM &&
+                    cy >= ValuesAtPointIterator.DOMAIN_MINIMUM && cy <= ValuesAtPointIterator.DOMAIN_MAXIMUM)
+                {
+                    try {
+                        final int  x = toIntExact(addExact(round(cx), gridToImageX));
+                        final int  y = toIntExact(addExact(round(cy), gridToImageY));
+                        final int tx = ImageUtilities.pixelToTileX(data, x);
+                        final int ty = ImageUtilities.pixelToTileY(data, y);
+                        return values = data.getTile(tx, ty).getPixel(x, y, values);
+                    } catch (ArithmeticException | IndexOutOfBoundsException e) {
+                        cause = e;
                     }
-                    throw (PointOutsideCoverageException) new PointOutsideCoverageException(
-                            gc.pointOutsideCoverage(gridGeometry.extent), point).initCause(ex);
                 }
-            } catch (PointOutsideCoverageException ex) {
-                ex.setOffendingLocation(point);
-                throw ex;
             } catch (RuntimeException | FactoryException | TransformException ex) {
                 throw new CannotEvaluateException(ex.getMessage(), ex);
             }
+            if (isNullIfOutside()) {
+                return null;
+            }
+            var ex = new PointOutsideCoverageException(pointOutsideCoverage(point), point);
+            ex.initCause(cause);
+            throw ex;
         }
     }
 

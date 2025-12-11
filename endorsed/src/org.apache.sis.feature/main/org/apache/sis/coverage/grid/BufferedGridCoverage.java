@@ -77,7 +77,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.6
  * @since   1.1
  */
 public class BufferedGridCoverage extends GridCoverage {
@@ -234,7 +234,7 @@ public class BufferedGridCoverage extends GridCoverage {
      */
     @Override
     public Evaluator evaluator() {
-        return new CellAccessor(this);
+        return new CellAccessor();
     }
 
     /**
@@ -285,13 +285,9 @@ public class BufferedGridCoverage extends GridCoverage {
 
     /**
      * Implementation of evaluator returned by {@link #evaluator()}.
+     * This evaluator gets the values directly from the {@link DataBuffer}.
      */
-    private static final class CellAccessor extends DefaultEvaluator {
-        /**
-         * A copy of {@link BufferedGridCoverage#data} reference.
-         */
-        private final DataBuffer data;
-
+    private final class CellAccessor extends DefaultEvaluator {
         /**
          * The grid lower values. Those values need to be subtracted to each
          * grid coordinate before to compute index in {@link #data} buffer.
@@ -311,13 +307,11 @@ public class BufferedGridCoverage extends GridCoverage {
         private final boolean banded;
 
         /**
-         * Creates a new evaluator for the specified coverage.
+         * Creates a new evaluator for the enclosing coverage.
          */
-        CellAccessor(final BufferedGridCoverage coverage) {
-            super(coverage);
-            final GridExtent extent = coverage.getGridGeometry().getExtent();
-            final int numBands = coverage.getSampleDimensions().size();
-            data     = coverage.data;
+        CellAccessor() {
+            final GridExtent extent = getGridGeometry().getExtent();
+            final int numBands = getSampleDimensions().size();
             banded   = data.getNumBanks() > 1;
             values   = new double[numBands];
             lower    = new long[extent.getDimension()];
@@ -330,28 +324,36 @@ public class BufferedGridCoverage extends GridCoverage {
         }
 
         /**
+         * Returns the coverage from which this evaluator is fetching sample values.
+         */
+        @Override
+        public final GridCoverage getCoverage() {
+            return BufferedGridCoverage.this;
+        }
+
+        /**
          * Returns a sequence of double values for a given point in the coverage.
          * The CRS of the given point may be any coordinate reference system,
          * or {@code null} for the same CRS as the coverage.
          */
         @Override
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")
         public double[] apply(final DirectPosition point) throws CannotEvaluateException {
             final int pos;
             try {
-                final FractionalGridCoordinates gc = toGridPosition(point);
+                final double[] gridCoords = toGridPosition(point);
                 int  i = lower.length;
                 long s = sizes[i];
                 long index = 0;
                 while (--i >= 0) {
                     final long low = lower[i];
-                    long p = gc.getCoordinateValue(i);
+                    long p = Math.round(gridCoords[i]);
                     // (p - low) may overflow, so we must test (p < low) before.
                     if (p < low || (p -= low) >= s) {
                         if (isNullIfOutside()) {
                             return null;
                         }
-                        throw new PointOutsideCoverageException(
-                                gc.pointOutsideCoverage(getCoverage().gridGeometry.extent), point);
+                        throw new PointOutsideCoverageException(pointOutsideCoverage(point), point);
                     }
                     /*
                      * Following should never overflow, otherwise BufferedGridCoverage

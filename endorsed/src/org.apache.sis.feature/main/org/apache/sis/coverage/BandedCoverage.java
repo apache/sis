@@ -18,6 +18,8 @@ package org.apache.sis.coverage;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Collection;
+import java.util.stream.Stream;
 import java.util.function.Function;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -131,7 +133,7 @@ public abstract class BandedCoverage {
      *
      * @author  Johann Sorel (Geomatys)
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.3
+     * @version 1.6
      *
      * @see BandedCoverage#evaluator()
      *
@@ -199,16 +201,19 @@ public abstract class BandedCoverage {
 
         /**
          * Returns a sequence of double values for a given point in the coverage.
-         * The CRS of the given point may be any coordinate reference system;
-         * coordinate conversions will be applied as needed.
-         * If the CRS of the point is undefined, then it is assumed to be the {@linkplain #getCoverage() coverage} CRS.
-         * The returned sequence includes a value for each {@linkplain SampleDimension sample dimension}.
+         * If the <abbr>CRS</abbr> of the point is undefined (i.e., {@code null}),
+         * then it is assumed to be the <abbr>CRS</abbr> of the {@linkplain #getCoverage() coverage}.
+         * If the <abbr>CRS</abbr> of the point is defined but different than the coverage <abbr>CRS</abbr>,
+         * then coordinate conversions or transformations will be applied automatically by this method.
          *
-         * @param  point   the position where to evaluate.
+         * <p>The returned sequence includes a value for each {@linkplain SampleDimension sample dimension}.
+         * For performance reason, this method may return the same array on every method call by overwriting
+         * previous values. Therefore, callers can assume that the array content is stable only until the next call
+         * to an {@code Evaluator} method or traversal of more elements in the {@linkplain #stream stream}.</p>
+         *
+         * @param  point  the position where to evaluate.
          * @return the sample values at the specified point, or {@code null} if the point is outside the coverage.
-         *         For performance reason, this method may return the same array
-         *         on every method call by overwriting previous values.
-         *         Callers should not assume that the array content stay valid for a long time.
+         *         This is not guaranteed to be a new array on each method call.
          * @throws PointOutsideCoverageException if the evaluation failed because the input point
          *         has invalid coordinates and the {@link #isNullIfOutside()} flag is {@code false}.
          * @throws CannotEvaluateException if the values cannot be computed at the specified coordinates
@@ -217,5 +222,42 @@ public abstract class BandedCoverage {
          */
         @Override
         double[] apply(DirectPosition point) throws CannotEvaluateException;
+
+        /**
+         * Returns a stream of sample values for each point of the given collection.
+         * The values in the returned stream are traversed in the iteration order of the given collection.
+         * The returned stream behave as if {@link #apply(DirectPosition)} was invoked for each point.
+         *
+         * <p>This method is equivalent to {@code points.stream().map(this::apply)}, but potentially more efficient.
+         * Therefore, the notes documented in {@link #apply(DirectPosition)} apply also to each elements traversed by
+         * the stream: the <abbr>CRS</abbr> of each point is handled as documented in {@link #apply(DirectPosition)},
+         * consumers should not assume that the content of the {@code double[]} arrays are stable after execution of
+         * the consumer body, and some elements provided by the stream may be {@code null} if a point is outside the
+         * coverage and the {@link #isNullIfOutside()} flag is {@code true}.</p>
+         *
+         * <h4>Parallel streams</h4>
+         * While {@code Evaluator} is not thread-safe, parallel streams may be supported provided that the state of
+         * this {@code Evaluator} is not modified during stream execution. A parallel stream can be requested by
+         * invoking this method with the {@code parallel} argument set to {@code true}.
+         * The {@link Stream#parallel()} method should <strong>not</strong> by invoked.
+         *
+         * <p>Implementations may ignore the {@code parallel} argument if they do not support parallel streams.
+         * It is more difficult for implementations to ignore a call to {@link Stream#parallel()}, which is why
+         * {@code parallel()} should not be invoked on streams returned by this method.</p>
+         *
+         * <h4>Exceptions</h4>
+         * {@link CannotEvaluateException} may be thrown either when this method is invoked,
+         * or later during the traversal, at implementation choice.
+         *
+         * @param  points   the positions where to evaluate.
+         * @param  parallel {@code true} for a parallel stream, or {@code false} for a sequential stream.
+         * @return a sequential or parallel stream of sample values at the specified positions.
+         *
+         * @since 1.6
+         */
+        default Stream<double[]> stream(Collection<? extends DirectPosition> points, boolean parallel) {
+            // Ignore `parallel` because we don't know if `apply(DirectPosition)` is thread-safe.
+            return points.stream().map(this::apply);
+        }
     }
 }
