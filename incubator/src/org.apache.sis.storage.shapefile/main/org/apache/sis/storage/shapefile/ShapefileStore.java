@@ -350,7 +350,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                     final Path prjFile = files.getPrj(false);
                     if (prjFile != null) {
                         try {
-                            crs = CRS.fromWKT(Files.readString(prjFile, StandardCharsets.UTF_8));
+                            crs = CRS.fromWKT(Files.readString(prjFile, StandardCharsets.ISO_8859_1));
                         } catch (IOException | FactoryException ex) {
                             throw new DataStoreException("Failed to parse prj file.", ex);
                         }
