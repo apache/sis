@@ -19,11 +19,13 @@ package org.apache.sis.coverage.grid;
 import java.util.Random;
 import java.util.Arrays;
 import java.util.List;
+import java.util.HashSet;
 import java.util.stream.Stream;
 import java.awt.image.DataBuffer;
 import javax.measure.IncommensurableException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -31,6 +33,9 @@ import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.coverage.PointOutsideCoverageException;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -124,6 +129,9 @@ public final class DefaultEvaluatorTest extends TestCase {
                 random.nextBoolean());          // banded or interleaved sample model
 
         image.initializeAllTiles();
+        assertEquals(width,  image.getWidth());
+        assertEquals(height, image.getHeight());
+
         final int dx = random.nextInt(200) - 100;
         final int dy = random.nextInt(200) - 100;
         gridGeometry = new GridGeometry(
@@ -131,6 +139,23 @@ public final class DefaultEvaluatorTest extends TestCase {
                 new Envelope2D(HardCodedCRS.WGS84, 20, -10, 40, 60), GridOrientation.HOMOTHETY);
         evaluator = new GridCoverage2D(gridGeometry, null, image).evaluator();
         numXTiles = image.getNumXTiles();
+    }
+
+    /**
+     * Returns the "grid to CRS" transform targeting the given coordinate reference system.
+     *
+     * @param  crs  the target coordinate reference system.
+     * @return the "grid to CRS" to the given CRS.
+     * @throws TransformException if the transform cannot be created.
+     */
+    private MathTransform gridToCRS(final CoordinateReferenceSystem crs) throws TransformException {
+        try {
+            CoordinateSystem coverageCS = gridGeometry.getCoordinateReferenceSystem().getCoordinateSystem();
+            Matrix swap = CoordinateSystems.swapAndScaleAxes(crs.getCoordinateSystem(), coverageCS);
+            return MathTransforms.concatenate(gridGeometry.gridToCRS, MathTransforms.linear(swap).inverse());
+        } catch (IncommensurableException e) {
+            throw new AssertionError(e);
+        }
     }
 
     /**
@@ -148,29 +173,52 @@ public final class DefaultEvaluatorTest extends TestCase {
         final float   lowerY     = gridGeometry.extent.getLow(1);
         final float[] gridCoords = new float[2];
         MathTransform gridToCRS  = gridGeometry.gridToCRS;
-        CoordinateReferenceSystem crs = HardCodedCRS.WGS84;
-        final CoordinateSystem coverageCS = crs.getCoordinateSystem();
+        CoordinateReferenceSystem crs = gridGeometry.getCoordinateReferenceSystem();
         expectedValues = new float[numPoints];
+        /*
+         * Prepare in advance the indexes of points to put outside the coverage.
+         * Some tests need the guarantee that at least one point is outside, and
+         * this approach also makes easier to have two consecutive points outside.
+         */
+        final var indexOfPointsOutside = new HashSet<Integer>();
+        if (allowVariations) {
+            for (int j=0; j<5; j++) {
+                int i = random.nextInt(numPoints);
+                indexOfPointsOutside.add(i);
+                if (i != 0 && random.nextBoolean()) {
+                    indexOfPointsOutside.add(i - 1);
+                }
+            }
+        }
         for (int i=0; i<numPoints; i++) {
             /*
-             * Randomly change the CRS if this change is allowed.
+             * Randomly change the CRS if this change is allowed. The test needs at least one CRS
+             * with more dimensions than the grid CRS, in order to verify that internal arrays do
+             * not overflow.
              */
-            if (allowVariations && random.nextInt(5) == 0) try {
-                if (random.nextBoolean()) {
-                    crs = HardCodedCRS.WGS84_LATITUDE_FIRST;
-                    var swap = CoordinateSystems.swapAndScaleAxes(coverageCS, crs.getCoordinateSystem());
-                    gridToCRS = MathTransforms.concatenate(gridGeometry.gridToCRS, MathTransforms.linear(swap));
-                } else {
-                    crs = HardCodedCRS.WGS84;
-                    gridToCRS  = gridGeometry.gridToCRS;
+            if (allowVariations) {
+                switch (random.nextInt(10)) {
+                    case 0: {
+                        crs = HardCodedCRS.WGS84;
+                        gridToCRS  = gridGeometry.gridToCRS;
+                        break;
+                    }
+                    case 1: {
+                        crs = HardCodedCRS.WGS84_LATITUDE_FIRST;
+                        gridToCRS = gridToCRS(crs);
+                        break;
+                    }
+                    case 2: {
+                        crs = HardCodedCRS.WGS84_3D;
+                        gridToCRS = gridToCRS(crs);
+                        break;
+                    }
                 }
-            } catch (IncommensurableException e) {
-                throw new AssertionError(e);
             }
             final float expected;
-            if (allowVariations && random.nextInt(5) == 0) {
-                gridCoords[0] = lowerX + (random.nextBoolean() ? -10 : 10 + width);
-                gridCoords[1] = lowerY + (random.nextBoolean() ? -10 : 10 + height);
+            if (indexOfPointsOutside.remove(i)) {
+                gridCoords[0] = lowerX + (random.nextBoolean() ? -1 : width);
+                gridCoords[1] = lowerY + (random.nextBoolean() ? -1 : height);
                 expected = Float.NaN;
             } else {
                 final int x = random.nextInt(width);
@@ -188,6 +236,7 @@ public final class DefaultEvaluatorTest extends TestCase {
             gridToCRS.transform(gridCoords, 0, point.coordinates, 0, 1);
             points[i] = point;
         }
+        assertTrue(indexOfPointsOutside.isEmpty());
         return Arrays.asList(points);
     }
 
@@ -199,7 +248,14 @@ public final class DefaultEvaluatorTest extends TestCase {
      * @param  stream  the computed values.
      */
     private void runAndCompare(final Stream<double[]> stream) {
-        final double[][] actual = stream.map((samples) -> (samples != null) ? samples.clone() : null).toArray(double[][]::new);
+        final boolean isNullIfOutside = evaluator.isNullIfOutside();
+        final double[][] actual = stream.map((samples) -> {
+            if (samples != null) {
+                return samples.clone();
+            }
+            assertTrue(isNullIfOutside, "Unexpected null array of sample values.");
+            return null;
+        }).toArray(double[][]::new);
         assertEquals(expectedValues.length, actual.length);
         for (int i=0; i<actual.length; i++) {
             double expected = expectedValues[i];
@@ -208,6 +264,7 @@ public final class DefaultEvaluatorTest extends TestCase {
                 assertEquals(numBands, samples.length);
             }
             for (int band = 0; band < numBands; band++) {
+                assertEquals(Double.isNaN(expected), samples == null);
                 assertEquals(expected += 1000, (samples != null) ? samples[band] : Double.NaN);
             }
         }
@@ -290,5 +347,20 @@ public final class DefaultEvaluatorTest extends TestCase {
         evaluator.setNullIfOutside(true);
         assertTrue(evaluator.isNullIfOutside());
         runAndCompare(evaluator.stream(createTestPoints(true), true));
+    }
+
+    /**
+     * Verifies the exception thrown for point outside the grid domain.
+     *
+     * @throws TransformException if a test point cannot be computed.
+     */
+    @Test
+    public void testPointOutsideCoverageException() throws TransformException {
+        evaluator.setNullIfOutside(false);
+        assertFalse(evaluator.isNullIfOutside());
+        PointOutsideCoverageException ex = assertThrows(PointOutsideCoverageException.class,
+                () -> runAndCompare(evaluator.stream(createTestPoints(true), true)));
+        assertNotNull(ex.getOffendingLocation());
+        assertNotNull(ex.getMessage());
     }
 }

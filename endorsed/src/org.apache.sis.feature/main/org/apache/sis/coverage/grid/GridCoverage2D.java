@@ -59,7 +59,6 @@ import org.apache.sis.util.resources.Errors;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.coverage.CannotEvaluateException;
-import org.opengis.coverage.PointOutsideCoverageException;
 
 
 /**
@@ -501,9 +500,20 @@ public class GridCoverage2D extends GridCoverage {
      */
     private final class PixelAccessor extends DefaultEvaluator {
         /**
+         * Bounding box of valid grid coordinate values, before conversion to pixel coordinates.
+         */
+        private final double xmin, ymin, xmax, ymax;
+
+        /**
          * Creates a new evaluator for the enclosing coverage.
          */
         PixelAccessor() {
+            final long x = Math.subtractExact(data.getMinX(), gridToImageX);
+            final long y = Math.subtractExact(data.getMinY(), gridToImageY);
+            xmin = x - 0.5;
+            ymin = y - 0.5;
+            xmax = addExact(x, data.getWidth())  - 0.5;
+            ymax = addExact(y, data.getHeight()) - 0.5;
         }
 
         /**
@@ -521,23 +531,21 @@ public class GridCoverage2D extends GridCoverage {
          */
         @Override
         public double[] apply(final DirectPosition point) throws CannotEvaluateException {
-            RuntimeException cause = null;
             try {
                 final double[] gridCoords = toGridPosition(point);
                 final double cx = gridCoords[xDimension];
                 final double cy = gridCoords[yDimension];
-                if (cx >= ValuesAtPointIterator.DOMAIN_MINIMUM && cx <= ValuesAtPointIterator.DOMAIN_MAXIMUM &&
-                    cy >= ValuesAtPointIterator.DOMAIN_MINIMUM && cy <= ValuesAtPointIterator.DOMAIN_MAXIMUM)
-                {
-                    try {
-                        final int  x = toIntExact(addExact(round(cx), gridToImageX));
-                        final int  y = toIntExact(addExact(round(cy), gridToImageY));
-                        final int tx = ImageUtilities.pixelToTileX(data, x);
-                        final int ty = ImageUtilities.pixelToTileY(data, y);
-                        return values = data.getTile(tx, ty).getPixel(x, y, values);
-                    } catch (ArithmeticException | IndexOutOfBoundsException e) {
-                        cause = e;
-                    }
+                /*
+                 * We need to check the bounds ourselves instead of relying on the check done by `Raster.getPixel(…)`
+                 * for two reasons: 1) the tile bounds may not be fully valid if the image size is not a multiple of
+                 * the tile size, and 2) if a coordinate is NaN, the round result is 0 but which is incorrect here.
+                 */
+                if (cx >= xmin && cx < xmax && cy >= ymin && cy < ymax) {
+                    final int x  = toIntExact(addExact(round(cx), gridToImageX));
+                    final int y  = toIntExact(addExact(round(cy), gridToImageY));
+                    final int tx = ImageUtilities.pixelToTileX(data, x);
+                    final int ty = ImageUtilities.pixelToTileY(data, y);
+                    return values = data.getTile(tx, ty).getPixel(x, y, values);
                 }
             } catch (RuntimeException | FactoryException | TransformException ex) {
                 throw new CannotEvaluateException(ex.getMessage(), ex);
@@ -545,9 +553,7 @@ public class GridCoverage2D extends GridCoverage {
             if (isNullIfOutside()) {
                 return null;
             }
-            var ex = new PointOutsideCoverageException(pointOutsideCoverage(point), point);
-            ex.initCause(cause);
-            throw ex;
+            throw pointOutsideCoverage(point);
         }
     }
 

@@ -88,11 +88,11 @@ abstract class ValuesAtPointIterator implements Spliterator<double[]> {
     protected final int limitOfXY;
 
     /**
-     * Supplier of the message of the exception to throw if a point is outside the coverage bounds.
+     * Supplier of the exception to throw if a point is outside the coverage bounds.
      * The function argument is the index of the coordinate tuple which is outside the grid coverage.
      * If this supplier is {@code null}, then null arrays will be returned instead of throwing an exception.
      */
-    protected final IntFunction<String> ifOutside;
+    protected final IntFunction<PointOutsideCoverageException> ifOutside;
 
     /**
      * Creates a new iterator which will traverses a subset of the given grid coordinates.
@@ -100,9 +100,11 @@ abstract class ValuesAtPointIterator implements Spliterator<double[]> {
      *
      * @param nearestXY  grid coordinates of points to evaluate, or {@code null}.
      * @param limitOfXY  index after the last coordinate of the last point to evaluate.
-     * @param ifOutside  supplier of exception message for points outside the coverage bounds, or {@code null}.
+     * @param ifOutside  supplier of exception for points outside the coverage bounds, or {@code null}.
      */
-    protected ValuesAtPointIterator(final long[] nearestXY, final int limitOfXY, final IntFunction<String> ifOutside) {
+    protected ValuesAtPointIterator(final long[] nearestXY, final int limitOfXY,
+                                    final IntFunction<PointOutsideCoverageException> ifOutside)
+    {
         this.nearestXY = nearestXY;
         this.limitOfXY = limitOfXY;
         this.ifOutside = ifOutside;
@@ -116,11 +118,11 @@ abstract class ValuesAtPointIterator implements Spliterator<double[]> {
      * @param  coverage    the coverage which will be evaluated.
      * @param  gridCoords  the grid coordinates as floating-point numbers.
      * @param  numPoints   number of points in the array.
-     * @param  ifOutside   supplier of exception message for points outside the coverage bounds, or {@code null}.
+     * @param  ifOutside   supplier of exception for points outside the coverage bounds, or {@code null}.
      * @return the iterator.
      */
     static ValuesAtPointIterator create(final GridCoverage coverage, final double[] gridCoords, int numPoints,
-                                        final IntFunction<String> ifOutside)
+                                        final IntFunction<PointOutsideCoverageException> ifOutside)
     {
         return Slices.create(coverage, gridCoords, 0, numPoints, ifOutside).shortcut();
     }
@@ -216,13 +218,13 @@ abstract class ValuesAtPointIterator implements Spliterator<double[]> {
          *
          * @param nearestXY  grid coordinates of points to evaluate, or {@code null}.
          * @param limitOfXY  index after the last coordinate of the last point to evaluate.
-         * @param ifOutside  supplier of exception message for points outside the coverage bounds, or {@code null}.
+         * @param ifOutside  supplier of exception for points outside the coverage bounds, or {@code null}.
          */
         protected Group(final long[] nearestXY,
                         final int    limitOfXY,
                         final int[]  firstGridCoordOfChildren,
                         final int    upperChildIndex,
-                        final IntFunction<String> ifOutside)
+                        final IntFunction<PointOutsideCoverageException> ifOutside)
         {
             super(nearestXY, limitOfXY, ifOutside);
             this.firstGridCoordOfChildren = firstGridCoordOfChildren;
@@ -372,7 +374,7 @@ abstract class ValuesAtPointIterator implements Spliterator<double[]> {
                        final int[]        firstGridCoordOfChildren,
                        final int          upperChildIndex,
                        final GridExtent[] imageExtents,
-                       final IntFunction<String> ifOutside)
+                       final IntFunction<PointOutsideCoverageException> ifOutside)
         {
             super(nearestXY, limitOfXY, firstGridCoordOfChildren, upperChildIndex, ifOutside);
             this.coverage = coverage;
@@ -391,10 +393,10 @@ abstract class ValuesAtPointIterator implements Spliterator<double[]> {
          * @param gridCoords        the grid coordinates as floating-point numbers.
          * @param gridCoordsOffset  index of the first grid coordinate value.
          * @param numPoints         number of points in the array.
-         * @param ifOutside         supplier of exception message for points outside the coverage bounds, or {@code null}.
+         * @param ifOutside         supplier of exception for points outside the coverage bounds, or {@code null}.
          */
         static Slices create(final GridCoverage coverage, final double[] gridCoords, int gridCoordsOffset, int numPoints,
-                             final IntFunction<String> ifOutside)
+                             final IntFunction<PointOutsideCoverageException> ifOutside)
         {
             final int dimension  = coverage.gridGeometry.getDimension();
             final var extentLow  = new long[dimension];
@@ -413,7 +415,7 @@ abstract class ValuesAtPointIterator implements Spliterator<double[]> {
                     extentLow[i] = Math.round(c);
                 }
                 if (wasOutside && ifOutside != null) {
-                    throw new PointOutsideCoverageException(ifOutside.apply(indexOfXY / BIDIMENSIONAL));
+                    throw ifOutside.apply(indexOfXY / BIDIMENSIONAL);
                 }
                 long lowerX, upperX, lowerY, upperY;
                 nearestXY[limitOfXY++] = lowerX = upperX = extentLow[X_DIMENSION];
@@ -498,7 +500,7 @@ changeOfSlice:  while (numPoints != 0) {
                 return Image.create(this, stopAtXY, coverage.render(extent)).shortcut();
             } catch (DisjointExtentException cause) {
                 if (ifOutside != null) {
-                    var e = new PointOutsideCoverageException(ifOutside.apply(indexOfXY / BIDIMENSIONAL));
+                    var e = ifOutside.apply(indexOfXY / BIDIMENSIONAL);
                     e.initCause(cause);
                     throw e;
                 }
@@ -571,7 +573,7 @@ changeOfSlice:  while (numPoints != 0) {
                       final int    upperChildIndex,
                       final int[]  tileIndices,
                       final BitSet tileIsAbsent,
-                      final IntFunction<String> ifOutside)
+                      final IntFunction<PointOutsideCoverageException> ifOutside)
         {
             super(nearestXY, limitOfXY, firstGridCoordOfChildren, upperChildIndex, ifOutside);
             this.image        = image;
@@ -643,7 +645,7 @@ nextTile:   for (tileCount = 0; indexOfXY < limitOfXY; tileCount++) {
                      * (instead of the end of the sequence of points that are on the same tile).
                      */
                     if (parent.ifOutside != null) {
-                        throw new PointOutsideCoverageException(parent.ifOutside.apply(indexOfXY / BIDIMENSIONAL));
+                        throw parent.ifOutside.apply(indexOfXY / BIDIMENSIONAL);
                     }
                     wasOutside = true;
                 } while (indexOfXY < limitOfXY);

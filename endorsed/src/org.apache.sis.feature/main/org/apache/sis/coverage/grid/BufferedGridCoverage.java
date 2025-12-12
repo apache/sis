@@ -40,7 +40,6 @@ import org.apache.sis.image.DataType;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.coverage.CannotEvaluateException;
-import org.opengis.coverage.PointOutsideCoverageException;
 
 
 /**
@@ -353,7 +352,7 @@ public class BufferedGridCoverage extends GridCoverage {
                         if (isNullIfOutside()) {
                             return null;
                         }
-                        throw new PointOutsideCoverageException(pointOutsideCoverage(point), point);
+                        throw pointOutsideCoverage(point);
                     }
                     /*
                      * Following should never overflow, otherwise BufferedGridCoverage
