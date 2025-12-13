@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.xml;
+package org.apache.sis.xml.internal.shared;
 
 import java.io.Reader;
 import java.io.InputStream;
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
@@ -35,17 +36,31 @@ import org.xml.sax.InputSource;
  * This convenience is provided in a separated class in order to allow the JVM to instantiate the factory
  * only when first needed, when initializing this class.
  *
+ * <h2>Security</h2>
+ * Unless the user has configured the {@code javax.xml.accessExternalDTD} property to something else
+ * than {@code "all"}, this class disallows external DTDs referenced by the {@code "file"} protocols.
+ * Allowed protocols are <abbr>HTTP</abbr> and <abbr>HTTPS</abbr> (list may be expanded if needed).
+ *
  * @author  Martin Desruisseaux (Geomatys)
+ *
+ * @see <a href="https://openjdk.org/jeps/185">JEP 185: Restrict Fetching of External XML Resources</a>
  */
-final class InputFactory {
+public final class InputFactory {
     /**
      * The SIS-wide factory. This factory can be specified by the user, for example using the
-     * {@code javax.xml.stream.XMLInputFactory} system property.
+     * {@code javax.xml.stream.XMLInputFactory} system property or with {@code META-INF/services}.
      *
-     * <div class="note"><b>Note:</b>
-     * {@code XMLInputFactory} has an {@code newDefaultFactory()} method which bypass user settings.</div>
+     * @see org.apache.sis.storage.xml.stream.StaxDataStore#inputFactory()
      */
     private static final XMLInputFactory FACTORY = XMLInputFactory.newInstance();
+    static {
+        if (FACTORY.isPropertySupported(XMLConstants.FEATURE_SECURE_PROCESSING)) {
+            FACTORY.setProperty(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);
+        }
+        if ("all".equals(FACTORY.getProperty(XMLConstants.ACCESS_EXTERNAL_DTD))) {
+            FACTORY.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "http,https");
+        }
+    }
 
     /**
      * Do not allow instantiation of this class.
@@ -68,7 +83,7 @@ final class InputFactory {
      * @throws XMLStreamException if the reader cannot be created.
      */
     public static XMLEventReader createXMLEventReader(final InputStream in) throws XMLStreamException {
-        return FACTORY.createXMLEventReader(in);
+        return FACTORY.createXMLEventReader(in, "UTF-8");
     }
 
     /**

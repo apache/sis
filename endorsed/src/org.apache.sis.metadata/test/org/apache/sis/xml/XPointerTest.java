@@ -29,6 +29,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class XPointerTest extends TestCase {
     /**
      * Creates a new test case.

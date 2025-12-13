@@ -20,7 +20,6 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Filter;
-import java.time.ZoneId;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +27,7 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.charset.Charset;
+import javax.xml.XMLConstants;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLReporter;
 import javax.xml.stream.XMLInputFactory;
@@ -63,28 +63,6 @@ import org.apache.sis.io.wkt.WKTFormat;
  * @author  Martin Desruisseaux (Geomatys)
  */
 public abstract class StaxDataStore extends URIDataStore {
-    /**
-     * The locale to use for locale-sensitive data (<strong>not</strong> for logging or warning messages),
-     * or {@code null} if unspecified.
-     *
-     * @see OptionKey#LOCALE
-     */
-    protected final Locale locale;
-
-    /**
-     * The timezone to use when parsing or formatting dates and times without explicit timezone,
-     * or {@code null} if unspecified.
-     *
-     * @see OptionKey#TIMEZONE
-     */
-    protected final ZoneId timezone;
-
-    /**
-     * The character encoding of the file content, or {@code null} if unspecified.
-     * This is often (but not always) ignored at reading time, but taken in account at writing time.
-     */
-    protected final Charset encoding;
-
     /**
      * Configuration information for JAXB (un)marshaller (actually the SIS wrappers) or for the StAX factories.
      * This object is a read-only map which may contain the following entries:
@@ -201,9 +179,6 @@ public abstract class StaxDataStore extends URIDataStore {
         super(provider, connector);
         final Integer indent;
         storage         = connector.getStorage();
-        locale          = connector.getOption(OptionKey.LOCALE);
-        timezone        = connector.getOption(OptionKey.TIMEZONE);
-        encoding        = connector.getOption(OptionKey.ENCODING);
         indent          = connector.getOption(OptionKey.INDENTATION);
         indentation     = (indent == null) ? Constants.DEFAULT_INDENTATION
                                            : (byte) Math.max(WKTFormat.SINGLE_LINE, Math.min(120, indent));
@@ -298,7 +273,7 @@ public abstract class StaxDataStore extends URIDataStore {
         public Object get(final Object key) {
             if (key instanceof String) {
                 switch ((String) key) {
-                    case XML.LOCALE:         return locale;
+                    case XML.LOCALE:         return getDataLocale();
                     case XML.TIMEZONE:       return timezone;
                     case XML.WARNING_FILTER: return this;
                 }
@@ -325,7 +300,7 @@ public abstract class StaxDataStore extends URIDataStore {
          */
         @Override
         public void report(String message, String errorType, Object info, Location location) {
-            final LogRecord record = new LogRecord(Level.WARNING, message);
+            final var record = new LogRecord(Level.WARNING, message);
             record.setSourceClassName(StaxDataStore.this.getClass().getCanonicalName());
             // record.setLoggerName(…) will be invoked by `listeners` with inferred name.
             listeners.warning(record);
@@ -348,7 +323,7 @@ public abstract class StaxDataStore extends URIDataStore {
          */
         @Override
         public String toString() {
-            return Strings.toString(getClass(), "locale", locale, "timezone", timezone);
+            return Strings.toString(getClass(), "dataLocale", dataLocale, "timezone", timezone);
         }
     }
 
@@ -375,19 +350,52 @@ public abstract class StaxDataStore extends URIDataStore {
     }
 
     /**
+     * Returns the character encoding of the file content, or {@code null} if unspecified.
+     * This is often (but not always) ignored at reading time, but taken in account at writing time.
+     */
+    final Charset getEncoding() {
+        return encoding;
+    }
+
+    /**
+     * Returns the locale to use for locale-sensitive data (<strong>not</strong> for logging or warning messages),
+     * or {@code null} if unspecified.
+     *
+     * @see OptionKey#LOCALE
+     */
+    final Locale getDataLocale() {
+        return dataLocale;
+    }
+
+    /**
      * Returns the factory for StAX readers. The same instance is returned for all {@code StaxDataStore} lifetime.
      * Warnings emitted by readers created by this factory will be forwarded to the {@link #listeners}.
      *
      * <p>This method is indirectly invoked by {@link #createReader(StaxStreamReader)},
      * through a call to {@link InputType#create(StaxDataStore, Object)}.</p>
+     *
+     * <h4>Security</h4>
+     * Unless the user has configured the {@code javax.xml.accessExternalDTD} property to something else
+     * than {@code "all"}, this class disallows external DTDs referenced by the {@code "file"} protocols.
+     * Allowed protocols are <abbr>HTTP</abbr> and <abbr>HTTPS</abbr> (list may be expanded if needed).
+     *
+     * @see org.apache.sis.xml.internal.shared.InputFactory#FACTORY
      */
     final XMLInputFactory inputFactory() {
         assert Thread.holdsLock(this);
-        if (inputFactory == null) {
-            inputFactory = XMLInputFactory.newInstance();
-            inputFactory.setXMLReporter(configuration);
+        XMLInputFactory factory = inputFactory;
+        if (factory == null) {
+            factory = XMLInputFactory.newInstance();
+            if (factory.isPropertySupported(XMLConstants.FEATURE_SECURE_PROCESSING)) {
+                factory.setProperty(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);
+            }
+            if ("all".equals(factory.getProperty(XMLConstants.ACCESS_EXTERNAL_DTD))) {
+                factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "http,https");
+            }
+            factory.setXMLReporter(configuration);
+            inputFactory = factory;     // Set only on success.
         }
-        return inputFactory;
+        return factory;
     }
 
     /**

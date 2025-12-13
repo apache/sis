@@ -28,10 +28,11 @@ import static org.apache.sis.test.Assertions.assertMessageContains;
 
 
 /**
- * Tests the {@link XLink}.
+ * Tests {@link XLink}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class XLinkTest extends TestCase {
     /**
      * Creates a new test case.

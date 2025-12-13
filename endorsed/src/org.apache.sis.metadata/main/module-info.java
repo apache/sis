@@ -173,6 +173,7 @@ module org.apache.sis.metadata {
             org.apache.sis.referencing,
             org.apache.sis.storage,
             org.apache.sis.storage.xml,
+            org.apache.sis.storage.geotiff,
             org.apache.sis.gui;                 // In the "optional" sub-project.
 
     /*

@@ -38,6 +38,7 @@ import org.xml.sax.ContentHandler;
 import org.w3c.dom.Node;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.UseLegacyMetadata;
+import org.apache.sis.xml.internal.shared.OutputFactory;
 import org.apache.sis.xml.internal.shared.ExternalLinkHandler;
 
 

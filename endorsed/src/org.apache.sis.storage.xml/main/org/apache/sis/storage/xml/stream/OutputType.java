@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
+import java.nio.charset.Charset;
 import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
@@ -61,8 +62,9 @@ enum OutputType {
     STREAM(OutputStream.class, InputType.STREAM) {
         @Override XMLStreamWriter create(StaxDataStore ds, Object s) throws XMLStreamException {
             final XMLOutputFactory f = ds.outputFactory();
-            return (ds.encoding != null) ? f.createXMLStreamWriter((OutputStream) s, ds.encoding.name())
-                                         : f.createXMLStreamWriter((OutputStream) s);
+            final Charset encoding = ds.getEncoding();
+            return (encoding != null) ? f.createXMLStreamWriter((OutputStream) s, encoding.name())
+                                      : f.createXMLStreamWriter((OutputStream) s);
         }
         @Override Closeable snapshot(final Object s) {
             if (s instanceof ByteArrayOutputStream) {

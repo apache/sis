@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.base;
 
-import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
 import java.util.Optional;
@@ -28,12 +27,14 @@ import java.io.BufferedWriter;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.net.URL;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.NoSuchFileException;
 import java.nio.charset.Charset;
 import javax.xml.transform.Source;
 import jakarta.xml.bind.JAXBException;
@@ -413,7 +414,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource {
             return false;
         };
         // Cannot use Map.of(…) because it does not accept null values.
-        Map<String,Object> properties = new HashMap<>(8);
+        final var properties = new HashMap<String, Object>(8);
         properties.put(XML.LOCALE, dataLocale);
         properties.put(XML.TIMEZONE, timezone);
         properties.put(XML.WARNING_FILTER, handler);
