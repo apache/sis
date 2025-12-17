@@ -390,7 +390,7 @@ public abstract class StaxDataStore extends URIDataStore {
                 factory.setProperty(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);
             }
             if ("all".equals(factory.getProperty(XMLConstants.ACCESS_EXTERNAL_DTD))) {
-                factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "http,https");
+                factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
             }
             factory.setXMLReporter(configuration);
             inputFactory = factory;     // Set only on success.

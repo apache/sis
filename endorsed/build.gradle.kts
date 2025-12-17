@@ -65,6 +65,8 @@ dependencies {
     compileOnly(libs.esri.geometry)
     compileOnly(libs.libreoffice)
     compileOnly(libs.ucar)
+    compileOnly(libs.udunits)
+    compileOnly(libs.guava)
     compileOnly(libs.aws.s3)
     compileOnly(drivers.postgres)
     runtimeOnly(drivers.derby.core)
@@ -79,6 +81,8 @@ dependencies {
     testImplementation(libs.esri.geometry)      // Idem.
     testImplementation(libs.libreoffice)
     testImplementation(libs.ucar)
+    testImplementation(libs.udunits)
+    testImplementation(libs.guava)
     testImplementation(libs.aws.s3)
     testImplementation(drivers.derby.tools)
     testImplementation(drivers.derby.core)

@@ -58,7 +58,7 @@ public final class InputFactory {
             FACTORY.setProperty(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);
         }
         if ("all".equals(FACTORY.getProperty(XMLConstants.ACCESS_EXTERNAL_DTD))) {
-            FACTORY.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "http,https");
+            FACTORY.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
         }
     }
 
