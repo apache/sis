@@ -18,6 +18,7 @@ package org.apache.sis.xml.internal.shared;
 
 import java.io.Reader;
 import java.io.InputStream;
+import java.util.logging.Logger;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -27,6 +28,8 @@ import javax.xml.stream.util.StreamReaderDelegate;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
+import org.apache.sis.system.Loggers;
+import org.apache.sis.util.logging.Logging;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 
@@ -54,11 +57,20 @@ public final class InputFactory {
      */
     private static final XMLInputFactory FACTORY = XMLInputFactory.newInstance();
     static {
-        if (FACTORY.isPropertySupported(XMLConstants.FEATURE_SECURE_PROCESSING)) {
-            FACTORY.setProperty(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);
-        }
-        if ("all".equals(FACTORY.getProperty(XMLConstants.ACCESS_EXTERNAL_DTD))) {
-            FACTORY.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        try {
+            if (FACTORY.isPropertySupported(XMLConstants.FEATURE_SECURE_PROCESSING)) {
+                FACTORY.setProperty(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);
+            }
+            if ("all".equals(FACTORY.getProperty(XMLConstants.ACCESS_EXTERNAL_DTD))) {
+                FACTORY.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            }
+        } catch (IllegalArgumentException e) {
+            /*
+             * `ACCESS_EXTERNAL_DTD` is clearly documented as a mandatory property since JAXP 1.5 in Java 7.
+             * But Jackson 2.19.1, despite being released 14 years after Java 7, still doesn't support this
+             * property.
+             */
+            Logging.unexpectedException(Logger.getLogger(Loggers.XML), InputFactory.class, "createXMLEventReader", e);
         }
     }
 
