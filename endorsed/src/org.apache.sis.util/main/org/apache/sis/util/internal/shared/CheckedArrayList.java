@@ -113,6 +113,16 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
     }
 
     /**
+     * Indicates that this collection is modifiable.
+     *
+     * @return {@link Mutability#MODIFIABLE}.
+     */
+    @Override
+    public Mutability getMutability() {
+        return Mutability.MODIFIABLE;
+    }
+
+    /**
      * Invoked when an illegal element has been given to the {@code add(E)} method.
      * The element may be illegal either because null or because of invalid type.
      * This method will perform only one of the following actions:

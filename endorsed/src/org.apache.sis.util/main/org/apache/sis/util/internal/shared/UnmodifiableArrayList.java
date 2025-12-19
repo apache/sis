@@ -158,8 +158,18 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
     @Override
     @ConditionallySafe
     @SuppressWarnings("unchecked")
-    public Class<E> getElementType() {
+    public final Class<E> getElementType() {
         return (Class<E>) array.getClass().getComponentType();
+    }
+
+    /**
+     * Indicates that this collection is unmodifiable.
+     *
+     * @return {@link Mutability#UNMODIFIABLE}.
+     */
+    @Override
+    public final Mutability getMutability() {
+        return Mutability.UNMODIFIABLE;
     }
 
     /**

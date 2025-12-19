@@ -82,6 +82,16 @@ public final class CheckedHashSet<E> extends LinkedHashSet<E> implements Checked
     }
 
     /**
+     * Indicates that this collection is modifiable.
+     *
+     * @return {@link Mutability#MODIFIABLE}.
+     */
+    @Override
+    public Mutability getMutability() {
+        return Mutability.MODIFIABLE;
+    }
+
+    /**
      * Adds the specified element to this set if it is not already present.
      *
      * @param  element  element to be added to this set.

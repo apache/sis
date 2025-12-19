@@ -73,7 +73,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  *
  * @author  Chris Mattmann
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.6
  *
  * @param  <E>  the type of elements stored in this tree.
  *
@@ -275,6 +275,16 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E> 
         return elementType;
     }
 
+    /**
+     * Indicates that this collection is modifiable (at least by default).
+     *
+     * @return {@link Mutability#MODIFIABLE} by default.
+     * @since 1.6
+     */
+    @Override
+    public Mutability getMutability() {
+        return Mutability.MODIFIABLE;
+    }
 
     /**
      * Removes all elements from this tree.

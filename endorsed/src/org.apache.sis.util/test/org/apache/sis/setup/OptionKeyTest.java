@@ -47,6 +47,10 @@ public final class OptionKeyTest extends TestCase {
         CustomKey(final String name, final Class<T> type) {
             super(name, type);
         }
+
+        @Override public final Mutability getMutability() {
+            return Mutability.IMMUTABLE;
+        }
     }
 
     /**

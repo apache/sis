@@ -146,6 +146,16 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
     }
 
     /**
+     * Indicates that this container is modifiable.
+     *
+     * @return {@link Mutability#MODIFIABLE}.
+     */
+    @Override
+    public final Mutability getMutability() {
+        return Mutability.MODIFIABLE;
+    }
+
+    /**
      * Returns the number of nodes in this list.
      *
      * @return the number of nodes.

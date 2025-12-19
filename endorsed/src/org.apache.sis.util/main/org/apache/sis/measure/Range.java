@@ -81,7 +81,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  * @author  Joe White
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Jody Garnett (for parameterized type inspiration)
- * @version 1.4
+ * @version 1.6
  *
  * @param <E>  the type of range elements, typically a {@link Number} subclass or {@link java.util.Date}.
  *
@@ -209,6 +209,17 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
         ArgumentChecks.ensureCanCast("minValue", elementType, minValue);
         ArgumentChecks.ensureCanCast("maxValue", elementType, maxValue);
         return Comparable.class.isAssignableFrom(elementType);
+    }
+
+    /**
+     * Indicates that this range is immutable (at least by default).
+     *
+     * @return {@link Mutability#IMMUTABLE} by default.
+     * @since 1.6
+     */
+    @Override
+    public Mutability getMutability() {
+        return Mutability.IMMUTABLE;
     }
 
     /**

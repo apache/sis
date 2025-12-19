@@ -49,7 +49,7 @@ import org.apache.sis.util.resources.Errors;
  *   }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @param <E>  the type of code list elements in the set.
  *
@@ -157,6 +157,17 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     @Override
     public Class<E> getElementType() {
         return elementType;
+    }
+
+    /**
+     * Indicates that this collection is modifiable (at least by default).
+     *
+     * @return {@link Mutability#MODIFIABLE} by default.
+     * @since 1.6
+     */
+    @Override
+    public Mutability getMutability() {
+        return Mutability.MODIFIABLE;
     }
 
     /**

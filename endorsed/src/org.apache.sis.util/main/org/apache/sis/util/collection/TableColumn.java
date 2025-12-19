@@ -314,8 +314,21 @@ public class TableColumn<V> implements CheckedContainer<V> {
     }
 
     /**
+     * Indicates that a table header is an immutable object (at least by default).
+     *
+     * @return {@link Mutability#IMMUTABLE} by default.
+     * @since 1.6
+     */
+    @Override
+    public Mutability getMutability() {
+        return Mutability.IMMUTABLE;
+    }
+
+    /**
      * Returns a string representation of this table column.
      * The default implementation returns the {@linkplain #getHeader() header} in its default locale.
+     *
+     * @return a string representation of this table column.
      */
     @Override
     public String toString() {

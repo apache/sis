@@ -78,7 +78,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  * if they intent to cache {@code IdentifiedObjectSet} instances.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @param <T>  the type of objects to be included in this set.
  *
@@ -147,6 +147,17 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
     @Override
     public Class<T> getElementType() {
         return type;
+    }
+
+    /**
+     * Indicates that this collection is modifiable (at least by default).
+     *
+     * @return {@link Mutability#MODIFIABLE} by default.
+     * @since 1.6
+     */
+    @Override
+    public Mutability getMutability() {
+        return Mutability.MODIFIABLE;
     }
 
     /**
