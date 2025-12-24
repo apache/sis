@@ -66,7 +66,7 @@ import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.internal.shared.CodeLists;
 import org.apache.sis.util.internal.shared.Strings;
@@ -467,12 +467,12 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         Address        address        = null;
         OnlineResource resource       = null;
         if (responsibility != null) {
-            final Party party = CollectionsExt.first(responsibility.getParties());
+            final Party party = Containers.peekFirst(responsibility.getParties());
             if (party != null) {
-                contact = CollectionsExt.first(party.getContactInfo());
+                contact = Containers.peekFirst(party.getContactInfo());
                 if (contact != null) {
-                    address  = CollectionsExt.first(contact.getAddresses());
-                    resource = CollectionsExt.first(contact.getOnlineResources());
+                    address  = Containers.peekFirst(contact.getAddresses());
+                    resource = Containers.peekFirst(contact.getOnlineResources());
                 }
                 if (!canShare(resource, url)) {
                     resource       = null;
@@ -488,7 +488,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                     if (party instanceof Organisation) {
                         // Individual (if any) is considered an organisation member. See comment in next block.
                         if (!canShare(party.getName(), organisationName) ||
-                            !canShare(CollectionsExt.first(((Organisation) party).getIndividual()).getName(), individualName))
+                            !canShare(Containers.peekFirst(((Organisation) party).getIndividual()).getName(), individualName))
                         {
                             responsibility = null;
                         }

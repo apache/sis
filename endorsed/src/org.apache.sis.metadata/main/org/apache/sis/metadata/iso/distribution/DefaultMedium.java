@@ -33,10 +33,10 @@ import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.gco.GO_Real;
 import org.apache.sis.xml.bind.metadata.CI_Citation;
 import org.apache.sis.xml.bind.metadata.MD_Identifier;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.metadata.internal.Dependencies;
-import org.apache.sis.xml.internal.shared.LegacyNamespaces;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ensurePositive;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -256,7 +256,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
 
             /** Returns an iterator over 0 or 1 element. Current iterator implementation is unmodifiable. */
             @Override public Iterator<Double> iterator() {
-                return CollectionsExt.singletonOrEmpty(getDensity()).iterator();
+                return Containers.singletonOrEmpty(getDensity()).iterator();
             }
 
             /** Adds an element only if the set is empty. This method is invoked by JAXB at unmarshalling time. */

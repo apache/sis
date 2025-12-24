@@ -180,6 +180,7 @@ public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E
      * @return {@code true} if this set contains the specified element.
      */
     @Override
+    @SuppressWarnings("element-type-mismatch")
     public boolean contains(final Object element) {
         return count.containsKey(element);
     }
@@ -192,6 +193,7 @@ public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E
      * @return {@code true} if this set changed as a result of this operation.
      */
     @Override
+    @SuppressWarnings("element-type-mismatch")
     public boolean remove(final Object element) {
         if (count.remove(element) != null) {
             sorted = null;
@@ -593,6 +595,10 @@ public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E
      *
      * <p>This method is final because the {@code FrequencySortedSet} implementation makes
      * assumptions on the comparator that would not hold if this method were overridden.</p>
+     *
+     * @param  o1  the first object to compare.
+     * @param  o2  the second object to compare.
+     * @return ordering of the given objects.
      */
     public final int compare(final E o1, final E o2) {
         return signedFrequency(o1) - signedFrequency(o2);

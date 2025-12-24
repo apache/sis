@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.internal.shared;
+package org.apache.sis.util.collection;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
@@ -38,7 +38,7 @@ final class EmptyQueue<E> extends AbstractQueue<E> implements Serializable {
     private static final long serialVersionUID = 2798927118201392605L;
 
     /**
-     * The singleton instance to be returned by {@link CollectionsExt#emptyQueue()}.
+     * The singleton instance to be returned by {@link org.apache.sis.util.collection.Containers#emptyQueue()}.
      * This is not parameterized on intent.
      */
     @SuppressWarnings("rawtypes")

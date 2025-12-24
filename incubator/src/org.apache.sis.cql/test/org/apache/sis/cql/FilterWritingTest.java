@@ -18,13 +18,13 @@ package org.apache.sis.cql;
 
 import java.time.Instant;
 import java.text.ParseException;
+import java.util.List;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LinearRing;
 import org.opengis.filter.Filter;
 import org.opengis.feature.Feature;
 import org.apache.sis.geometry.Envelope2D;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 
@@ -77,11 +77,11 @@ public final class FilterWritingTest extends CQLTestCase {
     @Test
     public void testAnd() throws CQLException {
         final Filter filter = FF.and(
-                UnmodifiableArrayList.<Filter<? super Feature>>wrap(new Filter[] {(Filter)
+                List.<Filter<? super Feature>>of((Filter)
                     FF.equal(FF.property("att1"), FF.literal(15)),
                     FF.equal(FF.property("att2"), FF.literal(30)),
                     FF.equal(FF.property("att3"), FF.literal(50))
-                }));
+                ));
         final String cql = CQL.write(filter);
         assertNotNull(cql);
         assertEquals("(\"att1\" = 15 AND \"att2\" = 30 AND \"att3\" = 50)", cql);
@@ -90,11 +90,11 @@ public final class FilterWritingTest extends CQLTestCase {
     @Test
     public void testOr() throws CQLException {
         final Filter filter = FF.or(
-                UnmodifiableArrayList.<Filter<? super Feature>>wrap(new Filter[] {(Filter)
+                List.<Filter<? super Feature>>of((Filter)
                     FF.equal(FF.property("att1"), FF.literal(15)),
                     FF.equal(FF.property("att2"), FF.literal(30)),
                     FF.equal(FF.property("att3"), FF.literal(50))
-                }));
+                ));
         final String cql = CQL.write(filter);
         assertNotNull(cql);
         assertEquals("(\"att1\" = 15 OR \"att2\" = 30 OR \"att3\" = 50)", cql);

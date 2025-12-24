@@ -25,7 +25,7 @@ import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.coverage.internal.shared.BandAggregateArgument;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -227,7 +227,7 @@ final class BandAggregateGridCoverage extends GridCoverage {
                 for (final Evaluator source : sources) {
                     c.putAll(source.getDefaultSlice());
                 }
-                slices = CollectionsExt.unmodifiableOrCopy(c);
+                slices = Containers.unmodifiable(c);
             }
             return slices;
         }

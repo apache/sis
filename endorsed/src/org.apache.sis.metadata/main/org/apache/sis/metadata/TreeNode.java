@@ -33,7 +33,6 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.internal.shared.Unsafe;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.collection.TableColumn;
@@ -654,7 +653,7 @@ class TreeNode implements Node {
         @Override
         CharSequence getName() {
             CharSequence name = super.getName();
-            final int size = CollectionsExt.size(super.getUserObject());
+            final int size = PropertyAccessor.size(super.getUserObject());
             if (size >= 2) {
                 name = Vocabulary.formatInternational(Vocabulary.Keys.Of_3, name, indexInList+1, size);
             }
@@ -935,7 +934,7 @@ class TreeNode implements Node {
                     final TreeNodeChildren siblings = getSiblings();
                     final int indexInList;
                     if (siblings.isCollectionOrMap(indexInData)) {
-                        indexInList = CollectionsExt.size(siblings.valueAt(indexInData));
+                        indexInList = PropertyAccessor.size(siblings.valueAt(indexInData));
                     } else {
                         indexInList = -1;
                     }

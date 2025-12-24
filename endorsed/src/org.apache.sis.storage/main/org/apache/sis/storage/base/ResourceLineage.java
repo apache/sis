@@ -25,11 +25,11 @@ import org.opengis.metadata.identification.Resolution;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.lineage.DefaultSource;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
-import static org.apache.sis.util.internal.shared.CollectionsExt.nonNull;
+import static org.apache.sis.util.collection.Containers.nonNull;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.MetadataScope;
@@ -87,7 +87,7 @@ final class ResourceLineage {
      * @param  source  metadata of a source of the derived resource for which to provide lineage.
      */
     ResourceLineage(final Metadata source) {
-        referenceSystem = CollectionsExt.first(source.getReferenceSystemInfo());
+        referenceSystem = Containers.peekFirst(source.getReferenceSystemInfo());
         for (final Identification info : nonNull(source.getIdentificationInfo())) {
             final Citation citation = info.getCitation();
             if (citation != null) {

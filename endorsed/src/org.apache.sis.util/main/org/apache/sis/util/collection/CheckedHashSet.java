@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.internal.shared;
+package org.apache.sis.util.collection;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.Objects;
-import org.apache.sis.util.collection.CheckedContainer;
+import org.apache.sis.util.internal.shared.CloneAccess;
 
 
 /**
@@ -32,8 +32,12 @@ import org.apache.sis.util.collection.CheckedContainer;
  *
  * <ul>
  *   <li>Avoid one level of indirection.</li>
- *   <li>Does not accept null elements.</li>
+ *   <li>Do not accept null elements.</li>
+ *   <li>Implement {@link CheckedContainer}.</li>
  * </ul>
+ *
+ * @todo Implements {@link java.util.SequencedSet} after we can target JDK21,
+ * then override the {@code addFirst(E)} and {@code addLast(E)} methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
@@ -42,7 +46,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  * @see Collections#checkedSet(Set, Class)
  */
 @SuppressWarnings("CloneableImplementsClone")
-public final class CheckedHashSet<E> extends LinkedHashSet<E> implements CheckedContainer<E> {
+final class CheckedHashSet<E> extends LinkedHashSet<E> implements CheckedContainer<E>, CloneAccess {
     /**
      * Serial version UID for compatibility with different versions.
      */
@@ -54,23 +58,26 @@ public final class CheckedHashSet<E> extends LinkedHashSet<E> implements Checked
     private final Class<E> type;
 
     /**
-     * Constructs a set of the specified type.
+     * Creates a set of the specified type.
      *
-     * @param type  the element type (cannot be null).
+     * @param type  the type of elements in the set.
      */
-    public CheckedHashSet(final Class<E> type) {
-        this.type = Objects.requireNonNull(type);
+    CheckedHashSet(final Class<E> type) {
+        this.type = type;
     }
 
     /**
-     * Constructs a set of the specified type and initial capacity.
+     * Creates a set initialized to the content of the given collection.
+     * The elements are verified indirectly, since the super-class constructor invokes
+     * {@link #addAll(Collection)} which in turn invoke {@link #add(Object)} for each element.
      *
-     * @param type      the element type (should not be null).
-     * @param capacity  the initial capacity.
+     * @param source  the collection to copy.
+     * @param type    the type of elements in the set.
      */
-    public CheckedHashSet(final Class<E> type, final int capacity) {
-        super(capacity);
-        this.type = Objects.requireNonNull(type);
+    CheckedHashSet(final Collection<? extends E> source, final Class<E> type) {
+        super(Containers.hashMapCapacity(source.size()));
+        this.type = type;
+        addAll(source);     // TODO: replace by super(source) after we can use flexible constructor in JDK25.
     }
 
     /**

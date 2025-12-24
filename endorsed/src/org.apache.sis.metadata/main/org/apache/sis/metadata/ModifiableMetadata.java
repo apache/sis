@@ -20,22 +20,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.List;
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Currency;
-import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.CodeList;
 import org.opengis.metadata.Metadata;               // For javadoc
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.collection.CodeListSet;
-import org.apache.sis.util.internal.shared.CollectionsExt;
-import org.apache.sis.util.internal.shared.CheckedHashSet;
-import org.apache.sis.util.internal.shared.CheckedArrayList;
 import org.apache.sis.metadata.internal.Resources;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.pending.jdk.JDK19;
@@ -85,7 +79,7 @@ import static org.apache.sis.metadata.internal.shared.ImplementationHelper.value
  *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   0.3
  */
 @XmlTransient
@@ -517,19 +511,19 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
                  */
                 if (target != null && state != COMPLETABLE) {
                     target.clear();
+                    target.addAll(source);
                 } else {
                     if (useSet) {
-                        target = createSet(elementType, source);
+                        target = Containers.newCheckedSet(source, elementType);
                     } else {
-                        target = createList(elementType, source);
+                        target = Containers.newCheckedList(source, elementType);
                     }
                 }
-                target.addAll(source);
                 if (state == COMPLETABLE) {
                     if (useSet) {
-                        target = CollectionsExt.unmodifiableOrCopy((Set<E>) target);
+                        target = Containers.unmodifiable((Set<E>) target);
                     } else {
-                        target = CollectionsExt.unmodifiableOrCopy((List<E>) target);
+                        target = Containers.unmodifiable((List<E>) target);
                     }
                 }
             }
@@ -585,7 +579,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
                 }
                 target.putAll(source);
                 if (state == COMPLETABLE) {
-                    target = CollectionsExt.unmodifiableOrCopy(target);
+                    target = Containers.unmodifiable(target);
                 }
             }
         }
@@ -604,12 +598,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *         or {@code null} if the source was null or empty.
      */
     protected static <E> List<E> copyList(final Collection<? extends E> source, final Class<E> elementType) {
-        if (isNullOrEmpty(source)) {
-            return null;
-        }
-        final List<E> target = createList(elementType, source);
-        target.addAll(source);
-        return target;
+        return isNullOrEmpty(source) ? null : Containers.newCheckedList(source, elementType);
     }
 
     /**
@@ -624,12 +613,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *         or {@code null} if the source was null or empty.
      */
     protected static <E> Set<E> copySet(final Collection<? extends E> source, final Class<E> elementType) {
-        if (isNullOrEmpty(source)) {
-            return null;
-        }
-        final Set<E> target = createSet(elementType, source);
-        target.addAll(source);
-        return target;
+        return isNullOrEmpty(source) ? null : Containers.newCheckedSet(source, elementType);
     }
 
     /**
@@ -647,14 +631,11 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
         if (isNullOrEmpty(source)) {
             return null;
         }
-        final Collection<E> target;
         if (useSet(elementType)) {
-            target = createSet(elementType, source);
+            return Containers.newCheckedSet(source, elementType);
         } else {
-            target = createList(elementType, source);
+            return Containers.newCheckedList(source, elementType);
         }
-        target.addAll(source);
-        return target;
     }
 
     /**
@@ -694,14 +675,12 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
         if (value == null) {
             return null;
         }
-        final Collection<E> collection;
+        final Set<E> singleton = Collections.singleton(value);
         if (useSet(elementType)) {
-            collection = createSet(elementType, null);
+            return Containers.newCheckedSet(singleton, elementType);
         } else {
-            collection = new CheckedArrayList<>(elementType, 1);
+            return Containers.newCheckedList(singleton, elementType);
         }
-        collection.add(value);
-        return collection;
     }
 
     /**
@@ -732,7 +711,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
             return null;
         }
         if (state < FREEZING) {
-            return createList(elementType, current);        // `current` given as a matter of principle even if null.
+            return Containers.newCheckedList(null, elementType);
         }
         return Collections.emptyList();
     }
@@ -754,7 +733,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
             return null;
         }
         if (state < FREEZING) {
-            return createSet(elementType, current);     // `current` given as a matter of principle even if null.
+            return Containers.newCheckedSet(null, elementType);
         }
         return Collections.emptySet();
     }
@@ -783,13 +762,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
         final boolean isModifiable = (state < FREEZING);
         if (useSet(elementType)) {
             if (isModifiable) {
-                return createSet(elementType, current);         // `current` given as a matter of principle even if null.
+                return Containers.newCheckedSet(null, elementType);
             } else {
                 return Collections.emptySet();
             }
         } else {
             if (isModifiable) {
-                return createList(elementType, current);        // `current` given as a matter of principle even if null.
+                return Containers.newCheckedList(null, elementType);
             } else {
                 return Collections.emptyList();
             }
@@ -819,52 +798,6 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
             return createMap(keyType, current);         // `current` given as a matter of principle even if null.
         }
         return Collections.emptyMap();
-    }
-
-    /**
-     * Creates a modifiable list for elements of the given type. This method is defined mostly
-     * for consistency with {@link #createSet(Class, Collection)}.
-     *
-     * @param  source  the collection to be copied in the new list. This method uses this information
-     *                 only for computing initial capacity; it does not perform the actual copy.
-     */
-    private static <E> List<E> createList(final Class<E> elementType, final Collection<?> source) {
-        if (source == null) {
-            /*
-             * Do not specify an initial capacity, because the list will stay empty in a majority of cases
-             * (i.e. the users will want to iterate over the list elements more often than they will want
-             * to add elements). JDK implementation of ArrayList has a lazy instantiation mechanism for
-             * initially empty lists, but as of JDK 10 this lazy instantiation works only for list having
-             * the default capacity.
-             */
-            return new CheckedArrayList<>(elementType);
-        }
-        return new CheckedArrayList<>(elementType, source.size());
-    }
-
-    /**
-     * Creates a modifiable set for elements of the given type. This method will create an {@link EnumSet},
-     * {@link CodeListSet} or {@link java.util.LinkedHashSet} depending on the {@code elementType} argument.
-     * The set must have a stable iteration order (this is needed by {@link TreeTableView}).
-     *
-     * @param  source  the collection to be copied in the new set, or {@code null} if unknown.
-     *                 This method uses this information only for computing initial capacity;
-     *                 it does not perform the actual copy.
-     */
-    @SuppressWarnings({"unchecked","rawtypes"})
-    private static <E> Set<E> createSet(final Class<E> elementType, final Collection<?> source) {
-        if (Enum.class.isAssignableFrom(elementType)) {
-            return EnumSet.noneOf((Class) elementType);
-        }
-        if (CodeList.class.isAssignableFrom(elementType) && Modifier.isFinal(elementType.getModifiers())) {
-            return new CodeListSet(elementType);
-        }
-        /*
-         * If we cannot compute an initial capacity from the size of an existing source, use an arbitrary
-         * small value (currently 4). We use a small value because collections will typically contain few
-         * elements (often just a singleton).
-         */
-        return new CheckedHashSet<>(elementType, (source != null) ? Containers.hashMapCapacity(source.size()) : 4);
     }
 
     /**

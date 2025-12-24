@@ -50,7 +50,7 @@ public interface CheckedContainer<E> {
      *
      * @return the element type.
      */
-    Class<E> getElementType();
+    Class<? extends E> getElementType();
 
     /**
      * Returns whether this container is modifiable, unmodifiable or immutable.
@@ -125,6 +125,16 @@ public interface CheckedContainer<E> {
                 }
             }
             return UNKNOWN;
+        }
+
+        /**
+         * Returns {@code true} if this enumeration unmodifiable or immutable.
+         * For this method, immutability is considered a stronger variant of being unmodifiable.
+         *
+         * @return whether this enumeration is {@link #UNMODIFIABLE} or {@link #IMMUTABLE}.
+         */
+        final boolean isUnmodifiable() {
+            return this == UNMODIFIABLE || this == IMMUTABLE;
         }
     }
 }

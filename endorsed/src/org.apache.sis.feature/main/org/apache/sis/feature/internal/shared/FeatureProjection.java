@@ -30,9 +30,9 @@ import org.opengis.util.GenericName;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CorruptedObjectException;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.pending.jdk.Record;
 import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.feature.Features;
@@ -341,7 +341,7 @@ public final class FeatureProjection extends Record implements UnaryOperator<Fea
      * @return the name of all stored properties.
      */
     public final List<String> propertiesToCopy() {
-        return UnmodifiableArrayList.wrap(propertiesToCopy);
+        return Containers.viewAsUnmodifiableList(propertiesToCopy);
     }
 
     /**

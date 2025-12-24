@@ -173,7 +173,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     public String getFilename() {
-        String filename = Utils.nonEmpty(file.getLocation());
+        String filename = VariableWrapper.nonEmpty(file.getLocation());
         if (filename != null) {
             int s = filename.lastIndexOf(File.separatorChar);
             if (s < 0 && File.separatorChar != '/') {
@@ -202,12 +202,12 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     public void addFormatDescription(MetadataBuilder builder) {
-        String name = Utils.nonEmpty(file.getFileTypeId());
+        String name = VariableWrapper.nonEmpty(file.getFileTypeId());
         if (builder.setPredefinedFormat(name, null, false)) {
             name = null;
         }
-        builder.addFormatName(Utils.nonEmpty(file.getFileTypeDescription()));
-        builder.setFormatEdition(Utils.nonEmpty(file.getFileTypeVersion()));
+        builder.addFormatName(VariableWrapper.nonEmpty(file.getFileTypeDescription()));
+        builder.setFormatEdition(VariableWrapper.nonEmpty(file.getFileTypeVersion()));
         builder.addFormatName(name);        // Do nothing if `name` is null.
         Citation provider;
         try {
@@ -321,7 +321,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             for (final Group group : groups) {
                 final Attribute attribute = findAttribute(group, name);
                 if (attribute != null && attribute.isString()) {
-                    return Utils.nonEmpty(attribute.getStringValue());
+                    return VariableWrapper.nonEmpty(attribute.getStringValue());
                 }
             }
         }
@@ -342,9 +342,9 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
                 if (attribute != null) {
                     final Number value = attribute.getNumericValue();
                     if (value != null) {
-                        return Utils.fixSign(value, attribute.getDataType().isUnsigned());
+                        return VariableWrapper.fixSign(value, attribute.getDataType().isUnsigned());
                     }
-                    String asString = Utils.nonEmpty(attribute.getStringValue());
+                    String asString = VariableWrapper.nonEmpty(attribute.getStringValue());
                     if (asString != null) {
                         return parseNumber(name, asString);
                     }
@@ -366,7 +366,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             for (final Group group : groups) {
                 final Attribute attribute = findAttribute(group, name);
                 if (attribute != null && attribute.isString()) {
-                    String value = Utils.nonEmpty(attribute.getStringValue());
+                    String value = VariableWrapper.nonEmpty(attribute.getStringValue());
                     if (value != null) {
                         final CalendarDate date;
                         try {
@@ -416,7 +416,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     public String getId() {
-        return Utils.nonEmpty(file.getId());
+        return VariableWrapper.nonEmpty(file.getId());
     }
 
     /**
@@ -426,7 +426,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     public String getTitle() {
-        return Utils.nonEmpty(file.getTitle());
+        return VariableWrapper.nonEmpty(file.getTitle());
     }
 
     /**

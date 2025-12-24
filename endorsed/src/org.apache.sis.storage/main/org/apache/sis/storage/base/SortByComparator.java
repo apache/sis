@@ -23,7 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.Comparator;
 import java.io.Serializable;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.SortBy;
@@ -159,16 +159,22 @@ public final class SortByComparator<R> implements SortBy<R>, Serializable {
     /**
      * Returns the properties whose values are used for sorting.
      * The list shall have a minimum of one element.
+     *
+     * @return the properties whose values are used for sorting.
      */
     @Override
     public List<SortProperty<R>> getSortProperties() {
-        return UnmodifiableArrayList.wrap(properties);
+        return Containers.viewAsUnmodifiableList(properties);
     }
 
     /**
      * Compares two resources for order. Returns a negative number if {@code r1} should be sorted before {@code r2},
      * a positive number if {@code r2} should be after {@code r1}, or 0 if both resources are equal.
      * The ordering of null resources or null property values is unspecified.
+     *
+     * @param  r1  the first resource to compare.
+     * @param  r2  the second resource to compare.
+     * @return the order.
      */
     @Override
     public int compare(final R r1, final R r2) {

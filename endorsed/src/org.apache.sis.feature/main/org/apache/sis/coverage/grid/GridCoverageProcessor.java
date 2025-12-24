@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.EnumSet;
@@ -54,7 +55,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.internal.shared.Numerics;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.measure.NumberRange;
 
 
@@ -446,8 +446,7 @@ public class GridCoverageProcessor implements Cloneable {
             targetBands[i] = sampleDimensionModifier.apply(builder.setName(band.getName())).forConvertedValues(true);
             builder.clear();
         }
-        return new ConvertedGridCoverage(source, UnmodifiableArrayList.wrap(targetBands),
-                                         converters, true, snapshot(), true);
+        return new ConvertedGridCoverage(source, Arrays.asList(targetBands), converters, true, snapshot(), true);
     }
 
     /**

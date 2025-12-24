@@ -28,7 +28,7 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
@@ -228,7 +228,7 @@ final class GroupAsPolylineOperation extends AbstractOperation {
              * The property value is usually cast directly to `Collection` when the
              * constructor ensured that `Features.getMaximumOccurs(property) > 1`.
              */
-            Iterator<?> paths = CollectionsExt.toCollection(feature.getPropertyValue(propertyName)).iterator();
+            Iterator<?> paths = Containers.toCollection(feature.getPropertyValue(propertyName)).iterator();
             if (isFeatureAssociation) {
                 final Iterator<?> it = paths;
                 paths = new Iterator<Object>() {

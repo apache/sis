@@ -30,7 +30,7 @@ import org.apache.sis.storage.netcdf.base.Grid;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.Dimension;
 import org.apache.sis.storage.netcdf.internal.Resources;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -131,7 +131,7 @@ final class GridInfo extends Grid {
      */
     @Override
     protected List<Dimension> getDimensions() {
-        return UnmodifiableArrayList.wrap(domain);
+        return Containers.viewAsUnmodifiableList(domain);
     }
 
     /**

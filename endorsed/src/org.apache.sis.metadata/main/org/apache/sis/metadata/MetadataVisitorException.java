@@ -18,8 +18,8 @@ package org.apache.sis.metadata;
 
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.LocalizedException;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -86,11 +86,11 @@ final class MetadataVisitorException extends BackingStoreException implements Lo
                 message = cause.getClass();
             }
         }
-        final Object[] arguments = new Object[count];
+        final var arguments = new Object[count];
         arguments[--count] = message;
         arguments[--count] = location;
         if (count != 0) {
-            arguments[0] = String.join(".", UnmodifiableArrayList.wrap(propertyPath, 0, pathLength));
+            arguments[0] = String.join(".", Containers.viewAsUnmodifiableList(propertyPath, 0, pathLength));
         }
         return Errors.formatInternational(key, arguments);
     }

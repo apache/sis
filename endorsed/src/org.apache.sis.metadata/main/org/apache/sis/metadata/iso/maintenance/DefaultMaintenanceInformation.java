@@ -37,7 +37,7 @@ import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.internal.shared.LegacyNamespaces;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import static org.apache.sis.metadata.internal.shared.ImplementationHelper.valueIfDefined;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -417,8 +417,8 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
         return new LegacyPropertyAdapter<ScopeDescription,Scope>(getMaintenanceScopes()) {
             /** Stores a legacy value into the new kind of value. */
             @Override protected Scope wrap(final ScopeDescription value) {
-                final DefaultScope container = new DefaultScope();
-                container.setLevelDescription(CollectionsExt.singletonOrEmpty(value));
+                final var container = new DefaultScope();
+                container.setLevelDescription(Containers.singletonOrEmpty(value));
                 return container;
             }
 
@@ -431,7 +431,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
             /** Updates the legacy value in an existing instance of the new kind of value. */
             @Override protected boolean update(final Scope container, final ScopeDescription value) {
                 if (container instanceof DefaultScope) {
-                    ((DefaultScope) container).setLevelDescription(CollectionsExt.singletonOrEmpty(value));
+                    ((DefaultScope) container).setLevelDescription(Containers.singletonOrEmpty(value));
                     return true;
                 }
                 return false;

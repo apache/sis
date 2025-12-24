@@ -46,7 +46,6 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Convention;
@@ -197,7 +196,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
          * At this point we should have flattened.size() >= 2, except if some operations
          * were omitted because their associated math transform were identity operation.
          */
-        this.operations = UnmodifiableArrayList.wrap(flattened.toArray(CoordinateOperation[]::new));
+        this.operations = Containers.copyToImmutableList(flattened, CoordinateOperation.class);
     }
 
     /**

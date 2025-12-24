@@ -50,10 +50,10 @@ import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.system.Environment;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.internal.shared.X364;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.metadata.internal.shared.NameToIdentifier;
@@ -348,7 +348,7 @@ public class ParameterFormat extends TabularFormat<Object> {
     public void setPreferredCodespaces(final String... codespaces) {
         Set<String> copy = null;
         if (codespaces != null) {
-            copy = CollectionsExt.immutableSet(true, codespaces);
+            copy = Containers.copyToImmutableSetIgnoreNull(codespaces);
         }
         preferredCodespaces = copy;
     }

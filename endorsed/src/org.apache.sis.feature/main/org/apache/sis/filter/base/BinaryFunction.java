@@ -92,6 +92,8 @@ public abstract class BinaryFunction<R,V1,V2> extends Node {
     /**
      * Returns the expressions used as parameters by this function.
      * Defined for {@link Expression#getParameters()} implementations.
+     *
+     * @return the expression used as parameter by this function.
      */
     public final List<Expression<R,?>> getParameters() {
         return getExpressions();
@@ -168,6 +170,9 @@ public abstract class BinaryFunction<R,V1,V2> extends Node {
      * Otherwise the result is usually a {@link Long}, except for division which may produce other types.
      * This method may return {@code null} if the operation cannot apply on numbers.
      *
+     * @param  left   the first operand.
+     * @param  right  the second operand.
+     * @return the result of applying the function on the given operands.
      * @throws ArithmeticException if the operation overflows or if there is a division by zero.
      */
     protected Number applyAsLong(long left, long right) {
@@ -179,6 +184,10 @@ public abstract class BinaryFunction<R,V1,V2> extends Node {
      * then this method should returns an {@link Integer} value 0 or 1 for false or true respectively.
      * Otherwise the result is usually a {@link Double}.
      * This method may return {@code null} if the operation cannot apply on numbers.
+     *
+     * @param  left   the first operand.
+     * @param  right  the second operand.
+     * @return the result of applying the function on the given operands.
      */
     protected Number applyAsDouble(double left, double right) {
         return null;
@@ -190,6 +199,9 @@ public abstract class BinaryFunction<R,V1,V2> extends Node {
      * Otherwise the result is usually a {@link Fraction}.
      * This method may return {@code null} if the operation cannot apply on numbers.
      *
+     * @param  left   the first operand.
+     * @param  right  the second operand.
+     * @return the result of applying the function on the given operands.
      * @throws ArithmeticException if the operation overflows or if there is a division by zero.
      */
     protected Number applyAsFraction(Fraction left, Fraction right) {
@@ -202,6 +214,9 @@ public abstract class BinaryFunction<R,V1,V2> extends Node {
      * Otherwise the result is usually a {@link BigInteger}, except for division which may produce other types.
      * This method may return {@code null} if the operation cannot apply on numbers.
      *
+     * @param  left   the first operand.
+     * @param  right  the second operand.
+     * @return the result of applying the function on the given operands.
      * @throws ArithmeticException if there is a division by zero.
      */
     protected Number applyAsInteger(BigInteger left, BigInteger right) {
@@ -214,6 +229,9 @@ public abstract class BinaryFunction<R,V1,V2> extends Node {
      * Otherwise the result is usually a {@link BigDecimal}.
      * This method may return {@code null} if the operation cannot apply on numbers.
      *
+     * @param  left   the first operand.
+     * @param  right  the second operand.
+     * @return the result of applying the function on the given operands.
      * @throws ArithmeticException if a division does not have a terminating decimal expansion.
      */
     protected Number applyAsDecimal(BigDecimal left, BigDecimal right) {

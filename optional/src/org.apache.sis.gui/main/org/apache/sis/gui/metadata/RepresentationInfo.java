@@ -24,7 +24,7 @@ import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.iso.Types;
-import static org.apache.sis.util.internal.shared.CollectionsExt.nonNull;
+import static org.apache.sis.util.collection.Containers.nonNull;
 
 
 /**

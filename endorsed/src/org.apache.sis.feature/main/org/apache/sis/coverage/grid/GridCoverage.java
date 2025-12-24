@@ -31,7 +31,6 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.coverage.BandedCoverage;
 import org.apache.sis.coverage.SampleDimension;
@@ -40,6 +39,7 @@ import org.apache.sis.coverage.internal.shared.SampleDimensions;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.geometry.CoordinateFormat;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -190,7 +190,7 @@ public abstract class GridCoverage extends BandedCoverage {
      */
     @Override
     public List<SampleDimension> getSampleDimensions() {
-        return UnmodifiableArrayList.wrap(sampleDimensions);
+        return Containers.viewAsUnmodifiableList(sampleDimensions);
     }
 
     /**

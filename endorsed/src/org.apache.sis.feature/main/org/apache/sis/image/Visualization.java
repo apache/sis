@@ -49,7 +49,7 @@ import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -200,7 +200,7 @@ final class Visualization extends ResampledImage {
             if (sampleDimensions == null) {
                 Object ranges = source.getProperty(SAMPLE_DIMENSIONS_KEY);
                 if (ranges instanceof SampleDimension[]) {
-                    sampleDimensions = UnmodifiableArrayList.wrap((SampleDimension[]) ranges);
+                    sampleDimensions = Containers.viewAsUnmodifiableList((SampleDimension[]) ranges);
                 }
             }
         }

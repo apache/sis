@@ -44,7 +44,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.internal.shared.DefinitionURI;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.pending.jdk.JDK21;
 import org.apache.sis.xml.IdentifierSpace;
@@ -216,7 +216,7 @@ public final class IdentifiedObjects {
              * If we do not found a primary name for the specified authority,
              * or if the user requested all names, search among aliases.
              */
-            for (final GenericName alias : CollectionsExt.nonNull(object.getAlias())) {
+            for (final GenericName alias : Containers.nonNull(object.getAlias())) {
                 if (alias != null) {
                     final String name;
                     if (alias instanceof Identifier) {
@@ -270,7 +270,7 @@ public final class IdentifiedObjects {
             if (authority instanceof IdentifierSpace<?>) {
                 cs = ((IdentifierSpace<?>) authority).getName();
             }
-            for (final Identifier identifier : CollectionsExt.nonNull(object.getIdentifiers())) {
+            for (final Identifier identifier : Containers.nonNull(object.getIdentifiers())) {
                 if (identifier != null) {                       // Paranoiac check.
                     if (cs != null && cs.equalsIgnoreCase(identifier.getCodeSpace())) {
                         return identifier;      // Match based on codespace.
@@ -309,7 +309,7 @@ public final class IdentifiedObjects {
         if (object == null) {
             return null;
         }
-        for (final Identifier id : CollectionsExt.nonNull(object.getIdentifiers())) {
+        for (final Identifier id : Containers.nonNull(object.getIdentifiers())) {
             final String code = toString(id);
             if (code != null) {                                 // Paranoiac check.
                 return code;
@@ -352,7 +352,7 @@ public final class IdentifiedObjects {
                     return code;
                 }
             }
-            for (GenericName alias : CollectionsExt.nonNull(object.getAlias())) {
+            for (GenericName alias : Containers.nonNull(object.getAlias())) {
                 if (alias != null && (alias = alias.tip()) != null) {
                     final String code = alias.toString();
                     if (CharSequences.isUnicodeIdentifier(code)) {
@@ -360,7 +360,7 @@ public final class IdentifiedObjects {
                     }
                 }
             }
-            for (final Identifier id : CollectionsExt.nonNull(object.getIdentifiers())) {
+            for (final Identifier id : Containers.nonNull(object.getIdentifiers())) {
                 if (id != null) {                                           // Paranoiac check.
                     final String code = id.getCode();
                     if (CharSequences.isUnicodeIdentifier(code)) {
@@ -417,7 +417,7 @@ public final class IdentifiedObjects {
             return null;
         }
         String name = toString(object.getName(), locale);
-        for (final GenericName c : CollectionsExt.nonNull(object.getAlias())) {
+        for (final GenericName c : Containers.nonNull(object.getAlias())) {
             final String alias = toString(c, locale);
             if (alias != null) {
                 if (name == null || CharSequences.isAcronymForWords(name, alias)) {
@@ -430,7 +430,7 @@ public final class IdentifiedObjects {
             }
         }
         if (name == null) {
-            for (final Identifier id : CollectionsExt.nonNull(object.getIdentifiers())) {
+            for (final Identifier id : Containers.nonNull(object.getIdentifiers())) {
                 name = toString(id, locale);
                 if (name != null) break;
             }

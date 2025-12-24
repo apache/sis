@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.DirectPosition;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -130,7 +130,7 @@ final class ReducedGridCoverage extends DerivedGridCoverage {
                     dim = reduction.toReducedDimension(dim);
                     if (dim >= 0) copy.put(dim, coord);
                 });
-                slice = CollectionsExt.unmodifiableOrCopy(copy);
+                slice = Containers.unmodifiable(copy);
             }
             return slice;
         }

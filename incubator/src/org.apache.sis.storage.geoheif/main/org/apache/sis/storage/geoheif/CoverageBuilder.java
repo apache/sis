@@ -62,8 +62,8 @@ import org.apache.sis.storage.isobmff.image.ImageSpatialExtents;
 import org.apache.sis.storage.isobmff.image.PixelInformation;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Emptiable;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.Numerics;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.pending.jdk.JDK18;
 
@@ -664,7 +664,7 @@ final class CoverageBuilder implements Emptiable {
         if (sampleDimensions == null) {
             sampleDimensions(true);
         }
-        return UnmodifiableArrayList.wrap(sampleDimensions);
+        return Containers.viewAsUnmodifiableList(sampleDimensions);
     }
 
     /**

@@ -35,7 +35,7 @@ import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.referencing.internal.shared.AbstractShape;
 import org.apache.sis.referencing.internal.shared.ShapeUtilities;
 import org.apache.sis.util.UnsupportedImplementationException;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -324,7 +324,7 @@ public final class Factory extends Geometries<Shape> {
          * Java2D API does not distinguish between single geometry and geometry collection.
          * So if the number of components is 1, there is no reason to create a new geometry object.
          */
-        Shape geometry = (Shape) CollectionsExt.singletonOrNull(data);
+        Shape geometry = (Shape) Containers.peekIfSingleton(data);
         if (geometry == null) {
             boolean isFloat = true;
             for (final Object component : data) {

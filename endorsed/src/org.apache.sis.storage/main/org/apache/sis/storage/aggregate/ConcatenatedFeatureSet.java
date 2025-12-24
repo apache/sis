@@ -31,8 +31,7 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.internal.shared.CollectionsExt;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.storage.internal.Resources;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -57,7 +56,7 @@ import org.opengis.feature.FeatureType;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.6
  * @since   1.0
  */
 public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
@@ -77,7 +76,7 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
      */
     private ConcatenatedFeatureSet(final FeatureSet[] sources, final ConcatenatedFeatureSet original) {
         super(original);
-        this.sources = UnmodifiableArrayList.wrap(sources);
+        this.sources = Containers.viewAsUnmodifiableList(sources);
         commonType = original.commonType;
     }
 
@@ -89,7 +88,7 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
      *
      * @param  parent   the parent resource, or {@code null} if none.
      * @param  sources  the sequence of feature sets to expose in a single set.
-     *                  Must neither be null, empty nor contain a single element only.
+     *                  Must contains at least two elements.
      * @throws DataStoreException if given feature sets does not share any common type.
      */
     protected ConcatenatedFeatureSet(final Resource parent, final FeatureSet[] sources) throws DataStoreException {
@@ -97,14 +96,13 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
         for (int i=0; i<sources.length; i++) {
             ArgumentChecks.ensureNonNullElement("sources", i, sources[i]);
         }
-        this.sources = UnmodifiableArrayList.wrap(sources);
-        final FeatureType[] types = new FeatureType[sources.length];
+        this.sources = Containers.viewAsUnmodifiableList(sources);
+        final var types = new FeatureType[sources.length];
         for (int i=0; i<types.length; i++) {
             types[i] = sources[i].getType();
         }
         commonType = Features.findCommonParent(Arrays.asList(types));
         if (commonType == null) {
-            // TODO: localize.
             throw new DataStoreContentException(Resources.format(Resources.Keys.NoCommonFeatureType));
         }
     }
@@ -143,7 +141,7 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "sources"));
             }
             case 1: {
-                final FeatureSet fs = CollectionsExt.first(sources);
+                final FeatureSet fs = Containers.peekFirst(sources);
                 ArgumentChecks.ensureNonNullElement("sources", 0, fs);
                 return fs;
             }

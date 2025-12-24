@@ -25,8 +25,8 @@ import java.util.ConcurrentModificationException;
 import java.util.function.Predicate;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.filter.base.Node;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.CodeList;
@@ -481,7 +481,7 @@ public class Optimization {
      * @throws IllegalArgumentException if the filter does not have a single operand.
      */
     private static <R> Filter<R> getNotOperand(final Filter<R> filter) {
-        final Filter<R> operand = CollectionsExt.singletonOrNull(((LogicalOperator<R>) filter).getOperands());
+        final Filter<R> operand = Containers.peekIfSingleton(((LogicalOperator<R>) filter).getOperands());
         if (operand != null) {
             return operand;
         }

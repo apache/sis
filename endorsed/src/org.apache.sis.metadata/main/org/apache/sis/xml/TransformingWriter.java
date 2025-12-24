@@ -38,7 +38,6 @@ import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import static javax.xml.stream.XMLStreamConstants.*;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 
 
@@ -134,7 +133,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
          * `environmentDescription` between them in legacy ISO 19139:2007. So we add the latter in the
          * list of elements to skip for `extent`.
          */
-        m.put(new QName(Namespaces.MRI, "topicCategory", "mri"), CollectionsExt.clone(toSkip));
+        m.put(new QName(Namespaces.MRI, "topicCategory", "mri"), Set.copyOf(toSkip));
         toSkip.remove(first);
         toSkip.add(new QName(Namespaces.MRI, "environmentDescription", "mri"));
         m.put(first, toSkip);                                                     // For <mri:extent>

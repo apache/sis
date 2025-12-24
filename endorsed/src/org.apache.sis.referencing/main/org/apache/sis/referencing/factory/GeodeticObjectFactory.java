@@ -198,7 +198,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     /**
      * The default properties, or an empty map if none. This map shall not change after construction in
      * order to allow usage without synchronization in multi-thread context. But we do not need to wrap
-     * in a unmodifiable map since {@code GeodeticObjectFactory} does not provide public access to it.
+     * in an unmodifiable map since {@code GeodeticObjectFactory} does not provide public access to it.
      */
     private final Map<String,?> defaultProperties;
 

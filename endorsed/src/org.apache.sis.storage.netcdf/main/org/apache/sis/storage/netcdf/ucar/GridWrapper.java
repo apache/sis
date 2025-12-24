@@ -32,7 +32,7 @@ import org.apache.sis.storage.netcdf.base.Grid;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.Variable;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -128,7 +128,7 @@ final class GridWrapper extends Grid {
      */
     @Override
     protected Grid forDimensions(final org.apache.sis.storage.netcdf.base.Dimension[] dimensions) {
-        return forDimensions(UnmodifiableArrayList.wrap(DimensionWrapper.unwrap(dimensions)));
+        return forDimensions(Containers.viewAsUnmodifiableList(DimensionWrapper.unwrap(dimensions)));
     }
 
     /**

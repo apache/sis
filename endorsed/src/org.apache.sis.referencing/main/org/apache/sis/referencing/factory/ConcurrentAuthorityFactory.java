@@ -33,6 +33,7 @@ import java.util.logging.Level;
 import java.lang.ref.WeakReference;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
+import java.util.LinkedHashSet;
 import javax.measure.Unit;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -55,7 +56,7 @@ import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.collection.Cache;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.system.Cleaners;
 import org.apache.sis.system.DelayedExecutor;
@@ -1975,7 +1976,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         @Override
         final Set<IdentifiedObject> cache(final IdentifiedObject object, final Set<IdentifiedObject> result) {
             // `finder` should never be null since this method is not invoked directly by this Finder.
-            return cache(object, CollectionsExt.copyPreserveOrder(result), index(finder));
+            return cache(object, Containers.unmodifiable(new LinkedHashSet<>(result)), index(finder));
         }
 
         /**
@@ -2026,7 +2027,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 synchronized (this) {
                     try {
                         acquire();
-                        result = CollectionsExt.singletonOrEmpty(finder.findSingleton(object));
+                        result = Containers.singletonOrEmpty(finder.findSingleton(object));
                     } finally {
                         release();
                     }
@@ -2034,7 +2035,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 cache(object, result, index);
             }
             factory().findPoolLatestQueries.markAsUsed(object);
-            return CollectionsExt.first(result);
+            return Containers.peekFirst(result);
         }
 
         /**

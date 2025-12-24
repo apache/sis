@@ -16,11 +16,14 @@
  */
 package org.apache.sis.storage;
 
+import java.util.Set;
+import java.util.LinkedHashMap;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.iso.Names;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.TestCase;
@@ -31,6 +34,8 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class FeatureNamingTest extends TestCase {
     /**
      * Name for the tests.
@@ -44,6 +49,35 @@ public final class FeatureNamingTest extends TestCase {
         A      = Names.parseGenericName(null, null, "myNS:A");
         B      = Names.createLocalName (null, null, "B");
         otherA = Names.parseGenericName(null, null, "other:A");
+    }
+
+    /**
+     * Tests {@link FeatureNaming#addToMultiValuesMap(Map, Object, Object)}, then
+     * opportunistically tests {@link FeatureNaming#removeFromMultiValuesMap(Map, Object, Object)},
+     */
+    @Test
+    public void testAddAndRemoveToMultiValuesMap() {
+        final var map = new LinkedHashMap<String, Set<Integer>>();
+        final Integer A1 = 2;
+        final Integer A2 = 4;
+        final Integer B1 = 3;
+        final Integer B2 = 6;
+        final Integer B3 = 9;
+        assertArrayEquals(new Integer[] {A1},         FeatureNaming.addToMultiValuesMap(map, "A", A1).toArray());
+        assertArrayEquals(new Integer[] {B1},         FeatureNaming.addToMultiValuesMap(map, "B", B1).toArray());
+        assertArrayEquals(new Integer[] {B1, B2},     FeatureNaming.addToMultiValuesMap(map, "B", B2).toArray());
+        assertArrayEquals(new Integer[] {A1, A2},     FeatureNaming.addToMultiValuesMap(map, "A", A2).toArray());
+        assertArrayEquals(new Integer[] {B1, B2, B3}, FeatureNaming.addToMultiValuesMap(map, "B", B3).toArray());
+        assertArrayEquals(new String[]  {"A", "B"},   map.keySet().toArray());
+        assertArrayEquals(new Integer[] {A1, A2},     map.get("A").toArray());
+        assertArrayEquals(new Integer[] {B1, B2, B3}, map.get("B").toArray());
+
+        assertNull(                                   FeatureNaming.removeFromMultiValuesMap(map, "C", A2));
+        assertArrayEquals(new Integer[] {A1},         FeatureNaming.removeFromMultiValuesMap(map, "A", A2).toArray());
+        assertArrayEquals(new Integer[] {B1, B3},     FeatureNaming.removeFromMultiValuesMap(map, "B", B2).toArray());
+        assertArrayEquals(new Integer[] {},           FeatureNaming.removeFromMultiValuesMap(map, "A", A1).toArray());
+        assertArrayEquals(new String[]  {"B"},        map.keySet().toArray());
+        assertArrayEquals(new Integer[] {B1, B3},     map.get("B").toArray());
     }
 
     /**

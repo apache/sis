@@ -25,7 +25,7 @@ import javax.measure.quantity.Length;
 import org.opengis.util.CodeList;
 import org.opengis.geometry.Envelope;
 import org.opengis.filter.*;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.feature.internal.Resources;
 
@@ -273,7 +273,7 @@ public class CopyVisitor<SR,TR,G,T> extends Visitor<SR, List<Object>> {
                 final FilterFactory<R,?,?> factory,
                 final Collection<? extends Filter<R>> operands)
         {
-            Filter<R> op = CollectionsExt.singletonOrNull(operands);
+            Filter<R> op = Containers.peekIfSingleton(operands);
             return (op != null) ? factory.not(op) : null;
         }
     }

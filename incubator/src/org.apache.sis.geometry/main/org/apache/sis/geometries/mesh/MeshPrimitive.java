@@ -44,7 +44,6 @@ import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.TIN;
 import org.apache.sis.geometries.Triangle;
-import org.apache.sis.geometries.math.AbstractArray;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.SampleSystem;
@@ -56,10 +55,9 @@ import org.apache.sis.geometries.math.Vector3D;
 import org.apache.sis.geometries.math.Vectors;
 import org.apache.sis.geometries.math.Cursor;
 import org.apache.sis.geometries.math.Array;
-import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -321,7 +319,7 @@ public interface MeshPrimitive extends Geometry {
 
         @Override
         public List<String> getAttributeNames() {
-            return UnmodifiableArrayList.wrap(attributes.keySet().toArray(new String[0]));
+            return Containers.copyToImmutableList(attributes.keySet(), String.class);
         }
 
         @Override

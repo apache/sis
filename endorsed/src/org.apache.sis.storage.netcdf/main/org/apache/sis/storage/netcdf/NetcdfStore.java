@@ -47,9 +47,9 @@ import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.internal.shared.Constants;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -60,7 +60,7 @@ import org.apache.sis.util.collection.TreeTable;
  * Instances of this data store are created by {@link NetcdfStoreProvider#open(StorageConnector)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see NetcdfStoreProvider
  *
@@ -240,10 +240,10 @@ public class NetcdfStore extends DataStore implements Aggregate {
             Resource[] resources = decoder.getDiscreteSampling(this);
             final List<Resource> grids = RasterResource.create(decoder, this);
             if (!grids.isEmpty()) {
-                grids.addAll(UnmodifiableArrayList.wrap(resources));
+                grids.addAll(Containers.viewAsUnmodifiableList(resources));
                 resources = grids.toArray(Resource[]::new);
             }
-            components = UnmodifiableArrayList.wrap(resources);
+            components = Containers.viewAsUnmodifiableList(resources);
         } catch (IOException e) {
             throw new DataStoreException(e);
         }

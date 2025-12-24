@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.internal.shared;
+package org.apache.sis.util.collection;
 
 import java.io.Serializable;
 import java.util.AbstractList;
@@ -22,15 +22,13 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.RandomAccess;
 import java.lang.reflect.Array;
-import org.apache.sis.util.ConditionallySafe;
-import org.apache.sis.util.collection.CheckedContainer;
 
 
 /**
  * An unmodifiable view of an array. Invoking
  *
  * {@snippet lang="java" :
- *     List<?> list = UnmodifiableArrayList.wrap(array);
+ *     List<?> list = Containers.viewAsUnmodifiableList(array);
  *     }
  *
  * is equivalent to
@@ -43,23 +41,12 @@ import org.apache.sis.util.collection.CheckedContainer;
  * unmodifiable lists are extensively used in SIS) and implements the {@link CheckedContainer}
  * interface.
  *
- * <h2>WARNING! Type safety hole</h2>
- * The {@link #getElementType()} return type is {@code Class<E>}, but its implementation actually
- * returns {@code Class<? extends E>}. This contract violation is possible because Java arrays are
- * covariant (at the contrary of collections). In order to avoid such contract violation, callers
- * <strong>must</strong> ensure that the type of array elements is exactly {@code E}, not a subtype
- * of {@code E}. This class has no way to verify that condition. This class is not in the public API
- * for this reason.
- *
- * <p>Note that the public API, {@link org.apache.sis.util.collection.Containers#unmodifiableList(Object[])},
- * returns {@code List<? extends E>}, which is okay.</p>
- *
  * @author  Martin Desruisseaux (IRD)
  *
  * @param <E>  the type of elements in the list.
  */
 @SuppressWarnings("EqualsAndHashcode")
-public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomAccess, CheckedContainer<E>, Serializable {
+class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomAccess, CheckedContainer<E>, Serializable {
     /**
      * For compatibility with different versions.
      */
@@ -69,7 +56,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
      * The wrapped array.
      */
     @SuppressWarnings("serial")         // Not statically typed as Serializable.
-    final E[] array;
+    protected final E[] array;
 
     /**
      * Creates a new instance wrapping the given array. A direct reference to the given array is
@@ -83,83 +70,24 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
      * the caller to instantiate the array explicitly, in order to make sure that the array type is
      * the intended one.</p>
      *
-     * <h4>WARNING! Type safety hole</h4>
-     * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
-     * not a subtype of {@code E}. See class javadoc for more information.
-     *
      * @param array the array to wrap.
      */
-    protected UnmodifiableArrayList(final E[] array) {                          // NOT "E..." - see javadoc.
+    protected UnmodifiableArrayList(final E[] array) {      // NOT "E..." - see javadoc.
         this.array = Objects.requireNonNull(array);
-    }
-
-    /**
-     * Creates a new instance wrapping the given array. A direct reference to the given array is
-     * retained (i.e. the array is <strong>not</strong> cloned). Consequently, the given array
-     * shall not be modified after construction if the returned list is intended to be immutable.
-     *
-     * <h4>WARNING! Type safety hole</h4>
-     * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
-     * not a subtype of {@code E}. If the caller is okay with {@code List<? extends E>}, then (s)he
-     * should use {@link org.apache.sis.util.collection.Containers#unmodifiableList(Object[])} instead.
-     * See class javadoc for more information.
-     *
-     * <p>The argument type is intentionally {@code E[]} instead of {@code E...} in order to force
-     * the caller to instantiate the array explicitly, in order to make sure that the array type is
-     * the intended one.</p>
-     *
-     * @param  <E>    the type of elements in the list.
-     * @param  array  the array to wrap, or {@code null} if none.
-     * @return the given array wrapped in an unmodifiable list, or {@code null} if the given array was null.
-     */
-    public static <E> UnmodifiableArrayList<E> wrap(final E[] array) {          // NOT "E..." - see javadoc.
-        return (array != null) ? new UnmodifiableArrayList<>(array) : null;
-    }
-
-    /**
-     * Creates a new instance wrapping a subregion of the given array. A direct reference to the
-     * given array is retained (i.e. the array is <strong>not</strong> cloned). Consequently, the
-     * specified sub-region of the given array shall not be modified after construction if the
-     * returned list is intended to be immutable.
-     *
-     * <p>This method does not check the validity of the given indices.
-     * The check must be done by the caller.</p>
-     *
-     * <h4>WARNING! Type safety hole</h4>
-     * Callers <strong>must</strong> ensure that the type of array elements is exactly {@code E},
-     * not a subtype of {@code E}. If the caller is okay with {@code List<? extends E>}, then (s)he
-     * should use {@link org.apache.sis.util.collection.Containers#unmodifiableList(Object[])} instead.
-     * See class javadoc for more information.
-     *
-     * @param  <E>    the type of elements in the list.
-     * @param  array  the array to wrap.
-     * @param  lower  low endpoint (inclusive) of the sublist.
-     * @param  upper  high endpoint (exclusive) of the sublist.
-     * @return the given array wrapped in an unmodifiable list.
-     */
-    @ConditionallySafe
-    public static <E> UnmodifiableArrayList<E> wrap(final E[] array, final int lower, final int upper) {
-        if (lower == 0 && upper == array.length) {
-            return new UnmodifiableArrayList<>(array);
-        }
-        return new UnmodifiableArrayList.SubList<>(array, lower, upper - lower);
     }
 
     /**
      * Returns the element type of the wrapped array. The default implementation returns
      * <code>array.getClass().{@linkplain Class#getComponentType() getComponentType()}</code>.
-     *
-     * <h4>Type safety hole</h4>
-     * The returned value is correct only if the condition documented
-     * in {@link #wrap(Object[], int, int)} has been met.
+     * Because arrays in the Java language are covariant (at the contrary of collections),
+     * the returned element type has to be {@code <? extends E>} instead of {@code <E>}.
      *
      * @return the type of elements in the list.
      */
     @Override
-    @ConditionallySafe
     @SuppressWarnings("unchecked")
-    public final Class<E> getElementType() {
-        return (Class<E>) array.getClass().getComponentType();
+    public final Class<? extends E> getElementType() {
+        return (Class<? extends E>) array.getClass().getComponentType();
     }
 
     /**
@@ -187,23 +115,6 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
      */
     @Override
     public int size() {
-        return array.length;
-    }
-
-    /**
-     * Returns the size of the array backing this list. This is the length of the array
-     * given to the constructor. It is equal to {@link #size()} except if this instance
-     * is a {@linkplain #subList(int,int) sublist}, in which case the value returned by
-     * this method is greater than {@code size()}.
-     *
-     * <p>This method can be used as a hint for choosing a {@code UnmodifiableArrayList}
-     * instance to keep when there is a choice between many equal instances. Note that a
-     * greater value is not necessarily more memory consuming, since the backing array
-     * may be shared by many sublists.</p>
-     *
-     * @return the length of the backing array.
-     */
-    public final int arraySize() {
         return array.length;
     }
 
@@ -322,7 +233,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
      *
      * @param <E>  the type of elements in the list.
      */
-    private static final class SubList<E> extends UnmodifiableArrayList<E> {
+    static final class SubList<E> extends UnmodifiableArrayList<E> {
         /**
          * For cross-version compatibility.
          */

@@ -43,7 +43,6 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.metadata.simple.SimpleMetadata;
 import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
@@ -317,10 +316,9 @@ public final class Metadata extends SimpleMetadata {
     public Collection<Responsibility> getPointOfContacts() {
         if (creator != null) {
             final var p = new Person(creator);
-            return (author != null) ? UnmodifiableArrayList.wrap(new Responsibility[] {p, author})
-                                    : Collections.singletonList(author);
+            return (author != null) ? List.of(p, author) : List.of(author);
         }
-        return (author != null) ? Collections.singletonList(author) : Collections.emptyList();
+        return (author != null) ? List.of(author) : List.of();
     }
 
     /**

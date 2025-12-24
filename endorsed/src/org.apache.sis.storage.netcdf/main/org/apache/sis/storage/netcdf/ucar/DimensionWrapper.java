@@ -19,8 +19,6 @@ package org.apache.sis.storage.netcdf.ucar;
 import java.util.List;
 import java.util.Collection;
 import ucar.nc2.Dimension;
-import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 
 /**
@@ -36,20 +34,20 @@ final class DimensionWrapper extends org.apache.sis.storage.netcdf.base.Dimensio
      * Wraps all given dimensions.
      */
     static List<org.apache.sis.storage.netcdf.base.Dimension> wrap(final Collection<Dimension> dimensions) {
-        final DimensionWrapper[] wrappers = new DimensionWrapper[dimensions.size()];
+        final var wrappers = new DimensionWrapper[dimensions.size()];
         int i = 0;
         for (final Dimension dim : dimensions) {
             wrappers[i] = new DimensionWrapper(dim, i);
             i++;
         }
-        return UnmodifiableArrayList.wrap(ArraysExt.resize(wrappers, i));
+        return List.of(wrappers);
     }
 
     /**
      * Unwraps all given dimensions.
      */
     static Dimension[] unwrap(final org.apache.sis.storage.netcdf.base.Dimension[] dimensions) {
-        final Dimension[] ncd = new Dimension[dimensions.length];
+        final var ncd = new Dimension[dimensions.length];
         for (int i=0; i<ncd.length; i++) {
             ncd[i] = ((DimensionWrapper) dimensions[i]).netcdf;
         }

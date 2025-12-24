@@ -16,8 +16,11 @@
  */
 package org.apache.sis.parameter;
 
+import java.util.Set;
 import java.util.Map;
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import javax.measure.Unit;
 import org.apache.sis.measure.Range;
@@ -26,6 +29,7 @@ import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.io.wkt.Convention;
 
@@ -43,11 +47,30 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultParameterDescriptorTest extends TestCase {
     /**
      * Creates a new test case.
      */
     public DefaultParameterDescriptorTest() {
+    }
+
+    /**
+     * Tests {@link DefaultParameterDescriptor#createSetForType(Class, int)}.
+     */
+    @Test
+    public void testCreateSetForType() {
+        Set<?> set = DefaultParameterDescriptor.createSetForType(java.lang.annotation.ElementType.class, 0);
+        assertTrue(set.isEmpty());
+        assertInstanceOf(EnumSet.class, set);
+
+        set = DefaultParameterDescriptor.createSetForType(org.opengis.referencing.cs.AxisDirection.class, 0);
+        assertTrue(set.isEmpty());
+        assertInstanceOf(CodeListSet.class, set);
+
+        set = DefaultParameterDescriptor.createSetForType(String.class, 0);
+        assertTrue(set.isEmpty());
+        assertInstanceOf(HashSet.class, set);
     }
 
     /**

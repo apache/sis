@@ -28,7 +28,7 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.opengis.util.GenericName;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -443,7 +443,7 @@ public class FeatureComparator {
         if (value instanceof Collection<?> c) {
             return c;
         } else {
-            return CollectionsExt.singletonOrEmpty(value);
+            return Containers.singletonOrEmpty(value);
         }
     }
 }

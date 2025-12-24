@@ -34,7 +34,7 @@ import javax.measure.spi.FormatService;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.logging.Logging;
 
 
@@ -46,7 +46,7 @@ import org.apache.sis.util.logging.Logging;
  * without direct dependency. A {@code UnitServices} instance can be obtained by call to {@link #current()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.6
  * @since   0.8
  */
 public class UnitServices extends ServiceProvider implements SystemOfUnitsService, FormatService {
@@ -119,7 +119,7 @@ public class UnitServices extends ServiceProvider implements SystemOfUnitsServic
      */
     @Override
     public Collection<SystemOfUnits> getAvailableSystemsOfUnits() {
-        return UnmodifiableArrayList.wrap(systems);
+        return Containers.viewAsUnmodifiableList(systems);
     }
 
     /**

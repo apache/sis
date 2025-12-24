@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.LinkedHashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.time.temporal.Temporal;
@@ -34,7 +35,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.temporal.TemporalDate;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
 
 
@@ -795,10 +795,13 @@ final class Element {
     final void close(final Map<String, Set<String>> ignoredElements) throws ParseException {
         for (final Object value : children) {
             if (value instanceof Element) {
-                CollectionsExt.addToMultiValuesMap(ignoredElements, ((Element) value).keyword, keyword);
+                ignoredElements.computeIfAbsent(((Element) value).keyword, (key) -> new LinkedHashSet<>()).add(keyword);
             } else {
-                throw new UnparsableObjectException(errorLocale, Errors.Keys.UnexpectedValueInElement_2,
-                        new Object[] {keyword, value}, offsetAfterKeyword());
+                throw new UnparsableObjectException(
+                        errorLocale,
+                        Errors.Keys.UnexpectedValueInElement_2,
+                        new Object[] {keyword, value},
+                        offsetAfterKeyword());
             }
         }
     }

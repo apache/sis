@@ -45,7 +45,6 @@ import org.apache.sis.metadata.internal.shared.ImplementationHelper;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.OptionalCandidate;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.Utilities.deepEquals;
@@ -128,7 +127,7 @@ import org.opengis.referencing.datum.DynamicReferenceFrame;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see DefaultEllipsoid
  * @see DefaultPrimeMeridian
@@ -262,17 +261,27 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         super(properties);
         this.ellipsoid     = Objects.requireNonNull(ellipsoid);
         this.primeMeridian = Objects.requireNonNull(primeMeridian);
-        bursaWolf = CollectionsExt.nonEmpty(CollectionsExt.nonNullArraySet(
-                BURSA_WOLF_KEY, properties.get(BURSA_WOLF_KEY), EMPTY_ARRAY));
-        if (bursaWolf != null) {
-            for (int i=0; i<bursaWolf.length; i++) {
-                BursaWolfParameters param = bursaWolf[i];
-                ensureNonNullElement("bursaWolf", i, param);
-                param = param.clone();
-                param.verify(primeMeridian);
-                bursaWolf[i] = param;
+        final Object value = properties.get(BURSA_WOLF_KEY);
+        if (value != null) {
+            final Object[] array;
+            if (value instanceof Object[]) {
+                array = (Object[]) value;
+            } else {
+                array = new Object[] {value};
+            }
+            if (array.length != 0) {
+                bursaWolf = new BursaWolfParameters[array.length];
+                for (int i=0; i<array.length; i++) {
+                    var param = (BursaWolfParameters) array[i];
+                    ensureNonNullElement("bursaWolf", i, param);
+                    param = param.clone();
+                    param.verify(primeMeridian);
+                    bursaWolf[i] = param;
+                }
+                return;
             }
         }
+        bursaWolf = null;
     }
 
     /**

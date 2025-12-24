@@ -47,7 +47,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.CannotEvaluateException;
@@ -182,7 +182,7 @@ abstract class DefaultEvaluator implements GridCoverage.Evaluator {
         if (slice == null) {
             final GridCoverage coverage = getCoverage();
             final GridExtent extent = coverage.getGridGeometry().getExtent();
-            slice = CollectionsExt.unmodifiableOrCopy(extent.getSliceCoordinates());
+            slice = Containers.unmodifiable(extent.getSliceCoordinates());
         }
         return slice;
     }
@@ -202,7 +202,7 @@ abstract class DefaultEvaluator implements GridCoverage.Evaluator {
     public void setDefaultSlice(Map<Integer, Long> slice) {
         if (!Objects.equals(this.slice, slice)) {
             if (slice != null) {
-                slice = CollectionsExt.unmodifiableOrCopy(new TreeMap<>(slice));
+                slice = Containers.unmodifiable(new TreeMap<>(slice));
                 final GridCoverage coverage = getCoverage();
                 final GridExtent extent = coverage.getGridGeometry().getExtent();
                 final int max = extent.getDimension() - 1;

@@ -20,8 +20,7 @@ import java.util.List;
 import java.util.Collection;
 import java.util.StringJoiner;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.internal.shared.CollectionsExt;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -55,7 +54,7 @@ abstract class PrimaryKey {
         if (columns.isEmpty()) {
             return null;
         }
-        final String c = CollectionsExt.singletonOrNull(columns);
+        final String c = Containers.peekIfSingleton(columns);
         return (c != null) ? new Single(valueClass, c) : new Composite(valueClass, columns);
     }
 
@@ -97,7 +96,7 @@ abstract class PrimaryKey {
         /** Creates a new primary key composed of the given columns. */
         Composite(final Class<?> valueClass, final Collection<String> columns) {
             super(valueClass);
-            this.columns = UnmodifiableArrayList.wrap(columns.toArray(String[]::new));
+            this.columns = Containers.copyToImmutableList(columns, String.class);
         }
 
         /** Returns all columns composing this primary key. */

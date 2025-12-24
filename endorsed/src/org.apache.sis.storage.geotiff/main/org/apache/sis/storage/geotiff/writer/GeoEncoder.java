@@ -62,7 +62,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.Strings;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
@@ -274,8 +274,8 @@ public final class GeoEncoder {
             throws FactoryException, TransformException, IncommensurableException, IncompatibleResourceException
     {
         grid = grid.shiftGridToZeros();
-        citation = CollectionsExt.first(metadata.transformationDimension);
-        isPoint  = CollectionsExt.first(metadata.cellGeometry) == CellGeometry.POINT;
+        citation = Containers.peekFirst(metadata.transformationDimension);
+        isPoint  = Containers.peekFirst(metadata.cellGeometry) == CellGeometry.POINT;
         final var anchor = isPoint ? PixelInCell.CELL_CENTER : PixelInCell.CELL_CORNER;
         /*
          * Get the dimension indices of the two-dimensional slice to write.

@@ -30,12 +30,12 @@ import org.opengis.metadata.content.ImageDescription;
 import org.opengis.metadata.content.RangeDimension;
 import org.opengis.metadata.content.RangeElementDescription;
 import org.opengis.util.RecordType;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.bind.metadata.MD_Identifier;
 import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
-import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.xml.bind.metadata.MD_Identifier;
 import static org.apache.sis.metadata.internal.shared.ImplementationHelper.valueIfDefined;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -284,7 +284,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     @Deprecated(since="1.0")
     public void setContentType(final CoverageContentType newValue) {
         checkWritePermission(valueIfDefined(attributeGroups));
-        final Collection<CoverageContentType> newValues = CollectionsExt.singletonOrEmpty(newValue);
+        final Collection<CoverageContentType> newValues = Containers.singletonOrEmpty(newValue);
         Collection<AttributeGroup> groups = attributeGroups;
         if (groups != null) {
             for (final AttributeGroup group : groups) {
@@ -322,7 +322,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
             /** Stores a legacy value into the new kind of value. */
             @Override protected AttributeGroup wrap(final RangeDimension value) {
                 final DefaultAttributeGroup container = new DefaultAttributeGroup();
-                container.setAttributes(CollectionsExt.singletonOrEmpty(value));
+                container.setAttributes(Containers.singletonOrEmpty(value));
                 return container;
             }
 
@@ -335,7 +335,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
             /** Updates the legacy value in an existing instance of the new kind of value. */
             @Override protected boolean update(final AttributeGroup container, final RangeDimension value) {
                 if (container instanceof DefaultAttributeGroup) {
-                    ((DefaultAttributeGroup) container).setAttributes(CollectionsExt.singletonOrEmpty(value));
+                    ((DefaultAttributeGroup) container).setAttributes(Containers.singletonOrEmpty(value));
                     return true;
                 }
                 return false;

@@ -26,7 +26,7 @@ import javafx.concurrent.Worker;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
@@ -115,7 +115,7 @@ final class FeatureList extends ObservableListBase<Feature> {
      * Returns the currently valid elements.
      */
     private List<Feature> validElements() {
-        return UnmodifiableArrayList.wrap(elements, 0, validCount);
+        return Containers.viewAsUnmodifiableList(elements, 0, validCount);
     }
 
     /**

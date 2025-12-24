@@ -25,7 +25,7 @@ import java.util.Collection;
 import org.opengis.metadata.extent.Extent;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -134,6 +134,6 @@ public class DefaultScope extends org.apache.sis.metadata.iso.maintenance.Defaul
      */
     @Deprecated(since="1.0")
     public void setExtent(final Extent newValue) {
-        setExtents(CollectionsExt.singletonOrEmpty(newValue));
+        setExtents(Containers.singletonOrEmpty(newValue));
     }
 }

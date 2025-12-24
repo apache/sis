@@ -33,10 +33,10 @@ import org.apache.sis.util.resources.Messages;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.gco.InternationalStringAdapter;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
-import org.apache.sis.xml.internal.shared.LegacyNamespaces;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.citation.TelephoneType;
@@ -345,7 +345,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      */
     @Deprecated(since="1.0")
     public void setAddress(final Address newValue) {
-        setAddresses(CollectionsExt.singletonOrEmpty(newValue));
+        setAddresses(Containers.singletonOrEmpty(newValue));
     }
 
     /**
@@ -401,7 +401,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      */
     @Deprecated(since="1.0")
     public void setOnlineResource(final OnlineResource newValue) {
-        setOnlineResources(CollectionsExt.singletonOrEmpty(newValue));
+        setOnlineResources(Containers.singletonOrEmpty(newValue));
     }
 
     /**

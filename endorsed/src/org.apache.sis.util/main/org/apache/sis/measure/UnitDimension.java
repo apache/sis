@@ -28,8 +28,8 @@ import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnsupportedImplementationException;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.converter.FractionConverter;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 
 
 /**
@@ -130,10 +130,10 @@ final class UnitDimension implements Dimension, Serializable {
          * Implementation note: following code duplicates the functionality of Map.computeIfAbsent(…),
          * but we had to do it because we compute not only the value, but also the `components` key.
          */
-        UnitDimension dim = (UnitDimension) UnitRegistry.get(components);
+        var dim = (UnitDimension) UnitRegistry.get(components);
         if (dim == null) {
             components.replaceAll((c, power) -> power.unique());
-            components = CollectionsExt.unmodifiableOrCopy(components);
+            components = Containers.unmodifiable(components);
             dim = new UnitDimension(components);
             if (!Units.initialized) {
                 UnitRegistry.init(components, dim);

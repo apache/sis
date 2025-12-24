@@ -57,8 +57,6 @@ import org.apache.sis.util.Workaround;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.Strings;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.metadata.internal.shared.NameToIdentifier;
 import org.apache.sis.metadata.internal.shared.ImplementationHelper;
 import org.apache.sis.referencing.internal.shared.WKTUtilities;
@@ -70,9 +68,7 @@ import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.util.Utilities.deepEquals;
-import static org.apache.sis.util.internal.shared.CollectionsExt.nonNull;
-import static org.apache.sis.util.internal.shared.CollectionsExt.nonEmpty;
-import static org.apache.sis.util.internal.shared.CollectionsExt.immutableSet;
+import static org.apache.sis.util.collection.Containers.nonNull;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.ObjectDomain;
@@ -121,7 +117,7 @@ import org.opengis.referencing.ObjectDomain;
  * objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   0.4
  */
 @XmlType(name = "IdentifiedObjectType", propOrder = {
@@ -376,7 +372,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         } catch (ClassCastException e) {
             throw (IllegalArgumentException) illegalPropertyType(properties, ALIAS_KEY, value).initCause(e);
         }
-        alias = immutableSet(true, names);
+        alias = Containers.copyToImmutableSetIgnoreNull(names);
 
         // -----------------------------------------
         // "identifiers": Identifier or Identifier[]
@@ -385,7 +381,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         if (value instanceof Identifier) {
             identifiers = Collections.singleton((Identifier) value);
         } else if (value instanceof Identifier[]) {
-            identifiers = immutableSet(true, (Identifier[]) value);
+            identifiers = Containers.copyToImmutableSetIgnoreNull((Identifier[]) value);
         } else if (value != null) {
             throw illegalPropertyType(properties, IDENTIFIERS_KEY, value);
         }
@@ -397,7 +393,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         if (value instanceof ObjectDomain) {
             domains = Collections.singleton((ObjectDomain) value);
         } else if (value instanceof ObjectDomain[]) {
-            domains = immutableSet(true, (ObjectDomain[]) value);
+            domains = Containers.copyToImmutableSetIgnoreNull((ObjectDomain[]) value);
         } else if (value != null) {
             throw illegalPropertyType(properties, DOMAINS_KEY, value);
         } else {
@@ -456,6 +452,18 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         domains     = nonEmpty(object.getDomains());
         remarks     =          object.getRemarks().orElse(null);
         deprecated  = (object instanceof Deprecable) ? ((Deprecable) object).isDeprecated() : false;
+    }
+
+    /**
+     * Returns the given collection if non-empty, or {@code null} if the given collection is null or empty.
+     *
+     * @param  <T>  the type of the collection.
+     * @param  <E>  the type of elements in the collection.
+     * @param  c    the collection, or {@code null}.
+     * @return the given collection, or {@code null} if the given collection was empty.
+     */
+    private static <T extends Collection<E>, E> T nonEmpty(final T c) {
+        return (c != null && c.isEmpty()) ? null : c;
     }
 
     /**
@@ -1162,7 +1170,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
                     final int size = alias.size();
                     final GenericName[] names = alias.toArray(new GenericName[size + 1]);
                     names[size] = n;
-                    alias = UnmodifiableArrayList.wrap(names);
+                    alias = Containers.viewAsUnmodifiableList(names);
                 }
             }
             return true;
@@ -1221,7 +1229,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      */
     private void setDomainExtent(final Extent value) {
         InternationalString scope = null;
-        final DefaultObjectDomain domain = DefaultObjectDomain.castOrCopy(CollectionsExt.first(domains));
+        final DefaultObjectDomain domain = DefaultObjectDomain.castOrCopy(Containers.peekFirst(domains));
         if (domain != null) {
             if (domain.domainOfValidity != null) {
                 propertyAlreadySet("setDomain", "domainOfValidity");
@@ -1237,7 +1245,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      */
     private void setDomainScope(final InternationalString value) {
         Extent area = null;
-        final DefaultObjectDomain domain = DefaultObjectDomain.castOrCopy(CollectionsExt.first(domains));
+        final DefaultObjectDomain domain = DefaultObjectDomain.castOrCopy(Containers.peekFirst(domains));
         if (domain != null) {
             if (domain.scope != null) {
                 propertyAlreadySet("setDomainScope", "scope");
