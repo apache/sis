@@ -47,7 +47,7 @@ import org.apache.sis.util.Workaround;
  *
  * @author Martin Desruisseaux (Geomatys).
  */
-@Workaround(library="JDK", version="1.7")
+@Workaround(library="JDK", version="7", fixed="25")
 final class Initializer {
     /**
      * Suffixes of auxiliary files.

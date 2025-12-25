@@ -129,7 +129,7 @@ public class DefaultCompoundCS extends AbstractCS {
      *
      * @param  components  the coordinate systems.
      */
-    @Workaround(library="JDK", version="1.7")
+    @Workaround(library="JDK", version="7", fixed="25")
     private DefaultCompoundCS(final CoordinateSystem[] components, final CoordinateSystemAxis[] axes) {
         super(Map.of(NAME_KEY, AxisDirections.appendTo(new StringBuilder(60).append("Compound CS"), axes)), axes);
         this.components = List.of(components);

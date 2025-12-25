@@ -109,7 +109,7 @@ public class ObliqueStereographic extends NormalizedProjection {
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @Workaround(library="JDK", version="1.7")
+    @Workaround(library="JDK", version="7", fixed="25")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         roles.put(ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_ORIGIN);
@@ -123,6 +123,7 @@ public class ObliqueStereographic extends NormalizedProjection {
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
+    @Workaround(library="JDK", version="7", fixed="25")
     private ObliqueStereographic(final Initializer initializer) {
         super(initializer, null);
         final double φ0     = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
