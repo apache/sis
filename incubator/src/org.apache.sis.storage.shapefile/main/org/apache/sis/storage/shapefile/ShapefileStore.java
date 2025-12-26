@@ -287,7 +287,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
         return featureSetView.getFileSet();
     }
 
-    private class AsFeatureSet extends AbstractFeatureSet implements WritableFeatureSet {
+    private final class AsFeatureSet extends AbstractFeatureSet implements WritableFeatureSet {
 
         private final Rectangle2D.Double filter;
         private final Set<String> dbfProperties;
@@ -323,6 +323,16 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
          */
         private boolean isDefaultView() {
             return filter == null && dbfProperties == null && readShp;
+        }
+
+        /**
+         * Configures the optimization of a query with the knowledge that the feature type is final.
+         * This configuration asserts that all features will be instances of the type returned by
+         * {@link #getType()} with no sub-type.
+         */
+        @Override
+        protected void prepareQueryOptimization(FeatureQuery query, Optimization optimizer) throws DataStoreException {
+            optimizer.setFinalFeatureType(getType());
         }
 
         @Override
@@ -579,7 +589,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                 if (selection != null) {
                     //run optimizations
                     final Optimization optimization = new Optimization();
-                    optimization.setFeatureType(type);
+                    optimization.setFinalFeatureType(type);
                     final ThreadLocal<Consumer<WarningEvent>> context = WarningEvent.LISTENER;
                     final Consumer<WarningEvent> old = context.get();
                     try {

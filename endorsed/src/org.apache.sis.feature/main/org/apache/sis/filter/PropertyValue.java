@@ -17,20 +17,22 @@
 package org.apache.sis.filter;
 
 import java.util.List;
+import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.Collection;
 import org.apache.sis.feature.Features;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.feature.internal.shared.FeatureProjectionBuilder;
 import org.apache.sis.filter.base.XPath;
 import org.apache.sis.filter.base.XPathSource;
-import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.PropertyNotFoundException;
@@ -260,13 +262,17 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
          */
         @Override
         public Expression<Feature, Object> optimize(final Optimization optimization) {
-            final FeatureType type = optimization.getFeatureType();
-            if (type != null) try {
-                return Features.getLinkTarget(type.getProperty(name))
-                        .map((rename) -> new AsObject(rename, isVirtual)).orElse(this);
+            final var found = new HashSet<String>();
+            try {
+                final String preferredName = optimization.getPreferredPropertyName(name, found);
+                if (!preferredName.equals(name)) {
+                    return new AsObject(preferredName, isVirtual);
+                }
             } catch (PropertyNotFoundException e) {
                 warning(e, true);
-                return NULL();
+                if (found.isEmpty()) {
+                    return NULL();      // The property does not exist in any feature type.
+                }
             }
             return this;
         }
@@ -331,47 +337,58 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
          */
         @Override
         public final Expression<Feature, V> optimize(final Optimization optimization) {
-            final FeatureType featureType = optimization.getFeatureType();
-            if (featureType != null) try {
-                /*
-                 * Resolve link (e.g. "sis:identifier" as a reference to the real identifier property).
-                 * This is important for allowing `SQLStore` to use the property in SQL WHERE statements.
-                 * If there is no renaming to apply (which is the usual case), then `rename` is null.
-                 */
-                String rename = name;
-                PropertyType property = featureType.getProperty(rename);
-                Optional<String> target = Features.getLinkTarget(property);
-                if (target.isPresent()) try {
-                    rename = target.get();
-                    property = featureType.getProperty(rename);
-                } catch (PropertyNotFoundException e) {
-                    warning(e, true);
-                    rename = name;
-                }
-                /*
-                 * At this point we did our best effort for having the property as an attribute,
-                 * which allows us to get the expected type. If the type is not `Object`, we can
-                 * try to fetch a more specific converter than the default `Converted` one.
-                 */
-                Class<?> source = getSourceClass();
-                final Class<?> original = source;
-                if (property instanceof AttributeType<?>) {
-                    source = ((AttributeType<?>) property).getValueClass();
-                }
-                if (!(rename.equals(name) && source.equals(original))) {
-                    if (source == Object.class) {
-                        return new Converted<>(type, rename, isVirtual);
-                    } else if (type.isAssignableFrom(source)) {
-                        return new Unsafe<>(source, type, rename, isVirtual);
-                    } else {
-                        return new CastedAndConverted<>(source, type, rename, isVirtual);
-                    }
-                }
+            /*
+             * Resolve links (e.g. "sis:identifier" as a reference to the real identifier property).
+             * This is important for allowing `SQLStore` to use the property in SQL WHERE statements.
+             */
+            final var found = new HashSet<String>();
+            final String preferredName;
+            try {
+                preferredName = optimization.getPreferredPropertyName(name, found);
             } catch (PropertyNotFoundException e) {
                 warning(e, true);
-                return NULL();
+                return found.isEmpty() ? NULL() : this;
             }
-            return this;
+            /*
+             * Check if the same converter can be used for all feature types.
+             * This is guaranteed to be true if the requested property contains
+             * the same class of values in all feature types.
+             */
+            final ObjectConverter<?, ? extends V> converter;
+            final var actualTypes = new HashMap<Class<?>, ObjectConverter<?, ? extends V>>();
+            converter = optimization.constantResultForAllTypes((featureType) -> {
+                PropertyType property = featureType.getProperty(preferredName);
+                Optional<String> target = Features.getLinkTarget(property);
+                if (target.isPresent()) {
+                    property = featureType.getProperty(target.get());
+                }
+                final Class<?> source;
+                if (property instanceof AttributeType<?>) {
+                    source = ((AttributeType<?>) property).getValueClass();
+                } else {
+                    source = getSourceClass();
+                }
+                return actualTypes.computeIfAbsent(source, (s) -> ObjectConverters.find(s, type));
+            });
+            /*
+             * Finished to collect the class of values in declared feature types. The `actualTypes` may contain more
+             * than one element if different feature types define the same property with values of different types,
+             * but a unique converter was nevertheless found.
+             */
+            Class<?> source = Containers.peekIfSingleton(actualTypes.keySet());
+            if (converter == null || (preferredName.equals(name) && (source == null || source == getSourceClass()))) {
+                return this;
+            }
+            if (source == null) {
+                source = converter.getSourceClass();
+            }
+            if (source == Object.class) {
+                return new Converted<>(type, preferredName, isVirtual);
+            } else if (type.isAssignableFrom(source)) {
+                return new Unsafe<>(source, type, preferredName, isVirtual);
+            } else {
+                return new CastedAndConverted<>(source, type, preferredName, isVirtual);
+            }
         }
 
         /**

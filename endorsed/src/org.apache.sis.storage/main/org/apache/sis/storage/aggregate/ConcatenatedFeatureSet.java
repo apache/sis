@@ -18,14 +18,17 @@ package org.apache.sis.storage.aggregate;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.Collection;
 import java.util.OptionalLong;
 import java.util.stream.Stream;
 import org.apache.sis.feature.Features;
+import org.apache.sis.filter.Optimization;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.AbstractFeatureSet;
+import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.storage.Query;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.util.ArgumentChecks;
@@ -71,6 +74,13 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
     private final FeatureType commonType;
 
     /**
+     * The types, including sub-types, of all feature instances.
+     * This is often a singleton containing only {@link #commonType}, but it may also be a
+     * set without {@code commonType} if all features are instances of various subtypes.
+     */
+    private final Set<FeatureType> allTypes;
+
+    /**
      * Creates a new concatenated feature set with the same types as the given feature set,
      * but different sources. This is used for creating {@linkplain #subset(Query) subsets}.
      */
@@ -78,6 +88,7 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
         super(original);
         this.sources = Containers.viewAsUnmodifiableList(sources);
         commonType = original.commonType;
+        allTypes = original.allTypes;
     }
 
     /**
@@ -101,7 +112,8 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
         for (int i=0; i<types.length; i++) {
             types[i] = sources[i].getType();
         }
-        commonType = Features.findCommonParent(Arrays.asList(types));
+        allTypes = Set.copyOf(Arrays.asList(types));
+        commonType = Features.findCommonParent(allTypes);
         if (commonType == null) {
             throw new DataStoreContentException(Resources.format(Resources.Keys.NoCommonFeatureType));
         }
@@ -239,5 +251,16 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
             modified |= (subsets[i] != source);
         }
         return modified ? new ConcatenatedFeatureSet(subsets, this) : this;
+    }
+
+    /**
+     * Configures the optimization of a query with information about the expected types of all feature instances.
+     * This method is invoked indirectly when a {@linkplain #subset feature subset} is created from a query.
+     *
+     * @since 1.6
+     */
+    @Override
+    protected void prepareQueryOptimization(FeatureQuery query, Optimization optimizer) throws DataStoreException {
+        optimizer.setFinalFeatureTypes(allTypes);
     }
 }

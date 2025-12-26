@@ -154,7 +154,7 @@ public class SEPortrayerTest {
         shark1.setPropertyValue("specie", "White Shark");
         shark1.setPropertyValue("length", 12.0);
 
-        fishes = new MemoryFeatureSet(null, sharkType, List.of(fish1, fish2, shark1));
+        fishes = new MemoryFeatureSet(null, fishType, List.of(fish1, fish2, shark1));
 
         final FeatureTypeBuilder boatbuilder = new FeatureTypeBuilder();
         boatbuilder.setName("boat");

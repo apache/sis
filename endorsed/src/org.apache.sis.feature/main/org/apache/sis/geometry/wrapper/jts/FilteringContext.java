@@ -32,7 +32,7 @@ import org.apache.sis.system.DelayedRunnable;
  *
  * <p>Ideally this object should be created when a filtering operation on a collection of features
  * is about to start, and disposed after the filtering operation is completed. We do not yet have
- * a notification mechanism for those events, so current implementation use a {@link ThreadLocal}.
+ * a notification mechanism for those events, so current implementation use a {@link Queue}.
  * A future version may revisit this strategy and expand the use of "filtering context" to all
  * geometry implementations, not only JTS (but we may keep a specialized JTS subclass).</p>
  *

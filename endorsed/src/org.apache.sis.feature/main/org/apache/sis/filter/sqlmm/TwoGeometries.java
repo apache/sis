@@ -17,19 +17,15 @@
 package org.apache.sis.filter.sqlmm;
 
 import java.util.List;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.filter.Optimization;
-import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.filter.Expression;
 import org.opengis.filter.Literal;
-import org.opengis.filter.ValueReference;
 
 
 /**
@@ -78,23 +74,15 @@ class TwoGeometries<R> extends SpatialFunction<R> {
      */
     @Override
     public Expression<R,?> optimize(final Optimization optimization) {
-        final FeatureType featureType = optimization.getFeatureType();
-        if (featureType != null) {
-            final Expression<R,?> p1 = unwrap(geometry1);
-            if (p1 instanceof ValueReference<?,?> && unwrap(geometry2) instanceof Literal<?,?>) try {
-                final CoordinateReferenceSystem targetCRS = AttributeConvention.getCRSCharacteristic(
-                        featureType, featureType.getProperty(((ValueReference<?,?>) p1).getXPath()));
-                if (targetCRS != null) {
-                    final GeometryWrapper literal = geometry2.apply(null);
-                    if (literal != null) {
-                        final GeometryWrapper tr = literal.transform(targetCRS);
-                        if (tr != literal) {
-                            @SuppressWarnings({"unchecked","rawtypes"})
-                            final Expression<R,?>[] effective = getParameters().toArray(Expression[]::new);
-                            effective[1] = Optimization.literal(tr);
-                            return recreate(effective);
-                        }
-                    }
+        if (unwrap(geometry2) instanceof Literal<?,?>) {
+            final GeometryWrapper literal = geometry2.apply(null);
+            if (literal != null) try {
+                final GeometryWrapper transformed = literal.transform(optimization.findExpectedCRS(unwrap(geometry1)).orElse(null));
+                if (transformed != literal) {
+                    @SuppressWarnings({"unchecked","rawtypes"})
+                    final Expression<R,?>[] effective = getParameters().toArray(Expression[]::new);
+                    effective[1] = Optimization.literal(transformed);
+                    return recreate(effective);
                 }
             } catch (PropertyNotFoundException | TransformException e) {
                 warning(e, true);

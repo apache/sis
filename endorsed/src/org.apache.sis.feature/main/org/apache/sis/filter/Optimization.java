@@ -19,10 +19,19 @@ package org.apache.sis.filter;
 import java.util.Map;
 import java.util.Set;
 import java.util.List;
+import java.util.Iterator;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.feature.internal.shared.AttributeConvention;
+import org.apache.sis.feature.Features;
+import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
@@ -33,9 +42,11 @@ import org.opengis.util.CodeList;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Literal;
 import org.opengis.filter.Expression;
+import org.opengis.filter.ValueReference;
 import org.opengis.filter.LogicalOperator;
 import org.opengis.filter.LogicalOperatorName;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.PropertyNotFoundException;
 
 
 /**
@@ -89,13 +100,15 @@ public class Optimization {
     private static final Object COMPUTING = Void.TYPE;
 
     /**
-     * The type of feature instances to be filtered, or {@code null} if unknown.
+     * Exhaustive set of types of all feature instances that the filters and expressions may see.
+     * This is an empty set if the feature types are unknown or irrelevant for the type of resources to be filtered.
      */
-    private FeatureType featureType;
+    private Set<FeatureType> featureTypes;
 
     /**
      * Filters and expressions already optimized. Also used for avoiding never-ending loops.
-     * The map is created when first needed.
+     * The map is created when first needed. The null value (not the same as an empty map) is
+     * used for identifying the start of recursive invocations of {@code apply(…)} methods.
      *
      * <h4>Implementation note</h4>
      * The same map is used for filters and expressions.
@@ -103,13 +116,17 @@ public class Optimization {
      * If it happens anyway, it should still be okay because the method signatures are
      * the same in both interfaces (only the return type changes), so the same methods
      * would be invoked no matter if we consider the keys as a filter or an expression.
+     *
+     * @see #apply(Filter)
+     * @see #apply(Expression)
      */
-    private Map<Object,Object> done;
+    private Map<Object, Object> done;
 
     /**
      * Creates a new instance.
      */
     public Optimization() {
+        featureTypes = Set.of();
     }
 
     /**
@@ -118,9 +135,12 @@ public class Optimization {
      * The default value is {@code null}.
      *
      * @return the type of feature instances to be filtered, or {@code null} if unknown.
+     *
+     * @deprecated Replaced by {@link #getFinalFeatureTypes()}.
      */
+    @Deprecated(since = "1.6", forRemoval = true)
     public FeatureType getFeatureType() {
-        return featureType;
+        return Containers.peekIfSingleton(getFinalFeatureTypes());
     }
 
     /**
@@ -130,9 +150,173 @@ public class Optimization {
      * in advance.
      *
      * @param  type  the type of feature instances to be filtered, or {@code null} if unknown.
+     *
+     * @deprecated Replaced by {@link #setFinalFeatureTypes(Collection)}.
      */
+    @Deprecated(since = "1.6", forRemoval = true)
     public void setFeatureType(final FeatureType type) {
-        featureType = type;
+        setFinalFeatureType(type);
+    }
+
+    /**
+     * Returns the exhaustive set of the types of all feature instances that the filters and expressions may see.
+     * The super-types should not be included in the set, unless some features may be instances of these specific
+     * super-types rather than instances of a some sub-type. If the set of feature types is unknown or irrelevant
+     * for the type of resources to be filtered, then this method returns an empty set.
+     *
+     * <h4>Purpose</h4>
+     * A {@link org.apache.sis.storage.DataStore} may contain a hierarchy of feature types instead of a single type.
+     * A property may be absent in the parent type but present in some sub-types, or may be overridden in sub-types.
+     * If an optimization wants to evaluate once and for all an expression with literal parameters, the optimization
+     * needs to verify that the parameters are really literals in all possible sub-types.
+     *
+     * @return exhaustive set of types of all feature instances that the filters and expressions may see.
+     *
+     * @since 1.6
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public Set<FeatureType> getFinalFeatureTypes() {
+        return featureTypes;
+    }
+
+    /**
+     * Specifies the exhaustive set of the types of all feature instances that the filters and expressions may see.
+     * The given collection should not include super-types, unless some features may be instances of these specific
+     * super-types rather than instances of a some sub-type. An empty collection means that feature types are unknown
+     * or irrelevant for the type of resources to be filtered.
+     *
+     * @param  types  exhaustive set of types of all feature instances that the filters and expressions may see.
+     *
+     * @since 1.6
+     */
+    public void setFinalFeatureTypes(final Collection<? extends FeatureType> types) {
+        featureTypes = Set.copyOf(types);
+    }
+
+    /**
+     * Specifies the single type of all feature instances that the filters and expressions may see.
+     * This is a convenience method delegating to {@link #setFinalFeatureTypes(Collection)} with a
+     * singleton or empty set.
+     *
+     * <p>Note that the given type should be effectively final, i.e. no subtype should exist.
+     * If the feature instances may be of some subtypes, then all subtypes should be enumerated
+     * in a call to {@link #setFinalFeatureTypes(Collection)}.</p>
+     *
+     * @param  type  the type of feature instances to be filtered, or {@code null} if unknown.
+     *
+     * @since 1.6
+     */
+    public final void setFinalFeatureType(final FeatureType type) {
+        setFinalFeatureTypes((type != null) ? Set.of(type) : Set.of());
+    }
+
+    /**
+     * If the result of applying the given function is equal for all feature types, returns that value.
+     * Otherwise, returns {@code null}. This is used for implementation of {@code optimize(…)} methods.
+     *
+     * @param  <R>     type of the result.
+     * @param  mapper  the operation to apply on each feature type.
+     * @return the constant result, or {@code null} if none.
+     */
+    final <R> R constantResultForAllTypes(final Function<FeatureType, R> mapper) {
+        final Iterator<FeatureType> it = getFinalFeatureTypes().iterator();
+        if (it.hasNext()) {
+            final R value = mapper.apply(it.next());
+            if (value != null) {
+                while (it.hasNext()) {
+                    if (!value.equals(mapper.apply(it.next()))) {
+                        return null;
+                    }
+                }
+                return value;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Fetches the real name of the given property after resolution of links in all feature types.
+     * The real name depends on the feature types declared by {@link #getFinalFeatureTypes()}.
+     * If the specified property is present in all declared feature types and all these properties
+     * are links referencing the same target property, then this method returns that target property.
+     * Otherwise, this method returns {@code property}.
+     *
+     * <p>If at least one feature type does not have the requested property, then an exception is thrown.
+     * This method finished the iteration over all types before to throw {@link PropertyNotFoundException}.
+     * Therefore, the size of {@code addTo} can be used for detecting if at least one feature type has the
+     * property. If {@code addTo} is empty, then the property has not been found in any feature type.</p>
+     *
+     * @param  property  name of the property to resolve.
+     * @param  addTo     where to add the XPath of the specified property for all feature types.
+     * @return preferred name to use for fetching the property values for all feature types.
+     * @throws PropertyNotFoundException if at least one feature type does not have the specified property.
+     */
+    @SuppressWarnings("ThrowableResultIgnored")
+    final String getPreferredPropertyName(final String property, final Set<String> addTo) throws PropertyNotFoundException {
+        final var exceptions = new HashMap<FeatureType, PropertyNotFoundException>();
+        for (final FeatureType type : getFinalFeatureTypes()) {
+            try {
+                addTo.add(Features.getLinkTarget(type.getProperty(property)).orElse(property));
+            } catch (PropertyNotFoundException e) {
+                exceptions.putIfAbsent(type, e);
+            }
+        }
+        if (exceptions.isEmpty()) {
+            final String name = Containers.peekIfSingleton(addTo);
+            return (name != null) ? name : property;
+        }
+        /*
+         * Throws the exception associated with the most basic feature type.
+         * The base type search is not mandatory, but provide more useful stack trace.
+         */
+        final PropertyNotFoundException e = valueOfBaseType(exceptions);
+        while (!exceptions.isEmpty()) {
+            e.addSuppressed(valueOfBaseType(exceptions));
+        }
+        throw e;
+    }
+
+    /**
+     * Returns the value associated to the base type among all keys of the given map.
+     * If no base type is found, then an arbitrary entry is used.
+     * This method always removes exactly one entry from the map.
+     */
+    private static <E> E valueOfBaseType(final Map<FeatureType, E> map) {
+        E e = map.remove(Features.findCommonParent(map.keySet()));
+        if (e == null) {
+            Iterator<E> it = map.values().iterator();
+            e = it.next();
+            it.remove();
+        }
+        return e;
+    }
+
+    /**
+     * If the specified parameter should always use the same Coordinate Reference System, returns that <abbr>CRS</abbr>.
+     * The {@code parameter} argument is usually one of the elements returned by {@link Expression#getParameters()} or
+     * {@link Filter#getExpressions()}, and the <abbr>CRS</abbr> used by that parameter may depend on the feature types
+     * declared by {@link #getFinalFeatureTypes()}.
+     * The returned value is empty if the <abbr>CRS</abbr> is unknown or not the same for all feature types.
+     *
+     * @param  parameter  a parameter of a filter or expression.
+     * @return the <abbr>CRS</abbr> expected for the specified parameter, or empty if unknown of not unique.
+     * @throws PropertyNotFoundException if the parameter is a {@link ValueReference} and
+     *         the referenced property has not been found in at least one feature type.
+     *
+     * @since 1.6
+     */
+    public Optional<CoordinateReferenceSystem> findExpectedCRS(final Expression<?,?> parameter)
+            throws PropertyNotFoundException
+    {
+        CoordinateReferenceSystem crs = null;
+        if (parameter instanceof Literal<?,?>) {
+            crs = Geometries.getCoordinateReferenceSystem(((Literal<?,?>) parameter).getValue());
+        } else if (parameter instanceof ValueReference<?,?>) {
+            final String xpath = ((ValueReference<?,?>) parameter).getXPath();
+            crs = constantResultForAllTypes(
+                    (type) -> AttributeConvention.getCRSCharacteristic(type, type.getProperty(xpath)));
+        }
+        return Optional.ofNullable(crs);
     }
 
     /**

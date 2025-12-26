@@ -253,7 +253,7 @@ public final class LogicalFilterTest extends TestCase {
          * Notify the optimizer that property values will be of `String` type.
          * The optimizer should compute an `ObjectConverter` in advance.
          */
-        optimization.setFeatureType(feature);
+        optimization.setFinalFeatureType(feature);
         final var optimized = optimization.apply(expression);
         assertEquals(200, expression.apply(instance).intValue());
         assertNotSame(expression, optimized);
