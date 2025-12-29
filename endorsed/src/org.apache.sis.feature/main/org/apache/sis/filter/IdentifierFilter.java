@@ -90,8 +90,9 @@ final class IdentifierFilter extends Node
                 return new IdentifierFilter(this, preferredName);
             }
         } catch (PropertyNotFoundException e) {
-            warning(e, true);
-            if (found.isEmpty()) {
+            boolean resolved = found.isEmpty();
+            optimization.warning(e, !resolved);
+            if (resolved) {
                 return Filter.exclude();    // The property does not exist in any feature type.
             }
         }

@@ -214,7 +214,7 @@ walk:   if (instance != null) {
                 }
             }
         } catch (PropertyNotFoundException e) {
-            warning(e, true);
+            optimization.warning(e, true);
         }
         return this;
     }

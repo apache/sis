@@ -223,7 +223,7 @@ abstract class BinaryGeometryFilter<R> extends Node implements SpatialOperator<R
                     else effective2 = literal;
                 }
             } catch (PropertyNotFoundException | TransformException e) {
-                warning(e, true);
+                optimization.warning(e, false);
             }
             /*
              * If one of the "effective" parameter has been modified, recreate a new filter.

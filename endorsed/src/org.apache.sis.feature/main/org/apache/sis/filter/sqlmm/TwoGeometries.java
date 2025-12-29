@@ -85,7 +85,7 @@ class TwoGeometries<R> extends SpatialFunction<R> {
                     return recreate(effective);
                 }
             } catch (PropertyNotFoundException | TransformException e) {
-                warning(e, true);
+                optimization.warning(e, false);
             }
         }
         return super.optimize(optimization);

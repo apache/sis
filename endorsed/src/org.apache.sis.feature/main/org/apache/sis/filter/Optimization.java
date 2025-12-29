@@ -22,12 +22,15 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.BiPredicate;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.feature.Features;
@@ -35,7 +38,9 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.filter.base.Node;
+import org.apache.sis.filter.base.WarningEvent;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.CodeList;
@@ -121,6 +126,25 @@ public class Optimization {
      * @see #apply(Expression)
      */
     private Map<Object, Object> done;
+
+    /**
+     * The filter or expression in process of being optimized.
+     * This is used by {@link #warning(Exception)} for reporting the source of errors.
+     */
+    private Object currentFilterOrExpression;
+
+    /**
+     * Set during the execution of an {@code apply(…)} method if it could do better.
+     * If {@code true}, then invoking {@code apply(…)} again with, for example, a single
+     * {@link #setFinalFeatureType final feature type} may improve the result efficiency.
+     * Conversely, a value of {@code false} means that no improvement is expected.
+     *
+     * @see #apply(Filter)
+     * @see #apply(Expression)
+     * @see #warning(Exception, boolean)
+     * @see #isImprovable()
+     */
+    private boolean isImprovable;
 
     /**
      * Creates a new instance.
@@ -320,6 +344,106 @@ public class Optimization {
     }
 
     /**
+     * Returns whether an {@code apply(…)} method may obtain a better result with dynamic optimization.
+     * A value of {@code true} does not necessarily mean that {@link DynamicOptimization} will be created,
+     * because {@code DynamicOptimization.ofAny(…)} will check if the resource type is {@code Feature}.
+     *
+     * @param  source         the filter or expression to test if it can be improved.
+     * @param  isOptimizable  one of the {@code isOptimizable(…)} methods.
+     * @return whether it is suggested to use {@link DynamicOptimization}.
+     */
+    private <T> boolean isImprovable(final T source, final BiPredicate<T, Set<Object>> isOptimizable) {
+        if (isImprovable || featureTypes.isEmpty()) {
+            return isOptimizable.test(source, new HashSet<>());
+        }
+        return false;
+    }
+
+    /**
+     * Verifies whether the given filter can be optimized.
+     *
+     * @param  filter  the filter to test.
+     * @param  done    an initially empty set used as a safety against infinite recursion.
+     * @return whether the given filter can be optimized.
+     */
+    private static boolean isOptimizable(final Filter<?> filter, final Set<Object> done) {
+        if (filter instanceof OnFilter<?>) {
+            return true;
+        }
+        for (Expression<?,?> parameter : filter.getExpressions()) {
+            if (done.add(parameter) && isOptimizable(parameter, done)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Verifies whether the given expression can be optimized.
+     *
+     * @param  expression  the expression to test.
+     * @param  done        an initially empty set used as a safety against infinite recursion.
+     * @return whether the given expression can be optimized.
+     */
+    private static boolean isOptimizable(final Expression<?,?> expression, final Set<Object> done) {
+        if (expression instanceof OnExpression<?,?>) {
+            return true;
+        }
+        for (Expression<?,?> parameter : expression.getParameters()) {
+            if (done.add(parameter) && isOptimizable(parameter, done)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns whether a call to {@code apply(…)} is the first of possibly recursive calls.
+     * This method shall be invoked in all {@code apply(…)} methods before to do the optimization.
+     *
+     * @return whether this is the entry (non-recursive) call to an {@code apply(…)} method.
+     */
+    private boolean isFirstCall() {
+        if (done != null) {
+            return false;
+        }
+        isImprovable = false;
+        done = new IdentityHashMap<>();
+        return true;
+    }
+
+    /**
+     * Returns the previous optimization result for the given filter or expression.
+     * The {@link #isFirstCall()} method must have been invoked before this method.
+     *
+     * @param  original        the filter or expression to optimize.
+     * @param  identification  method to invoke for getting an identification of the filter or expression.
+     * @return the previous value, or {@code null} if none.
+     * @throws IllegalArgumentException if a recursive call is detected for the same filter or expression.
+     */
+    private <T> Object previousResult(final T original, final Function<T, Object> identification) {
+        currentFilterOrExpression = original;
+        final Object previous = done.putIfAbsent(original, COMPUTING);
+        if (previous != COMPUTING) {
+            return previous;
+        }
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.RecursiveCreateCallForKey_1, identification.apply(original)));
+    }
+
+    /**
+     * Stores the result of an optimization.
+     *
+     * @param original  the filter or expression to optimize.
+     * @param result    the optimization result.
+     */
+    private void storeResult(final Object original, final Object result) {
+        if (done.put(original, result) != COMPUTING) {
+            // Should not happen unless this `Optimization` is used concurrently in many threads.
+            throw new ConcurrentModificationException();
+        }
+    }
+
+    /**
      * Optimizes or simplifies the given filter. If the given instance implements the {@link OnFilter} interface,
      * then its {@code optimize(this)} method is invoked. Otherwise this method returns the given filter as-is.
      *
@@ -330,34 +454,29 @@ public class Optimization {
      * @throws IllegalArgumentException if the given filter is already in process of being optimized
      *         (i.e. there is a recursive call to {@code apply(…)} for the same filter).
      */
-    public <R> Filter<R> apply(final Filter<R> filter) {
-        if (!(filter instanceof OnFilter<?>)) {
-            return filter;
-        }
-        final boolean isFirstCall = (done == null);
-        if (isFirstCall) {
-            done = new IdentityHashMap<>();
-        }
-        try {
-            final Object previous = done.putIfAbsent(filter, COMPUTING);
-            if (previous == COMPUTING) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.RecursiveCreateCallForKey_1, filter.getOperatorType()));
-            }
-            @SuppressWarnings("unchecked")
-            Filter<R> result = (Filter<R>) previous;
-            if (result == null) {
-                result = ((OnFilter<R>) filter).optimize(this);
-                if (done.put(filter, result) != COMPUTING) {
-                    // Should not happen unless this `Optimization` is used concurrently in many threads.
-                    throw new ConcurrentModificationException();
+    @SuppressWarnings("unchecked")
+    public <R> Filter<R> apply(Filter<R> filter) {
+        if (filter instanceof OnFilter<?>) {
+            final var original = (OnFilter<R>) filter;
+            final boolean isFirstCall = isFirstCall();
+            final Object oldFilterOrExpression = currentFilterOrExpression;
+            try {
+                filter = (Filter<R>) previousResult(original, Filter::getOperatorType);
+                if (filter == null) {
+                    filter = original.optimize(this);
+                    storeResult(original, filter);
+                }
+            } finally {
+                currentFilterOrExpression = oldFilterOrExpression;
+                if (isFirstCall) {
+                    done = null;
                 }
             }
-            return result;
-        } finally {
-            if (isFirstCall) {
-                done = null;
+            if (isFirstCall && isImprovable(filter, Optimization::isOptimizable)) {
+                filter = DynamicOptimization.ofAny(filter);
             }
         }
+        return filter;
     }
 
     /**
@@ -368,6 +487,9 @@ public class Optimization {
      * <p>Implementations need to override only one of the 2 methods defined in this interface.</p>
      *
      * @param  <R>  the type of resources to filter.
+     *
+     * @version 1.6
+     * @since   1.1
      */
     public interface OnFilter<R> extends Filter<R> {
         /**
@@ -505,34 +627,29 @@ public class Optimization {
      * @throws IllegalArgumentException if the given expression is already in process of being optimized
      *         (i.e. there is a recursive call to {@code apply(…)} for the same expression).
      */
-    public <R,V> Expression<R, ? extends V> apply(final Expression<R,V> expression) {
-        if (!(expression instanceof OnExpression<?,?>)) {
-            return expression;
-        }
-        final boolean isFirstCall = (done == null);
-        if (isFirstCall) {
-            done = new IdentityHashMap<>();
-        }
-        try {
-            final Object previous = done.putIfAbsent(expression, COMPUTING);
-            if (previous == COMPUTING) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.RecursiveCreateCallForKey_1, expression.getFunctionName()));
-            }
-            @SuppressWarnings("unchecked")
-            Expression<R, ? extends V> result = (Expression<R, ? extends V>) previous;
-            if (result == null) {
-                result = ((OnExpression<R,V>) expression).optimize(this);
-                if (done.put(expression, result) != COMPUTING) {
-                    // Should not happen unless this `Optimization` is used concurrently in many threads.
-                    throw new ConcurrentModificationException();
+    @SuppressWarnings("unchecked")
+    public <R,V> Expression<R, ? extends V> apply(Expression<R, ? extends V> expression) {
+        if (expression instanceof OnExpression<?,?>) {
+            final var original = (OnExpression<R, ? extends V>) expression;
+            final boolean isFirstCall = isFirstCall();
+            final Object oldFilterOrExpression = currentFilterOrExpression;
+            try {
+                expression = (Expression<R, ? extends V>) previousResult(original, Expression::getFunctionName);
+                if (expression == null) {
+                    expression = original.optimize(this);
+                    storeResult(original, expression);
+                }
+                if (isFirstCall && isImprovable(expression, Optimization::isOptimizable)) {
+                    expression = DynamicOptimization.ofAny(expression);
+                }
+            } finally {
+                currentFilterOrExpression = oldFilterOrExpression;
+                if (isFirstCall) {
+                    done = null;
                 }
             }
-            return result;
-        } finally {
-            if (isFirstCall) {
-                done = null;
-            }
         }
+        return expression;
     }
 
     /**
@@ -544,6 +661,9 @@ public class Optimization {
      *
      * @param  <R>  the type of resources used as inputs.
      * @param  <V>  the type of values computed by the expression.
+     *
+     * @version 1.6
+     * @since   1.1
      */
     public interface OnExpression<R,V> extends Expression<R,V> {
         /**
@@ -670,6 +790,33 @@ public class Optimization {
             return operand;
         }
         throw new IllegalArgumentException();
+    }
+
+    /**
+     * Reports that a warning occurred during the execution of an {@code apply(…)} method.
+     * This method can be invoked by implementations of {@link OnFilter} or {@link OnExpression} interfaces.
+     * The exception if often a {@link PropertyNotFoundException}, which is not necessarily an error because
+     * a property may not exist in a base feature type but exists in some sub-types.
+     *
+     * <p>If the {@code resolvable} flag is {@code true}, it will be taken as a hint to retry the optimization
+     * later if more information about the {@link #getFinalFeatureTypes() final feature types} become available.
+     * This flag should be {@code false} if more information would not have a direct impact on the optimization
+     * done by the caller. Callers do not need to care about indirect impacts in the parameters of the filter or
+     * expression.</p>
+     *
+     * @param exception   the recoverable exception that occurred.
+     * @param resolvable  whether an optimization with more information may avoid this warning.
+     *
+     * @since 1.6
+     */
+    public void warning(Exception exception, boolean resolvable) {
+        isImprovable |= resolvable;
+        final Consumer<WarningEvent> listener = WarningEvent.LISTENER.get();
+        if (listener != null) {
+            listener.accept(new WarningEvent(currentFilterOrExpression, exception, true));
+        } else {
+            Logging.recoverableException(Node.LOGGER, Optimization.class, "apply", exception);
+        }
     }
 
     /**

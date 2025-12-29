@@ -269,8 +269,9 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
                     return new AsObject(preferredName, isVirtual);
                 }
             } catch (PropertyNotFoundException e) {
-                warning(e, true);
-                if (found.isEmpty()) {
+                boolean resolved = found.isEmpty();
+                optimization.warning(e, !resolved);
+                if (resolved) {
                     return NULL();      // The property does not exist in any feature type.
                 }
             }
@@ -346,8 +347,9 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
             try {
                 preferredName = optimization.getPreferredPropertyName(name, found);
             } catch (PropertyNotFoundException e) {
-                warning(e, true);
-                return found.isEmpty() ? NULL() : this;
+                boolean resolved = found.isEmpty();
+                optimization.warning(e, !resolved);
+                return resolved ? NULL() : this;
             }
             /*
              * Check if the same converter can be used for all feature types.

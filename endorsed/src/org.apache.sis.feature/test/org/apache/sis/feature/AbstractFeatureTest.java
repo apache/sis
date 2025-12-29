@@ -64,7 +64,7 @@ public final class AbstractFeatureTest extends FeatureTestCase {
          * If a feature backed by a {@code java.util.Map} is really wanted, then {@link SparseFeature} should
          * be considered.
          */
-        private HashMap<String,Object> values = new HashMap<>();
+        private HashMap<String, Object> values = new HashMap<>();
 
         /**
          * Creates a new feature of the given type. This constructor adds immediately the default values into
@@ -145,7 +145,7 @@ public final class AbstractFeatureTest extends FeatureTestCase {
             } catch (CloneNotSupportedException e) {
                 throw new AssertionError(e);
             }
-            c.values = (HashMap<String,Object>) c.values.clone();
+            c.values = (HashMap<String, Object>) c.values.clone();
             return c;
         }
     }

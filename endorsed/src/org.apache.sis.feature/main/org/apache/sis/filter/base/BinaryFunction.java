@@ -157,6 +157,7 @@ public abstract class BinaryFunction<R,V1,V2> extends Node {
             /*
              * Integer overflow, or division by zero, or attempt to convert NaN or infinity
              * to `BigDecimal`, or division does not have a terminating decimal expansion.
+             * This is a recoverable because we can fallback on floating point arithmetic.
              */
             warning(e, true);
         }
