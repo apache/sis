@@ -71,7 +71,7 @@ final class CharacteristicMap extends AbstractMap<String,Attribute<?>> implement
      */
     @Override
     public CharacteristicMap clone() throws CloneNotSupportedException {
-        final CharacteristicMap clone = (CharacteristicMap) super.clone();
+        final var clone = (CharacteristicMap) super.clone();
         Attribute<?>[] c = clone.characterizedBy;
         if (c != null) {
             clone.characterizedBy = c = c.clone();
@@ -150,6 +150,7 @@ final class CharacteristicMap extends AbstractMap<String,Attribute<?>> implement
     @Override
     public Attribute<?> remove(final Object key) {
         if (characterizedBy != null) {
+            @SuppressWarnings("element-type-mismatch")
             final Integer index = types.indices.get(key);
             if (index != null) {
                 final Attribute<?> previous = characterizedBy[index];

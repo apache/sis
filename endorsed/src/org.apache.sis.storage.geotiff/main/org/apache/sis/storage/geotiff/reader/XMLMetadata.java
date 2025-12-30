@@ -30,7 +30,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 import javax.xml.stream.events.Attribute;
@@ -49,6 +48,7 @@ import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.XML;
+import org.apache.sis.xml.internal.shared.InputFactory;
 
 
 /**
@@ -210,11 +210,10 @@ public final class XMLMetadata implements Filter {
      * Returns a reader for the XML document, or {@code null} if the document could not be read.
      */
     private XMLEventReader toXML() throws XMLStreamException {
-        final XMLInputFactory factory = XMLInputFactory.newFactory();
         if (bytes != null) {
-            return factory.createXMLEventReader(new ByteArrayInputStream(bytes), "UTF-8");
+            return InputFactory.createXMLEventReader(new ByteArrayInputStream(bytes));
         } else if (string != null) {
-            return factory.createXMLEventReader(new StringReader(string));
+            return InputFactory.createXMLEventReader(new StringReader(string));
         } else {
             return null;
         }

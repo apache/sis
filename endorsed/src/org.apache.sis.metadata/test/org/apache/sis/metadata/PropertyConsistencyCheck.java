@@ -26,7 +26,6 @@ import org.opengis.util.CodeList;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.CheckedContainer;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.metadata.internal.Dependencies;
 
 // Test dependencies
@@ -262,10 +261,10 @@ public abstract class PropertyConsistencyCheck extends AnnotationConsistencyChec
                 }
                 if (isMap) {
                     assertTrue(((Map<?,?>) value).isEmpty(), "Collections shall be initially empty.");
-                    value = CollectionsExt.modifiableCopy((Map<?,?>) value);                          // Protect from changes.
+                    value = PropertyAccessor.snapshot((Map<?,?>) value);        // Protect from changes.
                 } else if (isCollection) {
                     assertTrue(((Collection<?>) value).isEmpty(), "Collections shall be initially empty.");
-                    value = CollectionsExt.modifiableCopy((Collection<?>) value);                     // Protect from changes.
+                    value = PropertyAccessor.snapshot((Collection<?>) value);   // Protect from changes.
                 }
             }
             /*

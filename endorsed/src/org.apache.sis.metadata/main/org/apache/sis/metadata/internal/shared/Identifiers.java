@@ -25,10 +25,10 @@ import org.apache.sis.util.Characters;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.internal.shared.Constants;
-import org.apache.sis.util.internal.shared.CollectionsExt;
-import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
 
@@ -113,7 +113,7 @@ public final class Identifiers {
             boolean isUnicode = false;      // Whether `identifier` is a Unicode identifier.
             String identifier = null;       // The best identifier found so far.
             String codeSpace  = null;       // Code space of the identifier, or null if none.
-            for (final Identifier id : CollectionsExt.nonNull(citation.getIdentifiers())) {
+            for (final Identifier id : Containers.nonNull(citation.getIdentifiers())) {
                 if (id != null && !isDeprecated(id)) {
                     final String candidate = Strings.trimOrNull(id.getCode());
                     if (candidate != null) {
@@ -166,7 +166,7 @@ public final class Identifiers {
                     isUnicode = CharSequences.isUnicodeIdentifier(identifier);
                 }
                 if (!isUnicode) {
-                    for (final InternationalString i18n : CollectionsExt.nonNull(citation.getAlternateTitles())) {
+                    for (final InternationalString i18n : Containers.nonNull(citation.getAlternateTitles())) {
                         final String candidate = trimOrNull(i18n);
                         if (candidate != null) {
                             isUnicode = CharSequences.isUnicodeIdentifier(candidate);

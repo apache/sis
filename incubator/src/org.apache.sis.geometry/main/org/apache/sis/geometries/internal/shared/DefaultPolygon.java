@@ -16,16 +16,14 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.LinearRing;
 import org.apache.sis.geometries.Polygon;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 
 /**
@@ -42,10 +40,8 @@ public class DefaultPolygon extends AbstractGeometry implements Polygon {
     }
 
     public DefaultPolygon(LinearRing exterior, List<LinearRing> interiors) {
-        ArgumentChecks.ensureNonNull("exterior", exterior);
-        this.exterior = exterior;
-        this.interiors = interiors == null ? Collections.EMPTY_LIST : UnmodifiableArrayList.wrap(interiors.toArray(new LinearRing[0]));
-
+        this.exterior = Objects.requireNonNull(exterior);
+        this.interiors = (interiors == null) ? List.of() : List.copyOf(interiors);
         if (!this.interiors.isEmpty()) {
             for (Curve interior : this.interiors) {
                 Geometries.ensureSameAttributes(exterior.getAttributesType(), interior.getAttributesType());

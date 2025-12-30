@@ -26,9 +26,9 @@ import java.util.Locale;
 import java.util.Iterator;
 import java.util.Objects;
 import java.nio.charset.Charset;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.Bag;
 import org.apache.sis.util.internal.shared.Unsafe;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable.Node;
 
@@ -346,7 +346,7 @@ public final class LocaleAndCharset implements Node {
      * @return the given map, or a new map if necessary and the given map was null.
      */
     public static Map<Locale,Charset> setLanguages(Map<Locale,Charset> locales, final Collection<? extends Locale> newValues) {
-        final Charset encoding = (locales != null) ? CollectionsExt.first(locales.values()) : null;
+        final Charset encoding = (locales != null) ? Containers.peekFirst(locales.values()) : null;
         if (newValues == null || newValues.isEmpty()) {
             if (locales != null) {
                 locales.clear();
@@ -381,7 +381,7 @@ public final class LocaleAndCharset implements Node {
      * @return the given map, or a new map if necessary and the given map was null.
      */
     public static Map<Locale,Charset> setCharacterSets(Map<Locale,Charset> locales, final Collection<? extends Charset> newValues) {
-        final Charset encoding = CollectionsExt.first(newValues);
+        final Charset encoding = Containers.peekFirst(newValues);
         if (locales != null || encoding != null) {
             if (locales == null) {
                 locales = new LinkedHashMap<>();

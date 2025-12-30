@@ -37,7 +37,7 @@ import org.apache.sis.image.internal.shared.ColorModelFactory;
 import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -126,7 +126,7 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
             if (template != null) {
                 final Object value = template.getProperty(PlanarImage.SAMPLE_DIMENSIONS_KEY);
                 if (value instanceof SampleDimension[]) {
-                    ranges = UnmodifiableArrayList.wrap((SampleDimension[]) value);
+                    ranges = Containers.viewAsUnmodifiableList((SampleDimension[]) value);
                     return;
                 }
             }

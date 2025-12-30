@@ -39,6 +39,7 @@ import org.opengis.metadata.citation.TelephoneType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultContactTest extends TestCase implements Filter {
     /**
      * The resource key for the message of the warning that occurred, or {@code null} if none.

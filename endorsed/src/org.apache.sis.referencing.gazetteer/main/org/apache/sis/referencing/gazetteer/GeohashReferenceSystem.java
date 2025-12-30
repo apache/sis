@@ -197,7 +197,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @Workaround(library="JDK", version="1.8")
+    @Workaround(library="JDK", version="8", fixed="25")
     private static LocationType[] types() {
         final ModifiableLocationType gzd = new ModifiableLocationType(IDENTIFIER);
         gzd.addIdentification(Vocabulary.formatInternational(Vocabulary.Keys.Code));

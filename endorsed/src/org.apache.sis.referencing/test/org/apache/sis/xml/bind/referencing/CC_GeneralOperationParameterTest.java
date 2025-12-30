@@ -16,6 +16,7 @@
  */
 package org.apache.sis.xml.bind.referencing;
 
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -48,6 +49,16 @@ public final class CC_GeneralOperationParameterTest extends TestCase.WithLogs {
      */
     public CC_GeneralOperationParameterTest() {
         super(Loggers.XML);
+    }
+
+    /**
+     * Tests {@link CC_GeneralOperationParameter#toArray(Collection, Class)}.
+     */
+    @Test
+    public void testToArray() {
+        final String[] expected = new String[] {"One", "Two", "Three"};
+        final String[] actual = CC_GeneralOperationParameter.toArray(List.of(expected), String.class);
+        assertArrayEquals(expected, actual);
     }
 
     /**

@@ -18,12 +18,10 @@ package org.apache.sis.filter;
 
 import java.util.List;
 import javax.measure.Unit;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.geometry.wrapper.SpatialOperationContext;
-import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.filter.base.Node;
 import org.apache.sis.util.Exceptions;
 
@@ -31,11 +29,9 @@ import org.apache.sis.util.Exceptions;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Literal;
 import org.opengis.filter.Expression;
-import org.opengis.filter.ValueReference;
 import org.opengis.filter.SpatialOperator;
 import org.opengis.filter.BinarySpatialOperator;
 import org.opengis.filter.InvalidFilterValueException;
-import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyNotFoundException;
 
 
@@ -218,21 +214,16 @@ abstract class BinaryGeometryFilter<R> extends Node implements SpatialOperator<R
              * then try to fetch the CRS of the property values. If we can transform the literal to that
              * CRS, do it now in order to avoid doing this transformation for all feature instances.
              */
-            final FeatureType featureType = optimization.getFeatureType();
-            if (featureType != null && other instanceof ValueReference<?,?>) try {
-                final CoordinateReferenceSystem targetCRS = AttributeConvention.getCRSCharacteristic(
-                        featureType, featureType.getProperty(((ValueReference<?,?>) other).getXPath()));
-                if (targetCRS != null) {
-                    final GeometryWrapper geometry    = wrapper.apply(null);
-                    final GeometryWrapper transformed = geometry.transform(targetCRS);
-                    if (geometry != transformed) {
-                        literal = Optimization.literal(transformed);
-                        if (literal == effective1) effective1 = literal;
-                        else effective2 = literal;
-                    }
+            final GeometryWrapper geometry = wrapper.apply(null);
+            if (geometry != null) try {
+                final GeometryWrapper transformed = geometry.transform(optimization.findExpectedCRS(other).orElse(null));
+                if (geometry != transformed) {
+                    literal = Optimization.literal(transformed);
+                    if (literal == effective1) effective1 = literal;
+                    else effective2 = literal;
                 }
             } catch (PropertyNotFoundException | TransformException e) {
-                warning(e, true);
+                optimization.warning(e, false);
             }
             /*
              * If one of the "effective" parameter has been modified, recreate a new filter.

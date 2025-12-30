@@ -19,7 +19,7 @@
  * Widgets showing {@link org.apache.sis.coverage.grid.GridCoverage} images or sample values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   1.1
  */
 package org.apache.sis.gui.coverage;

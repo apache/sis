@@ -17,11 +17,14 @@
 package org.apache.sis.metadata;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.List;
 import java.util.Arrays;
+import java.util.AbstractMap;
 import java.util.Locale;
 import java.util.Iterator;
 import java.util.Collection;
+import java.util.Collections;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 import org.opengis.annotation.UML;
@@ -38,19 +41,17 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.internal.shared.Unsafe;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.internal.shared.ViewAsSet;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.pending.jdk.JDK19;
 import static org.apache.sis.metadata.PropertyComparator.*;
 import static org.apache.sis.metadata.ValueExistencePolicy.isNullOrEmpty;
-import static org.apache.sis.util.internal.shared.CollectionsExt.snapshot;
-import static org.apache.sis.util.internal.shared.CollectionsExt.modifiableCopy;
 
 
 /**
@@ -595,8 +596,8 @@ class PropertyAccessor {
                     return elementTypes[index];
                 }
                 case PROPERTY_TYPE: {
-                    final Class<?> type = getters[index].getReturnType();
-                    return Classes.isParameterizedProperty(type) ? elementTypes[index] : type;
+                    final Class<?> returnType = getters[index].getReturnType();
+                    return Classes.isParameterizedProperty(returnType) ? elementTypes[index] : returnType;
                 }
                 case DECLARING_INTERFACE: {
                     return getters[index].getDeclaringClass();
@@ -695,6 +696,105 @@ class PropertyAccessor {
      */
     CharSequence remarks(int index, Object metadata) {
         return null;
+    }
+
+    /**
+     * Returns {@code true} if the given collection is immutable (implies unmodifiable).
+     * In case of doubt, this method returns {@code false}.
+     * A null collection is considered as immutable.
+     *
+     * @param  collection  the collection, or {@code null}.
+     * @return {@code true} if the given collection is null or immutable.
+     *
+     * @see CheckedContainer.Mutability#IMMUTABLE
+     */
+    private static boolean isImmutable(final Collection<?> collection) {
+        if (collection == null) {
+            return true;
+        }
+        if (collection instanceof CheckedContainer<?>) {
+            return ((CheckedContainer<?>) collection).getMutability() == CheckedContainer.Mutability.IMMUTABLE;
+        }
+        return false;
+    }
+
+    /**
+     * Returns a snapshot of the given collection. The returned collection will not be affected
+     * by changes in the given collection after this method call. This method makes no guarantees
+     * about whether the returned collection is modifiable.
+     *
+     * <h4>Difference with standard methods</h4>
+     * This method differs from {@link List#copyOf(Collection)} and {@link Set#copyOf(Collection)}
+     * in that it accepts null elements, preserves element order, does not copy the collections marked
+     * by <abbr>SIS</abbr> as immutable, and is cheap for the other cases (does not recreate a hash table).
+     * The latter is at the cost of inefficient {@link Set#contains(Object)} method.
+     *
+     * <p>This method tries to be cheap because, while the snapshot is necessary for compliance with the
+     * method contract of the collection framework, very often the returned object will be just ignored.</p>
+     *
+     * @param  <E>   the type of elements in the collection.
+     * @param  data  the collection for which to take a snapshot, or {@code null} if none.
+     * @return a snapshot of the given collection, or {@code data} itself if null or unmodifiable.
+     */
+    static <E> Collection<E> snapshot(final Collection<E> data) {
+        if (isImmutable(data)) {
+            return data;
+        }
+        final boolean isSet = (data instanceof Set<?>);
+        switch (data.size()) {
+            case 0: {
+                return isSet ? Collections.emptySet() : Collections.emptyList();
+            }
+            case 1: {
+                final E value = data.iterator().next();
+                return isSet ? Collections.singleton(value) : Collections.singletonList(value);
+            }
+            default: {
+                @SuppressWarnings("unchecked")
+                final var copy = (List<E>) Arrays.asList(data.toArray());
+                return isSet ? new ViewAsSet<>(copy) : copy;
+            }
+        }
+    }
+
+    /**
+     * Returns a snapshot of the given map. The returned map will not be affected by changes in the given map
+     * after this method call. This method makes no guarantees about whether the returned map is modifiable.
+     *
+     * <h4>Difference with standard methods</h4>
+     * This method differs from {@link Map#copyOf(Map)} in that it accepts null elements, preserves element order,
+     * and is cheap (does not recreate a hash table). The latter is at the cost of inefficient {@code get(Object)}
+     * and related methods.
+     *
+     * <p>This method tries to be cheap because, while the snapshot is necessary for compliance with the
+     * method contract of the collection framework, very often the returned object will be just ignored.</p>
+     *
+     * @param  <K>   the type of keys in the map.
+     * @param  <V>   the type of values in the map.
+     * @param  data  the map to copy, or {@code null}.
+     * @return a snapshot of the given map, or {@code data} itself if null or unmodifiable.
+     */
+    static <K,V> Map<K,V> snapshot(final Map<K,V> data) {
+        if (data == null) {
+            return null;
+        }
+        switch (data.size()) {
+            case 0: {
+                return Collections.emptyMap();
+            }
+            case 1: {
+                final Map.Entry<K,V> entry = data.entrySet().iterator().next();
+                return Collections.singletonMap(entry.getKey(), entry.getValue());
+            }
+            default: {
+                @SuppressWarnings("unchecked")
+                final List<Map.Entry<K,V>> copy = Arrays.asList(data.entrySet().toArray(Map.Entry[]::new));
+                final var entries = new ViewAsSet<>(copy);
+                return new AbstractMap<K,V>() {
+                    @Override public Set<Map.Entry<K,V>> entrySet() {return entries;}
+                };
+            }
+        }
     }
 
     /**
@@ -853,13 +953,9 @@ class PropertyAccessor {
                     case RETURN_PREVIOUS: {
                         oldValue = get(getter, metadata);
                         if (oldValue instanceof Collection<?>) {
-                            if (oldValue instanceof List<?>) {
-                                snapshot = snapshot((List<?>) oldValue);
-                            } else {
-                                snapshot = modifiableCopy((Collection<?>) oldValue);
-                            }
+                            snapshot = snapshot((Collection<?>) oldValue);
                         } else if (oldValue instanceof Map<?,?>) {
-                            snapshot = modifiableCopy((Map<?,?>) oldValue);
+                            snapshot = snapshot((Map<?,?>) oldValue);
                         } else {
                             snapshot = oldValue;
                         }
@@ -1166,7 +1262,7 @@ class PropertyAccessor {
                          * Count always at least one element because if the user wanted to skip null or empty
                          * collections, then `valuePolicy.isSkipped(value)` above would have returned `true`.
                          */
-                        count += isCollectionOrMap(i) ? Math.max(CollectionsExt.size(value), 1) : 1;
+                        count += isCollectionOrMap(i) ? Math.max(size(value), 1) : 1;
                         break;
                     }
                     default: throw new AssertionError(mode);
@@ -1174,6 +1270,25 @@ class PropertyAccessor {
             }
         }
         return count;
+    }
+
+    /**
+     * Returns the number of elements if the given object is a collection or a map.
+     * Otherwise returns 0 if the given object if null or 1 otherwise.
+     *
+     * @param  c  the collection or map for which to get the size, or {@code null}.
+     * @return the size or pseudo-size of the given object.
+     */
+    static int size(final Object c) {
+        if (c == null) {
+            return 0;
+        } else if (c instanceof Collection<?>) {
+            return ((Collection<?>) c).size();
+        } else if (c instanceof Map<?,?>) {
+            return ((Map<?,?>) c).size();
+        } else {
+            return 1;
+        }
     }
 
     /**

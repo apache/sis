@@ -18,7 +18,8 @@ package org.apache.sis.feature;
 
 import java.util.Collection;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.internal.shared.CheckedArrayList;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.internal.shared.CloneAccess;
 import org.apache.sis.feature.internal.Resources;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -56,7 +57,8 @@ final class MultiValuedAssociation extends AbstractAssociation {
     /**
      * The association values.
      */
-    private CheckedArrayList<Feature> values;
+    @SuppressWarnings("serial")     // Should be an instance of `CheckedArrayList`.
+    private Collection<Feature> values;
 
     /**
      * Creates a new association of the given role.
@@ -65,7 +67,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
      */
     public MultiValuedAssociation(final FeatureAssociationRole role) {
         super(role);
-        values = new CheckedArrayList<>(Feature.class);
+        values = Containers.newCheckedList(null, Feature.class);
     }
 
     /**
@@ -77,9 +79,9 @@ final class MultiValuedAssociation extends AbstractAssociation {
     MultiValuedAssociation(final FeatureAssociationRole role, final Object values) {
         super(role);
         if (values == null) {
-            this.values = new CheckedArrayList<>(Feature.class);
+            this.values = Containers.newCheckedList(null, Feature.class);
         } else {
-            this.values = CheckedArrayList.castOrCopy((CheckedArrayList<?>) values, Feature.class);
+            this.values = AbstractFeature.castOrCopyAsCheckedList((Collection<?>) values, Feature.class);
         }
     }
 
@@ -93,7 +95,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
     public Feature getValue() {
         switch (values.size()) {
             case 0:  return null;
-            case 1:  return values.get(0);
+            case 1:  return values.iterator().next();
             default: throw new MultiValuedPropertyException(Resources.format(Resources.Keys.NotASingleton_1, getName()));
         }
     }
@@ -154,8 +156,8 @@ final class MultiValuedAssociation extends AbstractAssociation {
     @Override
     @SuppressWarnings("unchecked")
     public MultiValuedAssociation clone() throws CloneNotSupportedException {
-        final MultiValuedAssociation clone = (MultiValuedAssociation) super.clone();
-        clone.values = (CheckedArrayList<Feature>) clone.values.clone();
+        final var clone = (MultiValuedAssociation) super.clone();
+        clone.values = (Collection<Feature>) ((CloneAccess) clone.values).clone();
         return clone;
     }
 
@@ -180,7 +182,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
             return true;
         }
         if (obj instanceof MultiValuedAssociation) {
-            final MultiValuedAssociation that = (MultiValuedAssociation) obj;
+            final var that = (MultiValuedAssociation) obj;
             return role.equals(that.role) && values.equals(that.values);
         }
         return false;

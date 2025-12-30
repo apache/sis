@@ -36,8 +36,6 @@ import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.internal.shared.CollectionsExt;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.feature.internal.Resources;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -262,7 +260,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         if (superTypes == null) {
             this.superTypes = Collections.emptySet();
         } else {
-            this.superTypes = CollectionsExt.immutableSet(true, superTypes);
+            this.superTypes = Containers.copyToImmutableSetIgnoreNull(superTypes);
             for (final FeatureType type : this.superTypes) {
                 if (type instanceof NamedFeatureType) {
                     // Hierarchy of feature types cannot be cyclic.
@@ -282,11 +280,10 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
             sourceProperties.add(property);
         }
         computeTransientFields(sourceProperties);
-        final int size = sourceProperties.size();
-        switch (size) {
+        switch (sourceProperties.size()) {
             case 0:  this.properties = Collections.emptyList(); break;
             case 1:  this.properties = Collections.singletonList(sourceProperties.get(0)); break;
-            default: this.properties = UnmodifiableArrayList.wrap(sourceProperties.toArray(new PropertyType[size])); break;
+            default: this.properties = Containers.copyToImmutableList(sourceProperties, PropertyType.class); break;
         }
         /*
          * Before to resolve cyclic associations, verify that operations depend only on existing properties.
@@ -350,7 +347,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         assignableTo = new HashSet<>(4);
         assignableTo.add(super.getName());
         scanPropertiesFrom(this, properties);
-        allProperties = UnmodifiableArrayList.wrap(byName.values().toArray(PropertyType[]::new));
+        allProperties = Containers.copyToImmutableList(byName.values(), PropertyType.class);
         /*
          * Now check if the feature is simple/complex or dense/sparse. We perform this check after we finished
          * to create the list of all properties, because some properties may be overridden and we want to take
@@ -420,9 +417,9 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         /*
          * Trim the collections. Especially useful when the collections have less that 2 elements.
          */
-        byName       = CollectionsExt.compact(byName);
-        indices      = CollectionsExt.compact(indices);
-        assignableTo = CollectionsExt.unmodifiableOrCopy(assignableTo);
+        byName       = compact(byName);
+        indices      = compact(indices);
+        assignableTo = Containers.unmodifiable(assignableTo);
         /*
          * Rational for choosing whether the feature is sparse: By default, java.util.HashMap implementation creates
          * an internal array of length 16 (see HashMap.DEFAULT_INITIAL_CAPACITY).  In addition, the HashMap instance

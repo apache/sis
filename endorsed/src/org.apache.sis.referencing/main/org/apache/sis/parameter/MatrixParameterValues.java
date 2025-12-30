@@ -42,9 +42,9 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.shared.CloneAccess;
 import org.apache.sis.util.internal.shared.Numerics;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
-import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.io.wkt.Formatter;
 
 
 /**
@@ -174,7 +174,7 @@ final class MatrixParameterValues<E> extends AbstractParameterDescriptor
      */
     @Override
     public List<GeneralParameterDescriptor> descriptors() {
-        return UnmodifiableArrayList.wrap(descriptors.getAllDescriptors(size()));
+        return Containers.viewAsUnmodifiableList(descriptors.getAllDescriptors(size()));
     }
 
     /**

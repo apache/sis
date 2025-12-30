@@ -1018,7 +1018,7 @@ convert:            if (componentType != null) {
      *
      * @param  <T>        the type of the value stored in the given parameter.
      * @param  parameter  the parameter to make unmodifiable, or {@code null}.
-     * @return a unmodifiable implementation of the given parameter, or {@code null} if the given parameter was null.
+     * @return an unmodifiable implementation of the given parameter, or {@code null} if the given parameter was null.
      *
      * @see DefaultParameterValueGroup#unmodifiable(ParameterValueGroup)
      *

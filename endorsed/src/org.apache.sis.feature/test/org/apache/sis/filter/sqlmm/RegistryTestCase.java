@@ -524,7 +524,7 @@ public abstract class RegistryTestCase<G> extends TestCaseWithLogs {
         final var optimization = new Optimization();
         final var ftb = new FeatureTypeBuilder();
         ftb.addAttribute(library.pointClass).setName(P_NAME).setCRS(HardCodedCRS.WGS84);
-        optimization.setFeatureType(ftb.setName("Test").build());
+        optimization.setFinalFeatureType(ftb.setName("Test").build());
         final var optimized = optimization.apply(function);
         assertNotSame(function, optimized, "Optimization should produce a new expression.");
         /*

@@ -36,6 +36,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.filter.DefaultFilterFactory;
+import org.apache.sis.filter.Optimization;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
@@ -69,7 +70,7 @@ import org.opengis.filter.BinaryComparisonOperator;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.6
  * @since   1.0
  */
 public class JoinFeatureSet extends AggregatedFeatureSet {
@@ -312,6 +313,19 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
     public Stream<Feature> features(final boolean parallel) throws DataStoreException {
         final Iterator it = new Iterator();
         return StreamSupport.stream(it, parallel).onClose(it);
+    }
+
+    /**
+     * Configures the optimization of a query with information about the expected type of all feature instances.
+     * The default implementation uses the knowledge that all features will be instances of exactly the type
+     * returned by {@link #getType()}, with no sub-type.
+     * Subclasses should override this method if they break this assertion.
+     *
+     * @since 1.6
+     */
+    @Override
+    protected void prepareQueryOptimization(FeatureQuery query, Optimization optimizer) throws DataStoreException {
+        optimizer.setFinalFeatureType(getType());
     }
 
     /**

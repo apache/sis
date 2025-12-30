@@ -28,7 +28,7 @@ import org.apache.sis.referencing.internal.shared.CoordinateOperations;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -181,7 +181,7 @@ public class CoordinateOperationContext implements Serializable {
     static Extent setGeographicBoundingBox(Extent areaOfInterest, final GeographicBoundingBox bbox) {
         if (areaOfInterest != null) {
             final DefaultExtent ex = DefaultExtent.castOrCopy(areaOfInterest);
-            ex.setGeographicElements(CollectionsExt.singletonOrEmpty(bbox));
+            ex.setGeographicElements(Containers.singletonOrEmpty(bbox));
             areaOfInterest = ex;
         } else if (bbox != null) {
             areaOfInterest = new DefaultExtent(null, bbox, null, null);

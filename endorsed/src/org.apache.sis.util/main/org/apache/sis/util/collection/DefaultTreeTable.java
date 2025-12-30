@@ -16,7 +16,6 @@
  */
 package org.apache.sis.util.collection;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap;
@@ -27,7 +26,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.Acyclic;
 import org.apache.sis.util.internal.shared.Cloner;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.pending.jdk.JDK19;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
@@ -61,7 +59,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * implementation provided in the {@link Node} inner class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.6
  *
  * @see Node
  * @see TableColumn
@@ -120,14 +118,9 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * @param  columns  the list of table columns.
      */
     public DefaultTreeTable(TableColumn<?>... columns) {
-        ArgumentChecks.ensureNonEmpty("columns", columns);
-        /*
-         * Copy the array for safety against user changes, and also for forcing the element type
-         * to TableColumn, not a subclass, because of the UnmodifiableArrayList.wrap(E[]) contract.
-         */
-        columns = Arrays.copyOf(columns, columns.length, TableColumn[].class);
+        columns = columns.clone();
         this.columnIndices = createColumnIndices(columns);
-        this.columns = UnmodifiableArrayList.wrap(columns);
+        this.columns = Containers.viewAsUnmodifiableList(columns);
     }
 
     /**
@@ -173,9 +166,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * Returns all columns in the given map, sorted by increasing index value.
      * This method relies on {@link LinkedHashMap} preserving insertion order.
      *
-     * @return the columns in an array of elements of type {@code TableColumn},
-     *         <strong>not a subtype</strong> for allowing usage in
-     *         {@link UnmodifiableArrayList#wrap(Object[])}.
+     * @return the columns in an array of elements of type {@code TableColumn}.
      */
     static TableColumn<?>[] getColumns(final Map<TableColumn<?>,Integer> columnIndices) {
         return columnIndices.keySet().toArray(TableColumn<?>[]::new);
@@ -192,7 +183,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")         // Safe because returned list is unmodifiable.
     public final List<TableColumn<?>> getColumns() {
         if (columns == null) {
-            columns = UnmodifiableArrayList.wrap(getColumns(columnIndices));
+            columns = Containers.viewAsUnmodifiableList(getColumns(columnIndices));
         }
         return columns;
     }

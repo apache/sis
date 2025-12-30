@@ -50,7 +50,7 @@ import org.apache.sis.io.stream.Region;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Errors;
@@ -547,7 +547,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      */
     @Override
     public List<Dimension> getGridDimensions() {
-        return UnmodifiableArrayList.wrap(dimensions);
+        return Containers.viewAsUnmodifiableList(dimensions);
     }
 
     /**

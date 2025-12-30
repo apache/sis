@@ -201,7 +201,7 @@ public class TransverseMercator extends NormalizedProjection {
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @Workaround(library="JDK", version="1.7")
+    @Workaround(library="JDK", version="7", fixed="25")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
         final Variant variant = variant(method, Variant.values(), null);
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);

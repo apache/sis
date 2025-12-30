@@ -65,9 +65,7 @@ public abstract class UpdatableWrite<V> implements CheckedContainer<V> {
      * This variant can be used when the caller only want to record the position, with no write operation.
      *
      * @param  output  stream where to write the value.
-     * @param  value   the unsigned short value to write.
      * @return handler for modifying the value later.
-     * @throws IOException if an error occurred while writing the value.
      */
     public static UpdatableWrite<Void> of(final ChannelDataOutput output) {
         return new OfVoid(output);
@@ -234,6 +232,16 @@ public abstract class UpdatableWrite<V> implements CheckedContainer<V> {
         @Override void write(ChannelDataOutput output) throws IOException {
             output.writeLong(current = defined);
         }
+    }
+
+    /**
+     * Indicates that this container is modifiable.
+     *
+     * @return {@link Mutability#MODIFIABLE}.
+     */
+    @Override
+    public final Mutability getMutability() {
+        return Mutability.MODIFIABLE;
     }
 
     /**

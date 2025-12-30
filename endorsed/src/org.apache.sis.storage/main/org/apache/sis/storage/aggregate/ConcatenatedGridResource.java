@@ -40,7 +40,7 @@ import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -185,7 +185,7 @@ final class ConcatenatedGridResource extends AggregatedResource implements GridC
         for (int i=0; i<resources.length; i++) {
             resources[i] = slices[i].resource;
         }
-        return UnmodifiableArrayList.wrap(resources);
+        return Containers.viewAsUnmodifiableList(resources);
     }
 
     /**
@@ -231,7 +231,7 @@ final class ConcatenatedGridResource extends AggregatedResource implements GridC
                 }
                 resolutions = commonResolutions(resources);
             }
-            return UnmodifiableArrayList.wrap(resolutions);
+            return Containers.viewAsUnmodifiableList(resolutions);
         }
     }
 

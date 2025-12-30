@@ -56,7 +56,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.internal.shared.AbstractIterator;
 import org.apache.sis.util.internal.shared.DefinitionURI;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.SetOfUnknownSize;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.metadata.internal.shared.NameMeaning;
@@ -522,7 +522,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             for (final Iterator<AuthorityFactory> it = getAllFactories(); it.hasNext();) {
                 union.addAll(getCodeSpaces(it.next()));
             }
-            codeSpaces = union = CollectionsExt.unmodifiableOrCopy(union);
+            codeSpaces = union = Containers.unmodifiable(union);
         }
         return union;
     }
@@ -554,7 +554,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      */
     static String getCodeSpace(final AuthorityFactory factory) {
         try {
-            return CollectionsExt.first(getCodeSpaces(factory));
+            return Containers.peekFirst(getCodeSpaces(factory));
         } catch (FactoryException e) {
             throw new BackingStoreException(e);
         }
@@ -1914,7 +1914,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                         final var result = new LinkedHashSet<IdentifiedObject>();
                         createFromIdentifiers(type, object, object.getIdentifiers(), result);
                         if (result.isEmpty()) {
-                            createFromIdentifiers(type, object, CollectionsExt.singletonOrEmpty(object.getName()), result);
+                            createFromIdentifiers(type, object, Containers.singletonOrEmpty(object.getName()), result);
                             if (result.isEmpty()) {
                                 break;
                             }

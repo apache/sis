@@ -63,7 +63,6 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.metadata.iso.DefaultMetadata;
@@ -1663,7 +1662,7 @@ final class ImageFileDirectory extends DataCube {
                     dimensions[band] = sd;
                     builder.clear();
                 }
-                sampleDimensions = UnmodifiableArrayList.wrap(dimensions);
+                sampleDimensions = List.of(dimensions);
             }
             return sampleDimensions;        // Safe because unmodifiable.
         }

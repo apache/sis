@@ -20,18 +20,24 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.NavigableSet;
+import java.util.Queue;
+import java.util.Set;
+import java.util.SortedSet;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.KeyNamePolicy;
 import org.apache.sis.metadata.ValueExistencePolicy;
-import org.apache.sis.system.Semaphores;
 import org.apache.sis.metadata.internal.Dependencies;
+import org.apache.sis.system.Semaphores;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -173,7 +179,7 @@ final class Dispatcher implements InvocationHandler {
                 if (value == null) {
                     final Class<?> returnType = method.getReturnType();
                     if (Collection.class.isAssignableFrom(returnType)) {
-                        value = CollectionsExt.empty(returnType);
+                        value = empty(returnType);
                     }
                 }
                 return value;
@@ -184,6 +190,38 @@ final class Dispatcher implements InvocationHandler {
          */
         throw new BackingStoreException(Errors.format(Errors.Keys.UnsupportedOperation_1,
                     Classes.getShortName(method.getDeclaringClass()) + '.' + method.getName()));
+    }
+
+    /**
+     * Returns an immutable empty collection of the given type.
+     * The {@code type} argument should be
+     * <code>{@link List}.class</code>,
+     * <code>{@link Set}.class</code>,
+     * <code>{@link SortedSet}.class</code>,
+     * <code>{@link NavigableSet}.class</code> or
+     * <code>{@link Queue}.class</code> (more types may be added in any future version).
+     * This method delegates to the {@code Collections.emptyXXX()} method where <var>XXX</var>
+     * is one of the above-cited types.
+     *
+     * @param  <E>   the type of elements in the collection.
+     * @param  type  the type of the desired empty collection. Can be {@code null}.
+     * @return an empty collection of the given type, or {@code null} if the given type is null or unrecognized.
+     */
+    private static <E> Collection<E> empty(final Class<?> type) {
+        if (type != null) {
+            if (type.isAssignableFrom(List.class)) {                    // Most common case first.
+                return Collections.emptyList();
+            } else if (type.isAssignableFrom(Set.class)) {
+                return Collections.emptySet();
+            } else if (type.isAssignableFrom(SortedSet.class)) {
+                return Collections.emptySortedSet();
+            } else if (type.isAssignableFrom(NavigableSet.class)) {     // Rarely used case (at least in SIS).
+                return Collections.emptyNavigableSet();
+            } else if (type.isAssignableFrom(Queue.class)) {
+                return Containers.emptyQueue();
+            }
+        }
+        return null;
     }
 
     /**

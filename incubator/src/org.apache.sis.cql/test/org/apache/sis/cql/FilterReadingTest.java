@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.time.Instant;
 import java.time.temporal.TemporalAccessor;
 import java.text.ParseException;
+import java.util.List;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LinearRing;
@@ -37,7 +38,6 @@ import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 // Test dependencies
 import org.junit.jupiter.api.Disabled;
@@ -94,11 +94,11 @@ public final class FilterReadingTest extends CQLTestCase {
         final Filter<?> filter = CQL.parseFilter(cql);
         assertEquals(
                 FF.and(
-                UnmodifiableArrayList.<Filter<? super Feature>>wrap(new Filter[] {(Filter)
+                List.<Filter<? super Feature>>of((Filter)
                     FF.equal(FF.property("att1"), FF.literal(15)),
                     FF.equal(FF.property("att2"), FF.literal(30)),
                     FF.equal(FF.property("att3"), FF.literal(50))
-                })),
+                )),
                 filter);
     }
 
@@ -108,11 +108,11 @@ public final class FilterReadingTest extends CQLTestCase {
         final Filter<?> filter = CQL.parseFilter(cql);
         assertEquals(
                 FF.or(
-                UnmodifiableArrayList.<Filter<? super Feature>>wrap(new Filter[] {(Filter)
+                List.<Filter<? super Feature>>of((Filter)
                     FF.equal(FF.property("att1"), FF.literal(15)),
                     FF.equal(FF.property("att2"), FF.literal(30)),
                     FF.equal(FF.property("att3"), FF.literal(50))
-                })),
+                )),
                 filter);
     }
 
@@ -397,14 +397,14 @@ public final class FilterReadingTest extends CQLTestCase {
         assertEquals(LogicalOperatorName.AND, filter.getOperatorType());
         assertEquals(
                 FF.and(
-                    UnmodifiableArrayList.<Filter<? super Feature>>wrap(new Filter[] {(Filter)
+                    List.<Filter<? super Feature>>of((Filter)
                         FF.not(FF.equal(FF.property("att1"), FF.literal(15))),
                         FF.or(
                             FF.equal(FF.property("att2"), FF.literal(15)),
                             FF.between(FF.property("att3"), FF.literal(15), FF.literal(30))
                         ),
                         FF.between(FF.property("att4"), FF.literal(1), FF.literal(2))
-                    })
+                    )
                 ),
                 filter
                 );

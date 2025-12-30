@@ -37,7 +37,6 @@ import org.apache.sis.xml.bind.IdentifierMapAdapter;
 import org.apache.sis.xml.bind.ModifiableIdentifierMap;
 import org.apache.sis.xml.bind.NonMarshalledAuthority;
 import org.apache.sis.metadata.internal.shared.ImplementationHelper;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.collection.Containers;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
@@ -234,9 +233,9 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
              */
             if (p != null && p == identifiers) {
                 if (p instanceof Set<?>) {
-                    identifiers = CollectionsExt.unmodifiableOrCopy((Set<Identifier>) p);
+                    identifiers = Containers.unmodifiable((Set<Identifier>) p);
                 } else if (p instanceof List<?>) {
-                    identifiers = CollectionsExt.unmodifiableOrCopy((List<Identifier>) p);
+                    identifiers = Containers.unmodifiable((List<Identifier>) p);
                 } else {
                     identifiers = Collections.unmodifiableCollection(p);
                 }

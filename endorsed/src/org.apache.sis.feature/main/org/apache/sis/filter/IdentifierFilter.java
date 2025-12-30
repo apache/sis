@@ -17,16 +17,15 @@
 package org.apache.sis.filter;
 
 import java.util.List;
+import java.util.HashSet;
 import java.util.Collection;
 import java.util.Objects;
 import org.apache.sis.filter.base.Node;
 import org.apache.sis.filter.base.XPathSource;
-import org.apache.sis.feature.Features;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.filter.Expression;
 import org.opengis.filter.ResourceId;
@@ -84,12 +83,18 @@ final class IdentifierFilter extends Node
      */
     @Override
     public Filter<Feature> optimize(Optimization optimization) {
-        final FeatureType type = optimization.getFeatureType();
-        if (type != null) try {
-            return Features.getLinkTarget(type.getProperty(property)).map((n) -> new IdentifierFilter(this, n)).orElse(this);
+        final var found = new HashSet<String>();
+        try {
+            final String preferredName = optimization.getPreferredPropertyName(property, found);
+            if (!preferredName.equals(property)) {
+                return new IdentifierFilter(this, preferredName);
+            }
         } catch (PropertyNotFoundException e) {
-            warning(e, true);
-            return Filter.exclude();
+            boolean resolved = found.isEmpty();
+            optimization.warning(e, !resolved);
+            if (resolved) {
+                return Filter.exclude();    // The property does not exist in any feature type.
+            }
         }
         return this;
     }

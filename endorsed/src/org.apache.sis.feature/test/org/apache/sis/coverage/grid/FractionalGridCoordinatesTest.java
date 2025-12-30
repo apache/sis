@@ -27,6 +27,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class FractionalGridCoordinatesTest extends TestCase {
     /**
      * Creates a new test case.
@@ -38,11 +39,7 @@ public final class FractionalGridCoordinatesTest extends TestCase {
      * Creates a test instance with (4 -1.1 7.6) coordinate values.
      */
     private static FractionalGridCoordinates instance() {
-        final FractionalGridCoordinates gc = new FractionalGridCoordinates(3);
-        gc.coordinates[0] =  4;
-        gc.coordinates[1] = -1.1;
-        gc.coordinates[2] =  7.6;
-        return gc;
+        return new FractionalGridCoordinates(new double[] {4, -1.1, 7.6});
     }
 
     /**
@@ -61,6 +58,7 @@ public final class FractionalGridCoordinatesTest extends TestCase {
      * with default parameter values.
      */
     @Test
+    @SuppressWarnings("removal")   // TODO: make GridExtentTest.assertExtentEquals private.
     public void testToExtent() {
         final GridExtent extent = instance().toExtent(null);
         GridExtentTest.assertExtentEquals(extent, 0,  4,  4);
@@ -72,6 +70,7 @@ public final class FractionalGridCoordinatesTest extends TestCase {
      * Tests {@link FractionalGridCoordinates#toExtent(GridExtent, long...)} with a size of 1.
      */
     @Test
+    @SuppressWarnings("removal")
     public void testToExtentSize1() {
         final GridExtent extent = instance().toExtent(null, 1, 1, 1);
         GridExtentTest.assertExtentEquals(extent, 0,  4,  4);
@@ -83,6 +82,7 @@ public final class FractionalGridCoordinatesTest extends TestCase {
      * Tests {@link FractionalGridCoordinates#toExtent(GridExtent, long...)} with a size greater than 2.
      */
     @Test
+    @SuppressWarnings("removal")
     public void testToExtentSizeN() {
         final GridExtent extent = instance().toExtent(null, 3, 5, 4);
         GridExtentTest.assertExtentEquals(extent, 0,  3,  5);
@@ -94,6 +94,7 @@ public final class FractionalGridCoordinatesTest extends TestCase {
      * Tests {@link FractionalGridCoordinates#toExtent(GridExtent, long...)} with a bounds constraint.
      */
     @Test
+    @SuppressWarnings("removal")
     public void testToExtentBounded() {
         final GridExtent bounds = new GridExtent(null, new long[] {0, -1, 0}, new long[] {4, 2, 8}, true);
         final GridExtent extent = instance().toExtent(bounds, 3, 5, 4);

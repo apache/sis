@@ -23,7 +23,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.quality.Element;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.iso.Types;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -146,7 +146,7 @@ public class DefaultMeasureReference extends ISOMetadata implements MeasureRefer
     final boolean setLegacy(final Element element) {
         return (null != (measureIdentification = element.getMeasureIdentification()))
              | (null != (namesOfMeasure        = copyCollection(element.getNamesOfMeasure(), InternationalString.class)))
-             | (null != (measureDescription    = CollectionsExt.first(element.getNamesOfMeasure())));
+             | (null != (measureDescription    = Containers.peekFirst(element.getNamesOfMeasure())));
     }
 
     /**

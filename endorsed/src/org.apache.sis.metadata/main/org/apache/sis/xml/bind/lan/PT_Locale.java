@@ -30,7 +30,7 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.metadata.code.MD_CharacterSetCode;
 import org.apache.sis.xml.internal.shared.LegacyNamespaces;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -292,7 +292,7 @@ public final class PT_Locale {
      */
     public static PT_Locale first(final Map<Locale,Charset> locales) {
         if (locales != null) {
-            final Map.Entry<Locale,Charset> first = CollectionsExt.first(locales.entrySet());
+            final Map.Entry<Locale,Charset> first = Containers.peekFirst(locales.entrySet());
             if (first != null) return new PT_Locale(first);
         }
         return null;

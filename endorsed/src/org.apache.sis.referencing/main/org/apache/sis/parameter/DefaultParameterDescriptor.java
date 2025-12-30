@@ -19,6 +19,7 @@ package org.apache.sis.parameter;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.Map;
+import java.util.EnumSet;
 import java.util.Objects;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -33,9 +34,11 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
+import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.gco.PropertyType;
 import org.apache.sis.xml.bind.metadata.replace.QualityParameter;
@@ -64,7 +67,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
+ * @version 1.6
  *
  * @param <T>  the type of elements to be returned by {@link DefaultParameterValue#getValue()}.
  *
@@ -231,7 +234,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
          * a new set and verify their type and inclusion in the [min … max] range.
          */
         if (validValues != null) {
-            final Set<T> valids = CollectionsExt.createSetForType(valueClass, validValues.length);
+            final Set<T> valids = createSetForType(valueClass, validValues.length);
             for (final T value : validValues) {
                 if (value != null) {
                     final Verifier error = Verifier.ensureValidValue(valueClass, null, valueDomain, value);
@@ -241,7 +244,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
                     valids.add(value);
                 }
             }
-            this.validValues = CollectionsExt.unmodifiableOrCopy(valids);
+            this.validValues = Containers.unmodifiable(valids);
         } else {
             this.validValues = null;
         }
@@ -254,6 +257,26 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
                 throw new IllegalArgumentException(error.message(properties, super.getName().getCode(), defaultValue));
             }
         }
+    }
+
+    /**
+     * Creates an initially empty set for elements of the given type.
+     * This method will creates specialized set for code lists and enumerations.
+     *
+     * @param  <E>    the type of elements in the set.
+     * @param  type   the type of elements in the set.
+     * @param  count  the expected number of elements to put in the set.
+     * @return a new set for elements of the given type.
+     */
+    @SuppressWarnings({"unchecked","rawtypes"})
+    static <E> Set<E> createSetForType(final Class<E> type, final int count) {
+        if (CodeList.class.isAssignableFrom(type)) {
+            return new CodeListSet((Class) type);
+        }
+        if (Enum.class.isAssignableFrom(type)) {
+            return EnumSet.noneOf((Class) type);
+        }
+        return JDK19.newLinkedHashSet(count);
     }
 
     /**

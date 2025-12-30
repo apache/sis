@@ -32,7 +32,7 @@ import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.feature.internal.shared.FeatureExpression;
 import org.apache.sis.filter.visitor.FunctionIdentifier;
 import org.apache.sis.filter.base.Node;
-import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.internal.shared.ViewAsSet;
 import org.apache.sis.util.iso.Names;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -328,7 +328,6 @@ public enum Function implements FunctionIdentifier, AvailableFunction {
      * All other array elements are the data types of the function's parameters, in order.
      * The values of all array elements are constants of the {@link Types} class.
      *
-     * @param  dataTypes  data type of the return value followed by parameters, as {@link java.sql.Types} constants.
      * @return whether the specified return type and argument data types are valid for this function.
      */
     @Override
@@ -345,7 +344,7 @@ public enum Function implements FunctionIdentifier, AvailableFunction {
      * Returns the names and aliases of all functions.
      */
     static List<String> namesAndAliases() {
-        final var names = new ArrayList<String>(Containers.namesOf(Function.class));
+        final var names = new ArrayList<String>(ViewAsSet.namesOf(Function.class));
         names.addAll(ALIASES.keySet());
         return names;
     }

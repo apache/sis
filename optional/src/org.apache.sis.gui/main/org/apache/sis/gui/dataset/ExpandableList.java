@@ -30,7 +30,7 @@ import javafx.scene.text.TextAlignment;
 import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.TransformationList;
 import javafx.scene.layout.Background;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.gui.internal.Styles;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -133,7 +133,7 @@ final class ExpandableList extends TransformationList<Feature,Feature>
      */
     private List<Feature> shrink() {
         final List<Feature> removed = (expansion == null) ? null
-                                    : UnmodifiableArrayList.wrap(expansion, 1, expansion.length);
+                : Containers.viewAsUnmodifiableList(expansion, 1, expansion.length);
         expansion       = null;
         indexOfExpanded = Integer.MAX_VALUE;
         return removed;

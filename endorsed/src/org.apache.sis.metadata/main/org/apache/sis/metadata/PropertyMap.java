@@ -192,9 +192,10 @@ abstract class PropertyMap<V> extends AbstractMap<String,V> {
         }
 
         /** Returns {@code true} if this collection contains the specified element. */
+        @SuppressWarnings("element-type-mismatch")
         @Override public boolean contains(final Object object) {
             if (object instanceof Map.Entry<?,?>) {
-                final Map.Entry<?,?> entry = (Map.Entry<?,?>) object;
+                final var    entry = (Map.Entry<?,?>) object;
                 final Object key   = entry.getKey();
                 final Object value = entry.getValue();
                 if (value != null) {

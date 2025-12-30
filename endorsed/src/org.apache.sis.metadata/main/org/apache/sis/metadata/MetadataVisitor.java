@@ -23,7 +23,7 @@ import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.util.Exceptions;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -125,7 +125,7 @@ abstract class MetadataVisitor<R> {
      * @return the path to the currently visited property.
      */
     List<String> getCurrentPropertyPath() {
-        return UnmodifiableArrayList.wrap(propertyPath, 0, nestedCount);
+        return Containers.viewAsUnmodifiableList(propertyPath, 0, nestedCount);
     }
 
     /**

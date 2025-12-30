@@ -14,18 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.internal.shared;
+package org.apache.sis.util.collection;
 
 import java.util.List;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.ListIterator;
 import java.util.Objects;
+import java.util.function.Consumer;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.collection.CheckedContainer;
+import org.apache.sis.util.internal.shared.CloneAccess;
+import org.apache.sis.util.internal.shared.MetadataServices;
 
 
 /**
@@ -37,11 +40,9 @@ import org.apache.sis.util.collection.CheckedContainer;
  *
  * <ul>
  *   <li>Avoid one level of indirection.</li>
- *   <li>Does not accept null elements.</li>
+ *   <li>Do not accept null elements.</li>
+ *   <li>Implement {@link CheckedContainer}.</li>
  * </ul>
- *
- * The checks are performed only on a <em>best effort</em> basis. In current implementation,
- * holes are known to exist in use cases like {@code sublist(…).set(…)} or when using the list iterator.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
@@ -50,7 +51,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  * @see Collections#checkedList(List, Class)
  */
 @SuppressWarnings("CloneableImplementsClone")           // ArrayList.clone() is sufficient.
-public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedContainer<E> {
+final class CheckedArrayList<E> extends ArrayList<E> implements CheckedContainer<E>, CloneAccess {
     /**
      * Serial version UID for compatibility with different versions.
      */
@@ -62,45 +63,28 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
     private final Class<E> type;
 
     /**
-     * Constructs a list of the specified type.
+     * Creates a list of the specified type.
      *
-     * @param type  the element type (cannot be null).
+     * @param type  the type of elements in the list.
      */
-    public CheckedArrayList(final Class<E> type) {
+    CheckedArrayList(final Class<E> type) {
         this.type = Objects.requireNonNull(type);
     }
 
     /**
-     * Constructs a list of the specified type and initial capacity.
+     * Creates a list initialized to the content of the given collection.
+     * All added elements are verified by this constructor.
      *
-     * @param type      the element type (should not be null).
-     * @param capacity  the initial capacity.
+     * @param source  the collection to copy.
+     * @param type    the type of elements in the list.
      */
-    public CheckedArrayList(final Class<E> type, final int capacity) {
-        super(capacity);
+    CheckedArrayList(final Collection<? extends E> source, final Class<E> type) {
+        super(source);
         this.type = Objects.requireNonNull(type);
-    }
-
-    /**
-     * Returns the given collection as a {@code CheckedArrayList} instance of the given element type.
-     *
-     * @param  <E>         the element type.
-     * @param  collection  the collection or {@code null}.
-     * @param  type        the element type.
-     * @return the given collection as a {@code CheckedArrayList}, or {@code null} if the given collection was null.
-     * @throws ClassCastException if an element is not of the expected type.
-     */
-    @SuppressWarnings("unchecked")
-    public static <E> CheckedArrayList<E> castOrCopy(final Collection<?> collection, final Class<E> type) {
-        if (collection == null) {
-            return null;
-        }
-        if (collection instanceof CheckedArrayList<?> && ((CheckedArrayList<?>) collection).type == type) {
-            return (CheckedArrayList<E>) collection;
-        } else {
-            final CheckedArrayList<E> list = new CheckedArrayList<>(type, collection.size());
-            list.addAll((Collection) collection);               // addAll will perform the type checks.
-            return list;
+        for (int i = size(); --i >= 0;) {
+            if (!ensureValid(get(i))) {
+                remove(i);
+            }
         }
     }
 
@@ -110,6 +94,16 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
     @Override
     public Class<E> getElementType() {
         return type;
+    }
+
+    /**
+     * Indicates that this collection is modifiable.
+     *
+     * @return {@link Mutability#MODIFIABLE}.
+     */
+    @Override
+    public Mutability getMutability() {
+        return Mutability.MODIFIABLE;
     }
 
     /**
@@ -211,8 +205,8 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
 
     /**
      * A wrapper around the given array for use by {@link CheckedArrayList#addAll(Collection)} only.
-     * This wrapper violates some {@link List} method contracts, so it shall really be used only as
-     * a temporary object for passing array to {@code ArrayList.addAll(…)} methods.
+     * This wrapper violates some {@link List} method contracts, so it shall be used only as a temporary object
+     * for passing array to {@code ArrayList.addAll(…)} methods.
      * In particular {@link #toArray()} returns directly the internal array, because this is the method to be
      * invoked by {@code ArrayList.addAll(…)} (this is actually the only important method in this wrapper).
      *
@@ -320,5 +314,30 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
     @Override
     public List<E> subList(final int fromIndex, final int toIndex) {
         return Collections.checkedList(super.subList(fromIndex, toIndex), type);
+    }
+
+    /**
+     * Returns an iterator over the elements of the list.
+     *
+     * @param  index  index of the first element to return.
+     * @return an iterator over the elements starting at the given index.
+     */
+    @Override
+    public ListIterator<E> listIterator(final int index) {
+        final ListIterator<E> it = super.listIterator(index);
+        return new ListIterator<>() {
+            @Override public boolean hasNext()       {return it.hasNext();}
+            @Override public boolean hasPrevious()   {return it.hasPrevious();}
+            @Override public int     nextIndex()     {return it.nextIndex();}
+            @Override public int     previousIndex() {return it.previousIndex();}
+            @Override public E       next()          {return it.next();}
+            @Override public E       previous()      {return it.previous();}
+            @Override public void    remove()        {       it.remove();}
+            @Override public void    set(E element)  {if (ensureValid(element)) it.set(element);}
+            @Override public void    add(E element)  {if (ensureValid(element)) it.add(element);}
+            @Override public void    forEachRemaining(final Consumer<? super E> action) {
+                it.forEachRemaining(action);
+            }
+        };
     }
 }

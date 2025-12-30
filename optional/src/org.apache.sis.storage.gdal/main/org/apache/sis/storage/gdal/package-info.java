@@ -45,7 +45,7 @@
  * @author  Quentin Bialota (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   1.5
  */
 package org.apache.sis.storage.gdal;

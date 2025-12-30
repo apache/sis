@@ -34,7 +34,7 @@ import java.time.temporal.TemporalAmount;
 import java.time.temporal.TemporalUnit;
 import java.time.temporal.UnsupportedTemporalTypeException;
 import org.apache.sis.pending.jdk.JDK18;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -298,7 +298,7 @@ public final class GeneralDuration implements TemporalAmount, Serializable {
         for (TemporalUnit unit : suffix) {
             units[i++] = unit;
         }
-        return UnmodifiableArrayList.wrap(units);
+        return Containers.viewAsUnmodifiableList(units, 0, i);
     }
 
     /**
@@ -362,6 +362,8 @@ public final class GeneralDuration implements TemporalAmount, Serializable {
 
     /**
      * Returns this duration in ISO 8601 format.
+     *
+     * @return a string representation of this duration.
      */
     @Override
     public String toString() {

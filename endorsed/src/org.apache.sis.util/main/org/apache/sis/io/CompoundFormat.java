@@ -105,7 +105,7 @@ import static org.apache.sis.util.internal.shared.Constants.UTC;
  * in case of error.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @param <T>  the base type of objects parsed and formatted by this class.
  *
@@ -349,15 +349,31 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     public abstract void format(T object, Appendable toAppendTo) throws IOException;
 
     /**
-     * Writes a textual representation of the specified object in the given buffer.
-     * This method delegates its work to {@link #format(Object, Appendable)}, but
-     * without propagating {@link IOException}. The I/O exception should never
-     * occur since we are writing in a {@link StringBuffer}.
+     * Writes a textual representation of the given object in the given buffer.
+     * This method delegates the work to {@link #format(Object, Appendable)}.
+     * If an {@link IOException} occurs (for example, because {@code format(…)} performs
+     * some I/O operations on other objects than the given {@link StringBuilder}),
+     * the exception is wrapped in {@link UncheckedIOException}.
      *
-     * <div class="note"><b>Note:</b>
-     * Strictly speaking, an {@link IOException} could still occur if a subclass overrides the above {@code format}
-     * method and performs some I/O operation outside the given {@link StringBuffer}. However, this is not the intended
-     * usage of this class and implementers should avoid such unexpected I/O operation.</div>
+     * @param  object      the object to format.
+     * @param  toAppendTo  where to format the object.
+     *
+     * @since 1.6
+     */
+    public void format(T object, StringBuilder toAppendTo) {
+        try {
+            format(object, (Appendable) toAppendTo);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    /**
+     * Writes a textual representation of the specified object in the given buffer.
+     * This method delegates the work to {@link #format(Object, Appendable)}.
+     * If an {@link IOException} occurs (for example, because {@code format(…)} performs
+     * some I/O operations on other objects than the given {@link StringBuffer}),
+     * the exception is wrapped in {@link UncheckedIOException}.
      *
      * @param  object      the object to format.
      * @param  toAppendTo  where to format the object.
@@ -373,9 +389,8 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalClass_2, valueType, Classes.getClass(object)), e);
         } catch (IOException e) {
             /*
-             * Should never happen when writing into a StringBuffer, unless the user
-             * override the format(Object, Appendable) method.  We do not rethrow an
-             * AssertionError because of this possibility.
+             * Should never happen when writing into a StringBuffer, unless the error
+             * results from another operation than writting in the given buffer.
              */
             throw new UncheckedIOException(e);
         }

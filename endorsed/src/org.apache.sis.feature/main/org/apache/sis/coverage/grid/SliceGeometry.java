@@ -108,7 +108,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
     public GridGeometry apply(final RenderedImage image) {
         try {
             final GridExtent extent = new GridExtent(image.getMinX(), image.getMinY(), image.getWidth(), image.getHeight());
-            return reduce(extent, GridCoverage2D.BIDIMENSIONAL);
+            return reduce(extent, GridCoverage.BIDIMENSIONAL);
         } catch (FactoryException e) {
             throw canNotCompute(e);
         }

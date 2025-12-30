@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
@@ -50,12 +52,12 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.FrequencySortedSet;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -130,7 +132,7 @@ import org.opengis.metadata.Identifier;
  * {@link org.apache.sis.referencing.factory.sql.EPSGFactory}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   1.1
  */
 public class WKTDictionary extends GeodeticAuthorityFactory {
@@ -157,7 +159,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
      *
      * @see #getCodeSpaces()
      */
-    private final Set<String> codespaces;
+    private final FrequencySortedSet<String> codespaces;
 
     /**
      * Cache of authority codes computed by {@link #getAuthorityCodes(Class)}.
@@ -255,7 +257,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
              * Identifier should never be null because `WKTDictionary` accepts only definitions having
              * an `ID[…]` or `AUTHORITY[…]` element. A WKT can contain at most one of those elements.
              */
-            final Identifier id = CollectionsExt.first(object.getIdentifiers());
+            final Identifier id = Containers.peekFirst(object.getIdentifiers());
             codespace = id.getCodeSpace();
             version   = id.getVersion();
             value     = object;
@@ -430,9 +432,9 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     private void updateAuthority() {
         codeCaches.clear();
         if (authorities != null) {
-            String name = CollectionsExt.first(authorities);        // Most frequently declared authority.
+            String name = Containers.peekFirst(authorities);        // Most frequently declared authority.
             if (name == null) {
-                name = CollectionsExt.first(codespaces);            // Most frequently declared codespace.
+                name = Containers.peekFirst(codespaces);            // Most frequently declared codespace.
             }
             authority = Citations.fromName(name);                   // May still be null.
         }
@@ -886,7 +888,11 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     public Set<String> getCodeSpaces() {
         lock.readLock().lock();
         try {
-            return CollectionsExt.copyPreserveOrder(codespaces);
+            switch (codespaces.size()) {
+                case 0:  return Collections.emptySet();
+                case 1:  return Collections.singleton(codespaces.first());    // Most common case.
+                default: return new LinkedHashSet<>(codespaces);
+            }
         } finally {
             lock.readLock().unlock();
         }

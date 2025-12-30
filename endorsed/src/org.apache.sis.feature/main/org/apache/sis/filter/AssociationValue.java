@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.List;
@@ -156,46 +157,64 @@ walk:   if (instance != null) {
 
     /**
      * If at least one evaluated property is a link, replaces this expression by more direct references
-     * to the target properties. This is needed for better SQL WHERE clause in database queries.
+     * to the target properties. This is needed for better SQL {@code WHERE} clause in database queries.
      */
     @Override
     public Expression<Feature, V> optimize(final Optimization optimization) {
-        final FeatureType specifiedType = optimization.getFeatureType();
-walk:   if (specifiedType != null) try {
-            FeatureType type = specifiedType;
-            String[] direct = path;                 // To be cloned before any modification.
-            for (int i=0; i<path.length; i++) {
-                PropertyType property = type.getProperty(path[i]);
-                Optional<String> link = Features.getLinkTarget(property);
-                if (link.isPresent()) {
-                    if (direct == path) direct = direct.clone();
-                    property = type.getProperty(direct[i] = link.get());
+        final var actualTypes = new ArrayList<FeatureType>();
+        final var pathInstances = new ArrayList<String[]>(2);
+        pathInstances.add(path);
+        try {
+            final String[] actualPath = optimization.constantResultForAllTypes((type) -> {
+                String[] realPath = path;       // To be cloned before any modification.
+                for (int i=0; i<realPath.length; i++) {
+                    PropertyType property = type.getProperty(realPath[i]);
+                    Optional<String> link = Features.getLinkTarget(property);
+                    if (link.isPresent()) {
+                        if (realPath == path) realPath = realPath.clone();
+                        property = type.getProperty(realPath[i] = link.get());
+                    }
+                    if (property instanceof FeatureAssociationRole) {
+                        type = ((FeatureAssociationRole) property).getValueType();
+                    } else {
+                        return null;
+                    }
                 }
-                if (!(property instanceof FeatureAssociationRole)) break walk;
-                type = ((FeatureAssociationRole) property).getValueType();
-            }
+                actualTypes.add(type);
+                // Workaround needed because the `equals(…)` method of arrays performs an identity comparison.
+                for (final String[] canonical : pathInstances) {
+                    if (Arrays.equals(canonical, realPath)) {
+                        return canonical;
+                    }
+                }
+                pathInstances.add(realPath);
+                return realPath;
+            });
             /*
              * At this point all links have been resolved, up to the final property to evaluate.
              * Delegate the final property optimization to `accessor` which may not only resolve
              * links but also tune the `ObjectConverter`.
              */
-            final Expression<Feature, V> converted;
-            optimization.setFeatureType(type);
-            try {
-                converted = accessor.optimize(optimization);
-            } finally {
-                optimization.setFeatureType(specifiedType);
-            }
-            if (converted != accessor || direct != path) {
-                if (converted instanceof PropertyValue<?>) {
-                    return new AssociationValue<>(direct, (PropertyValue<V>) converted);
-                } else {
-                    // If not a `PropertyValue`, then it should be a `Literal`.
-                    return converted;
+            if (actualPath != null) {
+                final Expression<Feature, V> converted;
+                final Set<FeatureType> currentTypes = optimization.getFinalFeatureTypes();
+                optimization.setFinalFeatureTypes(actualTypes);
+                try {
+                    converted = accessor.optimize(optimization);
+                } finally {
+                    optimization.setFinalFeatureTypes(currentTypes);
+                }
+                if (converted != accessor || actualPath != path) {
+                    if (converted instanceof PropertyValue<?>) {
+                        return new AssociationValue<>(actualPath, (PropertyValue<V>) converted);
+                    } else {
+                        // If not a `PropertyValue`, then it should be a `Literal`.
+                        return converted;
+                    }
                 }
             }
         } catch (PropertyNotFoundException e) {
-            warning(e, true);
+            optimization.warning(e, true);
         }
         return this;
     }

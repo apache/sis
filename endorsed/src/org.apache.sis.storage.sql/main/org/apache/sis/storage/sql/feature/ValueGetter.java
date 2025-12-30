@@ -33,8 +33,8 @@ import java.time.ZoneOffset;
 import java.math.BigDecimal;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.Constants;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 
 /**
@@ -515,6 +515,6 @@ public class ValueGetter<T> {
         if (Numbers.isNumber(componentType)) {
             return Vector.create(result, true);
         }
-        return UnmodifiableArrayList.wrap((Object[]) result);
+        return Containers.viewAsUnmodifiableList((Object[]) result);
     }
 }

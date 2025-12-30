@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.internal.shared;
+package org.apache.sis.util.collection;
 
 import java.util.List;
 import java.util.Arrays;
@@ -33,6 +33,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class CheckedArrayListTest extends TestCase {
     /**
      * Creates a new test case.
@@ -118,29 +119,5 @@ public final class CheckedArrayListTest extends TestCase {
         assertTrue(list.add("Three"));
         testAddWrongType(list.subList(1, 3));
         // Exception message is JDK-dependent, so we cannot test it.
-    }
-
-    /**
-     * Tests {@link CheckedArrayList#castOrCopy(Collection, Class)}.
-     */
-    @Test
-    public void testCastOrCopy() {
-        assertNull(CheckedArrayList.castOrCopy(null, String.class));
-        final var fruits = List.of("Apple", "Orange", "Raisin");
-        final var asStrings = CheckedArrayList.castOrCopy(fruits, String.class);
-        assertEquals (String.class, asStrings.getElementType());        // Should have the given element type.
-        assertNotSame(fruits, asStrings);                               // Should have created a new instance.
-        assertEquals (fruits, asStrings);                               // Should contain the same data.
-        assertSame   (asStrings, CheckedArrayList.castOrCopy(asStrings, String.class));
-
-        final var asChars = CheckedArrayList.castOrCopy(asStrings, CharSequence.class);
-        assertEquals (CharSequence.class, asChars.getElementType());    // Should have the given element type.
-        assertNotSame(asStrings, asChars);                              // Should have created a new instance.
-        assertEquals (asStrings, asChars);                              // Should contain the same data.
-        assertEquals (fruits,    asChars);                              // Should contain the same data.
-
-        var e = assertThrows(ClassCastException.class, () -> CheckedArrayList.castOrCopy(asChars, Integer.class),
-                             "Should not be allowed to cast String to Integer.");
-        assertMessageContains(e, "String", "Integer");
     }
 }

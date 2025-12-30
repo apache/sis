@@ -25,7 +25,7 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.util.internal.shared.Strings;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.xml.bind.gco.GO_GenericName;
 
 // Specific to the main and geoapi-3.1 branches:
@@ -130,7 +130,7 @@ public class IdentifiedObjectMock implements IdentifiedObject, ReferenceIdentifi
      */
     @Override
     public final Collection<GenericName> getAlias() {
-        return CollectionsExt.singletonOrEmpty(alias);
+        return Containers.singletonOrEmpty(alias);
     }
 
     /**

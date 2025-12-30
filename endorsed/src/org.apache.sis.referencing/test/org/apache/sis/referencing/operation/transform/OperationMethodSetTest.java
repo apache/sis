@@ -16,6 +16,8 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.AbstractCollection;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.Map;
 import java.util.Iterator;
@@ -27,7 +29,6 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -43,6 +44,7 @@ import org.opengis.referencing.operation.PointMotionOperation;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class OperationMethodSetTest extends TestCase {
     /**
      * Creates a new test case.
@@ -84,14 +86,19 @@ public final class OperationMethodSetTest extends TestCase {
                                              final DefaultOperationMethod... methods)
     {
         @SuppressWarnings("serial")
-        final Iterable<DefaultOperationMethod> asList = new UnmodifiableArrayList<DefaultOperationMethod>(methods) {
+        final Iterable<DefaultOperationMethod> asList = new AbstractCollection<DefaultOperationMethod>() {
             private boolean isIterationDone;
 
             @Override
             public Iterator<DefaultOperationMethod> iterator() {
                 assertFalse(isIterationDone);
                 isIterationDone = true;
-                return super.iterator();
+                return Arrays.asList(methods).iterator();
+            }
+
+            @Override
+            public int size() {
+                return methods.length;
             }
         };
         synchronized (asList) {                           // Needed for avoiding assertion error in OperationMethodSet.

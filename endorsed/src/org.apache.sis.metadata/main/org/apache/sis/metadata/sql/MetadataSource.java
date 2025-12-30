@@ -68,8 +68,6 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.internal.shared.CodeLists;
-import org.apache.sis.util.internal.shared.CollectionsExt;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
@@ -1039,7 +1037,7 @@ public class MetadataSource implements AutoCloseable {
             }
             value = values;             // Now a Java array.
             if (wantCollection) {
-                value = specialize(UnmodifiableArrayList.wrap(values), returnType, elementType);
+                value = specialize(Containers.viewAsUnmodifiableList(values), returnType, elementType);
             }
         }
         /*
@@ -1117,7 +1115,7 @@ public class MetadataSource implements AutoCloseable {
                 } else {
                     switch (collection.size()) {
                         case 0:  collection = Collections.emptySet(); break;
-                        case 1:  collection = Collections.singleton(CollectionsExt.first(collection)); break;
+                        case 1:  collection = Collections.singleton(Containers.peekFirst(collection)); break;
                         default: collection = Collections.unmodifiableSet(new LinkedHashSet<>(collection)); break;
                     }
                 }

@@ -246,7 +246,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @Workaround(library="JDK", version="1.7")
+    @Workaround(library="JDK", version="7", fixed="25")
     private static Map<String,?> getProperties(final MathTransform transform) {
         ArgumentChecks.ensureNonNull("transform", transform);
         if (transform instanceof Parameterized) {

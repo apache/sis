@@ -91,7 +91,7 @@ final class MapProjectionDescriptor extends DefaultParameterDescriptorGroup {
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @Workaround(library="JDK", version="1.7")
+    @Workaround(library="JDK", version="7", fixed="25")
     private static ParameterDescriptor<?>[] addAxisLengths(final ParameterDescriptor<?>[] parameters) {
         final ParameterDescriptor<?>[] ext = new ParameterDescriptor<?>[parameters.length + 2];
         ext[0] = MapProjection.SEMI_MAJOR;

@@ -64,8 +64,8 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.Cache;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.Strings;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Vocabulary;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -568,7 +568,7 @@ public class Database<G> extends Syntax {
      * @return all tables in an unmodifiable list.
      */
     public final List<FeatureSet> tables() {
-        return UnmodifiableArrayList.wrap(tables);
+        return Containers.viewAsUnmodifiableList(tables);
     }
 
     /**

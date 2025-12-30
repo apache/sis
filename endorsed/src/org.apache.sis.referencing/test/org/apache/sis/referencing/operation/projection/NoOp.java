@@ -68,7 +68,7 @@ final class NoOp extends ConformalProjection {
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @Workaround(library="JDK", version="1.7")
+    @Workaround(library="JDK", version="7", fixed="25")
     private NoOp(final Parameters parameters) {
         super(new Initializer(new DefaultOperationMethod(
                 Map.of(DefaultOperationMethod.NAME_KEY, parameters.getDescriptor().getName()),
@@ -79,7 +79,7 @@ final class NoOp extends ConformalProjection {
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @Workaround(library="JDK", version="1.7")
+    @Workaround(library="JDK", version="7", fixed="25")
     private static Parameters parameters(final Ellipsoid ellipsoid, final boolean declareIvf) {
         final Parameters parameters = parameters(
                 ellipsoid.getSemiMajorAxis(),
@@ -94,7 +94,7 @@ final class NoOp extends ConformalProjection {
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @Workaround(library="JDK", version="1.7")
+    @Workaround(library="JDK", version="7", fixed="25")
     private static Parameters parameters(final double semiMajor, final double semiMinor) {
         final ParameterValueGroup group = new ParameterBuilder()
                 .addName("No-operation").createGroupForMapProjection().createValue();

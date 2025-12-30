@@ -19,14 +19,15 @@ package org.apache.sis.storage;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
-import java.util.ConcurrentModificationException;
+import java.util.LinkedHashSet;
 import java.util.Iterator;
+import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.Locale;
 import java.util.Objects;
 import org.opengis.util.GenericName;
 import org.opengis.util.ScopedName;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.storage.internal.Resources;
 
 
@@ -87,7 +88,7 @@ import org.apache.sis.storage.internal.Resources;
  * The caller is typically the {@code DataStore} implementation which contains this {@code FeatureNaming} instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @param <E>  the type of elements associated with the names.
  *
@@ -199,7 +200,7 @@ public class FeatureNaming<E> {
                 }
                 throw new IllegalNameException(locale(store), Resources.Keys.FeatureAlreadyPresent_2, name(store), key);
             }
-            CollectionsExt.addToMultiValuesMap(aliases, key, key);
+            addToMultiValuesMap(aliases, key, key);
         }
         /*
          * At this point we associated the value to the given name. Now try to associate the same value to all aliases.
@@ -208,7 +209,7 @@ public class FeatureNaming<E> {
         while (name instanceof ScopedName) {
             name = ((ScopedName) name).tail();
             final String alias = name.toString();
-            final Set<String> fullNames = CollectionsExt.addToMultiValuesMap(aliases, alias, key);
+            final Set<String> fullNames = addToMultiValuesMap(aliases, alias, key);
             if (fullNames.size() > 1) {
                 /*
                  * If there is more than one GenericName for the same alias, we have an ambiguity.
@@ -226,7 +227,7 @@ public class FeatureNaming<E> {
                  * additional value, we need to add explicitly the previously implicit value.
                  */
                 assert !fullNames.contains(alias) : alias;
-                CollectionsExt.addToMultiValuesMap(aliases, alias, alias);
+                addToMultiValuesMap(aliases, alias, alias);
             }
         }
     }
@@ -247,7 +248,7 @@ public class FeatureNaming<E> {
         if (values.remove(key) == null) {
             return false;
         }
-        Set<String> remaining = CollectionsExt.removeFromMultiValuesMap(aliases, key, key);
+        Set<String> remaining = removeFromMultiValuesMap(aliases, key, key);
         if (remaining != null && remaining.size() == 1) {
             /*
              * If there is exactly one remaining element, that element is a non-ambiguous alias.
@@ -263,7 +264,7 @@ public class FeatureNaming<E> {
         while (name instanceof ScopedName) {
             name = ((ScopedName) name).tail();
             final String alias = name.toString();
-            remaining = CollectionsExt.removeFromMultiValuesMap(aliases, alias, key);
+            remaining = removeFromMultiValuesMap(aliases, alias, key);
             /*
              * The list of remaining GenericNames may be empty but should never be null unless the tail
              * is inconsistent with the one found by the `add(…)` method. Otherwise if there is exactly
@@ -282,5 +283,60 @@ public class FeatureNaming<E> {
             throw new IllegalNameException(locale(store), Resources.Keys.InconsistentNameComponents_2, name(store), key);
         }
         return true;
+    }
+
+    /**
+     * Adds a value in a pseudo multi-values map. The multi-values map is simulated by a map of sets.
+     * The map can be initially empty: sets will be created as needed, with an optimization for the
+     * common case where the majority of keys are associated to exactly one value.
+     * Null values are accepted.
+     *
+     * @param  <K>    the type of key elements in the map.
+     * @param  <V>    the type of value elements in the sets.
+     * @param  map    the multi-values map where to add an element.
+     * @param  key    the key of the element to add. Can be null if the given map supports null keys.
+     * @param  value  the value of the element to add. Can be null.
+     * @return the set where the given value has been added. May be unmodifiable.
+     */
+    static <K,V> Set<V> addToMultiValuesMap(final Map<K, Set<V>> map, final K key, final V value) {
+        return map.merge(key, Collections.singleton(value), (values, singleton) -> {
+            final Set<V> dest = (values.size() > 1) ? values : new LinkedHashSet<>(values);
+            return dest.addAll(singleton) ? dest : values;
+        });
+    }
+
+    /**
+     * Removes a value in a pseudo multi-values map. The multi-values map is simulated by a map of sets.
+     * If the set become empty after this method call, that set is removed from the map and this method
+     * returns the empty set.
+     *
+     * @param  <K>    the type of key elements in the map.
+     * @param  <V>    the type of value elements in the lists.
+     * @param  map    the multi-values map where to remove an element.
+     * @param  key    the key of the element to remove. Can be null if the given map supports null keys.
+     * @param  value  the value of the element to remove. Can be null.
+     * @return set of remaining elements after the removal, or {@code null} if no set is mapped to the given key.
+     */
+    static <K,V> Set<V> removeFromMultiValuesMap(final Map<K, Set<V>> map, final K key, final V value) {
+        final Set<V> remaining = map.compute(key, (k, values) -> {
+            if (values != null) {
+                final boolean isEmpty;
+                switch (values.size()) {
+                    case 0:  isEmpty = true; break;
+                    case 1:  isEmpty = values.contains(value); break;
+                    default: isEmpty = values.remove(value) && values.isEmpty(); break;
+                }
+                if (isEmpty) {
+                    return Collections.emptySet();
+                }
+            }
+            return values;
+        });
+        if (remaining != null && remaining.isEmpty()) {
+            if (map.remove(key) != remaining) {
+                throw new ConcurrentModificationException();
+            }
+        }
+        return remaining;
     }
 }

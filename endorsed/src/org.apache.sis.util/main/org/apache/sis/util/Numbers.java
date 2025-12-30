@@ -30,8 +30,8 @@ import java.math.BigInteger;
 import static java.lang.Double.doubleToLongBits;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.DoubleDouble;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 
 
 /**
@@ -827,7 +827,7 @@ asLong: if (mapping != null) {
         } else if (type != null && type != Object.class) {
             if (type == Map         .class) return (T) Collections.EMPTY_MAP;
             if (type == List        .class) return (T) Collections.EMPTY_LIST;
-            if (type == Queue       .class) return (T) CollectionsExt.emptyQueue();
+            if (type == Queue       .class) return (T) Containers.emptyQueue();
             if (type == SortedSet   .class) return (T) Collections.emptySortedSet();
             if (type == NavigableSet.class) return (T) Collections.emptyNavigableSet();
             if (type.isAssignableFrom(Set.class)) {

@@ -180,8 +180,8 @@ public class Resources extends IndexedResourceBundle {
         public static final short EmptyTileOrImageRegion = 20;
 
         /**
-         * Indices ({3}) are outside grid coverage. The value in dimension {0} shall be between
-         * {1,number} and {2,number} inclusive.
+         * Grid coordinates ({3}) are outside the coverage domain. The coordinate in the {0} dimension
+         * shall be between {1,number} and {2,number} inclusive.
          */
         public static final short GridCoordinateOutsideCoverage_4 = 21;
 

@@ -23,7 +23,7 @@ import org.opengis.filter.Literal;
 import org.opengis.filter.ValueReference;
 import org.apache.sis.style.Style;
 import org.apache.sis.style.se1.*;
-import static org.apache.sis.util.internal.shared.CollectionsExt.nonNull;
+import static org.apache.sis.util.collection.Containers.nonNull;
 
 
 /**

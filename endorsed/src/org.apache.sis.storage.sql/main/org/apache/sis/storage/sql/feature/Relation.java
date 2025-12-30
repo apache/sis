@@ -27,11 +27,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.metadata.sql.internal.shared.Reflection;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.InternalDataStoreException;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Errors;
 
@@ -229,7 +229,8 @@ final class Relation extends TableReference implements Cloneable {
          * name is not a sufficient condition, because we could have more than one foreigner key
          * referencing the same table.
          */
-        columns = CollectionsExt.compact(m);
+        // The map must stay modifiable if we have more than one entry.
+        columns = (m.size() >= 2) ? m : Containers.unmodifiable(m);
         /*
          * If the foreigner key uses exactly one column, we can use the name of that column.
          * Otherwise we do not know which column has the most appropriate name (often there is none),
@@ -241,7 +242,7 @@ final class Relation extends TableReference implements Cloneable {
             case EXPORT: names = columns.keySet(); break;
             default:     throw new AssertionError(dir);
         }
-        propertyName = CollectionsExt.singletonOrNull(names);
+        propertyName = Containers.peekIfSingleton(names);
         if (propertyName == null) {
             propertyName = freeText;                        // Name of foreigner key constraint.
             if (propertyName == null) {
@@ -372,7 +373,7 @@ final class Relation extends TableReference implements Cloneable {
             }
             if (!copy.isEmpty()) {
                 throw new DataStoreContentException(analyzer.resources()
-                        .getString(Resources.Keys.MalformedForeignerKey_2, freeText, CollectionsExt.first(copy.keySet())));
+                        .getString(Resources.Keys.MalformedForeignerKey_2, freeText, Containers.peekFirst(copy.keySet())));
             }
         }
     }

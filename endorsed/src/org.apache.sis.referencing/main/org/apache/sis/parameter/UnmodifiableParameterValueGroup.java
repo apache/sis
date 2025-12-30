@@ -28,12 +28,12 @@ import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -91,8 +91,9 @@ class UnmodifiableParameterValueGroup extends Parameters implements LenientCompa
             throw new IllegalArgumentException(Errors.format(Errors.Keys.CircularReference));
         }
         descriptor = group.getDescriptor();
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final List<GeneralParameterValue> values = group.values();
-        final GeneralParameterValue[] array = new GeneralParameterValue[values.size()];
+        final var array = new GeneralParameterValue[values.size()];
         for (int i=0; i<array.length; i++) {
             GeneralParameterValue value = values.get(i);
             ArgumentChecks.ensureNonNullElement("values", i, value);
@@ -103,7 +104,7 @@ class UnmodifiableParameterValueGroup extends Parameters implements LenientCompa
             }
             array[i] = value;
         }
-        this.values = UnmodifiableArrayList.wrap(array);
+        this.values = Containers.viewAsUnmodifiableList(array);
     }
 
     /**

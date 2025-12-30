@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Collections;
 import java.util.logging.Logger;
 import java.io.Serializable;
 import org.opengis.util.NameFactory;
@@ -263,6 +264,30 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
             }
         }
         return i18n;
+    }
+
+    /**
+     * Returns a more compact representation of the given map. This method is similar to
+     * {@link Containers#unmodifiable(Map)} except that it does not wrap the map in an unmodifiable view.
+     * The intent is to avoid one level of indirection for performance and memory reasons.
+     * This is okay only if the map is kept in a private field and never escape outside that class.
+     *
+     * @param  <K>  the type of keys in the map.
+     * @param  <V>  the type of values in the map.
+     * @param  map  the map to compact, or {@code null}.
+     * @return a potentially compacted map, or {@code null} if the given map was null.
+     *
+     * @see Containers#unmodifiable(Map)
+     */
+    static <K,V> Map<K,V> compact(final Map<K,V> map) {
+        if (map != null) {
+            switch (map.size()) {
+                case 0: return Collections.emptyMap();
+                case 1: final Map.Entry<K,V> entry = map.entrySet().iterator().next();
+                        return Collections.singletonMap(entry.getKey(), entry.getValue());
+            }
+        }
+        return map;
     }
 
     /**

@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.HashMap;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.lang.reflect.Array;
 import jakarta.xml.bind.annotation.XmlElementRef;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
@@ -38,7 +39,6 @@ import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.util.CorruptedObjectException;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.xml.IdentifierSpace;
@@ -401,7 +401,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                 // so they must be inferred from the predefined descriptor.
                 valueClass,
                 Parameters.getValueDomain(complete),
-                CollectionsExt.toArray(complete.getValidValues(), valueClass),
+                toArray(complete.getValidValues(), valueClass),
                 complete.getDefaultValue());
     }
 
@@ -463,9 +463,26 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                 c.remove(toNamedIdentifier(remove));
                 provided = c.values();
             }
-            complete = CollectionsExt.toArray(provided, componentType);
+            complete = toArray(provided, componentType);
             merged.put(key, complete);
         }
+    }
+
+    /**
+     * Returns the elements of the given collection as an array.
+     * This method can be used when the {@code valueClass} argument is not known at compile-time.
+     *
+     * @param  <T>         the compile-time value of {@code valueClass}.
+     * @param  collection  the collection from which to get the elements.
+     * @param  valueClass  the runtime type of collection elements.
+     * @return the collection elements as an array, or {@code null} if {@code collection} is null.
+     */
+    @SuppressWarnings("unchecked")
+    static <T> T[] toArray(final Collection<? extends T> collection, final Class<T> valueClass) {
+        if (collection != null) {
+            return collection.toArray((T[]) Array.newInstance(valueClass, collection.size()));
+        }
+        return null;
     }
 
     /**

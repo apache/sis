@@ -49,9 +49,8 @@ import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.URIDataStore;
-import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.Constants;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.system.Cleaners;
 
@@ -62,7 +61,7 @@ import org.apache.sis.system.Cleaners;
  * @author  Johann Sorel (Geomatys)
  * @author  Quentin Bialota (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   1.5
  */
 public class GDALStore extends DataStore implements Aggregate {
@@ -381,8 +380,17 @@ public class GDALStore extends DataStore implements Aggregate {
                 components = subdatasets;
             } else {
                 final TiledResource[] rasters = TiledResource.groupBySizeAndType(this, gdal);
-                final FeatureLayer[] vectors = FeatureLayer.listLayers(this, gdal);
-                components = UnmodifiableArrayList.wrap(ArraysExt.concatenate(rasters, vectors, new AbstractResource[0]));
+                final FeatureLayer[]  vectors = FeatureLayer.listLayers(this, gdal);
+                final AbstractResource[] merged;
+                if (vectors.length == 0) {
+                    merged = rasters;
+                } else if (rasters.length == 0) {
+                    merged = vectors;
+                } else {
+                    merged = Arrays.copyOf(rasters, rasters.length + vectors.length, AbstractResource[].class);
+                    System.arraycopy(vectors, 0, merged, rasters.length, vectors.length);
+                }
+                components = Containers.viewAsUnmodifiableList(merged);
             }
         } finally {
             ErrorHandler.throwOnFailure(this, "components");

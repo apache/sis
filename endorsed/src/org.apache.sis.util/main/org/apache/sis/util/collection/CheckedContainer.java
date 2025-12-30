@@ -16,7 +16,13 @@
  */
 package org.apache.sis.util.collection;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 
 /**
@@ -32,7 +38,7 @@ import java.util.Collection;
  *     }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
+ * @version 1.6
  *
  * @param <E>  the base type of elements in the container.
  *
@@ -44,5 +50,91 @@ public interface CheckedContainer<E> {
      *
      * @return the element type.
      */
-    Class<E> getElementType();
+    Class<? extends E> getElementType();
+
+    /**
+     * Returns whether this container is modifiable, unmodifiable or immutable.
+     *
+     * @return the mutability status of this container.
+     *
+     * @since 1.6
+     */
+    Mutability getMutability();
+
+    /**
+     * Mutability status of a container.
+     *
+     * @since 1.6
+     */
+    enum Mutability {
+        /**
+         * The container is modifiable.
+         * Invoking a setter method should not cause {@link UnsupportedOperationException} to be thrown.
+         */
+        MODIFIABLE,
+
+        /**
+         * The container supports only the removal of elements.
+         * Attempts to add or modify an element will cause {@link UnsupportedOperationException} to be thrown.
+         */
+        REMOVE_ONLY,
+
+        /**
+         * The container is unmodifiable, but not necessarily immutable.
+         * Attempts to add, remove or add an element will cause {@link UnsupportedOperationException} to be thrown.
+         * However, the content of the collection way still change with time, for example if the collection is a view
+         * and the underlying view changes.
+         */
+        UNMODIFIABLE,
+
+        /**
+         * The container is immutable. Its content does not change, and attempts to change
+         * the content will cause {@link UnsupportedOperationException} to be thrown.
+         */
+        IMMUTABLE,
+
+        /**
+         * The mutability status of the container is unknown.
+         */
+        UNKNOWN;
+
+        /**
+         * Hard-coded implementation classes considered as modifiable. We require the exact classes without accepting
+         * subclasses because the latter may override methods in a way that change the mutability of the collection.
+         * This is set is not exhaustive. Its content is determined by Apache <abbr>SIS</abbr> needs.
+         */
+        private static final Set<Class<?>> MUTABLES = Set.of(ArrayDeque.class, ArrayList.class, HashSet.class, LinkedHashSet.class);
+
+        /**
+         * Returns the mutability status of the given collection.
+         * If the given collection implements the {@link CheckedContainer} interface,
+         * then this method returns the {@link #getMutability()} status.
+         * Otherwise, this method tries to guess from the implementation class.
+         * In case of doubt, this method returns {@link #UNKNOWN}.
+         *
+         * @param  collection  the collection for which to get the mutability status.
+         * @return mutability status of the given collection.
+         */
+        public static Mutability of(final Collection<?> collection) {
+            if (collection != null) {
+                if (collection instanceof CheckedContainer<?>) {
+                    return ((CheckedContainer<?>) collection).getMutability();
+                }
+                if (collection instanceof EnumSet<?> || MUTABLES.contains(collection.getClass())) {
+                    return MODIFIABLE;
+                }
+            }
+            return UNKNOWN;
+        }
+
+        /**
+         * Returns {@code true} if this enumeration unmodifiable or immutable.
+         * For this method, immutability is considered a stronger variant of being unmodifiable.
+         *
+         * @return whether this enumeration is {@link #UNMODIFIABLE} or {@link #IMMUTABLE}.
+         */
+        final boolean isUnmodifiable() {
+            return this == UNMODIFIABLE || this == IMMUTABLE;
+        }
+    }
 }

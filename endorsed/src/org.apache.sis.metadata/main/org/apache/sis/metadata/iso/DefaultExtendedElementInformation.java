@@ -33,7 +33,7 @@ import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ensurePositive;
 
 // Specific to the main and geoapi-3.1 branches:
@@ -566,7 +566,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      * @since 0.5
      */
     public void setRationale(final InternationalString newValue) {
-        rationales = writeCollection(CollectionsExt.singletonOrEmpty(newValue), rationales, InternationalString.class);
+        rationales = writeCollection(Containers.singletonOrEmpty(newValue), rationales, InternationalString.class);
     }
 
     /**
@@ -586,7 +586,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
 
             /** Returns an iterator over 0 or 1 element. Current iterator implementation is unmodifiable. */
             @Override public Iterator<InternationalString> iterator() {
-                return CollectionsExt.singletonOrEmpty(getRationale()).iterator();
+                return Containers.singletonOrEmpty(getRationale()).iterator();
             }
 
             /** Adds an element only if the set is empty. This method is invoked by JAXB at unmarshalling time. */

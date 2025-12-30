@@ -25,6 +25,7 @@ import org.opengis.metadata.Metadata;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.WarningAdapter;
+import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.base.WarningEvent;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -49,7 +50,7 @@ import org.opengis.feature.FeatureType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.6
  * @since   1.2
  */
 public abstract class AbstractFeatureSet extends AbstractResource implements FeatureSet {
@@ -128,6 +129,32 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
     }
 
     /**
+     * Configures the optimization of a query to be applied on this {@code FeatureSet}.
+     * This method is invoked indirectly by the default implementation of {@link #subset(Query)}.
+     * The default implementation of this method does nothing.
+     *
+     * <h4>Recommendation</h4>
+     * Subclasses should override this method as below if they can guarantee that the feature type returned
+     * by {@link #getType()} is final, i.e. that the result of the query will not contain any feature which
+     * (before {@linkplain FeatureQuery#getProjection() projection}) is an instance of some subtype:
+     *
+     * {@snippet lang="java" :
+     * @Override
+     * protected void prepareQueryOptimization(FeatureQuery query, Optimization optimizer) throws DataStoreException {
+     *     optimizer.setFinalFeatureType(getType());
+     * }
+     * }
+     *
+     * @param  query      definition of feature and feature properties filtering applied at reading time.
+     * @param  optimizer  the optimization to configure.
+     * @throws DataStoreException if an error occurred during the configuration of the optimizer.
+     *
+     * @since 1.6
+     */
+    protected void prepareQueryOptimization(FeatureQuery query, Optimization optimizer) throws DataStoreException {
+    }
+
+    /**
      * Invoked in a synchronized block the first time that {@code getMetadata()} is invoked.
      * The default implementation populates metadata based on information provided by
      * {@link #getIdentifier()   getIdentifier()},
@@ -142,7 +169,7 @@ public abstract class AbstractFeatureSet extends AbstractResource implements Fea
      */
     @Override
     protected Metadata createMetadata() throws DataStoreException {
-        final MetadataBuilder builder = new MetadataBuilder();
+        final var builder = new MetadataBuilder();
         builder.addDefaultMetadata(this, listeners);
         return builder.build();
     }

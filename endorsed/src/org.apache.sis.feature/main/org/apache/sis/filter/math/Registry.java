@@ -19,8 +19,8 @@ package org.apache.sis.filter.math;
 import java.util.Set;
 import org.apache.sis.filter.FunctionRegister;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.internal.shared.Constants;
+import org.apache.sis.util.internal.shared.ViewAsSet;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
@@ -56,7 +56,7 @@ public final class Registry implements FunctionRegister {
      */
     @Override
     public Set<String> getNames() {
-        return CollectionsExt.viewAsSet(Function.namesAndAliases());
+        return new ViewAsSet<>(Function.namesAndAliases());
     }
 
     /**

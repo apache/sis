@@ -34,7 +34,7 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -74,6 +74,7 @@ final class BandGroup extends AbstractResource implements Aggregate, StoreResour
         super(parent);
         this.group = group;
         int n = 0;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         Band[] components = new Band[resources.length];
         for (int i=0; i<count; i++) {
             final Band r = resources[i];
@@ -132,7 +133,7 @@ final class BandGroup extends AbstractResource implements Aggregate, StoreResour
      */
     @Override
     public Collection<Resource> components() {
-        return UnmodifiableArrayList.wrap(components);
+        return Containers.viewAsUnmodifiableList(components);
     }
 
     /**

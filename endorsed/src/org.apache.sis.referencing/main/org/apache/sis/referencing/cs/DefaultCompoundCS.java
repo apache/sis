@@ -27,7 +27,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 
 /**
@@ -50,7 +49,7 @@ import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   0.4
  */
 @XmlTransient
@@ -102,8 +101,7 @@ public class DefaultCompoundCS extends AbstractCS {
      */
     public DefaultCompoundCS(final Map<String,?> properties, CoordinateSystem... components) {
         super(properties, getAxes(components = clone(components)));
-        this.components = UnmodifiableArrayList.wrap(components);
-        // TODO: replace by List.of(components) after RFE #4093999.
+        this.components = List.of(components);
     }
 
     /**
@@ -112,8 +110,7 @@ public class DefaultCompoundCS extends AbstractCS {
      */
     private DefaultCompoundCS(final DefaultCompoundCS original, final CoordinateSystem[] components) {
         super(original, null, getAxes(components));
-        this.components = UnmodifiableArrayList.wrap(components);
-        // TODO: replace by List.of(components) after RFE #4093999.
+        this.components = List.of(components);
     }
 
     /**
@@ -132,11 +129,10 @@ public class DefaultCompoundCS extends AbstractCS {
      *
      * @param  components  the coordinate systems.
      */
-    @Workaround(library="JDK", version="1.7")
+    @Workaround(library="JDK", version="7", fixed="25")
     private DefaultCompoundCS(final CoordinateSystem[] components, final CoordinateSystemAxis[] axes) {
         super(Map.of(NAME_KEY, AxisDirections.appendTo(new StringBuilder(60).append("Compound CS"), axes)), axes);
-        this.components = UnmodifiableArrayList.wrap(components);
-        // TODO: replace by List.of(components) after RFE #4093999.
+        this.components = List.of(components);
     }
 
     /**

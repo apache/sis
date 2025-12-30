@@ -78,8 +78,12 @@ final class Raster extends BufferedGridCoverage {
      * @param visibleBand  the band to use for defining pixel colors when the image is displayed on screen.
      * @param colors       the colors to use for each category, or {@code null} for default.
      */
-    Raster(final GridGeometry domain, final List<SampleDimension> range, final DataBuffer data,
-           final int pixelStride, final int[] bandOffsets, final int visibleBand,
+    Raster(final GridGeometry domain,
+           final List<? extends SampleDimension> range,
+           final DataBuffer data,
+           final int pixelStride,
+           final int[] bandOffsets,
+           final int visibleBand,
            final Function<Category,Color[]> colors)
     {
         super(domain, range, data);

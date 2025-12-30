@@ -55,7 +55,7 @@ import org.apache.sis.pending.jdk.JDK19;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   0.3
  */
 public final class Classes {
@@ -355,7 +355,10 @@ public final class Classes {
      * @param  <T>      the base type of elements in the given collection.
      * @param  objects  the collection of objects.
      * @return the set of classes of all objects in the given collection.
+     *
+     * @deprecated To be removed after removal of public deprecated methods.
      */
+    @Deprecated(since = "1.6", forRemoval = true)
     private static <T> Set<Class<? extends T>> getClasses(final Iterable<? extends T> objects) {
         final Set<Class<? extends T>> types = new LinkedHashSet<>();
         for (final T object : objects) {
@@ -548,7 +551,10 @@ next:       for (final Class<?> candidate : candidates) {
      * @param  objects  a collection of objects. May contains duplicated values and null values.
      * @return the most specialized class, or {@code null} if the given collection does not contain
      *         at least one non-null element.
+     *
+     * @deprecated This method is confusing as it works on instances instead of classes.
      */
+    @Deprecated(since = "1.6", forRemoval = true)
     public static Class<?> findSpecializedClass(final Iterable<?> objects) {
         final Set<Class<?>> types = getClasses(objects);
         types.remove(null);
@@ -600,7 +606,11 @@ next:       for (final Class<?> candidate : candidates) {
      * @param  objects  a collection of objects. May contains duplicated values and null values.
      * @return the most specific class common to all supplied objects, or {@code null} if the
      *         given collection does not contain at least one non-null element.
+     *
+     * @deprecated This method is confusing as it works on instances while {@link #findCommonClass(Class, Class)}
+     *             works on classes.
      */
+    @Deprecated(since = "1.6", forRemoval = true)
     public static Class<?> findCommonClass(final Iterable<?> objects) {
         final Set<Class<?>> types = getClasses(objects);
         types.remove(null);

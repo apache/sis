@@ -19,23 +19,39 @@ package org.apache.sis.filter;
 import java.util.Map;
 import java.util.Set;
 import java.util.List;
+import java.util.Iterator;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.BiPredicate;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.feature.internal.shared.AttributeConvention;
+import org.apache.sis.feature.Features;
+import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.filter.base.Node;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.filter.base.WarningEvent;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.CodeList;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Literal;
 import org.opengis.filter.Expression;
+import org.opengis.filter.ValueReference;
 import org.opengis.filter.LogicalOperator;
 import org.opengis.filter.LogicalOperatorName;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.PropertyNotFoundException;
 
 
 /**
@@ -89,13 +105,15 @@ public class Optimization {
     private static final Object COMPUTING = Void.TYPE;
 
     /**
-     * The type of feature instances to be filtered, or {@code null} if unknown.
+     * Exhaustive set of types of all feature instances that the filters and expressions may see.
+     * This is an empty set if the feature types are unknown or irrelevant for the type of resources to be filtered.
      */
-    private FeatureType featureType;
+    private Set<FeatureType> featureTypes;
 
     /**
      * Filters and expressions already optimized. Also used for avoiding never-ending loops.
-     * The map is created when first needed.
+     * The map is created when first needed. The null value (not the same as an empty map) is
+     * used for identifying the start of recursive invocations of {@code apply(…)} methods.
      *
      * <h4>Implementation note</h4>
      * The same map is used for filters and expressions.
@@ -103,13 +121,36 @@ public class Optimization {
      * If it happens anyway, it should still be okay because the method signatures are
      * the same in both interfaces (only the return type changes), so the same methods
      * would be invoked no matter if we consider the keys as a filter or an expression.
+     *
+     * @see #apply(Filter)
+     * @see #apply(Expression)
      */
-    private Map<Object,Object> done;
+    private Map<Object, Object> done;
+
+    /**
+     * The filter or expression in process of being optimized.
+     * This is used by {@link #warning(Exception)} for reporting the source of errors.
+     */
+    private Object currentFilterOrExpression;
+
+    /**
+     * Set during the execution of an {@code apply(…)} method if it could do better.
+     * If {@code true}, then invoking {@code apply(…)} again with, for example, a single
+     * {@link #setFinalFeatureType final feature type} may improve the result efficiency.
+     * Conversely, a value of {@code false} means that no improvement is expected.
+     *
+     * @see #apply(Filter)
+     * @see #apply(Expression)
+     * @see #warning(Exception, boolean)
+     * @see #isImprovable()
+     */
+    private boolean isImprovable;
 
     /**
      * Creates a new instance.
      */
     public Optimization() {
+        featureTypes = Set.of();
     }
 
     /**
@@ -118,9 +159,12 @@ public class Optimization {
      * The default value is {@code null}.
      *
      * @return the type of feature instances to be filtered, or {@code null} if unknown.
+     *
+     * @deprecated Replaced by {@link #getFinalFeatureTypes()}.
      */
+    @Deprecated(since = "1.6", forRemoval = true)
     public FeatureType getFeatureType() {
-        return featureType;
+        return Containers.peekIfSingleton(getFinalFeatureTypes());
     }
 
     /**
@@ -130,9 +174,273 @@ public class Optimization {
      * in advance.
      *
      * @param  type  the type of feature instances to be filtered, or {@code null} if unknown.
+     *
+     * @deprecated Replaced by {@link #setFinalFeatureTypes(Collection)}.
      */
+    @Deprecated(since = "1.6", forRemoval = true)
     public void setFeatureType(final FeatureType type) {
-        featureType = type;
+        setFinalFeatureType(type);
+    }
+
+    /**
+     * Returns the exhaustive set of the types of all feature instances that the filters and expressions may see.
+     * The super-types should not be included in the set, unless some features may be instances of these specific
+     * super-types rather than instances of a some sub-type. If the set of feature types is unknown or irrelevant
+     * for the type of resources to be filtered, then this method returns an empty set.
+     *
+     * <h4>Purpose</h4>
+     * A {@link org.apache.sis.storage.DataStore} may contain a hierarchy of feature types instead of a single type.
+     * A property may be absent in the parent type but present in some sub-types, or may be overridden in sub-types.
+     * If an optimization wants to evaluate once and for all an expression with literal parameters, the optimization
+     * needs to verify that the parameters are really literals in all possible sub-types.
+     *
+     * @return exhaustive set of types of all feature instances that the filters and expressions may see.
+     *
+     * @since 1.6
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public Set<FeatureType> getFinalFeatureTypes() {
+        return featureTypes;
+    }
+
+    /**
+     * Specifies the exhaustive set of the types of all feature instances that the filters and expressions may see.
+     * The given collection should not include super-types, unless some features may be instances of these specific
+     * super-types rather than instances of a some sub-type. An empty collection means that feature types are unknown
+     * or irrelevant for the type of resources to be filtered.
+     *
+     * @param  types  exhaustive set of types of all feature instances that the filters and expressions may see.
+     *
+     * @since 1.6
+     */
+    public void setFinalFeatureTypes(final Collection<? extends FeatureType> types) {
+        featureTypes = Set.copyOf(types);
+    }
+
+    /**
+     * Specifies the single type of all feature instances that the filters and expressions may see.
+     * This is a convenience method delegating to {@link #setFinalFeatureTypes(Collection)} with a
+     * singleton or empty set.
+     *
+     * <p>Note that the given type should be effectively final, i.e. no subtype should exist.
+     * If the feature instances may be of some subtypes, then all subtypes should be enumerated
+     * in a call to {@link #setFinalFeatureTypes(Collection)}.</p>
+     *
+     * @param  type  the type of feature instances to be filtered, or {@code null} if unknown.
+     *
+     * @since 1.6
+     */
+    public final void setFinalFeatureType(final FeatureType type) {
+        setFinalFeatureTypes((type != null) ? Set.of(type) : Set.of());
+    }
+
+    /**
+     * If the result of applying the given function is equal for all feature types, returns that value.
+     * Otherwise, returns {@code null}. This is used for implementation of {@code optimize(…)} methods.
+     *
+     * @param  <R>     type of the result.
+     * @param  mapper  the operation to apply on each feature type.
+     * @return the constant result, or {@code null} if none.
+     */
+    final <R> R constantResultForAllTypes(final Function<FeatureType, R> mapper) {
+        final Iterator<FeatureType> it = getFinalFeatureTypes().iterator();
+        if (it.hasNext()) {
+            final R value = mapper.apply(it.next());
+            if (value != null) {
+                while (it.hasNext()) {
+                    if (!value.equals(mapper.apply(it.next()))) {
+                        return null;
+                    }
+                }
+                return value;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Fetches the real name of the given property after resolution of links in all feature types.
+     * The real name depends on the feature types declared by {@link #getFinalFeatureTypes()}.
+     * If the specified property is present in all declared feature types and all these properties
+     * are links referencing the same target property, then this method returns that target property.
+     * Otherwise, this method returns {@code property}.
+     *
+     * <p>If at least one feature type does not have the requested property, then an exception is thrown.
+     * This method finished the iteration over all types before to throw {@link PropertyNotFoundException}.
+     * Therefore, the size of {@code addTo} can be used for detecting if at least one feature type has the
+     * property. If {@code addTo} is empty, then the property has not been found in any feature type.</p>
+     *
+     * @param  property  name of the property to resolve.
+     * @param  addTo     where to add the XPath of the specified property for all feature types.
+     * @return preferred name to use for fetching the property values for all feature types.
+     * @throws PropertyNotFoundException if at least one feature type does not have the specified property.
+     */
+    @SuppressWarnings("ThrowableResultIgnored")
+    final String getPreferredPropertyName(final String property, final Set<String> addTo) throws PropertyNotFoundException {
+        final var exceptions = new HashMap<FeatureType, PropertyNotFoundException>();
+        for (final FeatureType type : getFinalFeatureTypes()) {
+            try {
+                addTo.add(Features.getLinkTarget(type.getProperty(property)).orElse(property));
+            } catch (PropertyNotFoundException e) {
+                exceptions.putIfAbsent(type, e);
+            }
+        }
+        if (exceptions.isEmpty()) {
+            final String name = Containers.peekIfSingleton(addTo);
+            return (name != null) ? name : property;
+        }
+        /*
+         * Throws the exception associated with the most basic feature type.
+         * The base type search is not mandatory, but provide more useful stack trace.
+         */
+        final PropertyNotFoundException e = valueOfBaseType(exceptions);
+        while (!exceptions.isEmpty()) {
+            e.addSuppressed(valueOfBaseType(exceptions));
+        }
+        throw e;
+    }
+
+    /**
+     * Returns the value associated to the base type among all keys of the given map.
+     * If no base type is found, then an arbitrary entry is used.
+     * This method always removes exactly one entry from the map.
+     */
+    private static <E> E valueOfBaseType(final Map<FeatureType, E> map) {
+        E e = map.remove(Features.findCommonParent(map.keySet()));
+        if (e == null) {
+            Iterator<E> it = map.values().iterator();
+            e = it.next();
+            it.remove();
+        }
+        return e;
+    }
+
+    /**
+     * If the specified parameter should always use the same Coordinate Reference System, returns that <abbr>CRS</abbr>.
+     * The {@code parameter} argument is usually one of the elements returned by {@link Expression#getParameters()} or
+     * {@link Filter#getExpressions()}, and the <abbr>CRS</abbr> used by that parameter may depend on the feature types
+     * declared by {@link #getFinalFeatureTypes()}.
+     * The returned value is empty if the <abbr>CRS</abbr> is unknown or not the same for all feature types.
+     *
+     * @param  parameter  a parameter of a filter or expression.
+     * @return the <abbr>CRS</abbr> expected for the specified parameter, or empty if unknown of not unique.
+     * @throws PropertyNotFoundException if the parameter is a {@link ValueReference} and
+     *         the referenced property has not been found in at least one feature type.
+     *
+     * @since 1.6
+     */
+    public Optional<CoordinateReferenceSystem> findExpectedCRS(final Expression<?,?> parameter)
+            throws PropertyNotFoundException
+    {
+        CoordinateReferenceSystem crs = null;
+        if (parameter instanceof Literal<?,?>) {
+            crs = Geometries.getCoordinateReferenceSystem(((Literal<?,?>) parameter).getValue());
+        } else if (parameter instanceof ValueReference<?,?>) {
+            final String xpath = ((ValueReference<?,?>) parameter).getXPath();
+            crs = constantResultForAllTypes(
+                    (type) -> AttributeConvention.getCRSCharacteristic(type, type.getProperty(xpath)));
+        }
+        return Optional.ofNullable(crs);
+    }
+
+    /**
+     * Returns whether an {@code apply(…)} method may obtain a better result with dynamic optimization.
+     * A value of {@code true} does not necessarily mean that {@link DynamicOptimization} will be created,
+     * because {@code DynamicOptimization.ofAny(…)} will check if the resource type is {@code Feature}.
+     *
+     * @param  source         the filter or expression to test if it can be improved.
+     * @param  isOptimizable  one of the {@code isOptimizable(…)} methods.
+     * @return whether it is suggested to use {@link DynamicOptimization}.
+     */
+    private <T> boolean isImprovable(final T source, final BiPredicate<T, Set<Object>> isOptimizable) {
+        if (isImprovable || featureTypes.isEmpty()) {
+            return isOptimizable.test(source, new HashSet<>());
+        }
+        return false;
+    }
+
+    /**
+     * Verifies whether the given filter can be optimized.
+     *
+     * @param  filter  the filter to test.
+     * @param  done    an initially empty set used as a safety against infinite recursion.
+     * @return whether the given filter can be optimized.
+     */
+    private static boolean isOptimizable(final Filter<?> filter, final Set<Object> done) {
+        if (filter instanceof OnFilter<?>) {
+            return true;
+        }
+        for (Expression<?,?> parameter : filter.getExpressions()) {
+            if (done.add(parameter) && isOptimizable(parameter, done)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Verifies whether the given expression can be optimized.
+     *
+     * @param  expression  the expression to test.
+     * @param  done        an initially empty set used as a safety against infinite recursion.
+     * @return whether the given expression can be optimized.
+     */
+    private static boolean isOptimizable(final Expression<?,?> expression, final Set<Object> done) {
+        if (expression instanceof OnExpression<?,?>) {
+            return true;
+        }
+        for (Expression<?,?> parameter : expression.getParameters()) {
+            if (done.add(parameter) && isOptimizable(parameter, done)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns whether a call to {@code apply(…)} is the first of possibly recursive calls.
+     * This method shall be invoked in all {@code apply(…)} methods before to do the optimization.
+     *
+     * @return whether this is the entry (non-recursive) call to an {@code apply(…)} method.
+     */
+    private boolean isFirstCall() {
+        if (done != null) {
+            return false;
+        }
+        isImprovable = false;
+        done = new IdentityHashMap<>();
+        return true;
+    }
+
+    /**
+     * Returns the previous optimization result for the given filter or expression.
+     * The {@link #isFirstCall()} method must have been invoked before this method.
+     *
+     * @param  original        the filter or expression to optimize.
+     * @param  identification  method to invoke for getting an identification of the filter or expression.
+     * @return the previous value, or {@code null} if none.
+     * @throws IllegalArgumentException if a recursive call is detected for the same filter or expression.
+     */
+    private <T> Object previousResult(final T original, final Function<T, Object> identification) {
+        currentFilterOrExpression = original;
+        final Object previous = done.putIfAbsent(original, COMPUTING);
+        if (previous != COMPUTING) {
+            return previous;
+        }
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.RecursiveCreateCallForKey_1, identification.apply(original)));
+    }
+
+    /**
+     * Stores the result of an optimization.
+     *
+     * @param original  the filter or expression to optimize.
+     * @param result    the optimization result.
+     */
+    private void storeResult(final Object original, final Object result) {
+        if (done.put(original, result) != COMPUTING) {
+            // Should not happen unless this `Optimization` is used concurrently in many threads.
+            throw new ConcurrentModificationException();
+        }
     }
 
     /**
@@ -146,34 +454,29 @@ public class Optimization {
      * @throws IllegalArgumentException if the given filter is already in process of being optimized
      *         (i.e. there is a recursive call to {@code apply(…)} for the same filter).
      */
-    public <R> Filter<R> apply(final Filter<R> filter) {
-        if (!(filter instanceof OnFilter<?>)) {
-            return filter;
-        }
-        final boolean isFirstCall = (done == null);
-        if (isFirstCall) {
-            done = new IdentityHashMap<>();
-        }
-        try {
-            final Object previous = done.putIfAbsent(filter, COMPUTING);
-            if (previous == COMPUTING) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.RecursiveCreateCallForKey_1, filter.getOperatorType()));
-            }
-            @SuppressWarnings("unchecked")
-            Filter<R> result = (Filter<R>) previous;
-            if (result == null) {
-                result = ((OnFilter<R>) filter).optimize(this);
-                if (done.put(filter, result) != COMPUTING) {
-                    // Should not happen unless this `Optimization` is used concurrently in many threads.
-                    throw new ConcurrentModificationException();
+    @SuppressWarnings("unchecked")
+    public <R> Filter<R> apply(Filter<R> filter) {
+        if (filter instanceof OnFilter<?>) {
+            final var original = (OnFilter<R>) filter;
+            final boolean isFirstCall = isFirstCall();
+            final Object oldFilterOrExpression = currentFilterOrExpression;
+            try {
+                filter = (Filter<R>) previousResult(original, Filter::getOperatorType);
+                if (filter == null) {
+                    filter = original.optimize(this);
+                    storeResult(original, filter);
+                }
+            } finally {
+                currentFilterOrExpression = oldFilterOrExpression;
+                if (isFirstCall) {
+                    done = null;
                 }
             }
-            return result;
-        } finally {
-            if (isFirstCall) {
-                done = null;
+            if (isFirstCall && isImprovable(filter, Optimization::isOptimizable)) {
+                filter = DynamicOptimization.ofAny(filter);
             }
         }
+        return filter;
     }
 
     /**
@@ -184,6 +487,9 @@ public class Optimization {
      * <p>Implementations need to override only one of the 2 methods defined in this interface.</p>
      *
      * @param  <R>  the type of resources to filter.
+     *
+     * @version 1.6
+     * @since   1.1
      */
     public interface OnFilter<R> extends Filter<R> {
         /**
@@ -321,34 +627,29 @@ public class Optimization {
      * @throws IllegalArgumentException if the given expression is already in process of being optimized
      *         (i.e. there is a recursive call to {@code apply(…)} for the same expression).
      */
-    public <R,V> Expression<R, ? extends V> apply(final Expression<R,V> expression) {
-        if (!(expression instanceof OnExpression<?,?>)) {
-            return expression;
-        }
-        final boolean isFirstCall = (done == null);
-        if (isFirstCall) {
-            done = new IdentityHashMap<>();
-        }
-        try {
-            final Object previous = done.putIfAbsent(expression, COMPUTING);
-            if (previous == COMPUTING) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.RecursiveCreateCallForKey_1, expression.getFunctionName()));
-            }
-            @SuppressWarnings("unchecked")
-            Expression<R, ? extends V> result = (Expression<R, ? extends V>) previous;
-            if (result == null) {
-                result = ((OnExpression<R,V>) expression).optimize(this);
-                if (done.put(expression, result) != COMPUTING) {
-                    // Should not happen unless this `Optimization` is used concurrently in many threads.
-                    throw new ConcurrentModificationException();
+    @SuppressWarnings("unchecked")
+    public <R,V> Expression<R, ? extends V> apply(Expression<R, ? extends V> expression) {
+        if (expression instanceof OnExpression<?,?>) {
+            final var original = (OnExpression<R, ? extends V>) expression;
+            final boolean isFirstCall = isFirstCall();
+            final Object oldFilterOrExpression = currentFilterOrExpression;
+            try {
+                expression = (Expression<R, ? extends V>) previousResult(original, Expression::getFunctionName);
+                if (expression == null) {
+                    expression = original.optimize(this);
+                    storeResult(original, expression);
+                }
+                if (isFirstCall && isImprovable(expression, Optimization::isOptimizable)) {
+                    expression = DynamicOptimization.ofAny(expression);
+                }
+            } finally {
+                currentFilterOrExpression = oldFilterOrExpression;
+                if (isFirstCall) {
+                    done = null;
                 }
             }
-            return result;
-        } finally {
-            if (isFirstCall) {
-                done = null;
-            }
         }
+        return expression;
     }
 
     /**
@@ -360,6 +661,9 @@ public class Optimization {
      *
      * @param  <R>  the type of resources used as inputs.
      * @param  <V>  the type of values computed by the expression.
+     *
+     * @version 1.6
+     * @since   1.1
      */
     public interface OnExpression<R,V> extends Expression<R,V> {
         /**
@@ -481,11 +785,38 @@ public class Optimization {
      * @throws IllegalArgumentException if the filter does not have a single operand.
      */
     private static <R> Filter<R> getNotOperand(final Filter<R> filter) {
-        final Filter<R> operand = CollectionsExt.singletonOrNull(((LogicalOperator<R>) filter).getOperands());
+        final Filter<R> operand = Containers.peekIfSingleton(((LogicalOperator<R>) filter).getOperands());
         if (operand != null) {
             return operand;
         }
         throw new IllegalArgumentException();
+    }
+
+    /**
+     * Reports that a warning occurred during the execution of an {@code apply(…)} method.
+     * This method can be invoked by implementations of {@link OnFilter} or {@link OnExpression} interfaces.
+     * The exception if often a {@link PropertyNotFoundException}, which is not necessarily an error because
+     * a property may not exist in a base feature type but exists in some sub-types.
+     *
+     * <p>If the {@code resolvable} flag is {@code true}, it will be taken as a hint to retry the optimization
+     * later if more information about the {@link #getFinalFeatureTypes() final feature types} become available.
+     * This flag should be {@code false} if more information would not have a direct impact on the optimization
+     * done by the caller. Callers do not need to care about indirect impacts in the parameters of the filter or
+     * expression.</p>
+     *
+     * @param exception   the recoverable exception that occurred.
+     * @param resolvable  whether an optimization with more information may avoid this warning.
+     *
+     * @since 1.6
+     */
+    public void warning(Exception exception, boolean resolvable) {
+        isImprovable |= resolvable;
+        final Consumer<WarningEvent> listener = WarningEvent.LISTENER.get();
+        if (listener != null) {
+            listener.accept(new WarningEvent(currentFilterOrExpression, exception, true));
+        } else {
+            Logging.recoverableException(Node.LOGGER, Optimization.class, "apply", exception);
+        }
     }
 
     /**

@@ -26,6 +26,7 @@ import org.opengis.metadata.quality.ConformanceResult;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.quality.Result;
+import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.feature.internal.Resources;
@@ -209,6 +210,7 @@ public final class Features {
      *
      * @since 1.0
      */
+    @OptionalCandidate
     public static FeatureType findCommonParent(final Iterable<? extends FeatureType> types) {
         return (types != null) ? CommonParentFinder.select(types) : null;
     }
@@ -240,6 +242,7 @@ public final class Features {
      *
      * @since 1.0
      */
+    @OptionalCandidate
     public static Class<?> getValueClass(PropertyType type) {
         while (type instanceof Operation) {
             final IdentifiedType result = ((Operation) type).getResult();
@@ -281,6 +284,7 @@ public final class Features {
      *
      * @since 0.8
      */
+    @OptionalCandidate
     public static GenericName getValueTypeName(final PropertyType property) {
         if (property instanceof FeatureAssociationRole) {
             // Tested first because this is the main interest for this method.

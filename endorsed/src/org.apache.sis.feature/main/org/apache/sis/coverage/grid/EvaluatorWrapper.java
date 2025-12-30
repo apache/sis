@@ -17,6 +17,8 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Map;
+import java.util.Collection;
+import java.util.stream.Stream;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.TransformException;
 
@@ -84,7 +86,7 @@ abstract class EvaluatorWrapper implements GridCoverage.Evaluator {
      * with a different grid geometry than the coverage of the wrapped evaluator.
      */
     @Override
-    public Map<Integer,Long> getDefaultSlice() {
+    public Map<Integer, Long> getDefaultSlice() {
         return source.getDefaultSlice();
     }
 
@@ -94,7 +96,7 @@ abstract class EvaluatorWrapper implements GridCoverage.Evaluator {
      * with a different grid geometry than the coverage of the wrapped evaluator.
      */
     @Override
-    public void setDefaultSlice(Map<Integer,Long> slice) {
+    public void setDefaultSlice(Map<Integer, Long> slice) {
         source.setDefaultSlice(slice);
     }
 
@@ -119,5 +121,18 @@ abstract class EvaluatorWrapper implements GridCoverage.Evaluator {
     @Override
     public double[] apply(final DirectPosition point) throws CannotEvaluateException {
         return source.apply(point);
+    }
+
+    /**
+     * Returns a stream of double values for given points in the coverage.
+     * This method should be overridden if this evaluator is for a coverage
+     * doing some on-the-fly conversion of sample values.
+     *
+     * @param  points   positions where to evaluate the sample values.
+     * @param  parallel {@code true} for a parallel stream, or {@code false} for a sequential stream.
+     */
+    @Override
+    public Stream<double[]> stream(Collection<? extends DirectPosition> points, boolean parallel) {
+        return source.stream(points, parallel);
     }
 }

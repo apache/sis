@@ -29,7 +29,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> implements Identifier {
+final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation, String> implements Identifier {
     /**
      * For cross-version compatibility.
      */
@@ -73,11 +73,11 @@ final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> 
      * entry has been created on-the-fly at iteration time rather than being stored in the
      * identifier collection.
      */
-    static final class Immutable extends AbstractMap.SimpleImmutableEntry<Citation,String> implements Identifier {
+    static final class Immutable extends AbstractMap.SimpleImmutableEntry<Citation, String> implements Identifier {
         private static final long serialVersionUID = -6857931598565368465L;
         Immutable(Citation authority, String code) {super(authority, code);}
-        @Override public Citation            getAuthority()   {return getKey();}
-        @Override public String              getCode()        {return getValue();}
-        @Override public String              getCodeSpace()   {return Citations.toCodeSpace(getAuthority());}
+        @Override public Citation getAuthority()   {return getKey();}
+        @Override public String   getCode()        {return getValue();}
+        @Override public String   getCodeSpace()   {return Citations.toCodeSpace(getAuthority());}
     }
 }

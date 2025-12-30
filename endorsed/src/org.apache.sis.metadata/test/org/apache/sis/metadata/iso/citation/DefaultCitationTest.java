@@ -36,7 +36,7 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.DefaultInternationalString;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.metadata.MetadataCopier;
@@ -199,8 +199,8 @@ public final class DefaultCitationTest extends TestUsingFile {
         /*
          * Verify the author metadata.
          */
-        final Responsibility re = CollectionsExt.first(original.getCitedResponsibleParties());
-        final Responsibility ra = CollectionsExt.first(clone   .getCitedResponsibleParties());
+        final Responsibility re = Containers.peekFirst(original.getCitedResponsibleParties());
+        final Responsibility ra = Containers.peekFirst(clone   .getCitedResponsibleParties());
         assertNotSame(re, ra);
         assertSame(re.getRole(), ra.getRole());
         assertSame(assertSingleton(re.getParties()).getName(),

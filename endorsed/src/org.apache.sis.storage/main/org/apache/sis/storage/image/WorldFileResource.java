@@ -17,6 +17,7 @@
 package org.apache.sis.storage.image;
 
 import java.util.List;
+import java.util.Arrays;
 import java.util.Optional;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
@@ -43,12 +44,11 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.StoreResource;
-import static org.apache.sis.storage.modifier.CoverageModifier.BandSource;
+import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.coverage.internal.shared.RangeArgument;
 import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.iso.Names;
 
@@ -230,11 +230,11 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
                     } else {
                         name = Vocabulary.formatInternational(Vocabulary.Keys.Band_1, i+1);
                     }
-                    var source = new BandSource(store, imageIndex, i, bands.length, null);
+                    var source = new CoverageModifier.BandSource(store, imageIndex, i, bands.length, null);
                     bands[i] = store.customizer.customize(source, b.setName(name));
                     b.clear();
                 }
-                sampleDimensions = UnmodifiableArrayList.wrap(bands);
+                sampleDimensions = List.of(bands);
             } catch (IOException e) {
                 throw new DataStoreException(e);
             }
@@ -316,7 +316,7 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
                     if (args.isIdentity()) {
                         ranges = null;
                     } else {
-                        bands = UnmodifiableArrayList.wrap(args.select(bands));
+                        bands = Arrays.asList(args.select(bands));
                         if (args.hasAllBands || type.getSampleModel() instanceof BandedSampleModel) {
                             ranges = args.getSelectedBands();
                             param.setSourceBands(ranges);

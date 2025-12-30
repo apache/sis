@@ -85,7 +85,7 @@ import org.apache.sis.pending.jdk.JDK19;
  *
  * @see org.apache.sis.xml.IdentifiedObject
  */
-public class IdentifierMapAdapter extends AbstractMap<Citation,String> implements IdentifierMap, Serializable {
+public class IdentifierMapAdapter extends AbstractMap<Citation, String> implements IdentifierMap, Serializable {
     /**
      * For cross-version compatibility.
      */

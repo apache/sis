@@ -33,7 +33,7 @@ import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.gts.TM_Duration;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ensurePositive;
 
 
@@ -245,7 +245,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     public Collection<Medium> getOffLines() {
         Collection<Medium> c = offLines = nonNullCollection(offLines, Medium.class);
         if (c != null && c.size() > 1 && FilterByVersion.LEGACY_METADATA.accept()) {
-            c = CollectionsExt.singletonOrEmpty(LegacyPropertyAdapter.getSingleton(c,
+            c = Containers.singletonOrEmpty(LegacyPropertyAdapter.getSingleton(c,
                     Medium.class, null, DefaultDigitalTransferOptions.class, "getOffLines"));
         }
         return c;
@@ -285,7 +285,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      */
     @Deprecated(since="1.0")
     public void setOffLine(final Medium newValue) {
-        setOffLines(CollectionsExt.singletonOrEmpty(newValue));
+        setOffLines(Containers.singletonOrEmpty(newValue));
     }
 
     /**

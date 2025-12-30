@@ -40,7 +40,7 @@ import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -326,7 +326,7 @@ public final class Factory extends Geometries<Geometry> {
          * ESRI API does not distinguish between single geometry and geometry collection, except MultiPoint.
          * So if the number of components is 1, there is no reason to create a new geometry object.
          */
-        Geometry geometry = (Geometry) CollectionsExt.singletonOrNull(data);
+        Geometry geometry = (Geometry) Containers.peekIfSingleton(data);
 multi:  if (geometry == null) {
             boolean isPolygon = false;
             switch (type) {

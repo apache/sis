@@ -187,7 +187,7 @@ public abstract class CoverageReadConsistency<S extends DataStore> extends TestC
      * @return the resource to test.
      * @throws DataStoreException if an error occurred while reading the resource.
      */
-    @Workaround(library="JDK", version="1.7")
+    @Workaround(library="JDK", version="7", fixed="25")
     protected abstract GridCoverageResource resource() throws DataStoreException;
 
     /**

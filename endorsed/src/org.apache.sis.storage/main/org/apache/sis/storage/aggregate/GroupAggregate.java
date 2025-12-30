@@ -24,8 +24,8 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.base.MetadataBuilder;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -195,7 +195,7 @@ final class GroupAggregate extends AggregatedResource implements Aggregate {
      */
     @Override
     public final List<Resource> components() {
-        return UnmodifiableArrayList.wrap(components);
+        return Containers.viewAsUnmodifiableList(components);
     }
 
     /**

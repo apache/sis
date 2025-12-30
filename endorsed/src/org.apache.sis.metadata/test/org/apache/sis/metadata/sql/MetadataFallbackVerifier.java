@@ -23,7 +23,7 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.internal.CitationConstant;
 import org.apache.sis.metadata.iso.citation.Citations;
-import static org.apache.sis.util.internal.shared.CollectionsExt.first;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.Constants;
 
 // Test dependencies
@@ -102,8 +102,8 @@ public final class MetadataFallbackVerifier {
          * The database may contain more verbose title than the one declared in MetadataFallback,
          * in which case the shorter title appears as alternate title.
          */
-        final InternationalString expectedAltTitle = first(fromDB.getAlternateTitles());
-        final InternationalString actualAltTitle   = first(fromFB.getAlternateTitles());
+        final InternationalString expectedAltTitle = Containers.peekFirst(fromDB.getAlternateTitles());
+        final InternationalString actualAltTitle   = Containers.peekFirst(fromFB.getAlternateTitles());
         if (fromFB.getTitle().equals(expectedAltTitle)) {
             assertNull(actualAltTitle, name);
         } else {
@@ -116,8 +116,8 @@ public final class MetadataFallbackVerifier {
          * The fallback may not declare all identifiers (but it should not declare more).
          * If it declares an identifier, it should be equal.
          */
-        final Identifier expectedID = first(fromDB.getIdentifiers());
-        final Identifier actualID   = first(fromFB.getIdentifiers());
+        final Identifier expectedID = Containers.peekFirst(fromDB.getIdentifiers());
+        final Identifier actualID   = Containers.peekFirst(fromFB.getIdentifiers());
         if (expectedID == null) {
             assertNull(actualID, name);
         } else if (actualID != null) {
@@ -129,17 +129,17 @@ public final class MetadataFallbackVerifier {
          * The fallback may not declare all responsible parties.
          * If it declares a party, the name and role shall be equal.
          */
-        final Responsibility expectedResp = first(fromDB.getCitedResponsibleParties());
-        final Responsibility actualResp   = first(fromFB.getCitedResponsibleParties());
+        final Responsibility expectedResp = Containers.peekFirst(fromDB.getCitedResponsibleParties());
+        final Responsibility actualResp   = Containers.peekFirst(fromFB.getCitedResponsibleParties());
         if (expectedResp == null) {
             assertNull(actualResp, name);
         } else if (actualResp != null) {
             assertEquals(expectedResp.getRole(), actualResp.getRole(), name);
-            final Party expectedParty = first(expectedResp.getParties());
-            final Party actualParty = first(actualResp.getParties());
+            final Party expectedParty = Containers.peekFirst(expectedResp.getParties());
+            final Party actualParty = Containers.peekFirst(actualResp.getParties());
             assertEquals(expectedParty.getName(), actualParty.getName(), name);
         }
-        assertEquals(first(fromDB.getPresentationForms()),
-                     first(fromFB.getPresentationForms()), name);
+        assertEquals(Containers.peekFirst(fromDB.getPresentationForms()),
+                     Containers.peekFirst(fromFB.getPresentationForms()), name);
     }
 }
