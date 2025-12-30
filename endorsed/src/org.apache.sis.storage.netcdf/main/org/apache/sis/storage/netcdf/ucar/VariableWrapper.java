@@ -65,6 +65,14 @@ import org.apache.sis.pending.jdk.JDK19;
  */
 final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable {
     /**
+     * Strings used in UCAR netCDF API for meaning that an information is not available.
+     * Some {@link ucar.nc2} methods return this value instead of {@code null}.
+     *
+     * @see #nonEmpty(String)
+     */
+    private static final String NOT_AVAILABLE = "N/A";
+
+    /**
      * The netCDF variable. This is typically an instance of {@link VariableEnhanced}.
      */
     private final Variable variable;
@@ -113,7 +121,7 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
      */
     @Override
     public String getFilename() {
-        final String name = Utils.nonEmpty(variable.getDatasetLocation());
+        final String name = nonEmpty(variable.getDatasetLocation());
         if (name != null) {
             return name.substring(Math.max(name.lastIndexOf('/'), name.lastIndexOf(File.separatorChar)) + 1);
         }
@@ -143,7 +151,7 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
      */
     @Override
     public String getDescription() {
-        return Utils.nonEmpty(variable.getDescription());
+        return nonEmpty(variable.getDescription());
     }
 
     /**
@@ -397,9 +405,9 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
                 case 1: {
                     final Object value = attribute.getValue(0);
                     if (value instanceof String) {
-                        return Utils.nonEmpty((String) value);
+                        return nonEmpty((String) value);
                     } else if (value instanceof Number) {
-                        return Utils.fixSign((Number) value, attribute.getDataType().isUnsigned());
+                        return fixSign((Number) value, attribute.getDataType().isUnsigned());
                     }
                     break;
                 }
@@ -408,7 +416,7 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
                         boolean hasValues = false;
                         final String[] values = new String[length];
                         for (int i=0; i<length; i++) {
-                            values[i] = Utils.nonEmpty(attribute.getStringValue(i));
+                            values[i] = nonEmpty(attribute.getStringValue(i));
                             hasValues |= (values[i] != null);
                         }
                         if (hasValues) {
@@ -424,6 +432,49 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
             }
         }
         return null;
+    }
+
+    /**
+     * If {@code isUnsigned} is {@code true} but the given value is negative, makes it positive.
+     *
+     * @param  number  the attribute value, or {@code null}.
+     * @return whether the number is unsigned.
+     */
+    static Number fixSign(Number number, final boolean isUnsigned) {
+        if (isUnsigned) {
+            if (number instanceof Byte) {
+                final byte value = (byte) number;
+                if (value < 0) {
+                    number = (short) Byte.toUnsignedInt(value);
+                }
+            } else if (number instanceof Short) {
+                final short value = (Short) number;
+                if (value < 0) {
+                    number = Short.toUnsignedInt(value);
+                }
+            } else if (number instanceof Integer) {
+                final int value = (Integer) number;
+                if (value < 0) {
+                    number = Integer.toUnsignedLong(value);
+                }
+            }
+        }
+        return number;
+    }
+
+    /**
+     * Trims the leading and trailing spaces of the given string and excludes empty or missing texts.
+     * If the given string is null, empty, contains only spaces or is {@value #NOT_AVAILABLE} (ignoring case),
+     * then this method returns {@code null}.
+     */
+    static String nonEmpty(String text) {
+        if (text != null) {
+            text = text.trim();
+            if (text.isEmpty() || text.equalsIgnoreCase(NOT_AVAILABLE)) {
+                return null;
+            }
+        }
+        return text;
     }
 
     /**

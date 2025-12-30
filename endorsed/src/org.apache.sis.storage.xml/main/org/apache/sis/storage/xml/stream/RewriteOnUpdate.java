@@ -98,7 +98,7 @@ public abstract class RewriteOnUpdate implements AutoCloseable {
      * @return the data locale, or {@code null}.
      */
     protected final Locale getLocale() {
-        return (source instanceof StaxDataStore) ? ((StaxDataStore) source).locale : null;
+        return (source instanceof StaxDataStore) ? ((StaxDataStore) source).getDataLocale() : null;
     }
 
     /**

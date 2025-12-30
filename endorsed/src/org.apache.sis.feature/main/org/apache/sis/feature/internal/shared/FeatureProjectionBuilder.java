@@ -211,7 +211,6 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
      * In such case, the caller does not want the operation to be executed, since the property will rather
      * be used as a slot for receiving the result.
      *
-     * @param  childType   the feature type to use.
      * @param  expression  the expression from which to get the expected type.
      * @return handler for the property, or {@code null} if it cannot be resolved.
      */
@@ -462,6 +461,8 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
 
         /**
          * Returns a string representation for debugging purposes.
+         *
+         * @return a string representation for debugging purposes.
          */
         @Override
         public String toString() {
@@ -755,7 +756,7 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
      */
     public Optional<FeatureProjection> project() {
         final var optimizer = new Optimization();
-        optimizer.setFeatureType(source);
+        optimizer.setFinalFeatureType(source);
         requested.forEach((item) -> item.finish(optimizer));
         /*
          * Add properties for all dependencies that are required by operations but are not already present.

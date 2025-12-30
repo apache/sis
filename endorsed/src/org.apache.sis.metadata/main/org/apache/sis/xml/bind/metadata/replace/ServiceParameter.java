@@ -33,7 +33,7 @@ import org.apache.sis.xml.bind.gco.GO_GenericName;
 import org.apache.sis.metadata.internal.shared.NameToIdentifier;
 import org.apache.sis.util.iso.DefaultMemberName;
 import org.apache.sis.util.iso.Names;
-import static org.apache.sis.util.internal.shared.CollectionsExt.nonNull;
+import static org.apache.sis.util.collection.Containers.nonNull;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.ReferenceIdentifier;

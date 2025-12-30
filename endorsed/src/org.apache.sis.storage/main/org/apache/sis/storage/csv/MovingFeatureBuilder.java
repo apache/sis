@@ -29,7 +29,7 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.feature.internal.shared.MovingFeatures;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.util.CorruptedObjectException;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractAttribute;
@@ -176,7 +176,7 @@ final class MovingFeatureBuilder extends MovingFeatures {
             // Should never happen unless this object has been modified concurrently in another thread.
             throw new CorruptedObjectException();
         }
-        dest.setValues(UnmodifiableArrayList.wrap(values));
+        dest.setValues(Containers.viewAsUnmodifiableList(values));
         setInstants(dest, times);
     }
 

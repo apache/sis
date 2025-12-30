@@ -38,7 +38,7 @@ import org.apache.sis.metadata.iso.content.DefaultSampleDimension;
 import org.apache.sis.metadata.iso.content.DefaultBand;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.util.internal.shared.CollectionsExt.first;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -159,9 +159,9 @@ final class Band extends GridResourceWrapper implements CoverageModifier {
              * one specific implementation (`GeoTiffStore`) which is known to build metadata that way.
              * A ClassCastException would be a bug in the handling of `isElectromagneticMeasurement(…)`.
              */
-            final var content = (DefaultImageDescription) first(metadata.getContentInfo());
-            final var group   = (DefaultAttributeGroup)   first(content.getAttributeGroups());
-            final var sd      = (DefaultSampleDimension)  first(group.getAttributes());
+            final var content = (DefaultImageDescription) Containers.peekFirst(metadata.getContentInfo());
+            final var group   = (DefaultAttributeGroup)   Containers.peekFirst(content.getAttributeGroups());
+            final var sd      = (DefaultSampleDimension)  Containers.peekFirst(group.getAttributes());
             group.getContentTypes().add(CoverageContentType.PHYSICAL_MEASUREMENT);
             sd.setDescription(sampleDimension.getDescription());
             sd.setMinValue   (sampleDimension.getMinValue());

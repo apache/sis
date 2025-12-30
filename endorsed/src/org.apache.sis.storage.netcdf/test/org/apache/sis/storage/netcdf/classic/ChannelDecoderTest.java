@@ -20,12 +20,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Locale;
+import java.util.Map;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.setup.GeometryLibrary;
 
 // Test dependencies
+import org.junit.jupiter.api.Test;
+import static org.apache.sis.test.Assertions.assertMapEquals;
 import org.apache.sis.storage.netcdf.base.DecoderTest;
 
 // Specific to the main branch:
@@ -73,8 +80,34 @@ public final class ChannelDecoderTest extends DecoderTest {
      */
     public static Decoder createChannelDecoder(final TestData file) throws IOException, DataStoreException {
         final InputStream in = file.open();
-        final ChannelDataInput input = new ChannelDataInput(file.name(),
+        final var input = new ChannelDataInput(file.name(),
                 Channels.newChannel(in), ByteBuffer.allocate(4096), false);
         return new ChannelDecoder(input, null, GeometryLibrary.JAVA2D, createListeners());
+    }
+
+    /**
+     * Tests {@link ChannelDecoder#toCaseInsensitiveNameMap(Collection, Locale)}.
+     */
+    @Test
+    public void testToCaseInsensitiveNameMap() {
+        final var elements = new ArrayList<Map.Entry<String, String>>();
+        elements.add(new AbstractMap.SimpleEntry<>("AA", "AA"));
+        elements.add(new AbstractMap.SimpleEntry<>("Aa", "Aa"));
+        elements.add(new AbstractMap.SimpleEntry<>("BB", "BB"));
+        elements.add(new AbstractMap.SimpleEntry<>("bb", "bb"));
+        elements.add(new AbstractMap.SimpleEntry<>("CC", "CC"));
+
+        final Map<String, String> expected = Map.of(
+                "AA", "AA",
+                "Aa", "Aa",   // No mapping for "aa", because of ambiguity between "AA" and "Aa".
+                "BB", "BB",
+                "bb", "bb",
+                "CC", "CC",
+                "cc", "CC");  // Automatically added.
+
+        for (int i=0; i<10; i++) {
+            Collections.shuffle(elements);
+            assertMapEquals(expected, ChannelDecoder.toCaseInsensitiveNameMap(elements));
+        }
     }
 }

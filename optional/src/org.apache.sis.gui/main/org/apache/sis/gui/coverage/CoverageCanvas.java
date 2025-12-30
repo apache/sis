@@ -80,7 +80,6 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.measure.Units;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
@@ -92,7 +91,7 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  * instance (given by {@link #coverageProperty}) will change automatically according the zoom level.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see CoverageExplorer
  *
@@ -612,7 +611,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                         } else {
                             domain = resource.getGridGeometry();
                             ranges = resource.getSampleDimensions();
-                            scales = CollectionsExt.lastNonNull(resource.getResolutions());
+                            scales = lastNonNull(resource.getResolutions());
                         }
                         if (domain != null) {
                             /*
@@ -690,6 +689,24 @@ public class CoverageCanvas extends MapCanvasAWT {
                 }
             });
         }
+    }
+
+    /**
+     * Returns the last non-null element of the given list.
+     *
+     * @param  <T>   the type of elements contained in the list.
+     * @param  list  the list from which to get the last non-null element, or {@code null}.
+     * @return the last non-null element, or {@code null} if the given list is null or empty.
+     */
+    private static <T> T lastNonNull(final List<T> list) {
+        if (list != null) {
+            int i = list.size();
+            while (--i >= 0) {
+                T e = list.get(i);
+                if (e != null) return e;
+            }
+        }
+        return null;
     }
 
     /**

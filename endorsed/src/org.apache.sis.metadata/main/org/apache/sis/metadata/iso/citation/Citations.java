@@ -28,9 +28,9 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.xml.IdentifierSpace;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.Constants;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.metadata.internal.CitationConstant;
 import org.apache.sis.metadata.internal.shared.Identifiers;
 import org.apache.sis.metadata.simple.SimpleCitation;
@@ -112,7 +112,7 @@ public final class Citations {
      *
      * @since 0.6
      */
-    public static final List<Citation> ISO_19115 = UnmodifiableArrayList.wrap(new CitationConstant[] {
+    public static final List<Citation> ISO_19115 = Containers.viewAsUnmodifiableList(new CitationConstant[] {
         new CitationConstant("ISO 19115-1"),
         new CitationConstant("ISO 19115-2")
     });

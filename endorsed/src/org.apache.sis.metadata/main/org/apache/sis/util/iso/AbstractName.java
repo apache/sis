@@ -179,15 +179,6 @@ public abstract class AbstractName implements GenericName, Serializable {
     }
 
     /**
-     * Returns the size of the backing array. This is used only has a hint for optimizations
-     * in attempts to share internal arrays. The {@link DefaultScopedName} class is the only
-     * one to override this method. For other classes, the {@link #depth()} can be assumed.
-     */
-    int arraySize() {
-        return depth();
-    }
-
-    /**
      * Returns the sequence of {@linkplain DefaultLocalName local names} making this generic name.
      * The length of this sequence is the {@linkplain #depth() depth}. It does not include the
      * {@linkplain #scope() scope}.

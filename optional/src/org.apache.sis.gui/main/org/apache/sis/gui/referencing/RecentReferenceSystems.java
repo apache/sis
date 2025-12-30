@@ -54,16 +54,16 @@ import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.GUIUtilities;
 import org.apache.sis.gui.internal.NonNullObjectProperty;
 import org.apache.sis.gui.internal.RecentChoices;
 import org.apache.sis.gui.internal.io.OptionalDataDownloader;
-import org.apache.sis.util.internal.shared.Strings;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 
@@ -81,7 +81,7 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.6
  * @since   1.1
  */
 public class RecentReferenceSystems {
@@ -371,7 +371,7 @@ public class RecentReferenceSystems {
                 setPreferred(replaceByAuthoritativeDefinition, preferred);
                 addAlternatives(replaceByAuthoritativeDefinition, alt);         // No need to trim null elements.
                 cellIndiceSystems.clear();
-                cellIndiceSystems.addAll(UnmodifiableArrayList.wrap(derived, 0, countCIR));
+                cellIndiceSystems.addAll(Containers.viewAsUnmodifiableList(derived, 0, countCIR));
             }
             areaOfInterest.set(aoi);
         } finally {
@@ -528,6 +528,7 @@ public class RecentReferenceSystems {
         final List<ReferenceSystem> systems;
         final GazetteerFactory gf = new GazetteerFactory();     // Cheap to construct.
         synchronized (systemsOrCodes) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             CRSAuthorityFactory factory = this.factory;         // Hide volatile field by local field.
             if (!isModified) {
                 return null;                                    // Another thread already did the work.

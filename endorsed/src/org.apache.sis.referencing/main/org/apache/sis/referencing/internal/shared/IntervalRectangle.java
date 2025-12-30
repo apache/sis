@@ -527,10 +527,10 @@ public class IntervalRectangle extends Rectangle2D implements Serializable {
      * original rectangle and the specified point.
      *
      * <p>After adding a point, a call to {@code contains} with the added point as an argument
-     * does not necessarily return {@code true}. The {@code contains} method does not return
-     * {@code true} for points on the right or bottom edges of a rectangle. Therefore, if the
-     * added point falls on the left or bottom edge of the enlarged rectangle, {@code contains}
-     * returns {@code false} for that point.</p>
+     * does not necessarily return {@code true}. As per Java2D specification, the {@code contains}
+     * method does not consider as included the points on the right or bottom edges of a rectangle.
+     * Therefore, if the added point falls on the right or bottom edge of the enlarged rectangle,
+     * {@code contains} returns {@code false} for that point.</p>
      *
      * @param  x  x coordinate value of the point to add.
      * @param  y  y coordinate value of the point to add.

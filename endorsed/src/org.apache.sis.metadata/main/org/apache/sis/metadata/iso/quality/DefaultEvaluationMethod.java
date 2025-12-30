@@ -141,6 +141,14 @@ public class DefaultEvaluationMethod extends ISOMetadata {
         }
 
         /**
+         * Indicates that this list is modifiable.
+         */
+        @Override
+        public final Mutability getMutability() {
+            return Mutability.MODIFIABLE;
+        }
+
+        /**
          * Removes all dates in this list.
          */
         @Override
@@ -278,9 +286,9 @@ public class DefaultEvaluationMethod extends ISOMetadata {
     /**
      * Constructs an evaluation method initialized to the given description.
      *
-     * @param type  the method type, or {@code null} if none.
-     * @param name  the method description as a {@link String} or an {@link InternationalString} object,
-     *              or {@code null} if none.
+     * @param type         the method type, or {@code null} if none.
+     * @param description  the method description as a {@link String} or an {@link InternationalString} object,
+     *                     or {@code null} if none.
      * @since 1.5
      */
     public DefaultEvaluationMethod(final EvaluationMethodType type, final CharSequence description) {

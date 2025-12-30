@@ -33,8 +33,8 @@ import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.SetOfUnknownSize;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.internal.shared.AbstractIterator;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
@@ -336,7 +336,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      */
     @SuppressWarnings("unchecked")
     public V[] getValidValues() {
-        final Collection<?> c = CollectionsExt.nonNull((Collection<?>)
+        final Collection<?> c = Containers.nonNull((Collection<?>)
                 getCharacteristic(AttributeConvention.VALID_VALUES_CHARACTERISTIC));
         final V[] values = (V[]) Array.newInstance(valueClass, c.size());
         int index = 0;
@@ -360,8 +360,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     @SafeVarargs
     @SuppressWarnings("varargs")
     public final AttributeTypeBuilder<V> setValidValues(final V... values) {
-        return setCharacteristic(AttributeConvention.VALID_VALUES_CHARACTERISTIC,
-                Set.class, CollectionsExt.immutableSet(false, values));
+        return setCharacteristic(AttributeConvention.VALID_VALUES_CHARACTERISTIC, Set.class, Containers.copyToImmutableSet(values));
     }
 
     /**

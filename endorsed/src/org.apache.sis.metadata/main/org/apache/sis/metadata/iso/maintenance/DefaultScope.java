@@ -33,7 +33,7 @@ import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -227,7 +227,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
      */
     @Deprecated
     public void setExtent(final Extent newValue) {
-        setExtents(CollectionsExt.singletonOrEmpty(newValue));
+        setExtents(Containers.singletonOrEmpty(newValue));
     }
 
     /**

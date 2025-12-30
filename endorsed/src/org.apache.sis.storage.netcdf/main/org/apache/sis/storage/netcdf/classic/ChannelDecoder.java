@@ -28,7 +28,6 @@ import java.util.LinkedHashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.regex.Matcher;
 import java.time.DateTimeException;
 import java.time.Instant;
@@ -58,7 +57,6 @@ import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.shared.Constants;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
@@ -178,7 +176,7 @@ public final class ChannelDecoder extends Decoder {
      *
      * @see #findVariable(String)
      */
-    private final Map<String,VariableInfo> variableMap;
+    private final Map<String, VariableInfo> variableMap;
 
     /**
      * The attributes found in the netCDF file.
@@ -187,7 +185,7 @@ public final class ChannelDecoder extends Decoder {
      *
      * @see #findAttribute(String)
      */
-    private final Map<String,Object> attributeMap;
+    private final Map<String, Object> attributeMap;
 
     /**
      * Names of attributes. This is {@code attributeMap.keySet()} unless some attributes have a name
@@ -204,7 +202,7 @@ public final class ChannelDecoder extends Decoder {
      * @see #readDimensions(int)
      * @see #findDimension(String)
      */
-    private Map<String,DimensionInfo> dimensionMap;
+    private Map<String, DimensionInfo> dimensionMap;
 
     /**
      * The grid geometries, created when first needed.
@@ -266,7 +264,7 @@ public final class ChannelDecoder extends Decoder {
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         VariableInfo[]  variables  = null;
         DimensionInfo[] dimensions = null;
-        List<Map.Entry<String,Object>> attributes = List.of();
+        List<Map.Entry<String, Object>> attributes = List.of();
         for (int i=0; i<3; i++) {
             final long tn = input.readLong();                   // Combination of tag and nelems
             if (tn != 0) {
@@ -285,7 +283,7 @@ public final class ChannelDecoder extends Decoder {
                 }
             }
         }
-        attributeMap = CollectionsExt.toCaseInsensitiveNameMap(attributes, Decoder.DATA_LOCALE);
+        attributeMap = toCaseInsensitiveNameMap(attributes);
         attributeNames = attributeNames(attributes, attributeMap);
         if (variables != null) {
             this.variables   = variables;
@@ -295,6 +293,61 @@ public final class ChannelDecoder extends Decoder {
             this.variableMap = Map.of();
         }
         initialize();
+    }
+
+    /**
+     * Creates a (<var>name</var>, <var>element</var>) mapping for the given collection of elements.
+     * If the name of an element is not all lower cases, then this method also adds an entry for the
+     * lower cases version of that name in order to allow case-insensitive searches.
+     *
+     * <p>Code searching in the returned map shall ask for the original (non lower-case) name
+     * <strong>before</strong> to ask for the lower-cases version of that name.</p>
+     *
+     * <p>Iteration order in map entries is the same as iteration order in the given collection.
+     * If lower-case names have been generated, they appear immediately after the original names.</p>
+     *
+     * @param  <E>      the type of elements.
+     * @param  entries  the entries to store in the map, or {@code null} if none.
+     * @return a (<var>name</var>, <var>element</var>) mapping with lower cases entries where possible.
+     * @throws InvalidParameterCardinalityException if the same name is used for more than one element.
+     */
+    static <E> Map<String, E> toCaseInsensitiveNameMap(final Collection<Map.Entry<String, E>> entries) {
+        if (entries == null || entries.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        final Map<String, E> map = JDK19.newLinkedHashMap(entries.size());
+        final var generated = new HashSet<String>();
+        for (final Map.Entry<String, ? extends E> entry : entries) {
+            final String name = entry.getKey();
+            final E value = entry.getValue();
+            E old = map.put(name, value);
+            if (old != null && !generated.remove(name)) {
+                /*
+                 * If two elements use exactly the same name, this is considered an error. Otherwise the previous
+                 * mapping was using a lower case name version of its original name, so we can discard that lower
+                 * case version (the original name is still present in the map).
+                 */
+                throw new InvalidParameterCardinalityException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, name), name);
+            }
+            /*
+             * Add lower-cases versions of the above element names, only if that name is not already used.
+             * If a name was already used, then the original mapping will have precedence.
+             */
+            final String lower = name.toLowerCase(DATA_LOCALE);
+            if (!name.equals(lower)) {
+                if (generated.add(lower)) {
+                    map.putIfAbsent(lower, value);
+                } else {
+                    /*
+                     * Two entries having non-lower case names got the same name after conversion to
+                     * lower cases. Retains none of them, since doing so would introduce an ambiguity.
+                     * Remember that we cannot use that lower cases name for any other entries.
+                     */
+                    map.remove(lower);
+                }
+            }
+        }
+        return map;
     }
 
     /**
@@ -310,19 +363,19 @@ public final class ChannelDecoder extends Decoder {
      * @return a (<var>name</var>, <var>element</var>) mapping with lower cases entries where possible.
      * @throws InvalidParameterCardinalityException if the same name is used for more than one element.
      */
-    private static <E extends NamedElement> Map<String,E> toCaseInsensitiveNameMap(final E[] elements) {
-        return CollectionsExt.toCaseInsensitiveNameMap(new AbstractList<Map.Entry<String,E>>() {
+    private static <E extends NamedElement> Map<String,E > toCaseInsensitiveNameMap(final E[] elements) {
+        return toCaseInsensitiveNameMap(new AbstractList<Map.Entry<String, E>>() {
             @Override
             public int size() {
                 return elements.length;
             }
 
             @Override
-            public Map.Entry<String,E> get(final int index) {
+            public Map.Entry<String, E> get(final int index) {
                 final E e = elements[index];
                 return new AbstractMap.SimpleImmutableEntry<>(e.getName(), e);
             }
-        }, Decoder.DATA_LOCALE);
+        });
     }
 
     /**
@@ -549,8 +602,8 @@ public final class ChannelDecoder extends Decoder {
      *
      * @param  nelems  the number of attributes to read.
      */
-    private List<Map.Entry<String,Object>> readAttributes(int nelems) throws IOException, DataStoreException {
-        final List<Map.Entry<String,Object>> attributes = new ArrayList<>(nelems);
+    private List<Map.Entry<String, Object>> readAttributes(int nelems) throws IOException, DataStoreException {
+        final var attributes = new ArrayList<Map.Entry<String, Object>>(nelems);
         while (--nelems >= 0) {
             final String name = readName();
             final Object value = readValues(DataType.valueOf(input.readInt()), input.readInt());
@@ -595,7 +648,7 @@ public final class ChannelDecoder extends Decoder {
             throw malformedHeader();        // May happen if readDimensions(…) has not been invoked.
         }
         @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final VariableInfo[] variables = new VariableInfo[nelems];
+        final var variables = new VariableInfo[nelems];
         for (int j=0; j<nelems; j++) {
             final String name = readName();
             final int n = input.readInt();
@@ -611,7 +664,7 @@ public final class ChannelDecoder extends Decoder {
              * Following block is almost a copy-and-paste of similar block in the contructor,
              * but with less cases in the "switch" statements.
              */
-            List<Map.Entry<String,Object>> attributes = List.of();
+            List<Map.Entry<String, Object>> attributes = List.of();
             final long tn = input.readLong();
             if (tn != 0) {
                 final int tag = (int) (tn >>> Integer.SIZE);
@@ -628,7 +681,7 @@ public final class ChannelDecoder extends Decoder {
                     default: throw malformedHeader();
                 }
             }
-            final Map<String,Object> map = CollectionsExt.toCaseInsensitiveNameMap(attributes, Decoder.DATA_LOCALE);
+            final Map<String, Object> map = toCaseInsensitiveNameMap(attributes);
             variables[j] = new VariableInfo(this, input, name, varDims, map, attributeNames(attributes, map),
                     DataType.valueOf(input.readInt()), input.readInt(), readOffset());
         }
@@ -648,10 +701,10 @@ public final class ChannelDecoder extends Decoder {
      * case-insensitive search, only the {@code "Foo"} name is added in the returned set.
      *
      * @param  attributes    the attributes returned by {@link #readAttributes(int)}.
-     * @param  attributeMap  the map created by {@link CollectionsExt#toCaseInsensitiveNameMap(Collection, Locale)}.
+     * @param  attributeMap  the map created by {@link #toCaseInsensitiveNameMap(Collection)}.
      * @return {@code attributes.keySet()} without duplicated keys.
      */
-    private static Set<String> attributeNames(final List<Map.Entry<String,Object>> attributes, final Map<String,?> attributeMap) {
+    private static Set<String> attributeNames(final List<Map.Entry<String, Object>> attributes, final Map<String, ?> attributeMap) {
         if (attributes.size() >= attributeMap.size()) {
             return Collections.unmodifiableSet(attributeMap.keySet());
         }
@@ -724,7 +777,7 @@ public final class ChannelDecoder extends Decoder {
     protected Dimension findDimension(final String dimName) {
         DimensionInfo dim = dimensionMap.get(dimName);          // Give precedence to exact match before to ignore case.
         if (dim == null) {
-            final String lower = dimName.toLowerCase(Decoder.DATA_LOCALE);
+            final String lower = dimName.toLowerCase(DATA_LOCALE);
             if (lower != dimName) {                             // Identity comparison is okay here.
                 dim = dimensionMap.get(lower);
             }
@@ -742,7 +795,7 @@ public final class ChannelDecoder extends Decoder {
     private VariableInfo findVariableInfo(final String name) {
         VariableInfo v = variableMap.get(name);
         if (v == null && name != null) {
-            final String lower = name.toLowerCase(Decoder.DATA_LOCALE);
+            final String lower = name.toLowerCase(DATA_LOCALE);
             // Identity comparison is ok since following check is only an optimization for a common case.
             if (lower != name) {
                 v = variableMap.get(lower);
@@ -966,7 +1019,7 @@ public final class ChannelDecoder extends Decoder {
              * from grid coordinates to CRS coordinates). For each key there is usually only one value, but
              * more complicated netCDF files (e.g. using two-dimensional localisation grids) also exist.
              */
-            final var dimToAxes = new IdentityHashMap<DimensionInfo, Set<VariableInfo>>();
+            final var dimToAxes = new IdentityHashMap<DimensionInfo, List<VariableInfo>>();
             for (final VariableInfo variable : variables) {
                 switch (variable.getRole()) {
                     case COVERAGE:
@@ -979,7 +1032,7 @@ public final class ChannelDecoder extends Decoder {
                     case AXIS: {
                         variable.isCoordinateSystemAxis = true;
                         for (final DimensionInfo dimension : variable.dimensions) {
-                            CollectionsExt.addToMultiValuesMap(dimToAxes, dimension, variable);
+                            dimToAxes.computeIfAbsent(dimension, (key) -> new ArrayList<>(2)).add(variable);
                         }
                     }
                 }
@@ -1012,10 +1065,10 @@ nextVar:    for (final VariableInfo variable : variables) {
                  * and we would not need to check for variables having dimension names. However, in practice there is
                  * incomplete attributes, so we check for other dimensions even if the above loop did some work.
                  */
-                for (int i=variable.dimensions.length; --i >= 0;) {                     // Reverse of netCDF order.
+                for (int i=variable.dimensions.length; --i >= 0;) {                 // Reverse of netCDF order.
                     final DimensionInfo dimension = variable.dimensions[i];
                     if (usedDimensions.add(dimension)) {
-                        final Set<VariableInfo> axis = dimToAxes.get(dimension);       // Should have only 1 element.
+                        final List<VariableInfo> axis = dimToAxes.get(dimension);   // Should have only 1 element.
                         if (axis == null) {
                             continue nextVar;
                         }

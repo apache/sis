@@ -29,8 +29,10 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.InvalidXPathException;
 import org.apache.sis.filter.base.XPath;
+import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.InternalDataStoreException;
@@ -602,5 +604,14 @@ final class Table extends AbstractFeatureSet {
     @Override
     public Stream<AbstractFeature> features(final boolean parallel) {
         return new FeatureStream(this, parallel);
+    }
+
+    /**
+     * Configures the optimization of a query with the knowledge that the feature type is final.
+     * This configuration asserts that all features will be instances of {@link #featureType} with no sub-type.
+     */
+    @Override
+    protected void prepareQueryOptimization(FeatureQuery query, Optimization optimizer) throws DataStoreException {
+        optimizer.setFinalFeatureType(featureType);
     }
 }

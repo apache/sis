@@ -41,8 +41,10 @@ import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.DoubleDouble;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.parameter.DefaultParameterValue;
@@ -51,8 +53,6 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.referencing.internal.shared.WKTUtilities.LOGGER;
 
 
@@ -674,7 +674,7 @@ public class ContextualParameters extends Parameters implements Serializable {
         while (upper != 0 && values[upper - 1] == null) {
             upper--;
         }
-        return UnmodifiableArrayList.wrap(values, 0, upper);
+        return Containers.viewAsUnmodifiableList(values, 0, upper);
     }
 
     /**
@@ -777,6 +777,8 @@ public class ContextualParameters extends Parameters implements Serializable {
     /**
      * Returns a hash code value for this object. This value is
      * implementation-dependent and may change in any future version.
+     *
+     * @return a hash code value.
      */
     @Override
     public synchronized int hashCode() {

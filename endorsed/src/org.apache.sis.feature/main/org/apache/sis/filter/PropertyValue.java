@@ -17,22 +17,24 @@
 package org.apache.sis.filter;
 
 import java.util.List;
+import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.Collection;
 import org.apache.sis.feature.Features;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.feature.internal.shared.FeatureProjectionBuilder;
 import org.apache.sis.filter.base.XPath;
 import org.apache.sis.filter.base.XPathSource;
-import org.apache.sis.util.resources.Errors;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.DefaultAttributeType;
-import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.pending.geoapi.filter.ValueReference;
 
 
@@ -258,13 +260,18 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
          */
         @Override
         public Expression<AbstractFeature, Object> optimize(final Optimization optimization) {
-            final DefaultFeatureType type = optimization.getFeatureType();
-            if (type != null) try {
-                return Features.getLinkTarget(type.getProperty(name))
-                        .map((rename) -> new AsObject(rename, isVirtual)).orElse(this);
+            final var found = new HashSet<String>();
+            try {
+                final String preferredName = optimization.getPreferredPropertyName(name, found);
+                if (!preferredName.equals(name)) {
+                    return new AsObject(preferredName, isVirtual);
+                }
             } catch (IllegalArgumentException e) {
-                warning(e, true);
-                return NULL();
+                boolean resolved = found.isEmpty();
+                optimization.warning(e, !resolved);
+                if (resolved) {
+                    return NULL();      // The property does not exist in any feature type.
+                }
             }
             return this;
         }
@@ -316,11 +323,8 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
         public V apply(final AbstractFeature instance) {
             if (instance != null) try {
                 return ObjectConverters.convert(instance.getPropertyValue(name), type);
-            } catch (UnconvertibleObjectException e) {
-                warning(e, false);
             } catch (IllegalArgumentException e) {
-                warning(e, true);
-                // Null will be returned below.
+                warning(e, false);
             }
             return null;
         }
@@ -332,47 +336,59 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
          */
         @Override
         public final Expression<AbstractFeature, V> optimize(final Optimization optimization) {
-            final DefaultFeatureType featureType = optimization.getFeatureType();
-            if (featureType != null) try {
-                /*
-                 * Resolve link (e.g. "sis:identifier" as a reference to the real identifier property).
-                 * This is important for allowing `SQLStore` to use the property in SQL WHERE statements.
-                 * If there is no renaming to apply (which is the usual case), then `rename` is null.
-                 */
-                String rename = name;
-                AbstractIdentifiedType property = featureType.getProperty(rename);
+            /*
+             * Resolve links (e.g. "sis:identifier" as a reference to the real identifier property).
+             * This is important for allowing `SQLStore` to use the property in SQL WHERE statements.
+             */
+            final var found = new HashSet<String>();
+            final String preferredName;
+            try {
+                preferredName = optimization.getPreferredPropertyName(name, found);
+            } catch (IllegalArgumentException e) {
+                boolean resolved = found.isEmpty();
+                optimization.warning(e, !resolved);
+                return resolved ? NULL() : this;
+            }
+            /*
+             * Check if the same converter can be used for all feature types.
+             * This is guaranteed to be true if the requested property contains
+             * the same class of values in all feature types.
+             */
+            final ObjectConverter<?, ? extends V> converter;
+            final var actualTypes = new HashMap<Class<?>, ObjectConverter<?, ? extends V>>();
+            converter = optimization.constantResultForAllTypes((featureType) -> {
+                AbstractIdentifiedType property = featureType.getProperty(preferredName);
                 Optional<String> target = Features.getLinkTarget(property);
-                if (target.isPresent()) try {
-                    rename = target.get();
-                    property = featureType.getProperty(rename);
-                } catch (IllegalArgumentException e) {
-                    warning(e, true);
-                    rename = name;
+                if (target.isPresent()) {
+                    property = featureType.getProperty(target.get());
                 }
-                /*
-                 * At this point we did our best effort for having the property as an attribute,
-                 * which allows us to get the expected type. If the type is not `Object`, we can
-                 * try to fetch a more specific converter than the default `Converted` one.
-                 */
-                Class<?> source = getSourceClass();
-                final Class<?> original = source;
+                final Class<?> source;
                 if (property instanceof DefaultAttributeType<?>) {
                     source = ((DefaultAttributeType<?>) property).getValueClass();
+                } else {
+                    source = getSourceClass();
                 }
-                if (!(rename.equals(name) && source.equals(original))) {
-                    if (source == Object.class) {
-                        return new Converted<>(type, rename, isVirtual);
-                    } else if (type.isAssignableFrom(source)) {
-                        return new Unsafe<>(source, type, rename, isVirtual);
-                    } else {
-                        return new CastedAndConverted<>(source, type, rename, isVirtual);
-                    }
-                }
-            } catch (IllegalArgumentException e) {
-                warning(e, true);
-                return NULL();
+                return actualTypes.computeIfAbsent(source, (s) -> ObjectConverters.find(s, type));
+            });
+            /*
+             * Finished to collect the class of values in declared feature types. The `actualTypes` may contain more
+             * than one element if different feature types define the same property with values of different types,
+             * but a unique converter was nevertheless found.
+             */
+            Class<?> source = Containers.peekIfSingleton(actualTypes.keySet());
+            if (converter == null || (preferredName.equals(name) && (source == null || source == getSourceClass()))) {
+                return this;
             }
-            return this;
+            if (source == null) {
+                source = converter.getSourceClass();
+            }
+            if (source == Object.class) {
+                return new Converted<>(type, preferredName, isVirtual);
+            } else if (type.isAssignableFrom(source)) {
+                return new Unsafe<>(source, type, preferredName, isVirtual);
+            } else {
+                return new CastedAndConverted<>(source, type, preferredName, isVirtual);
+            }
         }
 
         /**
@@ -524,7 +540,7 @@ abstract class PropertyValue<V> extends LeafExpression<AbstractFeature,V>
             if (instance != null) try {
                 return (V) instance.getPropertyValue(name);
             } catch (IllegalArgumentException e) {
-                warning(e, true);
+                warning(e, false);
             }
             return null;
         }

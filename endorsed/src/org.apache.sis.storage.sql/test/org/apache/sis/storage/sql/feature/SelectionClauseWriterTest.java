@@ -129,7 +129,7 @@ public final class SelectionClauseWriterTest extends TestCase implements SchemaM
 
         Filter<AbstractFeature> filter = FF.intersects(FF.property("BETA"), FF.literal(bbox));
         final var optimization = new Optimization();
-        optimization.setFeatureType(table.featureType);
+        optimization.setFinalFeatureType(table.featureType);
         verifySQL(optimization.apply(filter), "ST_Intersects(\"BETA\", " +
                 "ST_GeomFromText('POLYGON ((20 -10, 25 -10, 25 -5, 20 -5, 20 -10))'))");
     }

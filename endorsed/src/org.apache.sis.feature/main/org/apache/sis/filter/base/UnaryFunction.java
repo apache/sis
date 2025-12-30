@@ -55,6 +55,8 @@ public class UnaryFunction<R,V> extends Node {
 
     /**
      * Creates a new unary operator.
+     *
+     * @param  expression  the expression to be used by this operator.
      */
     protected UnaryFunction(final Expression<R, ? extends V> expression) {
         this.expression = Objects.requireNonNull(expression);
@@ -73,6 +75,8 @@ public class UnaryFunction<R,V> extends Node {
     /**
      * Returns the expression used as parameter by this function.
      * Defined for {@link Expression#getParameters()} implementations.
+     *
+     * @return the expression used as parameter by this function.
      */
     public final List<Expression<R,?>> getParameters() {
         return getExpressions();

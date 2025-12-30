@@ -25,10 +25,10 @@ import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.bind.Context;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.Strings;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -205,11 +205,11 @@ public final class ImplementationHelper {
      * @param  newValue  the new value to set, or {@code null} for instead removing the first element.
      * @return the collection (may or may not be the given {@code values} collection).
      *
-     * @see org.apache.sis.util.internal.shared.CollectionsExt#first(Iterable)
+     * @see org.apache.sis.util.collection.Containers#peekFirst(Iterable)
      */
     public static <T> Collection<T> setFirst(Collection<T> values, final T newValue) {
         if (values == null) {
-            return CollectionsExt.singletonOrEmpty(newValue);
+            return Containers.singletonOrEmpty(newValue);
         }
         if (newValue == null) {
             final Iterator<T> it = values.iterator();

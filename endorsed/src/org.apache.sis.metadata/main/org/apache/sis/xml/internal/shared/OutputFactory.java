@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.xml;
+package org.apache.sis.xml.internal.shared;
 
 import java.io.OutputStream;
 import java.io.Writer;
@@ -28,7 +28,6 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stax.StAXResult;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
-import org.apache.sis.xml.internal.shared.StreamWriterDelegate;
 
 
 /**
@@ -38,13 +37,10 @@ import org.apache.sis.xml.internal.shared.StreamWriterDelegate;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class OutputFactory {
+public final class OutputFactory {
     /**
      * The SIS-wide factory. This factory can be specified by the user, for example using the
-     * {@code javax.xml.stream.XMLOutputFactory} system property.
-     *
-     * <div class="note"><b>Note:</b>
-     * {@code XMLOutputFactory} has an {@code newDefaultFactory()} method which bypass user settings.</div>
+     * {@code javax.xml.stream.XMLOutputFactory} system property or with {@code META-INF/services}.
      */
     private static final XMLOutputFactory FACTORY = XMLOutputFactory.newInstance();
 

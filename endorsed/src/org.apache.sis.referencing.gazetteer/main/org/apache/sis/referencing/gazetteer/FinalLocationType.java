@@ -19,13 +19,11 @@ package org.apache.sis.referencing.gazetteer;
 import java.util.Map;
 import java.util.List;
 import java.util.Collection;
-import java.util.Collections;
 import java.io.Serializable;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.metadata.MetadataCopier;
 
@@ -135,7 +133,7 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
          */
         name            = source.getName();
         theme           = source.getTheme();
-        identifications = snapshot(source.getIdentifications());
+        identifications = List.copyOf(source.getIdentifications());
         definition      = source.getDefinition();
         territoryOfUse  = (GeographicExtent) unmodifiable(source.getTerritoryOfUse());
         owner           = (AbstractParty) unmodifiable(source.getOwner());
@@ -178,27 +176,7 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
             }
             array[i] = copy;
         }
-        switch (array.length) {
-            /*
-             * Use `Collections` instead of `List.of(…)` for consistency with
-             * `UnmodifiableArrayList` which accepts `List.contains(null)`.
-             */
-            case 0:  return Collections.emptyList();
-            case 1:  return Collections.singletonList(array[0]);
-            default: return UnmodifiableArrayList.wrap(array);
-        }
-    }
-
-    /**
-     * Returns the given collection as an unmodifiable list.
-     */
-    @SuppressWarnings("unchecked")
-    private static List<InternationalString> snapshot(final Collection<? extends InternationalString> c) {
-        if (c instanceof UnmodifiableArrayList<?>) {
-            return (List<InternationalString>) c;       // Unsafe cast okay because we allow only read operations.
-        } else {
-            return UnmodifiableArrayList.wrap(c.toArray(InternationalString[]::new));
-        }
+        return List.of(array);
     }
 
     /**

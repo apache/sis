@@ -22,7 +22,7 @@ import static java.lang.Double.isNaN;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the main branch:
@@ -109,7 +109,7 @@ final class ST_Point<R> extends FunctionWithSRID<R> {
      */
     @Override
     public List<Expression<R,?>> getParameters() {
-        return UnmodifiableArrayList.wrap(parameters);
+        return Containers.viewAsUnmodifiableList(parameters);
     }
 
     /**

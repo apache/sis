@@ -34,10 +34,11 @@ import org.opengis.metadata.citation.ResponsibleParty;
 
 
 /**
- * Tests the {@link NilReason}.
+ * Tests {@link NilReason}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class NilReasonTest extends TestCase {
     /**
      * Creates a new test case.

@@ -50,7 +50,7 @@ import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.internal.shared.GeodeticObjectBuilder;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.temporal.LenientDateFormat;
@@ -685,9 +685,9 @@ final class Store extends URIDataStore implements FeatureSet {
             return StreamSupport.stream(new FeatureIterator(this), parallel);
         }
         if (movingFeatures == null) try {
-            final MovingFeatureIterator iter = new MovingFeatureIterator(this);
+            final var iter = new MovingFeatureIterator(this);
             iter.readMoving(null, true);
-            movingFeatures = UnmodifiableArrayList.wrap(iter.createMovingFeatures());
+            movingFeatures = Containers.viewAsUnmodifiableList(iter.createMovingFeatures());
         } catch (IOException | IllegalArgumentException | DateTimeException e) {
             throw new DataStoreException(canNotParseFile(), e);
         }

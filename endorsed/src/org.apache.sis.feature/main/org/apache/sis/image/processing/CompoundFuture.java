@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.CancellationException;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.feature.internal.Resources;
 
 
@@ -190,7 +190,7 @@ final class CompoundFuture<R> implements Future<R> {
      * @return the unique instance to return.
      */
     protected R merge(final Set<R> results) {
-        final R singleton = CollectionsExt.singletonOrNull(results);
+        final R singleton = Containers.peekIfSingleton(results);
         if (singleton != null) {
             return singleton;
         }

@@ -36,7 +36,7 @@ import org.apache.sis.xml.bind.metadata.MD_Identifier;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.xml.internal.shared.LegacyNamespaces;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ensurePositive;
 
 // Specific to the main and geoapi-3.1 branches:
@@ -249,7 +249,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     public void setDensity(final Double newValue) {
         checkWritePermission(valueIfDefined(densities));
         if (ensurePositive(DefaultMedium.class, "density", true, newValue)) {
-            densities = writeCollection(CollectionsExt.singletonOrEmpty(newValue), densities, Double.class);
+            densities = writeCollection(Containers.singletonOrEmpty(newValue), densities, Double.class);
         }
     }
 

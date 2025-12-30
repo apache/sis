@@ -55,11 +55,6 @@ import org.apache.sis.coverage.CannotEvaluateException;
  */
 final class ResampledGridCoverage extends DerivedGridCoverage {
     /**
-     * The {@value} constant for identifying code specific to the two-dimensional case.
-     */
-    private static final int BIDIMENSIONAL = 2;
-
-    /**
      * The transform from cell coordinates in this coverage to cell coordinates in {@linkplain #source source} coverage.
      * Note that an offset may exist between cell coordinates and pixel coordinates, so some translations may need
      * to be concatenated with this transform on an image-by-image basis.

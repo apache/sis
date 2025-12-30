@@ -34,8 +34,8 @@ import org.apache.sis.storage.MemoryGridCoverageResource;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -258,7 +258,7 @@ final class BandAggregateGridResource extends AggregatedResource implements Grid
      */
     @Override
     final List<Resource> components() {
-        return UnmodifiableArrayList.wrap(sources);
+        return Containers.viewAsUnmodifiableList(sources);
     }
 
     /**
@@ -315,7 +315,7 @@ final class BandAggregateGridResource extends AggregatedResource implements Grid
             if (resolutions == null) {
                 resolutions = ConcatenatedGridResource.commonResolutions(sources);
             }
-            return UnmodifiableArrayList.wrap(resolutions);
+            return Containers.viewAsUnmodifiableList(resolutions);
         }
     }
 

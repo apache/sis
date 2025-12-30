@@ -101,7 +101,7 @@ import static org.apache.sis.util.Numbers.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.4
+ * @version 1.6
  *
  * @param <E>  the type of range elements.
  *
@@ -301,6 +301,17 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     @SuppressWarnings("unchecked")
     public final Class<Range<E>> getElementType() {
         return (Class) Range.class;
+    }
+
+    /**
+     * Indicates that this collection is modifiable (at least by default).
+     *
+     * @return {@link Mutability#MODIFIABLE} by default.
+     * @since 1.6
+     */
+    @Override
+    public Mutability getMutability() {
+        return Mutability.MODIFIABLE;
     }
 
     /**

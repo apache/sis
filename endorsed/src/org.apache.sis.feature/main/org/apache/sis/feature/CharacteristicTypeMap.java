@@ -22,7 +22,6 @@ import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.shared.AbstractMap;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.pending.jdk.JDK19;
@@ -143,7 +142,7 @@ final class CharacteristicTypeMap extends AbstractMap<String,DefaultAttributeTyp
                 indices.putIfAbsent(entry.getKey(), value);
             }
         }
-        this.indices = CollectionsExt.compact(indices);
+        this.indices = AbstractIdentifiedType.compact(indices);
     }
 
     /**

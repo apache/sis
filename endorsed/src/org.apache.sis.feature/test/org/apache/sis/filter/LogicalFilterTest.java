@@ -244,14 +244,14 @@ public final class LogicalFilterTest extends TestCase {
          * Prepare an expression which divide the population value by 5.
          */
         final var expression = factory.divide(factory.property(attribute, Integer.class), factory.literal(5));
-        final Optimization optimization = new Optimization();
-        assertSame(expression, optimization.apply(expression));                       // No optimization.
+        final var optimization = new Optimization();
+        assertInstanceOf(DynamicOptimization.class, optimization.apply(expression));
         assertEquals(200, expression.apply(instance).intValue());
         /*
          * Notify the optimizer that property values will be of `String` type.
          * The optimizer should compute an `ObjectConverter` in advance.
          */
-        optimization.setFeatureType(feature);
+        optimization.setFinalFeatureType(feature);
         final var optimized = optimization.apply(expression);
         assertEquals(200, expression.apply(instance).intValue());
         assertNotSame(expression, optimized);

@@ -44,6 +44,7 @@ import jakarta.xml.bind.attachment.AttachmentUnmarshaller;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.apache.sis.xml.bind.Context;
+import org.apache.sis.xml.internal.shared.InputFactory;
 import org.apache.sis.xml.internal.shared.ExternalLinkHandler;
 import org.apache.sis.util.resources.Errors;
 

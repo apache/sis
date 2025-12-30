@@ -32,14 +32,14 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Numbers;
-import org.apache.sis.util.Debug;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Numbers;
+import org.apache.sis.util.Debug;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Names;
@@ -1252,7 +1252,7 @@ defName:    if (name == null) {
                 }
                 name = createLocalName(Vocabulary.formatInternational(Vocabulary.Keys.Untitled));
             }
-            return new SampleDimension(name, toNaN.background, UnmodifiableArrayList.wrap(categories, 0, count));
+            return new SampleDimension(name, toNaN.background, Containers.viewAsUnmodifiableList(categories, 0, count));
         }
 
         /**

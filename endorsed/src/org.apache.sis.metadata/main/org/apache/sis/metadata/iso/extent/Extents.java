@@ -70,7 +70,7 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.temporal.TemporalDate;
-import static org.apache.sis.util.internal.shared.CollectionsExt.nonNull;
+import static org.apache.sis.util.collection.Containers.nonNull;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.metadata.internal.shared.ReferencingServices.AUTHALIC_RADIUS;
 

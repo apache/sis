@@ -19,6 +19,7 @@ package org.apache.sis.storage;
 import java.util.OptionalLong;
 import java.util.stream.Stream;
 import org.opengis.metadata.Metadata;
+import org.apache.sis.filter.Optimization;
 import org.apache.sis.feature.internal.shared.FeatureProjection;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;
@@ -71,6 +72,22 @@ final class FeatureSubset extends AbstractFeatureSet {
         super(source);
         this.source = source;
         this.query = query;
+    }
+
+    /**
+     * Configures the optimization of a query for the expected types of all feature instances.
+     * If this subset is the result of a projection (in <abbr>SQL</abbr> sense), then all features
+     * are instances of {@link #getType()}. Otherwise, features are instances of the same type as
+     * in the original {@linkplain #source}, therefore the same optimization as the source is applied.
+     */
+    @Override
+    protected void prepareQueryOptimization(final FeatureQuery query, final Optimization optimizer) throws DataStoreException {
+        final DefaultFeatureType type = getType();
+        if (projection != null) {
+            optimizer.setFinalFeatureType(type);
+        } else if (source instanceof AbstractFeatureSet) {
+            ((AbstractFeatureSet) source).prepareQueryOptimization(query, optimizer);
+        }
     }
 
     /**

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.iso.citation;
 
+import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,7 +26,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.citation.Telephone;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.xml.bind.gco.StringAdapter;
@@ -284,7 +284,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      */
     final DefaultTelephone setOwner(final Collection<Telephone> phones) {
         if (owner != phones) {
-            if (owner != null && !CollectionsExt.identityEquals(owner.iterator(), phones.iterator())) {
+            if (owner != null && !identityEquals(owner.iterator(), phones.iterator())) {
                 final var copy = new DefaultTelephone(this);
                 copy.owner = phones;
                 return copy;
@@ -295,12 +295,30 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     }
 
     /**
+     * Returns {@code true} if the next elements returned by the given iterators are the same.
+     * This method compares using the identity operation ({@code ==}), not {@code equals(Object)}.
+     *
+     * @param  it1  the first iterator.
+     * @param  it2  the second iterator.
+     * @return if both iterators return the same objects.
+     */
+    static boolean identityEquals(final Iterator<?> it1, final Iterator<?> it2) {
+        while (it1.hasNext()) {
+            if (!it2.hasNext() || it1.next() != it2.next()) {
+                return false;
+            }
+        }
+        return !it2.hasNext();
+    }
+
+    /**
      * Returns the collection that own this telephone number, or create a new collection.
      * Creating a new collection is needed when this phone number has not yet been given
      * to a {@link DefaultContact}.
      *
      * <p>This method will be removed after we removed the deprecated public methods.</p>
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     final Collection<Telephone> getOwner() {
        if (owner == null) {
            if (super.state() != State.FINAL) {

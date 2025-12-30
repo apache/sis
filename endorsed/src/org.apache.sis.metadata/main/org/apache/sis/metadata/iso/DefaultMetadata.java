@@ -61,7 +61,6 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.temporal.TemporalDate;
 import org.apache.sis.metadata.MetadataCopier;
 import org.apache.sis.metadata.MetadataStandard;
@@ -625,7 +624,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @XmlElement(name = "language", namespace = LegacyNamespaces.GMD)
     public Locale getLanguage() {
         if (FilterByVersion.LEGACY_METADATA.accept()) {
-            return CollectionsExt.first(LocaleAndCharset.getLanguages(getLocalesAndCharsets()));
+            return Containers.peekFirst(LocaleAndCharset.getLanguages(getLocalesAndCharsets()));
             /*
              * No warning if the collection contains more than one locale, because
              * this is allowed by the "getLanguage() + getLocales()" contract.
@@ -1338,7 +1337,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
         final URI uri = (newValue != null) ? new URI(newValue) : null;
         Collection<Identification> info = identificationInfo;   // See "Note about deprecated methods implementation"
         checkWritePermission(ImplementationHelper.valueIfDefined(info));
-        AbstractIdentification firstId = AbstractIdentification.castOrCopy(CollectionsExt.first(info));
+        AbstractIdentification firstId = AbstractIdentification.castOrCopy(Containers.peekFirst(info));
         if (firstId == null) {
             if (uri == null) return;
             firstId = new DefaultDataIdentification();
@@ -1349,7 +1348,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
             citation = new DefaultCitation();
         }
         Collection<OnlineResource> onlineResources = citation.getOnlineResources();
-        DefaultOnlineResource firstOnline = DefaultOnlineResource.castOrCopy(CollectionsExt.first(onlineResources));
+        DefaultOnlineResource firstOnline = DefaultOnlineResource.castOrCopy(Containers.peekFirst(onlineResources));
         if (firstOnline == null) {
             if (uri == null) return;
             firstOnline = new DefaultOnlineResource();
@@ -1670,7 +1669,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @SuppressWarnings("unused")
     private void beforeMarshal(final Marshaller marshaller) {
-        Context.push(CollectionsExt.first(LocaleAndCharset.getLanguages(getLocalesAndCharsets())));
+        Context.push(Containers.peekFirst(LocaleAndCharset.getLanguages(getLocalesAndCharsets())));
     }
 
     /**
@@ -1720,7 +1719,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Sets the character coding standard for the metadata set (used in legacy ISO 19157 format).
      */
     private void setCharset(final Charset newValue) {
-        setLocalesAndCharsets(LocaleAndCharset.setCharacterSets(getLocalesAndCharsets(), CollectionsExt.singletonOrEmpty(newValue)));
+        setLocalesAndCharsets(LocaleAndCharset.setCharacterSets(getLocalesAndCharsets(), Containers.singletonOrEmpty(newValue)));
     }
 
     /**

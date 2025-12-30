@@ -97,7 +97,7 @@ final class IdentifierCommand extends FormattedOutputCommand {
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @Workaround(library="JDK", version="1.7")
+    @Workaround(library="JDK", version="7", fixed="25")
     private static EnumSet<Option> options() {
         final EnumSet<Option> options = MetadataCommand.options();
         options.remove(Option.TIMEZONE);

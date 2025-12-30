@@ -22,7 +22,7 @@ import org.opengis.util.GenericName;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.GridCoverageResource;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -68,6 +68,6 @@ final class Group extends AbstractResource implements Aggregate {
      */
     @Override
     public Collection<GridCoverageResource> components() {
-        return UnmodifiableArrayList.wrap(components);
+        return Containers.viewAsUnmodifiableList(components);
     }
 }

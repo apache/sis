@@ -58,6 +58,16 @@ final class InstantList extends AbstractList<Instant> implements CheckedContaine
     }
 
     /**
+     * Indicates that this vector is immutable.
+     *
+     * @return {@link Mutability#IMMUTABLE}.
+     */
+    @Override
+    public final Mutability getMutability() {
+        return Mutability.IMMUTABLE;
+    }
+
+    /**
      * Returns the number of instants in this list.
      *
      * @return number of instants in this list.

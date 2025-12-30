@@ -130,7 +130,7 @@ import org.apache.sis.util.resources.Errors;
  *     }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @param <E>  the type of matrix element values.
  *
@@ -484,6 +484,17 @@ public class MatrixParameters<E> implements CheckedContainer<E>, Serializable {
     @Override
     public final Class<E> getElementType() {
         return elementType;
+    }
+
+    /**
+     * Indicates that this collection is modifiable (at least by default).
+     *
+     * @return {@link Mutability#MODIFIABLE} by default.
+     * @since 1.6
+     */
+    @Override
+    public Mutability getMutability() {
+        return Mutability.MODIFIABLE;
     }
 
     /**

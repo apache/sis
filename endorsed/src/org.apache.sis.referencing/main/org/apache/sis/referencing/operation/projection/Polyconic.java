@@ -89,7 +89,7 @@ public class Polyconic extends MeridianArcBased {
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @Workaround(library="JDK", version="1.8")
+    @Workaround(library="JDK", version="8", fixed="25")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         roles.put(ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_ORIGIN);
@@ -117,6 +117,7 @@ public class Polyconic extends MeridianArcBased {
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
+    @Workaround(library="JDK", version="8", fixed="25")
     private Polyconic(final Initializer initializer) {
         super(initializer);
         final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));

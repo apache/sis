@@ -50,7 +50,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.internal.shared.Constants;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.pending.jdk.JDK16;
 import org.apache.sis.pending.jdk.JDK19;
@@ -230,7 +230,7 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
             if (isNext) buffer.append(" AND ");
             buffer.append(column);
             if (values.size() == 1) {
-                buffer.append('=').append(CollectionsExt.first(values));
+                buffer.append('=').append(Containers.peekFirst(values));
             } else {
                 buffer.append(" IN (");
                 for (final Number code : values) {
@@ -523,7 +523,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
             });
             return true;
         } catch (SQLException exception) {
-            throw dao.databaseFailure(Identifier.class, String.valueOf(CollectionsExt.first(filters[0].values)), exception);
+            throw dao.databaseFailure(Identifier.class, String.valueOf(Containers.peekFirst(filters[0].values)), exception);
         }
     }
 

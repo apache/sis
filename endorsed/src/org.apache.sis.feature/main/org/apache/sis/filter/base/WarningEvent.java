@@ -19,6 +19,7 @@ package org.apache.sis.filter.base;
 import java.util.Optional;
 import java.util.function.Consumer;
 import org.opengis.util.ScopedName;
+import org.apache.sis.util.Classes;
 
 // Specific to the main branch:
 import org.apache.sis.filter.Filter;
@@ -43,7 +44,7 @@ public final class WarningEvent {
     /**
      * The filter or expression that produced this warning.
      */
-    private final Node source;
+    private final Object source;
 
     /**
      * The exception that occurred.
@@ -60,10 +61,11 @@ public final class WarningEvent {
     /**
      * Creates a new warning.
      *
-     * @param  source     the filter or expression that produced this warning.
-     * @param  exception  the exception that occurred.
+     * @param  source       the filter or expression that produced this warning.
+     * @param  exception    the exception that occurred.
+     * @param  recoverable  {@code true} for fine level, {@code false} for warning level.
      */
-    public WarningEvent(final Node source, final Exception exception, final boolean recoverable) {
+    public WarningEvent(final Object source, final Exception exception, final boolean recoverable) {
         this.source      = source;
         this.exception   = exception;
         this.recoverable = recoverable;
@@ -100,6 +102,7 @@ public final class WarningEvent {
      * If there is many parameter assignable to the given type, then the first occurrence is returned.
      * The {@code type} argument is typically {@code Literal.class} or {@code ValueReference.class}.
      *
+     * @param  <P>   the compile-time value of {@code type}.
      * @param  type  the desired type of the parameter to return.
      * @return the first parameter of the given type, or empty if none.
      */
@@ -129,6 +132,8 @@ public final class WarningEvent {
      */
     @Override
     public String toString() {
-        return source.getDisplayName() + ": " + exception.toString();
+        return (source instanceof Node ? ((Node) source).getDisplayName()
+                                       : Classes.getShortClassName(source))
+                + ": " + exception;
     }
 }

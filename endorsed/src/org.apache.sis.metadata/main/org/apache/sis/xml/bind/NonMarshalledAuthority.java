@@ -19,7 +19,6 @@ package org.apache.sis.xml.bind;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,8 +26,7 @@ import java.io.ObjectStreamException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.internal.CitationConstant;
-import org.apache.sis.util.internal.shared.CollectionsExt;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.xml.IdentifierSpace;
 
 
@@ -152,7 +150,7 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
     public static <T extends Identifier> Collection<T> setMarshallable(final Collection<T> identifiers, final T newValue) {
         if (identifiers == null) {
             // This may happen during MetadataVisitor execution.
-            return CollectionsExt.singletonOrEmpty(newValue);
+            return Containers.singletonOrEmpty(newValue);
         }
         final Iterator<T> it = identifiers.iterator();
         while (it.hasNext()) {
@@ -192,7 +190,7 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
                         System.arraycopy(copy, i+1, copy, i, --count - i);
                     }
                 }
-                identifiers = (count != 0) ? UnmodifiableArrayList.wrap(copy, 0, count) : null;
+                identifiers = (count != 0) ? Containers.viewAsUnmodifiableList(copy, 0, count) : null;
             }
         }
         return identifiers;
@@ -241,8 +239,8 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
          * We find at least one identifier that may need to be preserved.
          * We need to create a combination of the two collections.
          */
-        final Map<Citation,Identifier> authorities = new IdentityHashMap<>(4);
-        final List<Identifier> merged = new ArrayList<>(newValues.size());
+        final var authorities = new IdentityHashMap<Citation,Identifier>(4);
+        final var merged = new ArrayList<Identifier>(newValues.size());
         for (final Identifier id : newValues) {
             merged.add(id);
             if (id != null) {
@@ -265,7 +263,7 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
         switch (merged.size()) {
             case 0:  return Collections.emptyList();
             case 1:  return Collections.singletonList(merged.get(0));
-            default: return UnmodifiableArrayList.wrap(merged.toArray(Identifier[]::new));
+            default: return Containers.copyToImmutableList(merged, Identifier.class);
         }
     }
 

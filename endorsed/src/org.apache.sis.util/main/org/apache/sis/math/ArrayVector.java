@@ -164,6 +164,16 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     }
 
     /**
+     * Indicates that this vector is modifiable.
+     *
+     * @return {@link Mutability#MODIFIABLE}.
+     */
+    @Override
+    public final Mutability getMutability() {
+        return Mutability.MODIFIABLE;
+    }
+
+    /**
      * Default implementation for the convenience of wrapper of integer types.
      */
     @Override

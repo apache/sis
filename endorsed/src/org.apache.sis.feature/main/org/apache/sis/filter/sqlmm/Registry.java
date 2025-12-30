@@ -17,7 +17,7 @@
 package org.apache.sis.filter.sqlmm;
 
 import java.util.Set;
-import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.internal.shared.ViewAsSet;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.filter.FunctionRegister;
 
@@ -60,7 +60,7 @@ public final class Registry implements FunctionRegister {
      */
     @Override
     public Set<String> getNames() {
-        return Containers.namesOf(SQLMM.class);
+        return ViewAsSet.namesOf(SQLMM.class);
     }
 
     /**

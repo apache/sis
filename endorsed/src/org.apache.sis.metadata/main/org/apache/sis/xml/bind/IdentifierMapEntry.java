@@ -32,7 +32,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> implements ReferenceIdentifier {
+final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation, String> implements ReferenceIdentifier {
     /**
      * For cross-version compatibility.
      */
@@ -86,12 +86,12 @@ final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> 
      * entry has been created on-the-fly at iteration time rather than being stored in the
      * identifier collection.
      */
-    static final class Immutable extends AbstractMap.SimpleImmutableEntry<Citation,String> implements ReferenceIdentifier {
+    static final class Immutable extends AbstractMap.SimpleImmutableEntry<Citation, String> implements ReferenceIdentifier {
         private static final long serialVersionUID = -6857931598565368465L;
         Immutable(Citation authority, String code) {super(authority, code);}
-        @Override public Citation            getAuthority()   {return getKey();}
-        @Override public String              getCode()        {return getValue();}
-        @Override public String              getCodeSpace()   {return Citations.toCodeSpace(getAuthority());}
-        @Override public String              getVersion()     {return null;}
+        @Override public Citation getAuthority()   {return getKey();}
+        @Override public String   getCode()        {return getValue();}
+        @Override public String   getCodeSpace()   {return Citations.toCodeSpace(getAuthority());}
+        @Override public String   getVersion()     {return null;}
     }
 }

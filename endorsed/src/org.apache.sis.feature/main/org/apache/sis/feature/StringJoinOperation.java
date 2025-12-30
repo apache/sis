@@ -32,12 +32,11 @@ import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.internal.shared.CollectionsExt;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.converter.SurjectiveConverter;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -139,7 +138,7 @@ final class StringJoinOperation extends AbstractOperation {
 
     /**
      * The property names as an unmodifiable set, created when first needed.
-     * This is simply {@link #attributeNames} copied in a unmodifiable set.
+     * This is simply {@link #attributeNames} copied in an unmodifiable set.
      *
      * @see #getDependencies()
      */
@@ -295,7 +294,7 @@ final class StringJoinOperation extends AbstractOperation {
      * kind of collection.
      */
     final List<String> getAttributeNames() {
-        return UnmodifiableArrayList.wrap(attributeNames);
+        return Containers.viewAsUnmodifiableList(attributeNames);
     }
 
     /**
@@ -307,7 +306,7 @@ final class StringJoinOperation extends AbstractOperation {
         Set<String> cached = dependencies;
         if (cached == null) {
             // Not really a problem if computed twice concurrently.
-            dependencies = cached = CollectionsExt.immutableSet(true, attributeNames);
+            dependencies = cached = Containers.copyToImmutableSetIgnoreNull(attributeNames);
         }
         return cached;
     }

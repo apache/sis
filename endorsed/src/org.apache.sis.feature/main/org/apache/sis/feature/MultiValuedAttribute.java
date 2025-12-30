@@ -16,11 +16,12 @@
  */
 package org.apache.sis.feature;
 
+import java.util.List;
 import java.util.Collection;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.shared.CloneAccess;
-import org.apache.sis.util.internal.shared.CheckedArrayList;
 import org.apache.sis.util.collection.CheckedContainer;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.feature.internal.Resources;
 
@@ -58,7 +59,8 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Clon
     /**
      * The attribute values.
      */
-    private CheckedArrayList<V> values;
+    @SuppressWarnings("serial")     // Should be an instance of `CheckedArrayList`.
+    private List<V> values;
 
     /**
      * Creates a new attribute of the given type initialized to the
@@ -68,7 +70,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Clon
      */
     public MultiValuedAttribute(final DefaultAttributeType<V> type) {
         super(type);
-        values = new CheckedArrayList<>(type.getValueClass());
+        values = Containers.newCheckedList(null, type.getValueClass());
         final V value = type.getDefaultValue();
         if (value != null) {
             values.add(value);
@@ -87,11 +89,11 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Clon
         super(type);
         final Class<V> valueClass = type.getValueClass();
         if (values == null) {
-            this.values = new CheckedArrayList<>(valueClass);
+            this.values = Containers.newCheckedList(null, valueClass);
         } else {
             final Class<?> actual = ((CheckedContainer<?>) values).getElementType();
             if (actual == valueClass) {
-                this.values = (CheckedArrayList<V>) values;
+                this.values = (List<V>) values;
             } else {
                 throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_3, "values", valueClass, actual));
             }
@@ -164,8 +166,8 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Clon
     @Override
     @SuppressWarnings("unchecked")
     public AbstractAttribute<V> clone() throws CloneNotSupportedException {
-        final MultiValuedAttribute<V> clone = (MultiValuedAttribute<V>) super.clone();
-        clone.values = (CheckedArrayList<V>) clone.values.clone();
+        final var clone = (MultiValuedAttribute<V>) super.clone();
+        clone.values = (List<V>) ((CloneAccess) clone.values).clone();
         return clone;
     }
 

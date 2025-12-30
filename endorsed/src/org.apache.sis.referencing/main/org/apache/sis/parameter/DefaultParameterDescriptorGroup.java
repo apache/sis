@@ -17,9 +17,7 @@
 package org.apache.sis.parameter;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.List;
-import java.util.HashSet;
 import java.util.Collections;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -35,7 +33,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.util.Utilities.deepEquals;
 
@@ -244,42 +242,9 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      */
     private static List<GeneralParameterDescriptor> asList(final GeneralParameterDescriptor[] parameters) {
         switch (parameters.length) {
-            /*
-             * Use `Collections` instead of `List.of(…)` for consistency with
-             * `UnmodifiableArrayList` which accepts `List.contains(null)`.
-             */
             case 0:  return Collections.emptyList();
             case 1:  return Collections.singletonList(parameters[0]);
-            case 2:  // fall through
-            case 3:  return UnmodifiableArrayList.wrap(parameters);
-            default: return new AsList(parameters);
-        }
-    }
-
-    /**
-     * The {@link DefaultParameterDescriptorGroup#descriptors} as an unmodifiable list.
-     * This class overrides {@link #contains(Object)} with a faster implementation based on {@link HashSet}.
-     * This optimizations is helpful for map projection implementations, which test often for a parameter validity.
-     */
-    private static final class AsList extends UnmodifiableArrayList<GeneralParameterDescriptor> {
-        /** For compatibility with different versions. */
-        private static final long serialVersionUID = -2116304004367396735L;
-
-        /** The element as a set, created when first needed. */
-        private transient volatile Set<GeneralParameterDescriptor> asSet;
-
-        /** Constructs a list for the specified array. */
-        public AsList(final GeneralParameterDescriptor[] array) {
-            super(array);
-        }
-
-        /** Tests for the inclusion of the specified descriptor. */
-        @Override public boolean contains(final Object object) {
-            Set<GeneralParameterDescriptor> s = asSet;
-            if (s == null) {
-                asSet = s = new HashSet<>(this);        // No synchronization: not a big problem if created twice.
-            }
-            return s.contains(object);
+            default: return Containers.viewAsUnmodifiableList(parameters);
         }
     }
 

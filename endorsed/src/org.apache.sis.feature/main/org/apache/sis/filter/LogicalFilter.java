@@ -22,8 +22,7 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.filter.base.Node;
-import org.apache.sis.util.internal.shared.CollectionsExt;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 
 // Specific to the main branch:
 import org.apache.sis.pending.geoapi.filter.LogicalOperator;
@@ -101,7 +100,7 @@ abstract class LogicalFilter<R> extends Node implements LogicalOperator<R>, Opti
      */
     @Override
     public final List<Filter<R>> getOperands() {
-        return UnmodifiableArrayList.wrap(operands);
+        return Containers.viewAsUnmodifiableList(operands);
     }
 
     /**
@@ -343,7 +342,7 @@ abstract class LogicalFilter<R> extends Node implements LogicalOperator<R>, Opti
         if (unchanged) {
             return this;
         }
-        final Filter<R> c = CollectionsExt.singletonOrNull(effective);
+        final Filter<R> c = Containers.peekIfSingleton(effective);
         return (c != null) ? c : createSameType(effective);
     }
 }

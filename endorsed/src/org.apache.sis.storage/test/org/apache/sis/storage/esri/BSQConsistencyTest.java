@@ -48,7 +48,7 @@ public final class BSQConsistencyTest extends CoverageReadConsistency<RawRasterS
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @Workaround(library="JDK", version="1.7")
+    @Workaround(library="JDK", version="7", fixed="25")
     private static RawRasterStore openFile() throws IOException, DataStoreException {
         final URL url = BSQConsistencyTest.class.getResource("BSQ.raw");
         assertNotNull(url, "Test file not found.");
@@ -60,6 +60,7 @@ public final class BSQConsistencyTest extends CoverageReadConsistency<RawRasterS
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Override
+    @Workaround(library="JDK", version="7", fixed="25")
     protected GridCoverageResource resource() throws DataStoreException {
         return store;
     }

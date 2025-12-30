@@ -983,7 +983,7 @@ search:     while (freeColumn < numCol) {
      * only if the given {@code matrix} is not modified anymore after this method call.
      *
      * @param  matrix  the matrix for which to get an unmodifiable view, or {@code null}.
-     * @return a unmodifiable view of the given matrix, or {@code null} if the given matrix was null.
+     * @return an unmodifiable view of the given matrix, or {@code null} if the given matrix was null.
      *
      * @since 0.6
      */

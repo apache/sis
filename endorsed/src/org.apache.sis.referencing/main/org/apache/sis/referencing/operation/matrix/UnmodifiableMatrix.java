@@ -22,7 +22,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * A unmodifiable view of a matrix. This matrix is immutable only if the wrapped matrix
+ * An unmodifiable view of a matrix. This matrix is immutable only if the wrapped matrix
  * is not modified anymore after {@code UnmodifiableMatrix} construction.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -40,7 +40,7 @@ final class UnmodifiableMatrix extends MatrixSIS implements ExtendedPrecisionMat
     final Matrix matrix;
 
     /**
-     * Creates a unmodifiable view of the given matrix.
+     * Creates an unmodifiable view of the given matrix.
      */
     UnmodifiableMatrix(final Matrix matrix) {
         this.matrix = matrix;

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.feature.internal.shared;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 import java.time.Instant;
@@ -23,7 +24,6 @@ import org.apache.sis.util.iso.Names;
 import org.apache.sis.math.Vector;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractAttribute;
@@ -112,12 +112,10 @@ public class MovingFeatures {
     public static void setTimes(final AbstractAttribute<?> dest, final Vector values, final DefaultTemporalCRS converter) {
         final AbstractAttribute<?> ct;
         if (converter != null) {
-            final Instant[] instants = new Instant[values.size()];
-            for (int i=0; i<instants.length; i++) {
-                instants[i] = converter.toInstant(values.doubleValue(i));
-            }
+            final var instants = new Instant[values.size()];
+            Arrays.setAll(instants, (i) -> converter.toInstant(values.doubleValue(i)));
             final AbstractAttribute<Instant> c = TIME_AS_INSTANTS.newInstance();
-            c.setValues(UnmodifiableArrayList.wrap(instants));
+            c.setValues(Arrays.asList(instants));   // The list is copied.
             ct = c;
         } else {
             final AbstractAttribute<Number> c = TIME_AS_NUMBERS.newInstance();

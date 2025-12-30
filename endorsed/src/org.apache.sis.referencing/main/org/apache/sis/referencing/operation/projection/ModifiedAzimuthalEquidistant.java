@@ -83,7 +83,7 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @Workaround(library="JDK", version="1.8")
+    @Workaround(library="JDK", version="8", fixed="25")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
         final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
         roles.put(ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_ORIGIN);
@@ -111,7 +111,7 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @Workaround(library="JDK", version="1.8")
+    @Workaround(library="JDK", version="8", fixed="25")
     private ModifiedAzimuthalEquidistant(final Initializer initializer) {
         super(initializer);
         var ν0      = initializer.rν2(sinφ0).sqrt().inverse();

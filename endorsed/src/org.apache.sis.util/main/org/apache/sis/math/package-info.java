@@ -40,7 +40,7 @@
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.6
  * @since   0.3
  */
 package org.apache.sis.math;

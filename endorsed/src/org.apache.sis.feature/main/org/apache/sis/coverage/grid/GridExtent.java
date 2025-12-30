@@ -941,8 +941,8 @@ public class GridExtent implements Serializable, LenientComparable {
      *
      * @since 1.3
      */
-    public SortedMap<Integer,Long> getSliceCoordinates() {
-        final var slice = new TreeMap<Integer,Long>();
+    public SortedMap<Integer, Long> getSliceCoordinates() {
+        final var slice = new TreeMap<Integer, Long>();
         final int dimension = getDimension();
         for (int i=0; i<dimension; i++) {
             final long value = coordinates[i];
@@ -1134,7 +1134,7 @@ public class GridExtent implements Serializable, LenientComparable {
 
     /**
      * Returns the {@link #types} array or a default array of arbitrary length if {@link #types} is null.
-     * This method returns directly the arrays without cloning; do not modify.
+     * This method returns directly the arrays without cloning, <strong>do not modify</strong>.
      */
     final DimensionNameType[] getAxisTypes() {
         return (types != null) ? types : DEFAULT_TYPES;

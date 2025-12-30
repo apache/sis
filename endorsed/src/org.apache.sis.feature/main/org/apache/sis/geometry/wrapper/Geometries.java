@@ -234,6 +234,19 @@ public abstract class Geometries<G> implements Serializable {
     }
 
     /**
+     * Returns the coordinate reference system of the given geometry, or {@code null} if none.
+     * This is a convenience method for cases where the <abbr>CRS</abbr> is the only desired information.
+     * If more information are needed, use {@link #wrap(Object)} instead.
+     *
+     * @param  geometry  the geometry instance (can be {@code null}).
+     * @return the coordinate reference system, or {@code null}.
+     * @throws BackingStoreException if the operation failed because of a checked exception.
+     */
+    public static CoordinateReferenceSystem getCoordinateReferenceSystem(final Object geometry) {
+        return wrap(geometry).map(GeometryWrapper::getCoordinateReferenceSystem).orElse(null);
+    }
+
+    /**
      * Wraps the geometry stored in a property of the given feature. This method should be used
      * instead of {@link #wrap(Object)} when the value come from a feature instance in order to
      * allow <abbr>SIS</abbr> to fetch a default <abbr>CRS</abbr> when the geometry object does

@@ -28,7 +28,7 @@ import org.opengis.util.MemberName;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.pending.jdk.JDK19;
 
 // Specific to the main branch:
@@ -167,7 +167,7 @@ abstract class RecordDefinition {                                       // Inten
             types[i] = type;
             i++;
         }
-        fieldIndices = CollectionsExt.unmodifiableOrCopy(fieldIndices);
+        fieldIndices = Containers.unmodifiable(fieldIndices);
         baseValueClass = (baseValueClass != null) ? Numbers.wrapperToPrimitive(baseValueClass) : Object.class;
         return types;
     }

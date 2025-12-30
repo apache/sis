@@ -29,7 +29,7 @@ import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.shared.AffineTransform2D;
 import org.apache.sis.referencing.internal.shared.IntervalRectangle;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.pending.jdk.JDK19;
 
 
@@ -176,7 +176,7 @@ public final class GridGroup<C extends Quantity<C>, T extends Quantity<T>> exten
          * the grid having smallest cells, or that cell indices in some grids, when expressed in units of the
          * smallest cells, would be fractional numbers. It should not happen in a NTv2 compliant file.
          */
-        final Map.Entry<Tile,Tile[]> result = CollectionsExt.singletonOrNull(mosaic.tiles().entrySet());
+        final Map.Entry<Tile, Tile[]> result = Containers.peekIfSingleton(mosaic.tiles().entrySet());
         if (result == null) {
             throw new FactoryException(Resources.format(Resources.Keys.MisalignedDatumShiftGrid_1, file.parameter));
         }

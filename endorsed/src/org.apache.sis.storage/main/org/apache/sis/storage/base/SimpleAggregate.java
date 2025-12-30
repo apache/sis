@@ -21,7 +21,7 @@ import java.util.Collection;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.AbstractResource;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -43,7 +43,7 @@ final class SimpleAggregate extends AbstractResource implements Aggregate {
      */
     public SimpleAggregate(final Resource parent, final Collection<? extends Resource> components) {
         super(parent);
-        this.components = UnmodifiableArrayList.wrap(components.toArray(Resource[]::new));
+        this.components = Containers.copyToImmutableList(components, Resource.class);
     }
 
     /**

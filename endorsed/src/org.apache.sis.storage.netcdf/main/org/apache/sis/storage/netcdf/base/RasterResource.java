@@ -39,7 +39,6 @@ import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.IllegalSampleDimensionException;
@@ -55,6 +54,7 @@ import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.storage.netcdf.internal.Resources;
 
 
@@ -456,7 +456,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
         } catch (RuntimeException e) {
             throw new DataStoreContentException(e);
         }
-        return UnmodifiableArrayList.wrap(sampleDimensions);
+        return Containers.viewAsUnmodifiableList(sampleDimensions);
     }
 
     /**
@@ -723,9 +723,13 @@ public final class RasterResource extends AbstractGridCoverageResource implement
             throw new DataStoreContentException(Errors.forLocale(listeners.getLocale()).getString(Errors.Keys.UnsupportedType_1, dataType.name()));
         }
         final Variable main = data[visibleBand];
-        final Raster raster = new Raster(targetDomain, UnmodifiableArrayList.wrap(bands), imageBuffer,
-                rangeIndices.getPixelStride(), bandOffsets, visibleBand,
-                main.decoder.convention().getColors(main));
+        final var raster = new Raster(targetDomain,
+                                      Containers.viewAsUnmodifiableList(bands),
+                                      imageBuffer,
+                                      rangeIndices.getPixelStride(),
+                                      bandOffsets,
+                                      visibleBand,
+                                      main.decoder.convention().getColors(main));
         logReadOperation(location, targetDomain, startTime);
         return raster;
     }

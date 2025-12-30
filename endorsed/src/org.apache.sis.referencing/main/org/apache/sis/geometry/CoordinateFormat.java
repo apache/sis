@@ -544,9 +544,14 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
          *    - case 3: grid direction  — use NumberFormat configured for integers.
          *    - case 4: all other unit  — use NumberFormat + UnitFormat + [axis direction]
          */
-        final int      dimension = cs.getDimension();
-        final byte[]   types     = new byte  [dimension];
-        final Format[] formats   = new Format[dimension];
+        final int dimension = cs.getDimension();
+
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final var types = new byte[dimension];
+
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final var formats = new Format[dimension];
+
         for (int i=0; i<dimension; i++) {
             final CoordinateSystemAxis axis = cs.getAxis(i);
             if (axis == null) {                                               // Paranoiac check.

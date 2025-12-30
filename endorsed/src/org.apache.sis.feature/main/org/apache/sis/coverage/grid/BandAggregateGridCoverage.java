@@ -25,7 +25,7 @@ import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.coverage.internal.shared.BandAggregateArgument;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -190,7 +190,12 @@ final class BandAggregateGridCoverage extends GridCoverage {
          * The union of slice coordinates from all sources, or {@code null} if not yet computed.
          * All coverages should have the same values, but we nevertheless compute union in case.
          */
-        private Map<Integer,Long> slices;
+        private Map<Integer, Long> slices;
+
+        /**
+         * Result of combining the bands, recycled on each invocation of this method.
+         */
+        private final double[] aggregate;
 
         /**
          * Creates a new evaluator which will delegate to the evaluators of all given sources.
@@ -200,6 +205,7 @@ final class BandAggregateGridCoverage extends GridCoverage {
             for (int i=0; i < coverages.length; i++) {
                 sources[i] = coverages[i].evaluator();
             }
+            aggregate = new double[numBands];
         }
 
         /**
@@ -215,13 +221,13 @@ final class BandAggregateGridCoverage extends GridCoverage {
          */
         @Override
         @SuppressWarnings("ReturnOfCollectionOrArrayField")
-        public Map<Integer,Long> getDefaultSlice() {
+        public Map<Integer, Long> getDefaultSlice() {
             if (slices == null) {
-                final var c = new TreeMap<Integer,Long>();
+                final var c = new TreeMap<Integer, Long>();
                 for (final Evaluator source : sources) {
                     c.putAll(source.getDefaultSlice());
                 }
-                slices = CollectionsExt.unmodifiableOrCopy(c);
+                slices = Containers.unmodifiable(c);
             }
             return slices;
         }
@@ -288,8 +294,8 @@ final class BandAggregateGridCoverage extends GridCoverage {
          * This method delegates to all source evaluators and merge the results.
          */
         @Override
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")
         public double[] apply(final DirectPosition point) {
-            final double[] aggregate = new double[numBands];
             int offset = 0;
             for (int i=0; i < sources.length; i++) {
                 final double[] values = sources[i].apply(point);

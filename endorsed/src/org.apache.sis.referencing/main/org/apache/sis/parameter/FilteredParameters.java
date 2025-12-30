@@ -22,7 +22,7 @@ import java.util.function.Predicate;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.GeneralParameterValue;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -87,7 +87,7 @@ final class FilteredParameters extends UnmodifiableParameterValueGroup {
      */
     @Override
     public List<GeneralParameterValue> values() {
-        return UnmodifiableArrayList.wrap(filtered);
+        return Containers.viewAsUnmodifiableList(filtered);
     }
 
     /**
@@ -104,6 +104,8 @@ final class FilteredParameters extends UnmodifiableParameterValueGroup {
 
     /**
      * Returns a hash value for this parameter.
+     *
+     * @return a hash code value.
      */
     @Override
     public int hashCode() {

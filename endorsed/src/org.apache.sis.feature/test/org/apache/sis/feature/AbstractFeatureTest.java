@@ -17,11 +17,15 @@
 package org.apache.sis.feature;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.apache.sis.util.collection.CheckedContainer;
 
 // Test dependencies
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 
 
 /**
@@ -33,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class AbstractFeatureTest extends FeatureTestCase {
     /**
      * Creates a new test case.
@@ -53,7 +58,7 @@ public final class AbstractFeatureTest extends FeatureTestCase {
          * If a feature backed by a {@code java.util.Map} is really wanted, then {@link SparseFeature} should
          * be considered.
          */
-        private HashMap<String,Object> values = new HashMap<>();
+        private HashMap<String, Object> values = new HashMap<>();
 
         /**
          * Creates a new feature of the given type. This constructor adds immediately the default values into
@@ -134,7 +139,7 @@ public final class AbstractFeatureTest extends FeatureTestCase {
             } catch (CloneNotSupportedException e) {
                 throw new AssertionError(e);
             }
-            c.values = (HashMap<String,Object>) c.values.clone();
+            c.values = (HashMap<String, Object>) c.values.clone();
             return c;
         }
     }
@@ -169,4 +174,28 @@ public final class AbstractFeatureTest extends FeatureTestCase {
     }
 
     // Inherit all tests from the super-class.
+
+    /**
+     * Tests {@link AbstractFeature#castOrCopyAsCheckedList(Collection, Class)}.
+     */
+    @Test
+    public void testCastOrCopyAsCheckedList() {
+        final var fruits = List.of("Apple", "Orange", "Raisin");
+        final var asStrings = AbstractFeature.castOrCopyAsCheckedList(fruits, String.class);
+        assertEquals (String.class, assertInstanceOf(CheckedContainer.class, asStrings).getElementType());
+        assertNotSame(fruits, asStrings);       // Should have created a new instance.
+        assertEquals (fruits, asStrings);       // Should contain the same data.
+        assertSame   (asStrings, AbstractFeature.castOrCopyAsCheckedList(asStrings, String.class));
+
+        final var asChars = AbstractFeature.castOrCopyAsCheckedList(asStrings, CharSequence.class);
+        assertEquals (CharSequence.class, assertInstanceOf(CheckedContainer.class, asChars).getElementType());
+        assertNotSame(asStrings, asChars);      // Should have created a new instance.
+        assertEquals (asStrings, asChars);      // Should contain the same data.
+        assertEquals (fruits,    asChars);      // Should contain the same data.
+
+        var e = assertThrows(ClassCastException.class,
+                () -> AbstractFeature.castOrCopyAsCheckedList(asChars, Integer.class),
+                "Should not be allowed to cast String to Integer.");
+        assertMessageContains(e, "String", "Integer");
+    }
 }

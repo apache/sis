@@ -49,7 +49,6 @@ import org.apache.sis.image.internal.shared.ObservableImage;
 import org.apache.sis.coverage.internal.shared.RangeArgument;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.math.Statistics;
@@ -410,7 +409,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
                 }
             }
         }
-        sampleDimensions = UnmodifiableArrayList.wrap(bands);
+        sampleDimensions = List.of(bands);
     }
 
     /**

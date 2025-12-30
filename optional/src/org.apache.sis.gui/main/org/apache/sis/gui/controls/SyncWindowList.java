@@ -28,11 +28,11 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.application.Platform;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.gui.dataset.WindowHandler;
 import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.GestureFollower;
 import org.apache.sis.gui.internal.Resources;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 
 
 /**
@@ -89,7 +89,7 @@ public final class SyncWindowList extends TabularWidget implements ListChangeLis
                         }
                     }
                 }
-                addTo.addAll(UnmodifiableArrayList.wrap(items, 0, count));
+                addTo.addAll(Containers.viewAsUnmodifiableList(items, 0, count));
             } catch (Throwable e) {
                 while (--count >= 0) {
                     items[--count].dispose();               // Remove listeners for avoiding memory leak.

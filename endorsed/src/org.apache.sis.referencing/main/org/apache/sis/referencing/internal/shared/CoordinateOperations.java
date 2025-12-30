@@ -46,7 +46,6 @@ import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.metadata.internal.shared.NameToIdentifier;
 import org.apache.sis.util.Deprecable;
-import org.apache.sis.util.internal.shared.CollectionsExt;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.internal.shared.URLs;
 import org.apache.sis.util.collection.Containers;
@@ -397,7 +396,7 @@ public final class CoordinateOperations {
             indices[i] = dim;
             r &= ~(1L << dim);
         }
-        final Set<Integer> dimensions = CollectionsExt.immutableSet(true, indices);
+        final Set<Integer> dimensions = Containers.copyToImmutableSetIgnoreNull(indices);
         if (useCache) {
             synchronized (CACHE) {
                 final Set<Integer> existing = CACHE[(int) changes];

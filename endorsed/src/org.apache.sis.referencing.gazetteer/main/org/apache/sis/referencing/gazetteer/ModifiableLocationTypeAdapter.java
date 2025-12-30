@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.IdentityHashMap;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -88,7 +88,7 @@ final class ModifiableLocationTypeAdapter extends ModifiableLocationType {
             }
             nt[i] = p;
         }
-        return UnmodifiableArrayList.wrap(nt);
+        return Containers.viewAsUnmodifiableList(nt);
     }
 
     /**

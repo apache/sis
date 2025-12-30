@@ -50,7 +50,6 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.xml.bind.referencing.SC_CRS;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
@@ -100,7 +99,7 @@ import org.apache.sis.io.wkt.Convention;
  * SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCompoundCRS(String)
  *
@@ -328,7 +327,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
         if (setSingleComponents(elements)) {
             components = singles;                           // Shares the same list.
         } else {
-            components = UnmodifiableArrayList.wrap(elements.toArray(CoordinateReferenceSystem[]::new));
+            components = Containers.copyToImmutableList(elements, CoordinateReferenceSystem.class);
             /*
              * Verify that we do not have an ellipsoidal height with a geographic or projected CRS.
              * https://issues.apache.org/jira/browse/SIS-303
@@ -365,7 +364,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     private boolean setSingleComponents(final List<? extends CoordinateReferenceSystem> elements) {
         final var flattened = new ArrayList<SingleCRS>(elements.size());
         final boolean identical = ReferencingUtilities.getSingleComponents(elements, flattened);
-        singles = UnmodifiableArrayList.wrap(flattened.toArray(SingleCRS[]::new));
+        singles = Containers.copyToImmutableList(flattened, SingleCRS.class);
         return identical;
     }
 
@@ -638,7 +637,8 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * Invoked by JAXB for setting the components of this compound CRS.
      */
     private void setXMLComponents(final CoordinateReferenceSystem[] elements) {
-        components = setSingleComponents(Arrays.asList(elements)) ? singles : UnmodifiableArrayList.wrap(elements);
+        components = Containers.viewAsUnmodifiableList(elements);
+        if (setSingleComponents(components)) components = singles;
         setCoordinateSystem("coordinateSystem", createCoordinateSystem(null, elements));
     }
 }

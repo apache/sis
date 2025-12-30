@@ -287,7 +287,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @Workaround(library="JDK", version="1.8")
+    @Workaround(library="JDK", version="8", fixed="25")
     private static Map<String,?> properties() {
         AbstractParty party = new AbstractParty("North Atlantic Treaty Organization", null);
         return properties(new NamedIdentifier(null, "NATO", Resources.formatInternational(Resources.Keys.MGRS), null, null), IDENTIFIER, party);
@@ -297,7 +297,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @Workaround(library="JDK", version="1.8")
+    @Workaround(library="JDK", version="8", fixed="25")
     private static ModifiableLocationType[] types() {
         final ModifiableLocationType gzd    = new ModifiableLocationType(Resources.formatInternational(Resources.Keys.GridZoneDesignator));
         final ModifiableLocationType square = new ModifiableLocationType(Resources.formatInternational(Resources.Keys.SquareIdentifier100));

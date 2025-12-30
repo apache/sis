@@ -35,7 +35,7 @@ final class ClippedGridCoverage extends DerivedGridCoverage {
      *
      * @see #evaluator()
      */
-    private final Map<Integer,Long> defaultSlice;
+    private final Map<Integer, Long> defaultSlice;
 
     /**
      * Constructs a new grid coverage which will delegate the rendering operation to the given source.
@@ -46,7 +46,7 @@ final class ClippedGridCoverage extends DerivedGridCoverage {
      */
     private ClippedGridCoverage(final GridCoverage source, final GridGeometry domain) {
         super(source, domain);
-        final Map<Integer,Long> c = domain.getExtent().getSliceCoordinates();
+        final Map<Integer, Long> c = domain.getExtent().getSliceCoordinates();
         if (c.equals(source.getGridGeometry().getExtent().getSliceCoordinates())) {
             defaultSlice = null;
         } else {
@@ -129,7 +129,7 @@ final class ClippedGridCoverage extends DerivedGridCoverage {
                 if (property instanceof int[]) {
                     gridDimensions = (int[]) property;
                 } else {
-                    gridDimensions = clipped.getSubspaceDimensions(GridCoverage2D.BIDIMENSIONAL);
+                    gridDimensions = clipped.getSubspaceDimensions(BIDIMENSIONAL);
                 }
                 final var t = new ReshapedImage(image, translation[gridDimensions[0]], translation[gridDimensions[1]]);
                 return t.isIdentity() ? t.source : t;
@@ -186,7 +186,7 @@ final class ClippedGridCoverage extends DerivedGridCoverage {
          * @throws IllegalArgumentException if the map contains an illegal dimension or grid coordinate value.
          */
         @Override
-        public void setDefaultSlice(final Map<Integer,Long> slice) {
+        public void setDefaultSlice(final Map<Integer, Long> slice) {
             super.setDefaultSlice(slice != null ? slice : defaultSlice);
         }
     }

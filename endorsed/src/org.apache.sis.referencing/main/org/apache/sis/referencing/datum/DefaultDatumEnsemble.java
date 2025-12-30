@@ -52,7 +52,7 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 
 // Specific to the main and geoapi-3.1 branches:
 import java.util.Date;
@@ -317,7 +317,7 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
      * @see org.apache.sis.referencing.CRS#getLinearAccuracy(CoordinateOperation)
      */
     public double getLinearAccuracy() {
-        return PositionalAccuracyConstant.getLinearAccuracy(CollectionsExt.singletonOrEmpty(getEnsembleAccuracy()));
+        return PositionalAccuracyConstant.getLinearAccuracy(Containers.singletonOrEmpty(getEnsembleAccuracy()));
     }
 
     /**

@@ -34,7 +34,7 @@ import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.pending.jdk.JDK21;
@@ -117,7 +117,7 @@ final class EnvelopeOperation extends AbstractOperation {
 
     /**
      * The property names as an unmodifiable set, created when first needed.
-     * This is simply {@link #attributeNames} copied in a unmodifiable set.
+     * This is simply {@link #attributeNames} copied in an unmodifiable set.
      *
      * @see #getDependencies()
      */
@@ -286,7 +286,7 @@ final class EnvelopeOperation extends AbstractOperation {
         Set<String> cached = dependencies;
         if (cached == null) {
             // Not really a problem if computed twice concurrently.
-            dependencies = cached = CollectionsExt.immutableSet(true, attributeNames);
+            dependencies = cached = Containers.copyToImmutableSetIgnoreNull(attributeNames);
         }
         return cached;
     }

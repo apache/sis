@@ -78,7 +78,7 @@ import org.apache.sis.pending.geoapi.filter.SortProperty;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   1.1
  */
 public class FeatureQuery extends Query implements Cloneable, Emptiable, Serializable {
@@ -642,6 +642,8 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
          * The literal, value reference or more complex expression to be retrieved by a {@code Query}.
          * Never {@code null}.
          *
+         * @return the expression (often a literal) for the value to retrieve.
+         *
          * @since 1.5
          */
         public Expression<? super AbstractFeature, ?> expression() {
@@ -650,6 +652,8 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
 
         /**
          * The name to assign to the expression result, or {@code null} if unspecified.
+         *
+         * @return optional name for the expression result.
          *
          * @since 1.5
          */
@@ -662,6 +666,8 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
          * A stored value will exist as a feature {@link Attribute}, while a virtual value will exist as
          * a feature {@link Operation}. The latter are commonly called "computed fields" and are equivalent
          * to SQL {@code GENERATED ALWAYS} keyword for columns.
+         *
+         * @return the projection type (stored or computing).
          *
          * @since 1.5
          */
@@ -842,12 +848,18 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
      * @throws DataStoreException if an error occurred during the optimization of this query.
      *
      * @since 1.5
+     *
+     * @deprecated Moved to {@link AbstractFeatureSet#prepareQueryOptimization(FeatureQuery, Optimization)}
+     * because experience suggests that this is the class that know best how to configure.
      */
+    @Deprecated(since = "1.6", forRemoval = true)
     protected void optimize(final FeatureSet source) throws DataStoreException {
         if (selection != null) {
-            final var optimization = new Optimization();
-            optimization.setFeatureType(source.getType());
-            selection = optimization.apply(selection);
+            final var optimizer = new Optimization();
+            if (source instanceof AbstractFeatureSet) {
+                ((AbstractFeatureSet) source).prepareQueryOptimization(this, optimizer);
+            }
+            selection = optimizer.apply(selection);
         }
     }
 
@@ -857,7 +869,6 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
      * @return a clone of this query.
      *
      * @see #FeatureQuery(FeatureQuery)
-     * @see #optimize(FeatureSet)
      */
     @Override
     public FeatureQuery clone() {

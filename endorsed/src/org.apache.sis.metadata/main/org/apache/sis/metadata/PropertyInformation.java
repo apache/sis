@@ -56,15 +56,12 @@ import org.opengis.metadata.citation.ResponsibleParty;
  * This final class is immutable and thus thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
  *
  * @param <E>  the value type, either the method return type if not a collection,
  *             or the type of elements in the collection otherwise.
  *
  * @see InformationMap
  * @see MetadataStandard#asInformationMap(Class, KeyNamePolicy)
- *
- * @since 0.3
  */
 final class PropertyInformation<E> extends SimpleIdentifier           // Implementing Identifier is part of SIS public API.
         implements ExtendedElementInformation, CheckedContainer<E>
@@ -129,7 +126,7 @@ final class PropertyInformation<E> extends SimpleIdentifier           // Impleme
      * @param  range        the range of valid values, or {@code null} if none. This information is associated to the
      *                      implementation method rather than the interface one, because it is specific to SIS.
      */
-    @SuppressWarnings({"unchecked","rawtypes"})
+    @SuppressWarnings({"unchecked","rawtypes","LocalVariableHidesMemberVariable"})
     PropertyInformation(final Citation standard, final String property, final Method getter,
                         final Class<E> elementType, final ValueRange range)
     {
@@ -264,6 +261,16 @@ final class PropertyInformation<E> extends SimpleIdentifier           // Impleme
     }
 
     /**
+     * Indicates that this vector is immutable.
+     *
+     * @return {@link Mutability#IMMUTABLE}.
+     */
+    @Override
+    public final Mutability getMutability() {
+        return Mutability.IMMUTABLE;
+    }
+
+    /**
      * Returns the maximum number of times that values are required.
      * This method returns 0 if the property is forbidden, {@link Integer#MAX_VALUE}
      * if the property is an array or a collection, or 1 otherwise.
@@ -395,6 +402,7 @@ final class PropertyInformation<E> extends SimpleIdentifier           // Impleme
         } else {
             buffer.append('∞');
         }
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final InternationalString domainValue = getDomainValue();
         if (domainValue != null) {
             buffer.append(", domain=").append(domainValue);

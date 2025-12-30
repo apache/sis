@@ -113,6 +113,17 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
     }
 
     /**
+     * Indicates whether this container is modifiable (which is true by default).
+     *
+     * @return {@link Mutability#MODIFIABLE} by default.
+     * @since 1.6
+     */
+    @Override
+    public final Mutability getMutability() {
+        return Mutability.of(storage);
+    }
+
+    /**
      * Declares that this set excludes the null element.
      */
     @Override

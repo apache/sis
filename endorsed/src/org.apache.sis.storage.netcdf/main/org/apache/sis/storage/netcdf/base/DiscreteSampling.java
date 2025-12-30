@@ -18,8 +18,11 @@ package org.apache.sis.storage.netcdf.base;
 
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.filter.Optimization;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.AbstractFeatureSet;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.resources.Errors;
@@ -84,6 +87,16 @@ public abstract class DiscreteSampling extends AbstractFeatureSet implements Sto
     @Override
     protected final Object getSynchronizationLock() {
         return lock;
+    }
+
+    /**
+     * Configures the optimization of a query with the knowledge that the feature type is final.
+     * This configuration asserts that all features will be instances of the type returned by
+     * {@link #getType()}, with no sub-type.
+     */
+    @Override
+    protected final void prepareQueryOptimization(FeatureQuery query, Optimization optimizer) throws DataStoreException {
+        optimizer.setFinalFeatureType(getType());
     }
 
     /**

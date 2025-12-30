@@ -47,9 +47,9 @@ import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.isobmff.Root;
 import org.apache.sis.storage.isobmff.Reader;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.iso.DefaultNameFactory;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -307,7 +307,7 @@ public class GeoHeifStore extends DataStore implements Aggregate {
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
-        return UnmodifiableArrayList.wrap(content);
+        return Containers.viewAsUnmodifiableList(content);
     }
 
     /**

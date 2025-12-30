@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.Collection;
+import java.util.stream.Stream;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.MathTransform1D;
@@ -268,7 +270,28 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
          */
         @Override
         public double[] apply(final DirectPosition point) throws CannotEvaluateException {
-            final double[] values = super.apply(point);
+            return convert(super.apply(point));
+        }
+
+        /**
+         * Returns a stream of double values for given points in the coverage.
+         * This method delegates to the source coverage, then converts the values.
+         *
+         * @param  point    the position where to evaluate.
+         * @param  parallel {@code true} for a parallel stream, or {@code false} for a sequential stream.
+         */
+        @Override
+        public Stream<double[]> stream(Collection<? extends DirectPosition> points, boolean parallel) {
+            return super.stream(points, parallel).map(this::convert);
+        }
+
+        /**
+         * Converts the given sample values.
+         *
+         * @param  values  the sample values to convert. May be null.
+         * @return the converted sample values, or {@code null} if the given values were null.
+         */
+        private double[] convert(final double[] values) {
             if (values != null) try {
                 final MathTransform1D[] converters = ConvertedGridCoverage.this.converters;
                 for (int i=0; i<converters.length; i++) {

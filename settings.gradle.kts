@@ -66,7 +66,9 @@ dependencyResolutionManagement {
             library("jts.core",      "org.locationtech.jts",   "jts-core")            .version {strictly("[1.15, 2.0["); prefer("1.20.0")}
             library("esri.geometry", "com.esri.geometry",      "esri-geometry-api")   .version {strictly("[2.0, 3.0[");  prefer("2.2.4")}
             library("libreoffice",   "org.libreoffice",        "libreoffice")         .version {strictly("[7.0, 8.0[");  prefer("24.8.4")}
-            library("ucar",          "edu.ucar",               "cdm-core")            .version {strictly("[5.0, 6.0[");  prefer("5.5.3")}
+            library("ucar",          "edu.ucar",               "cdm-core")            .version {strictly("[5.0, 6.0[");  prefer("5.9.1")}
+            library("udunits",       "edu.ucar",               "udunits")             .version {strictly("[5.0, 6.0[");  prefer("5.9.1")}
+            library("guava",         "com.google.guava",       "guava")               .version {                         prefer("33.4.8-jre")}
             library("aws.s3",        "software.amazon.awssdk", "s3")                  .version {strictly("[2.0, 3.0[");  prefer("2.33.4")}
         }
         create("tests") {
@@ -76,7 +78,7 @@ dependencyResolutionManagement {
             library("jama",          "gov.nist.math",          "jama")                   .version {strictly("1.0.3")}
             library("geographiclib", "net.sf.geographiclib",   "GeographicLib-Java")     .version {strictly("2.0")}
             library("slf4j",         "org.slf4j",              "slf4j-jdk14").version {
-                prefer("1.7.28")            // Should match the version used by UCAR.
+                prefer("2.0.17")            // Should match the version used by UCAR.
             }
         }
         create("drivers") {

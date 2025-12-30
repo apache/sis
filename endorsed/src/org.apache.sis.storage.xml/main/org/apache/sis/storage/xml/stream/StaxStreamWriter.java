@@ -142,7 +142,7 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
      *         {@link DataStoreException}, {@link ClassCastException}, <i>etc.</i>
      */
     public void writeStartDocument() throws Exception {
-        final Charset encoding = owner.encoding;
+        final Charset encoding = owner.getEncoding();
         if (encoding != null) {
             writer.writeStartDocument(encoding.name(), null);
         } else {
@@ -294,7 +294,7 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
             m = getMarshallerPool().acquireMarshaller();
             m.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.FALSE);     // Formatting will be done by FormattedWriter.
-            final Charset encoding = owner.encoding;
+            final Charset encoding = owner.getEncoding();
             if (encoding != null) {
                 m.setProperty(Marshaller.JAXB_ENCODING, encoding.name());
             }

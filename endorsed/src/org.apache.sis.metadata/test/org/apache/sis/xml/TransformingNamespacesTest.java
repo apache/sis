@@ -36,6 +36,7 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class TransformingNamespacesTest extends TestCase implements NamespaceContext {
     /**
      * All prefixes declared in this test.

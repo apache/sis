@@ -34,7 +34,7 @@ import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.xml.bind.metadata.MD_Medium;
 import org.apache.sis.xml.bind.metadata.CI_Citation;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 
 // Specific to the main branch:
@@ -320,7 +320,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     public void setName(final InternationalString newValue) {
         checkWritePermission(formatSpecificationCitation);
         setFormatSpecificationCitation((citation, value) ->
-                citation.setAlternateTitles(CollectionsExt.singletonOrEmpty(value)), newValue);
+                citation.setAlternateTitles(Containers.singletonOrEmpty(value)), newValue);
     }
 
     /**

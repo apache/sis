@@ -27,7 +27,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -48,7 +48,7 @@ import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
  * state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.6
  *
  * @see DefaultNameSpace
  * @see DefaultLocalName
@@ -71,7 +71,8 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
     /**
      * The immutable list of parsed names.
      */
-    private final UnmodifiableArrayList<? extends LocalName> parsedNames;
+    @SuppressWarnings("serial")     // Actually an instance of `ArrayList`.
+    private final List<? extends LocalName> parsedNames;
 
     /**
      * The tail or path, computed when first needed.
@@ -84,7 +85,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
      *
      * @param names  the names to gives to the new scoped name.
      */
-    static AbstractName create(final UnmodifiableArrayList<? extends DefaultLocalName> names) {
+    static AbstractName create(final List<? extends DefaultLocalName> names) {
         ArgumentChecks.ensureNonEmpty("names", names);
         if (names.size() == 1) {
             return names.get(0);
@@ -98,7 +99,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
      *
      * @param names  the names to gives to the new scoped name.
      */
-    private DefaultScopedName(final UnmodifiableArrayList<? extends LocalName> names) {
+    private DefaultScopedName(final List<? extends LocalName> names) {
         parsedNames = names;
     }
 
@@ -148,7 +149,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
             throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, "names"));
         }
         // Following line is safe because `parsedNames` type is <? extends LocalName>.
-        parsedNames = UnmodifiableArrayList.wrap(locals);
+        parsedNames = Containers.viewAsUnmodifiableList(locals);
     }
 
     /**
@@ -212,7 +213,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
             throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, "tail"));
         }
         // Following line is safe because `parsedNames` type is <? extends LocalName>.
-        parsedNames = UnmodifiableArrayList.wrap(locals);
+        parsedNames = Containers.viewAsUnmodifiableList(locals);
         if (tail instanceof LocalName) {
             this.path = path;
         }
@@ -246,7 +247,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
         DefaultNameSpace scope = DefaultNameSpace.castOrCopy(lastName.scope());
         scope = scope.child(name(lastName), separator != null ? separator : scope.separator);
         locals[index] = new DefaultLocalName(scope, tail);
-        parsedNames = UnmodifiableArrayList.wrap(locals);
+        parsedNames = Containers.viewAsUnmodifiableList(locals);
         this.path = path;
     }
 
@@ -259,15 +260,6 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
         }
         final InternationalString label = name.toInternationalString();
         return (label != null) ? label : name.toString();
-    }
-
-    /**
-     * Returns the size of the backing array.
-     * This is used only has a hint for optimizations in attempts to share internal arrays.
-     */
-    @Override
-    final int arraySize() {
-        return parsedNames.arraySize();
     }
 
     /**

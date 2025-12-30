@@ -18,6 +18,7 @@ package org.apache.sis.storage.xml.stream;
 
 import java.io.Reader;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
@@ -60,8 +61,9 @@ enum InputType {
     STREAM(InputStream.class) {
         @Override XMLStreamReader create(StaxDataStore ds, Object s) throws XMLStreamException {
             final XMLInputFactory f = ds.inputFactory();
-            return (ds.encoding != null) ? f.createXMLStreamReader((InputStream) s, ds.encoding.name())
-                                         : f.createXMLStreamReader((InputStream) s);
+            final Charset encoding = ds.getEncoding();
+            return (encoding != null) ? f.createXMLStreamReader((InputStream) s, encoding.name())
+                                      : f.createXMLStreamReader((InputStream) s);
         }
     },
 

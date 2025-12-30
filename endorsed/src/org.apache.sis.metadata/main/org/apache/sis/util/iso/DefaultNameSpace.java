@@ -30,7 +30,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.internal.shared.Constants;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -340,7 +340,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
                 scan = scan.parent;
             }
             assert depth(scan) == 0 || scan.isGlobal();
-            path = DefaultScopedName.create(UnmodifiableArrayList.wrap(names));
+            path = DefaultScopedName.create(Containers.viewAsUnmodifiableList(names));
             GenericName truncated = path;
             for (int i=depth; --i>=0;) {
                 names[i].fullyQualified = truncated;
@@ -365,7 +365,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
              */
             truncated = (AbstractName) ((ScopedName) truncated).path();
             synchronized (scan) {
-                if (scan.path == null || scan.path.arraySize() < depth) {
+                if (scan.path == null) {
                     scan.path = truncated;
                 }
             }

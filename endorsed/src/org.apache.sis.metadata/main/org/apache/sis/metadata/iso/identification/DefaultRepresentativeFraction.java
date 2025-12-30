@@ -39,9 +39,9 @@ import org.apache.sis.metadata.internal.Resources;
 import org.apache.sis.metadata.internal.shared.ImplementationHelper;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Emptiable;
-import org.apache.sis.util.internal.shared.CheckedArrayList;
-import org.apache.sis.measure.ValueRange;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.measure.ValueRange;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.metadata.internal.shared.ImplementationHelper.ensurePositive;
 
@@ -358,7 +358,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Collection<Identifier> getIdentifiers() {
         if (identifiers == null) {
-            identifiers = new CheckedArrayList<>(Identifier.class);
+            identifiers = Containers.newCheckedList(null, Identifier.class);
         }
         return identifiers;
     }

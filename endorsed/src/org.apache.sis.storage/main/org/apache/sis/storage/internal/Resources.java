@@ -241,6 +241,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short FeatureAlreadyPresent_2 = 16;
 
         /**
+         * Feature of type “{1}” is not assignable to base type “{0}”.
+         */
+        public static final short FeatureNotAssignableToBaseType_2 = 86;
+
+        /**
          * Feature “{1}” has not been found in the “{0}” data store.
          */
         public static final short FeatureNotFound_2 = 17;

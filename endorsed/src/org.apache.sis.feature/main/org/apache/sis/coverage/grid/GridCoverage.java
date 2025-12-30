@@ -31,14 +31,15 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.coverage.BandedCoverage;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
+import org.apache.sis.coverage.internal.shared.SampleDimensions;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
-import org.apache.sis.coverage.internal.shared.SampleDimensions;
+import org.apache.sis.geometry.CoordinateFormat;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -57,10 +58,16 @@ import org.apache.sis.coverage.CannotEvaluateException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
+ * @version 1.6
  * @since   1.0
  */
 public abstract class GridCoverage extends BandedCoverage {
+    /**
+     * A constant for making easier to identify codes working on two dimensional data.
+     * This is the minimal number of dimension required for {@link GridCoverage2D}.
+     */
+    static final int BIDIMENSIONAL = 2;
+
     /**
      * The processor to use in calls to {@link #convert(RenderedImage, DataType, MathTransform1D[], ImageProcessor)}.
      * Wrapped in a class for lazy instantiation.
@@ -183,7 +190,7 @@ public abstract class GridCoverage extends BandedCoverage {
      */
     @Override
     public List<SampleDimension> getSampleDimensions() {
-        return UnmodifiableArrayList.wrap(sampleDimensions);
+        return Containers.viewAsUnmodifiableList(sampleDimensions);
     }
 
     /**
@@ -337,7 +344,11 @@ public abstract class GridCoverage extends BandedCoverage {
      */
     @Override
     public Evaluator evaluator() {
-        return new DefaultEvaluator(this);
+        return new DefaultEvaluator() {
+            @Override public GridCoverage getCoverage() {
+                return GridCoverage.this;
+            }
+        };
     }
 
     /**
@@ -352,7 +363,7 @@ public abstract class GridCoverage extends BandedCoverage {
      *
      * @author  Johann Sorel (Geomatys)
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.3
+     * @version 1.6
      *
      * @see GridCoverage#evaluator()
      *
@@ -388,7 +399,7 @@ public abstract class GridCoverage extends BandedCoverage {
          *
          * @return the default slice where to perform evaluation, or an empty map if unspecified.
          */
-        Map<Integer,Long> getDefaultSlice();
+        Map<Integer, Long> getDefaultSlice();
 
         /**
          * Sets the default slice where to perform evaluation when the points do not have enough dimensions.
@@ -400,7 +411,7 @@ public abstract class GridCoverage extends BandedCoverage {
          *
          * @see GridExtent#getSliceCoordinates()
          */
-        void setDefaultSlice(Map<Integer,Long> slice);
+        void setDefaultSlice(Map<Integer, Long> slice);
 
         /**
          * Converts the specified geospatial position to grid coordinates. If the given position is associated to
@@ -504,6 +515,27 @@ public abstract class GridCoverage extends BandedCoverage {
      * @throws CannotEvaluateException if this method cannot produce the rendered image for another reason.
      */
     public abstract RenderedImage render(GridExtent sliceExtent);
+
+    /**
+     * Creates a new object for formatting spatial-temporal coordinates in the domain of this grid coverage.
+     * The {@linkplain CoordinateFormat#setDefaultCRS default <abbr>CRS</abbr>} of the format is set to the
+     * <abbr>CRS</abbr> of this coverage, and the {@linkplain CoordinateFormat#setPrecisions precision} of
+     * each coordinate is set to the {@linkplain GridGeometry#getResolution(boolean) grid resolution}.
+     *
+     * @return a coordinate format configured for the domain of this grid coverage.
+     *
+     * @since 1.6
+     */
+    public CoordinateFormat createCoordinateFormat() {
+        final var cf = new CoordinateFormat();
+        if (gridGeometry.isDefined(GridGeometry.CRS)) {
+            cf.setDefaultCRS(gridGeometry.getCoordinateReferenceSystem());
+        }
+        if (gridGeometry.isDefined(GridGeometry.RESOLUTION)) {
+            cf.setPrecisions(gridGeometry.getResolution(true));
+        }
+        return cf;
+    }
 
     /**
      * Returns a string representation of this grid coverage for debugging purpose.

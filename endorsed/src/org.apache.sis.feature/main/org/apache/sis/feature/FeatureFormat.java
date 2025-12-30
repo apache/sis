@@ -43,7 +43,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.internal.shared.Strings;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -530,7 +530,7 @@ public class FeatureFormat extends TabularFormat<Object> {
                     case VALUE: {
                         table.setCellAlignment(TableAppender.ALIGN_LEFT);
                         final Format format = getFormat(valueClass);                            // Null if valueClass is null.
-                        final Iterator<?> it = CollectionsExt.toCollection(value).iterator();
+                        final Iterator<?> it = Containers.toCollection(value).iterator();
                         String separator = "";
                         int length = 0;
                         while (it.hasNext()) {
@@ -606,7 +606,7 @@ format:                     for (final DefaultAttributeType<?> ct : ((DefaultAtt
                                 final String cs = toString(cn);
                                 table.append(separator).append(cs);
                                 length += separator.length() + cs.length();
-                                Collection<?> cv = CollectionsExt.singletonOrEmpty(ct.getDefaultValue());
+                                Collection<?> cv = Containers.singletonOrEmpty(ct.getDefaultValue());
                                 if (feature != null) {
                                     /*
                                      * Usually, the property `cp` below is null because all features use the same

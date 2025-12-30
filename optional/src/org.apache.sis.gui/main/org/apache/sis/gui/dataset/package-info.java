@@ -24,7 +24,7 @@
  * @author  Smaniotto Enzo (GSoC)
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   1.1
  */
 package org.apache.sis.gui.dataset;

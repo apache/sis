@@ -196,7 +196,7 @@ final class FeatureStream extends DeferredStream<AbstractFeature> {
         return execute(() -> {
             Stream<AbstractFeature> stream = this;
             final var optimization = new Optimization();
-            optimization.setFeatureType(table.featureType);
+            optimization.setFinalFeatureType(table.featureType);
             for (final var filter : optimization.applyAndDecompose((Filter<? super AbstractFeature>) predicate)) {
                 if (filter == Filter.include()) continue;
                 if (filter == Filter.exclude()) return empty();

@@ -35,6 +35,7 @@ import java.util.Date;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultCitationDateTest extends TestCase {
     /**
      * Creates a new test case.

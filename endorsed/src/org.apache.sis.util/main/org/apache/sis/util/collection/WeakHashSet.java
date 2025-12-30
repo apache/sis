@@ -151,6 +151,17 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
     }
 
     /**
+     * Indicates that this collection is modifiable (at least by default).
+     *
+     * @return {@link Mutability#MODIFIABLE} by default.
+     * @since 1.6
+     */
+    @Override
+    public Mutability getMutability() {
+        return Mutability.MODIFIABLE;
+    }
+
+    /**
      * Invoked by {@link Entry} when an element has been collected by the garbage
      * collector. This method removes the weak reference from the {@link #table}.
      *

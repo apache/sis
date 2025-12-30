@@ -71,8 +71,6 @@ import org.apache.sis.referencing.internal.shared.WKTUtilities;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.metadata.internal.shared.ImplementationHelper;
 import org.apache.sis.util.internal.shared.Constants;
-import org.apache.sis.util.internal.shared.CollectionsExt;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.system.Loggers;
 import static org.apache.sis.util.Utilities.deepEquals;
@@ -118,7 +116,7 @@ import org.apache.sis.coordinate.AbstractCoordinateSet;
  * synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   0.6
  */
 @XmlType(name = "AbstractCoordinateOperationType", propOrder = {
@@ -257,7 +255,10 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
         Object value = properties.get(COORDINATE_OPERATION_ACCURACY_KEY);
         if (value != null) {
             if (value instanceof PositionalAccuracy[]) {
-                coordinateOperationAccuracy = CollectionsExt.nonEmptySet((PositionalAccuracy[]) value);
+                coordinateOperationAccuracy = Containers.copyToImmutableSetIgnoreNull((PositionalAccuracy[]) value);
+                if (coordinateOperationAccuracy.isEmpty()) {
+                    coordinateOperationAccuracy = null;
+                }
             } else {
                 coordinateOperationAccuracy = Set.of((PositionalAccuracy) value);
             }
@@ -526,7 +527,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * Returns whether this coordinate operation is for the definition of a derived or projected <abbr>CRS</abbr>.
      * The <abbr>ISO</abbr> 19111 approach constructs <dfn>defining conversion</dfn> as an operation of type
      * {@link Conversion} with null {@linkplain #getSourceCRS() source} and {@linkplain #getTargetCRS() target CRS}.
-     * But <abbr>SIS</abbr> supports also defining conversions with non-null <abbr>CRS</abbrr> provided that:
+     * But <abbr>SIS</abbr> supports also defining conversions with non-null <abbr>CRS</abbr> provided that:
      *
      * <ul>
      *   <li>{@link GeneralDerivedCRS#getBaseCRS()} is the {@linkplain #getSourceCRS() source CRS} of this operation, and</li>
@@ -650,7 +651,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      */
     @Override
     public Collection<PositionalAccuracy> getCoordinateOperationAccuracy() {
-        return CollectionsExt.nonNull(coordinateOperationAccuracy);
+        return Containers.nonNull(coordinateOperationAccuracy);
     }
 
     /**
@@ -1250,7 +1251,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      */
     private void setAccuracy(final PositionalAccuracy[] values) {
         if (coordinateOperationAccuracy == null) {
-            coordinateOperationAccuracy = UnmodifiableArrayList.wrap(values);
+            coordinateOperationAccuracy = Containers.viewAsUnmodifiableList(values);
         } else {
             ImplementationHelper.propertyAlreadySet(AbstractCoordinateOperation.class, "setAccuracy", "coordinateOperationAccuracy");
         }

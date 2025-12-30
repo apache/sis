@@ -42,10 +42,9 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.internal.shared.Numerics;
-import org.apache.sis.util.internal.shared.CollectionsExt;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.pending.jdk.JDK19;
 import static org.apache.sis.storage.base.StoreUtilities.ALLOW_LAST_RESORT_STATISTICS;
@@ -941,7 +940,7 @@ public abstract class Variable extends Node {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     final Map<Number,Object> getNodataValues() {
         if (nodataValues == null) {
-            nodataValues = CollectionsExt.unmodifiableOrCopy(decoder.convention().nodataValues(this));
+            nodataValues = Containers.unmodifiable(decoder.convention().nodataValues(this));
         }
         return nodataValues;
     }
@@ -1117,7 +1116,7 @@ public abstract class Variable extends Node {
                 assert Array.getLength(array) == count * length : getName();
                 final String[] strings = createStringArray(array, Math.toIntExact(count), length);
                 values        = Vector.create(strings, false);
-                valuesAnyType = UnmodifiableArrayList.wrap(strings);
+                valuesAnyType = Containers.viewAsUnmodifiableList(strings);
                 return;
             }
         }
@@ -1183,7 +1182,7 @@ public abstract class Variable extends Node {
         for (int i = area.getDimension(); --i >= STRING_DIMENSION;) {   // As a safety, but should never enter in this loop.
             count = Math.multiplyExact(count, area.getSize(i));
         }
-        return UnmodifiableArrayList.wrap(createStringArray(chars, Math.toIntExact(count), length));
+        return Containers.viewAsUnmodifiableList(createStringArray(chars, Math.toIntExact(count), length));
     }
 
     /**

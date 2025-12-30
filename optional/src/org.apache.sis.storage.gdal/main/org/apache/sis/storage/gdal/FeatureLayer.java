@@ -30,12 +30,14 @@ import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
+import org.apache.sis.filter.Optimization;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Errors;
@@ -68,6 +70,7 @@ final class FeatureLayer extends AbstractFeatureSet {
 
     /**
      * Description (list of fields) of all feature instances in this layer.
+     * All features will be instances of that type, with no sub-types.
      */
     final DefaultFeatureType type;
 
@@ -324,6 +327,15 @@ final class FeatureLayer extends AbstractFeatureSet {
         } finally {
             ErrorHandler.throwOnFailure(store, "features");
         }
+    }
+
+    /**
+     * Configures the optimization of a query with the knowledge that the feature type is final.
+     * This configuration asserts that all features will be instances of {@link #type} with no sub-type.
+     */
+    @Override
+    protected void prepareQueryOptimization(FeatureQuery query, Optimization optimizer) throws DataStoreException {
+        optimizer.setFinalFeatureType(type);
     }
 
     /**

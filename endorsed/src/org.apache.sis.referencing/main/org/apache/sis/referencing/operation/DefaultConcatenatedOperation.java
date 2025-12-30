@@ -46,7 +46,6 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Convention;
@@ -184,7 +183,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
                             final MathTransformFactory  mtFactory)
             throws FactoryException
     {
-        final var flattened = new ArrayList<CoordinateOperation>(operations.length);
+        final var flattened = new ArrayList<SingleOperation>(operations.length);
         final CoordinateReferenceSystem crs = initialize(properties, operations, flattened, mtFactory,
                 sourceCRS, (sourceCRS == null), (coordinateOperationAccuracy == null));
 
@@ -200,7 +199,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
          * At this point we should have flattened.size() >= 2, except if some operations
          * were omitted because their associated math transform were identity operation.
          */
-        this.operations = UnmodifiableArrayList.wrap(flattened.toArray(SingleOperation[]::new));
+        this.operations = Containers.copyToImmutableList(flattened, SingleOperation.class);
     }
 
     /**
@@ -247,7 +246,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
     private CoordinateReferenceSystem initialize(
             final Map<String,?>             properties,
             final CoordinateOperation[]     operations,
-            final List<CoordinateOperation> flattened,
+            final List<SingleOperation>     flattened,
             final MathTransformFactory      mtFactory,
             CoordinateReferenceSystem       previous,
             boolean setSource,
@@ -307,7 +306,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
             } else {
                 // Note: operation (source, target) may be in reverse order, but it should be taken as metadata.
                 if (!step.isIdentity()) {
-                    flattened.add(op);
+                    flattened.add((SingleOperation) op);
                 }
                 previous = target;          // For next iteration cycle.
             }

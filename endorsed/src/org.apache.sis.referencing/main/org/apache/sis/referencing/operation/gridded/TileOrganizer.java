@@ -132,8 +132,8 @@ public class TileOrganizer {
      * @throws IOException if a call to {@link Tile#getSize()} or {@link Tile#getRegion()} failed,
      *         and {@link #unavailableSize(Tile, IOException)} did not consumed the exception.
      */
-    public Map<Tile,Tile[]> tiles() throws IOException {
-        final Map<Tile,Tile[]> results = new HashMap<>(4);
+    public Map<Tile, Tile[]> tiles() throws IOException {
+        final var results = new HashMap<Tile, Tile[]>(4);
         for (final Map<AffineTransform,Dimension> tilesAT : computePyramidLevels(tiles.keySet())) {
             /*
              * Picks an affine transform to be used as the reference one. We need the finest one.

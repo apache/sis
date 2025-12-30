@@ -23,9 +23,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import org.apache.sis.util.internal.shared.Cloner;
-import org.apache.sis.util.internal.shared.CollectionsExt;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.collection.CodeListSet;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
 
 
@@ -180,7 +179,7 @@ final class StateChanger extends MetadataVisitor<Boolean> {
                             collection = Collections.unmodifiableSet(((CodeListSet<?>) collection).clone());
                         } else {
                             applyToAll(array);
-                            collection = CollectionsExt.immutableSet(false, array);
+                            collection = Containers.copyToImmutableSet(array);
                         }
                     } else {
                         /*
@@ -189,7 +188,7 @@ final class StateChanger extends MetadataVisitor<Boolean> {
                          * is less destructive (no removal of duplicated values).
                          */
                         applyToAll(array);
-                        collection = UnmodifiableArrayList.wrap(array);
+                        collection = Containers.viewAsUnmodifiableList(array);
                     }
                     break;
                 }
@@ -201,11 +200,11 @@ final class StateChanger extends MetadataVisitor<Boolean> {
          *          by their unmodifiable variant. The keys are assumed already immutable.
          */
         if (object instanceof Map<?,?>) {
-            final Map<Object,Object> map = new LinkedHashMap<>((Map<?,?>) object);
+            final var map = new LinkedHashMap<Object, Object>((Map<?,?>) object);
             for (final Map.Entry<Object,Object> entry : map.entrySet()) {
                 entry.setValue(applyTo(entry.getValue()));
             }
-            return CollectionsExt.unmodifiableOrCopy(map);
+            return Containers.unmodifiable(map);
         }
         /*
          * CASE 4 - The object is presumed cloneable.

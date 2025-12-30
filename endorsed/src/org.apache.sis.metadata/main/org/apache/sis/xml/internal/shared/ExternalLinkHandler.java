@@ -283,7 +283,7 @@ public class ExternalLinkHandler {
         if (!(property instanceof XMLResolver)) {
             return new ExternalLinkHandler(base);
         }
-        final XMLResolver resolver = (XMLResolver) property;
+        final var resolver = (XMLResolver) property;
         return new ExternalLinkHandler(base) {
             @Override public Source openReader(final URI path) throws Exception {
                 /*
@@ -311,6 +311,8 @@ public class ExternalLinkHandler {
 
     /**
      * Returns a string representation of this link handler for debugging purposes.
+     *
+     * @return a string representation for debugging purposes.
      */
     @Override
     public String toString() {

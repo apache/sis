@@ -156,7 +156,7 @@ public final class WritableStore extends Store implements WritableFeatureSet {
             /*
              * Get the writer if no read or other write operation is in progress, then write the data.
              */
-            try (Writer writer = new Writer(this, org.apache.sis.storage.gpx.Metadata.castOrCopy(metadata, locale), null)) {
+            try (Writer writer = new Writer(this, org.apache.sis.storage.gpx.Metadata.castOrCopy(metadata, dataLocale), null)) {
                 writer.writeStartDocument();
                 if (features != null) {
                     features.forEachOrdered(writer);

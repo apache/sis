@@ -19,7 +19,7 @@ package org.apache.sis.metadata;
 import java.util.Iterator;
 import java.util.Collection;
 import org.apache.sis.util.Emptiable;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import static org.apache.sis.metadata.ValueExistencePolicy.*;
 
 // Specific to the main branch:
@@ -113,7 +113,7 @@ final class Pruner extends MetadataVisitor<Boolean> {
     Object visit(final Class<?> type, final Object value) {
         final boolean isEmptyMetadata = isEmpty;    // Save the value in case it is overwritten by recursive invocations.
         boolean isEmptyValue = true;
-        final Collection<?> values = CollectionsExt.toCollection(value);
+        final Collection<?> values = Containers.toCollection(value);
         for (final Iterator<?> it = values.iterator(); it.hasNext();) {
             final Object element = it.next();
             if (!isNullOrEmpty(element)) {

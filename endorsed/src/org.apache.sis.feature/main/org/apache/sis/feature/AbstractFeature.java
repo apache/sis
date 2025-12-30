@@ -31,7 +31,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.internal.shared.CheckedArrayList;
+import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.feature.internal.Resources;
 
 
@@ -693,9 +693,12 @@ public abstract class AbstractFeature implements Serializable {
         final Class<T> valueClass = type.getValueClass();
         final boolean isSingleton = Field.isSingleton(type.getMaximumOccurs());
         if (valueClass.isInstance(value)) {
-            return isSingleton ? value : singletonList(valueClass, type.getMinimumOccurs(), value);
+            if (isSingleton) {
+                return value;
+            }
+            return Containers.newCheckedList(Collections.singleton(valueClass.cast(value)), valueClass);
         } else if (!isSingleton && value instanceof Collection<?>) {
-            return CheckedArrayList.castOrCopy((Collection<?>) value, valueClass);
+            return castOrCopyAsCheckedList((Collection<?>) value, valueClass);
         } else {
             throw new ClassCastException(illegalValueClass(type, valueClass, value));
         }
@@ -721,13 +724,16 @@ public abstract class AbstractFeature implements Serializable {
             final DefaultFeatureType valueType = ((AbstractFeature) value).getType();
             final DefaultFeatureType base = role.getValueType();
             if (base == valueType || DefaultFeatureType.maybeAssignableFrom(base, valueType)) {
-                return isSingleton ? value : singletonList(AbstractFeature.class, role.getMinimumOccurs(), value);
+                if (isSingleton) {
+                    return value;
+                }
+                return Containers.newCheckedList(Collections.singleton((AbstractFeature) value), AbstractFeature.class);
             } else {
                 throw new IllegalArgumentException(illegalFeatureType(role, base, valueType));
             }
         } else if (!isSingleton && value instanceof Collection<?>) {
             verifyAssociationValues(role, (Collection<?>) value);
-            return CheckedArrayList.castOrCopy((Collection<?>) value, AbstractFeature.class);
+            return castOrCopyAsCheckedList((Collection<?>) value, AbstractFeature.class);
         } else {
             throw new ClassCastException(illegalValueClass(role, AbstractFeature.class, value));
         }
@@ -753,14 +759,21 @@ public abstract class AbstractFeature implements Serializable {
     }
 
     /**
-     * Creates a collection which will initially contain only the given value.
-     * At the difference of {@link Collections#singletonList(Object)}, this method returns a modifiable list.
+     * Returns the given collection as a checked collection for elements of the specified type.
+     *
+     * @param  <E>         the element type.
+     * @param  collection  the collection.
+     * @param  type        the element type.
+     * @return the given collection as a {@link CheckedContainer}.
+     * @throws ClassCastException if an element is not of the expected type.
      */
     @SuppressWarnings("unchecked")
-    private static <V> Collection<V> singletonList(final Class<V> valueClass, final int minimumOccurs, final Object value) {
-        final CheckedArrayList<V> values = new CheckedArrayList<>(valueClass, Math.max(minimumOccurs, 4));
-        values.add((V) value);                              // Type will be checked by CheckedArrayList.
-        return values;
+    static <E> Collection<E> castOrCopyAsCheckedList(final Collection<?> collection, final Class<E> type) {
+        if (collection instanceof CheckedContainer<?> && ((CheckedContainer<?>) collection).getElementType() == type) {
+            return (Collection<E>) collection;
+        } else {
+            return Containers.newCheckedList((Collection<E>) collection, type);
+        }
     }
 
     /**

@@ -39,6 +39,7 @@ import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultContactTest extends TestCase implements Filter {
     /**
      * The resource key for the message of the warning that occurred, or {@code null} if none.

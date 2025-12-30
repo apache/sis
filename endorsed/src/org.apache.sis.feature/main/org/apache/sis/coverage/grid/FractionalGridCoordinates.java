@@ -21,6 +21,7 @@ import java.io.Serializable;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.internal.shared.Strings;
@@ -28,7 +29,6 @@ import org.apache.sis.util.resources.Errors;
 
 // Specific to the main branch:
 import org.opengis.geometry.MismatchedDimensionException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.PointOutsideCoverageException;
 
 
@@ -48,7 +48,7 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  * {@link ArithmeticException} is thrown.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see GridCoverage.Evaluator#toGridCoordinates(DirectPosition)
  *
@@ -63,7 +63,7 @@ public class FractionalGridCoordinates implements Serializable {
     /**
      * The grid coordinates as floating-point numbers.
      */
-    final double[] coordinates;
+    private final double[] coordinates;
 
     /**
      * Creates a new grid coordinates with the given number of dimensions.
@@ -77,6 +77,16 @@ public class FractionalGridCoordinates implements Serializable {
      */
     public FractionalGridCoordinates(final int dimension) {
         coordinates = new double[dimension];
+    }
+
+    /**
+     * Creates a new grid coordinates with the given coordinates.
+     * The array length is the number of dimensions.
+     *
+     * @param  coordinates  the grid coordinates.
+     */
+    FractionalGridCoordinates(final double[] coordinates) {
+        this.coordinates = coordinates;
     }
 
     /**
@@ -131,13 +141,7 @@ public class FractionalGridCoordinates implements Serializable {
      */
     public long getCoordinateValue(final int dimension) {
         final double value = coordinates[dimension];
-        /*
-         * 2048 is the smallest value that can be added or removed to Long.MIN/MAX_VALUE,
-         * as given by Math.ulp(Long.MIN_VALUE). We add this tolerance since the contract
-         * is to return the `long` value closest to the `double` value and we consider a
-         * 1 ULP error as close enough.
-         */
-        if (value >= (Long.MIN_VALUE - 2048d) && value <= (Long.MAX_VALUE + 2048d)) {
+        if (value >= ValuesAtPointIterator.DOMAIN_MINIMUM && value <= ValuesAtPointIterator.DOMAIN_MAXIMUM) {
             return Math.round(value);
         }
         throw new ArithmeticException(Resources.format(Resources.Keys.UnconvertibleGridCoordinate_2, "long", value));
@@ -175,7 +179,7 @@ public class FractionalGridCoordinates implements Serializable {
     /**
      * Creates a new grid extent around this grid coordinates. The returned extent will have the same number
      * of dimensions than this grid coordinates. For each dimension <var>i</var> the following relationships
-     * will hold:
+     * will hold (where {@code extent} is the return value):
      *
      * <ol>
      *   <li>If <code>extent.{@linkplain GridExtent#getSize(int) getSize}(i)</code> ≥ 2 and no shift (see below) then:<ul>
@@ -224,21 +228,11 @@ public class FractionalGridCoordinates implements Serializable {
      * @throws PointOutsideCoverageException if the grid coordinates (rounded to nearest integers) are outside the
      *         given bounds.
      * @return a grid extent of the given size (if possible) containing those grid coordinates.
-     */
-    public GridExtent toExtent(final GridExtent bounds, final long... size) {
-        return toExtent(bounds, size, false);
-    }
-
-    /**
-     * Implementation of {@link #toExtent(GridExtent, long...)} with the option to replace
-     * {@link PointOutsideCoverageException} by null return value.
      *
-     * @param  bounds         if the coordinates shall be contained inside a grid, that grid extent. Otherwise {@code null}.
-     * @param  size           the desired extent sizes as strictly positive numbers, or 0 for automatic sizes (1 or 2).
-     * @param  nullIfOutside  whether to return {@code null} instead of throwing an exception if given point is outside coverage bounds.
-     * @return a grid extent containing grid coordinates, or {@code null} if outside and {@code nullIfOutside} is {@code true}.
+     * @deprecated Not used anymore because this method leads to a multiplication of very small read operations.
      */
-    final GridExtent toExtent(final GridExtent bounds, final long[] size, final boolean nullIfOutside) {
+    @Deprecated(since = "1.6", forRemoval = true)
+    public GridExtent toExtent(final GridExtent bounds, final long... size) {
         final int dimension = coordinates.length;
         if (bounds != null) {
             final int bd = bounds.getDimension();
@@ -299,10 +293,7 @@ public class FractionalGridCoordinates implements Serializable {
                 final long validMin = bounds.getLow(i);
                 final long validMax = bounds.getHigh(i);
                 if (nearest > validMax || nearest < validMin) {
-                    if (nullIfOutside) {
-                        return null;
-                    }
-                    final StringBuilder b = new StringBuilder();
+                    final var b = new StringBuilder();
                     writeCoordinates(b);
                     throw new PointOutsideCoverageException(
                             Resources.format(Resources.Keys.GridCoordinateOutsideCoverage_4,
@@ -336,6 +327,7 @@ public class FractionalGridCoordinates implements Serializable {
 
     /**
      * Returns the grid coordinates converted to a geospatial position using the given transform.
+     * This is the reverse of {@link GridCoverage.Evaluator#toGridCoordinates(DirectPosition)}.
      * The {@code gridToCRS} argument is typically {@link GridGeometry#getGridToCRS(PixelInCell)}
      * with {@link PixelInCell#CELL_CENTER}.
      *
@@ -346,131 +338,19 @@ public class FractionalGridCoordinates implements Serializable {
      * @see GridCoverage.Evaluator#toGridCoordinates(DirectPosition)
      */
     public DirectPosition toPosition(final MathTransform gridToCRS) throws TransformException {
-        return gridToCRS.transform(new Position(this), null);
+        final var position = new GeneralDirectPosition(gridToCRS.getTargetDimensions());
+        gridToCRS.transform(coordinates, 0, position.coordinates, 0, 1);
+        return position;
     }
 
     /**
-     * A grid coordinates viewed as a {@link DirectPosition}. This class is used only for coordinate transformation.
-     * We do not want to make this class public in order to avoid the abuse of {@link DirectPosition} as a storage
-     * of grid coordinates.
+     * Returns a string representation of this grid coordinates for debugging purposes.
      *
-     * <p>Note this this class does not comply with the contract documented in {@link DirectPosition#equals(Object)}
-     * and {@link DirectPosition#hashCode()} javadoc. This is another reason for not making this class public.</p>
-     */
-    static final class Position extends FractionalGridCoordinates implements DirectPosition {
-        /**
-         * For cross-version compatibility.
-         */
-        private static final long serialVersionUID = -7804151694395153401L;
-
-        /**
-         * Creates a new position of the given number of dimensions.
-         */
-        Position(final int dimension) {
-            super(dimension);
-        }
-
-        /**
-         * Creates a new position initialized to a copy of the given coordinates.
-         */
-        Position(final FractionalGridCoordinates other) {
-            super(other);
-        }
-
-        /**
-         * Returns the direct position, which is this object itself.
-         */
-        @Override
-        public DirectPosition getDirectPosition() {
-            return this;
-        }
-
-        /**
-         * Grid coordinates have no coordinate reference system.
-         */
-        @Override
-        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return null;
-        }
-
-        /**
-         * Returns all coordinate values.
-         */
-        @Override
-        public double[] getCoordinate() {
-            return coordinates.clone();
-        }
-
-        /**
-         * Returns the coordinate value at the given dimension.
-         */
-        @Override
-        public double getOrdinate(int dimension) {
-            return coordinates[dimension];
-        }
-
-        /**
-         * Sets the coordinate value at the given dimension.
-         */
-        @Override
-        public void setOrdinate(final int dimension, final double value) {
-            coordinates[dimension] = value;
-        }
-
-        /**
-         * Returns the grid coordinates converted to a geospatial position using the given transform.
-         */
-        @Override
-        public DirectPosition toPosition(final MathTransform gridToCRS) throws TransformException {
-            return gridToCRS.transform(this, null);
-        }
-    }
-
-    /**
-     * Creates an error message for a grid coordinates out of bounds.
-     * This method tries to detect the dimension of the out-of-bounds
-     * coordinate by searching for the dimension with largest error.
-     *
-     * @param  bounds  the expected bounds, or {@code null} if unknown.
-     * @return message to provide to {@link PointOutsideCoverageException},
-     *         or {@code null} if the given bounds were null.
-     */
-    final String pointOutsideCoverage(final GridExtent bounds) {
-        if (bounds == null) {
-            return null;
-        }
-        int    axis     = 0;
-        long   validMin = 0;
-        long   validMax = 0;
-        double distance = 0;
-        for (int i = bounds.getDimension(); --i >= 0;) {
-            final long low  = bounds.getLow(i);
-            final long high = bounds.getHigh(i);
-            final double c  = coordinates[i];
-            double d = low - c;
-            if (!(d > distance)) {              // Use '!' for entering in this block if `d` is NaN.
-                d = c - high;
-                if (!(d > distance)) {          // Use '!' for skipping this coordinate if `d` is NaN.
-                    continue;
-                }
-            }
-            axis     = i;
-            validMin = low;
-            validMax = high;
-            distance = d;
-        }
-        final StringBuilder b = new StringBuilder();
-        writeCoordinates(b);
-        return Resources.format(Resources.Keys.GridCoordinateOutsideCoverage_4,
-                bounds.getAxisIdentification(axis, axis), validMin, validMax, b.toString());
-    }
-
-    /**
-     * Returns a string representation of this grid coordinates for debugging purpose.
+     * @return a string representation for debugging purposes.
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder("GridCoordinates[");
+        final var buffer = new StringBuilder("GridCoordinates[");
         writeCoordinates(buffer);
         return buffer.append(']').toString();
     }
@@ -487,6 +367,8 @@ public class FractionalGridCoordinates implements Serializable {
 
     /**
      * Returns a hash code value for this grid coordinates.
+     *
+     * @return a hash code value.
      */
     @Override
     public int hashCode() {

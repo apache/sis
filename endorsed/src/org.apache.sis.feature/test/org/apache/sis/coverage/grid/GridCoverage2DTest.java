@@ -90,7 +90,7 @@ public class GridCoverage2DTest extends TestCase {
         final var grid = new GridGeometry(new GridExtent(GRID_SIZE, GRID_SIZE),
                             PixelInCell.CELL_CENTER, gridToCRS, HardCodedCRS.WGS84);
 
-        final MathTransform1D toUnits = (MathTransform1D) MathTransforms.linear(0.5, 100);
+        final var toUnits = (MathTransform1D) MathTransforms.linear(0.5, 100);
         final SampleDimension sd = new SampleDimension.Builder().setName("Some kind of height")
                 .addQuantitative("data", NumberRange.create(-10, true, 10, true), toUnits, Units.METRE)
                 .build();
@@ -181,7 +181,7 @@ public class GridCoverage2DTest extends TestCase {
          *
          *   70 = p * 0.5 + 100   →   (70-100)/0.5 = p   →   p = -60
          */
-        final WritableRenderedImage image = (WritableRenderedImage) coverage.render(null);
+        final var image = (WritableRenderedImage) coverage.render(null);
         final WritableRaster raster = image.getWritableTile(0, 0);
         raster.setSample(0, 0, 0,  70);
         raster.setSample(1, 0, 0,   2.5);

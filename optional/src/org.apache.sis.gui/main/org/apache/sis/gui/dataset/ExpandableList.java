@@ -30,7 +30,7 @@ import javafx.scene.text.TextAlignment;
 import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.TransformationList;
 import javafx.scene.layout.Background;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.gui.internal.Styles;
 
 // Specific to the main branch:
@@ -132,7 +132,7 @@ final class ExpandableList extends TransformationList<AbstractFeature,AbstractFe
      */
     private List<AbstractFeature> shrink() {
         final List<AbstractFeature> removed = (expansion == null) ? null
-                                    : UnmodifiableArrayList.wrap(expansion, 1, expansion.length);
+                : Containers.viewAsUnmodifiableList(expansion, 1, expansion.length);
         expansion       = null;
         indexOfExpanded = Integer.MAX_VALUE;
         return removed;

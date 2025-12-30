@@ -28,7 +28,7 @@ import java.awt.image.BandedSampleModel;
 import java.awt.image.ComponentSampleModel;
 import java.awt.image.WritableRenderedImage;
 import org.apache.sis.util.collection.FrequencySortedSet;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.DisjointExtentException;
@@ -388,6 +388,6 @@ search: for (int i=0; i < sources.length; i++) {
                 return null;
             }
         }
-        return UnmodifiableArrayList.wrap(result);
+        return Containers.viewAsUnmodifiableList(result);
     }
 }

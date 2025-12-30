@@ -49,8 +49,8 @@ import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.storage.folder.ConcurrentCloser;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.util.iso.DefaultNameFactory;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.setup.OptionKey;
 
 
@@ -82,7 +82,7 @@ import org.apache.sis.setup.OptionKey;
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.6
  * @since   1.1
  */
 public class LandsatStore extends DataStore implements Aggregate {
@@ -291,7 +291,7 @@ public class LandsatStore extends DataStore implements Aggregate {
         if (bands == null) {
             bands = loadMetadata();
         }
-        return UnmodifiableArrayList.wrap(bands);
+        return Containers.viewAsUnmodifiableList(bands);
     }
 
     /**

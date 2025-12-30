@@ -70,7 +70,7 @@ import org.apache.sis.util.Version;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.internal.shared.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.resources.Vocabulary;
@@ -2933,12 +2933,12 @@ public class MetadataBuilder {
         if (metadata != null) {
             final var source = new DefaultSource();
             final var scope  = new DefaultScope(level);
-            source.setSourceReferenceSystem(CollectionsExt.first(metadata.getReferenceSystemInfo()));
+            source.setSourceReferenceSystem(Containers.peekFirst(metadata.getReferenceSystemInfo()));
             for (final Identification id : metadata.getIdentificationInfo()) {
                 source.setSourceCitation(id.getCitation());
                 if (id instanceof AbstractIdentification) {
-                    final AbstractIdentification aid = (AbstractIdentification) id;
-                    source.setSourceSpatialResolution(CollectionsExt.first(aid.getSpatialResolutions()));
+                    final var aid = (AbstractIdentification) id;
+                    source.setSourceSpatialResolution(Containers.peekFirst(aid.getSpatialResolutions()));
                     scope.setExtents(aid.getExtents());
                 }
                 if (features != null && features.length != 0) {

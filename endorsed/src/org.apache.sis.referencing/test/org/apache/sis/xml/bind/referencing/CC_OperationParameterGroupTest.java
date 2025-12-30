@@ -28,7 +28,6 @@ import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.operation.provider.Mercator1SP;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.measure.Units;
 import org.apache.sis.xml.Namespaces;
 import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
@@ -111,12 +110,10 @@ public final class CC_OperationParameterGroupTest extends TestCase {
      */
     @Test
     public void testSubtitution() throws JAXBException {
-        final ParameterDescriptor<?>[]         expected   = create(REMARK);
-        final List<GeneralParameterDescriptor> fromXML    = unmarshal().descriptors();
-        final List<GeneralParameterDescriptor> fromValues = UnmodifiableArrayList.wrap(expected);
-        final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements = new IdentityHashMap<>(4);
-        final var merged = CC_OperationParameterGroup.merge(fromXML,
-                fromValues.toArray(GeneralParameterDescriptor[]::new), replacements);
+        final ParameterDescriptor<?>[] expected = create(REMARK);
+        final List<GeneralParameterDescriptor> fromXML = unmarshal().descriptors();
+        final var replacements = new IdentityHashMap<GeneralParameterDescriptor, GeneralParameterDescriptor>(4);
+        final var merged = CC_OperationParameterGroup.merge(fromXML, expected, replacements);
 
         assertTrue(replacements.isEmpty());
         assertEquals(2, merged.length);

@@ -36,7 +36,6 @@ import org.apache.sis.referencing.internal.shared.DirectPositionView;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;
-import org.apache.sis.util.internal.shared.UnmodifiableArrayList;
 import org.apache.sis.pending.jdk.JDK16;
 
 
@@ -229,7 +228,7 @@ final class CoverageSubset extends AbstractGridCoverageResource {
         if (selectedRange == null) {
             return dimensions;
         }
-        final SampleDimension[] subset = new SampleDimension[selectedRange.length];
+        final var subset = new SampleDimension[selectedRange.length];
         for (int i=0; i < selectedRange.length; i++) {
             final int j = selectedRange[i];
             try {
@@ -238,7 +237,7 @@ final class CoverageSubset extends AbstractGridCoverageResource {
                 throw new DataStoreException(e);
             }
         }
-        return UnmodifiableArrayList.wrap(subset);
+        return List.of(subset);
     }
 
     /**

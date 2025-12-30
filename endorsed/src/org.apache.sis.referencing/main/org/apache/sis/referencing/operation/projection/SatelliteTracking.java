@@ -101,7 +101,7 @@ public class SatelliteTracking extends NormalizedProjection {
      * Work around for RFE #4093999 in Sun's bug database ("Relax constraint on
      * placement of this()/super() call in constructors").
      */
-    @Workaround(library = "JDK", version = "1.8")
+    @Workaround(library="JDK", version="8", fixed="25")
     static Initializer initializer(final OperationMethod method, final Parameters parameters) {
         final EnumMap<NormalizedProjection.ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(NormalizedProjection.ParameterRole.class);
         roles.put(NormalizedProjection.ParameterRole.CENTRAL_MERIDIAN, CENTRAL_MERIDIAN);
@@ -124,6 +124,7 @@ public class SatelliteTracking extends NormalizedProjection {
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
+    @Workaround(library="JDK", version="8", fixed="25")
     private SatelliteTracking(final Initializer initializer) {
         super(initializer, null);
         final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
