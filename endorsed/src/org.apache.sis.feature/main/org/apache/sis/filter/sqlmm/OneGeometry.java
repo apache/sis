@@ -25,7 +25,7 @@ import org.opengis.filter.Expression;
 
 
 /**
- * SQLMM spatial functions taking a single geometry operand.
+ * <abbr>SQLMM</abbr> spatial functions taking a single geometry operand.
  * This base class assumes that the geometry is the only parameter.
  * Subclasses may add other kind of parameters.
  *
@@ -96,7 +96,7 @@ class OneGeometry<R> extends SpatialFunction<R> {
         if (value != null) try {
             return value.operation(operation);
         } catch (RuntimeException e) {
-            warning(e, false);
+            warning(e);
         }
         return null;
     }
@@ -159,7 +159,7 @@ class OneGeometry<R> extends SpatialFunction<R> {
             if (value != null) try {
                 return value.operationWithArgument(operation, argument.apply(input));
             } catch (RuntimeException e) {
-                warning(e, false);
+                warning(e);
             }
             return null;
         }

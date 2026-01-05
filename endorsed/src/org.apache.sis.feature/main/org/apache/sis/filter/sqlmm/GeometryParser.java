@@ -113,7 +113,7 @@ abstract class GeometryParser<R,G> extends GeometryConstructor<R,G> {
             }
             return library.getGeometry(result);
         } catch (Exception e) {
-            warning(Exceptions.unwrap(e), false);
+            warning(Exceptions.unwrap(e));
         }
         return null;
     }

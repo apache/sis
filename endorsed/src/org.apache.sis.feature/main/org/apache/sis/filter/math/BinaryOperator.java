@@ -30,7 +30,13 @@ import org.opengis.filter.Expression;
 
 
 /**
- * An operation upon two operands.
+ * An operation upon two numerical operands. Inputs are {@link Number} instances
+ * which will be converted to {@link Double}. Output are {@link Double}.
+ *
+ * <h2>Terminology</h2>
+ * "Binary operator" is a specialization of "binary function" in that it restricts
+ * the inputs and the output to the same set, which is the set of double-precision
+ * floating point numbers.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
@@ -45,7 +51,7 @@ final class BinaryOperator<R> extends BinaryFunction<R, Number, Number>
     private static final long serialVersionUID = 8021641013005967925L;
 
     /**
-     * The function to apply.
+     * Description of the function to apply.
      */
     private final Function function;
 

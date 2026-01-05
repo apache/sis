@@ -27,6 +27,7 @@ import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.filter.base.UnaryFunction;
+import org.apache.sis.filter.math.ArithmeticFunction;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Errors;

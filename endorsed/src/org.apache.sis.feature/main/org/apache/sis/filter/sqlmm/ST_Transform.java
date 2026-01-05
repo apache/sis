@@ -133,9 +133,9 @@ final class ST_Transform<R> extends FunctionWithSRID<R> {
             return getGeometryLibrary().getGeometry(value.transform(getTargetCRS(input)));
         } catch (BackingStoreException e) {
             final Throwable cause = e.getCause();
-            warning((cause instanceof Exception) ? (Exception) cause : e, false);
+            warning((cause instanceof Exception) ? (Exception) cause : e);
         } catch (UnsupportedOperationException | FactoryException | TransformException e) {
-            warning(e, false);
+            warning(e);
         }
         return null;
     }

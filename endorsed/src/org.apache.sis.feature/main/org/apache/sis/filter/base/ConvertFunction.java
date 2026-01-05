@@ -113,6 +113,8 @@ public final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
 
     /**
      * Returns an identification of this operation.
+     *
+     * @return "Convert".
      */
     @Override
     public ScopedName getFunctionName() {
@@ -130,8 +132,9 @@ public final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
     }
 
     /**
-     * Returns the singleton expression tested by this operator
-     * together with the source and target classes.
+     * Returns the singleton expression tested by this operator together with the source and target classes.
+     *
+     * @return expression, source, target.
      */
     @Override
     protected Collection<?> getChildren() {
@@ -153,7 +156,7 @@ public final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
         try {
             return converter.apply(value);
         } catch (UnconvertibleObjectException e) {
-            warning(e, false);
+            warning(e);
             return null;
         }
     }

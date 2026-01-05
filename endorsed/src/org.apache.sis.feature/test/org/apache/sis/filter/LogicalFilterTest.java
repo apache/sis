@@ -247,20 +247,22 @@ public final class LogicalFilterTest extends TestCase {
          */
         final var expression = factory.divide(factory.property(attribute, Integer.class), factory.literal(5));
         final var optimization = new Optimization();
-        assertInstanceOf(DynamicOptimization.class, optimization.apply(expression));
+        var optimized = optimization.apply(expression);
+        assertInstanceOf(DynamicOptimization.class, optimized);
         assertEquals(200, expression.apply(instance).intValue());
+        assertEquals(200,  optimized.apply(instance).intValue());
         /*
          * Notify the optimizer that property values will be of `String` type.
          * The optimizer should compute an `ObjectConverter` in advance.
          */
         optimization.setFinalFeatureType(feature);
-        final var optimized = optimization.apply(expression);
-        assertEquals(200, expression.apply(instance).intValue());
+        optimized = optimization.apply(expression);
         assertNotSame(expression, optimized);
+        assertEquals(200, optimized.apply(instance).intValue());
 
         final var property = assertInstanceOf(PropertyValue.class, optimized.getParameters().get(0));
-        assertEquals(String.class, property.getSourceClass());
-        assertEquals(Number.class, property.getResultClass());
+        assertEquals(String.class,  property.getSourceClass());
+        assertEquals(Integer.class, property.getResultClass());
     }
 
     /**

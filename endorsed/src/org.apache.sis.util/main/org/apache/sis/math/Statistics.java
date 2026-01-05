@@ -722,7 +722,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
             if (last == (double) lastAsLong) {
                 /*
                  * 'lastAsLong' may have more precision than 'last' since the cast to the
-                 * 'double' type may loose some digits. Invoke the 'delta.accept(long)' version.
+                 * 'double' type may loss some digits. Invoke the 'delta.accept(long)' version.
                  */
                 delta.accept(sample - lastAsLong);
             } else {

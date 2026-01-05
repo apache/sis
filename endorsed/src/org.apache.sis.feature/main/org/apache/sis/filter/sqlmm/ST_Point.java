@@ -254,7 +254,7 @@ final class ST_Point<R> extends FunctionWithSRID<R> {
                 }
             }
         } catch (Exception e) {
-            warning(e, false);
+            warning(e);
             return null;
         }
         if (crs != null) {

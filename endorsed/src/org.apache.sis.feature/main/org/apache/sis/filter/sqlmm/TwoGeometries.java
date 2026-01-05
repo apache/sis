@@ -127,7 +127,7 @@ class TwoGeometries<R> extends SpatialFunction<R> {
             if (other != null) try {
                 return value.operation(operation, other);
             } catch (TransformException | RuntimeException e) {
-                warning(e, false);
+                warning(e);
             }
         }
         return null;
@@ -194,7 +194,7 @@ class TwoGeometries<R> extends SpatialFunction<R> {
                 if (other != null) try {
                     return value.operationWithArgument(operation, other, argument.apply(input));
                 } catch (TransformException | RuntimeException e) {
-                    warning(e, false);
+                    warning(e);
                 }
             }
             return null;

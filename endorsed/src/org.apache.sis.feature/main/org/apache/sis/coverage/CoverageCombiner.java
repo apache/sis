@@ -252,7 +252,7 @@ next:   for (int j=0; j<sources.length; j++) {
             final long[]        max      = new long[dimension];
             for (int i=0; i<dimension; i++) {
                 /*
-                 * The conversion from `double` to `long` may loose precision. The -1 (for making the maximum value
+                 * The conversion from `double` to `long` may loss precision. The -1 (for making the maximum value
                  * inclusive) is done on the floating point value instead of the integer value in order to have the
                  * same rounding when the minimum and maximum values are close to each other.
                  * The goal is to avoid spurious "disjoint extent" exceptions.

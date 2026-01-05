@@ -135,7 +135,7 @@ class GeometryConstructor<R,G> extends FunctionWithSRID<R> {
             }
             return geomImpl;
         } catch (Exception e) {
-            warning(e, false);
+            warning(e);
         }
         return null;
     }

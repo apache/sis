@@ -191,7 +191,7 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
     @SuppressWarnings("unchecked")
     public final <N> PropertyValue<N> toValueType(final Class<N> target) {
         // `getResultClass()` should never return null with our subtypes of `PropertyValue`.
-        if (target == getResultClass()) {
+        if (target.isAssignableFrom(getResultClass())) {
             return (PropertyValue<N>) this;
         } else if (target == Object.class) {
             return (PropertyValue<N>) new AsObject(name, isVirtual);
@@ -249,7 +249,7 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
             if (instance != null) try {
                 return instance.getPropertyValue(name);
             } catch (PropertyNotFoundException e) {
-                warning(e, false);
+                warning(e);
             }
             return null;
         }
@@ -326,7 +326,7 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
             if (instance != null) try {
                 return ObjectConverters.convert(instance.getPropertyValue(name), type);
             } catch (PropertyNotFoundException | UnconvertibleObjectException e) {
-                warning(e, false);
+                warning(e);
             }
             return null;
         }
@@ -490,7 +490,7 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
             if (instance != null) try {
                 return converter.apply(source.cast(instance.getPropertyValue(name)));
             } catch (PropertyNotFoundException | ClassCastException | UnconvertibleObjectException e) {
-                warning(e, false);
+                warning(e);
             }
             return null;
         }
@@ -542,7 +542,7 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
             if (instance != null) try {
                 return (V) instance.getPropertyValue(name);
             } catch (PropertyNotFoundException e) {
-                warning(e, false);
+                warning(e);
             }
             return null;
         }

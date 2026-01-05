@@ -316,7 +316,7 @@ public final class Metadata extends SimpleMetadata {
     public Collection<Responsibility> getPointOfContacts() {
         if (creator != null) {
             final var p = new Person(creator);
-            return (author != null) ? List.of(p, author) : List.of(author);
+            return (author != null) ? List.of(p, author) : List.of(p);
         }
         return (author != null) ? List.of(author) : List.of();
     }

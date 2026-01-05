@@ -358,6 +358,8 @@ public abstract class Node implements Serializable {
 
     /**
      * Returns a hash code value computed from the class and the children.
+     *
+     * @return a hash code value.
      */
     @Override
     public int hashCode() {
@@ -376,6 +378,16 @@ public abstract class Node implements Serializable {
             return getChildren().equals(((Node) other).getChildren());
         }
         return false;
+    }
+
+    /**
+     * Reports that an operation failed because of the given exception, resulting in a null value.
+     * This method assumes that the warning occurred in a {@code test(…)} or {@code apply(…)} method.
+     *
+     * @param  exception  the exception that occurred.
+     */
+    protected final void warning(final Exception exception) {
+        warning(exception, false);
     }
 
     /**
