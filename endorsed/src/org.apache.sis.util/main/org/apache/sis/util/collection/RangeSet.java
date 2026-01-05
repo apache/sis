@@ -30,12 +30,12 @@ import java.util.SortedSet;
 import java.util.AbstractSet;
 import java.util.NoSuchElementException;
 import java.util.ConcurrentModificationException;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Range;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import static org.apache.sis.util.Numbers.*;
 
 
 /**
@@ -115,7 +115,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7493555225994855486L;
+    private static final long serialVersionUID = 4996397525797174442L;
 
     /**
      * The range comparator returned by {@link RangeSet#comparator()}. This comparator
@@ -195,11 +195,10 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     protected final Class<E> elementType;
 
     /**
-     * The primitive type, as one of {@code DOUBLE}, {@code FLOAT}, {@code LONG}, {@code INTEGER},
-     * {@code SHORT}, {@code BYTE}, {@code CHARACTER} enumeration. If the {@link #elementType} is
-     * not the wrapper of a primitive type, then this field value is {@code OTHER}.
+     * The type of elements as an enumeration. If the {@link #elementType} is not a supported type,
+     * then this field is set to {@link NumberType#NULL}.
      */
-    private final byte elementCode;
+    private final NumberType elementCode;
 
     /**
      * {@code true} if the minimal values of ranges in this set are inclusive, or {@code false}
@@ -260,8 +259,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         ArgumentChecks.ensureNonNull("elementType", elementType);
         // Following assertion may fail only if the user bypass the parameterized type checks.
         assert Comparable.class.isAssignableFrom(elementType) : elementType;
+        this.elementCode   = NumberType.forClass(elementType).orElse(NumberType.NULL);
         this.elementType   = elementType;
-        this.elementCode   = getEnumConstant(elementType);
         this.isMinIncluded = isMinIncluded;
         this.isMaxIncluded = isMaxIncluded;
         if (!isMinIncluded && !isMaxIncluded) {
@@ -518,7 +517,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
             ensureOrdered(minValue, maxValue);
             Class<?> type = elementType;
             if (type != Boolean.class) {        // Because there is no Arrays.binarySearch(boolean[], …) method.
-                type = wrapperToPrimitive(type);
+                type = NumberType.wrapperToPrimitive(type);
             }
             array = Array.newInstance(type, 8);
             Array.set(array, 0, minValue);
@@ -1043,6 +1042,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
          * Recomputes the {@link #lower} and {@link #upper} indices if they are outdated.
          * If the indices are already up to date, then this method does nothing.
          */
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         private void updateBounds() {
             if (modCount != RangeSet.this.modCount) {
                 int lower = 0;

@@ -19,7 +19,6 @@ package org.apache.sis.math;
 import java.util.Objects;
 import java.io.Serializable;
 import java.util.function.IntSupplier;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.measure.NumberRange;
 
@@ -254,8 +253,8 @@ final class LinearlyDerivedVector extends Vector implements Serializable {
                     boolean ti = isMinIncluded; isMinIncluded = isMaxIncluded; isMaxIncluded = ti;
                 }
                 range = new NumberRange<>(Double.class,
-                        Numbers.cast(min, Double.class), isMinIncluded,
-                        Numbers.cast(max, Double.class), isMaxIncluded);
+                        (min != null) ? min.doubleValue() : null, isMinIncluded,
+                        (max != null) ? max.doubleValue() : null, isMaxIncluded);
             }
         }
         return range;

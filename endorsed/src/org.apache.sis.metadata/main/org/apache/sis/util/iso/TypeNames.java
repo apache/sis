@@ -29,7 +29,7 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.opengis.geometry.Geometry;
-import org.apache.sis.util.Numbers;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.resources.Errors;
 
@@ -100,8 +100,8 @@ final class TypeNames {
         NameSpace ns = ogcNS;
 search: if (CharSequence.class.isAssignableFrom(valueClass)) {
             name = InternationalString.class.isAssignableFrom(valueClass) ? "FreeText" : "CharacterString";
-        } else if (Numbers.isNumber(valueClass)) {
-            name = Numbers.isInteger(valueClass) ? "Integer" : "Real";
+        } else if (NumberType.isReal(valueClass)) {
+            name = NumberType.isInteger(valueClass) ? "Integer" : "Real";
         } else {
             /*
              * Iterate over the special cases, excluding the numbers and character sequences

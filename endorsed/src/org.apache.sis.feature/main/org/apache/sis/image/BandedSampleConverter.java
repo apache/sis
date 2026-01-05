@@ -36,10 +36,10 @@ import org.apache.sis.coverage.internal.shared.SampleDimensions;
 import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.image.internal.shared.TileOpExecutor;
 import org.apache.sis.image.internal.shared.ColorScaleBuilder;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.measure.NumberRange;
 import static org.apache.sis.image.internal.shared.ImageUtilities.LOGGER;
 
@@ -135,7 +135,7 @@ class BandedSampleConverter extends WritableComputedImage {
         boolean hasResolutions = false;
         final double[] resolutions = new double[converters.length];
         final Object sr = source.getProperty(SAMPLE_RESOLUTIONS_KEY);
-        final int n = (sr != null && Numbers.isNumber(sr.getClass().getComponentType())) ? Array.getLength(sr) : 0;
+        final int n = (sr != null && NumberType.isReal(sr.getClass().getComponentType())) ? Array.getLength(sr) : 0;
         for (int i=0; i<resolutions.length; i++) {
             /*
              * Get the sample value in the middle of the range of valid values for the current band.

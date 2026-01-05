@@ -19,7 +19,7 @@ package org.apache.sis.io.stream;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.io.IOException;
-import org.apache.sis.util.Numbers;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.storage.DataStoreContentException;
 
@@ -60,19 +60,19 @@ public class HyperRectangleReader {
     /**
      * Creates a new reader for the given input.
      *
-     * @param  dataType  the type of elements to read, as one of the constants defined in {@link Numbers}.
+     * @param  dataType  the type of elements to read.
      * @param  input     the channel from which to read the values, together with a buffer for transferring data.
      * @throws DataStoreContentException if the given {@code dataType} is not one of the supported values.
      */
-    public HyperRectangleReader(final byte dataType, final ChannelDataInput input) throws DataStoreContentException {
+    public HyperRectangleReader(final NumberType dataType, final ChannelDataInput input) throws DataStoreContentException {
         switch (dataType) {
-            case Numbers.BYTE:      reader = input.new BytesReader  ((byte[])   null); break;
-            case Numbers.CHARACTER: reader = input.new CharsReader  ((char[])   null); break;
-            case Numbers.SHORT:     reader = input.new ShortsReader ((short[])  null); break;
-            case Numbers.INTEGER:   reader = input.new IntsReader   ((int[])    null); break;
-            case Numbers.LONG:      reader = input.new LongsReader  ((long[])   null); break;
-            case Numbers.FLOAT:     reader = input.new FloatsReader ((float[])  null); break;
-            case Numbers.DOUBLE:    reader = input.new DoublesReader((double[]) null); break;
+            case BYTE:      reader = input.new BytesReader  ((byte[])   null); break;
+            case CHARACTER: reader = input.new CharsReader  ((char[])   null); break;
+            case SHORT:     reader = input.new ShortsReader ((short[])  null); break;
+            case INTEGER:   reader = input.new IntsReader   ((int[])    null); break;
+            case LONG:      reader = input.new LongsReader  ((long[])   null); break;
+            case FLOAT:     reader = input.new FloatsReader ((float[])  null); break;
+            case DOUBLE:    reader = input.new DoublesReader((double[]) null); break;
             default: throw new DataStoreContentException(Errors.format(Errors.Keys.UnknownType_1, dataType));
         }
         final ByteBuffer buffer = input.buffer;

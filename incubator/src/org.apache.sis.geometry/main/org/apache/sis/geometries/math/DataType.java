@@ -19,8 +19,7 @@ package org.apache.sis.geometries.math;
 import java.awt.image.RasterFormatException;
 import static org.apache.sis.util.internal.shared.Numerics.MAX_INTEGER_CONVERTIBLE_TO_FLOAT;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Numbers;
+import org.apache.sis.math.NumberType;
 
 
 /**
@@ -127,15 +126,13 @@ public enum DataType {
      * @return smallest data type for the given range of values.
      */
     public static DataType forRange(final NumberRange<?> range, final boolean asInteger) {
-        ArgumentChecks.ensureNonNull("range", range);
-        final byte nt = Numbers.getEnumConstant(range.getElementType());
-        if (!asInteger) {
-            if (nt >= Numbers.DOUBLE)   return DOUBLE;
-            if (nt >= Numbers.FRACTION) return FLOAT;
+        final NumberType nt = NumberType.forNumberClass(range.getElementType());
+        if (!asInteger && nt.isFractional()) {
+            return nt.isNarrowerThan(NumberType.DOUBLE) ? FLOAT : DOUBLE;
         }
         final double min = range.getMinDouble();
         final double max = range.getMaxDouble();
-        if (nt < Numbers.BYTE || nt > Numbers.FLOAT || nt == Numbers.LONG) {
+        if (!nt.isReal() || nt.ordinal() >= NumberType.LONG.ordinal()) {
             /*
              * Value type is long, double, BigInteger, BigDecimal or unknown type.
              * If conversions to 32 bits integers would lost integer digits, or if
@@ -183,13 +180,13 @@ public enum DataType {
      * @throws RasterFormatException if the given type is not a recognized.
      */
     public static DataType forPrimitiveType(final Class<?> type, final boolean unsigned) {
-        switch (Numbers.getEnumConstant(type)) {
-            case Numbers.BYTE:    return unsigned ? UBYTE : BYTE;
-            case Numbers.SHORT:   return unsigned ? USHORT : SHORT;
-            case Numbers.INTEGER: return unsigned ? UINT : INT;
-            case Numbers.LONG:    return LONG;
-            case Numbers.FLOAT:   return FLOAT;
-            case Numbers.DOUBLE:  return DOUBLE;
+        switch (NumberType.forNumberClass(type)) {
+            case BYTE:    return unsigned ? UBYTE : BYTE;
+            case SHORT:   return unsigned ? USHORT : SHORT;
+            case INTEGER: return unsigned ? UINT : INT;
+            case LONG:    return LONG;
+            case FLOAT:   return FLOAT;
+            case DOUBLE:  return DOUBLE;
         }
         throw new RasterFormatException("Unknown data type " + type.getSimpleName());
     }

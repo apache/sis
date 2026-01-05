@@ -441,7 +441,7 @@ public enum Type {
         if (isUnsigned) {
             return Numerics.fraction(input.readUnsignedInt(), input.readUnsignedInt());
         } else {
-            return new Fraction(input.readInt(), input.readInt()).unique();
+            return new Fraction(input.readInt(), input.readInt());
         }
     }
 

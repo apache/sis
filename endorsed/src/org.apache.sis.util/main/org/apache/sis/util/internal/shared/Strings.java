@@ -17,6 +17,7 @@
 package org.apache.sis.util.internal.shared;
 
 import java.lang.reflect.Array;
+import java.util.Locale;
 import java.util.Formatter;
 import java.util.FormattableFlags;
 import org.apache.sis.util.Classes;
@@ -110,6 +111,23 @@ public final class Strings {
             text = text.trim().strip();
             if (!text.isEmpty()) {
                 return text;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Parses the given string as a Boolean value.
+     * This method implements the conversion table documented in {@link org.apache.sis.converter.StringConverter}.
+     *
+     * @param  text  the string to parse, or {@code null}.
+     * @return the Boolean value, or {@code null} if not recognized.
+     */
+    public static Boolean parseBoolean(final String text) {
+        if (text != null) {
+            switch (text.toLowerCase(Locale.US)) {
+                case "true":  case "yes": case "on":  case "1": return Boolean.TRUE;
+                case "false": case "no":  case "off": case "0": return Boolean.FALSE;
             }
         }
         return null;

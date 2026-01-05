@@ -22,7 +22,7 @@ import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 import java.io.IOException;
-import org.apache.sis.util.Numbers;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.storage.DataStoreException;
 
 // Test dependencies
@@ -136,7 +136,7 @@ public final class HyperRectangleReaderTest extends TestCase {
             final var channel = new ByteArrayChannel(array, true);
             final var buffer  = ByteBuffer.allocate(random.nextInt(20) + 20).order(ByteOrder.nativeOrder());
             final var input   = new ChannelDataInput("HyperRectangle in channel", channel, buffer, false);
-            reader = new HyperRectangleReader(Numbers.SHORT, input);
+            reader = new HyperRectangleReader(NumberType.SHORT, input);
             reader.setOrigin(origin);
         } else {
             view.clear();

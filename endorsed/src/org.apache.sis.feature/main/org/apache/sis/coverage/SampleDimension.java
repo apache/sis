@@ -36,6 +36,7 @@ import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Debug;
@@ -278,7 +279,7 @@ public class SampleDimension implements IdentifiedType, Serializable {
         if (converse != null) {             // Null if SampleDimension does not contain at least one quantitative category.
             final boolean isConverted = transferFunction.isIdentity();
             final NumberRange<?>[] ranges = new NumberRange<?>[categories.size()];
-            Class<? extends Number> widestClass = Byte.class;
+            final Class<?>[] rangeTypes = new Class<?>[ranges.length];
             int count = 0;
             for (final Category category : categories) {
                 final Category converted = category.converted();
@@ -287,23 +288,26 @@ public class SampleDimension implements IdentifiedType, Serializable {
                     if (!range.isBounded()) {
                         throw new IllegalStateException(Resources.format(Resources.Keys.CanNotEnumerateValuesInRange_1, range));
                     }
-                    widestClass = Numbers.widestClass(widestClass, range.getElementType());
+                    rangeTypes[count] = range.getElementType();
                     ranges[count++] = range;
                 }
             }
             if (count != 0) {
+                final NumberType widestType = NumberType.forClasses(rangeTypes).filter(NumberType::isConvertible).orElse(null);
                 final Set<Number> noDataValues = new TreeSet<>(SampleDimension::compare);
                 for (int i=0; i<count; i++) {
                     final NumberRange<?> range = ranges[i];
                     final Number minimum = range.getMinValue();
                     final Number maximum = range.getMaxValue();
-                    if (range.isMinIncluded()) noDataValues.add(Numbers.cast(minimum, widestClass));
-                    if (range.isMaxIncluded()) noDataValues.add(Numbers.cast(maximum, widestClass));
-                    if (Numbers.isInteger(range.getElementType())) {
+                    if (widestType != null) {
+                        if (range.isMinIncluded()) noDataValues.add(widestType.cast(minimum));
+                        if (range.isMaxIncluded()) noDataValues.add(widestType.cast(maximum));
+                    }
+                    if (NumberType.isInteger(range.getElementType())) {
                         long value = minimum.longValue() + 1;       // If value was inclusive, then it has already been added to the set.
                         long stop  = maximum.longValue() - 1;
                         while (value <= stop) {
-                            noDataValues.add(Numbers.wrap(value, widestClass));
+                            noDataValues.add(widestType.wrapExact(value));
                         }
                     } else if (!minimum.equals(maximum)) {
                         throw new IllegalStateException(Resources.format(Resources.Keys.CanNotEnumerateValuesInRange_1, range));
@@ -710,12 +714,12 @@ public class SampleDimension implements IdentifiedType, Serializable {
          * <p>This method is invoked for qualitative categories only. For that reason, it accepts NaN values.</p>
          */
         private static NumberRange<?> range(final Class<?> type, Number minimum, Number maximum) {
-            switch (Numbers.getEnumConstant(type)) {
-                case Numbers.BYTE:    return NumberRange.create(minimum.byteValue(),  true, maximum.byteValue(),   true);
-                case Numbers.SHORT:   return NumberRange.create(minimum.shortValue(), true, maximum.shortValue(),  true);
-                case Numbers.INTEGER: return NumberRange.create(minimum.intValue(),   true, maximum.intValue(),    true);
-                case Numbers.LONG:    return NumberRange.create(minimum.longValue(),  true, maximum.longValue(),   true);
-                case Numbers.FLOAT: {
+            switch (NumberType.forNumberClass(type)) {
+                case BYTE:    return NumberRange.create(minimum.byteValue(),  true, maximum.byteValue(),   true);
+                case SHORT:   return NumberRange.create(minimum.shortValue(), true, maximum.shortValue(),  true);
+                case INTEGER: return NumberRange.create(minimum.intValue(),   true, maximum.intValue(),    true);
+                case LONG:    return NumberRange.create(minimum.longValue(),  true, maximum.longValue(),   true);
+                case FLOAT: {
                     final float min = minimum.floatValue();
                     final float max = maximum.floatValue();
                     if (!Float.isNaN(min) || !Float.isNaN(max)) {       // Let `create` throws an exception if only one value is NaN.

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.math;
 
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.collection.IntegerList;
 import org.apache.sis.util.resources.Errors;
 
@@ -205,7 +204,7 @@ final class PackedVector extends ArrayVector<Long> {
      */
     @Override
     public Number set(final int index, final Number value) {
-        verifyType(value, Numbers.LONG);
+        verifyType(value, NumberType.LONG);
         long v = value.longValue();
         if (v >= offset) {
             v -= offset;

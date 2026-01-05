@@ -16,7 +16,7 @@
  */
 package org.apache.sis.storage.netcdf.base;
 
-import org.apache.sis.util.Numbers;
+import org.apache.sis.math.NumberType;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -112,17 +112,20 @@ public final class DataTypeTest extends TestCase {
      */
     @Test
     public void testClasses() {
-        for (final DataType type : DataType.values()) {
-            final String name = type.name();
-            final int code = Numbers.getEnumConstant(type.getClass(false));
-            if (type.isInteger) {
-                if (!type.isUnsigned) {
-                    assertEquals(type.number, code, name);
-                } else if (type != DataType.UINT64) {
-                    assertTrue(code > type.number, name);
+        for (final DataType dataType : DataType.values()) {
+            final Class<?> c = dataType.getClass(false);
+            if (Number.class.isAssignableFrom(c)) {
+                final NumberType numberType = NumberType.forNumberClass(c);
+                final String name = dataType.name();
+                if (dataType.isInteger) {
+                    if (!dataType.isUnsigned) {
+                        assertEquals(dataType.number, numberType, name);
+                    } else if (dataType != DataType.UINT64) {
+                        assertTrue(numberType.isWiderThan(dataType.number), name);
+                    }
+                } else {
+                    assertEquals((dataType == DataType.CHAR) ? NumberType.CHARACTER : dataType.number, numberType, name);
                 }
-            } else {
-                assertEquals((type == DataType.CHAR) ? Numbers.CHARACTER : type.number, code, name);
             }
         }
     }

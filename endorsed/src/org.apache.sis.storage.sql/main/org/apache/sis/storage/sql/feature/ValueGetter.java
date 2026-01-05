@@ -32,7 +32,7 @@ import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.math.BigDecimal;
 import org.apache.sis.math.Vector;
-import org.apache.sis.util.Numbers;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.Constants;
 
@@ -493,7 +493,7 @@ public class ValueGetter<T> {
              */
             cmget = stmts.database.getMapping(new Column(array.getBaseType(), array.getBaseTypeName(), "element"));
         }
-        Class<?> componentType = Numbers.primitiveToWrapper(result.getClass().getComponentType());
+        Class<?> componentType = NumberType.primitiveToWrapper(result.getClass().getComponentType());
         if (cmget != null && !cmget.valueType.isAssignableFrom(componentType)) {
             /*
              * If the elements in the `result` array are not of the expected type, fetch them again
@@ -502,7 +502,7 @@ public class ValueGetter<T> {
              * hopefully not be needed most of the time. It is also the only way to have the number
              * of elements in advance.
              */
-            componentType = Numbers.wrapperToPrimitive(cmget.valueType);
+            componentType = NumberType.wrapperToPrimitive(cmget.valueType);
             final int length = java.lang.reflect.Array.getLength(result);
             result = java.lang.reflect.Array.newInstance(componentType, length);
             try (ResultSet r = array.getResultSet()) {
@@ -512,7 +512,7 @@ public class ValueGetter<T> {
             }
         }
         array.free();
-        if (Numbers.isNumber(componentType)) {
+        if (NumberType.isReal(componentType)) {
             return Vector.create(result, true);
         }
         return Containers.viewAsUnmodifiableList((Object[]) result);

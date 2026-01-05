@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.lang.reflect.Method;
 import org.opengis.util.CodeList;
-import org.apache.sis.util.Numbers;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.metadata.internal.Dependencies;
@@ -120,14 +120,14 @@ public abstract class PropertyConsistencyCheck extends AnnotationConsistencyChec
         if (CharSequence.class.isAssignableFrom(type)) {
             return "Dummy value for " + property + '.';
         }
-        switch (Numbers.getEnumConstant(type)) {
-            case Numbers.DOUBLE:  return         random.nextDouble() * 90;
-            case Numbers.FLOAT:   return         random.nextFloat()  * 90f;
-            case Numbers.LONG:    return (long)  random.nextInt(1000000) + 1;
-            case Numbers.INTEGER: return         random.nextInt(  10000) + 1;
-            case Numbers.SHORT:   return (short) random.nextInt(   1000) + 1;
-            case Numbers.BYTE:    return (byte)  random.nextInt(    100) + 1;
-            case Numbers.BOOLEAN: return         random.nextBoolean();
+        switch (NumberType.forClass(type).orElse(NumberType.NULL)) {
+            case DOUBLE:  return         random.nextDouble() * 90;
+            case FLOAT:   return         random.nextFloat()  * 90f;
+            case LONG:    return (long)  random.nextInt(1000000) + 1;
+            case INTEGER: return         random.nextInt(  10000) + 1;
+            case SHORT:   return (short) random.nextInt(   1000) + 1;
+            case BYTE:    return (byte)  random.nextInt(    100) + 1;
+            case BOOLEAN: return         random.nextBoolean();
         }
         if (Date.class.isAssignableFrom(type)) {
             return new Date(random.nextInt() * 1000L);
@@ -239,8 +239,8 @@ public abstract class PropertyConsistencyCheck extends AnnotationConsistencyChec
              * Get the property type. In the special case where the property type
              * is a collection, this is the type of elements in that collection.
              */
-            final Class<?> propertyType = Numbers.primitiveToWrapper(accessor.type(i, TypeValuePolicy.PROPERTY_TYPE));
-            final Class<?>  elementType = Numbers.primitiveToWrapper(accessor.type(i, TypeValuePolicy.ELEMENT_TYPE));
+            final Class<?> propertyType = NumberType.primitiveToWrapper(accessor.type(i, TypeValuePolicy.PROPERTY_TYPE));
+            final Class<?>  elementType = NumberType.primitiveToWrapper(accessor.type(i, TypeValuePolicy.ELEMENT_TYPE));
             assertNotNull(propertyType, testingMethod);
             assertNotNull(elementType, testingMethod);
             final boolean isMap        =        Map.class.isAssignableFrom(propertyType);

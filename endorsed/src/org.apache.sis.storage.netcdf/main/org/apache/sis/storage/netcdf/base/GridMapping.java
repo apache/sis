@@ -77,7 +77,6 @@ import org.apache.sis.system.Modules;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.internal.shared.Constants;
@@ -86,6 +85,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.measure.Units;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -301,10 +301,10 @@ final class GridMapping {
                             continue;
                         }
                         final Class<?> type = parameter.getDescriptor().getValueClass();
-                        if (Numbers.isNumber(type)) {
+                        if (NumberType.isReal(type)) {
                             it.remove();
                             parameter.setValue(Double.parseDouble(text));
-                        } else if (Numbers.isNumber(type.getComponentType())) {
+                        } else if (NumberType.isReal(type.getComponentType())) {
                             it.remove();
                             parameter.setValue(parseDoubles(text), null);
                         }

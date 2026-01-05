@@ -17,7 +17,6 @@
 package org.apache.sis.util;
 
 import java.util.Map;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -29,6 +28,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import static java.lang.Double.doubleToLongBits;
 import org.apache.sis.math.Fraction;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.DoubleDouble;
@@ -38,16 +38,13 @@ import org.apache.sis.util.internal.shared.DoubleDouble;
  * Static methods working with {@code Number} objects, and a few primitive types by extension.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.6
  *
  * @see org.apache.sis.math.MathFunctions
  *
  * @since 0.3
  */
-@SuppressWarnings({
-    "UnnecessaryBoxing",
-    "ResultOfObjectAllocationIgnored"
-})
+@SuppressWarnings("UnnecessaryBoxing")
 public final class Numbers {
     /**
      * Constant of value {@value} used in {@code switch} statements or as index in arrays.
@@ -62,93 +59,18 @@ public final class Numbers {
      *       and {@code BIG_INTEGER}) have higher enumeration values.</li>
      *   <li>{@link Fraction} is considered as a kind of floating point value.</li>
      * </ul>
+     *
+     * @deprecated Replaced by the {@link NumberType} enumeration.
      */
+    @Deprecated(since="1.6", forRemoval=true)
     public static final byte
             BIG_DECIMAL=11, BIG_INTEGER=10, FRACTION=7,
             DOUBLE=9, FLOAT=8, LONG=6, INTEGER=5, SHORT=4, BYTE=3, CHARACTER=2, BOOLEAN=1, OTHER=0;
 
-    /** Undocumented type internal to SIS. */
-    private static final byte DOUBLE_DOUBLE = 12;
-
     /**
-     * Mapping between a primitive type and its wrapper, if any.
-     *
-     * <h4>Implementation note</h4>
-     * In the particular case of {@code Class} keys, {@code IdentityHashMap} and {@code HashMap} have identical
-     * behavior since {@code Class} is final and does not override the {@code equals(Object)} and {@code hashCode()}
-     * methods. The {@code IdentityHashMap} Javadoc claims that it is faster than the regular {@code HashMap}.
-     * But maybe the most interesting property is that it allocates less objects since {@code IdentityHashMap}
-     * implementation does not need the chain of objects created by {@code HashMap}.
+     * Do not allow instantiation of this class.
      */
-    private static final Map<Class<?>,Numbers> MAPPING = new IdentityHashMap<>(13);
-    static {
-        new Numbers(DoubleDouble.class, true, false, DOUBLE_DOUBLE);
-        new Numbers(BigDecimal  .class, true, false, BIG_DECIMAL);
-        new Numbers(BigInteger  .class, false, true, BIG_INTEGER);
-        new Numbers(Fraction    .class, true, false, FRACTION);
-        new Numbers(Double   .TYPE, Double   .class, true,  false, (byte) Double   .SIZE, DOUBLE,    'D', Double   .valueOf(Double.NaN));
-        new Numbers(Float    .TYPE, Float    .class, true,  false, (byte) Float    .SIZE, FLOAT,     'F', Float    .valueOf(Float .NaN));
-        new Numbers(Long     .TYPE, Long     .class, false, true,  (byte) Long     .SIZE, LONG,      'J', Long     .valueOf(        0L));
-        new Numbers(Integer  .TYPE, Integer  .class, false, true,  (byte) Integer  .SIZE, INTEGER,   'I', Integer  .valueOf(        0));
-        new Numbers(Short    .TYPE, Short    .class, false, true,  (byte) Short    .SIZE, SHORT,     'S', Short    .valueOf((short) 0));
-        new Numbers(Byte     .TYPE, Byte     .class, false, true,  (byte) Byte     .SIZE, BYTE,      'B', Byte     .valueOf((byte)  0));
-        new Numbers(Character.TYPE, Character.class, false, false, (byte) Character.SIZE, CHARACTER, 'C', Character.valueOf((char)  0));
-        new Numbers(Boolean  .TYPE, Boolean  .class, false, false, (byte) 1,              BOOLEAN,   'Z', Boolean.FALSE);
-        new Numbers(Void     .TYPE, Void     .class, false, false, (byte) 0,              OTHER,     'V', null);
-    }
-
-    /** The primitive type.                      */ private final Class<?> primitive;
-    /** The wrapper for the primitive type.      */ private final Class<?> wrapper;
-    /** {@code true} for floating point number.  */ private final boolean  isFloat;
-    /** {@code true} for integer number.         */ private final boolean  isInteger;
-    /** The size in bits, or -1 if variable.     */ private final byte     size;
-    /** Constant to be used in switch statement. */ private final byte     ordinal;
-    /** The internal form of the primitive name. */ private final char     internal;
-    /** The null, NaN, 0 or false value.         */ private final Object   nullValue;
-
-    /**
-     * Creates an entry for a type which is not a primitive type.
-     */
-    private Numbers(final Class<?> type, final boolean isFloat, final boolean isInteger, final byte ordinal) {
-        primitive = wrapper = type;
-        this.isFloat   = isFloat;
-        this.isInteger = isInteger;
-        this.size      = -1;
-        this.ordinal   = ordinal;
-        this.internal  = 'L';                           // Defined by Java, and tested elsewhere in this class.
-        this.nullValue = null;
-        if (MAPPING.put(type, this) != null) {
-            throw new AssertionError();                 // Should never happen.
-        }
-    }
-
-    /**
-     * Creates a mapping between a primitive type and its wrapper.
-     */
-    private Numbers(final Class<?> primitive, final Class<?> wrapper,
-                    final boolean  isFloat,   final boolean  isInteger,
-                    final byte     size,      final byte     ordinal,
-                    final char     internal,  final Object   nullValue)
-    {
-        this.primitive = primitive;
-        this.wrapper   = wrapper;
-        this.isFloat   = isFloat;
-        this.isInteger = isInteger;
-        this.size      = size;
-        this.ordinal   = ordinal;
-        this.internal  = internal;
-        this.nullValue = nullValue;
-        if (MAPPING.put(primitive, this) != null || MAPPING.put(wrapper, this) != null) {
-            throw new AssertionError();                         // Should never happen.
-        }
-    }
-
-    /**
-     * Returns the Java letter used for the internal representation of this given primitive type.
-     * This method shall be invoked only when the caller knows that the given type is a primitive.
-     */
-    static char getInternal(final Class<?> type) {
-        return MAPPING.get(type).internal;
+    private Numbers() {
     }
 
     /**
@@ -160,10 +82,12 @@ public final class Numbers {
      * @return {@code true} if {@code type} is one of the known types capable to represent floating point numbers.
      *
      * @see #isInteger(Class)
+     *
+     * @deprecated Moved to {@link NumberType#isFractional(Class)}.
      */
+    @Deprecated(since="1.6", forRemoval=true)
     public static boolean isFloat(final Class<?> type) {
-        final Numbers mapping = MAPPING.get(type);
-        return (mapping != null) && mapping.isFloat;
+        return NumberType.isFractional(type);
     }
 
     /**
@@ -176,10 +100,12 @@ public final class Numbers {
      *
      * @see #isFloat(Class)
      * @see #round(Number)
+     *
+     * @deprecated Moved to {@link NumberType#isInteger(Class)}.
      */
+    @Deprecated(since="1.6", forRemoval=true)
     public static boolean isInteger(final Class<?> type) {
-        final Numbers mapping = MAPPING.get(type);
-        return (mapping != null) && mapping.isInteger;
+        return NumberType.isInteger(type);
     }
 
     /**
@@ -194,11 +120,12 @@ public final class Numbers {
      * @see #isInteger(Class)
      *
      * @since 1.1
+     *
+     * @deprecated Moved to {@link NumberType#isReal(Class)}.
      */
+    @Deprecated(since="1.6", forRemoval=true)
     public static boolean isNumber(final Class<?> type) {
-        final Numbers mapping = MAPPING.get(type);
-        return ((mapping != null) && (mapping.isInteger | mapping.isFloat)) ||
-               ((type != null) && Number.class.isAssignableFrom(type));
+        return NumberType.isReal(type);
     }
 
     /**
@@ -249,15 +176,12 @@ public final class Numbers {
      * @since 1.4
      */
     public static long round(final Number value) {
-        final Numbers mapping = MAPPING.get(value.getClass());
-asLong: if (mapping != null) {
-            switch (mapping.ordinal) {
-                case DOUBLE_DOUBLE: break;
-                case BIG_DECIMAL:   return ((BigDecimal) value).longValueExact();
-                case BIG_INTEGER:   return ((BigInteger) value).longValueExact();
-                default:            if (!mapping.isInteger) break asLong;
-            }
-            return value.longValue();       // Does rounding in `DoubleDouble` case.
+        final NumberType mapping = NumberType.forNumberClass(value.getClass());
+        switch (mapping) {
+            case DOUBLE_DOUBLE: return value.longValue();       // Does rounding.
+            case BIG_DECIMAL:   return ((BigDecimal) value).longValueExact();
+            case BIG_INTEGER:   return ((BigInteger) value).longValueExact();
+            default: if (mapping.isInteger()) return value.longValue();
         }
         final double v = value.doubleValue();
         final long   n = Math.round(v);
@@ -272,18 +196,15 @@ asLong: if (mapping != null) {
      * @param  type  the primitive type (can be {@code null}).
      * @return the number of bits, or 0 if {@code type} is null.
      * @throws IllegalArgumentException if the given type is not one of the types supported by this {@code Numbers} class.
+     *
+     * @deprecated Replaced by {@link NumberType#size()}.
      */
+    @Deprecated(since="1.6", forRemoval=true)
     public static int primitiveBitCount(final Class<?> type) throws IllegalArgumentException {
-        final Numbers mapping = MAPPING.get(type);
-        if (mapping != null) {
-            final int size = mapping.size;
-            if (size >= 0) {
-                return size;
-            }
-        } else if (type == null) {
+        if (type == null) {
             return 0;
         }
-        throw unknownType(type);
+        return NumberType.forNumberClass(type).size().orElseThrow();
     }
 
     /**
@@ -294,12 +215,11 @@ asLong: if (mapping != null) {
      * @param  type  the primitive type (can be {@code null}).
      * @return the type as a wrapper.
      *
-     * @see #wrapperToPrimitive(Class)
+     * @deprecated Moved to {@link NumberType#primitiveToWrapper(Class)}.
      */
-    @SuppressWarnings("unchecked")
+    @Deprecated(since="1.6", forRemoval=true)
     public static <N> Class<N> primitiveToWrapper(final Class<N> type) {
-        final Numbers mapping = MAPPING.get(type);
-        return (mapping != null) ? (Class<N>) mapping.wrapper : type;
+        return NumberType.primitiveToWrapper(type);
     }
 
     /**
@@ -310,12 +230,11 @@ asLong: if (mapping != null) {
      * @param  type  the wrapper type (can be {@code null}).
      * @return the type as a primitive.
      *
-     * @see #primitiveToWrapper(Class)
+     * @deprecated Moved to {@link NumberType#wrapperToPrimitive(Class)}.
      */
-    @SuppressWarnings("unchecked")
+    @Deprecated(since="1.6", forRemoval=true)
     public static <N> Class<N> wrapperToPrimitive(final Class<N> type) {
-        final Numbers mapping = MAPPING.get(type);
-        return (mapping != null) ? (Class<N>) mapping.primitive : type;
+        return NumberType.wrapperToPrimitive(type);
     }
 
     /**
@@ -323,7 +242,7 @@ asLong: if (mapping != null) {
      * {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float}, {@link Double},
      * {@link Fraction}, {@link BigInteger} or {@link BigDecimal} types.
      *
-     * <p>If one of the given argument is null, then this method returns the class of the non-null argument.
+     * <p>If one of the given arguments is null, then this method returns the class of the non-null argument.
      * If both arguments are null, then this method returns {@code null}.</p>
      *
      * @param  n1  the first number, or {@code null}.
@@ -334,7 +253,9 @@ asLong: if (mapping != null) {
      * @see #widestClass(Number, Number)
      * @see #narrowestClass(Number, Number)
      */
-    public static Class<? extends Number> widestClass(final Number n1, final Number n2) throws IllegalArgumentException {
+    public static Class<? extends Number> widestClass(final Number n1, final Number n2)
+            throws IllegalArgumentException
+    {
         return widestClass((n1 != null) ? n1.getClass() : null,
                            (n2 != null) ? n2.getClass() : null);
     }
@@ -344,15 +265,20 @@ asLong: if (mapping != null) {
      * {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float}, {@link Double},
      * {@link Fraction}, {@link BigInteger} or {@link BigDecimal} types.
      *
-     * <p>If one of the given argument is null, then this method returns the non-null argument.
+     * <p>If one of the given arguments is null, then this method returns the non-null argument.
      * If both arguments are null, then this method returns {@code null}.</p>
      *
      * <h4>Example</h4>
-     * in the following code, {@code type} is set to {@code Long.class}:
+     * in the following code, the result stored in {@code type} will be {@code Long.class}:
      *
      * {@snippet lang="java" :
      *     Class<?> type = widestClass(Short.class, Long.class);
      *     }
+     *
+     * <h4>Accuracy</h4>
+     * Note that conversions to the widest class are not guaranteed to be lossless.
+     * For example, {@code double} is considered a wider class than {@code long}, but
+     * conversion from {@code long} to {@code double} can nevertheless loose accuracy.
      *
      * @param  c1  the first number type, or {@code null}.
      * @param  c2  the second number type, or {@code null}.
@@ -366,23 +292,19 @@ asLong: if (mapping != null) {
                                                       final Class<? extends Number> c2)
             throws IllegalArgumentException
     {
+        if (c1 == c2)   return c2;  // Avoid IllegalArgumentException if the type is unknown.
         if (c1 == null) return c2;
         if (c2 == null) return c1;
-        final Numbers m1 = MAPPING.get(c1);
-        if (m1 == null) {
-            throw unknownType(c1);
-        }
-        final Numbers m2 = MAPPING.get(c2);
-        if (m2 == null) {
-            throw unknownType(c2);
-        }
-        return (m1.ordinal >= m2.ordinal) ? c1 : c2;
+        return NumberType.forNumberClass(c1).isWiderThan(NumberType.forNumberClass(c2)) ? c1 : c2;
     }
 
     /**
      * Returns the narrowest type of two numbers. Numbers {@code n1} and {@code n2} can be instance of
      * {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float}, {@link Double},
      * {@link Fraction}, {@link BigInteger} or {@link BigDecimal} types.
+     *
+     * <p>If one of the given arguments is null, then this method returns the class of the non-null argument.
+     * If both arguments are null, then this method returns {@code null}.</p>
      *
      * @param  n1  the first number, or {@code null}.
      * @param  n2  the second number, or {@code null}.
@@ -404,14 +326,14 @@ asLong: if (mapping != null) {
      * {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float}, {@link Double},
      * {@link Fraction}, {@link BigInteger} or {@link BigDecimal} types.
      *
-     * <p>If one of the given argument is null, then this method returns the non-null argument.
+     * <p>If one of the given arguments is null, then this method returns the non-null argument.
      * If both arguments are null, then this method returns {@code null}.</p>
      *
      * <h4>Example</h4>
-     * in the following code, {@code type} is set to {@code Short.class}:
+     * in the following code, the result stored in {@code type} will be {@code Short.class}:
      *
      * {@snippet lang="java" :
-     *     Class<?> type = widestClass(Short.class, Long.class);
+     *     Class<?> type = narrowestClass(Short.class, Long.class);
      *     }
      *
      * @param  c1  the first number type, or {@code null}.
@@ -426,17 +348,10 @@ asLong: if (mapping != null) {
                                                          final Class<? extends Number> c2)
             throws IllegalArgumentException
     {
+        if (c1 == c2)   return c2;  // Avoid IllegalArgumentException if the type is unknown.
         if (c1 == null) return c2;
         if (c2 == null) return c1;
-        final Numbers m1 = MAPPING.get(c1);
-        if (m1 == null) {
-            throw unknownType(c1);
-        }
-        final Numbers m2 = MAPPING.get(c2);
-        if (m2 == null) {
-            throw unknownType(c2);
-        }
-        return (m1.ordinal < m2.ordinal) ? c1 : c2;
+        return NumberType.forNumberClass(c1).isNarrowerThan(NumberType.forNumberClass(c2)) ? c1 : c2;
     }
 
     /**
@@ -470,7 +385,7 @@ asLong: if (mapping != null) {
         }
         boolean isFloat = false;
         final long longValue = value.longValue();
-        switch (getEnumConstant(value.getClass())) {
+        switch (NumberType.forNumberClass(value.getClass())) {
             default: {
                 final double doubleValue = value.doubleValue();
                 final float  floatValue  = (float) doubleValue;
@@ -509,7 +424,7 @@ asLong: if (mapping != null) {
         final Number candidate;
         boolean isFloat = false;
         final long longValue = value.longValue();
-        switch (getEnumConstant(value.getClass())) {
+        switch (NumberType.forNumberClass(value.getClass())) {
             default: {
                 final double doubleValue = value.doubleValue();
                 final float  floatValue  = (float) doubleValue;
@@ -591,7 +506,7 @@ asLong: if (mapping != null) {
      * </ul>
      *
      * This method does not verify if the given type is wide enough for the given value,
-     * because the type has typically been calculated by {@link #widestClass(Class, Class)}
+     * because the type has typically been calculated by {@link #widestClass(Number, Number)}
      * or {@link #narrowestClass(Number)}. If nevertheless the given type is not wide enough,
      * then the behavior depends on the implementation of the corresponding
      * {@code Number.fooValue()} method - typically, the value is just rounded or truncated.
@@ -603,54 +518,18 @@ asLong: if (mapping != null) {
      * @throws IllegalArgumentException if the given type is not supported by this {@code Numbers} class,
      *         or the number cannot be converted to the specified type (e.g. {@link Double#NaN} cannot
      *         be converted to {@link BigDecimal}).
+     *
+     * @see NumberType#cast(Number)
      */
     @SuppressWarnings("unchecked")
     public static <N extends Number> N cast(final Number number, final Class<N> type) throws IllegalArgumentException {
-        if (number == null || number.getClass() == type) {
+        if (number == null || type.isInstance(number)) {
             return (N) number;
         }
-        switch (getEnumConstant(type)) {
-            case BYTE:     return (N) Byte    .valueOf(number.  byteValue());
-            case SHORT:    return (N) Short   .valueOf(number. shortValue());
-            case INTEGER:  return (N) Integer .valueOf(number.   intValue());
-            case LONG:     return (N) Long    .valueOf(number.  longValue());
-            case FLOAT:    return (N) Float   .valueOf(number. floatValue());
-            case DOUBLE:   return (N) Double  .valueOf(number.doubleValue());
-            case FRACTION: return (N) Fraction.valueOf(number.doubleValue());
-            case BIG_INTEGER: {
-                final BigInteger c;
-                if (number instanceof BigInteger) {
-                    c = (BigInteger) number;
-                } else if (number instanceof BigDecimal) {
-                    c = ((BigDecimal) number).toBigInteger();
-                } else {
-                    c = BigInteger.valueOf(number.longValue());
-                }
-                return (N) c;
-            }
-            case BIG_DECIMAL: {
-                final BigDecimal c;
-                if (number instanceof BigDecimal) {
-                    c = (BigDecimal) number;
-                } else if (number instanceof BigInteger) {
-                    c = new BigDecimal((BigInteger) number);
-                } else if (isInteger(number.getClass())) {
-                    c = BigDecimal.valueOf(number.longValue());
-                } else {
-                    /*
-                     * Same implementation as BigDecimal.valueOf(double)
-                     * but better result if number is a Float instance.
-                     */
-                    c = new BigDecimal(number.toString());
-                }
-                return (N) c;
-            }
-            default: {
-                if (type.isInstance(number)) {
-                    return (N) number;
-                }
-                throw unknownType(type);
-            }
+        try {
+            return type.cast(NumberType.forNumberClass(type).cast(number));
+        } catch (UnsupportedOperationException | ArithmeticException e) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.NotANumericalType_1, type), e);
         }
     }
 
@@ -667,26 +546,15 @@ asLong: if (mapping != null) {
      * @return the value wrapped in an object of the given class.
      * @throws IllegalArgumentException if the given type is not supported by this {@code Numbers} class,
      *         or if the given value cannot be wrapped in an instance of the given class without precision lost.
+     *
+     * @see NumberType#wrapExact(double)
      */
-    @SuppressWarnings("unchecked")
     public static <N extends Number> N wrap(final double value, final Class<N> type) throws IllegalArgumentException {
-        final N number;
-        switch (getEnumConstant(type)) {
-            case BYTE:        number = (N) Byte      .valueOf((byte)  value); break;
-            case SHORT:       number = (N) Short     .valueOf((short) value); break;
-            case INTEGER:     number = (N) Integer   .valueOf((int)   value); break;
-            case LONG:        number = (N) Long      .valueOf((long)  value); break;
-            case FLOAT:       number = (N) Float     .valueOf((float) value); break;
-            case DOUBLE:      return   (N) Double    .valueOf(value); // No need to verify.
-            case FRACTION:    return   (N) Fraction  .valueOf(value); // No need to verify.
-            case BIG_INTEGER: number = (N) BigInteger.valueOf((long) value); break;
-            case BIG_DECIMAL: return   (N) BigDecimal.valueOf(value); // No need to verify.
-            default: throw unknownType(type);
+        try {
+            return type.cast(NumberType.forNumberClass(type).wrapExact(value));
+        } catch (UnsupportedOperationException | ArithmeticException e) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotConvertValue_2, value, type), e);
         }
-        if (doubleToLongBits(number.doubleValue()) != doubleToLongBits(value)) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotConvertValue_2, value, type));
-        }
-        return number;
     }
 
     /**
@@ -704,26 +572,15 @@ asLong: if (mapping != null) {
      *         or if the given value cannot be wrapped in an instance of the given class without precision lost.
      *
      * @since 0.8
+     *
+     * @see NumberType#wrapExact(long)
      */
-    @SuppressWarnings("unchecked")
     public static <N extends Number> N wrap(final long value, final Class<N> type) throws IllegalArgumentException {
-        final N number;
-        switch (getEnumConstant(type)) {
-            case BYTE:        number = (N) Byte      .valueOf((byte)   value); break;
-            case SHORT:       number = (N) Short     .valueOf((short)  value); break;
-            case INTEGER:     number = (N) Integer   .valueOf((int)    value); break;
-            case LONG:        return   (N) Long      .valueOf(value);  // No need to verify.
-            case FLOAT:       number = (N) Float     .valueOf((float)  value); break;
-            case DOUBLE:      number = (N) Double    .valueOf((double) value); break;
-            case FRACTION:    number = (N) new Fraction      ((int) value, 1); break;
-            case BIG_INTEGER: return   (N) BigInteger.valueOf(value);  // No need to verify.
-            case BIG_DECIMAL: return   (N) BigDecimal.valueOf(value);  // No need to verify.
-            default: throw unknownType(type);
+        try {
+            return type.cast(NumberType.forNumberClass(type).wrapExact(value));
+        } catch (UnsupportedOperationException | ArithmeticException e) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotConvertValue_2, value, type), e);
         }
-        if (number.longValue() != value) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotConvertValue_2, value, type));
-        }
-        return number;
     }
 
     /**
@@ -742,51 +599,31 @@ asLong: if (mapping != null) {
      * </ul>
      *
      * @param  <T>    the requested type.
-     * @param  value  the value to parse.
+     * @param  text   the text to parse.
      * @param  type   the requested type.
      * @return the value object, or {@code null} if {@code value} was null.
      * @throws IllegalArgumentException if {@code type} is not a recognized type.
      * @throws NumberFormatException if {@code type} is a subclass of {@link Number}
      *         and the string value is not parsable as a number of the specified type.
+     *
+     * @see NumberType#parse(String)
      */
-    @SuppressWarnings("unchecked")
-    public static <T> T valueOf(final String value, final Class<T> type)
+    public static <T> T valueOf(final String text, final Class<T> type)
             throws IllegalArgumentException, NumberFormatException
     {
-        if (value == null || type == String.class) {
-            return (T) value;
+        Object value;
+        if (text == null || type == String.class) {
+            value = text;
+        } else {
+            value = NumberType.forNumberClass(type).parse(text);
         }
-        switch (getEnumConstant(type)) {
-            case CHARACTER: {
-                /*
-                 * If the string is empty, returns 0 which means "end of string" in C/C++
-                 * and NULL in Unicode standard. If non-empty, take only the first char.
-                 * This is somewhat consistent with Boolean.valueOf(...) which is quite
-                 * lenient about the parsing as well, and throwing a NumberFormatException
-                 * for those would not be appropriate.
-                 */
-                return (T) Character.valueOf(value.isEmpty() ? 0 : value.charAt(0));
-            }
-            // Do not trim whitespaces. It is up to the caller to do that if he wants.
-            // For such low level function, we are better to avoid hidden initiative.
-            case BOOLEAN:     return (T) Boolean.valueOf(value);
-            case BYTE:        return (T) Byte   .valueOf(value);
-            case SHORT:       return (T) Short  .valueOf(value);
-            case INTEGER:     return (T) Integer.valueOf(value);
-            case LONG:        return (T) Long   .valueOf(value);
-            case FLOAT:       return (T) Float  .valueOf(value);
-            case DOUBLE:      return (T) Double .valueOf(value);
-            case FRACTION:    return (T) new Fraction  (value);
-            case BIG_INTEGER: return (T) new BigInteger(value);
-            case BIG_DECIMAL: return (T) new BigDecimal(value);
-            default: throw unknownType(type);
-        }
+        return type.cast(value);
     }
 
     /**
-     * Returns a {@code NaN}, zero, empty or {@code null} value of the given type. This method
-     * tries to return the closest value that can be interpreted as <q>none</q>, which
-     * is usually not the same as <q>zero</q>. More specifically:
+     * Returns a {@code NaN}, zero, empty or {@code null} value of the given type.
+     * This method tries to return the closest value that can be interpreted as <q>none</q>,
+     * which is usually not the same as <q>zero</q>. More specifically:
      *
      * <ul>
      *   <li>If the given type is a floating point <strong>primitive</strong> type ({@code float}
@@ -807,39 +644,47 @@ asLong: if (mapping != null) {
      *       returns {@code null}.</li>
      * </ul>
      *
-     * Despite being defined in the {@code Numbers} class, the scope of this method has been
-     * extended to array and collection types because those objects can also be seen as
-     * mathematical concepts.
+     * Despite being defined in the {@code Numbers} class, the scope of this method has been extended
+     * to array and collection types because those objects can also be seen as mathematical concepts.
      *
      * @param  <T>   the compile-time type of the requested object.
      * @param  type  the type of the object for which to get a nil value.
      * @return an object of the given type which represents a nil value, or {@code null}.
      *
+     * @see NumberType#nilValue()
      * @see org.apache.sis.xml.NilObject
      */
-    @SuppressWarnings("unchecked")
     public static <T> T valueOfNil(final Class<T> type) {
-        final Numbers mapping = MAPPING.get(type);
-        if (mapping != null) {
-            if (type.isPrimitive()) {
-                return (T) mapping.nullValue;
-            }
-        } else if (type != null && type != Object.class) {
-            if (type == Map         .class) return (T) Collections.EMPTY_MAP;
-            if (type == List        .class) return (T) Collections.EMPTY_LIST;
-            if (type == Queue       .class) return (T) Containers.emptyQueue();
-            if (type == SortedSet   .class) return (T) Collections.emptySortedSet();
-            if (type == NavigableSet.class) return (T) Collections.emptyNavigableSet();
-            if (type.isAssignableFrom(Set.class)) {
-                return (T) Collections.EMPTY_SET;
-            }
-            final Class<?> element = type.getComponentType();
-            if (element != null) {
-                return (T) Array.newInstance(element, 0);
+        if (type == null) {
+            return null;
+        }
+        Object value = NumberType.forClass(type).orElse(NumberType.NULL).nilValue();
+        if (value == null) {
+            value = NIL_VALUES.get(type);
+            if (value == null && type != Object.class) {
+                if (type.isAssignableFrom(Set.class)) {
+                    value = Collections.EMPTY_SET;
+                } else {
+                    Class<?> element = type.getComponentType();
+                    if (element != null) {
+                        value = Array.newInstance(element, 0);
+                    }
+                }
             }
         }
-        return null;
+        return type.cast(value);
     }
+
+    /**
+     * Nil values for each type other than the ones managed by {@link NumberType}.
+     */
+    private static final Map<Class<?>, Object> NIL_VALUES = Map.of(
+            Map.class,          Collections.EMPTY_MAP,
+            Set.class,          Collections.EMPTY_SET,
+            List.class,         Collections.EMPTY_LIST,
+            Queue.class,        Containers.emptyQueue(),
+            SortedSet.class,    Collections.emptySortedSet(),
+            NavigableSet.class, Collections.emptyNavigableSet());
 
     /**
      * Returns a numeric constant for the given type.
@@ -850,16 +695,24 @@ asLong: if (mapping != null) {
      *
      * @param  type  a type (usually either a primitive type or its wrapper), or {@code null}.
      * @return the constant for the given type, or {@link #OTHER} if unknown.
+     *
+     * @deprecated Replaced by the {@link NumberType} enumeration.
      */
+    @Deprecated(since="1.6", forRemoval=true)
     public static byte getEnumConstant(final Class<?> type) {
-        final Numbers mapping = MAPPING.get(type);
-        return (mapping != null) ? mapping.ordinal : OTHER;
-    }
-
-    /**
-     * Returns an exception for an unknown type.
-     */
-    private static IllegalArgumentException unknownType(final Class<?> type) {
-        return new IllegalArgumentException(Errors.format(Errors.Keys.NotAPrimitiveWrapper_1, type));
+        switch (NumberType.forClass(type).orElse(NumberType.NULL)) {
+            case BIG_DECIMAL: return BIG_DECIMAL;
+            case BIG_INTEGER: return BIG_INTEGER;
+            case FRACTION:    return FRACTION;
+            case DOUBLE:      return DOUBLE;
+            case FLOAT:       return FLOAT;
+            case LONG:        return LONG;
+            case INTEGER:     return INTEGER;
+            case SHORT:       return SHORT;
+            case BYTE:        return BYTE;
+            case CHARACTER:   return CHARACTER;
+            case BOOLEAN:     return BOOLEAN;
+            default:          return OTHER;
+        }
     }
 }

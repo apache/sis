@@ -18,8 +18,8 @@ package org.apache.sis.converter;
 
 import java.util.Date;
 import java.util.ServiceLoader;
+import org.apache.sis.math.NumberType;
 import org.opengis.util.CodeList;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.system.SystemListener;
@@ -231,7 +231,6 @@ public final class SystemRegistry extends ConverterRegistry {
      * by {@link NumberConverter}.
      */
     private static boolean isSupportedNumber(final Class<?> type) {
-        final int code = Numbers.getEnumConstant(type);
-        return (code >= Numbers.BYTE && code <= Numbers.BIG_DECIMAL);
+        return NumberType.forClass(type).filter(NumberType::isReal).isPresent();
     }
 }

@@ -18,8 +18,8 @@ package org.apache.sis.converter;
 
 import java.util.Map;
 import java.util.LinkedHashMap;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
@@ -522,8 +522,8 @@ public class ConverterRegistry {
                 final Class<?> targetComponent = targetClass.getComponentType();
                 if (targetComponent != null) {
                     converter = new ArrayConverter<>(sourceClass, targetClass, find(
-                            Numbers.primitiveToWrapper(sourceComponent),
-                            Numbers.primitiveToWrapper(targetComponent)));
+                            NumberType.primitiveToWrapper(sourceComponent),
+                            NumberType.primitiveToWrapper(targetComponent)));
                     put(key, converter);
                     return converter;
                 }

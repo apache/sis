@@ -32,7 +32,7 @@ import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
  * All {@code Fraction} instances are immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 1.4
+ * @version 1.6
  * @since   0.8
  */
 public final class Fraction extends Number implements Comparable<Fraction>, Serializable {
@@ -210,7 +210,11 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * It is usually not worth to invoke this method for short-lived instances.</p>
      *
      * @return a unique instance of a fraction equals to {@code this}.
+     *
+     * @deprecated {@code Fraction} may become a value object with a future Java version,
+     *             and this method is incompatible with value objects.
      */
+    @Deprecated(since="1.6", forRemoval=true)
     public Fraction unique() {
         return POOL.unique(this);
     }

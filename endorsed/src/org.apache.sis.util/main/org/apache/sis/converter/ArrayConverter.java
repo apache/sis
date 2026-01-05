@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.EnumSet;
 import java.lang.reflect.Array;
 import org.apache.sis.math.FunctionProperty;
-import org.apache.sis.util.Numbers;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 
@@ -71,8 +71,8 @@ final class ArrayConverter<S,T> extends SystemConverter<S,T> {
      */
     ArrayConverter(final Class<S> sourceClass, final Class<T> targetClass, final ObjectConverter<?,?> converter) {
         super(sourceClass, targetClass);
-        assert converter.getSourceClass().isAssignableFrom(Numbers.primitiveToWrapper(sourceClass.getComponentType())) : sourceClass;
-        assert Numbers.primitiveToWrapper(targetClass.getComponentType()).isAssignableFrom(converter.getTargetClass()) : targetClass;
+        assert converter.getSourceClass().isAssignableFrom(NumberType.primitiveToWrapper(sourceClass.getComponentType())) : sourceClass;
+        assert NumberType.primitiveToWrapper(targetClass.getComponentType()).isAssignableFrom(converter.getTargetClass()) : targetClass;
         this.converter = converter;
     }
 

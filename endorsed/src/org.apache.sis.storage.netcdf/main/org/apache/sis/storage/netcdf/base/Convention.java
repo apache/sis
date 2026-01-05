@@ -39,7 +39,7 @@ import org.apache.sis.image.internal.shared.ColorModelFactory;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.Vector;
-import org.apache.sis.util.Numbers;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.system.Reflect;
 
@@ -604,7 +604,7 @@ public class Convention {
     public NumberRange<?> validRange(final Variable data) {
         Number minimum = null;
         Number maximum = null;
-        Class<? extends Number> type = null;
+        NumberType rangeType = NumberType.VOID;
         for (final String attribute : RANGE_ATTRIBUTES) {
             final Vector values = data.getAttributeAsVector(attribute);
             if (values != null) {
@@ -620,10 +620,13 @@ public class Convention {
                         if      (fp == +Double.MAX_VALUE) value = Double.POSITIVE_INFINITY;
                         else if (fp == -Double.MAX_VALUE) value = Double.NEGATIVE_INFINITY;
                     }
-                    type    = Numbers.widestClass(type, value.getClass());
-                    minimum = Numbers.cast(minimum, type);
-                    maximum = Numbers.cast(maximum, type);
-                    value   = Numbers.cast(value,   type);
+                    final NumberType other = NumberType.forNumberClass(value.getClass());
+                    if (rangeType.isNarrowerThan(other)) {
+                        rangeType = other;
+                    }
+                    minimum = rangeType.cast(minimum);
+                    maximum = rangeType.cast(maximum);
+                    value   = rangeType.cast(value);
                     if (!attribute.endsWith("max") && (minimum == null || compare(value, minimum) < 0)) minimum = value;
                     if (!attribute.endsWith("min") && (maximum == null || compare(value, maximum) > 0)) maximum = value;
                 } catch (NumberFormatException e) {
@@ -642,14 +645,12 @@ public class Convention {
                  */
                 final Class<?> scaleType  = data.getAttributeType(CDM.SCALE_FACTOR);
                 final Class<?> offsetType = data.getAttributeType(CDM.ADD_OFFSET);
-                final int rangeType = Numbers.getEnumConstant(type);
                 if ((scaleType != null || offsetType != null)
-                        && rangeType >= data.getDataType().number
-                        && rangeType >= Math.max(Numbers.getEnumConstant(scaleType),
-                                                 Numbers.getEnumConstant(offsetType)))
+                        && !rangeType.isNarrowerThan(NumberType.forNumberClasses(scaleType, offsetType))
+                        && !data.getDataType().number.isWiderThan(rangeType))
                 {
                     @SuppressWarnings({"unchecked", "rawtypes"})
-                    final NumberRange<?> range = new MeasurementRange(type, minimum, true, maximum, true, data.getUnit());
+                    final NumberRange<?> range = new MeasurementRange(rangeType.classOfValues(false), minimum, true, maximum, true, data.getUnit());
                     return range;
                 } else {
                     /*
@@ -671,7 +672,7 @@ public class Convention {
                         }
                     }
                     @SuppressWarnings({"unchecked", "rawtypes"})
-                    final NumberRange<?> range = new NumberRange(type, minimum, isMinIncluded, maximum, isMaxIncluded);
+                    final NumberRange<?> range = new NumberRange(rangeType.classOfValues(false), minimum, isMinIncluded, maximum, isMaxIncluded);
                     return range;
                 }
             }

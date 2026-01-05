@@ -16,9 +16,6 @@
  */
 package org.apache.sis.util;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import org.apache.sis.math.Fraction;
 import static org.apache.sis.util.Numbers.*;
 
 // Test dependencies
@@ -33,59 +30,12 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class NumbersTest extends TestCase {
     /**
      * Creates a new test case.
      */
     public NumbersTest() {
-    }
-
-    /**
-     * Tests {@link Numbers#isInteger(Class)}.
-     */
-    @Test
-    public void testIsInteger() {
-        assertTrue (isInteger(Byte      .TYPE));
-        assertTrue (isInteger(Short     .TYPE));
-        assertTrue (isInteger(Integer   .TYPE));
-        assertTrue (isInteger(Long      .TYPE));
-        assertFalse(isInteger(Float     .TYPE));
-        assertFalse(isInteger(Double    .TYPE));
-        assertTrue (isInteger(Byte      .class));
-        assertTrue (isInteger(Short     .class));
-        assertTrue (isInteger(Integer   .class));
-        assertTrue (isInteger(Long      .class));
-        assertFalse(isInteger(Float     .class));
-        assertFalse(isInteger(Double    .class));
-        assertFalse(isInteger(String    .class));
-        assertFalse(isInteger(Character .class));
-        assertFalse(isInteger(Fraction  .class));
-        assertTrue (isInteger(BigInteger.class));
-        assertFalse(isInteger(BigDecimal.class));
-    }
-
-    /**
-     * Tests {@link Numbers#isFloat(Class)}.
-     */
-    @Test
-    public void testIsFloat() {
-        assertFalse(isFloat(Byte      .TYPE));
-        assertFalse(isFloat(Short     .TYPE));
-        assertFalse(isFloat(Integer   .TYPE));
-        assertFalse(isFloat(Long      .TYPE));
-        assertTrue (isFloat(Float     .TYPE));
-        assertTrue (isFloat(Double    .TYPE));
-        assertFalse(isFloat(Byte      .class));
-        assertFalse(isFloat(Short     .class));
-        assertFalse(isFloat(Integer   .class));
-        assertFalse(isFloat(Long      .class));
-        assertTrue (isFloat(Float     .class));
-        assertTrue (isFloat(Double    .class));
-        assertFalse(isFloat(String    .class));
-        assertFalse(isFloat(Character .class));
-        assertTrue (isFloat(Fraction  .class));
-        assertFalse(isFloat(BigInteger.class));
-        assertTrue (isFloat(BigDecimal.class));
     }
 
     /**
@@ -96,75 +46,6 @@ public final class NumbersTest extends TestCase {
         assertEquals(123456, Numbers.round(123456.2f));
         var e = assertThrows(ArithmeticException.class, () -> Numbers.round(Long.MAX_VALUE * 3d));
         assertMessageContains(e);
-    }
-
-    /**
-     * Tests {@link Numbers#primitiveBitCount(Class)}.
-     */
-    @Test
-    public void testPrimitiveBitCount() {
-        assertEquals(Byte   .SIZE, primitiveBitCount(Byte   .class));
-        assertEquals(Short  .SIZE, primitiveBitCount(Short  .class));
-        assertEquals(Integer.SIZE, primitiveBitCount(Integer.class));
-        assertEquals(Long.   SIZE, primitiveBitCount(Long   .class));
-        assertEquals(Float  .SIZE, primitiveBitCount(Float  .class));
-        assertEquals(Double .SIZE, primitiveBitCount(Double .class));
-    }
-
-    /**
-     * Tests {@link Numbers#primitiveToWrapper(Class)}.
-     */
-    @Test
-    public void testPrimitiveToWrapper() {
-        verifyPrimitiveToWrapper(Byte     .class,  Byte     .TYPE);
-        verifyPrimitiveToWrapper(Short    .class,  Short    .TYPE);
-        verifyPrimitiveToWrapper(Integer  .class,  Integer  .TYPE);
-        verifyPrimitiveToWrapper(Long     .class,  Long     .TYPE);
-        verifyPrimitiveToWrapper(Float    .class,  Float    .TYPE);
-        verifyPrimitiveToWrapper(Double   .class,  Double   .TYPE);
-        verifyPrimitiveToWrapper(Character.class,  Character.TYPE);
-        verifyPrimitiveToWrapper(Boolean  .class,  Boolean  .TYPE);
-        verifyPrimitiveToWrapper(Void     .class,  Void     .TYPE);
-        assertSame(String.class, primitiveToWrapper(String.class));
-    }
-
-    /**
-     * Asserts that calls to {@link Numbers#primitiveToWrapper(Class)} produces the expected wrapper.
-     * The {@code <N>} parameter type is for making sure that e.g. {@link Integer#TYPE} has the same
-     * type declaration than {@code Integer.class} despite being different {@link Class} instances.
-     */
-    private static <N> void verifyPrimitiveToWrapper(final Class<N> wrapper, final Class<N> primitive) {
-        assertNotSame(wrapper, primitive);
-        assertSame   (wrapper, primitiveToWrapper(primitive));
-        assertSame   (wrapper, primitiveToWrapper(wrapper));
-    }
-
-    /**
-     * Tests {@link Numbers#wrapperToPrimitive(Class)}.
-     */
-    @Test
-    public void testWrapperToPrimitive() {
-        verifyWrapperToPrimitive(Byte     .TYPE,  Byte     .class);
-        verifyWrapperToPrimitive(Short    .TYPE,  Short    .class);
-        verifyWrapperToPrimitive(Integer  .TYPE,  Integer  .class);
-        verifyWrapperToPrimitive(Long     .TYPE,  Long     .class);
-        verifyWrapperToPrimitive(Float    .TYPE,  Float    .class);
-        verifyWrapperToPrimitive(Double   .TYPE,  Double   .class);
-        verifyWrapperToPrimitive(Character.TYPE,  Character.class);
-        verifyWrapperToPrimitive(Boolean  .TYPE,  Boolean  .class);
-        verifyWrapperToPrimitive(Void     .TYPE,  Void     .class);
-        assertSame(String.class, wrapperToPrimitive(String.class));
-    }
-
-    /**
-     * Asserts that calls to {@link Numbers#wrapperToPrimitive(Class)} produces the expected wrapper.
-     * The {@code <N>} parameter type is for making sure that e.g. {@link Integer#TYPE} has the same
-     * type declaration than {@code Integer.class} despite being different {@link Class} instances.
-     */
-    private static <N> void verifyWrapperToPrimitive(final Class<N> primitive, final Class<N> wrapper) {
-        assertNotSame(primitive, wrapper);
-        assertSame   (primitive, wrapperToPrimitive(wrapper));
-        assertSame   (primitive, wrapperToPrimitive(primitive));
     }
 
     /**

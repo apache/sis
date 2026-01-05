@@ -16,11 +16,13 @@
  */
 package org.apache.sis.io;
 
+import java.util.EnumMap;
 import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import java.io.ObjectStreamException;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.internal.shared.LocalizedParseException;
@@ -46,10 +48,9 @@ final class DefaultFormat extends Format {
     private static final long serialVersionUID = -2309270763519060316L;
 
     /**
-     * The array for storing singleton instances for types {@code byte} to {@code double}.
-     * The value at index 0 is reserved for the generic {@link Number} type.
+     * The array for storing singleton instances.
      */
-    private static final Format[] INSTANCES = new Format[Numbers.DOUBLE - Numbers.BYTE + 2];
+    private static final EnumMap<NumberType, Format> INSTANCES = new EnumMap<>(NumberType.class);
 
     /**
      * The type of the objects to parse.
@@ -58,31 +59,21 @@ final class DefaultFormat extends Format {
 
     /**
      * Gets an instance of the given type, or {@code null} if the given type is not supported.
+     * The given type should be a subclass of {@link Number}.
+     *
+     * @throws IllegalArgumentException if the given type is not recognized.
      */
     static Format getInstance(final Class<?> type) {
-        final int index;
-        if (type == Number.class) {
-            index = 0;
-        } else {
-            index = Numbers.getEnumConstant(type) - (Numbers.BYTE - 1);
-            if (index < 0 || index >= INSTANCES.length) {
-                return null;
-            }
-        }
         synchronized (INSTANCES) {
-            Format format = INSTANCES[index];
-            if (format == null) {
-                INSTANCES[index] = format = new DefaultFormat(type);
-            }
-            return format;
+            return INSTANCES.computeIfAbsent(NumberType.forNumberClass(type), DefaultFormat::new);
         }
     }
 
     /**
      * Creates a new instance for parsing and formatting objects of the given type.
      */
-    private DefaultFormat(final Class<?> type) {
-        this.type = type;
+    private DefaultFormat(final NumberType type) {
+        this.type = type.classOfValues(false);
     }
 
     /**

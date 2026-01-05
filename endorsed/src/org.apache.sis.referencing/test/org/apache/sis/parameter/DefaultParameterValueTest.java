@@ -42,7 +42,7 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@SuppressWarnings("UnnecessaryBoxing")
+@SuppressWarnings({"exports", "UnnecessaryBoxing"})
 public final class DefaultParameterValueTest extends TestCase {
     /**
      * Small tolerance factor for floating point comparisons resulting from some calculation.

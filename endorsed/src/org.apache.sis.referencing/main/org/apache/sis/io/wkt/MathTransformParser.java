@@ -40,10 +40,10 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.internal.shared.ReferencingFactoryContainer;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.parameter.DefaultParameterValue;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.measure.Units;
 
@@ -229,7 +229,7 @@ class MathTransformParser extends AbstractParser {
             if (unitID != null) unitID[0] = code;
             if (Constants.EPSG.equalsIgnoreCase(codeSpace)) try {
                 final int n;
-                if (Numbers.isInteger(code.getClass())) {
+                if (NumberType.isInteger(code.getClass())) {
                     n = ((Number) code).intValue();
                 } else {
                     n = Integer.parseInt(code.toString());
@@ -388,7 +388,7 @@ class MathTransformParser extends AbstractParser {
                 if (unit != null) {
                     parameter.setValue(param.pullDouble("doubleValue"), unit);
                 } else if (isNumeric) {
-                    if (Numbers.isInteger(valueClass)) {
+                    if (NumberType.isInteger(valueClass)) {
                         parameter.setValue(param.pullInteger("intValue"));
                     } else {
                         parameter.setValue(param.pullDouble("doubleValue"));

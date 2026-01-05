@@ -320,10 +320,8 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
         /** See {@link StringConverter} for the conversion table. */
         @Override java.lang.Boolean doConvert(final String source) throws UnconvertibleObjectException {
-            switch (source.toLowerCase(java.util.Locale.ROOT)) {
-                case "true":  case "yes": case "on":  case "1": return java.lang.Boolean.TRUE;
-                case "false": case "no":  case "off": case "0": return java.lang.Boolean.FALSE;
-            }
+            var value = Strings.parseBoolean(source);
+            if (value != null) return value;
             throw new UnconvertibleObjectException(formatErrorMessage(source));
         }
     }

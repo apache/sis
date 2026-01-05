@@ -36,6 +36,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.CodeListSet;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.pending.jdk.JDK19;
@@ -211,7 +212,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
         if (valueDomain != null) {
             Class<?> componentType = valueClass.getComponentType();
             if (componentType != null) {
-                componentType = Numbers.primitiveToWrapper(componentType);
+                componentType = NumberType.primitiveToWrapper(componentType);
             } else {
                 componentType = valueClass;
             }

@@ -26,9 +26,9 @@ import org.opengis.util.Type;
 import org.opengis.util.RecordType;
 import org.opengis.util.MemberName;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.pending.jdk.JDK19;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -168,7 +168,7 @@ abstract class RecordDefinition {                                       // Inten
             i++;
         }
         fieldIndices = Containers.unmodifiable(fieldIndices);
-        baseValueClass = (baseValueClass != null) ? Numbers.wrapperToPrimitive(baseValueClass) : Object.class;
+        baseValueClass = (baseValueClass != null) ? NumberType.wrapperToPrimitive(baseValueClass) : Object.class;
         return types;
     }
 

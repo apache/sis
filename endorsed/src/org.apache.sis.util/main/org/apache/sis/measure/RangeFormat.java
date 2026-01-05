@@ -44,6 +44,7 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.Temporal;
 import java.lang.reflect.InaccessibleObjectException;
 import javax.measure.Unit;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.UnconvertibleObjectException;
@@ -1036,21 +1037,23 @@ public class RangeFormat extends Format implements Localized {
          * than a more specialized type, the finest suitable type will be determined.
          */
         if (Number.class.isAssignableFrom(elementType)) {
-            Class<? extends Number> type = (Class) elementType;
             Number min = (Number) minValue;
             Number max = (Number) maxValue;
-            if (type == Number.class) {
-                type = Numbers.widestClass(Numbers.narrowestClass(min), Numbers.narrowestClass(max));
-                min  = Numbers.cast(min, type);
-                max  = Numbers.cast(max, type);
+            NumberType type = NumberType.forNumberClass(elementType);
+            if (type == NumberType.NUMBER) {
+                type = NumberType.forNumberClasses(Numbers.narrowestClass(min), Numbers.narrowestClass(max));
+                min  = type.cast(min);
+                max  = type.cast(max);
             }
             if (min != null && min.doubleValue() == Double.NEGATIVE_INFINITY) min = null;
             if (max != null && max.doubleValue() == Double.POSITIVE_INFINITY) max = null;
             if (unit != null) {
-                final MeasurementRange<?> range = new MeasurementRange(type, min, isMinIncluded, max, isMaxIncluded, unit);
-                return range;
+                return new MeasurementRange(
+                        type.classOfValues(false),
+                        min, isMinIncluded,
+                        max, isMaxIncluded, unit);
             }
-            return new NumberRange(type, min, isMinIncluded, max, isMaxIncluded);
+            return new NumberRange(type.classOfValues(false), min, isMinIncluded, max, isMaxIncluded);
         } else if (Date.class.isAssignableFrom(elementType)) {
             return new Range(Date.class, (Date) minValue, isMinIncluded, (Date) maxValue, isMaxIncluded);
         } else {

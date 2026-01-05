@@ -25,7 +25,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import org.apache.sis.image.DataType;
-import org.apache.sis.util.Numbers;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.resources.Vocabulary;
 import static org.apache.sis.util.internal.shared.Numerics.COMPARISON_THRESHOLD;
 
@@ -181,12 +181,12 @@ public final class ImageUtilitiesTest extends TestCase {
      */
     @Test
     public void testToNumberEnum() {
-        assertEquals(Numbers.BYTE,    ImageUtilities.toNumberEnum(DataType.BYTE));
-        assertEquals(Numbers.SHORT,   ImageUtilities.toNumberEnum(DataType.SHORT));
-        assertEquals(Numbers.SHORT,   ImageUtilities.toNumberEnum(DataType.USHORT));
-        assertEquals(Numbers.INTEGER, ImageUtilities.toNumberEnum(DataType.INT));
-        assertEquals(Numbers.FLOAT,   ImageUtilities.toNumberEnum(DataType.FLOAT));
-        assertEquals(Numbers.DOUBLE,  ImageUtilities.toNumberEnum(DataType.DOUBLE));
+        assertEquals(NumberType.BYTE,    ImageUtilities.toNumberEnum(DataType.BYTE));
+        assertEquals(NumberType.SHORT,   ImageUtilities.toNumberEnum(DataType.SHORT));
+        assertEquals(NumberType.SHORT,   ImageUtilities.toNumberEnum(DataType.USHORT));
+        assertEquals(NumberType.INTEGER, ImageUtilities.toNumberEnum(DataType.INT));
+        assertEquals(NumberType.FLOAT,   ImageUtilities.toNumberEnum(DataType.FLOAT));
+        assertEquals(NumberType.DOUBLE,  ImageUtilities.toNumberEnum(DataType.DOUBLE));
     }
 
     /**

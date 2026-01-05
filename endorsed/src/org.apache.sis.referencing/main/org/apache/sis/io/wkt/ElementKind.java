@@ -25,7 +25,7 @@ import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.parameter.GeneralParameterValue;
-import org.apache.sis.util.Numbers;
+import org.apache.sis.math.NumberType;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.datum.DatumEnsemble;
@@ -188,7 +188,7 @@ public enum ElementKind {
             if (Extent               .class.isAssignableFrom(type)) return EXTENT;
             if (Unit                 .class.isAssignableFrom(type)) return UNIT;
             if (Number.class.isAssignableFrom(type)) {
-                return Numbers.isInteger(type) ? INTEGER : NUMBER;
+                return NumberType.isInteger(type) ? INTEGER : NUMBER;
             }
         }
         return null;

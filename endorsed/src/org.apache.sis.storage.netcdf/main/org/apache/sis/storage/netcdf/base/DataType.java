@@ -17,8 +17,8 @@
 package org.apache.sis.storage.netcdf.base;
 
 import java.awt.image.DataBuffer;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.math.Vector;
-import org.apache.sis.util.Numbers;
 
 
 /**
@@ -43,82 +43,82 @@ public enum DataType {
     /**
      * The enumeration for unknown data type. This is not a valid netCDF type.
      */
-    UNKNOWN(Numbers.OTHER, Object.class, false, false, (byte) 0, null),
+    UNKNOWN(NumberType.VOID, Object.class, false, false, (byte) 0, null),
 
     /**
      * 8 bits signed integer (netCDF type 1).
      * Can be made unsigned by assigning the “_Unsigned” attribute to a netCDF variable.
      */
-    BYTE(Numbers.BYTE, Byte.class, true, false, (byte) 7, org.apache.sis.image.DataType.BYTE),
+    BYTE(NumberType.BYTE, Byte.class, true, false, (byte) 7, org.apache.sis.image.DataType.BYTE),
 
     /**
      * Character type as unsigned 8 bits (netCDF type 2).
      * Encoding can be specified by assigning the “_Encoding” attribute to a netCDF variable.
      */
-    CHAR(Numbers.BYTE, Character.class, false, true, (byte) 2, null),   // NOT Numbers.CHARACTER
+    CHAR(NumberType.BYTE, Character.class, false, true, (byte) 2, null),   // NOT Numbers.CHARACTER
 
     /**
      * 16 bits signed integer (netCDF type 3).
      */
-    SHORT(Numbers.SHORT, Short.class, true, false, (byte) 8, org.apache.sis.image.DataType.SHORT),
+    SHORT(NumberType.SHORT, Short.class, true, false, (byte) 8, org.apache.sis.image.DataType.SHORT),
 
     /**
      * 32 bits signed integer (netCDF type 4).
      * This is also called "long", but that name is deprecated.
      */
-    INT(Numbers.INTEGER, Integer.class, true, false, (byte) 9, org.apache.sis.image.DataType.INT),
+    INT(NumberType.INTEGER, Integer.class, true, false, (byte) 9, org.apache.sis.image.DataType.INT),
 
     /**
      * 32 bits floating point number (netCDF type 5)
      * This is also called "real".
      */
-    FLOAT(Numbers.FLOAT, Float.class, false, false, (byte) 5, org.apache.sis.image.DataType.FLOAT),
+    FLOAT(NumberType.FLOAT, Float.class, false, false, (byte) 5, org.apache.sis.image.DataType.FLOAT),
 
     /**
      * 64 bits floating point number (netCDF type 6).
      */
-    DOUBLE(Numbers.DOUBLE, Double.class, false, false, (byte) 6, org.apache.sis.image.DataType.DOUBLE),
+    DOUBLE(NumberType.DOUBLE, Double.class, false, false, (byte) 6, org.apache.sis.image.DataType.DOUBLE),
 
     /**
      * 8 bits unsigned integer (netCDF type 7).
      * Not available in netCDF classic format.
      */
-    UBYTE(Numbers.BYTE, Short.class, true, true, (byte) 1, org.apache.sis.image.DataType.BYTE),
+    UBYTE(NumberType.BYTE, Short.class, true, true, (byte) 1, org.apache.sis.image.DataType.BYTE),
 
     /**
      * 16 bits unsigned integer (netCDF type 8).
      * Not available in netCDF classic format.
      */
-    USHORT(Numbers.SHORT, Integer.class, true, true, (byte) 3, org.apache.sis.image.DataType.USHORT),
+    USHORT(NumberType.SHORT, Integer.class, true, true, (byte) 3, org.apache.sis.image.DataType.USHORT),
 
     /**
      * 32 bits unsigned integer (netCDF type 9).
      * Not available in netCDF classic format.
      */
-    UINT(Numbers.INTEGER, Long.class, true, true, (byte) 4, org.apache.sis.image.DataType.UINT),
+    UINT(NumberType.INTEGER, Long.class, true, true, (byte) 4, org.apache.sis.image.DataType.UINT),
 
     /**
      * 64 bits signed integer (netCDF type 10).
      * Not available in netCDF classic format.
      */
-    INT64(Numbers.LONG, Long.class, true, false, (byte) 11, null),
+    INT64(NumberType.LONG, Long.class, true, false, (byte) 11, null),
 
     /**
      * 64 bits unsigned integer (netCDF type 11).
      * Not available in netCDF classic format.
      */
-    UINT64(Numbers.LONG, Number.class, true, true, (byte) 10, null),
+    UINT64(NumberType.LONG, Number.class, true, true, (byte) 10, null),
 
     /**
      * Character string (netCDF type 12).
      * Not available in netCDF classic format.
      */
-    STRING(Numbers.OTHER, String.class, false, false, (byte) 12, null);
+    STRING(NumberType.VOID, String.class, false, false, (byte) 12, null);
 
     /**
-     * Mapping from the netCDF data type to the enumeration used by our {@link Numbers} class.
+     * Mapping from the netCDF data type to the enumeration used by Apache <abbr>SIS</abbr>.
      */
-    public final byte number;
+    public final NumberType number;
 
     /**
      * {@code true} for data type that are signed or unsigned integers.
@@ -156,8 +156,8 @@ public enum DataType {
     /**
      * Creates a new enumeration value.
      */
-    private DataType(final byte number, final Class<?> classe, final boolean isInteger, final boolean isUnsigned,
-            final byte opposite, final org.apache.sis.image.DataType rasterDataType)
+    private DataType(final NumberType number, final Class<?> classe, final boolean isInteger, final boolean isUnsigned,
+                     final byte opposite, final org.apache.sis.image.DataType rasterDataType)
     {
         this.number         = number;
         this.classe         = classe;
@@ -193,13 +193,13 @@ public enum DataType {
      */
     public final int size() {
         switch (number) {
-            case Numbers.BYTE:    return Byte.BYTES;
-            case Numbers.SHORT:   return Short.BYTES;
-            case Numbers.INTEGER: // Same as float
-            case Numbers.FLOAT:   return Float.BYTES;
-            case Numbers.LONG:    // Same as double
-            case Numbers.DOUBLE:  return Double.BYTES;
-            default:              return 0;
+            case BYTE:    return Byte.BYTES;
+            case SHORT:   return Short.BYTES;
+            case INTEGER: // Same as float
+            case FLOAT:   return Float.BYTES;
+            case LONG:    // Same as double
+            case DOUBLE:  return Double.BYTES;
+            default:      return 0;
         }
     }
 

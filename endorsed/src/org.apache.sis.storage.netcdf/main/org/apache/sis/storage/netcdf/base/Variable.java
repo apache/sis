@@ -38,9 +38,9 @@ import org.apache.sis.storage.netcdf.internal.Resources;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.math.Vector;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -418,8 +418,8 @@ public abstract class Variable extends Node {
      * @return whether this variable contains values in unit of measurement, ignoring fill and missing values.
      */
     final boolean hasRealValues() {
-        final int n = getDataType().number;
-        if (n == Numbers.FLOAT | n == Numbers.DOUBLE) {
+        final NumberType n = getDataType().number;
+        if (n == NumberType.FLOAT | n == NumberType.DOUBLE) {
             final Convention convention = decoder.convention();
             if (convention != Convention.DEFAULT) {
                 return convention.transferFunction(this).isIdentity();
@@ -1135,7 +1135,7 @@ public abstract class Variable extends Node {
              * (i.e. it does not increase the risk of data loss).
              */
             double tolerance = 0;
-            if (Numbers.isFloat(data.getElementType())) {
+            if (NumberType.isFractional(data.getElementType())) {
                 final int n = data.size() - 1;
                 if (n >= 0) {
                     double first = data.doubleValue(0);

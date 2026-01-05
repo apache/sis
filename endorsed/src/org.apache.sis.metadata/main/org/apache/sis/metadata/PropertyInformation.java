@@ -28,7 +28,7 @@ import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.simple.SimpleIdentifier;
 import org.apache.sis.measure.ValueRange;
-import org.apache.sis.util.Numbers;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.logging.Logging;
@@ -217,7 +217,7 @@ final class PropertyInformation<E> extends SimpleIdentifier           // Impleme
         if (CharSequence.class.isAssignableFrom(elementType)) return Datatype.CHARACTER_STRING;
         if (CodeList    .class.isAssignableFrom(elementType)) return Datatype.CODE_LIST;
         if (Enum        .class.isAssignableFrom(elementType)) return Datatype.ENUMERATION;
-        if (Numbers.isInteger(elementType)) {
+        if (NumberType.isInteger(elementType)) {
             return Datatype.INTEGER;
         }
         // TODO: check the org.opengis.annotation.Classifier annotation here.

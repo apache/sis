@@ -22,6 +22,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.Numerics;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.collection.WeakHashSet;
 
@@ -140,7 +141,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
             final float value = (Float) n;
             return !Float.isNaN(value) || Float.floatToRawIntBits(value) == 0x7FC00000;
         } else {
-            return Numbers.getEnumConstant(n.getClass()) != Numbers.OTHER;
+            return NumberType.isReal(n.getClass());
         }
     }
 
@@ -365,37 +366,42 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
             final Number minValue, final boolean isMinIncluded,
             final Number maxValue, final boolean isMaxIncluded)
     {
-        final Class<? extends Number> type;
+        final NumberType type;
         if (asFloat) {
             if (minValue == null && maxValue == null) {
                 return null;
             }
             // Types supported below should be consistent with the comment in next block.
-            type = (isFloat(minValue) && isFloat(maxValue)) ? Float.class : Double.class;
+            type = (isFloat(minValue) && isFloat(maxValue)) ? NumberType.FLOAT : NumberType.DOUBLE;
         } else {
-            /*
-             * The `narrowestClass(…)` method currently returns only wrappers of primitive types.
-             * The `Fraction`, `BigInteger` or `BigDecimal` types accepted by `widestClass(…)` are lost.
-             * We could support those additional classes as well (by improving `narrowestClass(…)` and
-             * updating above Javadoc), but we do not yet have a need for them.
-             */
-            type = Numbers.widestClass(Numbers.narrowestClass(minValue),
-                                       Numbers.narrowestClass(maxValue));
-            if (type == null) {
+            type = bestFit(minValue, maxValue);
+            if (type == NumberType.NULL) {
                 return null;
             }
         }
-        Number min = Numbers.cast(minValue, type);
-        Number max = Numbers.cast(maxValue, type);
+        Number min = type.cast(minValue);
+        Number max = type.cast(maxValue);
         final boolean isCacheable = isCacheable(min) && isCacheable(max);
         if (isCacheable && Objects.equals(min, max)) {
             max = min;      // Share the same instance.
         }
-        NumberRange range = new NumberRange(type, min, isMinIncluded, max, isMaxIncluded);
+        var range = new NumberRange(
+                type.classOfValues(false),
+                min, isMinIncluded,
+                max, isMaxIncluded);
         if (isCacheable) {
             range = unique(range);
         }
         return range;
+    }
+
+    /**
+     * Returns the number type which is the best fit for the given values.
+     * If both values are {@code null}, returns {@link NumberType#NULL}.
+     */
+    static NumberType bestFit(final Number minValue, final Number maxValue) {
+        return NumberType.forNumberClasses(Numbers.narrowestClass(minValue),
+                                           Numbers.narrowestClass(maxValue));
     }
 
     /**
@@ -677,7 +683,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
         } else if (maxValue == null) {
             return Double.POSITIVE_INFINITY;
         }
-        if (Numbers.isInteger(getElementType())) {
+        if (NumberType.isInteger(getElementType())) {
             long min = minValue.longValue();
             long max = maxValue.longValue();
             if (!isMinIncluded) min++;
@@ -709,17 +715,17 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @return the adjacent value.
      */
     private static double next(final Class<?> type, double value, final boolean up) {
-        if (Numbers.isInteger(type)) {
+        if (NumberType.isInteger(type)) {
             if (up) value++; else value--;
-        } else if (type.equals(Float.class)) {
+        } else if (type == Float.class) {
             final float fv = (float) value;
             value = up ? Math.nextUp(fv) : Math.nextDown(fv);
-        } else if (type.equals(Double.class)) {
+        } else if (type == Double.class) {
             value = up ? Math.nextUp(value) : Math.nextDown(value);
         } else {
             // Thrown IllegalStateException instead of IllegalArgumentException because
             // the `type` argument given to this method come from a NumberRange field.
-            throw new IllegalStateException(Errors.format(Errors.Keys.NotAPrimitiveWrapper_1, type));
+            throw new IllegalStateException(Errors.format(Errors.Keys.NotANumericalType_1, type));
         }
         return value;
     }
@@ -731,25 +737,29 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      *
      * @param  value  the value to check for inclusion in this range, or {@code null}.
      * @return {@code true} if the given value is non-null and included in this range.
-     * @throws IllegalArgumentException if the given range cannot be converted to a valid type
+     * @throws IllegalArgumentException if the given value cannot be converted to a valid type
      *         through widening conversion.
      */
     public boolean containsAny(Number value) throws IllegalArgumentException {
         if (value == null) {
             return false;
         }
-        final Class<? extends Number> type = Numbers.widestClass(elementType, value.getClass());
-        value = Numbers.cast(value, type);
+        final NumberType type = NumberType.forNumberClasses(elementType, value.getClass());
+        try {
+            value = type.cast(value);
+        } catch (UnsupportedOperationException e) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotConvertValue_2, value, type), e);
+        }
         if (minValue != null) {
             @SuppressWarnings("unchecked")
-            final int c = ((Comparable) Numbers.cast(minValue, type)).compareTo(value);
+            final int c = ((Comparable) type.cast(minValue)).compareTo(value);
             if (isMinIncluded ? (c > 0) : (c >= 0)) {
                 return false;
             }
         }
         if (maxValue != null) {
             @SuppressWarnings("unchecked")
-            final int c = ((Comparable) Numbers.cast(maxValue, type)).compareTo(value);
+            final int c = ((Comparable) type.cast(maxValue)).compareTo(value);
             if (isMaxIncluded ? (c < 0) : (c <= 0)) {
                 return false;
             }

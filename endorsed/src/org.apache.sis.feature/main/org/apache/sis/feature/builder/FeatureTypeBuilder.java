@@ -36,9 +36,9 @@ import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.resources.Errors;
@@ -684,7 +684,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
             // We disallow Feature.class because that type shall be handled as association instead of attribute.
             throw new IllegalArgumentException(errors().getString(Errors.Keys.IllegalArgumentValue_2, "valueClass", valueClass));
         }
-        final var property = new AttributeTypeBuilder<V>(this, Numbers.primitiveToWrapper(valueClass));
+        final var property = new AttributeTypeBuilder<V>(this, NumberType.primitiveToWrapper(valueClass));
         properties.add(property);
         clearCache();
         return property;

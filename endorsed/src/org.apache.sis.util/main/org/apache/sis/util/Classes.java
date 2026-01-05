@@ -34,6 +34,7 @@ import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Modifier;
 import org.opengis.annotation.UML;
+import org.apache.sis.pending.jdk.JDK12;
 import org.apache.sis.pending.jdk.JDK19;
 
 
@@ -121,7 +122,7 @@ public final class Classes {
                 do buffer.insert(0, '[');
                 while (--change != 0);
                 if (element.isPrimitive()) {
-                    buffer.append(Numbers.getInternal(element));
+                    buffer.append(JDK12.descriptorString(element));
                 } else if (element.isArray()) {
                     buffer.append(element.getName());
                 } else {

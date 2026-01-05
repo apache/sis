@@ -18,7 +18,6 @@ package org.apache.sis.math;
 
 import java.io.Serializable;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.measure.NumberRange;
 
 
@@ -272,9 +271,9 @@ final class ConcatenatedVector extends Vector implements Serializable {
         if (inc != null) {
             Number check = second.increment(tolerance);
             if (check != null) {
-                final Class<? extends Number> type = Numbers.widestClass(inc.getClass(), check.getClass());
-                inc   = Numbers.cast(inc,   type);
-                check = Numbers.cast(check, type);
+                NumberType type = NumberType.forNumberClasses(inc.getClass(), check.getClass());
+                inc   = type.cast(inc);
+                check = type.cast(check);
                 if (inc.equals(check)) {
                     return inc;
                 }

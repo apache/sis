@@ -37,7 +37,6 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.StoreResource;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.coverage.SampleDimension;
@@ -50,6 +49,7 @@ import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.internal.shared.RangeArgument;
 import org.apache.sis.image.internal.shared.RasterFactory;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.resources.Errors;
@@ -495,7 +495,9 @@ public final class RasterResource extends AbstractGridCoverageResource implement
                     isMaxIncluded = isMinIncluded;
                     isMinIncluded = sb;
                 }
-                if (band.getDataType().number <= Numbers.LONG && minimum >= Long.MIN_VALUE && maximum <= Long.MAX_VALUE) {
+                if (!band.getDataType().number.isWiderThan(NumberType.LONG)
+                        && minimum >= Long.MIN_VALUE && maximum <= Long.MAX_VALUE)
+                {
                     range = NumberRange.create(Math.round(minimum), isMinIncluded, Math.round(maximum), isMaxIncluded);
                 } else {
                     range = NumberRange.create(minimum, isMinIncluded, maximum, isMaxIncluded);

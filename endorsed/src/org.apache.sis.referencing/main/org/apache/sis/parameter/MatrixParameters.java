@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
+import org.apache.sis.math.NumberType;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -39,13 +40,13 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.operation.provider.EPSGName;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.collection.CheckedContainer;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -461,12 +462,13 @@ public class MatrixParameters<E> implements CheckedContainer<E>, Serializable {
      * The values are {@link #zero}, {@link #one} and the {@link #parameters} array.
      * Callers shall assign the returned value to the {@link #parameters} field.
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     private <T> ParameterDescriptor<T>[] createCache() {
-        if (Number.class.isAssignableFrom(elementType)) try {
-            one  = (E) Numbers.wrap(1, (Class) elementType);
-            zero = (E) Numbers.wrap(0, (Class) elementType);
-        } catch (IllegalArgumentException e) {
+        try {
+            final NumberType type = NumberType.forNumberClass(elementType);
+            one  = elementType.cast(type.wrapExact(1));
+            zero = elementType.cast(type.wrapExact(0));
+        } catch (RuntimeException e) {
+            Logging.ignorableException(DefaultParameterValue.LOGGER, MatrixParameters.class, "<init>", e);
             // Ignore - zero and one will be left to null.
         }
         int length = 1;

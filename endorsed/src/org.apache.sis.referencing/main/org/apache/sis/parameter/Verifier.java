@@ -30,14 +30,14 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.system.Semaphores;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.internal.shared.Strings;
-import org.apache.sis.measure.Range;
-import org.apache.sis.measure.Units;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.IndexedResourceBundle;
+import org.apache.sis.math.NumberType;
+import org.apache.sis.measure.Range;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -151,17 +151,17 @@ final class Verifier {
                         if (componentType == null) {
                             // Usual case where the expected value is a singleton.
                             Number n = converter.convert((Number) value);
-                            convertedValue = Numbers.cast(n, expectedClass.asSubclass(Number.class));
+                            convertedValue = NumberType.forNumberClass(expectedClass).cast(n);
                         } else {
                             final int length = Array.getLength(value);
                             if (length != 0) {
                                 final Class<? extends Number> numberType =
-                                        Numbers.primitiveToWrapper(componentType).asSubclass(Number.class);
+                                        NumberType.primitiveToWrapper(componentType).asSubclass(Number.class);
                                 convertedValue = Array.newInstance(componentType, length);
                                 for (i=0; i<length; i++) {
                                     Number n = (Number) Array.get(value, i);
                                     n = converter.convert(n);                       // Value in units that we can compare.
-                                    n = Numbers.cast(n, numberType);
+                                    n = NumberType.forNumberClass(numberType).cast(n);
                                     Array.set(convertedValue, i, n);
                                 }
                             }
@@ -231,7 +231,8 @@ final class Verifier {
              * It could fail if the user overrides DefaultParameterDescriptor.getValueDomain()
              * in a way that break the method contract.
              */
-            assert valueDomain.getElementType() == (isArray ? Numbers.primitiveToWrapper(valueClass.getComponentType()) : valueClass) : valueDomain;
+            assert valueDomain.getElementType() ==
+                    (isArray ? NumberType.primitiveToWrapper(valueClass.getComponentType()) : valueClass) : valueDomain;
             final int length = isArray ? Array.getLength(convertedValue) : 1;
             for (int i=0; i<length; i++) {
                 final Object value = isArray ? Array.get(convertedValue, i) : convertedValue;

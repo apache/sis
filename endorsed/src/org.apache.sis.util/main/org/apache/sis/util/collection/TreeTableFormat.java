@@ -34,12 +34,12 @@ import java.text.ParseException;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
 import org.apache.sis.measure.UnitFormat;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.internal.Acyclic;
 import org.apache.sis.util.internal.shared.PropertyFormat;
 import org.apache.sis.util.internal.shared.LocalizedParseException;
@@ -716,7 +716,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         protected final String toString(final Object value) {
             final String text;
             final Format format = getFormat(value.getClass());
-            if (format instanceof DecimalFormat && Numbers.isFloat(value.getClass())) {
+            if (format instanceof DecimalFormat && NumberType.isFractional(value.getClass())) {
                 final double number = ((Number) value).doubleValue();
                 if (number != (int) number) {   // Cast to `int` instead of `long` as a way to limit to about 2E9.
                     /*

@@ -22,6 +22,7 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.math.FunctionProperty;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -97,9 +98,12 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
      */
     @Override
     public Set<FunctionProperty> properties() {
-        return EnumSet.of(Numbers.widestClass(sourceClass, targetClass) == targetClass
-                              ? FunctionProperty.INJECTIVE : FunctionProperty.SURJECTIVE,
-                          FunctionProperty.ORDER_PRESERVING, FunctionProperty.INVERTIBLE);
+        var properties = EnumSet.of(FunctionProperty.ORDER_PRESERVING, FunctionProperty.INVERTIBLE);
+        NumberType source = NumberType.forClass(sourceClass).orElse(NumberType.NULL);
+        NumberType target = NumberType.forClass(targetClass).orElse(NumberType.NULL);
+        if (source.isConversionLossless(target)) properties.add(FunctionProperty.INJECTIVE);
+        if (target.isConversionLossless(source)) properties.add(FunctionProperty.SURJECTIVE);
+        return properties;
     }
 
     /**

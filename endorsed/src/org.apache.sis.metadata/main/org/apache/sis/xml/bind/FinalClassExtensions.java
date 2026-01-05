@@ -19,7 +19,7 @@ package org.apache.sis.xml.bind;
 import java.util.Map;
 import java.util.IdentityHashMap;
 import java.lang.reflect.Modifier;
-import org.apache.sis.util.Numbers;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.xml.NilReason;
 
 
@@ -80,7 +80,8 @@ public final class FinalClassExtensions {
      * Primitive wrappers are not allowed neither because they will become value objects.
      */
     private static boolean isValidKey(final Class<?> type) {
-        return Modifier.isFinal(type.getModifiers()) && Numbers.getEnumConstant(type) == Numbers.OTHER;
+        return Modifier.isFinal(type.getModifiers()) && !type.isPrimitive() &&
+                !NumberType.forClass(type).orElse(NumberType.NULL).isConvertible();
     }
 
     /**

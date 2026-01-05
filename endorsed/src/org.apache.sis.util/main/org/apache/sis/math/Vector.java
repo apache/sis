@@ -90,7 +90,7 @@ import org.apache.sis.system.Loggers;
  * method and by accepting buffer in the {@link #create(Object, boolean)} method.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 1.4
+ * @version 1.6
  *
  * @see org.apache.sis.util.collection.IntegerList
  *
@@ -207,25 +207,25 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @return the given sequence as a vector.
      */
     public static Vector createSequence(final Number first, final Number increment, final int length) {
-        Class<? extends Number> type;
-        type = Numbers.widestClass(first, increment);
-        type = Numbers.widestClass(type,
-               Numbers.narrowestClass(first.doubleValue() + increment.doubleValue() * (length-1)));
+        final double last = Math.fma(length - 1, increment.doubleValue(), first.doubleValue());
+        final NumberType type = NumberType.forNumberClasses(
+                Numbers.widestClass(first, increment),
+                Numbers.narrowestClass(last));
         return createSequence(type, first, increment, length);
     }
 
     /**
      * Creates a sequence of the given type.
      */
-    static Vector createSequence(final Class<? extends Number> type, final Number first, final Number increment, final int length) {
-        final int t = Numbers.getEnumConstant(type);
-        if (t >= Numbers.BYTE && t <= Numbers.LONG) {
+    private static Vector createSequence(final NumberType type, final Number first, final Number increment, final int length) {
+        final Class<? extends Number> c = type.wrapper.asSubclass(Number.class);
+        if (type.isConversionLossless(NumberType.LONG)) {
             // Use the long type if possible because not all long values can be represented as double.
-            return new SequenceVector.Longs(type, first, increment, length);
-        } else if (t == Numbers.FLOAT) {
-            return new SequenceVector.Floats(type, first, increment, length);
+            return new SequenceVector.Longs(c, first, increment, length);
+        } else if (type == NumberType.FLOAT) {
+            return new SequenceVector.Floats(c, first, increment, length);
         } else {
-            return new SequenceVector.Doubles(type, first, increment, length);
+            return new SequenceVector.Doubles(c, first, increment, length);
         }
     }
 
@@ -266,6 +266,13 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     public abstract Class<? extends Number> getElementType();
 
     /**
+     * Convenience method for a frequently requested information.
+     */
+    private NumberType getNumberType() {
+        return NumberType.forNumberClass(getElementType());
+    }
+
+    /**
      * Returns {@code true} if values in this vector can be cast to single-precision floating point numbers
      * ({@code float}) without precision lost. In case of doubt, this method conservatively returns {@code false}.
      * This information is inferred from the {@linkplain #getElementType() element type} only.
@@ -279,8 +286,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @since 1.1
      */
     public boolean isSinglePrecision() {
-        final byte type = Numbers.getEnumConstant(getElementType());
-        return (type == Numbers.FLOAT) || (type >= Numbers.BYTE && type <= Numbers.SHORT);
+        return getNumberType().isConversionLossless(NumberType.FLOAT);
     }
 
     /**
@@ -288,11 +294,8 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * This is an estimation only and should be used only as a hint.
      */
     private int getBitCount() {
-        try {
-            return Numbers.primitiveBitCount(getElementType());
-        } catch (IllegalArgumentException e) {
-            return Integer.SIZE;                    // Assume references compressed on 32 bits.
-        }
+        // If empty, assume references compressed on 32 bits.
+        return getNumberType().size().orElse(Integer.SIZE);
     }
 
     /**
@@ -302,7 +305,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @return {@code true} if this vector contains only integer values.
      */
     public boolean isInteger() {
-        if (!Numbers.isInteger(getElementType())) {
+        if (!NumberType.isInteger(getElementType())) {
             for (int i=size(); --i >= 0;) {
                 if (!Numerics.isInteger(doubleValue(i))) {
                     return false;
@@ -769,14 +772,14 @@ search:     for (;;) {
         ArgumentChecks.ensurePositive("tolerance", tolerance);
         int i = size();
         if (i >= 2) try {
-            final int type = Numbers.getEnumConstant(getElementType());
+            final NumberType type = getNumberType();
             /*
              * For integer types, verify if the increment is constant. We do not use the "first + inc*i"
              * formula because some `long` values cannot be represented accurately as `double` values.
              * The result will be converted to the same type as the vector element type if possible,
              * or the next wider type if the increment is an unsigned value too big for the element type.
              */
-            if (type >= Numbers.BYTE && type <= Numbers.LONG && tolerance < 0.5) {
+            if (type.isConversionLossless(NumberType.LONG) && tolerance < 0.5) {
                 long p;
                 final long inc = subtract(longValue(--i), p = longValue(--i));
                 while (i != 0) {
@@ -785,9 +788,9 @@ search:     for (;;) {
                     }
                 }
                 switch (type) {
-                    case Numbers.BYTE:    if (inc >= Byte   .MIN_VALUE && inc <= Byte   .MAX_VALUE) return (byte)  inc;  // else fallthrough
-                    case Numbers.SHORT:   if (inc >= Short  .MIN_VALUE && inc <= Short  .MAX_VALUE) return (short) inc;  // else fallthrough
-                    case Numbers.INTEGER: if (inc >= Integer.MIN_VALUE && inc <= Integer.MAX_VALUE) return (int)   inc;  // else fallthrough
+                    case BYTE:    if (inc >= Byte   .MIN_VALUE && inc <= Byte   .MAX_VALUE) return (byte)  inc;  // else fallthrough
+                    case SHORT:   if (inc >= Short  .MIN_VALUE && inc <= Short  .MAX_VALUE) return (short) inc;  // else fallthrough
+                    case INTEGER: if (inc >= Integer.MIN_VALUE && inc <= Integer.MAX_VALUE) return (int)   inc;  // else fallthrough
                     default: return inc;
                 }
             }
@@ -802,7 +805,7 @@ search:     for (;;) {
              */
             final double first = doubleValue(0);
             double inc = (doubleValue(--i) - first) / i;                              // First estimation of increment.
-            if (type == Numbers.DOUBLE || type == Numbers.BIG_DECIMAL) {
+            if (type == NumberType.DOUBLE || type == NumberType.BIG_DECIMAL) {
                 final int pz = Math.max(0, Math.min(i, (int) Math.rint(-first / inc)));   // Presumed index of value zero.
                 if (doubleValue(pz) == 0) {
                     final Number value = (pz == i) ? get(pz-1) : get(pz+1);     // Value adjacent to zero.
@@ -812,7 +815,7 @@ search:     for (;;) {
                     }
                 }
             }
-            if (type == Numbers.FLOAT) {
+            if (type == NumberType.FLOAT) {
                 while (i >= 1) {
                     final float  value = floatValue(i);
                     final double delta = Math.abs(first + inc*i-- - value);
@@ -1416,7 +1419,7 @@ search:     for (;;) {
         final int length = size();
         final Number inc = increment(tolerance);
         if (inc != null) {
-            return createSequence(getElementType(), get(0), inc, length);
+            return createSequence(getNumberType(), get(0), inc, length);
         }
         /*
          * Verify if the vector contains only NaN values. This extra check is useful because `increment()`
@@ -1426,7 +1429,7 @@ search:     for (;;) {
         int i = 0;
         do if (i >= length) {
             final Double NaN = Double.NaN;
-            return createSequence(getElementType(), NaN, NaN, length);
+            return createSequence(getNumberType(), NaN, NaN, length);
         } while (isNaN(i++));
         /*
          * Verify if the vector contains repetitions. If yes, then we can keep only a subregion of this vector.
@@ -1543,19 +1546,19 @@ search:     for (;;) {
     final Vector copy() {
         final Object array;
         final int size = size();
-        switch (Numbers.getEnumConstant(getElementType())) {
-            case Numbers.DOUBLE: {
+        switch (getNumberType()) {
+            case DOUBLE: {
                 array = doubleValues();
                 break;
             }
-            case Numbers.FLOAT: {
+            case FLOAT: {
                 array = floatValues();
                 if (size != 0 && get(0) instanceof Double) {
                     return createForDecimal((float[]) array);
                 }
                 break;
             }
-            case Numbers.LONG: {
+            case LONG: {
                 final long[] data = new long[size];
                 for (int i=0; i<size; i++) {
                     data[i] = longValue(i);
@@ -1563,7 +1566,7 @@ search:     for (;;) {
                 array = data;
                 break;
             }
-            case Numbers.INTEGER: {
+            case INTEGER: {
                 final int[] data = new int[size];
                 for (int i=0; i<size; i++) {
                     data[i] = (int) longValue(i);           // For handling both signed and unsigned integers.
@@ -1571,7 +1574,7 @@ search:     for (;;) {
                 array = data;
                 break;
             }
-            case Numbers.SHORT: {
+            case SHORT: {
                 final short[] data = new short[size];
                 for (int i=0; i<size; i++) {
                     data[i] = (short) intValue(i);          // For handling both signed and unsigned integers.
@@ -1579,7 +1582,7 @@ search:     for (;;) {
                 array = data;
                 break;
             }
-            case Numbers.BYTE: {
+            case BYTE: {
                 final byte[] data = new byte[size];
                 for (int i=0; i<size; i++) {
                     data[i] = (byte) intValue(i);           // For handling both signed and unsigned integers.

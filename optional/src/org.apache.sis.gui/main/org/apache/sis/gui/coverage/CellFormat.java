@@ -29,7 +29,7 @@ import javafx.scene.control.Tooltip;
 import javafx.util.Duration;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.math.DecimalFunctions;
-import org.apache.sis.util.Numbers;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.gui.internal.Styles;
 import org.apache.sis.gui.internal.RecentChoices;
@@ -311,7 +311,7 @@ final class CellFormat extends SimpleStringProperty {
     private static OptionalInt getFractionDigits(final RenderedImage image, final int band) {
         final Object property = image.getProperty(PlanarImage.SAMPLE_RESOLUTIONS_KEY);
         if (property != null) {
-            if (Numbers.isNumber(property.getClass().getComponentType()) && band < Array.getLength(property)) {
+            if (NumberType.isReal(property.getClass().getComponentType()) && band < Array.getLength(property)) {
                 final double resolution = Math.abs(((Number) Array.get(property, band)).doubleValue());
                 if (resolution > 0 && resolution <= Double.MAX_VALUE) {     // Non-zero, non-NaN and finite.
                     return OptionalInt.of(DecimalFunctions.fractionDigitsForDelta(resolution, false));

@@ -20,6 +20,7 @@ import java.util.Objects;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 
@@ -161,19 +162,20 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     public static MeasurementRange<?> createBestFit(final Number minValue, final boolean isMinIncluded,
                                                     final Number maxValue, final boolean isMaxIncluded, final Unit<?> unit)
     {
-        final Class<? extends Number> type;
-        type = Numbers.widestClass(Numbers.narrowestClass(minValue),
-                                   Numbers.narrowestClass(maxValue));
-        if (type == null) {
+        final NumberType type = bestFit(minValue, maxValue);
+        if (type == NumberType.NULL) {
             return null;
         }
-        Number min = Numbers.cast(minValue, type);
-        Number max = Numbers.cast(maxValue, type);
+        Number min = type.cast(minValue);
+        Number max = type.cast(maxValue);
         final boolean isCacheable = isCacheable(min) && isCacheable(max);
         if (isCacheable && Objects.equals(min, max)) {
             max = min;      // Share the same instance.
         }
-        MeasurementRange range = new MeasurementRange(type, min, isMinIncluded, max, isMaxIncluded, unit);
+        var range = new MeasurementRange(
+                type.classOfValues(false),
+                min, isMinIncluded,
+                max, isMaxIncluded, unit);
         if (isCacheable) {
             range = unique(range);
         }
@@ -372,7 +374,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
                     final double  td = minimum; minimum = maximum; maximum = td;
                     final boolean tb = minInc;  minInc  = maxInc;  maxInc  = tb;
                 }
-                if (Numbers.isInteger(type)) {
+                if (NumberType.isInteger(type)) {
                     minInc &= (minimum == (minimum = Math.floor(minimum)));
                     maxInc &= (maximum == (maximum = Math.ceil (maximum)));
                 }

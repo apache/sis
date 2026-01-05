@@ -31,8 +31,8 @@ import org.opengis.annotation.UML;
 import org.opengis.annotation.Obligation;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.metadata.citation.Citation;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
@@ -358,7 +358,7 @@ class PropertyAccessor {
             } else if (Map.class.isAssignableFrom(elementType)) {
                 elementType = Map.Entry.class;
             }
-            elementTypes[i] = Numbers.primitiveToWrapper(elementType);
+            elementTypes[i] = NumberType.primitiveToWrapper(elementType);
         }
         this.setters = setters;
     }
@@ -1082,7 +1082,7 @@ class PropertyAccessor {
         if (newValue == null) {
             // Cannot test elementType, because it has been converted to the wrapper class.
             if (targetType.isPrimitive()) {
-                newValues[0] = Numbers.valueOfNil(targetType);
+                newValues[0] = NumberType.forNumberClass(targetType).nilValue();
             }
             return null;
         }
@@ -1111,7 +1111,7 @@ class PropertyAccessor {
                  * cause an exception later. The message should be appropriate.
                  */
             }
-            targetType = Numbers.primitiveToWrapper(targetType);
+            targetType = NumberType.primitiveToWrapper(targetType);
         } else {
             /*
              * We expect a collection. Collections are handled in one of the two ways below:

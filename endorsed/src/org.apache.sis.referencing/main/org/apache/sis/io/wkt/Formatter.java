@@ -60,9 +60,9 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
@@ -1611,7 +1611,7 @@ public class Formatter implements Localized {
     final boolean appendValue(final Object value) {
         if (value instanceof Number) {
             final var number = (Number) value;
-            if (Numbers.isInteger(number.getClass())) {
+            if (NumberType.isInteger(number.getClass())) {
                 append(number.longValue());
             } else {
                 append(number.doubleValue());

@@ -760,9 +760,9 @@ public class Errors extends IndexedResourceBundle {
         public static final short NotANumber_1 = 137;
 
         /**
-         * Class ‘{0}’ is not a primitive type wrapper.
+         * Class ‘{0}’ is not a numerical type recognized by Apache SIS.
          */
-        public static final short NotAPrimitiveWrapper_1 = 138;
+        public static final short NotANumericalType_1 = 138;
 
         /**
          * Text “{0}” is not a Unicode identifier.

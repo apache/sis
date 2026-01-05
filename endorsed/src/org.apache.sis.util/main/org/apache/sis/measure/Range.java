@@ -22,10 +22,10 @@ import java.util.Formattable;
 import java.util.FormattableFlags;
 import java.io.Serializable;
 import javax.measure.Unit;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArgumentCheckByAssertion;
 import org.apache.sis.util.Emptiable;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.collection.CheckedContainer;
 
@@ -725,7 +725,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
                 buffer.append(minValue);
             }
             // Compact representation for integers, more space for real numbers.
-            if (Numbers.isInteger(elementType) && isCompact(minValue, false) && isCompact(maxValue, true)) {
+            if (NumberType.isInteger(elementType) && isCompact(minValue, false) && isCompact(maxValue, true)) {
                 buffer.append('…');
             } else {
                 buffer.append(" … ");

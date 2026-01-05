@@ -23,9 +23,9 @@ import java.awt.image.RasterFormatException;
 import java.awt.image.SampleModel;
 import java.awt.image.MultiPixelPackedSampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.feature.internal.Resources;
@@ -39,7 +39,10 @@ import static org.apache.sis.util.internal.shared.Numerics.MAX_INTEGER_CONVERTIB
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
- * @since   1.1
+ *
+ * @see org.apache.sis.math.NumberType
+ *
+ * @since 1.1
  */
 public enum DataType {
     /**
@@ -187,14 +190,13 @@ public enum DataType {
      * @return smallest data type for the given range of values.
      */
     public static DataType forRange(final NumberRange<?> range, final boolean forceInteger) {
-        final byte nt = Numbers.getEnumConstant(range.getElementType());
-        if (!forceInteger) {
-            if (nt >= Numbers.DOUBLE)   return DOUBLE;
-            if (nt >= Numbers.FRACTION) return FLOAT;
+        final NumberType nt = NumberType.forClass(range.getElementType()).orElse(NumberType.NULL);
+        if (!forceInteger && nt.isFractional()) {
+            return nt.isNarrowerThan(NumberType.DOUBLE) ? FLOAT : DOUBLE;
         }
         final double min = range.getMinDouble();
         final double max = range.getMaxDouble();
-        if (nt < Numbers.BYTE || nt > Numbers.FLOAT || nt == Numbers.LONG) {
+        if (!nt.isReal() || nt.ordinal() >= NumberType.LONG.ordinal()) {
             /*
              * Value type is long, double, BigInteger, BigDecimal or unknown type.
              * If conversions to 32 bits integers would lost integer digits, or if
@@ -234,12 +236,12 @@ public enum DataType {
      * @throws RasterFormatException if the given type is not a recognized.
      */
     public static DataType forPrimitiveType(final Class<?> type, final boolean unsigned) {
-        switch (Numbers.getEnumConstant(type)) {
-            case Numbers.BYTE:    return unsigned ? BYTE   : SHORT;
-            case Numbers.SHORT:   return unsigned ? USHORT : SHORT;
-            case Numbers.INTEGER: return unsigned ? UINT   : INT;
-            case Numbers.FLOAT:   return FLOAT;
-            case Numbers.DOUBLE:  return DOUBLE;
+        switch (NumberType.forClass(type).orElse(NumberType.NULL)) {
+            case BYTE:    return unsigned ? BYTE   : SHORT;
+            case SHORT:   return unsigned ? USHORT : SHORT;
+            case INTEGER: return unsigned ? UINT   : INT;
+            case FLOAT:   return FLOAT;
+            case DOUBLE:  return DOUBLE;
         }
         throw new RasterFormatException(Resources.format(Resources.Keys.UnknownDataType_1, type));
     }

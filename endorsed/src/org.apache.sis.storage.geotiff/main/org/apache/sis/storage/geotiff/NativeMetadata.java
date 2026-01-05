@@ -27,7 +27,7 @@ import static java.lang.Math.addExact;
 import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 import org.apache.sis.math.Vector;
-import org.apache.sis.util.Numbers;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
@@ -254,7 +254,7 @@ final class NativeMetadata extends GeoKeysLoader {
      * Replaces an integer code by its enumeration value if that value is different than {@code unknown}.
      */
     private static Object toString(final Object value, final IntFunction<Enum<?>> valueOf, final Enum<?> unknown) {
-        if (value != null && Numbers.isInteger(value.getClass())) {
+        if (value != null && NumberType.isInteger(value.getClass())) {
             final Enum<?> c = valueOf.apply(((Number) value).intValue());
             if (c != unknown) return c.name();
         }

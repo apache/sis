@@ -39,7 +39,7 @@ import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.system.Modules;
-import org.apache.sis.util.Numbers;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.resources.Vocabulary;
 import static org.apache.sis.util.internal.shared.Numerics.COMPARISON_THRESHOLD;
@@ -350,18 +350,23 @@ public final class ImageUtilities {
     /**
      * The values to be returned by {@link #toNumberEnum(DataType)}.
      */
-    private static final byte[] NUMBER_ENUMS = {
-        Numbers.BYTE, Numbers.SHORT, Numbers.SHORT, Numbers.INTEGER, Numbers.FLOAT, Numbers.DOUBLE
+    private static final NumberType[] NUMBER_ENUMS = {
+        NumberType.BYTE,
+        NumberType.SHORT,
+        NumberType.SHORT,
+        NumberType.INTEGER,
+        NumberType.FLOAT,
+        NumberType.DOUBLE
     };
 
     /**
-     * Converts a {@link DataBuffer} enumeration value to {@link Numbers} enumeration value.
+     * Converts a {@link DataBuffer} enumeration value to {@link NumberType} enumeration value.
      * This method ignores whether the type is signed or unsigned.
      *
      * @param  type  the {@link DataBuffer} enumeration value.
-     * @return the {@link Numbers} enumeration value.
+     * @return the enumeration value.
      */
-    public static byte toNumberEnum(final DataType type) {
+    public static NumberType toNumberEnum(final DataType type) {
         return NUMBER_ENUMS[type.toDataBufferType()];
     }
 
@@ -551,7 +556,7 @@ public final class ImageUtilities {
      * Converts tile indices from the specified source image to the specified target image.
      *
      * @param  source  image for which tile indices are given.
-     * @param  tartet  image for which tile indices are desired.
+     * @param  target  image for which tile indices are desired.
      * @param  tiles   ranges of indices of tiles in the source image.
      * @return ranges of indices of tiles in the target image.
      */

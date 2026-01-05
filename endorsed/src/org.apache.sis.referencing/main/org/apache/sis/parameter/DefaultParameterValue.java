@@ -52,6 +52,7 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.shared.WKTUtilities;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.math.NumberType;
 import org.apache.sis.measure.Units;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.util.Utilities;
@@ -60,7 +61,6 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
@@ -650,13 +650,12 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     private static Number cast(final Number value, final Class<?> expectedClass) {
         if (expectedClass == Double.class && value instanceof Float) {
             return DecimalFunctions.floatToDouble(value.floatValue());
-        } else if (Number.class.isAssignableFrom(expectedClass)) {
-            final Number n = Numbers.cast(value, (Class<? extends Number>) expectedClass);
-            if (Numerics.equals(n.doubleValue(), value.doubleValue())) {
-                return n;
-            }
         }
-        return value;
+        return NumberType.forClass(expectedClass)
+                .filter(NumberType::isConvertible)
+                .map((type) -> type.cast(value))
+                .filter((n) -> Numerics.equals(n.doubleValue(), value.doubleValue()))
+                .orElse(value);
     }
 
     /**
@@ -707,7 +706,7 @@ convert:            if (componentType != null) {
                         final int length = Array.getLength(array);
                         if (length > 0) {
                             final Object copy = Array.newInstance(componentType, length);
-                            componentType = Numbers.primitiveToWrapper(componentType);
+                            componentType = NumberType.primitiveToWrapper(componentType);
                             for (int i=0; i<length; i++) {
                                 Object element = Array.get(array, i);
                                 if (element != null) {
@@ -778,15 +777,15 @@ convert:            if (componentType != null) {
      * If the value cannot be wrapped, then this method fallbacks on the {@link Double} class
      * consistently with this method being invoked only by {@code setValue(double, …)} methods.
      *
-     * @throws IllegalArgumentException if the given value cannot be converted to the given type.
+     * @throws UnsupportedOperationException if the given value cannot be converted to the given type.
+     * @throws ArithmeticException if the given value cannot be converted without precision lost.
      */
     @SuppressWarnings("unchecked")
     private static Number wrap(final double value, final Class<?> valueClass) throws IllegalArgumentException {
-        if (Number.class.isAssignableFrom(valueClass)) {
-            return Numbers.wrap(value, (Class<? extends Number>) valueClass);
-        } else {
-            return value;
-        }
+        return NumberType.forClass(valueClass)
+                .filter(NumberType::isConvertible)
+                .map((type) -> type.wrapExact(value))
+                .orElse(value);
     }
 
     /**
@@ -805,7 +804,7 @@ convert:            if (componentType != null) {
         final Number n;
         try {
             n = wrap(newValue, descriptor.getValueClass());
-        } catch (IllegalArgumentException e) {
+        } catch (RuntimeException e) {
             throw (InvalidParameterValueException) new InvalidParameterValueException(
                     e.getLocalizedMessage(), Verifier.getDisplayName(descriptor), newValue).initCause(e);
         }
@@ -834,7 +833,7 @@ convert:            if (componentType != null) {
         final Number n;
         try {
             n = wrap(newValue, descriptor.getValueClass());
-        } catch (IllegalArgumentException e) {
+        } catch (RuntimeException e) {
             throw (InvalidParameterValueException) new InvalidParameterValueException(
                     e.getLocalizedMessage(), Verifier.getDisplayName(descriptor), newValue).initCause(e);
         }
@@ -1248,7 +1247,7 @@ convert:            if (componentType != null) {
         if (value != null) {
             if (value instanceof Number) {
                 final Number n = (Number) value;
-                if (Numbers.isInteger(n.getClass())) {
+                if (NumberType.isInteger(n.getClass())) {
                     final int xmlValue = n.intValue();
                     if (xmlValue >= 0 && xmlValue == n.doubleValue()) {
                         return xmlValue;
@@ -1262,9 +1261,9 @@ convert:            if (componentType != null) {
             if (isFile(value)) {
                 return ObjectConverters.convert(value, URI.class);
             }
-            final Class<?> type = Numbers.primitiveToWrapper(value.getClass().getComponentType());
+            final Class<?> type = NumberType.primitiveToWrapper(value.getClass().getComponentType());
             if (type != null && Number.class.isAssignableFrom(type)) {
-                if (Numbers.isInteger(type)) {
+                if (NumberType.isInteger(type)) {
                     return new IntegerList(value);
                 }
                 return new MeasureList(value, type, getUnit());
