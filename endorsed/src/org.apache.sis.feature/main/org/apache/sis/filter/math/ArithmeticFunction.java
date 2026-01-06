@@ -72,14 +72,16 @@ public abstract class ArithmeticFunction<R, A extends Number> extends BinaryFunc
     public Class<? extends Number> getResultClass() {
         NumberType type = widestOperandType();
         switch (type) {
-            case BYTE:    return Short.class;
-            case SHORT:   return Integer.class;
-            case INTEGER: return Long.class;
-            case LONG:    return Number.class;  // Because of the possibility of overflow.
-        }
-        type = effective(type);
-        if (type.isReal()) {
-            return type.classOfValues(false).asSubclass(Number.class);
+            case BYTE:
+            case SHORT:
+            case INTEGER: return Long.class;    // `applyAsLong(…)` is used for all these types.
+            case LONG:    break;                // Because of the possibility of overflow.
+            default: {
+                type = effective(type);
+                if (type.isReal()) {
+                    return type.classOfValues(false).asSubclass(Number.class);
+                }
+            }
         }
         return Number.class;
     }

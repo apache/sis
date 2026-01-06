@@ -101,7 +101,7 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
      * N⋅m is considered equivalent to m⋅N, and both of them are associated to the symbol "J" (Joule).
      * We ignore dimension order because it has no incidence on the unit symbol shown to user.
      */
-    private static final Map<Object,Object> HARD_CODED = new HashMap<>(256);
+    private static final Map<Object, Object> HARD_CODED = new HashMap<>(256);
 
     /**
      * Units defined by the user. Accesses to this map implies synchronization.
@@ -121,7 +121,7 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
      * the user-defined map will typically stay empty. This separation avoids synchronization of hard-coded values.
      * Furthermore the two maps have a different policy on whether to consider dimension order as significant.
      */
-    private static final WeakValueHashMap<Object,Object> USER_DEFINED = new WeakValueHashMap<>(Object.class,
+    private static final WeakValueHashMap<Object, Object> USER_DEFINED = new WeakValueHashMap<>(Object.class,
             UnitRegistry::hashCodeOrdered,
             UnitRegistry::equalsOrdered);
 

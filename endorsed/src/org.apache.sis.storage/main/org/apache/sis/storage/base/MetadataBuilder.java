@@ -161,7 +161,7 @@ public class MetadataBuilder {
      *   <tr><td>Other</td>                        <td>Same as key</td>         <td>{@link #shared(Class, Object)}</td></tr>
      * </table>
      */
-    private final Map<Object,Object> sharedValues = new HashMap<>();
+    private final Map<Object, Object> sharedValues = new HashMap<>();
 
     /**
      * Whether to add ISO 19115-1 and ISO 19115-2 entries in "metadata standards" node.

@@ -267,7 +267,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * The only cost of destroying the map too aggressively is that we may have more instance duplications
      * than what we would otherwise have.</p>
      */
-    private transient Map<Object,Object> sharedValues;
+    private transient Map<Object, Object> sharedValues;
 
     /**
      * A formatter using the same symbols as the {@linkplain #parser}.
@@ -1040,7 +1040,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * for the source of logging messages which is the enclosing {@code WKTParser} instead of a factory.
      * Also provides a mechanism for adding default identifier to root {@link IdentifiedObject}.
      */
-    private final class Parser extends GeodeticObjectParser implements Function<Object,Object> {
+    private final class Parser extends GeodeticObjectParser implements Function<Object, Object> {
         /** Creates a new parser. */
         Parser(final URI sourceFile, final Map<String,StoredTree> fragments, final Symbols symbols,
                final NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat,

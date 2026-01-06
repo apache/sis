@@ -104,7 +104,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * Shall be consistent with {@link #hashFunction}.
      * The arguments given in calls to {@code test(Object, Object)} will never be null.
      */
-    private final BiPredicate<Object,Object> comparator;
+    private final BiPredicate<Object, Object> comparator;
 
     /**
      * An entry in the {@link WeakValueHashMap}. This is a weak reference
@@ -299,7 +299,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     @SuppressWarnings({"rawtypes", "unchecked"})    // Generic array creation.
     public WeakValueHashMap(final Class<K> keyType,
             final ToIntFunction<Object> hashFunction,
-            final BiPredicate<Object,Object> comparator)
+            final BiPredicate<Object, Object> comparator)
     {
         this.keyType      = Objects.requireNonNull(keyType);
         this.hashFunction = Objects.requireNonNull(hashFunction);

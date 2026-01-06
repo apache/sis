@@ -180,7 +180,7 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
     }
 
     /**
-     * Implementation of the {@link #put(Object,Object)} method storing the given converted entry
+     * Implementation of the {@link #put(Object, Object)} method storing the given converted entry
      * to the storage map. The {@code original} key is used only for formatting an error message
      * in case of failure.
      */

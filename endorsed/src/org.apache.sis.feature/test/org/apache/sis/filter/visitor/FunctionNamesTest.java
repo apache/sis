@@ -111,7 +111,7 @@ public final class FunctionNamesTest extends TestCase {
      */
     @Test
     public void verifyLiteral() {
-        final var expression = new Literal<Object,Object>() {
+        final var expression = new Literal<Object, Object>() {
             @Override public Object getValue() {return null;}
             @Override public <N> Expression<Object, N> toValueType(Class<N> target) {
                 throw new UnsupportedOperationException();
@@ -125,7 +125,7 @@ public final class FunctionNamesTest extends TestCase {
      */
     @Test
     public void verifyValueReference() {
-        final var expression = new ValueReference<Object,Object>() {
+        final var expression = new ValueReference<Object, Object>() {
             @Override public String getXPath()      {return null;}
             @Override public Object apply(Object o) {return null;}
             @Override public Class<Object> getResourceClass() {return Object.class;}

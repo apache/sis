@@ -504,7 +504,7 @@ public final class Types {
              * which are expected to be internized anyway when the corresponding classes are loaded.
              */
             typeForNames = JDK19.newHashMap(2 * props.size());
-            for (final Map.Entry<Object,Object> e : props.entrySet()) {
+            for (final Map.Entry<Object, Object> e : props.entrySet()) {
                 final String key   = ((String) e.getKey()).intern();
                 final String value = ((String) e.getValue()).intern();
                 typeForNames.put(key, value);

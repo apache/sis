@@ -100,7 +100,7 @@ public final class Reader implements Cloneable {
      *
      * @see #unique(Object)
      */
-    public final Map<Object,Object> sharedObjects;
+    public final Map<Object, Object> sharedObjects;
 
     /**
      * Arbitrary objects identifying warnings that have already been reported.

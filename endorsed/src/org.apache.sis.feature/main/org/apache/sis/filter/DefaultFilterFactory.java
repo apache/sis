@@ -187,7 +187,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
          *
          * @see #forFeatures()
          */
-        static final Features<Object,Object> DEFAULT = new Features<>(Object.class, Object.class, WraparoundMethod.SPLIT);
+        static final Features<Object, Object> DEFAULT = new Features<>(Object.class, Object.class, WraparoundMethod.SPLIT);
 
         /**
          * Creates a new factory operating on {@link Feature} instances.

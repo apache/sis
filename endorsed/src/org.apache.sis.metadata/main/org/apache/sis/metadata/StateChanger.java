@@ -201,7 +201,7 @@ final class StateChanger extends MetadataVisitor<Boolean> {
          */
         if (object instanceof Map<?,?>) {
             final var map = new LinkedHashMap<Object, Object>((Map<?,?>) object);
-            for (final Map.Entry<Object,Object> entry : map.entrySet()) {
+            for (final Map.Entry<Object, Object> entry : map.entrySet()) {
                 entry.setValue(applyTo(entry.getValue()));
             }
             return Containers.unmodifiable(map);

@@ -644,7 +644,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
         ensureValidType(value);
 
         /** Similar to {@link Cache.ReplaceAdapter}, but adapted to the merge case. */
-        final class Adapter implements BiFunction<Object,Object,Object> {
+        final class Adapter implements BiFunction<Object, Object, Object> {
             /** Forwards {@link Cache#map} calls to the user-provided function. */
             @Override public Object apply(final Object oldValue, final Object givenValue) {
                 final V toReplace = valueOf(oldValue);
@@ -670,7 +670,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * Before to forward the calls, {@code ReplaceAdapter} verifies if the value is under computation. If yes, then
      * this adapter blocks until the value is available for forwarding it to the user.
      */
-    private final class ReplaceAdapter implements BiFunction<K,Object,Object> {
+    private final class ReplaceAdapter implements BiFunction<K, Object, Object> {
         /** The new values for which to send notifications. */
         private Deferred<K,V> changes;
 

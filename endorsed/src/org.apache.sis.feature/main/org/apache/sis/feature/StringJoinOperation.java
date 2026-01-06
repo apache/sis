@@ -95,7 +95,7 @@ final class StringJoinOperation extends AbstractOperation {
      * semantic of {@link ObjectConverter#inverse()}, but this is okay for {@link StringJoinOperation} needs.
      * This converter should never be accessible to users however.
      */
-    private static final class ForFeature extends SurjectiveConverter<Object,Object> implements Serializable {
+    private static final class ForFeature extends SurjectiveConverter<Object, Object> implements Serializable {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 2208230611402221572L;
 

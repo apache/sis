@@ -57,7 +57,7 @@ import org.apache.sis.util.resources.Errors;
  * <ul>
  *   <li>{@link #clear()}</li>
  *   <li>{@link #remove(Object)}</li>
- *   <li>{@link #put(Object,Object)}</li>
+ *   <li>{@link #put(Object, Object)}</li>
  *   <li>{@link #addKey(Object)} (non-standard, optional method)</li>
  *   <li>{@link #addValue(Object)} (non-standard, optional method)</li>
  * </ul>

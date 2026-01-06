@@ -333,7 +333,7 @@ final class StoredTree implements Serializable {
      * @param  tree          root of the tree of WKT elements.
      * @param  sharedValues  pool to use for sharing unique instances of values.
      */
-    StoredTree(final Element tree, final Map<Object,Object> sharedValues) {
+    StoredTree(final Element tree, final Map<Object, Object> sharedValues) {
         final Deflater deflater = new Deflater(sharedValues);
         root = (Node) deflater.unique(new Node(deflater, tree));
         offsets = deflater.offsets();
@@ -346,7 +346,7 @@ final class StoredTree implements Serializable {
      * @param  trees         roots of the trees of WKT elements.
      * @param  sharedValues  pool to use for sharing unique instances of values.
      */
-    StoredTree(final List<Element> trees, final Map<Object,Object> sharedValues) {
+    StoredTree(final List<Element> trees, final Map<Object, Object> sharedValues) {
         final Deflater deflater = new Deflater(sharedValues);
         root = new Node(deflater, trees);       // Do not invoke `unique(…)` on anymous node.
         offsets = deflater.offsets();
@@ -380,7 +380,7 @@ final class StoredTree implements Serializable {
          * This is a copy of {@link WKTFormat#sharedValues} map.
          * This is reset to {@code null} when not needed anymore.
          */
-        private Map<Object,Object> sharedValues;
+        private Map<Object, Object> sharedValues;
 
         /**
          * The {@link Element#offset} value of {@link StoredTree#root} together with offsets of all
@@ -400,7 +400,7 @@ final class StoredTree implements Serializable {
          *
          * @param  sharedValues  pool of previously created objects.
          */
-        Deflater(final Map<Object,Object> sharedValues) {
+        Deflater(final Map<Object, Object> sharedValues) {
             this.sharedValues = sharedValues;
             offsets = new short[24];
         }

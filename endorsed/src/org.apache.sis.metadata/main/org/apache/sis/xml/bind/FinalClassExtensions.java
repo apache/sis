@@ -65,7 +65,7 @@ public final class FinalClassExtensions {
      * <h4>Synchronization</h4>
      * All accesses to this map shall be synchronized on the map object.
      */
-    private static final Map<Object,Object> SENTINEL_VALUES = new IdentityHashMap<>();
+    private static final Map<Object, Object> SENTINEL_VALUES = new IdentityHashMap<>();
 
     /**
      * Do not allow instantiation of this class.

@@ -83,7 +83,7 @@ abstract class AnnotatedImage extends ImageAdapter {
      * computation failed for some tiles, that computation will be redone again for the same property
      * every time it is requested, until it eventually fully succeeds and the result become cached.</p>
      */
-    private static final WeakHashMap<RenderedImage, Cache<Object,Object>> CACHE = new WeakHashMap<>();
+    private static final WeakHashMap<RenderedImage, Cache<Object, Object>> CACHE = new WeakHashMap<>();
 
     /**
      * Cache of property values computed for the {@linkplain #source} image. This is an entry from the
@@ -97,7 +97,7 @@ abstract class AnnotatedImage extends ImageAdapter {
      * <p>Keys are {@link String} instances containing directly the property name when {@link #areaOfInterest}
      * and {@link #getExtraParameter()} are {@code null}, or {@link CacheKey} instances otherwise.</p>
      */
-    private final Cache<Object,Object> cache;
+    private final Cache<Object, Object> cache;
 
     /**
      * Keys in the {@link AnnotatedImage#cache} when {@link AnnotatedImage#areaOfInterest} is non-null.

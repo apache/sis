@@ -59,7 +59,7 @@ public final class Cloner {
      * This is used for preserving reference graph, and also as a safety against infinite recursion.
      * Keys must be compared using identity comparison, not {@link Object#equals(Object)}.
      */
-    private final IdentityHashMap<Object,Object> cloneResults;
+    private final IdentityHashMap<Object, Object> cloneResults;
 
     /**
      * Creates a new {@code Cloner} instance which requires public {@code clone()} method to be present.

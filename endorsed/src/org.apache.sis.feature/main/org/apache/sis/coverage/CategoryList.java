@@ -120,7 +120,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     /**
      * Index of the last used category. We assume that this category is the most likely to be
      * requested in the next {@code transform(…)} method invocation. This field does not need
-     * to be volatile because it is not a problem if a thread see an outdated value; this is
+     * to be volatile because it is not a problem if a thread see an outdated value. This is
      * only a hint, and the arrays used with this index are immutable.
      */
     private transient int lastUsed;

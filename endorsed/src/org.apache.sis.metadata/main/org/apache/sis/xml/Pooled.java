@@ -78,7 +78,7 @@ abstract class Pooled {
      *
      * This map is never {@code null}.
      */
-    final Map<Object,Object> initialProperties = new LinkedHashMap<>();
+    final Map<Object, Object> initialProperties = new LinkedHashMap<>();
 
     /**
      * Bit masks for various boolean attributes. This include whatever the language codes
@@ -194,7 +194,7 @@ abstract class Pooled {
      */
     final void initialize(final Pooled template) throws JAXBException {
         reset(template);     // Set the SIS properties first. JAXB properties are set below.
-        for (final Map.Entry<Object,Object> entry : template.initialProperties.entrySet()) {
+        for (final Map.Entry<Object, Object> entry : template.initialProperties.entrySet()) {
             setStandardProperty((String) entry.getKey(), entry.getValue());
         }
     }
@@ -208,7 +208,7 @@ abstract class Pooled {
      * @throws JAXBException if an error occurred while restoring a property.
      */
     public final void reset(final Pooled template) throws JAXBException {
-        for (final Map.Entry<Object,Object> entry : initialProperties.entrySet()) {
+        for (final Map.Entry<Object, Object> entry : initialProperties.entrySet()) {
             reset(entry.getKey(), entry.getValue());
         }
         initialProperties.clear();

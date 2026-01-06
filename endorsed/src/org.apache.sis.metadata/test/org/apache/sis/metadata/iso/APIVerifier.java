@@ -96,7 +96,7 @@ public final class APIVerifier extends TestCase {
             throws ClassNotFoundException, NoSuchMethodException
     {
         final Set<Method> classChanges = new HashSet<>();
-        for (final Map.Entry<Object,Object> entry : changes.entrySet()) {
+        for (final Map.Entry<Object, Object> entry : changes.entrySet()) {
             final Class<?> implementation = standard.getImplementation(Class.forName((String) entry.getKey()));
             for (final String change : (String[]) CharSequences.split((String) entry.getValue(), ' ')) {
                 switch (change.charAt(0)) {

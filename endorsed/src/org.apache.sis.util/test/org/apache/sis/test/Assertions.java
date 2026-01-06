@@ -521,7 +521,7 @@ public final class Assertions {
      */
     public static void assertMapEquals(final Map<?,?> expected, final Map<?,?> actual) {
         if (expected != null && actual != null && !expected.isEmpty()) {
-            final var r = new LinkedHashMap<Object,Object>(expected);
+            final var r = new LinkedHashMap<Object, Object>(expected);
             for (final Map.Entry<?,?> entry : actual.entrySet()) {
                 final Object key = entry.getKey();
                 if (!r.containsKey(key)) {

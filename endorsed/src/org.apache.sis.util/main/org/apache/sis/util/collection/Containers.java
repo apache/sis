@@ -685,7 +685,7 @@ public final class Containers {
      * Consequently, any change in the original map is immediately visible in the derived map,
      * and conversely.
      *
-     * <p>The {@link Map#put(Object,Object) Map.put(K,V)} method is supported only if the given
+     * <p>The {@link Map#put(Object, Object) Map.put(K,V)} method is supported only if the given
      * converters are {@linkplain org.apache.sis.math.FunctionProperty#INVERTIBLE invertible}.
      * An invertible converter is not mandatory for other {@code Map} operations like {@link Map#get(Object)},
      * but some of them may be faster if the inverse converters are available.</p>

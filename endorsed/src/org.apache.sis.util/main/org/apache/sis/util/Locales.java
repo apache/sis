@@ -53,7 +53,7 @@ public final class Locales {
      *
      * @see #unique(Locale)
      */
-    private static final Map<Locale,Locale> POOL;
+    private static final Map<Locale, Locale> POOL;
     static {
         final Locale[] locales = Locale.getAvailableLocales();
         POOL = JDK19.newHashMap(locales.length);

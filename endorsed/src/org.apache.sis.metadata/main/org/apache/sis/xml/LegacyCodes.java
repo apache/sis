@@ -58,7 +58,7 @@ final class LegacyCodes {
         final int capacity = Containers.hashMapCapacity(codes.size());
         IANA_TO_LEGACY = new HashMap<>(capacity);
         LEGACY_TO_IANA = new HashMap<>(capacity);
-        for (final Map.Entry<Object,Object> entry : codes.entrySet()) {
+        for (final Map.Entry<Object, Object> entry : codes.entrySet()) {
             final String legacy = ((String) entry.getKey()).intern();
             final String name   = ((String) entry.getValue()).intern();
             IANA_TO_LEGACY.put(name  .toUpperCase(Locale.US), legacy);      // IANA names are restricted to US-ASCII.

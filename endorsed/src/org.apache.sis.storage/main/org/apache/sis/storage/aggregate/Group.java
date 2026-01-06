@@ -57,7 +57,7 @@ abstract class Group<E> {
      * of {@link CoverageAggregator}, which is then shared by all groups contained in the aggregator.
      * The keys and values in the pool shall be immutable or objects handled as if they were immutable.
      */
-    private final Map<Object,Object> sharedInstances;
+    private final Map<Object, Object> sharedInstances;
 
     /**
      * The processor to use for creating grid coverages. This is the place where, for example,

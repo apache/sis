@@ -823,7 +823,7 @@ public class TileOpExecutor {
         /**
          * A thread-local variable which is given to each invocation of the {@link #processor}.
          * Processor implementation can use this instance for storing or updating information.
-         * No synchronization is needed since this instance is not shared by other threads.
+         * No synchronization is needed since this instance is not shared with other threads.
          * This value may be {@code null} if no such object is needed.
          */
         protected final A accumulator;
