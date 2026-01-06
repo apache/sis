@@ -28,7 +28,6 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix1;
 import org.apache.sis.referencing.internal.Arithmetic;
 import org.apache.sis.referencing.internal.shared.ExtendedPrecisionMatrix;
-import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.internal.shared.DoubleDouble;
@@ -282,11 +281,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
      */
     @Override
     public double transform(final double value) {
-        if (Formulas.USE_FMA) {
-            return Math.fma(value, scale, offset);
-        } else {
-            return offset + scale * value;
-        }
+        return Math.fma(value, scale, offset);
     }
 
     /**
@@ -300,11 +295,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
                             final boolean derivate)
     {
         if (dstPts != null) {
-            if (Formulas.USE_FMA) {
-                dstPts[dstOff] = Math.fma(srcPts[srcOff], scale, offset);
-            } else {
-                dstPts[dstOff] = offset + scale*srcPts[srcOff];
-            }
+            dstPts[dstOff] = Math.fma(srcPts[srcOff], scale, offset);
         }
         return derivate ? new Matrix1(scale) : null;
     }
@@ -319,21 +310,13 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     {
         if (srcPts != dstPts || srcOff >= dstOff) {
             while (--numPts >= 0) {
-                if (Formulas.USE_FMA) {
-                    dstPts[dstOff++] = Math.fma(srcPts[srcOff++], scale, offset);
-                } else {
-                    dstPts[dstOff++] = offset + scale * srcPts[srcOff++];
-                }
+                dstPts[dstOff++] = Math.fma(srcPts[srcOff++], scale, offset);
             }
         } else {
             srcOff += numPts;
             dstOff += numPts;
             while (--numPts >= 0) {
-                if (Formulas.USE_FMA) {
-                    dstPts[--dstOff] = Math.fma(srcPts[--srcOff], scale, offset);
-                } else {
-                    dstPts[--dstOff] = offset + scale * srcPts[--srcOff];
-                }
+                dstPts[--dstOff] = Math.fma(srcPts[--srcOff], scale, offset);
             }
         }
     }
@@ -349,21 +332,13 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     {
         if (srcPts != dstPts || srcOff >= dstOff) {
             while (--numPts >= 0) {
-                if (Formulas.USE_FMA) {
-                    dstPts[dstOff++] = (float) Math.fma(srcPts[srcOff++], scale, offset);
-                } else {
-                    dstPts[dstOff++] = (float) (offset + scale * srcPts[srcOff++]);
-                }
+                dstPts[dstOff++] = (float) Math.fma(srcPts[srcOff++], scale, offset);
             }
         } else {
             srcOff += numPts;
             dstOff += numPts;
             while (--numPts >= 0) {
-                if (Formulas.USE_FMA) {
-                    dstPts[--dstOff] = (float) Math.fma(srcPts[--srcOff], scale, offset);
-                } else {
-                    dstPts[--dstOff] = (float) (offset + scale * srcPts[--srcOff]);
-                }
+                dstPts[--dstOff] = (float) Math.fma(srcPts[--srcOff], scale, offset);
             }
         }
     }
@@ -378,11 +353,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
                           final float [] dstPts, int dstOff, int numPts)
     {
         while (--numPts >= 0) {
-            if (Formulas.USE_FMA) {
-                dstPts[dstOff++] = (float) Math.fma(srcPts[srcOff++], scale, offset);
-            } else {
-                dstPts[dstOff++] = (float) (offset + scale * srcPts[srcOff++]);
-            }
+            dstPts[dstOff++] = (float) Math.fma(srcPts[srcOff++], scale, offset);
         }
     }
 
@@ -395,11 +366,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
                           final double[] dstPts, int dstOff, int numPts)
     {
         while (--numPts >= 0) {
-            if (Formulas.USE_FMA) {
-                dstPts[dstOff++] = Math.fma(srcPts[srcOff++], scale, offset);
-            } else {
-                dstPts[dstOff++] = offset + scale * srcPts[srcOff++];
-            }
+            dstPts[dstOff++] = Math.fma(srcPts[srcOff++], scale, offset);
         }
     }
 

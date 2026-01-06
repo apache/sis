@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation.projection;
 
 import static java.lang.Math.*;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.referencing.internal.shared.Formulas;
 
 
 /**
@@ -207,11 +206,8 @@ abstract class ConformalProjection extends NormalizedProjection {
          */
         final double sin_2φ = sin(2*φ);
         final double cos_2φ = cos(2*φ);
-        if (Formulas.USE_FMA) {
-            φ = fma(sin_2φ, fma(cos_2φ, fma(cos_2φ, fma(cos_2φ, c8χ, c6χ), c4χ), c2χ), φ);
-        } else {
-            φ += sin_2φ * (c2χ + cos_2φ * (c4χ + cos_2φ * (c6χ + cos_2φ * c8χ)));
-        }
+        φ = fma(sin_2φ, fma(cos_2φ, fma(cos_2φ, fma(cos_2φ, c8χ, c6χ), c4χ), c2χ), φ);
+        // Equivalent to: φ += sin_2φ * (c2χ + cos_2φ * (c4χ + cos_2φ * (c6χ + cos_2φ * c8χ)))
         /*
          * Note: a previous version checked if the value of the smallest term c8χ⋅sin(8φ) was smaller than
          * the iteration tolerance. But this was not reliable enough. We use now a hard coded threshold

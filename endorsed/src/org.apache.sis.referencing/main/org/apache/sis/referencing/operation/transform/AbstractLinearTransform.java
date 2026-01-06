@@ -25,7 +25,6 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.resources.Errors;
@@ -237,11 +236,7 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
                 for (int i=0; i<srcDim; i++) {
                     final double e = getElement(j, i);
                     if (e != 0) {   // See the comment in ProjectiveTransform for the purpose of this test.
-                        if (Formulas.USE_FMA) {
-                            sum = Math.fma(srcPts[srcOff + i], e, sum);
-                        } else {
-                            sum += srcPts[srcOff + i] * e;
-                        }
+                        sum = Math.fma(srcPts[srcOff + i], e, sum);
                     }
                 }
                 buffer[j] = sum;

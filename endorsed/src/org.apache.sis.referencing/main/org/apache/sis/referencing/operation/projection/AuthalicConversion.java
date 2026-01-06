@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation.projection;
 
 import static java.lang.Math.*;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.referencing.internal.shared.Formulas;
 import static org.apache.sis.math.MathFunctions.atanh;
 
 
@@ -247,15 +246,12 @@ abstract class AuthalicConversion extends NormalizedProjection {
         final double sinβ2 = sinβ * sinβ;
         final double β = asin(sinβ);
         /*
-         * Snyder 3-18, but rewriten using trigonometric identities in order to avoid
-         * multiple calls to sin(double) method.
+         * Snyder 3-18, but rewriten using trigonometric identities
+         * in order to avoid multiple calls to sin(double) method.
+         *
+         *   φ = β + cos(β)*sinβ*(c2β + sinβ2*(c4β + sinβ2*c6β))
          */
-        double φ;
-        if (Formulas.USE_FMA) {
-            φ = fma(fma(fma(sinβ2, c6β, c4β), sinβ2, c2β), cos(β)*sinβ, β);
-        } else {
-            φ = β + cos(β)*sinβ*(c2β + sinβ2*(c4β + sinβ2*c6β));
-        }
+        double φ = fma(fma(fma(sinβ2, c6β, c4β), sinβ2, c2β), cos(β)*sinβ, β);
         if (useIterations) {
             /*
              * Mathematical note: Snyder 3-16 gives q/(1-ℯ²) instead of y in the calculation of Δφ below.

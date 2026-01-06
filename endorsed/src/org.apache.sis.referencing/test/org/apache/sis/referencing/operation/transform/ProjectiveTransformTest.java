@@ -175,22 +175,15 @@ public class ProjectiveTransformTest extends AffineTransformTest {
 
     /**
      * Tests the concatenation of transforms that would result in rounding errors
-     * in extended-precision matrix operations were not used.
-     *
-     * Actually there are two sources of rounding errors tested by this method.
-     * The first source is rounding errors caused by matrix multiplications.
-     * The other source is rounding errors inside the {@code transform(…)} methods,
-     * which is reduced by a denominator column in {@link ProjectiveTransform#elt}.
-     * For demonstrating the latter rounding errors, it may be necessary to set the
-     * {@link org.apache.sis.referencing.internal.shared.Formulas#USE_FMA} flag to {@code false}.
+     * if extended-precision matrix operations were not used.
      *
      * @throws FactoryException if the transform cannot be created.
      * @throws TransformException if a coordinate conversion failed.
      */
     @Test
     public void testRoundingErrors() throws FactoryException, TransformException {
-        final Matrix4 num = new Matrix4(); num.m00 =  2; num.m11 = 3.25; num.m22 = -17;
-        final Matrix4 den = new Matrix4(); den.m00 = 37; den.m11 = 1000; den.m22 = 127;
+        final var num = new Matrix4(); num.m00 =  2; num.m11 = 3.25; num.m22 = -17;
+        final var den = new Matrix4(); den.m00 = 37; den.m11 = 1000; den.m22 = 127;
 
         // Add translation terms.
         num.m03 =  4*37; num.m13 = 17; num.m23 = -2*127;
