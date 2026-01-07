@@ -564,6 +564,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
                         imageSize[X_DIMENSION], imageSize[Y_DIMENSION],
                         tileLower[X_DIMENSION], tileLower[Y_DIMENSION], result);
             }
+        } catch (DisjointExtentException | CannotEvaluateException e) {
+            throw e;
         } catch (Exception e) {     // Too many exception types for listing them all.
             throw new CannotEvaluateException(Resources.forLocale(getLocale()).getString(
                     Resources.Keys.CanNotRenderImage_1, getIdentifier().toFullyQualifiedName()), e);
