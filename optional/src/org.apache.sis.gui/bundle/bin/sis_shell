@@ -18,7 +18,7 @@
 
 set -o errexit
 
-SIS_HOME="`dirname "$( readlink -e "$0"; )";`/.."
+SIS_HOME="`dirname "$( readlink -f "$0"; )";`/.."
 SIS_DATA="${SIS_DATA:-$SIS_HOME/data}"
 export SIS_DATA
 export SIS_HOME

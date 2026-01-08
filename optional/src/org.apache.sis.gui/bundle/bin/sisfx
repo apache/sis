@@ -22,7 +22,7 @@ set -o errexit
 #
 # Initialization.
 #
-BASE_DIR="`dirname "$( readlink -e "$0"; )";`/.."
+BASE_DIR="`dirname "$( readlink -f "$0"; )";`/.."
 . "$BASE_DIR/conf/setenv.sh"
 
 SIS_DATA="${SIS_DATA:-$BASE_DIR/data}"
