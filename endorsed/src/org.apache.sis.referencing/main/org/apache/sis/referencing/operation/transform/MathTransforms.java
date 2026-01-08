@@ -207,7 +207,9 @@ public final class MathTransforms {
                                 DoubleDouble.of(m.getNumber(0, 1), true));
                     }
                     case 2: {
-                        return AffineTransform2D.create(matrix);
+                        if (!Matrices.hasNaN(matrix)) {
+                            return AffineTransform2D.create(matrix);
+                        }
                     }
                 }
             } else if (sourceDimension == 2) {

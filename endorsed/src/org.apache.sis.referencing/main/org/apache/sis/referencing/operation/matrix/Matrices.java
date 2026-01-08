@@ -74,7 +74,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see org.apache.sis.parameter.MatrixParameters
  *
@@ -946,10 +946,10 @@ search:     while (freeColumn < numCol) {
     }
 
     /**
-     * Creates a new matrix which is a copy of the given matrix.
+     * Creates a new matrix which is a modifiable copy of the given matrix.
      *
      * @param  matrix  the matrix to copy, or {@code null}.
-     * @return a copy of the given matrix, or {@code null} if the given matrix was null.
+     * @return a modifiable copy of the given matrix, or {@code null} if the given matrix was null.
      *
      * @see MatrixSIS#clone()
      * @see MatrixSIS#castOrCopy(Matrix)
@@ -1126,6 +1126,27 @@ search:     while (freeColumn < numCol) {
             }
         }
         return true;
+    }
+
+    /**
+     * Returns whether the given matrix has any NaN value.
+     *
+     * @param  matrix  the matrix to test.
+     * @return {@code true} if at least one matrix element is NaN.
+     *
+     * @since 1.6
+     */
+    public static boolean hasNaN(final Matrix matrix) {
+        final int numCol = matrix.getNumCol();
+        final int numRow = matrix.getNumRow();
+        for (int j=0; j<numRow; j++) {
+            for (int i=0; i<numCol; i++) {
+                if (Double.isNaN(matrix.getElement(j, i))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

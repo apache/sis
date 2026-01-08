@@ -271,6 +271,8 @@ public abstract class AbstractMathTransform extends FormattableObject
     /**
      * Tests whether this transform does not move any points.
      * The default implementation always returns {@code false}.
+     *
+     * @return whether this transform does not move any points.
      */
     @Override
     public boolean isIdentity() {
@@ -830,6 +832,9 @@ public abstract class AbstractMathTransform extends FormattableObject
      *
      * <h4>Implementation note</h4>
      * The {@link Inverse} inner class can be used as a base for inverse transform implementations.
+     *
+     * @return the inverse of this transform.
+     * @throws NoninvertibleTransformException if the inverse transform cannot be computed.
      */
     @Override
     public MathTransform inverse() throws NoninvertibleTransformException {

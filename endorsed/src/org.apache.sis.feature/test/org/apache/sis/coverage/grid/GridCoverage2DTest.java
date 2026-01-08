@@ -25,8 +25,9 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.image.internal.shared.RasterFactory;
@@ -244,6 +245,27 @@ public class GridCoverage2DTest extends TestCase {
          */
         assertArrayEquals(new double[] {5}, evaluator.apply(new DirectPosition2D(200 - 360, 0)));
         assertArrayEquals(new double[] {2}, evaluator.apply(new DirectPosition2D(100 - 360, 0)));
+    }
+
+    /**
+     * Tests {@link GridCoverage.Evaluator#apply(DirectPosition)} with a scale factor of NaN.
+     * This case happens, for example, in the temporal dimension of a slice of unknown temporal resolution.
+     *
+     * @throws TransformException if an error occurred while testing a conversion to grid coordinates.
+     */
+    @Test
+    public void testEvaluatorWithScaleNaN() throws TransformException {
+        final var gridToCRS = new Matrix3(0, 100, 17, Double.NaN, 0, 21, 0, 0, 1);
+        final GridCoverage.Evaluator evaluator = createTestCoverage(MathTransforms.linear(gridToCRS)).evaluator();
+        FractionalGridCoordinates fc;
+        fc = evaluator.toGridCoordinates(new DirectPosition2D(18, 23));
+        assertEquals(2,          fc.getDimension());
+        assertEquals(0.01,       fc.getCoordinateFractional(1), 1E-12);
+        assertEquals(Double.NaN, fc.getCoordinateFractional(0));
+        fc = evaluator.toGridCoordinates(new DirectPosition2D(17, 21));
+        assertEquals(2, fc.getDimension());
+        assertEquals(0, fc.getCoordinateFractional(1), 1E-12);
+        assertEquals(0, fc.getCoordinateFractional(0));
     }
 
     /**

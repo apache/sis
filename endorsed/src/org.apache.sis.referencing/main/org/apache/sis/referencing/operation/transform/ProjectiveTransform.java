@@ -640,7 +640,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
      */
     @Override
     protected boolean equalsSameClass(final Object object) {
-        final ProjectiveTransform that = (ProjectiveTransform) object;
+        final var that = (ProjectiveTransform) object;
         return numRow == that.numRow &&
                numCol == that.numCol &&
                Arrays.equals(elt, that.elt) &&

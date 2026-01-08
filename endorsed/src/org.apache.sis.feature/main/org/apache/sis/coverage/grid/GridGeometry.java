@@ -1201,7 +1201,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         } else try {
             cornerToCRS.transform(new double[cornerToCRS.getSourceDimensions()], 0, origin, 0, 1);
         } catch (TransformException e) {
-            throw new IllegalGridGeometryException(e, "gridToCRS");
+            throw new IllegalGridGeometryException(e, "origin");
         }
         return origin;
     }
@@ -2011,6 +2011,8 @@ public class GridGeometry implements LenientComparable, Serializable {
     /**
      * Returns a hash value for this grid geometry. This value needs not to remain
      * consistent between different implementations of the same class.
+     *
+     * @return a hash code value.
      */
     @Override
     public int hashCode() {
@@ -2067,6 +2069,8 @@ public class GridGeometry implements LenientComparable, Serializable {
      * Current implementation is equivalent to a call to {@link #toTree(Locale, int)} with
      * at least {@link #EXTENT}, {@link #ENVELOPE} and {@link #CRS} flags.
      * Whether more flags are present or not is unspecified.
+     *
+     * @return a human-readable, multi-line string representation.
      */
     @Override
     public String toString() {

@@ -76,7 +76,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
 abstract class DefaultEvaluator implements GridCoverage.Evaluator {
     /**
      * The coordinate reference system of input points given to this converter,
-     * or {@code null} if assumed the same as the coverage <abbr>CRS</abbr>.
+     * or {@code null} if assumed to be the same as the coverage <abbr>CRS</abbr>.
      * Used by {@link #toGridPosition(DirectPosition)} for checking if {@link #inputToGrid} needs to be recomputed.
      * As long at the evaluated points have the same <abbr>CRS</abbr>, the same transform is reused.
      */
@@ -414,7 +414,7 @@ abstract class DefaultEvaluator implements GridCoverage.Evaluator {
                                  numPointsToTransform);
             }
             final int numPoints = firstCoordToTransform / dimension + numPointsToTransform;
-            wraparound(coordinates, 0, numPoints);
+            postTransform(coordinates, 0, numPoints);
             /*
              * Create the iterator. The `ValuesAtPointIterator.create(…)` method will identify the slices in
              * n-dimensional coverage, get the rendered images for the regions of interest and get the tiles.
@@ -495,19 +495,20 @@ abstract class DefaultEvaluator implements GridCoverage.Evaluator {
         final double[] coordinates = point.getCoordinates();
         final double[] gridCoords = (dimension <= coordinates.length) ? coordinates : new double[dimension];
         inputToGrid.transform(coordinates, 0, gridCoords, 0, 1);
-        wraparound(gridCoords, 0, 1);
+        postTransform(gridCoords, 0, 1);
         return gridCoords;
     }
 
     /**
-     * If a coordinate is outside the coverage extent, check if a wraparound on some axes
-     * would bring the coordinates inside the extent. Coordinates are adjusted in-place.
+     * Post-processing on grid coordinates after conversions from <abbr>CRS</abbr> coordinates.
+     * If a coordinate is outside the coverage's extent, this method checks if a wraparound on
+     * some axes would bring the coordinates inside the extent. Coordinates are adjusted in-place.
      *
      * @param  gridCoords  the grid coordinates.
      * @param  offset      index of the first grid coordinate value.
      * @param  numPoints   number of points in the array.
      */
-    private void wraparound(final double[] gridCoords, int offset, int numPoints) throws TransformException {
+    private void postTransform(final double[] gridCoords, int offset, int numPoints) throws TransformException {
         if (wraparoundAxes == 0) {
             return;
         }
@@ -622,7 +623,7 @@ next:   while (--numPoints >= 0) {
         final GridCoverage coverage = getCoverage();
         final GridGeometry gridGeometry = coverage.getGridGeometry();
         MathTransform gridToCRS = gridGeometry.getGridToCRS(PixelInCell.CELL_CENTER);
-        MathTransform crsToGrid = gridToCRS.inverse();
+        MathTransform crsToGrid = TranslatedTransform.resolveNaN(gridToCRS.inverse(), gridGeometry);
         if (crs != null) {
             final CoordinateReferenceSystem stepCRS = coverage.getCoordinateReferenceSystem();
             final GeographicBoundingBox areaOfInterest = gridGeometry.geographicBBox();
@@ -642,7 +643,7 @@ next:   while (--numPoints >= 0) {
                 try {
                     CoordinateOperation op = CRS.findOperation(stepCRS, crs, areaOfInterest);
                     gridToCRS = MathTransforms.concatenate(gridToCRS, op.getMathTransform());
-                    final TransformSeparator ts = new TransformSeparator(gridToCRS);
+                    final var ts = new TransformSeparator(gridToCRS);
                     final int  crsDim = gridToCRS.getTargetDimensions();
                     final int gridDim = gridToCRS.getSourceDimensions();
                     int[] mandatory = new int[gridDim];

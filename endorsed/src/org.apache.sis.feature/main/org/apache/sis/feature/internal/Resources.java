@@ -218,7 +218,7 @@ public class Resources extends IndexedResourceBundle {
         public static final short IllegalGridEnvelope_3 = 27;
 
         /**
-         * Cannot create a grid geometry with the given “{0}” component.
+         * Invalid “{0}” component for the grid geometry.
          */
         public static final short IllegalGridGeometryComponent_1 = 28;
 

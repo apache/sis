@@ -584,8 +584,11 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
         for (int j=0; j<numRow; j++) {
             Number sum = null;
             for (int i=0; i<numCol; i++) {
-                final Number element = getElementOrNull(j, i);
-                sum = Arithmetic.add(sum, Arithmetic.multiply(element, vector[i]));
+                final double value = vector[i];
+                if (value != 0) {   // This is not just an optimization, as we want 0 × NaN = 0 instead of NaN.
+                    final Number element = getElementOrNull(j, i);
+                    sum = Arithmetic.add(sum, Arithmetic.multiply(element, value));
+                }
             }
             setNumber(j, numCol-1, sum);
         }
