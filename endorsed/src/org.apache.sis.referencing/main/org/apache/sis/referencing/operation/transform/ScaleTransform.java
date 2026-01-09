@@ -85,7 +85,6 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
             factors[i] = 1 / other.factors[i];
             numbers[i] = Arithmetic.inverse(other.numbers[i]);
         }
-        inverse = other;
         numDroppedDimensions = 0;
     }
 
@@ -313,7 +312,7 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
      * Invoked by {@link #inverse()} the first time that the inverse transform needs to be computed.
      */
     @Override
-    final LinearTransform createInverse() throws NoninvertibleTransformException {
+    protected final LinearTransform createInverse() throws NoninvertibleTransformException {
         if (numDroppedDimensions == 0) {
             return new ScaleTransform(this);
         }

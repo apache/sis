@@ -85,7 +85,6 @@ final class TranslationTransform extends AbstractLinearTransform implements Exte
             offsets[i] = -other.offsets[i];
             numbers[i] = Arithmetic.negate(other.numbers[i]);
         }
-        inverse = other;
     }
 
     /**
@@ -288,7 +287,7 @@ final class TranslationTransform extends AbstractLinearTransform implements Exte
      * Invoked by {@link #inverse()} the first time that the inverse transform needs to be computed.
      */
     @Override
-    final LinearTransform createInverse() {
+    protected final LinearTransform createInverse() {
         return new TranslationTransform(this);
     }
 

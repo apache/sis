@@ -320,7 +320,7 @@ final class CopyTransform extends AbstractLinearTransform {
      * Invoked by {@link #inverse()} the first time that the inverse transform needs to be computed.
      */
     @Override
-    final LinearTransform createInverse() {
+    protected final LinearTransform createInverse() {
         /*
          * Note: no need to perform the following check at this point because MathTransforms.linear(…)
          *       should never instantiate this class in the identity case and because we perform an
@@ -353,11 +353,7 @@ final class CopyTransform extends AbstractLinearTransform {
                     }
                 }
                 matrix.setElement(srcDim, dstDim, 1);
-                final LinearTransform inv = MathTransforms.linear(matrix);
-                if (inv instanceof AbstractLinearTransform) {
-                    ((AbstractLinearTransform) inv).inverse = this;
-                }
-                return inv;
+                return MathTransforms.linear(matrix);
             }
         }
         /*
@@ -365,12 +361,10 @@ final class CopyTransform extends AbstractLinearTransform {
          * If this transform is the identity transform or an anti-diagonal matrix except last row
          * (e.g. matrix used for swapping axis order), then the old and new arrays would be equal.
          */
-        CopyTransform copyInverse = this;
-        if (!Arrays.equals(reverse, indices)) {
-            copyInverse = new CopyTransform(dstDim, reverse);
-            copyInverse.inverse = this;
+        if (Arrays.equals(reverse, indices)) {
+            return this;
         }
-        return copyInverse;
+        return new CopyTransform(dstDim, reverse);
     }
 
     /**

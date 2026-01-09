@@ -60,7 +60,6 @@ final class IdentityTransform extends AbstractLinearTransform {
      */
     private IdentityTransform(final int dimension) {
         this.dimension = dimension;
-        inverse = this;
     }
 
     /**

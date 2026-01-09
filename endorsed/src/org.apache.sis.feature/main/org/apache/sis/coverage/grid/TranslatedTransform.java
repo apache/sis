@@ -27,6 +27,8 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.referencing.internal.shared.DirectPositionView;
+import org.apache.sis.util.Utilities;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -54,6 +56,11 @@ final class TranslatedTransform extends AbstractMathTransform {
     private final double offset;
 
     /**
+     * Tolerance factor for deciding that a value was equal to {@link #offset}.
+     */
+    private final double tolerance;
+
+    /**
      * The transform to apply after the translation.
      */
     private final MathTransform transform;
@@ -68,6 +75,7 @@ final class TranslatedTransform extends AbstractMathTransform {
     private TranslatedTransform(final int dimension, final double offset, final MathTransform transform) {
         this.dimension = dimension;
         this.offset    = offset;
+        this.tolerance = Math.abs(offset) * Numerics.COMPARISON_THRESHOLD;
         this.transform = transform;
     }
 
@@ -127,7 +135,9 @@ final class TranslatedTransform extends AbstractMathTransform {
                 final MathTransform fromCenter = MathTransforms.getFirstStep(gridGeometry.gridToCRS);
                 final MathTransform fromCorner = MathTransforms.getFirstStep(gridGeometry.cornerToCRS);
                 analyzing = analyzing.inverse();
-                if (analyzing.equals(fromCenter) || analyzing.equals(fromCorner)) {
+                if (Utilities.equalsApproximately(analyzing, fromCenter) ||
+                    Utilities.equalsApproximately(analyzing, fromCorner))
+                {
                     fromGrid = MathTransforms.getMatrix(fromCenter);
                     fallback = MathTransforms.getMatrix(fromCorner);
                     if (fromGrid == null) {
@@ -150,9 +160,11 @@ final class TranslatedTransform extends AbstractMathTransform {
                         final int j = Long.numberOfTrailingZeros(dimensionBitMask);
                         dimensionBitMask &= ~(1L << j);
                         double offset = fromGrid.getElement(j, translationColumn);
-                        if (Double.isNaN(offset) && fallback != null) {
-                            offset = fallback.getElement(j, translationColumn);
-                            if (Double.isNaN(offset)) continue;
+                        if (Double.isNaN(offset)) {
+                            if (fallback == null || Double.isNaN(offset = fallback.getElement(j, translationColumn))) {
+                                zeroingGridIndex &= ~(1L << j);
+                                continue;
+                            }
                         }
                         offsets[j] = offset;
                     }
@@ -163,27 +175,29 @@ final class TranslatedTransform extends AbstractMathTransform {
                      * all this stuff. But the coordinates modified by `offsets` may have an impact on some terms
                      * in other rows.
                      */
-                    final MatrixSIS translated = Matrices.copy(toGrid);
-                    translated.translate(offsets);
-                    do {
-                        final int j = Long.numberOfTrailingZeros(zeroingGridIndex);
-                        translated.setElement(j, translated.getNumCol() - 1, 0);
-                        zeroingGridIndex &= ~(1L << j);
-                    } while (zeroingGridIndex != 0);
-                    /*
-                     * Rebuild a chain of transforms from last step to first step, but with translations
-                     * before the affine transform in order to get NaN × 0 = 0 operations when possible.
-                     */
-                    final List<MathTransform> steps = MathTransforms.getSteps(crsToGrid);
-                    crsToGrid = MathTransforms.linear(translated);
-                    for (int dimension = offsets.length - 2; dimension >= 0; dimension--) {
-                        final double offset = offsets[dimension];
-                        if (offset != 0) {
-                            crsToGrid = new TranslatedTransform(dimension, offset, crsToGrid);
+                    if (zeroingGridIndex != 0) {
+                        final MatrixSIS translated = Matrices.copy(toGrid);
+                        translated.translate(offsets);
+                        do {
+                            final int j = Long.numberOfTrailingZeros(zeroingGridIndex);
+                            translated.setElement(j, translated.getNumCol() - 1, 0);
+                            zeroingGridIndex &= ~(1L << j);
+                        } while (zeroingGridIndex != 0);
+                        /*
+                         * Rebuild a chain of transforms from last step to first step, but with translations
+                         * before the affine transform in order to get NaN × 0 = 0 operations when possible.
+                         */
+                        final List<MathTransform> steps = MathTransforms.getSteps(crsToGrid);
+                        crsToGrid = MathTransforms.linear(translated);
+                        for (int dimension = offsets.length - 2; dimension >= 0; dimension--) {
+                            final double offset = offsets[dimension];
+                            if (offset != 0) {
+                                crsToGrid = new TranslatedTransform(dimension, offset, crsToGrid);
+                            }
                         }
-                    }
-                    for (int i = steps.size() - 2; i >= 0; i--) {   // Omit last step because it has been replaced.
-                        crsToGrid = MathTransforms.concatenate(steps.get(i), crsToGrid);
+                        for (int i = steps.size() - 2; i >= 0; i--) {   // Omit last step because it has been replaced.
+                            crsToGrid = MathTransforms.concatenate(steps.get(i), crsToGrid);
+                        }
                     }
                 }
             }
@@ -226,7 +240,9 @@ final class TranslatedTransform extends AbstractMathTransform {
         Matrix derivative = null;
         if (derivate) {
             final double[] coordinates = Arrays.copyOfRange(srcPts, srcOff, srcOff + getSourceDimensions());
-            coordinates[dimension] -= offset;
+            if (Math.abs(coordinates[dimension] -= offset) < tolerance) {
+                coordinates[dimension] = 0;
+            }
             derivative = transform.derivative(new DirectPositionView.Double(coordinates));
         }
         transform(srcPts, srcOff, dstPts, dstOff, 1);
@@ -256,7 +272,9 @@ final class TranslatedTransform extends AbstractMathTransform {
         final int srcDim = getSourceDimensions();
         final int stop = srcOff + numPts * srcDim;
         for (int i = srcOff + dimension; i < stop; i+= srcDim) {
-            srcPts[i] -= offset;
+            if (Math.abs(srcPts[i] -= offset) < tolerance) {
+                srcPts[i] = 0;
+            }
         }
         transform.transform(srcPts, srcOff, dstPts, dstOff, numPts);
     }

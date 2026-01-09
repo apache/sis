@@ -828,10 +828,10 @@ valid:  if (i >= 0 && i < steps.size()) {
                          * coefficients that `AbstractLinearTransform.inverse()` would have set to NaN, or may succeed
                          * where `AbstractLinearTransform.inverse()` would have throw an exception.
                          */
-                        if (impl.inverse == null) try {
+                        try {
                             final MathTransform inverse = multiply(tr2.inverse(), tr1.inverse());
                             if (inverse instanceof LinearTransform) {
-                                impl.inverse = (LinearTransform) inverse;
+                                impl.setInverse((LinearTransform) inverse);
                             }
                         } catch (NoninvertibleTransformException e) {
                             /*
