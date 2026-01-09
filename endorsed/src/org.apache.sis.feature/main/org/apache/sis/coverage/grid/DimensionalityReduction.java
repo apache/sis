@@ -681,7 +681,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
 
     /**
      * Returns a grid geometry on which dimensionality reduction of the grid extent has been applied.
-     * It usually implies a reduction in the number of dimensions of the CRS as well,
+     * It usually implies a reduction in the number of dimensions of the <abbr>CRS</abbr> as well,
      * but not necessarily in same order.
      *
      * <p>If the given source is {@code null}, then this method returns {@code null}.

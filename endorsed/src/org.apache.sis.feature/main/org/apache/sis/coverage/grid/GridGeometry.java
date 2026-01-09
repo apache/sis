@@ -227,6 +227,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * to real world coordinates, with the lower coordinates inclusive and the upper coordinates exclusive.
      * The Coordinate Reference System (CRS) of this envelope defines the "real world" CRS of this grid geometry.
      *
+     * @see #CRS
      * @see #ENVELOPE
      * @see #getEnvelope()
      */
@@ -237,7 +238,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * If non-null, the conversion shall map {@linkplain PixelInCell#CELL_CENTER cell center}.
      * This conversion is usually, but not necessarily, affine.
      *
-     * @see #CRS
+     * @see #GRID_TO_CRS
      * @see #getGridToCRS(PixelInCell)
      * @see PixelInCell#CELL_CENTER
      */
@@ -247,18 +248,21 @@ public class GridGeometry implements LenientComparable, Serializable {
     /**
      * Same conversion as {@link #gridToCRS} but from {@linkplain PixelInCell#CELL_CORNER cell corner}
      * instead of center. This transform is preferable to {@code gridToCRS} for transforming envelopes.
+     * This field may be more accurate than deriving this transform from {@link #gridToCRS}.
      *
-     * @serial This field is serialized because it may be a value specified explicitly at construction time,
-     *         in which case it can be more accurate than a computed value.
+     * @see #GRID_TO_CRS
+     * @see #getGridToCRS(PixelInCell)
+     * @see PixelInCell#CELL_CORNER
+     * @since 1.6
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    final MathTransform cornerToCRS;
+    protected final MathTransform cornerToCRS;
 
     /**
      * An <em>estimation</em> of the grid resolution, in units of the CRS axes.
      * Computed from {@link #gridToCRS}, eventually together with {@link #extent}.
      * May be {@code null} if unknown. If non-null, the array length is equal to
-     * the number of CRS dimensions.
+     * the number of <abbr>CRS</abbr> dimensions.
      *
      * @see #RESOLUTION
      * @see #getResolution(boolean)
@@ -266,7 +270,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     protected final double[] resolution;
 
     /**
-     * Whether the conversions from grid coordinates to the CRS are linear, for each target axis.
+     * Whether the conversions from grid coordinates to the <abbr>CRS</abbr> are linear, for each target axis.
      * The bit located at {@code 1L << dimension} is set to 1 when the conversion at that dimension is non-linear.
      * The dimension indices are those of the CRS, not the grid. The use of {@code long} type limits the capacity
      * to 64 dimensions. But actually {@code GridGeometry} can contain more dimensions provided that index of the
@@ -1704,22 +1708,21 @@ public class GridGeometry implements LenientComparable, Serializable {
 
     /**
      * Returns a grid geometry that encompass only some dimensions of this grid geometry.
-     * The specified dimensions will be copied into a new grid geometry if necessary.
-     * The selection is applied on {@linkplain #getExtent() grid extent} dimensions;
-     * they are not necessarily the same as the {@linkplain #getEnvelope() envelope} dimensions.
+     * The selection is applied on {@linkplain #getExtent() grid extent} dimensions,
+     * which are not necessarily the same as the {@linkplain #getEnvelope() envelope} dimensions.
      * The given dimensions must be in strictly ascending order without duplicated values.
-     * The number of dimensions of the sub grid geometry will be {@code dimensions.length}.
+     * The number of dimensions of the returned grid geometry will be {@code dimensions.length}.
      *
      * <p>This method performs a <i>dimensionality reduction</i>.
-     * This method cannot be used for changing dimension order.
-     * The converse operation is the {@linkplain #GridGeometry(GridGeometry, GridGeometry) concatenation}.</p>
+     * The converse of this operation is {@linkplain #GridGeometry(GridGeometry, GridGeometry) concatenation}.
+     * This method cannot be used for changing dimension order.</p>
      *
-     * @param  indices  the grid (not CRS) dimensions to select, in strictly increasing order.
+     * @param  indices  the grid (not <abbr>CRS</abbr>) dimensions to select, in strictly increasing order.
      * @return the sub-grid geometry, or {@code this} if the given array contains all dimensions of this grid geometry.
      * @throws IndexOutOfBoundsException if an index is out of bounds.
      *
-     * @see GridExtent#getSubspaceDimensions(int)
      * @see GridExtent#selectDimensions(int[])
+     * @see GridExtent#getSubspaceDimensions(int)
      * @see org.apache.sis.referencing.CRS#selectDimensions(CoordinateReferenceSystem, int[])
      *
      * @since 1.3

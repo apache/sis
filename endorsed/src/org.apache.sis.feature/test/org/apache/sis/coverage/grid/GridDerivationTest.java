@@ -17,11 +17,13 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.spatial.DimensionNameType;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -29,6 +31,7 @@ import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.referencing.internal.shared.AffineTransform2D;
@@ -733,6 +736,28 @@ public final class GridDerivationTest extends TestCase {
                 .toArray();
 
         assertExtentEquals(expectedGridPoint, expectedGridPoint, slice.extent);
+    }
+
+    /**
+     * Tests {@link GridDerivation#project(Predicate)}.
+     */
+    @Test
+    public void testProject() {
+        final var grid = new GridGeometry(
+                new GridExtent(null, new long[] {336, 20, 4}, new long[] {401, 419, 10}, true),
+                PixelInCell.CELL_CORNER, MathTransforms.linear(new Matrix4(
+                        0,   0.5, 0,  -90,
+                        0.5, 0,   0, -180,
+                        0,   0,   2,    3,
+                        0,   0,   0,    1)), HardCodedCRS.WGS84_3D);
+
+        GridGeometry projected = grid.derive().project((axis) -> axis.getDirection() != AxisDirection.UP).build();
+        assertNotSame(grid, projected);
+        assertEquals(2, projected.getDimension());
+        assertTrue(CRS.equivalent(HardCodedCRS.WGS84, projected.getCoordinateReferenceSystem()));
+        final long[] expectedLow  = {336,  20};
+        final long[] expectedHigh = {401, 419};
+        assertExtentEquals(expectedLow, expectedHigh, projected.getExtent());
     }
 
     /**

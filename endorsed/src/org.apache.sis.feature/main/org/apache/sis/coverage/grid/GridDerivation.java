@@ -17,9 +17,12 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.BitSet;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.math.RoundingMode;
@@ -30,6 +33,8 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
@@ -76,14 +81,14 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * The {@link #getIntersection()} method can also be invoked for the {@link GridExtent} part without subsampling.
  *
  * <h2>Multi-dimensional grids</h2>
- * All methods in this class preserve the number of dimensions. For example, the {@link #slice(DirectPosition)} method
- * sets the {@linkplain GridExtent#getSize(int) grid size} to 1 in all dimensions specified by the <i>slice point</i>,
- * but does not remove those dimensions from the grid geometry.
+ * Unless specified otherwise in Javadoc, the methods in this class preserve the number of dimensions.
+ * For example, the {@link #slice(DirectPosition)} method sets the {@linkplain GridExtent#getSize(int) grid size} to 1
+ * in all dimensions specified by the <i>slice point</i>, but does not remove those dimensions from the grid geometry.
  * For dimensionality reduction, see {@link GridGeometry#selectDimensions(int[])}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.5
+ * @version 1.6
  *
  * @see GridGeometry#derive()
  * @see GridGeometry#selectDimensions(int[])
@@ -223,6 +228,14 @@ public class GridDerivation {
      * @see #subgrid(Envelope, double...)
      */
     private GeneralEnvelope intersection;
+
+    /**
+     * Indexes of <abbr>CRS</abbr> axes to keep, or {@code null} if no filtering will be applied.
+     * A non-null value may cause a reduction in the number of dimensions of the grid.
+     *
+     * @see #project(Set)
+     */
+    private BitSet dimensionsToKeepInCRS;
 
     /**
      * Creates a new builder for deriving a grid geometry from the specified base.
@@ -1188,12 +1201,40 @@ public class GridDerivation {
         return this;
     }
 
-    /*
-     * RATIONAL FOR NOT PROVIDING reduce(int... dimensions) METHOD HERE: that method would need to be the last method invoked,
-     * otherwise it makes more complicated to implement other methods in this class.  Forcing users to invoke `build()` before
-     * (s)he can invoke GridGeometry.reduce(…) makes that clear and avoid the need for more flags in this GridDerivation class.
-     * Furthermore, declaring the `reduce(…)` method in GridGeometry is more consistent with `GridExtent.reduce(…)`.
+    /**
+     * Requests a projection where only a subset of the <abbr>CRS</abbr> dimensions will be kept.
+     * The real world dimensions to keep are specified by a filter applied on the coordinate system axes.
+     * This method may reduce the number of dimensions of the grid if, as a result of this filtering,
+     * some grid dimensions become unrelated to any <abbr>CRS</abbr> axis.
+     *
+     * <h4>Example</h4>
+     * The following code removes the temporal dimension of a grid geometry:
+     *
+     * {@snippet lang="java" :
+     *     gridGeometry.derive().project((axis) -> axis.getDirection() != AxisDirection.FUTURE).build();
+     *     }
+     *
+     * @param  filter  a predicate which returns {@code true} for coordinate system axes to keep.
+     * @return {@code this} for method call chaining.
+     * @throws IncompleteGridGeometryException if the base grid geometry has no <abbr>CRS</abbr>.
+     *
+     * @since 1.6
      */
+    public GridDerivation project(final Predicate<CoordinateSystemAxis> filter) {
+        final var dimensions = new BitSet();
+        final CoordinateSystem cs = base.getCoordinateReferenceSystem().getCoordinateSystem();
+        for (int i = cs.getDimension(); --i >= 0;) {
+            if (filter.test(cs.getAxis(i))) {
+                dimensions.set(i);
+            }
+        }
+        if (dimensionsToKeepInCRS == null) {
+            dimensionsToKeepInCRS = dimensions;
+        } else {
+            dimensionsToKeepInCRS.and(dimensions);
+        }
+        return this;
+    }
 
     /**
      * Builds a grid geometry with the configuration specified by the other methods in this {@code GridDerivation} class.
@@ -1229,31 +1270,37 @@ public class GridDerivation {
          * need for envelope clipping performed by GridGeometry constructor.
          */
         final GridExtent extent = (scaledExtent != null) ? scaledExtent : getBaseExtentExpanded(false);
+        GridGeometry grid = base;
         try {
-            if (toBase != null || extent != base.extent) {
-                return new GridGeometry(base, extent, toBase);
-            }
-            /*
-             * Intersection should be non-null only if we have not been able to compute more reliable properties
-             * (grid extent and "grid to CRS" transform). It should happen only if `gridToCRS` is null, but we
-             * nevertheless pass that transform to the constructor as a matter of principle.
-             */
-            if (intersection != null) {
-                return new GridGeometry(PixelInCell.CELL_CENTER, base.gridToCRS, intersection, rounding);
-            }
-            /*
-             * Case when the only settings were a margin or a chunk size. It is okay to test after `intersection`
-             * because a non-null envelope intersection would have meant that this `GridDerivation` does not have
-             * required information for applying a margin anyway (no `GridExtent` and no `gridToCRS`).
-             */
-            final GridExtent resized = getBaseExtentExpanded(false);
-            if (resized != baseExtent) {
-                return new GridGeometry(base, resized, null);
+            if (toBase != null || extent != grid.extent) {
+                grid = new GridGeometry(grid, extent, toBase);
+            } else if (intersection != null) {
+                /*
+                 * Intersection should be non-null only if we have not been able to compute more reliable properties
+                 * (grid extent and "grid to CRS" transform). It should happen only if `gridToCRS` is null, but we
+                 * nevertheless pass that transform to the constructor as a matter of principle.
+                 */
+                grid = new GridGeometry(PixelInCell.CELL_CENTER, grid.gridToCRS, intersection, rounding);
+            } else {
+                /*
+                 * Case when the only settings were a margin or a chunk size. It is okay to test after `intersection`
+                 * because a non-null envelope intersection would have meant that this `GridDerivation` does not have
+                 * required information for applying a margin anyway (no `GridExtent` and no `gridToCRS`).
+                 */
+                final GridExtent resized = getBaseExtentExpanded(false);
+                if (resized != baseExtent) {
+                    grid = new GridGeometry(grid, resized, null);
+                }
             }
         } catch (TransformException e) {
             throw new IllegalGridGeometryException(e, "envelope");
         }
-        return base;
+        if (dimensionsToKeepInCRS != null) try {
+            grid = new DimensionReducer(dimensionsToKeepInCRS.stream().toArray()).apply(grid);
+        } catch (FactoryException e) {
+            throw new IllegalGridGeometryException(e, "gridToCRS");
+        }
+        return grid;
     }
 
     /**
@@ -1315,6 +1362,7 @@ public class GridDerivation {
      * the scale factors on the diagonal are the {@linkplain #getSubsampling() subsampling values} and the
      * translation terms in the last column are the {@linkplain #getSubsamplingOffsets() subsampling offsets}.
      *
+     * @param  anchor  whether to map the center or the corner of source and target cells.
      * @return transform of <em>grid</em> coordinates from the derived grid to the {@linkplain #base} grid.
      *
      * @see #getSubsampling()
