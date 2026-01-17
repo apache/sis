@@ -408,7 +408,7 @@ public class Canvas extends Observable implements Localized {
         displayBounds = new GeneralEnvelope(displayCRS);
         displayBounds.setToNaN();
         coordinateOperationFactory = DefaultCoordinateOperationFactory.provider();
-        operationContext = new CanvasContext();
+        operationContext = new CanvasContext(locale);
     }
 
     /**

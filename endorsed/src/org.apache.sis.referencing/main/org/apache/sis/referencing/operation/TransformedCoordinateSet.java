@@ -23,7 +23,6 @@ import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CRS;
@@ -83,9 +82,9 @@ final class TransformedCoordinateSet extends AbstractCoordinateSet implements Un
         }
         final CoordinateMetadata metadata = data.getCoordinateMetadata();
         if (metadata != null) try {
-            GeographicBoundingBox aoi = CRS.getGeographicBoundingBox(op);
+            final var context = CoordinateOperationContext.fromBoundingBox(CRS.getGeographicBoundingBox(op));
             final var step = new DefaultCoordinateMetadata(op.getSourceCRS(), op.getSourceEpoch().orElse(null));
-            transform = MathTransforms.concatenate(CRS.findOperation(metadata, step, aoi).getMathTransform(), transform);
+            transform = MathTransforms.concatenate(CRS.findOperation(metadata, step, context).getMathTransform(), transform);
         } catch (FactoryException | MismatchedDimensionException e) {
             throw new TransformException(e.getMessage(), e);
         }

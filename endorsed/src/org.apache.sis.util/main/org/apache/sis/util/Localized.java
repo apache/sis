@@ -41,7 +41,7 @@ public interface Localized {
      * </ul>
      *
      * Implementations are encouraged to return a non-null value in every cases.
-     * Nevertheless client codes should be prepared to receive null values.
+     * Nevertheless, client codes should be prepared to receive null values.
      *
      * @return the locale, or {@code null} if not explicitly defined.
      */

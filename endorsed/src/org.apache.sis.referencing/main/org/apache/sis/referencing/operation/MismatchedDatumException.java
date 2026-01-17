@@ -18,19 +18,19 @@ package org.apache.sis.referencing.operation;
 
 
 /**
- * Thrown when the source and target CRS of a {@linkplain DefaultConversion conversion} use different datum.
- * By definition, conversions do not perform any change of datum
+ * Thrown when the source and target <abbr>CRS</abbr> of a coordinate conversion use different datum.
+ * By definition, {@linkplain DefaultConversion conversions} do not perform any change of datum
  * while {@linkplain DefaultTransformation transformations} can do.
  *
  * <h2>Usage note</h2>
- * SIS is tolerant about different datum at {@code DefaultConversion} construction time,
+ * Apache <abbr>SIS</abbr> is tolerant about different datum at {@code DefaultConversion} construction time,
  * for the reasons explained in {@linkplain DefaultConversion#DefaultConversion(java.util.Map,
  * org.opengis.referencing.crs.CoordinateReferenceSystem,
  * org.opengis.referencing.crs.CoordinateReferenceSystem,
  * org.opengis.referencing.crs.CoordinateReferenceSystem,
  * org.opengis.referencing.operation.OperationMethod,
  * org.opengis.referencing.operation.MathTransform) its constructor}.
- * However, SIS is stricter at {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS Derived CRS}
+ * However, <abbr>SIS</abbr> is stricter at {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS Derived CRS}
  * construction time.
  *
  * @author  Martin Desruisseaux (Geomatys)

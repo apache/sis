@@ -336,7 +336,7 @@ public final class Logging {
     public static boolean recoverableException(final Logger logger, final Class<?> classe,
                                                final String method, final Throwable error)
     {
-        final String classname = (classe != null) ? classe.getName() : null;
+        final String classname = (classe != null) ? classe.getCanonicalName() : null;
         return unexpectedException(logger, classname, method, error, Level.FINE);
     }
 

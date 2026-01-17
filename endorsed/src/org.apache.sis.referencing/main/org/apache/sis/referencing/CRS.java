@@ -86,6 +86,7 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
+import org.apache.sis.coordinate.DefaultCoordinateMetadata;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.ArgumentChecks;
@@ -105,20 +106,21 @@ import org.opengis.coordinate.CoordinateMetadata;
 
 
 /**
- * Static methods working on {@linkplain CoordinateReferenceSystem Coordinate Reference Systems}.
+ * Static methods working on Coordinate Reference System (<abbr>CRS</abbr>) objects.
  * The methods defined in this class can be grouped in three categories:
  *
  * <ul>
  *   <li>Factory methods, the most notable one being {@link #forCode(String)}.</li>
  *   <li>Methods providing information, like {@link #isHorizontalCRS(CoordinateReferenceSystem)}.</li>
- *   <li>Finding coordinate operations between a source and a target CRS.</li>
+ *   <li>Finding coordinate operations between a source and a target <abbr>CRS</abbr>.</li>
  * </ul>
  *
  * <h2>Usage example</h2>
  * The most frequently used methods in this class are {@link #forCode forCode(…)}, {@link #fromWKT fromWKT(…)}
- * and {@link #findOperation findOperation(…)}. An usage example is like below
- * (see the <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">Apache SIS™ Coordinate
- * Reference System (CRS) codes</a> page for the complete list of EPSG codes):
+ * and {@link #findOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, GeographicBoundingBox) findOperation(…)}.
+ * An usage example is like below
+ * (see the <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">Apache <abbr>SIS</abbr>™
+ * Coordinate Reference System (<abbr>CRS</abbr>) codes</a> page for the complete list of EPSG codes):
  *
  * {@snippet lang="java" :
  *     CoordinateReferenceSystem source = CRS.forCode("EPSG:4326");                   // WGS 84
@@ -134,7 +136,7 @@ import org.opengis.coordinate.CoordinateMetadata;
  *     System.out.println(position);
  *     }
  *
- * <h2>Note on kinds of CRS</h2>
+ * <h2>Note on kinds of <abbr>CRS</abbr></h2>
  * The {@link #getSingleComponents(CoordinateReferenceSystem)} method decomposes an arbitrary CRS into a flat
  * list of single components. In such flat list, vertical and temporal components can easily be identified by
  * {@code instanceof} checks. But identifying the horizontal component is not as easy. The list below suggests
@@ -673,35 +675,35 @@ public final class CRS {
      * @throws FactoryException if the operation cannot be created for another reason.
      *
      * @since 1.5
+     *
+     * @deprecated Replaced by {@link #findOperation(CoordinateMetadata, CoordinateMetadata, CoordinateOperationContext)}.
+     * This method will be removed for avoiding ambiguity when the last argument is null.
      */
+    @Deprecated(since = "1.6", forRemoval = true)
     public static CoordinateOperation findOperation(final CoordinateMetadata source,
                                                     final CoordinateMetadata target,
                                                     final GeographicBoundingBox areaOfInterest)
             throws FactoryException
     {
-        // TODO: take epoch in account.
-        if (source.getCoordinateEpoch().isPresent() || target.getCoordinateEpoch().isPresent()) {
-            throw new FactoryException("This version of Apache SIS does not yet support coordinate epoch.");
-        }
-        return findOperation(source.getCoordinateReferenceSystem(), target.getCoordinateReferenceSystem(), areaOfInterest);
+        return findOperation(source, target, CoordinateOperationContext.fromBoundingBox(areaOfInterest));
     }
 
     /**
-     * Finds a mathematical operation that transforms or converts coordinates from the given source to the
-     * given target coordinate reference system. If an estimation of the geographic area containing the points
-     * to transform is known, it can be specified for helping this method to find a better suited operation.
+     * Finds a mathematical operation that transform coordinates from the given source to the given target <abbr>CRS</abbr>.
+     * If an estimation of the geographic area containing the points to transform is known,
+     * it can be specified for helping this method to find a better suited operation.
      * If no area of interest is specified, then the current default is the widest
      * {@linkplain DefaultObjectDomain#getDomainOfValidity() domain of validity}.
      * A future Apache SIS version may also take the country of current locale in account.
      *
-     * <div class="note"><b>Note:</b>
-     * the area of interest is just one aspect that may affect the coordinate operation.
-     * Other aspects are the time of interest (because some coordinate operations take in account the
-     * plate tectonics movement) or the desired accuracy. For more control on the coordinate operation
-     * to create, see {@link CoordinateOperationContext}.</div>
+     * <p>Note that the area of interest is only one aspect that may affect the coordinate operation.
+     * Other aspects are the data epochs (because some coordinate operations take in account the plate tectonics movement)
+     * or the desired accuracy. For more control on the coordinate operation to create, see the
+     * {@linkplain #findOperation(CoordinateMetadata, CoordinateMetadata, CoordinateOperationContext) method below}.
+     * Alternatively, the area of interest can also be {@linkplain Envelopes#findOperation(Envelope, Envelope) specified as envelopes}.</p>
      *
-     * After the caller received a {@code CoordinateOperation} instance, the following methods can be invoked
-     * for checking if the operation suits the caller's needs:
+     * <p>After the caller received a {@code CoordinateOperation} instance,
+     * the following methods can be invoked for checking if the operation suits the caller's needs:</p>
      *
      * <ul>
      *   <li>{@link #getGeographicBoundingBox(CoordinateOperation)}
@@ -710,26 +712,37 @@ public final class CRS {
      *       for checking if the operation has sufficient accuracy for caller's purpose.</li>
      * </ul>
      *
-     * If the source and target CRS are equivalent, then this method returns an operation backed by an
-     * {@linkplain org.opengis.referencing.operation.MathTransform#isIdentity() identity} transform.
-     * If there is no known operation between the given pair of CRS, then this method throws an
-     * {@link OperationNotFoundException}.
+     * <p>If the source and target <abbr>CRS</abbr> are equivalent, then this method returns an operation
+     * backed by an {@linkplain org.opengis.referencing.operation.MathTransform#isIdentity() identity} transform.
+     * If there is no known operation between the given pair of <abbr>CRS</abbr>s,
+     * then this method throws an {@link OperationNotFoundException}.</p>
      *
-     * <p>Note that <code>CRS.findOperation(<var>B</var>, <var>A</var>, <var>aoi</var>)</code> is not necessarily
+     * <h4>Inverse operation</h4>
+     * Note that <code>CRS.findOperation(<var>B</var>, <var>A</var>, <var>aoi</var>)</code> is not necessarily
      * the exact converse of <code>CRS.findOperation(<var>A</var>, <var>B</var>, <var>aoi</var>)</code>.
-     * Some deviations may exist for example because of different paths explored in the geodetic database.
-     * For the inverse of an existing {@link CoordinateOperation}, using
-     * {@link org.opengis.referencing.operation.MathTransform#inverse()} is preferable.</p>
+     * Some deviations may exist, for example because of different paths explored in the geodetic database.
+     * For the mathematical inverse of an existing {@link CoordinateOperation}, using
+     * {@link org.opengis.referencing.operation.MathTransform#inverse()} is preferable.
      *
-     * @param  sourceCRS       the CRS of source coordinates.
-     * @param  targetCRS       the CRS of target coordinates.
+     * <h4>Advanced usages</h4>
+     * It is not recommended to use the returned coordinate operation for transforming bounding boxes simply by
+     * transforming the four corners. Use the {@linkplain Envelopes#transform(Envelope, CoordinateReferenceSystem)
+     * envelope transformation methods} instead. These methods will take care of line curvature, envelope spanning
+     * the anti-meridian (longitude wraparound) and singularity points at the poles.
+     *
+     * <p>Likewise, for finding an operation for transforming pixel coordinates between two rasters, use the
+     * {@linkplain org.apache.sis.coverage.grid.GridGeometry#createTransformTo grid geometry method} instead.
+     * That latter method will take care of rasters spanning the anti-meridian, contrarily to the operations
+     * returned by this {@code CRS} class.</p>
+     *
+     * @param  sourceCRS       the <abbr>CRS</abbr> of source coordinates.
+     * @param  targetCRS       the <abbr>CRS</abbr> of target coordinates.
      * @param  areaOfInterest  the area of interest, or {@code null} if none.
      * @return the mathematical operation from {@code sourceCRS} to {@code targetCRS}.
      * @throws OperationNotFoundException if no operation was found between the given pair of <abbr>CRS</abbr>s.
      * @throws FactoryException if the operation cannot be created for another reason.
      *
      * @see Envelopes#findOperation(Envelope, Envelope)
-     * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
      *
      * @since 0.7
      */
@@ -740,7 +753,66 @@ public final class CRS {
     {
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
-        final CoordinateOperationContext context = CoordinateOperationContext.fromBoundingBox(areaOfInterest);
+        return findOperation(
+                new DefaultCoordinateMetadata(sourceCRS, null),
+                new DefaultCoordinateMetadata(targetCRS, null),
+                CoordinateOperationContext.fromBoundingBox(areaOfInterest));
+    }
+
+    /**
+     * Finds a mathematical operation that transforms coordinates between the given <abbr>CRS</abbr>s and epochs.
+     * If many operations exist between the specified pair of <abbr>CRS</abbr>s, an operation is selected using the
+     * area of interest (<abbr>AOI</abbr>) and desired accuracy specified in the optional {@code context} argument:
+     * the operation having a {@linkplain DefaultObjectDomain#getDomainOfValidity() domain of validity} resulting in
+     * the widest intersection with the <abbr>AOI</abbr> is preferred. If many operations result in the same intersection,
+     * then the operation having an accuracy just sufficient for the desired accuracy is preferred.
+     *
+     * <p>After the caller received a {@code CoordinateOperation} instance,
+     * the following methods can be invoked for checking if the operation suits the caller's needs:</p>
+     *
+     * <ul>
+     *   <li>{@link #getGeographicBoundingBox(CoordinateOperation)}
+     *       for checking if the operation is valid in the caller's area of interest.</li>
+     *   <li>{@link #getLinearAccuracy(CoordinateOperation)}
+     *       for checking if the operation has sufficient accuracy for caller's purpose.</li>
+     * </ul>
+     *
+     * <p>If the source and target <abbr>CRS</abbr> are equivalent, then this method returns an operation
+     * backed by an {@linkplain org.opengis.referencing.operation.MathTransform#isIdentity() identity} transform.
+     * If there is no known operation between the given pair of <abbr>CRS</abbr>s,
+     * then this method throws an {@link OperationNotFoundException}.</p>
+     *
+     * <h4>Inverse operation</h4>
+     * Note that <code>CRS.findOperation(<var>B</var>, <var>A</var>, <var>context</var>)</code> is not necessarily
+     * the exact converse of <code>CRS.findOperation(<var>A</var>, <var>B</var>, <var>context</var>)</code>.
+     * Some deviations may exist, for example because of different paths explored in the geodetic database.
+     * For the mathematical inverse of an existing {@link CoordinateOperation}, using
+     * {@link org.opengis.referencing.operation.MathTransform#inverse()} is preferable.
+     *
+     * @param  source   the <abbr>CRS</abbr> and epoch of source coordinates.
+     * @param  target   the <abbr>CRS</abbr> and epoch of target coordinates.
+     * @param  context  area of interest, desired accuracy and other options, or {@code null} if none.
+     * @return the mathematical operation from {@code source} to {@code target}.
+     * @throws OperationNotFoundException if no operation was found between the given pair of <abbr>CRS</abbr>s and epochs.
+     * @throws FactoryException if the operation cannot be created for another reason.
+     *
+     * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
+     *
+     * @since 1.6
+     */
+    public static CoordinateOperation findOperation(final CoordinateMetadata source,
+                                                    final CoordinateMetadata target,
+                                                    final CoordinateOperationContext context)
+            throws FactoryException
+    {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("target", target);
+        if (source.getCoordinateEpoch().isPresent() || target.getCoordinateEpoch().isPresent()) {
+            throw new FactoryException("This version of Apache SIS does not yet support coordinate epoch.");
+        }
+        // TODO: take epoch in account.
+        final CoordinateReferenceSystem sourceCRS = source.getCoordinateReferenceSystem();
+        final CoordinateReferenceSystem targetCRS = target.getCoordinateReferenceSystem();
         /*
          * In principle following code should just delegate to factory.createOperation(…). However, that operation
          * may fail if a connection to the EPSG database has been found, but the EPSG tables do not yet exist in
@@ -763,20 +835,21 @@ public final class CRS {
     }
 
     /**
-     * Finds mathematical operations that transform or convert coordinates from the given source to the
-     * given target coordinate reference system. If at least one operation exists, they are returned in
-     * preference order: the operation having the widest intersection between its
-     * {@linkplain DefaultObjectDomain#getDomainOfValidity() domain of validity}
-     * and the given area of interest are returned first.
+     * Finds mathematical operations that transform coordinates from the given source to the given target <abbr>CRS</abbr>
+     * in a given area of interest. If many operations exist, they are returned in preference order: the operation having
+     * the widest intersection between its {@linkplain DefaultObjectDomain#getDomainOfValidity() domain of validity} and
+     * the given area of interest are returned first.
      *
-     * @param  sourceCRS       the CRS of source coordinates.
-     * @param  targetCRS       the CRS of target coordinates.
+     * <p>This is a convenience method for static <abbr>CRS</abbr>s and a context defined only by the area of interest.
+     * For an alternative allowing to specify data epochs (for dynamic <abbr>CRS</abbr>s) and desired accuracy, see the
+     * {@linkplain #findOperations(CoordinateMetadata, CoordinateMetadata, CoordinateOperationContext) method below}.</p>
+     *
+     * @param  sourceCRS       the <abbr>CRS</abbr> of source coordinates.
+     * @param  targetCRS       the <abbr>CRS</abbr> of target coordinates.
      * @param  areaOfInterest  the area of interest, or {@code null} if none.
      * @return mathematical operations from {@code sourceCRS} to {@code targetCRS}.
-     * @throws OperationNotFoundException if no operation was found between the given pair of CRS.
+     * @throws OperationNotFoundException if no operation was found between the given pair of <abbr>CRS</abbr>s.
      * @throws FactoryException if the operation cannot be created for another reason.
-     *
-     * @see DefaultCoordinateOperationFactory#createOperations(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
      *
      * @since 1.0
      */
@@ -787,7 +860,42 @@ public final class CRS {
     {
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
-        final CoordinateOperationContext context = CoordinateOperationContext.fromBoundingBox(areaOfInterest);
+        return findOperations(
+                new DefaultCoordinateMetadata(sourceCRS, null),
+                new DefaultCoordinateMetadata(targetCRS, null),
+                CoordinateOperationContext.fromBoundingBox(areaOfInterest));
+    }
+
+    /**
+     * Finds mathematical operations that transforms coordinates between the given <abbr>CRS</abbr>s and epochs.
+     * If many operations exist, they are sorted in preference order according criteria specified by {@code context}:
+     * best matches with the area of interest (<abbr>AOI</abbr>) are first, then operations matching <abbr>AOI</abbr>
+     * equally well are sorted by best matches with the desired accuracy.
+     *
+     * @param  source   the <abbr>CRS</abbr> and epoch of source coordinates.
+     * @param  target   the <abbr>CRS</abbr> and epoch of target coordinates.
+     * @param  context  area of interest, desired accuracy and other options, or {@code null} if none.
+     * @return mathematical operations from {@code source} to {@code target} <abbr>CRS</abbr> and epoch.
+     * @throws OperationNotFoundException if no operation was found between the given pair of <abbr>CRS</abbr>s.
+     * @throws FactoryException if the operation cannot be created for another reason.
+     *
+     * @see DefaultCoordinateOperationFactory#createOperations(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
+     *
+     * @since 1.6
+     */
+    public static List<CoordinateOperation> findOperations(final CoordinateMetadata source,
+                                                           final CoordinateMetadata target,
+                                                           final CoordinateOperationContext context)
+            throws FactoryException
+    {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("target", target);
+        if (source.getCoordinateEpoch().isPresent() || target.getCoordinateEpoch().isPresent()) {
+            throw new FactoryException("This version of Apache SIS does not yet support coordinate epoch.");
+        }
+        // TODO: take epoch in account.
+        final CoordinateReferenceSystem sourceCRS = source.getCoordinateReferenceSystem();
+        final CoordinateReferenceSystem targetCRS = target.getCoordinateReferenceSystem();
         final DefaultCoordinateOperationFactory factory = DefaultCoordinateOperationFactory.provider();
         try {
             return factory.createOperations(sourceCRS, targetCRS, context);

@@ -43,16 +43,16 @@ import org.opengis.referencing.operation.OperationNotFoundException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.metadata.internal.shared.ReferencingServices;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.operation.CoordinateOperationContext;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.referencing.operation.transform.WraparoundTransform;
 import org.apache.sis.referencing.internal.shared.CoordinateOperations;
 import org.apache.sis.referencing.internal.shared.DirectPositionView;
 import org.apache.sis.referencing.internal.shared.TemporalAccessor;
+import org.apache.sis.coordinate.DefaultCoordinateMetadata;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.logging.Logging;
@@ -234,13 +234,13 @@ public final class Envelopes {
      * GeographicBoundingBox)} CRS.findOperation(source.getCoordinateReferenceSystem(), target.getCoordinateReferenceSystem(),
      * <var>areaOfInterest</var>)</code></blockquote>
      *
-     * If at least one envelope is null or has no CRS, then this method returns {@code null}.
+     * If at least one envelope is null or has no <abbr>CRS</abbr>, then this method returns {@code null}.
      *
      * @param  source  the source envelope, or {@code null}.
      * @param  target  the target envelope, or {@code null}.
-     * @return the mathematical operation from {@code source} CRS to {@code target} CRS,
-     *         or {@code null} if at least one argument is null or has no CRS.
-     * @throws OperationNotFoundException if no operation was found between the given pair of CRS.
+     * @return the mathematical operation from the <abbr>CRS</abbr> of the {@code source} envelope to the <abbr>CRS</abbr>
+     *         of the {@code target} envelope, or {@code null} if at least one argument is null or has no <abbr>CRS</abbr>.
+     * @throws OperationNotFoundException if no operation was found between the <abbr>CRS</abbr>s of the given envelopes.
      * @throws FactoryException if the operation cannot be created for another reason.
      *
      * @see CRS#findOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, GeographicBoundingBox)
@@ -249,39 +249,18 @@ public final class Envelopes {
      */
     public static CoordinateOperation findOperation(final Envelope source, final Envelope target) throws FactoryException {
         if (source != null && target != null) {
-            final CoordinateReferenceSystem sourceCRS, targetCRS;
-            if ((sourceCRS = source.getCoordinateReferenceSystem()) != null &&
-                (targetCRS = target.getCoordinateReferenceSystem()) != null)
-            {
-                /*
-                 * Computing the area of interest (AOI) unconditionally would be harmless, but it is useless if the CRS
-                 * are the same since the result will be identity anyway. Conversely we could skip AOI computation more
-                 * often for example with the following condition instead of !=:
-                 *
-                 *     !Utilities.deepEquals(sourceCRS, targetCRS, ComparisonMode.ALLOW_VARIANT)
-                 *
-                 * but it would not be very advantageous if testing the condition is almost as long as computing the AOI.
-                 * For now we keep != as a very cheap test which will work quite often.
-                 */
-                DefaultGeographicBoundingBox areaOfInterest = null;
-                if (sourceCRS != targetCRS) try {
-                    final DefaultGeographicBoundingBox targetAOI;
-                    final ReferencingServices converter = ReferencingServices.getInstance();
-                    areaOfInterest = converter.setBounds(source, null, "findOperation");                // Should be first.
-                    targetAOI      = converter.setBounds(target, null, "findOperation");
-                    if (areaOfInterest == null) {
-                        areaOfInterest = targetAOI;
-                    } else if (targetAOI != null) {
-                        areaOfInterest.add(targetAOI);
-                    }
-                } catch (TransformException e) {
-                    /*
-                     * Note: we may succeed to transform `source` and fail to transform `target` to geographic bounding box,
-                     * but the opposite is unlikely because `source` should not have less dimensions than `target`.
-                     */
-                    Logging.recoverableException(LOGGER, Envelopes.class, "findOperation", e);
+            final CoordinateReferenceSystem sourceCRS = source.getCoordinateReferenceSystem();
+            if (sourceCRS != null) {
+                final CoordinateReferenceSystem targetCRS = target.getCoordinateReferenceSystem();
+                if (targetCRS != null && !CRS.equivalent(sourceCRS, targetCRS)) {
+                    final var context = new CoordinateOperationContext();
+                    context.addAreaOfInterest(source);
+                    context.addAreaOfInterest(target);
+                    return CRS.findOperation(
+                            new DefaultCoordinateMetadata(sourceCRS, null),
+                            new DefaultCoordinateMetadata(targetCRS, null),
+                            context);
                 }
-                return CRS.findOperation(sourceCRS, targetCRS, areaOfInterest);
             }
         }
         return null;

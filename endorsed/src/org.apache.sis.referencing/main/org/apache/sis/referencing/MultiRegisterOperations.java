@@ -27,6 +27,7 @@ import org.opengis.util.Factory;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.AuthorityFactory;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;

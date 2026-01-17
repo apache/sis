@@ -46,6 +46,7 @@ import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.matrix.UnderdeterminedMatrixException;
 
 
 /**
@@ -334,7 +335,8 @@ next:   for (final CoordinateSystem cs : targets) {
      * @param  targetCS  the target coordinate system.
      * @return the conversion from {@code sourceCS} to {@code targetCS} as an affine transform.
      *         Only axis direction and units are taken in account.
-     * @throws IllegalArgumentException if the CS are not of the same type, or axes do not match.
+     * @throws IllegalArgumentException if the <abbr>CS</abbr> are not of the same type, or axes do not match.
+     * @throws UnderdeterminedMatrixException if {@code targetCS} has an axis that {@code sourceCS} does not have.
      * @throws IncommensurableException if the units are not compatible, or the conversion is non-linear.
      *
      * @see Matrices#createTransform(AxisDirection[], AxisDirection[])

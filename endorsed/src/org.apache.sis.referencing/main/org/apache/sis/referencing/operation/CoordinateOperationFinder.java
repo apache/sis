@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ListIterator;
+import java.util.Locale;
 import java.util.Optional;
 import java.time.Duration;
 import javax.measure.Unit;
@@ -39,6 +40,7 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
@@ -58,6 +60,7 @@ import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
+import org.apache.sis.referencing.operation.matrix.UnderdeterminedMatrixException;
 import org.apache.sis.referencing.operation.provider.DatumShiftMethod;
 import org.apache.sis.referencing.operation.provider.GeocentricAffine;
 import org.apache.sis.util.Utilities;
@@ -136,7 +139,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * The pair of source and target CRS for which we already searched a coordinate operation.
      * This is used as a safety against infinite recursion.
      */
-    private final Map<CRSPair,Boolean> previousSearches;
+    private final Map<CRSPair, Boolean> previousSearches;
 
     /**
      * Whether this finder instance is allowed to use {@link DefaultCoordinateOperationFactory#cache}.
@@ -162,13 +165,13 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @see DefaultCoordinateOperationFactory#createOperationFinder(CoordinateOperationAuthorityFactory, CoordinateOperationContext)
      */
     public CoordinateOperationFinder(final CoordinateOperationAuthorityFactory registry,
-                                     final CoordinateOperationFactory          factory,
-                                     final CoordinateOperationContext          context) throws FactoryException
+                                     final CoordinateOperationFactory factory,
+                                     final CoordinateOperationContext context) throws FactoryException
     {
         super(registry, factory, context);
         identifierOfStepCRS = new HashMap<>(8);
         previousSearches    = new HashMap<>(8);
-        canReadFromCache    = (context == null) && (factory == factorySIS) && CoordinateOperationContext.canReadFromCache();
+        canReadFromCache    = (context == null || context.canReadFromCache()) && (factory == factorySIS);
         canStoreInCache     = (context == null);
     }
 
@@ -242,9 +245,10 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             return asList(createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS, null,
                             CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(),
                                                                targetCRS.getCoordinateSystem())));
-        } catch (IllegalArgumentException | IncommensurableException e) {
-            final CRSPair key = new CRSPair(sourceCRS, targetCRS);
-            throw new FactoryException(resources().getString(Resources.Keys.CanNotInstantiateGeodeticObject_1, key), e);
+        } catch (UnderdeterminedMatrixException exception) {
+            throw new MissingSourceDimensionsException(notFoundMessage(sourceCRS, targetCRS), exception);
+        } catch (IllegalArgumentException | IncommensurableException exception) {
+            throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
         }
         /*
          * If this method is invoked recursively, verify if the requested operation is already in the cache.
@@ -268,7 +272,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         if (bbox == null) {
             bbox = Extents.intersection(CRS.getGeographicBoundingBox(sourceCRS),
                                         CRS.getGeographicBoundingBox(targetCRS));
-            areaOfInterest = CoordinateOperationContext.setGeographicBoundingBox(areaOfInterest, bbox);
+            areaOfInterest = CoordinateOperationContext.setGeographicBoundingBox(DefaultExtent.castOrCopy(areaOfInterest), bbox);
         }
         /*
          * Verify in the EPSG dataset if the operation is explicitly defined by an authority.
@@ -752,6 +756,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final Matrix matrix;
         try {
             matrix = CoordinateSystems.swapAndScaleAxes(sourceCS, targetCS);
+        } catch (UnderdeterminedMatrixException exception) {
+            throw new MissingSourceDimensionsException(notFoundMessage(sourceCRS, targetCRS), exception);
         } catch (IllegalArgumentException | IncommensurableException exception) {
             throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
         }
@@ -820,6 +826,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final MatrixSIS matrix;
         try {
             matrix = MatrixSIS.castOrCopy(CoordinateSystems.swapAndScaleAxes(sourceCS, targetCS));
+        } catch (UnderdeterminedMatrixException exception) {
+            throw new MissingSourceDimensionsException(notFoundMessage(sourceCRS, targetCRS), exception);
         } catch (IllegalArgumentException | IncommensurableException exception) {
             throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
         }
@@ -873,6 +881,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final Matrix matrix;
         try {
             matrix = CoordinateSystems.swapAndScaleAxes(sourceCS, targetCS);
+        } catch (UnderdeterminedMatrixException exception) {
+            throw new MissingSourceDimensionsException(notFoundMessage(sourceCRS, targetCRS), exception);
         } catch (IllegalArgumentException | IncommensurableException exception) {
             throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
         }
@@ -909,14 +919,11 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          */
         final SubOperationInfo[] infos;
         try {
-            infos = SubOperationInfo.createSteps(this, sourceComponents, targetComponents);
+            infos = SubOperationInfo.createSteps(this, sourceCRS, sourceComponents, targetComponents);
         } catch (NoninvertibleTransformException e) {
             throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), e);
         } catch (TransformException e) {
             throw new FactoryException(notFoundMessage(sourceCRS, targetCRS), e);
-        }
-        if (infos == null) {
-            throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS));
         }
         /*
          * At this point, a coordinate operation has been found for all components of the target CRS.
@@ -959,8 +966,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         for (int i=0; i<stepComponents.length; i++) {
             final SubOperationInfo          info   = infos[i];
             final CoordinateReferenceSystem source = stepComponents[i];
-            final CoordinateReferenceSystem target = targetComponents.get(info.targetComponentIndex);
-            canStoreInCache &= info.canStoreInCache;
+            final CoordinateReferenceSystem target = info.targetComponent;
+            canStoreInCache &= info.canStoreInCache();
             /*
              * In order to compute `stepTargetCRS`, replace in-place a single element in `stepComponents`.
              * For each step except the last one, `stepTargetCRS` is a mix of target CRS and source CRS.
@@ -1008,16 +1015,14 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * source dimensions, add those constants as the last step. It never occur except is some particular
          * contexts like when computing a transform between two `GridGeometry` instances.
          */
-        if (stepComponents.length < infos.length) try {
-            final Matrix m = SubOperationInfo.createConstantOperation(infos,
+        if (stepComponents.length < infos.length) {
+            final Matrix m = SubOperationInfo.createConstantOperation(context, infos,
                     stepSourceCRS.getCoordinateSystem().getDimension(),
                         targetCRS.getCoordinateSystem().getDimension());
             operation = concatenate(operation, createFromAffineTransform(CONSTANTS, stepSourceCRS, targetCRS, null, m));
             for (int i = stepComponents.length; i < infos.length; i++) {
-                canStoreInCache &= infos[i].canStoreInCache;
+                canStoreInCache &= infos[i].canStoreInCache();
             }
-        } catch (TransformException e) {
-            throw new FactoryException(notFoundMessage(sourceCRS, targetCRS), e);
         }
         return asList(operation);
     }
@@ -1182,7 +1187,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         if (isIdentity(step3)) return concatenate(step1, step2);
         if (canHide(step1.getName())) return concatenate(concatenate(step1, step2), step3);
         if (canHide(step3.getName())) return concatenate(step1, concatenate(step2, step3));
-        final Map<String,?> properties = defaultName(step1.getSourceCRS(), step3.getTargetCRS());
+        final Map<String, ?> properties = defaultName(step1.getSourceCRS(), step3.getTargetCRS());
         return factory.createConcatenatedOperation(properties, null, null, step1, step2, step3);
     }
 
@@ -1223,7 +1228,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     /**
      * Returns the given name in a singleton map.
      */
-    private static Map<String,?> properties(final String name) {
+    private static Map<String, ?> properties(final String name) {
         return Map.of(IdentifiedObject.NAME_KEY, name);
     }
 
@@ -1233,7 +1238,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * where "(step 1)" may be replaced by "(step 2)", "(step 3)", <i>etc.</i> if this
      * method has already been invoked for the same identifier (directly or indirectly).
      */
-    private Map<String,?> derivedFrom(final IdentifiedObject object) {
+    private Map<String, ?> derivedFrom(final IdentifiedObject object) {
         Identifier oldID = object.getName();
         Object p = identifierOfStepCRS.get(oldID);
         if (p instanceof Identifier) {
@@ -1245,7 +1250,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         identifierOfStepCRS.put(newID, oldID);
         identifierOfStepCRS.put(oldID, count);
 
-        final Map<String,Object> properties = properties(newID);
+        final Map<String, Object> properties = properties(newID);
         properties.put(IdentifiedObject.REMARKS_KEY, Vocabulary.formatInternational(Vocabulary.Keys.DerivedFrom_1, label(object)));
         return properties;
     }
@@ -1253,7 +1258,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     /**
      * Returns a name for a transformation between two CRS.
      */
-    private static Map<String,?> defaultName(CoordinateReferenceSystem source, CoordinateReferenceSystem target) {
+    private static Map<String, ?> defaultName(CoordinateReferenceSystem source, CoordinateReferenceSystem target) {
         return properties(new CRSPair(source, target).toString());
     }
 
@@ -1278,8 +1283,12 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      *
      * @see #datumChangeNotFound(IdentifiedObject, IdentifiedObject)
      */
-    private String notFoundMessage(final CoordinateReferenceSystem source, final CoordinateReferenceSystem target) {
-        return resources().getString(Resources.Keys.CoordinateOperationNotFound_2, label(source), label(target));
+    final String notFoundMessage(final CoordinateReferenceSystem source, final CoordinateReferenceSystem target) {
+        final Locale locale = getLocale();
+        return Resources.forLocale(locale).getString(
+                Resources.Keys.CoordinateOperationNotFound_2,
+                CRSPair.label(source, locale),
+                CRSPair.label(target, locale));
     }
 
     /**
@@ -1290,7 +1299,10 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @return a default error message.
      */
     private String canNotInvert(final DerivedCRS crs) {
-        return resources().getString(Resources.Keys.NonInvertibleOperation_1, label(crs.getConversionFromBase()));
+        final Locale locale = getLocale();
+        return Resources.forLocale(locale).getString(
+                Resources.Keys.NonInvertibleOperation_1,
+                CRSPair.label(crs.getConversionFromBase(), locale));
     }
 
     /**

@@ -19,7 +19,6 @@ package org.apache.sis.referencing.internal.shared;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.function.Supplier;
 import java.util.logging.Logger;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
@@ -86,13 +85,6 @@ public final class CoordinateOperations {
      * (the latter is used in datum shift in geocentric coordinates).
      */
     public static final String OPERATION_TYPE_KEY = "operationType";
-
-    /**
-     * Value of {@link org.apache.sis.referencing.operation.CoordinateOperationContext#getConstantCoordinates()}.
-     * This thread-local is used as a workaround for the fact that we do not yet provide a public API for this
-     * functionality. This workaround should be deleted after a public API is defined.
-     */
-    public static final ThreadLocal<Supplier<double[]>> CONSTANT_COORDINATES = new ThreadLocal<>();
 
     /**
      * Cached values of {@link #wrapAroundChanges wrapAroundChanges(…)}, created when first needed.

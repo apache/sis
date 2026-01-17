@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
+import java.util.Set;
 import static java.lang.Double.NaN;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -33,6 +34,7 @@ import org.apache.sis.util.iso.Types;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertSetEquals;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -181,11 +183,12 @@ public final class MatricesTest extends TestCase {
      */
     @Test
     public void testCreateTransformWithAxisNotInSource() {
-        var e = assertThrows(IllegalArgumentException.class,
+        var e = assertThrows(UnderdeterminedMatrixException.class,
                 () -> Matrices.createTransform(
                         new AxisDirection[] {NORTH, EAST, UP},
                         new AxisDirection[] {DOWN, GEOCENTRIC_X}));
         assertMessageContainsDirection(e, GEOCENTRIC_X);
+        assertSetEquals(Set.of(GEOCENTRIC_X), e.getUnknownAxes());
     }
 
     /**

@@ -272,6 +272,7 @@ public final class Matrices {
          * (NORTH,EAST) to (EAST,NORTH)), then coordinates at index {@code srcIndex} will have
          * to be moved at index {@code dstIndex}.
          */
+        UnderdeterminedMatrixException exception = null;
         for (int dstIndex = 0; dstIndex < dstAxes.length; dstIndex++) {
             boolean hasFound = false;
             final AxisDirection dstDir = dstAxes[dstIndex];
@@ -312,9 +313,15 @@ public final class Matrices {
                 }
             }
             if (!hasFound) {
-                throw new IllegalArgumentException(Resources.format(
-                        Resources.Keys.CanNotMapAxisToDirection_1, dstAxes[dstIndex]));
+                if (exception == null) {
+                    exception = new UnderdeterminedMatrixException(Resources.format(
+                            Resources.Keys.CanNotMapAxisToDirection_1, dstDir));
+                }
+                exception.addUnknown(dstDir);
             }
+        }
+        if (exception != null) {
+            throw exception;
         }
         matrix.setElement(dstAxes.length, srcAxes.length, 1);
         return matrix;
@@ -439,8 +446,8 @@ public final class Matrices {
      * @param  srcAxes  the ordered sequence of axis directions for source coordinate system.
      * @param  dstAxes  the ordered sequence of axis directions for destination coordinate system.
      * @return the transform from the given source axis directions to the given target axis directions.
-     * @throws IllegalArgumentException if {@code dstAxes} contains at least one axis not found in {@code srcAxes},
-     *         or if some colinear axes were found.
+     * @throws UnderdeterminedMatrixException if {@code dstAxes} contains at least one axis not found in {@code srcAxes}.
+     * @throws IllegalArgumentException if some colinear axes were found.
      *
      * @see #createTransform(Envelope, Envelope)
      * @see #createTransform(Envelope, AxisDirection[], Envelope, AxisDirection[])
@@ -511,8 +518,8 @@ public final class Matrices {
      *         to the given envelope and target axis directions.
      * @throws MismatchedDimensionException if an envelope {@linkplain Envelope#getDimension() dimension} does not
      *         match the length of the axis directions sequence.
-     * @throws IllegalArgumentException if {@code dstAxes} contains at least one axis not found in {@code srcAxes},
-     *         or if some colinear axes were found.
+     * @throws UnderdeterminedMatrixException if {@code dstAxes} contains at least one axis not found in {@code srcAxes}.
+     * @throws IllegalArgumentException if some colinear axes were found.
      *
      * @see #createTransform(Envelope, Envelope)
      * @see #createTransform(AxisDirection[], AxisDirection[])

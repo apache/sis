@@ -16,6 +16,7 @@
  */
 package org.apache.sis.portrayal;
 
+import java.util.Locale;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -87,8 +88,11 @@ final class CanvasContext extends CoordinateOperationContext {
 
     /**
      * Creates a new context.
+     *
+     * @param  locale  the locale for error messages.
      */
-    CanvasContext() {
+    CanvasContext(final Locale locale) {
+        setLocale(locale);
     }
 
     /**

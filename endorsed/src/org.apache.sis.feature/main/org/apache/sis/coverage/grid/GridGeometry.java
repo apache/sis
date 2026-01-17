@@ -30,6 +30,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.geometry.Envelope;
+import org.opengis.coordinate.CoordinateMetadata;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -47,7 +48,7 @@ import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.coordinate.DefaultCoordinateMetadata;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -59,6 +60,7 @@ import org.apache.sis.referencing.internal.shared.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.internal.shared.DirectPositionView;
 import org.apache.sis.referencing.internal.shared.TemporalAccessor;
 import org.apache.sis.referencing.internal.shared.AxisDirections;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.internal.shared.ReferencingServices;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.LenientComparable;
@@ -985,6 +987,20 @@ public class GridGeometry implements LenientComparable, Serializable {
      */
 
     /**
+     * Returns the "real world" coordinate reference system together with the data epoch if any.
+     * This method is preferable to {@link #getCoordinateReferenceSystem()} when the <abbr>CRS</abbr> may be dynamic.
+     *
+     * @return the coordinate reference system (never {@code null}) together with the data epoch if any.
+     * @throws IncompleteGridGeometryException if this grid geometry has no <abbr>CRS</abbr> —
+     *         i.e. <code>{@linkplain #isDefined isDefined}({@linkplain #CRS})</code> returned {@code false}.
+     *
+     * @since 1.6
+     */
+    public CoordinateMetadata getCoordinateMetadata() {
+        return new DefaultCoordinateMetadata(getCoordinateReferenceSystem(), null);
+    }
+
+    /**
      * Returns the coordinate reference system of the given envelope if defined, or {@code null} if none.
      * Contrarily to {@link #getCoordinateReferenceSystem()}, this method does not throw exception.
      */
@@ -994,9 +1010,11 @@ public class GridGeometry implements LenientComparable, Serializable {
 
     /**
      * Returns the "real world" coordinate reference system.
+     * This method assumes that the <abbr>CRS</abbr> is static.
+     * If the <abbr>CRS</abbr> may be dynamic, use {@link #getCoordinateMetadata()} instead.
      *
      * @return the coordinate reference system (never {@code null}).
-     * @throws IncompleteGridGeometryException if this grid geometry has no CRS —
+     * @throws IncompleteGridGeometryException if this grid geometry has no <abbr>CRS</abbr> —
      *         i.e. <code>{@linkplain #isDefined isDefined}({@linkplain #CRS})</code> returned {@code false}.
      */
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {

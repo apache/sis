@@ -16,16 +16,18 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.Set;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.spatial.DimensionNameType;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.operation.OperationNotFoundException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.referencing.operation.MissingSourceDimensionsException;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
@@ -41,6 +43,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
+import static org.apache.sis.test.Assertions.assertSetEquals;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.referencing.Assertions.assertMatrixEquals;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
@@ -547,9 +550,11 @@ public final class GridGeometryTest extends TestCase {
                 new double[] { 1, -3.0, 56}), envelope);
 
         // Cannot map time to gravity-related height.
-        Throwable e = assertThrows(TransformException.class, () -> grid.getEnvelope(HardCodedCRS.GEOID_3D)).getCause();
-        e = assertInstanceOf(OperationNotFoundException.class, e);
-        assertMessageContains(e, "WGS 84 + time", "WGS 84 + height");
+        final var e = assertInstanceOf(
+                MissingSourceDimensionsException.class,
+                assertThrows(TransformException.class, () -> grid.getEnvelope(HardCodedCRS.GEOID_3D)).getCause());
+        assertMessageContains(e, "WGS 84 + time", "MSL height");
+        assertSetEquals(Set.of(AxisDirection.UP), e.getMissingAxes());
 
         // Ellipsoidal height is a special case, with default height of 0.
         envelope = grid.getEnvelope(HardCodedCRS.WGS84_3D);

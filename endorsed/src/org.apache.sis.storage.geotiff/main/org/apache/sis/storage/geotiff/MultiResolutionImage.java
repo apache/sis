@@ -73,7 +73,7 @@ final class MultiResolutionImage extends GridResourceWrapper implements StoreRes
 
     /**
      * The last coordinate operation returned by {@link #getTransformFrom(CoordinateReferenceSystem)}.
-     * Used as an optimization in the common case where the same CRS is used for many requests.
+     * Used as an optimization in the common case where the same <abbr>CRS</abbr> is used for many requests.
      */
     private volatile CoordinateOperation lastOperation;
 
@@ -205,12 +205,12 @@ final class MultiResolutionImage extends GridResourceWrapper implements StoreRes
     }
 
     /**
-     * Converts a resolution from units in the given CRS to units of this coverage CRS.
+     * Returns the resolution of the given grid geometry, but in units of this coverage <abbr>CRS</abbr>.
      *
      * @param  domain  the geometry from which to get the resolution.
      * @return resolution from the given grid geometry in units of this coverage CRS, or {@code null}.
      */
-    private double[] getResolution(final GridGeometry domain) throws DataStoreException {
+    private double[] convertResolutionOf(final GridGeometry domain) throws DataStoreException {
         if (domain == null || !domain.isDefined(GridGeometry.RESOLUTION)) {
             return null;
         }
@@ -253,7 +253,7 @@ final class MultiResolutionImage extends GridResourceWrapper implements StoreRes
      */
     @Override
     public GridCoverage read(final GridGeometry domain, final int... ranges) throws DataStoreException {
-        final double[] request = getResolution(domain);
+        final double[] request = convertResolutionOf(domain);
         int level = (request != null) ? resolutions.length : 1;
         synchronized (getSynchronizationLock()) {
 finer:      while (--level > 0) {

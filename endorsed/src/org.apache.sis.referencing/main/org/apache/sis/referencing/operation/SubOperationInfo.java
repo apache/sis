@@ -18,12 +18,15 @@ package org.apache.sis.referencing.operation;
 
 import java.util.List;
 import org.opengis.referencing.crs.*;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.OperationNotFoundException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.util.FactoryException;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -79,31 +82,28 @@ final class SubOperationInfo {
     }
 
     /**
-     * The coordinate operation between a source CRS component and a target CRS component.
-     * Exactly one of {@link #operation} or {@link #constants} shall be non-null.
+     * The coordinate operation between a component of the source CRS and a component of the target CRS.
+     * If {@code null}, then {@link CoordinateOperationContext#getConstantCoordinates()} shall return a
+     * non-null value, otherwise a {@link MissingSourceDimensionsException} will be thrown.
      */
     final CoordinateOperation operation;
 
     /**
-     * The constant values to store in target coordinates, or {@code null} if none. This array is usually null.
-     * It may be non-null if no source CRS component has been found for a target CRS component.
-     * Exactly one of {@link #operation} or {@link #constants} shall be non-null.
+     * The constant values to store in target coordinates, or {@code null} if none.
+     * This property is usually null, but may be non-null if no component of the source <abbr>CRS</abbr>
+     * has been found for a component of the target <abbr>CRS</abbr>, and fallbacks were specified with
+     * {@link CoordinateOperationContext#getConstantCoordinates()}.
      *
-     * <p>The array length is the number of dimensions in the full (usually compound) target CRS, but only the
-     * coordinate values for sourceless dimensions are used. Other coordinates are ignored and can be NaN.</p>
-     *
-     * <h4>Example</h4>
-     * If the source <abbr>CRS</abbr> has (<var>x</var>, <var>y</var>) axes and the target <abbr>CRS</abbr>
-     * has (<var>x</var>, <var>y</var>, <var>t</var>) axes, then this array may be set to a non-null value
-     * for specifying the <var>t</var> value.
+     * <p>The array length is the number of dimensions in the <em>component</em> of the target <abbr>CRS</abbr>
+     * for which this {@code SubOperationInfo} is constructed. These coordinates cannot be <abbr>NaN</abbr>.</p>
      *
      * @see CoordinateOperationContext#getConstantCoordinates()
      */
-    private final double[] constants;
+    private double[] constantCoordinates;
 
     /**
-     * The first dimension (inclusive) and the last dimension (exclusive) where the {@link SingleCRS} starts/ends
-     * in the full (usually compound) CRS.
+     * The first dimension (inclusive) and the last dimension (exclusive) where the
+     * {@link SingleCRS} starts/ends in the full (usually compound) <abbr>CRS</abbr>.
      *
      * @see #sourceToSelected(int, SubOperationInfo[])
      */
@@ -117,45 +117,48 @@ final class SubOperationInfo {
     final int targetComponentIndex;
 
     /**
-     * Whether this operation can be cached. This flag shall be {@code false} if
-     * the operation depends on parameters that may vary between two executions.
+     * The component of the target <abbr>CRS</abbr> which is managed by this {@code SubOperationInfo}.
+     * This is the component at the index specified by {@link #targetComponentIndex}.
      */
-    final boolean canStoreInCache;
+    final SingleCRS targetComponent;
 
     /**
-     * Creates a new instance wrapping the given coordinate operation or coordinate constants.
-     * Exactly one of {@code operation} or {@code constants} shall be non-null.
+     * Creates a new instance wrapping the given coordinate operation or constant coordinates.
+     * The constant coordinates are fetched after construction if they appear needed.
+     *
+     * @see #fetchConstantsForMissingSourceDimensions(CoordinateOperationContext)
      */
-    private SubOperationInfo(final CoordinateOperation operation, final double[] constants,
+    private SubOperationInfo(final CoordinateOperation operation,
                              final int sourceLowerDimension, final int sourceUpperDimension,
                              final int targetLowerDimension, final int targetUpperDimension,
-                             final int targetComponentIndex, final boolean canStoreInCache)
+                             final int targetComponentIndex, final SingleCRS targetComponent)
     {
         this.operation            = operation;
-        this.constants            = constants;
         this.sourceLowerDimension = sourceLowerDimension;
         this.sourceUpperDimension = sourceUpperDimension;
         this.targetLowerDimension = targetLowerDimension;
         this.targetUpperDimension = targetUpperDimension;
         this.targetComponentIndex = targetComponentIndex;
-        this.canStoreInCache      = canStoreInCache;
-        assert (operation == null) != (constants == null);
+        this.targetComponent      = targetComponent;
     }
 
     /**
      * Searches in given list of source components for operations capable to transform coordinates to each target CRS.
-     * There is one {@code SubOperationInfo} per target CRS because we need to satisfy all target dimensions, while it
-     * is okay to ignore some source dimensions. If an operation cannot be found, then this method returns {@code null}.
+     * There is one {@code SubOperationInfo} instance per target <abbr>CRS</abbr> because we need to satisfy all target
+     * dimensions. However, it is okay to ignore some components or dimensions of the source <abbr>CRS</abbr>.
      *
-     * @param  caller   the object which is inferring a coordinate operation.
-     * @param  sources  all components of the source CRS.
-     * @param  targets  all components of the target CRS.
-     * @return information about each coordinate operation from a source CRS to a target CRS, or {@code null}.
+     * @param  caller     the object which is inferring a coordinate operation.
+     * @param  sourceCRS  the source source <abbr>CRS</abbr>, used for error message.
+     * @param  sources    all components of the source <abbr>CRS</abbr>.
+     * @param  targets    all components of the target <abbr>CRS</abbr>.
+     * @return information about each coordinate operation from a source <abbr>CRS</abbr> to a target <abbr>CRS</abbr>.
      * @throws FactoryException if an error occurred while grabbing a coordinate operation.
+     * @throws MissingSourceDimensionsException if a target axis cannot be mapped to a source axis or a constant.
      * @throws TransformException if an error occurred while computing a coordinate value for unmatched dimension.
      * @throws NoninvertibleTransformException if the default coordinate value for a unmatched dimension is NaN.
      */
     static SubOperationInfo[] createSteps(final CoordinateOperationFinder caller,
+                                          final CoordinateReferenceSystem sourceCRS,
                                           final List<? extends SingleCRS> sources,
                                           final List<? extends SingleCRS> targets)
             throws FactoryException, TransformException
@@ -163,106 +166,135 @@ final class SubOperationInfo {
         final var infos = new SubOperationInfo[targets.size()];
         final var sourceComponentIsUsed = new boolean[sources.size()];
         /*
-         * Iterate over target CRS because all of them must have an operation.
-         * One the other hand, source CRS can be used zero or one (not two) time.
+         * Each target CRS must be associated to exactly one source CRS
+         * (or to zero source CRS if the missing source CRS can be replaced by constant coordinate values).
+         * Each source CRS must be associated to zero or one target CRS, not necessarily in the same order.
+         * Therefore, the iteration over source components will be repeated for each target CRS, combined
+         * with `sourceComponentIsUsed` flags for using each source CRS at most once.
          */
         int targetLowerDimension;
         int targetUpperDimension = 0;
-next:   for (int targetComponentIndex = 0; targetComponentIndex < infos.length; targetComponentIndex++) {
-            final SingleCRS target = targets.get(targetComponentIndex);
+        int targetComponentIndex = 0;
+        while (targetComponentIndex < infos.length) {
+            final SingleCRS targetComponent = targets.get(targetComponentIndex);
             targetLowerDimension  = targetUpperDimension;
-            targetUpperDimension += target.getCoordinateSystem().getDimension();
+            targetUpperDimension += targetComponent.getCoordinateSystem().getDimension();
 
-            final Class<?> targetType = type(target);
+            final Class<?> targetType = type(targetComponent);
             OperationNotFoundException failure = null;
+            CoordinateOperation operation = null;
             /*
              * For each target CRS, search for a source CRS which has not yet been used.
              * Some sources may be left unused after this method completion. Check only
              * sources that may be compatible according the `COMPATIBLE_TYPES` array.
              */
-            int sourceLowerDimension;
+            int sourceLowerDimension = 0;
             int sourceUpperDimension = 0;
-            for (int sourceComponentIndex = 0; sourceComponentIndex < sourceComponentIsUsed.length; sourceComponentIndex++) {
-                final SingleCRS source = sources.get(sourceComponentIndex);
-                sourceLowerDimension  = sourceUpperDimension;
-                sourceUpperDimension += source.getCoordinateSystem().getDimension();
+            int sourceComponentIndex = 0;
+searchSrc:  while (sourceComponentIndex < sourceComponentIsUsed.length) {
+                final SingleCRS sourceComponent = sources.get(sourceComponentIndex);
+                sourceUpperDimension += sourceComponent.getCoordinateSystem().getDimension();
                 if (!sourceComponentIsUsed[sourceComponentIndex]) {
-                    final Class<?> sourceType = type(source);
+                    final Class<?> sourceType = type(sourceComponent);
                     for (final Class<?>[] compatibleTypes : COMPATIBLE_TYPES) {
                         if (compatibleTypes[0].isAssignableFrom(targetType)) {
                             for (final Class<?> compatibleType : compatibleTypes) {
-                                if (compatibleType.isAssignableFrom(sourceType)) {
-                                    final CoordinateOperation operation;
-                                    try {
-                                        operation = caller.createOperation(source, target);
-                                    } catch (OperationNotFoundException exception) {
-                                        if (failure == null) {
-                                            failure = exception;
-                                        } else {
-                                            failure.addSuppressed(exception);
-                                        }
-                                        continue;
-                                    }
-                                    /*
-                                     * Found an operation. Exclude the source component from the list because each source
-                                     * should be used at most once by `SubOperationInfo`. Note that the same source may
-                                     * be used again in another context if that source is also an interpolation CRS.
-                                     *
-                                     * EXAMPLE: consider a coordinate operation from (GeodeticCRS₁, VerticalCRS₁) source
-                                     * to (GeodeticCRS₂, VerticalCRS₂) target.  The source GeodeticCRS₁ should be mapped
-                                     * to exactly one target component (which is GeodeticCRS₂)  and  VerticalCRS₁ mapped
-                                     * to VerticalCRS₂.  But the operation on vertical coordinates may need GeodeticCRS₁
-                                     * for doing its work, so GeodeticCRS₁ is needed twice. However, when needed for the
-                                     * vertical coordinate operation, the GeodeticCRS₁ is used as an "interpolation CRS".
-                                     * Interpolation CRS are handled in other code paths, it is not the business of this
-                                     * `SubOperationInfo` class to care about them. From the point of view of this class,
-                                     * GeodeticCRS₁ is used only once.
-                                     */
+                                if (compatibleType.isAssignableFrom(sourceType)) try {
+                                    operation = caller.createOperation(sourceComponent, targetComponent);
                                     sourceComponentIsUsed[sourceComponentIndex] = true;
-                                    infos[targetComponentIndex] = new SubOperationInfo(
-                                            operation, null,
-                                            sourceLowerDimension, sourceUpperDimension,
-                                            targetLowerDimension, targetUpperDimension,
-                                            targetComponentIndex, true);
-
-                                    if (failure != null) {
-                                        CoordinateOperationRegistry.recoverableException("decompose", failure);
+                                    break searchSrc;
+                                } catch (OperationNotFoundException exception) {
+                                    if (failure == null) {
+                                        failure = exception;
+                                    } else {
+                                        failure.addSuppressed(exception);
                                     }
-                                    continue next;
                                 }
                             }
                         }
                     }
                 }
+                // Following variable must be updated before to stop the loop. Therefore, it cannot be at loop beginning.
+                sourceLowerDimension = sourceUpperDimension;
+                sourceComponentIndex++;
             }
             if (failure != null) {
-                throw failure;
+                if (operation == null) {
+                    throw failure;
+                }
+                caller.recoverableException("createOperationStep", failure);
             }
+            final var info = new SubOperationInfo(operation,
+                    sourceLowerDimension, sourceUpperDimension,
+                    targetLowerDimension, targetUpperDimension,
+                    targetComponentIndex, targetComponent);
             /*
-             * If we reach this point, we have not been able to find a source CRS that we can map to the target CRS.
-             * Usually this is fatal, returning null will instruct the caller to throw `OperationNotFoundException`.
+             * If we enter in the following block, we have not been able to find a source for the target component.
+             * Usually, we don't know how to get coordinate values, so `MissingSourceDimensionsException` is thrown.
              * However, in some contexts (e.g. when searching for an operation between two `GridGeometry` instances)
              * it is possible to assign a constant value to the target coordinates. Those values cannot be guessed
-             * by `org.apache.sis.referencing`; they must be provided by caller. If such constants are specified,
-             * then we will try to apply them.
+             * by `org.apache.sis.referencing`, they must be provided by the user.
              */
-            final double[] constants = CoordinateOperationContext.getConstantCoordinates();
-            if (constants == null || constants.length < targetUpperDimension) {
-                return null;
-            }
-            for (int i = targetLowerDimension; i < targetUpperDimension; i++) {
-                if (Double.isNaN(constants[i])) {
-                    throw new NoninvertibleTransformException(caller.resources()
-                            .getString(Resources.Keys.ConstantCoordinateValueRequired_1, i));
+            if (operation == null) {
+                final CoordinateSystemAxis missing = info.fetchConstantsForMissingSourceDimensions(caller.context);
+                if (info.constantCoordinates == null) {
+                    final MissingSourceDimensionsException e;
+                    if (missing != null) {
+                        e = new MissingSourceDimensionsException(caller.resources().getString(
+                                Resources.Keys.ConstantCoordinateValueRequired_1, caller.label(missing)));
+                        e.addMissing(missing.getDirection());
+                    } else {
+                        e = new MissingSourceDimensionsException(caller.notFoundMessage(sourceCRS, targetComponent));
+                        e.addMissing(sourceCRS.getCoordinateSystem(), targetComponent.getCoordinateSystem());
+                    }
+                    throw e;
                 }
             }
-            infos[targetComponentIndex] = new SubOperationInfo(
-                    null, constants,
-                    sourceUpperDimension, sourceUpperDimension,
-                    targetLowerDimension, targetUpperDimension,
-                    targetComponentIndex, false);
+            infos[targetComponentIndex++] = info;
         }
         return infos;
+    }
+
+    /**
+     * Initializes the {@link #constantCoordinates} field to the constant coordinate values for the operation step
+     * managed by this {@code SubOperationInfo}. If no constants have been specified, {@link #constantCoordinates}
+     * field stay null and the reason for the failure is returned. That reason is an axis missing in the source
+     * <abbr>CRS</abbr>, or {@code null} if that axis is unknown.
+     *
+     * @param  context  options supplied by the user, or {@code null}.
+     * @return the coordinate axis that could not be resolved, or {@code null} if none or unknown.
+     */
+    private CoordinateSystemAxis fetchConstantsForMissingSourceDimensions(final CoordinateOperationContext context) {
+        if (context != null) {
+            final DirectPosition coordinates = context.getConstantCoordinates();
+            if (coordinates != null) {
+                /*
+                 * Finds the index of the first coordinate to use among the constant coordinates.
+                 * The default CRS of `coordinates` is the full target CRS (with all dimensions).
+                 * If a different CRS is specified, search the index of this target CRS component.
+                 * No coordinate transformation is perfomed in this method, only selection.
+                 */
+                int indexOfConstant = targetLowerDimension;     // Value for the default CRS.
+                final CoordinateReferenceSystem crs = coordinates.getCoordinateReferenceSystem();
+locate:         if (crs != null) {
+                    indexOfConstant = 0;
+                    for (SingleCRS component : CRS.getSingleComponents(crs)) {
+                        if (CRS.equivalent(targetComponent, component)) break locate;
+                        indexOfConstant += component.getCoordinateSystem().getDimension();
+                    }
+                    return null;
+                }
+                final int d = coordinates.getDimension();
+                final var c = new double[targetUpperDimension - targetLowerDimension];
+                for (int i=0; i<c.length; i++) {
+                    if (indexOfConstant >= d || Double.isNaN(c[i] = coordinates.getCoordinate(indexOfConstant++))) {
+                        return targetComponent.getCoordinateSystem().getAxis(i);
+                    }
+                }
+                constantCoordinates = c;
+            }
+        }
+        return null;
     }
 
     /**
@@ -375,59 +407,84 @@ next:   for (int targetComponentIndex = 0; targetComponentIndex < infos.length; 
 
     /**
      * Returns the matrix of an operation setting some coordinates to constant values.
+     * This is possible only if the user as provided a non-null value for
+     * {@link CoordinateOperationContext#getConstantCoordinates()}.
      *
+     * @param  context   options supplied by the user, or {@code null}.
      * @param  selected  all operations from source to target {@link CompoundCRS}.
      * @param  srcDim    number of dimensions in the target CRS of previous operation step.
      * @param  tgtDim    number of dimensions in the full (usually compound) target CRS.
      */
-    static MatrixSIS createConstantOperation(final SubOperationInfo[] selected, final int srcDim, final int tgtDim)
-            throws TransformException
+    static MatrixSIS createConstantOperation(final CoordinateOperationContext context,
+            final SubOperationInfo[] selected, final int srcDim, final int tgtDim)
+            throws MissingSourceDimensionsException
     {
-        final boolean[] targetDimensionIsUsed = new boolean[tgtDim];
-        final MatrixSIS m = Matrices.createZero(tgtDim + 1, srcDim + 1);
-        m.setElement(tgtDim, srcDim, 1);
+        final MatrixSIS matrix = Matrices.createZero(tgtDim + 1, srcDim + 1);
+        matrix.setElement(tgtDim, srcDim, 1);
         for (final SubOperationInfo component : selected) {
-            if (component.constants != null) {
-                /*
-                 * Component for which no operation has been found.
-                 * Set all coordinate values of that component to the specified constants
-                 */
-                for (int j = component.targetLowerDimension; j < component.targetUpperDimension; j++) {
-                    m.setElement(j, srcDim, component.constants[j]);
-                    targetDimensionIsUsed[j] = true;
-                }
-            } else {
-                /*
-                 * Component for which an operation has been found, but maybe this is the inverse of the
-                 * "Geographic 3D to 2D conversion" (EPSG:9659) which sets the height to `DEFAULT_HEIGHT`.
-                 * If all values in the row are zero, then the coordinate value is unconditionally zero.
-                 * Replace that value (usually the default ellipsoidal height) by the specified constant.
-                 */
-                final Matrix last = MathTransforms.getMatrix(MathTransforms.getLastStep(component.operation.getMathTransform()));
-                if (last != null) {
+            component.setConstantTerms(context, matrix, srcDim);
+        }
+        return matrix;
+    }
+
+    /**
+     * Sets the coefficients of the given matrix to the constant coordinate values
+     * in the dimensions managed by this {@code SubOperationInfo}.
+     *
+     * @param  context  options supplied by the user, or {@code null}.
+     * @param  matrix   the matrix for which to set the coefficients.
+     * @param  translationColumn  index of the last column of the given matrix.
+     */
+    private void setConstantTerms(final CoordinateOperationContext context, final MatrixSIS matrix, final int translationColumn) {
+        if (constantCoordinates != null) {
+            /*
+             * Component for which no operation has been found.
+             * Set all coordinate values of that component to the specified constant values.
+             */
+            for (int j = targetUpperDimension - targetLowerDimension; --j >= 0;) {
+                matrix.setElement(targetLowerDimension + j, translationColumn, constantCoordinates[j]);
+            }
+        } else {
+            /*
+             * Component for which an operation has been found, but maybe this is the inverse of the
+             * "Geographic 3D to 2D conversion" (EPSG:9659) which sets the height to `DEFAULT_HEIGHT`.
+             * If all values in the row are zero, then the coordinate value is unconditionally zero.
+             * Replace that value (usually the default ellipsoidal height) by the specified constant.
+             */
+            final var targetDimensionIsUsed = new boolean[targetUpperDimension - targetLowerDimension];
+            final Matrix last = MathTransforms.getMatrix(MathTransforms.getLastStep(operation.getMathTransform()));
+            if (last != null) {
+                fetchConstantsForMissingSourceDimensions(context);
+                if (constantCoordinates != null) {
 otherRow:           for (int j = last.getNumRow() - 1; --j >= 0;) {     // Ignore the last row.
                         for (int i = last.getNumCol(); --i >= 0;) {
                             if (last.getElement(j, i) != 0) {
                                 continue otherRow;
                             }
                         }
-                        final double[] constants = CoordinateOperationContext.getConstantCoordinates();
-                        if (constants == null) break;
-                        final int k = component.targetLowerDimension + j;
-                        m.setElement(j, srcDim, constants[k]);
-                        targetDimensionIsUsed[k] = true;
+                        matrix.setElement(targetLowerDimension + j, translationColumn, constantCoordinates[j]);
+                        targetDimensionIsUsed[j] = true;
                     }
                 }
             }
-        }
-        /*
-         * All coordinates that have not been set to a constant shall be propagated unchanged (scale factor of 1).
-         */
-        for (int i=0,j=0; j<tgtDim; j++) {
-            if (!targetDimensionIsUsed[j]) {
-                m.setElement(j, i++, 1);
+            /*
+             * All coordinates that have not been set to a constant
+             * shall be propagated unchanged (scale factor of 1).
+             */
+            int i = sourceLowerDimension;
+            for (int j = 0; j < targetDimensionIsUsed.length; j++) {
+                if (!targetDimensionIsUsed[j]) {
+                    matrix.setElement(targetLowerDimension + j, i++, 1);
+                }
             }
         }
-        return m;
+    }
+
+    /**
+     * Whether this operation can be cached. This flag shall be {@code false} if
+     * the operation depends on parameters that may vary between two executions.
+     */
+    final boolean canStoreInCache() {
+        return constantCoordinates == null;
     }
 }

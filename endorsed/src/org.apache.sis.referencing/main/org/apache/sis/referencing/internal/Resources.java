@@ -188,7 +188,7 @@ public class Resources extends IndexedResourceBundle {
         public static final short ConformanceMeansDatumShift = 11;
 
         /**
-         * A constant value is required for the coordinate at index {0}.
+         * A constant value is required for coordinate axis “{0}”.
          */
         public static final short ConstantCoordinateValueRequired_1 = 109;
 

@@ -75,7 +75,6 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Deprecable;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Vocabulary;
@@ -213,6 +212,14 @@ class CoordinateOperationRegistry {
     final DefaultCoordinateOperationFactory factorySIS;
 
     /**
+     * Options such as initial area of interest, desired accuracy and coordinates that may be considered as constants.
+     * This is null if no context has been specified.
+     *
+     * @since 1.6
+     */
+    protected final CoordinateOperationContext context;
+
+    /**
      * The spatiotemporal area of interest, or {@code null} if none.
      * When a new {@code CoordinateOperationFinder} instance is created with a non-null
      * {@link CoordinateOperationContext}, the context is used for initializing this value.
@@ -240,14 +247,6 @@ class CoordinateOperationRegistry {
     boolean stopAtFirst;
 
     /**
-     * A filter that can be used for applying additional restrictions on the coordinate operation,
-     * or {@code null} if none. If non-null, only operations passing this filter will be considered.
-     *
-     * @see CoordinateOperationContext#getOperationFilter()
-     */
-    private Predicate<CoordinateOperation> filter;
-
-    /**
      * Authority codes found for CRS. This is a cache for {@link #findCode(CoordinateReferenceSystem)}.
      * This map may be non-empty only if {@link #codeFinder} is non-null.
      *
@@ -261,13 +260,6 @@ class CoordinateOperationRegistry {
      * @see #findCode(CoordinateReferenceSystem)
      */
     private final Map<CoordinateReferenceSystem, List<String>> authorityCodes;
-
-    /**
-     * The locale for error messages.
-     *
-     * @todo Add a setter method, or make configurable in some way.
-     */
-    private Locale locale;
 
     /**
      * Creates a new instance for the given factory and context.
@@ -302,10 +294,10 @@ class CoordinateOperationRegistry {
             }
         }
         this.authorityCodes = authorityCodes;
+        this.context = context;
         if (context != null) {
             areaOfInterest  = context.getAreaOfInterest();
             desiredAccuracy = context.getDesiredAccuracy();
-            filter          = context.getOperationFilter();
         }
     }
 
@@ -701,7 +693,7 @@ class CoordinateOperationRegistry {
                 continue;                                   // Try again with the next best case.
             }
             /*
-             * It is possible that the CRS given to this method were not quite right.  For example, the user
+             * It is possible that the CRSs given to this method were not quite right. For example, the user
              * may have created his CRS from a WKT using a different axis order than the order specified by
              * the authority and still (wrongly) call those CRS "EPSG:xxxx".  So we check if the source and
              * target CRS for the operation we just created are equivalent to the CRS specified by the user.
@@ -713,6 +705,7 @@ class CoordinateOperationRegistry {
              * FactoryException propagate.
              */
             operation = complete(operation, sourceCRS, targetCRS);
+            final Predicate<CoordinateOperation> filter = (context != null) ? context.getOperationFilter() : null;
             if (filter == null || filter.test(operation)) {
                 if (stopAtFirst) {
                     operations.clear();
@@ -754,7 +747,7 @@ class CoordinateOperationRegistry {
         final CoordinateReferenceSystem sourceCRS = op.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = op.getTargetCRS();
         final MathTransform transform = op.getMathTransform().inverse();
-        final OperationMethod method = InverseOperationMethod.create(op.getMethod(), factorySIS);
+        final OperationMethod method = InverseOperationMethod.create(op.getMethod(), this);
         final Map<String,Object> properties = properties(INVERSE_OPERATION);
         InverseOperationMethod.properties(op, properties);
         inverse = createFromMathTransform(properties, targetCRS, sourceCRS, transform, method, null, typeOf(op));
@@ -1389,12 +1382,21 @@ class CoordinateOperationRegistry {
     }
 
     /**
+     * Returns the locale to use for error messages.
+     *
+     * @return the locale, or {@code null} for the default locale.
+     */
+    final Locale getLocale() {
+        return (context != null) ? context.getLocale() : null;
+    }
+
+    /**
      * Returns the localized resources for error messages.
      *
      * @return localized resources for errors.
      */
     final Resources resources() {
-        return Resources.forLocale(locale);
+        return Resources.forLocale(getLocale());
     }
 
     /**
@@ -1404,7 +1406,7 @@ class CoordinateOperationRegistry {
      * @return label identifying the given object.
      */
     final String label(final IdentifiedObject object) {
-        return CRSPair.label(object, locale);
+        return CRSPair.label(object, getLocale());
     }
 
     /**
@@ -1416,45 +1418,51 @@ class CoordinateOperationRegistry {
      * @return a default error message.
      */
     final String datumChangeNotFound(final IdentifiedObject source, final IdentifiedObject target) {
-        return resources().getString(Resources.Keys.DatumChangeNotFound_2,
+        final Locale locale = getLocale();
+        return Resources.forLocale(locale).getString(Resources.Keys.DatumChangeNotFound_2,
                 IdentifiedObjects.getDisplayName(source, locale),
                 IdentifiedObjects.getDisplayName(target, locale));
     }
 
     /**
-     * Logs an unexpected but ignorable exception. This method pretends that the logging
-     * come from {@link CoordinateOperationFinder} since this is the public API which
-     * use this {@code CoordinateOperationRegistry} class.
+     * Logs an unexpected but ignorable exception. This method pretends that the logging come from
+     * some {@link CoordinateOperationFinder} method because this is the public <abbr>API</abbr>
+     * which uses this {@code CoordinateOperationRegistry} class.
      *
      * @param record     the record to log, or {@code null} for creating from the exception.
-     * @param exception  the exception which occurred, or {@code null} if a {@code record} is specified instead.
+     * @param exception  the exception that occurred, or {@code null} if a {@code record} is specified instead.
      */
-    private static void log(LogRecord record, final Exception exception) {
+    private void log(LogRecord record, final Exception exception) {
         if (record == null) {
             record = new LogRecord(Level.WARNING, exception.getLocalizedMessage());
+            /*
+             * We usually do not log the stack trace because this method is invoked mostly for exceptions
+             * such as `NoSuchAuthorityCodeException` or `MissingFactoryResourceException`, for which the
+             * message is descriptive enough. But we make a special case for `NoninvertibleTransformException`
+             * because its cause may have deeper root.
+             */
+            if (exception instanceof NoninvertibleTransformException) {
+                record.setThrown(exception);
+            }
         }
-        /*
-         * We usually do not log the stack trace because this method should be invoked only for exceptions
-         * such as NoSuchAuthorityCodeException or MissingFactoryResourceException, for which the message
-         * is descriptive enough. But we make a special case for NoninvertibleTransformException because
-         * its cause may have deeper root.
-         */
-        if (exception instanceof NoninvertibleTransformException) {
-            record.setThrown(exception);
+        if (record.getSourceMethodName() == null) {
+            record.setSourceMethodName("createOperations");
         }
-        Logging.completeAndLog(AbstractCoordinateOperation.LOGGER, CoordinateOperationFinder.class, "createOperations", record);
+        CoordinateOperationContext.log(context, CoordinateOperationFinder.class, AbstractCoordinateOperation.LOGGER, record);
     }
 
     /**
      * Logs an ignorable exception. This method pretends that the logging come from
-     * {@link CoordinateOperationFinder} since this is the public API which use this
-     * {@code CoordinateOperationRegistry} class.
+     * {@link CoordinateOperationFinder} because this is the public <abbr>API</abbr>
+     * which uses this {@code CoordinateOperationRegistry} class.
      *
      * @param  method     the method name where the error occurred.
-     * @param  exception  the exception which occurred, or {@code null} if a {@code record} is specified instead.
+     * @param  exception  the exception that occurred.
      */
-    static void recoverableException(final String method, final Exception exception) {
-        Logging.recoverableException(AbstractCoordinateOperation.LOGGER,
-                CoordinateOperationFinder.class, method, exception);
+    final void recoverableException(final String method, final Exception exception) {
+        final var record = new LogRecord(Level.FINE, exception.getLocalizedMessage());
+        record.setThrown(exception);
+        record.setSourceMethodName(method);
+        log(record, null);
     }
 }

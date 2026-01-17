@@ -76,7 +76,7 @@ final class InverseOperationMethod extends DefaultOperationMethod {
      * for the inverse operation either with the exact same parameter values or with the sign of some values
      * reversed, then the given method is returned as-is. Otherwise a synthetic method is created.
      */
-    static OperationMethod create(OperationMethod method, final DefaultCoordinateOperationFactory factorySIS)
+    static OperationMethod create(OperationMethod method, final CoordinateOperationRegistry caller)
             throws FactoryException
     {
         if (method instanceof InverseOperationMethod) {
@@ -84,10 +84,10 @@ final class InverseOperationMethod extends DefaultOperationMethod {
         }
         if (!(method instanceof AbstractProvider)) try {
             method = CoordinateOperations.findMethod(
-                    factorySIS.getMathTransformFactory(),
+                    caller.factorySIS.getMathTransformFactory(),
                     method.getName().getCode());
         } catch (NoSuchIdentifierException e) {
-            CoordinateOperationRegistry.recoverableException("inverse", e);
+            caller.recoverableException("inverse", e);
         }
         if (method instanceof AbstractProvider) {
             final AbstractProvider inverse = ((AbstractProvider) method).inverse();

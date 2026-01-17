@@ -23,10 +23,10 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
  * Thrown when a matrix cannot be inverted.
  * This may be because the matrix is singular, or because the matrix is not square.
  *
- * <h2>Usage note</h2>
- * This exception extends {@code NoninvertibleTransformException} because the matrices in this package
- * are used in <i>Coordinate Operation Steps</i>, in which case a singular matrix means that the
- * operation is not invertible.
+ * <h2>Design note</h2>
+ * This exception extends {@code NoninvertibleTransformException} because in the context
+ * of Apache <abbr>SIS</abbr>, matrix inversions occur mostly during the construction of
+ * a coordinate operation between a pair of <abbr>CRS</abbr>.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4

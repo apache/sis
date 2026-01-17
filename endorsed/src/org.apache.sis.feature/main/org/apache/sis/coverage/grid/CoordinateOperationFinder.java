@@ -17,10 +17,8 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
-import java.util.function.Supplier;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
-import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -30,17 +28,15 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.internal.shared.CoordinateOperations;
 import org.apache.sis.referencing.internal.shared.WraparoundApplicator;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.referencing.operation.CoordinateOperationContext;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.WraparoundTransform;
 import org.apache.sis.geometry.AbstractDirectPosition;
-import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.internal.shared.Numerics;
 
 
@@ -73,7 +69,7 @@ import org.apache.sis.util.internal.shared.Numerics;
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class CoordinateOperationFinder implements Supplier<double[]> {
+final class CoordinateOperationFinder extends CoordinateOperationContext {
     /**
      * Whether the operation is between cell centers or cell corners.
      *
@@ -85,15 +81,6 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      * The grid geometry which is the source/target of the coordinate operation to find.
      */
     private final GridGeometry source, target;
-
-    /**
-     * The target coordinate values, computed only if needed. This is computed by {@link #get()}, which is
-     * itself invoked indirectly by {@link org.apache.sis.referencing.operation.CoordinateOperationFinder}.
-     * The value is cached in case {@code get()} is invoked many times during the same finder execution.
-     *
-     * @see #get()
-     */
-    private double[] coordinates;
 
     /**
      * The coordinate operation from source to target CRS, computed when first needed.
@@ -225,7 +212,7 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
     private boolean isWraparoundDisabled;
 
     /**
-     * Whether the {@link #get()} method should accept dimensions that are not slices in a multi-dimensional cube.
+     * Whether this {@link DirectPosition} should accept dimensions that are not slices in a multi-dimensional cube.
      * If 0 (the default), the dimensions are required to be slices. If non-zero, the requirement is relaxed, with
      * -1 meaning to use the low grid coordinate and +1 meaning to use the high grid coordinate.
      *
@@ -270,25 +257,25 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      */
     final void setAnchor(final PixelInCell newValue) {
         /*
-         * If `coordinates` is non-null, it means that `CoordinateOperationContext.getConstantCoordinates()`
-         * has been invoked during previous `gridToCRS()` execution, which implies that `changeOfCRS` depends
-         * on the `anchor` value. In such case we will need to recompute all fields that depend on `changeOfCRS`.
+         * If `hasUsedConstantValues()` is true, it means that `CoordinateOperationContext.getConstantCoordinates()`
+         * has been invoked during previous `gridToCRS()` execution, which implies that `changeOfCRS` depends on the
+         * `anchor` value. In such case, we will need to recompute all fields that depend on `changeOfCRS`.
          */
         anchor = newValue;
         gridToCRS = null;
         crsToGrid = null;
         if (hasUsedConstantValues()) {
-            coordinates        = null;
-            changeOfCRS        = null;
-            forwardChangeOfCRS = null;
-            inverseChangeOfCRS = null;
-            knowChangeOfCRS    = false;
-            // Do not clear `isWraparoundNeeded`; its value is still valid.
+            super.setConstantCoordinates(null);
+            changeOfCRS         = null;
+            forwardChangeOfCRS  = null;
+            inverseChangeOfCRS  = null;
+            knowChangeOfCRS     = false;
+            // Do not clear `isWraparoundNeeded` as its value is still valid.
         }
     }
 
     /**
-     * Sets whether the {@link #get()} method should accept dimensions that are not slices in a multi-dimensional cube.
+     * Sets whether this {@link DirectPosition} should accept dimensions that are not slices in a multi-dimensional cube.
      *
      * @param  mode  0 to require slices, -1 for using low grid coordinates, or +1 for high grid coordinates.
      */
@@ -338,22 +325,17 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      * Returns the coordinate operation from source CRS to target CRS. It may be the identity operation.
      * We try to take envelopes in account because the operation choice may depend on the geographic area.
      *
-     * @todo Specify also the desired resolution, computed from target grid geometry. It will require
-     *       more direct use of {@link org.apache.sis.referencing.operation.CoordinateOperationContext}.
-     *       As a side effect, we could remove {@link CoordinateOperations#CONSTANT_COORDINATES} hack.
+     * @todo Specify also the desired resolution, computed from target grid geometry.
      *
      * @return operation from source CRS to target CRS, or {@code null} if a CRS is not specified.
      * @throws FactoryException if no operation can be found between the source and target CRS.
      * @throws TransformException if some coordinates cannot be transformed to the specified target.
+     *
+     * @see #getConstantCoordinates()
      */
     private CoordinateOperation changeOfCRS() throws FactoryException, TransformException {
         if (!knowChangeOfCRS) {
-            try {
-                CoordinateOperations.CONSTANT_COORDINATES.set(this);
-                changeOfCRS = changeOfCRS(source, target);
-            } finally {
-                CoordinateOperations.CONSTANT_COORDINATES.remove();
-            }
+            changeOfCRS = changeOfCRS(source, target, this);
             knowChangeOfCRS = true;
         }
         return changeOfCRS;
@@ -362,39 +344,27 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
     /**
      * Computes the change of <abbr>CRS</abbr> between the given pair of grid geometries.
      *
-     * @param  source  the grid geometry which is the source of the coordinate operation to find.
-     * @param  target  the grid geometry which is the target of the coordinate operation to find.
+     * @param  source   the grid geometry which is the source of the coordinate operation to find.
+     * @param  target   the grid geometry which is the target of the coordinate operation to find.
+     * @param  context  contains coordinate values to use as constant if a source CRS is missing.
      * @return coordinate operation from source to target CRS, or {@code null} if none.
      * @throws FactoryException if no operation can be found between the source and target CRS.
      * @throws TransformException if some coordinates cannot be transformed to the specified target.
      */
-    private static CoordinateOperation changeOfCRS(final GridGeometry source, final GridGeometry target)
+    private static CoordinateOperation changeOfCRS(final GridGeometry source, final GridGeometry target,
+                                                   final CoordinateOperationContext context)
             throws FactoryException, TransformException
     {
         CoordinateOperation changeOfCRS = null;
-        final Envelope sourceEnvelope = source.envelope;
-        final Envelope targetEnvelope = target.envelope;
-        try {
-            if (sourceEnvelope != null && targetEnvelope != null) {
-                changeOfCRS = Envelopes.findOperation(sourceEnvelope, targetEnvelope);
-            }
-            if (changeOfCRS == null && source.isDefined(GridGeometry.CRS) && target.isDefined(GridGeometry.CRS)) {
-                final CoordinateReferenceSystem sourceCRS = source.getCoordinateReferenceSystem();
-                /*
-                 * Unconditionally create operation even if CRS are the same. A non-null operation trig
-                 * the check for wraparound axes, which is necessary even if the transform is identity.
-                 */
-                DefaultGeographicBoundingBox areaOfInterest = null;
-                if (sourceEnvelope != null || targetEnvelope != null) try {
-                    areaOfInterest = new DefaultGeographicBoundingBox();
-                    areaOfInterest.setBounds(targetEnvelope != null ? targetEnvelope : sourceEnvelope);
-                } catch (TransformException e) {
-                    areaOfInterest = null;
-                    recoverableException("changeOfCRS", e);
-                }
-                changeOfCRS = CRS.findOperation(sourceCRS, target.getCoordinateReferenceSystem(), areaOfInterest);
-            }
-        } catch (BackingStoreException e) {                         // May be thrown by getConstantCoordinates().
+        if (source.isDefined(GridGeometry.CRS) && target.isDefined(GridGeometry.CRS)) try {
+            /*
+             * Unconditionally create the operation even if the CRS are equivalent. A non-null operation
+             * trigs the check for wraparound axes, which is necessary even if the transform is identity.
+             */
+            context.addAreaOfInterest(source.envelope);
+            context.addAreaOfInterest(target.envelope);
+            changeOfCRS = CRS.findOperation(source.getCoordinateMetadata(), target.getCoordinateMetadata(), context);
+        } catch (BackingStoreException e) {
             throw e.unwrapOrRethrow(TransformException.class);
         }
         return changeOfCRS;
@@ -482,7 +452,7 @@ apply:          if (forwardChangeOfCRS == null) {
     /**
      * Computes the transform from “geospatial coordinates of the target” to “grid coordinates of the source”.
      * This is similar to invoking {@link MathTransform#inverse()} on {@link #gridToCRS()}, except in the way
-     * wraparounds are handled.
+     * that wraparounds are handled.
      *
      * @return operation from target geospatial coordinates to source grid indices.
      * @throws FactoryException if no operation can be found between the source and target CRS.
@@ -498,7 +468,7 @@ apply:          if (forwardChangeOfCRS == null) {
                     inverseChangeOfCRS = changeOfCRS.getMathTransform().inverse();
                 }
             } else {
-                final CoordinateOperation inverse = changeOfCRS(target, source);
+                final CoordinateOperation inverse = changeOfCRS(target, source, new CoordinateOperationContext());
                 if (inverse != null) {
                     sourceCRS = inverse.getTargetCRS();
                     inverseChangeOfCRS = inverse.getMathTransform();
@@ -692,7 +662,7 @@ apply:          if (forwardChangeOfCRS == null) {
      * @param  grid         the source or target grid providing the point of interest.
      * @param  changeOfCRS  transform from source CRS to target CRS, or {@code null} if none.
      */
-    private static DirectPosition median(final GridGeometry grid, final MathTransform changeOfCRS) throws TransformException {
+    private static DirectPosition median(final GridGeometry grid, final MathTransform changeOfCRS) {
         if (!grid.isDefined(GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS)) {
             return null;
         }
@@ -739,21 +709,17 @@ apply:          if (forwardChangeOfCRS == null) {
      * For example, this is invoked during the conversion from (<var>x</var>, <var>y</var>)
      * coordinates to (<var>x</var>, <var>y</var>, <var>t</var>). If constant values can
      * be given to the missing dimensions, then those values are returned.
-     * Otherwise this method returns {@code null}.
+     * Otherwise, this method returns an empty array.
      *
-     * <p>The returned array has a length equals to the number of dimensions in the target <abbr>CRS</abbr>.
-     * Only coordinates in dimensions without source (<var>t</var> in the above example) will be used.
-     * All other coordinate values will be ignored.</p>
-     *
-     * @see org.apache.sis.referencing.operation.CoordinateOperationContext#getConstantCoordinates()
+     * @see #changeOfCRS()
+     * @see CoordinateOperationContext#getConstantCoordinates()
      */
     @Override
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public double[] get() {
+    public DirectPosition getConstantCoordinates() {
+        DirectPosition coordinates = super.getConstantCoordinates();
         if (coordinates == null && target.isDefined(GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS)) {
             final MathTransform tr = target.getGridToCRS(anchor);
-            coordinates = new double[tr.getTargetDimensions()];
-            double[] gc = new double[tr.getSourceDimensions()];
+            final double[] gc = new double[tr.getSourceDimensions()];
             Arrays.fill(gc, Double.NaN);
             final GridExtent extent = target.getExtent();
             for (int i=0; i<gc.length; i++) {
@@ -776,20 +742,22 @@ apply:          if (forwardChangeOfCRS == null) {
              * will have non-NaN coordinate values only if they do not depend on any dimension
              * other than the one having a grid size of 1.
              */
+            final var gp = new GeneralDirectPosition(tr.getTargetDimensions());
             try {
-                tr.transform(gc, 0, coordinates, 0, 1);
+                tr.transform(gc, 0, gp.coordinates, 0, 1);
             } catch (TransformException e) {
-                throw new BackingStoreException(e);
+                throw new IllegalGridGeometryException(e, "gridToCRS");
             }
+            super.setConstantCoordinates(coordinates = gp);
         }
         return coordinates;
     }
 
     /**
-     * Returns {@code true} if {@link #get()} has been invoked and computed coordinates.
+     * Returns {@code true} if {@link #getConstantCoordinates()} has been invoked and computed coordinates.
      */
     final boolean hasUsedConstantValues() {
-        return coordinates != null;
+        return super.getConstantCoordinates() != null;
     }
 
     /**
@@ -815,15 +783,5 @@ apply:          if (forwardChangeOfCRS == null) {
             }
             processor.setPositionalAccuracyHints(hints);                        // Null elements will be ignored.
         }
-    }
-
-    /**
-     * Invoked when an ignorable exception occurred.
-     *
-     * @param  caller  the method where the exception occurred.
-     * @param  e       the ignorable exception.
-     */
-    private static void recoverableException(final String caller, final Exception e) {
-        Logging.recoverableException(GridExtent.LOGGER, CoordinateOperationFinder.class, caller, e);
     }
 }
