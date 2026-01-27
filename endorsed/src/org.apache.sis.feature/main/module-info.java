@@ -47,18 +47,15 @@ module org.apache.sis.feature {
     exports org.apache.sis.pending.geoapi.filter to
             org.apache.sis.storage,
             org.apache.sis.storage.sql,
-            org.apache.sis.storage.shapefile,       // In the "incubator" sub-project.
             org.apache.sis.portrayal;
 
     exports org.apache.sis.filter.base to
             org.apache.sis.storage,
-            org.apache.sis.storage.sql,
-            org.apache.sis.storage.shapefile;       // In the "incubator" sub-project.
+            org.apache.sis.storage.sql;
 
     exports org.apache.sis.filter.visitor to
             org.apache.sis.storage,
-            org.apache.sis.storage.sql,
-            org.apache.sis.storage.shapefile;       // In the "incubator" sub-project.
+            org.apache.sis.storage.sql;
 
     exports org.apache.sis.filter.math to
             org.apache.sis.storage.sql;
@@ -68,7 +65,6 @@ module org.apache.sis.feature {
             org.apache.sis.storage.xml,
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,
-            org.apache.sis.storage.shapefile,       // In the "incubator" sub-project.
             org.apache.sis.storage.gdal,            // In the "optional" sub-project.
             org.apache.sis.portrayal,
             org.apache.sis.gui;                     // In the "optional" sub-project.
@@ -78,8 +74,7 @@ module org.apache.sis.feature {
             org.apache.sis.storage.xml,
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,
-            org.apache.sis.storage.gdal,            // In the "optional" sub-project.
-            org.apache.sis.storage.shapefile;       // In the "incubator" sub-project.
+            org.apache.sis.storage.gdal;            // In the "optional" sub-project.
 
     exports org.apache.sis.geometry.wrapper.j2d to
             org.apache.sis.gui;                     // In the "optional" sub-project.
@@ -94,7 +89,6 @@ module org.apache.sis.feature {
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.geotiff,
-            org.apache.sis.storage.geoheif,             // In the "incubator" sub-project.
             org.apache.sis.storage.gdal,                // In the "optional" sub-project.
             org.apache.sis.portrayal,
             org.apache.sis.gui;                         // In the "optional" sub-project.

@@ -54,11 +54,6 @@ module org.apache.sis.storage {
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.geotiff,
             org.apache.sis.storage.earthobservation,
-            org.apache.sis.storage.coveragejson,        // In the "incubator" sub-project.
-            org.apache.sis.storage.geoheif,             // In the "incubator" sub-project.
-            org.apache.sis.storage.shapefile,           // In the "incubator" sub-project.
-            org.apache.sis.storage.geopackage,          // In the "incubator" sub-project.
-            org.apache.sis.storage.gsf,                 // In the "incubator" sub-project.
             org.apache.sis.storage.gdal,                // In the "optional" sub-project.
             org.apache.sis.util,                        // For the "About" command.
             org.apache.sis.console,
@@ -70,10 +65,6 @@ module org.apache.sis.storage {
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.geotiff,
-            org.apache.sis.storage.coveragejson,        // In the "incubator" sub-project.
-            org.apache.sis.storage.geoheif,             // In the "incubator" sub-project.
-            org.apache.sis.storage.shapefile,           // In the "incubator" sub-project.
-            org.apache.sis.storage.geopackage,          // In the "incubator" sub-project.
             org.apache.sis.storage.gdal,                // In the "optional" sub-project.
             org.apache.sis.cloud.aws,
             org.apache.sis.console,

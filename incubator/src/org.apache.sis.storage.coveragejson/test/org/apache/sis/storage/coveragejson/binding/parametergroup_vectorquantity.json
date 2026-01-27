@@ -1,9 +1,0 @@
-{
-  "type": "ParameterGroup",
-  "observedProperty": {
-    "label": {
-      "en": "Wind velocity"
-    }
-  },
-  "members": ["WIND_SPEED", "WIND_DIR"]
-}
