@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.panama;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.NoSuchElementException;
@@ -132,7 +131,7 @@ public final class LibraryLoader<F extends NativeFunctions> {
     public F global(final String library) {
         final var c = creator;
         creator     = null;
-        filename    = (File.separatorChar == '\\') ? (library + ".dll") : ("lib" + library + ".so");
+        filename    = System.mapLibraryName(library);
         status      = LibraryStatus.LIBRARY_NOT_FOUND;      // Default value if an exception occurs below.
         F instance  = null;
 create: try {

@@ -102,7 +102,6 @@ import org.apache.sis.coordinate.DefaultCoordinateMetadata;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 
 // Specific to the main branch:
-import org.apache.sis.referencing.DefaultObjectDomain;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
@@ -155,7 +154,7 @@ import static org.apache.sis.pending.geoapi.referencing.MissingMethods.getDatumE
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   0.3
  */
 public final class CRS {
@@ -669,32 +668,6 @@ public final class CRS {
             }
         } while (tryDerivedCRS);
         return bestCRS;
-    }
-
-    /**
-     * Finds a mathematical operation that transforms or converts coordinates between the given <abbr>CRS</abbr>s and epochs.
-     * This method performs the same work as the {@linkplain #findOperation(CoordinateReferenceSystem, CoordinateReferenceSystem,
-     * GeographicBoundingBox) variant working on CRS objects}, except that the coordinate epochs may be taken in account.
-     *
-     * @param  source          the CRS and epoch of source coordinates.
-     * @param  target          the CRS and epoch of target coordinates.
-     * @param  areaOfInterest  the area of interest, or {@code null} if none.
-     * @return the mathematical operation from {@code source} to {@code target}.
-     * @throws OperationNotFoundException if no operation was found between the given pair of <abbr>CRS</abbr>s and epochs.
-     * @throws FactoryException if the operation cannot be created for another reason.
-     *
-     * @since 1.5
-     *
-     * @deprecated Replaced by {@link #findOperation(DefaultCoordinateMetadata, DefaultCoordinateMetadata, CoordinateOperationContext)}.
-     * This method will be removed for avoiding ambiguity when the last argument is null.
-     */
-    @Deprecated(since = "1.6", forRemoval = true)
-    public static CoordinateOperation findOperation(final DefaultCoordinateMetadata source,
-                                                    final DefaultCoordinateMetadata target,
-                                                    final GeographicBoundingBox areaOfInterest)
-            throws FactoryException
-    {
-        return findOperation(source, target, CoordinateOperationContext.fromBoundingBox(areaOfInterest));
     }
 
     /**

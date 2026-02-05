@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.gsf.panama;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -87,7 +86,7 @@ public final class LibraryLoader {
     @SuppressWarnings("restricted")
     public GSF global() {
         status = LibraryStatus.CANNOT_LOAD_LIBRARY;
-        String filename = (File.separatorChar == '\\') ? "gsf.dll" : "libgsf.so";
+        String filename = System.mapLibraryName("gsf");
         try {
             symbols = SymbolLookup.libraryLookup(filename, Arena.global());
             GSF instance = new GSF(this);

@@ -42,11 +42,6 @@ import java.util.Collection;
 import java.util.NavigableSet;
 import java.util.RandomAccess;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectStreamException;
-import java.io.InvalidObjectException;
-import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.awt.geom.Point2D;
 import javax.print.attribute.standard.PrinterStateReason;
@@ -68,6 +63,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ClassesTest extends TestCase {
     /**
      * Creates a new test case.
@@ -159,35 +155,6 @@ public final class ClassesTest extends TestCase {
         assertEquals(Transformation.class, Classes.getStandardType(T3.class));
         assertEquals(String.class,         Classes.getStandardType(String.class));
         assertEquals(CharSequence.class,   Classes.getStandardType(CharSequence.class));
-    }
-
-    /**
-     * Tests {@link Classes#findCommonClass(Iterable)}
-     * and {@link Classes#findSpecializedClass(Iterable)}.
-     */
-    @Test
-    public void testFindCommonParent() {
-        final Set<Object> types = new HashSet<>();
-
-        assertTrue(types.add(new NotSerializableException()));
-        assertEquals(NotSerializableException.class, findCommonClass     (types));
-        assertEquals(NotSerializableException.class, findSpecializedClass(types));
-
-        assertTrue(types.add(new InvalidObjectException(null)));
-        assertEquals(ObjectStreamException.class, findCommonClass     (types));
-        assertEquals(ObjectStreamException.class, findSpecializedClass(types));
-
-        assertTrue(types.add(new FileNotFoundException()));
-        assertEquals(IOException.class, findCommonClass     (types));
-        assertEquals(IOException.class, findSpecializedClass(types));
-
-        assertTrue(types.add(new IOException()));
-        assertEquals(IOException.class, findCommonClass     (types));
-        assertEquals(IOException.class, findSpecializedClass(types));
-
-        assertTrue(types.add(new Exception()));
-        assertEquals(  Exception.class, findCommonClass     (types));
-        assertEquals(IOException.class, findSpecializedClass(types));
     }
 
     /**

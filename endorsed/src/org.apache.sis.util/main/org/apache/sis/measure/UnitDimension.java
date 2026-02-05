@@ -93,7 +93,7 @@ final class UnitDimension implements Dimension, Serializable {
     @SuppressWarnings("ThisEscapedInObjectConstruction")    // Safe because this class is final.
     UnitDimension(final char symbol) {
         this.symbol = symbol;
-        components  = Map.of(this, new Fraction(1,1).unique());
+        components  = Map.of(this, Fraction.ONE);
         UnitRegistry.init(components, this);
     }
 
@@ -132,7 +132,6 @@ final class UnitDimension implements Dimension, Serializable {
          */
         var dim = (UnitDimension) UnitRegistry.get(components);
         if (dim == null) {
-            components.replaceAll((c, power) -> power.unique());
             components = Containers.unmodifiable(components);
             dim = new UnitDimension(components);
             if (!Units.initialized) {
@@ -242,7 +241,7 @@ final class UnitDimension implements Dimension, Serializable {
         @SuppressWarnings("unchecked")
         final var components = (Map<Dimension,Integer>) dimension.getBaseDimensions();
         if (components == null) {
-            return Map.of(dimension, new Fraction(1,1));
+            return Map.of(dimension, Fraction.ONE);
         }
         return ObjectConverters.derivedValues(components, Dimension.class, FractionConverter.FromInteger.INSTANCE);
     }

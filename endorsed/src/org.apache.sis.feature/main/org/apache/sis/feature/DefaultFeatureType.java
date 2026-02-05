@@ -89,7 +89,7 @@ import org.apache.sis.feature.internal.Resources;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.6
+ * @version 1.7
  *
  * @see DefaultAttributeType
  * @see DefaultAssociationRole
@@ -879,7 +879,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         if (pt != null) {
             return pt;
         }
-        throw new IllegalArgumentException(AbstractFeature.propertyNotFound(this, getName(), name));
+        throw new IllegalArgumentException(AbstractFeature.propertyNotFound(this, name));
     }
 
     /**

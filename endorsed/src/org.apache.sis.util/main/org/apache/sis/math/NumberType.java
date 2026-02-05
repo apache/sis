@@ -429,6 +429,10 @@ public enum NumberType {
      * Returns {@code true} if this type is an integer type.
      * Those types are {@link #BYTE}, {@link #SHORT}, {@link #INTEGER}, {@link #LONG} and {@link #BIG_INTEGER}.
      *
+     * <p>This method is mutually exclusive with {@link #isFractional()}:
+     * only one of those two methods may return {@code true}.
+     * However, both methods may return {@code false}.</p>
+     *
      * @return whether this type is an integer type.
      */
     public final boolean isInteger() {
@@ -440,7 +444,7 @@ public enum NumberType {
      * Those types are {@code byte}, {@link Byte}, {@code short}, {@link Short}, {@code int}, {@link Integer},
      * {@code long}, {@link Long} and {@link BigInteger}.
      *
-     * <p>This method is mutually exclusive with {@link #isFractional()}:
+     * <p>This method is mutually exclusive with {@link #isFractional(Class)}:
      * only one of those two methods may return {@code true}.
      * However, both methods may return {@code false}.</p>
      *
@@ -471,6 +475,11 @@ public enum NumberType {
      * Returns {@code true} if the argument is one of the types known to <abbr>SIS</abbr>
      * as capable to store fractional digits. This method returns {@code true} for the following types:
      * {@link Fraction}, {@code float}, {@link Float}, {@code double}, {@link Double} and {@link BigDecimal}.
+     * Floating point types are considered as types or rational numbers where the denominator is a power of 2 or 10.
+     *
+     * <p>This method is mutually exclusive with {@link #isInteger(Class)}:
+     * only one of those two methods may return {@code true}.
+     * However, both methods may return {@code false}.</p>
      *
      * @param  type  the primitive type or {@link Number} subclass to test (can be {@code null}).
      * @return {@code true} if {@code type} is one of the known types capable to store fractional digits.
