@@ -95,7 +95,7 @@ import org.opengis.feature.PropertyNotFoundException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.6
+ * @version 1.7
  *
  * @see DefaultAttributeType
  * @see DefaultAssociationRole
@@ -879,7 +879,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         if (pt != null) {
             return pt;
         }
-        throw new PropertyNotFoundException(AbstractFeature.propertyNotFound(this, getName(), name));
+        throw new PropertyNotFoundException(AbstractFeature.propertyNotFound(this, name));
     }
 
     /**

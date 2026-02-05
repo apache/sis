@@ -284,7 +284,7 @@ final class GDAL extends NativeFunctions {
 
     /**
      * Pointers to native methods for the <abbr>OGR</abbr> part of <abbr>GDAL</abbr>.
-     * Stores in a separated object for avoiding to load those symbols before needed.
+     * Stored in a separated object for avoiding to load those symbols before needed.
      *
      * @see #ogr()
      */

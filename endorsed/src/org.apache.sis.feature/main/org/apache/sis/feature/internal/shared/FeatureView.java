@@ -110,28 +110,4 @@ final class FeatureView extends AbstractFeature {
     public void setPropertyValue(final String name, final Object value) {
         source.setPropertyValue(name, value);
     }
-
-    /**
-     * Returns the value for the property of the given name if that property exists, or a fallback value otherwise.
-     * This method delegates to the wrapped source without checking whether the given name exists in this subset.
-     *
-     * <h4>Design note</h4>
-     * We could add a verification of whether the property exists in the feature type given by {@link #getType()}.
-     * We don't do that for now because the current usages of this method in the Apache SIS code base do not need
-     * this method to be strict, and for consistency with the behavior of other methods in this class.
-     *
-     * @param  name  the property name.
-     * @param  missingPropertyFallback  the value to return if no attribute or association of the given name exists.
-     * @return value or default value of the specified property, or {@code missingPropertyFallback}.
-     *
-     * @deprecated Experience suggests that this method encourage bugs in user's code that stay unnoticed.
-     */
-    @Override
-    @Deprecated(since = "1.5", forRemoval = true)
-    public Object getValueOrFallback(final String name, final Object missingPropertyFallback) {
-        if (source instanceof AbstractFeature) {
-            return ((AbstractFeature) source).getValueOrFallback(name, missingPropertyFallback);
-        }
-        return super.getValueOrFallback(name, missingPropertyFallback);
-    }
 }

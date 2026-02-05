@@ -99,7 +99,7 @@ import org.opengis.feature.PropertyNotFoundException;
  * those effects will disappear in the optimized filter.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   1.1
  */
 public class Optimization {
@@ -155,35 +155,6 @@ public class Optimization {
      */
     public Optimization() {
         featureTypes = Set.of();
-    }
-
-    /**
-     * Returns the type of feature instances to be filtered, or {@code null} if unknown.
-     * This is the last value specified by a call to {@link #setFeatureType(FeatureType)}.
-     * The default value is {@code null}.
-     *
-     * @return the type of feature instances to be filtered, or {@code null} if unknown.
-     *
-     * @deprecated Replaced by {@link #getFinalFeatureTypes()}.
-     */
-    @Deprecated(since = "1.6", forRemoval = true)
-    public FeatureType getFeatureType() {
-        return Containers.peekIfSingleton(getFinalFeatureTypes());
-    }
-
-    /**
-     * Sets the type of feature instances to be filtered.
-     * If this type is known in advance, specifying it may allow to compute more specific
-     * {@link org.apache.sis.util.ObjectConverter}s or to apply some geometry reprojection
-     * in advance.
-     *
-     * @param  type  the type of feature instances to be filtered, or {@code null} if unknown.
-     *
-     * @deprecated Replaced by {@link #setFinalFeatureTypes(Collection)}.
-     */
-    @Deprecated(since = "1.6", forRemoval = true)
-    public void setFeatureType(final FeatureType type) {
-        setFinalFeatureType(type);
     }
 
     /**

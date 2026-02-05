@@ -91,11 +91,11 @@ public abstract class NativeFunctions implements Runnable, Callable<Object> {
      * @param  function   name of the C/C++ <abbr>GDAL</abbr> function to invoke.
      * @param  signature  type of arguments and return type.
      * @return method handler for the <abbr>GDAL</abbr> function.
-     * @throws IllegalArgumentException if the given function has not been found.
+     * @throws NoSuchElementException if the given function has not been found.
      */
     @SuppressWarnings("restricted")
     public final MethodHandle lookup(final String function, final FunctionDescriptor signature) {
-        return symbols.find(function).map((method) -> linker.downcallHandle(method, signature)).orElseThrow();
+        return linker.downcallHandle(symbols.find(function).orElseThrow(), signature);
     }
 
     /**
@@ -107,9 +107,11 @@ public abstract class NativeFunctions implements Runnable, Callable<Object> {
      * @param  arg       the argument.
      * @return whether the return value, or empty if the method was not found or returned {@code null}.
      */
+    @SuppressWarnings("restricted")
     protected final Optional<String> invokeGetString(final String function, final String arg) {
         return symbols.find(function).map((method) -> {
-            MethodHandle handle = lookup(function, FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS));
+            var acceptPointerReturnPointer = FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS);
+            MethodHandle handle = linker.downcallHandle(method, acceptPointerReturnPointer);
             MemorySegment result;
             try (Arena local = Arena.ofConfined()) {
                 result = (MemorySegment) handle.invokeExact(local.allocateFrom(arg));
@@ -217,7 +219,7 @@ public abstract class NativeFunctions implements Runnable, Callable<Object> {
      * because it assumes that no checked exception should be thrown.
      *
      * @param  exception  the exception thrown by {@code MethodHandler.invokeExact(…)}.
-     * @return the exception to throw by the caller.
+     * @return the exception to be thrown by the caller.
      */
     public static RuntimeException propagate(final Throwable exception) {
         switch (exception) {

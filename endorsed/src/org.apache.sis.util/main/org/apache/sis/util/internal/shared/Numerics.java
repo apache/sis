@@ -321,7 +321,7 @@ public final class Numerics {
      */
     public static Number fraction(long numerator, long denominator) {
         try {
-            return Fraction.valueOf(numerator, denominator).unique();
+            return Fraction.valueOf(numerator, denominator);
         } catch (ArithmeticException e) {
             return numerator / (double) denominator;
         }

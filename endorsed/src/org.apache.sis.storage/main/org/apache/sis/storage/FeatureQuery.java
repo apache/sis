@@ -83,7 +83,7 @@ import org.opengis.filter.SortProperty;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   1.1
  */
 public class FeatureQuery extends Query implements Cloneable, Emptiable, Serializable {
@@ -833,33 +833,14 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
             return source;
         }
         final FeatureQuery query = clone();
-        query.optimize(source);
-        return new FeatureSubset(source, query);
-    }
-
-    /**
-     * Optimizes this query before execution. This method is invoked by {@link #execute(FeatureSet)}
-     * on a {@linkplain #clone() clone} of the user-provided query. The default implementations tries
-     * to optimize the {@linkplain #getSelection() selection} filter using {@link Optimization}.
-     * Subclasses can override for modifying the optimization algorithm.
-     *
-     * @param  source  the set of features given to the {@code execute(FeatureSet)} method.
-     * @throws DataStoreException if an error occurred during the optimization of this query.
-     *
-     * @since 1.5
-     *
-     * @deprecated Moved to {@link AbstractFeatureSet#prepareQueryOptimization(FeatureQuery, Optimization)}
-     * because experience suggests that this is the class that know best how to configure.
-     */
-    @Deprecated(since = "1.6", forRemoval = true)
-    protected void optimize(final FeatureSet source) throws DataStoreException {
-        if (selection != null) {
+        if (query.selection != null) {
             final var optimizer = new Optimization();
             if (source instanceof AbstractFeatureSet) {
                 ((AbstractFeatureSet) source).prepareQueryOptimization(this, optimizer);
             }
-            selection = optimizer.apply(selection);
+            query.selection = optimizer.apply(query.selection);
         }
+        return new FeatureSubset(source, query);
     }
 
     /**

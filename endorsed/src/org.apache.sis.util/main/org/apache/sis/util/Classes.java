@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.lang.reflect.Type;
 import java.lang.reflect.Field;
@@ -56,7 +55,7 @@ import org.apache.sis.pending.jdk.JDK19;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   0.3
  */
 public final class Classes {
@@ -347,28 +346,6 @@ public final class Classes {
     }
 
     /**
-     * Returns the classes of all objects in the given collection. If the given collection
-     * contains some null elements, then the returned set will contain a null element as well.
-     * The returned set is modifiable and can be freely updated by the caller.
-     *
-     * <p>Note that interfaces are not included in the returned set.</p>
-     *
-     * @param  <T>      the base type of elements in the given collection.
-     * @param  objects  the collection of objects.
-     * @return the set of classes of all objects in the given collection.
-     *
-     * @deprecated To be removed after removal of public deprecated methods.
-     */
-    @Deprecated(since = "1.6", forRemoval = true)
-    private static <T> Set<Class<? extends T>> getClasses(final Iterable<? extends T> objects) {
-        final Set<Class<? extends T>> types = new LinkedHashSet<>();
-        for (final T object : objects) {
-            types.add(getClass(object));
-        }
-        return types;
-    }
-
-    /**
      * Returns the first type or super-type (including interface) considered "standard" in Apache SIS sense.
      * This method applies the following heuristic rules, in that order:
      *
@@ -543,40 +520,6 @@ next:       for (final Class<?> candidate : candidates) {
     }
 
     /**
-     * Returns the most specific class of the objects in the given collection.
-     * If there is more than one specialized class,
-     * returns their {@linkplain #findCommonClass most specific common super class}.
-     *
-     * <p>This method searches for classes only, not interfaces.</p>
-     *
-     * @param  objects  a collection of objects. May contains duplicated values and null values.
-     * @return the most specialized class, or {@code null} if the given collection does not contain
-     *         at least one non-null element.
-     *
-     * @deprecated This method is confusing as it works on instances instead of classes.
-     */
-    @Deprecated(since = "1.6", forRemoval = true)
-    public static Class<?> findSpecializedClass(final Iterable<?> objects) {
-        final Set<Class<?>> types = getClasses(objects);
-        types.remove(null);
-        /*
-         * Removes every classes in the types collection which are assignable from another
-         * class from the same collection. As a result, the collection should contain only
-         * leaf classes.
-         */
-        for (final Iterator<Class<?>> it=types.iterator(); it.hasNext();) {
-            final Class<?> candidate = it.next();
-            for (final Class<?> type : types) {
-                if (candidate != type && candidate.isAssignableFrom(type)) {
-                    it.remove();
-                    break;
-                }
-            }
-        }
-        return common(types);
-    }
-
-    /**
      * Returns the most specific class which is a common parent of all the specified classes.
      * This method is not public in order to make sure that it contains only classes, not
      * interfaces, since our implementation is not designed for multi-inheritances.
@@ -594,28 +537,6 @@ next:       for (final Class<?> candidate : candidates) {
             type = findCommonClass(type, it.next());
         }
         return type;
-    }
-
-    /**
-     * Returns the most specific class which {@linkplain Class#isAssignableFrom is assignable from}
-     * the type of all given objects. If no element in the given collection has a type assignable
-     * from the type of all other elements, then this method searches for a common
-     * {@linkplain Class#getSuperclass super class}.
-     *
-     * <p>This method searches for classes only, not interfaces.</p>
-     *
-     * @param  objects  a collection of objects. May contains duplicated values and null values.
-     * @return the most specific class common to all supplied objects, or {@code null} if the
-     *         given collection does not contain at least one non-null element.
-     *
-     * @deprecated This method is confusing as it works on instances while {@link #findCommonClass(Class, Class)}
-     *             works on classes.
-     */
-    @Deprecated(since = "1.6", forRemoval = true)
-    public static Class<?> findCommonClass(final Iterable<?> objects) {
-        final Set<Class<?>> types = getClasses(objects);
-        types.remove(null);
-        return common(types);
     }
 
     /**

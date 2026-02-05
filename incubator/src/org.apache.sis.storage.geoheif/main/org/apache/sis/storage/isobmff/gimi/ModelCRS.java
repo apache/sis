@@ -17,6 +17,8 @@
 package org.apache.sis.storage.isobmff.gimi;
 
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.io.IOException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -125,15 +127,25 @@ public final class ModelCRS extends FullBox {
      * @return the coordinate reference system parsed from the Well Known Text, or {@code null} if none or unparsable.
      */
     public CoordinateReferenceSystem toCRS(final StoreListeners listeners) {
-        if (crs != null) try {
-            switch (crsEncoding) {
-                case CURI: // Fall through.
-                case CRSU: return CRS.forCode(crs);
-                case WKT2: return CRS.fromWKT(crs);
-                default: listeners.warning("Unknown CRS encoding: " + formatFourCC(crsEncoding));
+        if (crs != null) {
+            LogRecord warning;
+            try {
+                switch (crsEncoding) {
+                    case CURI: // Fall through.
+                    case CRSU: return CRS.forCode(crs);
+                    case WKT2: return CRS.fromWKT(crs);
+                    default: {
+                        warning = new LogRecord(Level.WARNING, "Unknown CRS encoding: “" + formatFourCC(crsEncoding) + "”.");
+                        break;
+                    }
+                }
+            } catch (FactoryException e) {
+                warning = new LogRecord(Level.WARNING, "Cannot decode the CRS.");
+                warning.setThrown(e);
             }
-        } catch (FactoryException e) {
-            listeners.warning(e);
+            warning.setSourceClassName(ModelCRS.class.getName());
+            warning.setSourceMethodName("toCRS");
+            listeners.warning(warning);
         }
         return null;
     }

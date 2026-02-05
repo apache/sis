@@ -52,7 +52,7 @@ import org.apache.sis.util.resources.Errors;
  * All methods in this class preserve element order, including the methods returning a {@link Set}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   0.3
  */
 public final class Containers {
@@ -383,45 +383,6 @@ public final class Containers {
             return new UnmodifiableArrayList<>(array);
         }
         return new UnmodifiableArrayList.SubList<>(array, lower, upper - lower);
-    }
-
-    /**
-     * Returns an unmodifiable view of the given array. A direct reference to the given array is
-     * retained (i.e. the array is <strong>not</strong> cloned).
-     *
-     * @param  <E>    the base type of elements in the list.
-     * @param  array  the array to wrap, or {@code null} if none.
-     * @return the given array wrapped in an unmodifiable list, or {@code null} if the given array was null.
-     *
-     * @deprecated Renamed as {@link #viewAsUnmodifiableList(Object...)} for clarity.
-     * The new name emphases the contrast with {@link #copyToImmutableList(Collection, Class)}.
-     * The parameterized return type is also different.
-     */
-    @SafeVarargs
-    @SuppressWarnings("varargs")
-    @Deprecated(since = "1.6", forRemoval = true)
-    public static <E> List<? extends E> unmodifiableList(final E... array) {
-        return viewAsUnmodifiableList(array);
-    }
-
-    /**
-     * Returns an unmodifiable view of a subregion of the given array. A direct reference to the
-     * given array is retained (i.e. the array is <strong>not</strong> cloned).
-     *
-     * @param  <E>    the type of elements in the list.
-     * @param  array  the array to wrap (cannot be null).
-     * @param  lower  low endpoint (inclusive) of the sublist.
-     * @param  upper  high endpoint (exclusive) of the sublist.
-     * @return the given array wrapped in an unmodifiable list.
-     * @throws IndexOutOfBoundsException if the lower or upper value are out of bounds.
-     *
-     * @deprecated Renamed as {@link #viewAsUnmodifiableList(Object[], int, int)} for clarity.
-     * The new name emphases the contrast with {@link #copyToImmutableList(Collection, Class)}.
-     * The parameterized return type is also different.
-     */
-    @Deprecated(since = "1.6", forRemoval = true)
-    public static <E> List<? extends E> unmodifiableList(final E[] array, final int lower, final int upper) {
-        return viewAsUnmodifiableList(array, lower, upper);
     }
 
     /**

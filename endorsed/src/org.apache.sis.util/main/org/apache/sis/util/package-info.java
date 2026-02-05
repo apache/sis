@@ -39,7 +39,7 @@
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   0.3
  */
 package org.apache.sis.util;

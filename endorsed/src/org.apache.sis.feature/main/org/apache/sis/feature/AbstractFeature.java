@@ -87,7 +87,7 @@ import org.opengis.feature.Operation;
  * @author  Travis L. Pinney
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.6
+ * @version 1.7
  *
  * @see DefaultFeatureType#newInstance()
  *
@@ -101,8 +101,6 @@ public abstract class AbstractFeature implements Feature, Serializable {
 
     /**
      * Sentinel value for missing property.
-     *
-     * @see #getValueOrFallback(String, Object)
      */
     private static final Object MISSING = new Object();
 
@@ -350,11 +348,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * @see AbstractAttribute#getValue()
      */
     @Override
-    public Object getPropertyValue(final String name) throws PropertyNotFoundException {
-        final Object value = getValueOrFallback(name, MISSING);
-        if (value != MISSING) return value;
-        throw new PropertyNotFoundException(propertyNotFound(type, getName(), name));
-    }
+    public abstract Object getPropertyValue(String name) throws PropertyNotFoundException;
 
     /**
      * Sets the value for the property of the given name.
@@ -375,33 +369,6 @@ public abstract class AbstractFeature implements Feature, Serializable {
      */
     @Override
     public abstract void setPropertyValue(final String name, final Object value) throws IllegalArgumentException;
-
-    /**
-     * Returns the value for the property of the given name if that property exists, or a fallback value otherwise.
-     * This method is equivalent to the following code, but potentially more efficient:
-     *
-     * {@snippet lang="java" :
-     *     return type.hasProperty(name) ? getPropertyValue(name) : missingPropertyFallback;
-     *     }
-     *
-     * Note that if a property of the given name exists but has no value, then this method returns the
-     * {@linkplain DefaultAttributeType#getDefaultValue() default value} (which may be {@code null}).
-     * <i>Property without value</i> is not equivalent to <i>non-existent property</i>.
-     *
-     * @param  name  the property name.
-     * @param  missingPropertyFallback  the (potentially {@code null}) value to return
-     *         if no attribute or association of the given name exists.
-     * @return value or default value of the specified property, or {@code missingPropertyFallback}
-     *         if no attribute or association of that name exists. This value may be {@code null}.
-     *
-     * @since 1.1
-     *
-     * @deprecated Experience suggests that this method encourage bugs in user's code that stay unnoticed.
-     */
-    @Deprecated(since = "1.5", forRemoval = true)
-    public Object getValueOrFallback(final String name, Object missingPropertyFallback) {
-        return type.hasProperty(name) ? getPropertyValue(name) : missingPropertyFallback;
-    }
 
     /**
      * Executes the parameterless operation of the given name and returns the value of its result.
@@ -747,12 +714,12 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * Returns the exception message for a property not found. The message will differ depending
      * on whether the property is not found because ambiguous or because it does not exist.
      *
-     * @param  feature   the name of the feature where a property where searched ({@link String} or {@link GenericName}).
+     * @param  feature   the the feature where a property where searched.
      * @param  property  the name of the property which has not been found.
      */
-    static String propertyNotFound(final FeatureType type, final Object feature, final String property) {
+    static String propertyNotFound(final FeatureType feature, final String property) {
         GenericName ambiguous = null;
-        for (final IdentifiedType p : type.getProperties(true)) {
+        for (final IdentifiedType p : feature.getProperties(true)) {
             final GenericName next = p.getName();
             GenericName name = next;
             do {
@@ -765,7 +732,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
                 }
             } while (name instanceof ScopedName && (name = ((ScopedName) name).tail()) != null);
         }
-        return Resources.format(Resources.Keys.PropertyNotFound_2, feature, property);
+        return Resources.format(Resources.Keys.PropertyNotFound_2, feature.getName(), property);
     }
 
     /**

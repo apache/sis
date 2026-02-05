@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.TreeMap;
 import java.util.Objects;
 import java.util.Collection;
+import java.util.Spliterator;
 import java.util.function.IntFunction;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -363,6 +364,27 @@ abstract class DefaultEvaluator implements GridCoverage.Evaluator {
      */
     @Override
     public Stream<double[]> stream(final Collection<? extends DirectPosition> points, final boolean parallel) {
+        try {
+            return StreamSupport.stream(spliterator(points), parallel);
+        } catch (CannotEvaluateException ex) {
+            throw ex;
+        } catch (RuntimeException | FactoryException | TransformException ex) {
+            throw new CannotEvaluateException(ex.getMessage(), ex);
+        }
+    }
+
+    /**
+     * Returns an iterator over the sample values for each point of the given collection.
+     * The iteration happens in the same order as in the given iterator.
+     *
+     * @param  points  the positions where to evaluate.
+     * @return iterator over the sample values at the specified positions.
+     * @throws FactoryException if an exception occurred while search an operation to the <abbr>CRS</abbr> of a point.
+     * @throws TransformException if a coordinate transformation failed.
+     */
+    final Spliterator<double[]> spliterator(final Collection<? extends DirectPosition> points)
+            throws FactoryException, TransformException
+    {
         final GridCoverage coverage = getCoverage();
         final int dimension = coverage.gridGeometry.getDimension();
         double[] coordinates = ArraysExt.EMPTY_DOUBLE;
@@ -372,77 +394,71 @@ abstract class DefaultEvaluator implements GridCoverage.Evaluator {
         int inputCoordinateOffset = 0;
         int firstCoordToTransform = 0;
         int numPointsToTransform  = 0;
-        try {
-            /*
-             * Convert the "real world " coordinates to grid coordinates.
-             * The CRS of each point is verified. Consecutive points with
-             * the same CRS will be transformed in a single operation.
-             */
-            for (final DirectPosition point : points) {
-                if (crs != (crs = point.getCoordinateReferenceSystem())) {
-                    if (numPointsToTransform > 0) {     // Because `toGrid` may be null.
-                        assert toGrid.getTargetDimensions() == dimension;
-                        toGrid.transform(coordinates, firstCoordToTransform,
-                                         coordinates, firstCoordToTransform,
-                                         numPointsToTransform);
-                    }
-                    firstCoordToTransform += numPointsToTransform * dimension;
-                    inputCoordinateOffset = firstCoordToTransform;
-                    numPointsToTransform = 0;
-                    toGrid = getInputToGrid(crs);
-                    srcDim = toGrid.getSourceDimensions();
+        /*
+         * Convert the "real world " coordinates to grid coordinates.
+         * The CRS of each point is verified. Consecutive points with
+         * the same CRS will be transformed in a single operation.
+         */
+        for (final DirectPosition point : points) {
+            if (crs != (crs = point.getCoordinateReferenceSystem())) {
+                if (numPointsToTransform > 0) {     // Because `toGrid` may be null.
+                    assert toGrid.getTargetDimensions() == dimension;
+                    toGrid.transform(coordinates, firstCoordToTransform,
+                                     coordinates, firstCoordToTransform,
+                                     numPointsToTransform);
                 }
-                int offset = inputCoordinateOffset;
-                if ((inputCoordinateOffset += srcDim) > coordinates.length) {
-                    int n = firstCoordToTransform / dimension;      // Number of points already transformed.
-                    n = points.size() - n + numPointsToTransform;   // Number of points left to transform.
-                    coordinates = Arrays.copyOf(coordinates, Math.multiplyExact(n, Math.max(srcDim, dimension)) + offset);
-                }
-                for (int i=0; i<srcDim; i++) {
-                    coordinates[offset++] = point.getCoordinate(i);
-                }
-                numPointsToTransform++;
+                firstCoordToTransform += numPointsToTransform * dimension;
+                inputCoordinateOffset = firstCoordToTransform;
+                numPointsToTransform = 0;
+                toGrid = getInputToGrid(crs);
+                srcDim = toGrid.getSourceDimensions();
             }
-            /*
-             * Transforms the remaining sequence of points.
-             * Actually, in most cases, all points are transformed here.
-             */
-            if (numPointsToTransform > 0) {     // Because `toGrid` may be null.
-                assert toGrid.getTargetDimensions() == dimension;
-                toGrid.transform(coordinates, firstCoordToTransform,
-                                 coordinates, firstCoordToTransform,
-                                 numPointsToTransform);
+            int offset = inputCoordinateOffset;
+            if ((inputCoordinateOffset += srcDim) > coordinates.length) {
+                int n = firstCoordToTransform / dimension;      // Number of points already transformed.
+                n = points.size() - n + numPointsToTransform;   // Number of points left to transform.
+                coordinates = Arrays.copyOf(coordinates, Math.multiplyExact(n, Math.max(srcDim, dimension)) + offset);
             }
-            final int numPoints = firstCoordToTransform / dimension + numPointsToTransform;
-            postTransform(coordinates, 0, numPoints);
-            /*
-             * Create the iterator. The `ValuesAtPointIterator.create(…)` method will identify the slices in
-             * n-dimensional coverage, get the rendered images for the regions of interest and get the tiles.
-             */
-            final IntFunction<PointOutsideCoverageException> ifOutside;
-            if (nullIfOutside) {
-                ifOutside = null;
-            } else {
-                final var listOfPoints = (points instanceof List<?>) ? (List<? extends DirectPosition>) points : null;
-                ifOutside = (index) -> {
-                    DirectPosition point = null;
-                    if (listOfPoints != null) try {
-                        point = listOfPoints.get(index);
-                    } catch (IndexOutOfBoundsException e) {
-                        recoverableException("pointOutsideCoverage", e);
-                    }
-                    if (point != null) {
-                        return pointOutsideCoverage(point);
-                    }
-                    return new PointOutsideCoverageException(Resources.format(Resources.Keys.PointOutsideCoverageDomain_1, "#" + index));
-                };
+            for (int i=0; i<srcDim; i++) {
+                coordinates[offset++] = point.getCoordinate(i);
             }
-            return StreamSupport.stream(ValuesAtPointIterator.create(coverage, coordinates, numPoints, ifOutside), parallel);
-        } catch (CannotEvaluateException ex) {
-            throw ex;
-        } catch (RuntimeException | FactoryException | TransformException ex) {
-            throw new CannotEvaluateException(ex.getMessage(), ex);
+            numPointsToTransform++;
         }
+        /*
+         * Transforms the remaining sequence of points.
+         * Actually, in most cases, all points are transformed here.
+         */
+        if (numPointsToTransform > 0) {     // Because `toGrid` may be null.
+            assert toGrid.getTargetDimensions() == dimension;
+            toGrid.transform(coordinates, firstCoordToTransform,
+                             coordinates, firstCoordToTransform,
+                             numPointsToTransform);
+        }
+        final int numPoints = firstCoordToTransform / dimension + numPointsToTransform;
+        postTransform(coordinates, 0, numPoints);
+        /*
+         * Create the iterator. The `ValuesAtPointIterator.create(…)` method will identify the slices in
+         * n-dimensional coverage, get the rendered images for the regions of interest and get the tiles.
+         */
+        final IntFunction<PointOutsideCoverageException> ifOutside;
+        if (nullIfOutside) {
+            ifOutside = null;
+        } else {
+            final var listOfPoints = (points instanceof List<?>) ? (List<? extends DirectPosition>) points : null;
+            ifOutside = (index) -> {
+                DirectPosition point = null;
+                if (listOfPoints != null) try {
+                    point = listOfPoints.get(index);
+                } catch (IndexOutOfBoundsException e) {
+                    recoverableException("pointOutsideCoverage", e);
+                }
+                if (point != null) {
+                    return pointOutsideCoverage(point);
+                }
+                return new PointOutsideCoverageException(Resources.format(Resources.Keys.PointOutsideCoverageDomain_1, "#" + index));
+            };
+        }
+        return ValuesAtPointIterator.create(coverage, coordinates, numPoints, ifOutside);
     }
 
     /**

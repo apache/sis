@@ -20,7 +20,6 @@ import java.io.Serializable;
 import static java.lang.Math.multiplyFull;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.pending.jdk.JDK15;
 import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
@@ -32,7 +31,7 @@ import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
  * All {@code Fraction} instances are immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   0.8
  */
 public final class Fraction extends Number implements Comparable<Fraction>, Serializable {
@@ -42,9 +41,11 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
     private static final long serialVersionUID = -4501644254763471216L;
 
     /**
-     * Pool of fractions for which the {@link #unique()} method has been invoked.
+     * The value 1 as a fraction.
+     *
+     * @since 1.7
      */
-    private static final WeakHashSet<Fraction> POOL = new WeakHashSet<>(Fraction.class);
+    public static final Fraction ONE = new Fraction(1, 1);
 
     /**
      * The <var>a</var> term in the <var>a</var>/<var>b</var> fraction.
@@ -196,27 +197,6 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
             }
         }
         throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotConvertValue_2, value, Fraction.class));
-    }
-
-    /**
-     * Returns a unique fraction instance equals to {@code this}.
-     * If this method has been invoked previously on another {@code Fraction} with the same value as {@code this},
-     * then that previous instance is returned (provided that it has not yet been garbage collected). Otherwise this
-     * method adds this fraction to the pool of fractions that may be returned in next {@code unique()} invocations,
-     * then returns {@code this}.
-     *
-     * <p>This method is useful for saving memory when a potentially large number of {@code Fraction} instances will
-     * be kept for a long time and many instances are likely to have the same values.
-     * It is usually not worth to invoke this method for short-lived instances.</p>
-     *
-     * @return a unique instance of a fraction equals to {@code this}.
-     *
-     * @deprecated {@code Fraction} may become a value object with a future Java version,
-     *             and this method is incompatible with value objects.
-     */
-    @Deprecated(since="1.6", forRemoval=true)
-    public Fraction unique() {
-        return POOL.unique(this);
     }
 
     /**

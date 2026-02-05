@@ -95,7 +95,7 @@ abstract class ValuesAtPointIterator implements Spliterator<double[]> {
     protected final IntFunction<PointOutsideCoverageException> ifOutside;
 
     /**
-     * Creates a new iterator which will traverses a subset of the given grid coordinates.
+     * Creates a new iterator which will traverse a subset of the given grid coordinates.
      * Subclasses should initialize {@link #indexOfXY} to the index of the first valid coordinate.
      *
      * @param nearestXY  grid coordinates of points to evaluate, or {@code null}.
@@ -199,6 +199,7 @@ abstract class ValuesAtPointIterator implements Spliterator<double[]> {
          * Creates a new iterator over a subset of the given iterator.
          * This iterator will evaluate a prefix of the sequence of points of the given iterator.
          * Caller should change the parent iterator to a suffix after this constructor returned.
+         * In particular, {@code parent.current} shall be replaced by a next instance.
          * This constructor is for {@link #trySplit()} implementation only.
          *
          * @param  parent           the iterator from which to create a prefix.
@@ -281,6 +282,10 @@ abstract class ValuesAtPointIterator implements Spliterator<double[]> {
          * Tries to split this iterator. If successful, the returned iterator is a prefix
          * of the sequence of points to evaluate, and this iterator become the remaining.
          *
+         * A thread calling {@code trySplit()} may hand over the returned {@code Spliterator} to another thread,
+         * which in turn may further split that {@code Spliterator}. Therefore, this method must ensures that no
+         * instance share the same {@link #current} instance when this method returns.
+         *
          * @return an iterator covering a prefix of the points, or {@code null} if this iterator cannot be split.
          */
         @Override
@@ -293,7 +298,7 @@ abstract class ValuesAtPointIterator implements Spliterator<double[]> {
             i = Arrays.binarySearch(firstGridCoordOfChildren, nextChildIndex, upperChildIndex, i);
             if (i < 0) i = ~i;   // Tild operator, not minus. It gives the insertion point.
             if (i > nextChildIndex && i < upperChildIndex) {
-                final var prefix = createPrefix(i);
+                final Group prefix = createPrefix(i);
                 nextChildIndex = prefix.upperChildIndex;
                 indexOfXY = prefix.limitOfXY;
                 current = nextChild();
@@ -511,6 +516,8 @@ changeOfSlice:  while (numPoints != 0) {
         /**
          * Creates a new iterator covering a prefix of the points.
          * This is invoked by {@link #trySplit()} implementation.
+         * Caller shall update {@link #current}, {@link #indexOfXY} and {@link #nextChildIndex}
+         * after this method call, because the current values are taken by the returned instance.
          */
         @Override
         final Group createPrefix(int stopAtXY) {
@@ -672,6 +679,8 @@ nextTile:   for (tileCount = 0; indexOfXY < limitOfXY; tileCount++) {
         /**
          * Creates a new iterator covering a prefix of the points.
          * This is invoked by {@link #trySplit()} implementation.
+         * Caller shall update {@link #current}, {@link #indexOfXY} and {@link #nextChildIndex}
+         * after this method call, because the current values are taken by the returned instance.
          */
         @Override
         final Group createPrefix(int stopAtXY) {

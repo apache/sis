@@ -20,9 +20,12 @@ import java.util.Random;
 import java.util.Arrays;
 import java.util.List;
 import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Spliterator;
 import java.util.stream.Stream;
 import java.awt.image.DataBuffer;
 import javax.measure.IncommensurableException;
+import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Matrix;
@@ -241,6 +244,42 @@ public final class DefaultEvaluatorTest extends TestCase {
     }
 
     /**
+     * Tries to split the given iterator and adds the prefix and suffix to the given list.
+     */
+    private static void trySplit(final Spliterator<double[]> it, final List<Spliterator<double[]>> addTo) {
+        final Spliterator<double[]> prefix = it.trySplit();
+        if (prefix != null) {
+            trySplit(prefix, addTo);
+            trySplit(it, addTo);
+        } else {
+            addTo.add(it);
+        }
+    }
+
+    /**
+     * Tests {@link ValuesAtPointIterator#trySplit()}.
+     *
+     * @throws FactoryException if the transform to a <abbr>CRS</abbr> cannot be found.
+     * @throws TransformException if a test point cannot be computed.
+     */
+    @Test
+    public void testTrySplit() throws FactoryException, TransformException {
+        evaluator.setNullIfOutside(true);
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final var evaluator = assertInstanceOf(DefaultEvaluator.class, this.evaluator);
+        final var iterators = new ArrayList<Spliterator<double[]>>();
+        trySplit(evaluator.spliterator(createTestPoints(true)), iterators);
+        final var actual = new ArrayList<double[]>();
+        iterators.forEach((it) -> it.forEachRemaining((samples) -> {
+            if (samples != null) {
+                samples = samples.clone();
+            }
+            actual.add(samples);
+        }));
+        compareSampleValues(actual.toArray(double[][]::new));
+    }
+
+    /**
      * Compares the actual sample values against the expected values.
      * The given stream should compute sample values for the points
      * returned by {@link #createTestPoints()}.
@@ -256,6 +295,15 @@ public final class DefaultEvaluatorTest extends TestCase {
             assertTrue(isNullIfOutside, "Unexpected null array of sample values.");
             return null;
         }).toArray(double[][]::new);
+        compareSampleValues(actual);
+    }
+
+    /**
+     * Compares the given values against the expected sample values.
+     *
+     * @param  actual  the sample values computed by the evaluator.
+     */
+    private void compareSampleValues(final double[][] actual) {
         assertEquals(expectedValues.length, actual.length);
         for (int i=0; i<actual.length; i++) {
             double expected = expectedValues[i];

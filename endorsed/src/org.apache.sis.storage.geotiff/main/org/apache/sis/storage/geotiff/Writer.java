@@ -416,7 +416,7 @@ final class Writer extends IOBase implements Flushable {
          * paper size, as suggested by the units of measurement which are restricted to inch or centimeters.
          * This is not very useful for geospatial applications, except as aspect ratio.
          */
-        final Fraction xres = new Fraction(1, 1);       // TODO
+        final Fraction xres = Fraction.ONE;       // TODO
         final Fraction yres = xres;
         /*
          * If the image has any unsupported feature, the exception should have been thrown before this point.

@@ -38,7 +38,7 @@ import org.apache.sis.util.internal.shared.DoubleDouble;
  * Static methods working with {@code Number} objects, and a few primitive types by extension.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.6
+ * @version 1.7
  *
  * @see org.apache.sis.math.MathFunctions
  *
@@ -47,85 +47,9 @@ import org.apache.sis.util.internal.shared.DoubleDouble;
 @SuppressWarnings("UnnecessaryBoxing")
 public final class Numbers {
     /**
-     * Constant of value {@value} used in {@code switch} statements or as index in arrays.
-     * This enumeration provides the following guarantees (some Apache SIS codes rely on them):
-     *
-     * <ul>
-     *   <li>{@code OTHER} value is 0.</li>
-     *   <li>Primitive types are enumerated in this exact order
-     *       (from lower value to higher value, but not necessarily as consecutive values):
-     *       {@code BYTE}, {@code SHORT}, {@code INTEGER}, {@code LONG}, {@code FLOAT}, {@code DOUBLE}.</li>
-     *   <li>{@link java.math} types of greater capacity than primitive types ({@code BIG_DECIMAL}
-     *       and {@code BIG_INTEGER}) have higher enumeration values.</li>
-     *   <li>{@link Fraction} is considered as a kind of floating point value.</li>
-     * </ul>
-     *
-     * @deprecated Replaced by the {@link NumberType} enumeration.
-     */
-    @Deprecated(since="1.6", forRemoval=true)
-    public static final byte
-            BIG_DECIMAL=11, BIG_INTEGER=10, FRACTION=7,
-            DOUBLE=9, FLOAT=8, LONG=6, INTEGER=5, SHORT=4, BYTE=3, CHARACTER=2, BOOLEAN=1, OTHER=0;
-
-    /**
      * Do not allow instantiation of this class.
      */
     private Numbers() {
-    }
-
-    /**
-     * Returns {@code true} if the given {@code type} is a floating point type. The floating point types
-     * are {@link Float}, {@code float}, {@link Double}, {@code double} and {@link BigDecimal}.
-     * {@link Fraction} is also considered as a kind of floating point values.
-     *
-     * @param  type  the primitive type or wrapper class to test (can be {@code null}).
-     * @return {@code true} if {@code type} is one of the known types capable to represent floating point numbers.
-     *
-     * @see #isInteger(Class)
-     *
-     * @deprecated Moved to {@link NumberType#isFractional(Class)}.
-     */
-    @Deprecated(since="1.6", forRemoval=true)
-    public static boolean isFloat(final Class<?> type) {
-        return NumberType.isFractional(type);
-    }
-
-    /**
-     * Returns {@code true} if the given {@code type} is an integer type. The integer types are
-     * {@link Byte}, {@code byte}, {@link Short}, {@code short}, {@link Integer}, {@code int},
-     * {@link Long}, {@code long} and {@link BigInteger}.
-     *
-     * @param  type  the primitive type or wrapper class to test (can be {@code null}).
-     * @return {@code true} if {@code type} is an integer type.
-     *
-     * @see #isFloat(Class)
-     * @see #round(Number)
-     *
-     * @deprecated Moved to {@link NumberType#isInteger(Class)}.
-     */
-    @Deprecated(since="1.6", forRemoval=true)
-    public static boolean isInteger(final Class<?> type) {
-        return NumberType.isInteger(type);
-    }
-
-    /**
-     * Returns {@code true} if the given {@code type} is a floating point or an integer type.
-     * This method returns {@code true} if either {@link #isFloat(Class)} or {@link #isInteger(Class)}
-     * returns {@code true} for the given argument, or if the type is assignable to {@link Number}.
-     *
-     * @param  type  the primitive type or wrapper class to test (can be {@code null}).
-     * @return {@code true} if {@code type} is a {@link Number} or a primitive floating point or integer type.
-     *
-     * @see #isFloat(Class)
-     * @see #isInteger(Class)
-     *
-     * @since 1.1
-     *
-     * @deprecated Moved to {@link NumberType#isReal(Class)}.
-     */
-    @Deprecated(since="1.6", forRemoval=true)
-    public static boolean isNumber(final Class<?> type) {
-        return NumberType.isReal(type);
     }
 
     /**
@@ -187,54 +111,6 @@ public final class Numbers {
         final long   n = Math.round(v);
         if (Math.abs(v - n) <= 0.5) return n;
         throw new ArithmeticException(Errors.format(Errors.Keys.CanNotConvertValue_2, value, Long.TYPE));
-    }
-
-    /**
-     * Returns the number of bits used by primitive of the specified type.
-     * The given type must be a primitive type or its wrapper class.
-     *
-     * @param  type  the primitive type (can be {@code null}).
-     * @return the number of bits, or 0 if {@code type} is null.
-     * @throws IllegalArgumentException if the given type is not one of the types supported by this {@code Numbers} class.
-     *
-     * @deprecated Replaced by {@link NumberType#size()}.
-     */
-    @Deprecated(since="1.6", forRemoval=true)
-    public static int primitiveBitCount(final Class<?> type) throws IllegalArgumentException {
-        if (type == null) {
-            return 0;
-        }
-        return NumberType.forNumberClass(type).size().orElseThrow();
-    }
-
-    /**
-     * Changes a primitive class to its wrapper (for example {@code int} to {@link Integer}).
-     * If the specified class is not a primitive type, then it is returned unchanged.
-     *
-     * @param  <N>   the primitive and wrapper type (both have the same parametric declaration).
-     * @param  type  the primitive type (can be {@code null}).
-     * @return the type as a wrapper.
-     *
-     * @deprecated Moved to {@link NumberType#primitiveToWrapper(Class)}.
-     */
-    @Deprecated(since="1.6", forRemoval=true)
-    public static <N> Class<N> primitiveToWrapper(final Class<N> type) {
-        return NumberType.primitiveToWrapper(type);
-    }
-
-    /**
-     * Changes a wrapper class to its primitive (for example {@link Integer} to {@code int}).
-     * If the specified class is not a wrapper type, then it is returned unchanged.
-     *
-     * @param  <N>   the primitive and wrapper type (both have the same parametric declaration).
-     * @param  type  the wrapper type (can be {@code null}).
-     * @return the type as a primitive.
-     *
-     * @deprecated Moved to {@link NumberType#wrapperToPrimitive(Class)}.
-     */
-    @Deprecated(since="1.6", forRemoval=true)
-    public static <N> Class<N> wrapperToPrimitive(final Class<N> type) {
-        return NumberType.wrapperToPrimitive(type);
     }
 
     /**
@@ -685,34 +561,4 @@ public final class Numbers {
             Queue.class,        Containers.emptyQueue(),
             SortedSet.class,    Collections.emptySortedSet(),
             NavigableSet.class, Collections.emptyNavigableSet());
-
-    /**
-     * Returns a numeric constant for the given type.
-     * The constants are {@link #BIG_DECIMAL}, {@link #BIG_INTEGER}, {@link #FRACTION},
-     * {@link #DOUBLE}, {@link #FLOAT}, {@link #LONG}, {@link #INTEGER},
-     * {@link #SHORT}, {@link #BYTE}, {@link #CHARACTER}, {@link #BOOLEAN}, or {@link #OTHER}
-     * constants for the given type. This is a commodity for usage in {@code switch} statements.
-     *
-     * @param  type  a type (usually either a primitive type or its wrapper), or {@code null}.
-     * @return the constant for the given type, or {@link #OTHER} if unknown.
-     *
-     * @deprecated Replaced by the {@link NumberType} enumeration.
-     */
-    @Deprecated(since="1.6", forRemoval=true)
-    public static byte getEnumConstant(final Class<?> type) {
-        switch (NumberType.forClass(type).orElse(NumberType.NULL)) {
-            case BIG_DECIMAL: return BIG_DECIMAL;
-            case BIG_INTEGER: return BIG_INTEGER;
-            case FRACTION:    return FRACTION;
-            case DOUBLE:      return DOUBLE;
-            case FLOAT:       return FLOAT;
-            case LONG:        return LONG;
-            case INTEGER:     return INTEGER;
-            case SHORT:       return SHORT;
-            case BYTE:        return BYTE;
-            case CHARACTER:   return CHARACTER;
-            case BOOLEAN:     return BOOLEAN;
-            default:          return OTHER;
-        }
-    }
 }

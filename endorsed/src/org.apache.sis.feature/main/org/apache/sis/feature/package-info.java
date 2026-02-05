@@ -93,7 +93,7 @@
  * @author  Travis L. Pinney
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   0.5
  */
 package org.apache.sis.feature;

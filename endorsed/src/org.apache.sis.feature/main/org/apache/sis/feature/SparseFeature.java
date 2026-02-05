@@ -128,7 +128,7 @@ final class SparseFeature extends AbstractFeature implements CloneAccess {
         if (index != null) {
             return index;
         }
-        throw new PropertyNotFoundException(propertyNotFound(type, getName(), name));
+        throw new PropertyNotFoundException(propertyNotFound(type, name));
     }
 
     /**
@@ -220,21 +220,17 @@ final class SparseFeature extends AbstractFeature implements CloneAccess {
     }
 
     /**
-     * Returns the value for the property of the given name if that property exists, or a fallback value otherwise.
+     * Returns the value for the property of the given name if that property exists.
      *
      * @param  name  the property name.
-     * @param  missingPropertyFallback  the value to return if no attribute or association of the given name exists.
-     * @return the value for the given property, or {@code null} if none.
-     *
-     * @deprecated Experience suggests that this method encourage bugs in user's code that stay unnoticed.
+     * @return the value for the given property.
      */
     @Override
-    @Deprecated(since = "1.5", forRemoval = true)
-    public final Object getValueOrFallback(final String name, final Object missingPropertyFallback) {
+    public final Object getPropertyValue(final String name) {
         ArgumentChecks.ensureNonNull("name", name);
         final Integer index = indices.get(name);
         if (index == null) {
-            return missingPropertyFallback;
+            throw new PropertyNotFoundException(propertyNotFound(type, name));
         }
         if (index < 0) {
             return getOperationValue(name);
