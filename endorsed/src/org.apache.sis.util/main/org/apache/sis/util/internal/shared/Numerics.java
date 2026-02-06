@@ -313,7 +313,7 @@ public final class Numerics {
 
     /**
      * Returns the given fraction as a {@link Fraction} instance if possible,
-     * or as a {@link Double} approximation otherwise.
+     * or as a {@link DoubleDouble} approximation otherwise.
      *
      * @param  numerator    numerator of the fraction to return.
      * @param  denominator  denominator of the fraction to return.
@@ -323,7 +323,7 @@ public final class Numerics {
         try {
             return Fraction.valueOf(numerator, denominator);
         } catch (ArithmeticException e) {
-            return numerator / (double) denominator;
+            return DoubleDouble.of(numerator).divide(DoubleDouble.of(denominator));
         }
     }
 

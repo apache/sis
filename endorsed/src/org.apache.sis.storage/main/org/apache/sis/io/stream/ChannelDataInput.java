@@ -703,7 +703,7 @@ public class ChannelDataInput extends ChannelData implements DataInput {
         @Override
         void readFully(Buffer view, int offset, int length) throws IOException {
             final int dataSizeShift = dataSizeShift();
-            ensureBufferContains(Math.min(length << dataSizeShift, buffer.capacity()));
+            ensureBufferContains((int) Math.min(((long) length) << dataSizeShift, buffer.capacity()));
             if (view == null) {
                 view = createView();                                    // Must be after ensureBufferContains(int).
             } else {
