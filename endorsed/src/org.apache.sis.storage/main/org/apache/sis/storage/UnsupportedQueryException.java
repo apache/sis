@@ -27,6 +27,7 @@ package org.apache.sis.storage;
  *   <li>The query is requesting a property that does not exist in the {@link Resource}.</li>
  *   <li>The values in the {@link DataStore} are unconvertible to some characteristics
  *       (e.g., type or name) requested by the query.</li>
+ *   <li>The query is too large (e.g., overflows the capability of some integer type).</li>
  * </ul>
  *
  * This exception may be thrown when {@link FeatureSet#subset(Query)} is executed,

@@ -35,7 +35,6 @@ import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.DateType;
-import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameSpace;
 import org.opengis.util.FactoryException;
@@ -1486,11 +1485,9 @@ final class ImageFileDirectory extends DataCube {
         final GridGeometry geometry = fullResolution.getGridGeometry();
         final GridExtent fullExtent = geometry.getExtent();
         final int dimension = fullExtent.getDimension();
-        final var axisTypes = new DimensionNameType[dimension];
         final var scales    = new double[dimension];
         final var high      = new long[dimension];
         for (int i=0; i<dimension; i++) {
-            axisTypes[i] = fullExtent.getAxisType(i).orElse(null);
             final long size;
             switch (i) {
                 case 0:  size = imageWidth;  break;
@@ -1503,7 +1500,7 @@ final class ImageFileDirectory extends DataCube {
         if (referencing == null) {
             gridGeometry = new GridGeometry(
                     geometry,
-                    new GridExtent(axisTypes, null, high, true),
+                    fullExtent.reshape(null, high, true),
                     MathTransforms.scale(scales));
         }
         if (samplesPerPixel == fullResolution.samplesPerPixel) {

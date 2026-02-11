@@ -36,7 +36,6 @@ import static java.lang.Math.decrementExact;
 import static java.lang.Math.toIntExact;
 import static java.lang.Math.floorDiv;
 import org.opengis.util.GenericName;
-import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.DisjointExtentException;
@@ -1076,15 +1075,13 @@ public abstract class TiledGridCoverage extends GridCoverage {
          */
         public GridExtent getFullRegionInResourceCoordinates() {
             final int dimension = tileLower.length;
-            final var    axes  = new DimensionNameType[dimension];
             final long[] lower = new long[dimension];
             final long[] upper = new long[dimension];
             for (int i=0; i<dimension; i++) {
-                axes [i] = readExtent.getAxisType(i).orElse(null);
                 lower[i] = Math.max(coverageTileToResourceCell(tileLower[i], i),   readExtent.getLow(i));
                 upper[i] = Math.min(coverageTileToResourceCell(tileUpper[i], i)-1, readExtent.getHigh(i));
             }
-            return new GridExtent(axes, lower, upper, true);
+            return readExtent.reshape(lower, upper, true);
         }
 
         /**

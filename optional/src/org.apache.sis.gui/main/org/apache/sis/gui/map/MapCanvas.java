@@ -1195,9 +1195,11 @@ public abstract class MapCanvas extends PlanarCanvas {
                     return;
                 }
                 invalidObjectiveToDisplay = false;
-                final var extent = new GridExtent(null,
+                final var extent = new GridExtent(
+                        null,
                         new long[] {Math.round(target.getMinX()), Math.round(target.getMinY())},
-                        new long[] {Math.round(target.getMaxX()), Math.round(target.getMaxY())}, false);
+                        new long[] {Math.round(target.getMaxX()), Math.round(target.getMaxY())},
+                        false);
                 /*
                  * The main purpose of this block is to find the initial value of the `objectiveToDisplay` transform
                  * (named `crsToDisplay` here). If that value was explicitly specified by a call to `initialize(…)`,
