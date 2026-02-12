@@ -49,7 +49,7 @@ import org.apache.sis.image.internal.shared.ColorModelFactory;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.base.MetadataBuilder;
-import org.apache.sis.storage.base.TiledGridResource;
+import org.apache.sis.storage.tiling.TiledGridResource;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Vocabulary;

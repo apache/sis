@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.base;
+package org.apache.sis.storage.tiling;
 
 import java.util.Map;
 import java.awt.Rectangle;
@@ -53,9 +53,12 @@ final class TiledDeferredImage extends BatchComputedImage {
      * @param imageSize   full image size, after subsampling.
      * @param tileLower   indices of first tile to read, inclusive.
      * @param properties  image properties, or {@code null} if none.
+     * @param iterator    iterator over the coordinates of the tiles.
      */
-    TiledDeferredImage(final int[] imageSize, final int[] tileLower,
-                       final Map<String,Object> properties, final TiledGridCoverage.TileIterator iterator)
+    TiledDeferredImage(final int[] imageSize,
+                       final int[] tileLower,
+                       final Map<String,Object> properties,
+                       final TiledGridCoverage.TileIterator iterator)
     {
         super(iterator.getCoverage().model, properties);
         this.width    = imageSize[TiledGridCoverage.X_DIMENSION];

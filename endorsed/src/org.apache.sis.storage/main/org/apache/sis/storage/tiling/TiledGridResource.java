@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.base;
+package org.apache.sis.storage.tiling;
 
 import java.util.List;
 import java.util.Arrays;
@@ -49,15 +49,15 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.collection.WeakValueHashMap;
-import static org.apache.sis.storage.base.TiledGridCoverage.X_DIMENSION;
-import static org.apache.sis.storage.base.TiledGridCoverage.Y_DIMENSION;
+import static org.apache.sis.storage.tiling.TiledGridCoverage.X_DIMENSION;
+import static org.apache.sis.storage.tiling.TiledGridCoverage.Y_DIMENSION;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.CannotEvaluateException;
 
 
 /**
- * Base class of grid coverage resource storing data in tiles.
+ * Base class of grid coverage resources that store data in tiles.
  * The word "tile" is used for simplicity but can be understood
  * as "chunk" in a <var>n</var>-dimensional generalization.
  * Subclasses need to implement the following methods:
@@ -85,8 +85,16 @@ import org.opengis.coverage.CannotEvaluateException;
  *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.7
+ * @since   1.7
  */
 public abstract class TiledGridResource extends AbstractGridCoverageResource {
+    /**
+     * Number of dimensions in a rendered image.
+     * Used for identifying codes where a two-dimensional slice is assumed.
+     */
+    private static final int BIDIMENSIONAL = 2;
+
     /**
      * A key in the {@link #rasters} cache of tiles.
      * Each key shall be unique within its enclosing {@link TiledGridResource} instance.
@@ -160,7 +168,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
     /**
      * Returns the size of tiles in this resource.
      * The length of the returned array is the number of dimensions,
-     * which must be {@value TiledGridCoverage#BIDIMENSIONAL} or more.
+     * which must be {@value #BIDIMENSIONAL} or more.
      *
      * @return the size of tiles (in pixels) in this resource.
      * @throws DataStoreException if an error occurred while fetching the tile size.
@@ -689,13 +697,14 @@ check:  if (dataType.isInteger()) {
     /**
      * If the loading strategy is to load all tiles at {@code read(…)} time, replaces the given coverage
      * by a coverage will all data in memory. This method should be invoked by subclasses at the end of
-     * their {@link #read(GridGeometry, int...)} method implementation.
+     * their {@link #read(GridGeometry, int...)} method implementation if the tile loading strategy is not
+     * {@link RasterLoadingStrategy#AT_GET_TILE_TIME}.
      *
      * @param  coverage  the {@link TiledGridCoverage} to potentially replace by a coverage with preloaded data.
      * @return a coverage with preloaded data, or the given coverage if preloading is not enabled.
      * @throws DataStoreException if an error occurred while preloading data.
      */
-    protected final GridCoverage preload(final GridCoverage coverage) throws DataStoreException {
+    protected GridCoverage preload(final GridCoverage coverage) throws DataStoreException {
         assert Thread.holdsLock(getSynchronizationLock());
         // Note: `loadingStrategy` may still be null if unitialized.
         if (loadingStrategy == null || loadingStrategy == RasterLoadingStrategy.AT_READ_TIME) {
@@ -704,7 +713,7 @@ check:  if (dataType.isInteger()) {
              * We apply it anyway in case the coverage geometry is not what was announced.
              * This condition is also necessary if `loadingStrategy` has not been initialized.
              */
-            if (coverage.getGridGeometry().getDimension() == TiledGridCoverage.BIDIMENSIONAL) try {
+            if (coverage.getGridGeometry().getDimension() == BIDIMENSIONAL) try {
                 final RenderedImage image = coverage.render(null);
                 return new GridCoverage2D(coverage.getGridGeometry(), coverage.getSampleDimensions(), image);
             } catch (RuntimeException e) {
@@ -737,7 +746,7 @@ check:  if (dataType.isInteger()) {
      * Non-immediate loading allows users to specify two-dimensional slices.
      */
     private boolean supportImmediateLoading() throws DataStoreException {
-        return getTileSize().length == TiledGridCoverage.BIDIMENSIONAL;
+        return getTileSize().length == BIDIMENSIONAL;
     }
 
     /**
@@ -747,7 +756,7 @@ check:  if (dataType.isInteger()) {
      * @throws DataStoreException if an error occurred while fetching data store configuration.
      */
     @Override
-    public final RasterLoadingStrategy getLoadingStrategy() throws DataStoreException {
+    public RasterLoadingStrategy getLoadingStrategy() throws DataStoreException {
         synchronized (getSynchronizationLock()) {
             if (loadingStrategy == null) {
                 setLoadingStrategy(supportImmediateLoading());
@@ -765,7 +774,7 @@ check:  if (dataType.isInteger()) {
      * @throws DataStoreException if an error occurred while setting data store configuration.
      */
     @Override
-    public final boolean setLoadingStrategy(final RasterLoadingStrategy strategy) throws DataStoreException {
+    public boolean setLoadingStrategy(final RasterLoadingStrategy strategy) throws DataStoreException {
         synchronized (getSynchronizationLock()) {
             if (strategy == RasterLoadingStrategy.AT_GET_TILE_TIME) {
                 loadingStrategy = strategy;

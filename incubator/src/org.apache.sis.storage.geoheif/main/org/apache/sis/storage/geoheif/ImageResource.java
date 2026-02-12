@@ -41,8 +41,8 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.StoreResource;
-import org.apache.sis.storage.base.TiledGridCoverage;
-import org.apache.sis.storage.base.TiledGridResource;
+import org.apache.sis.storage.tiling.TiledGridCoverage;
+import org.apache.sis.storage.tiling.TiledGridResource;
 import org.apache.sis.storage.isobmff.ByteRanges;
 import org.apache.sis.io.stream.ChannelDataInput;
 

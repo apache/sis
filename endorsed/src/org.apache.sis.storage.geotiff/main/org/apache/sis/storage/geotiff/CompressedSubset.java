@@ -23,7 +23,7 @@ import java.awt.Point;
 import java.awt.image.Raster;
 import static java.lang.Math.toIntExact;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.base.TiledGridResource;
+import org.apache.sis.storage.tiling.TiledGridResource;
 import org.apache.sis.storage.geotiff.inflater.Inflater;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.internal.shared.RasterFactory;

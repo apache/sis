@@ -32,7 +32,7 @@ import org.apache.sis.storage.geotiff.base.Tags;
 import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.storage.geotiff.base.Predictor;
 import org.apache.sis.storage.geotiff.base.Compression;
-import org.apache.sis.storage.base.TiledGridResource;
+import org.apache.sis.storage.tiling.TiledGridResource;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.math.Vector;
 

@@ -25,8 +25,8 @@ import java.lang.foreign.MemorySegment;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.base.TiledGridCoverage;
-import org.apache.sis.storage.base.TiledGridResource;
+import org.apache.sis.storage.tiling.TiledGridCoverage;
+import org.apache.sis.storage.tiling.TiledGridResource;
 
 // Test dependencies
 import org.apache.sis.image.internal.shared.AssertionMessages;
