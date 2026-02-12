@@ -30,7 +30,7 @@ public class ArrayNuiTest extends AbstractArrayTest {
 
     @Override
     protected Array create(int dim, int length) {
-        return new ArrayMemory.UInt(SampleSystem.ofSize(dim), new int[length*dim]);
+        return new JavaFactory.UInt(SampleSystem.ofSize(dim), new int[length*dim]);
     }
 
 }

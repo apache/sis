@@ -38,6 +38,11 @@ final class ArrayUnmodifiable extends AbstractArray {
     }
 
     @Override
+    public ArrayFactory getFactory() {
+        return parent.getFactory();
+    }
+
+    @Override
     public SampleSystem getSampleSystem() {
         return parent.getSampleSystem();
     }

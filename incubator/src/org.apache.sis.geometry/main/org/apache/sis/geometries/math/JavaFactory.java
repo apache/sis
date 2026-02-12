@@ -26,9 +26,59 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class ArrayMemory extends AbstractArray {
+public final class JavaFactory implements ArrayFactory {
 
-    static final class Byte extends ArrayMemory {
+    public static final JavaFactory INSTANCE = new JavaFactory();
+
+    private JavaFactory() {
+    }
+
+    @Override
+    public Builder builder() {
+        return new JavaBuilder();
+    }
+
+    private static final class JavaBuilder implements Builder {
+
+        @Override
+        public Builder shape(long... shape) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Builder system(SampleSystem system) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Builder dataType(DataType type) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Builder values(Object values) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Builder fill(Object values) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public NDArray buildND() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Array build() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+    }
+
+
+    static final class Byte extends AbstractArray {
 
         private SampleSystem type;
         private final int dimension;
@@ -41,6 +91,11 @@ public abstract class ArrayMemory extends AbstractArray {
             if (array.length % dimension != 0) {
                 throw new IllegalArgumentException("Array size is not compatible, expected n*" + dimension + " but size is " + array.length);
             }
+        }
+
+        @Override
+        public ArrayFactory getFactory() {
+            return JavaFactory.INSTANCE;
         }
 
         @Override
@@ -202,7 +257,7 @@ public abstract class ArrayMemory extends AbstractArray {
 
     }
 
-    static final class UByte extends ArrayMemory {
+    static final class UByte extends AbstractArray {
 
         private SampleSystem type;
         private final int dimension;
@@ -215,6 +270,11 @@ public abstract class ArrayMemory extends AbstractArray {
             if (array.length % dimension != 0) {
                 throw new IllegalArgumentException("Array size is not compatible, expected n*" + dimension + " but size is " + array.length);
             }
+        }
+
+        @Override
+        public ArrayFactory getFactory() {
+            return JavaFactory.INSTANCE;
         }
 
         @Override
@@ -376,7 +436,7 @@ public abstract class ArrayMemory extends AbstractArray {
 
     }
 
-    static final class Short extends ArrayMemory {
+    static final class Short extends AbstractArray {
 
         private SampleSystem type;
         private final int dimension;
@@ -389,6 +449,11 @@ public abstract class ArrayMemory extends AbstractArray {
             if (array.length % dimension != 0) {
                 throw new IllegalArgumentException("Array size is not compatible, expected n*" + dimension + " but size is " + array.length);
             }
+        }
+
+        @Override
+        public ArrayFactory getFactory() {
+            return JavaFactory.INSTANCE;
         }
 
         @Override
@@ -559,7 +624,7 @@ public abstract class ArrayMemory extends AbstractArray {
 
     }
 
-    static final class UShort extends ArrayMemory {
+    static final class UShort extends AbstractArray {
 
         private SampleSystem type;
         private final int dimension;
@@ -572,6 +637,11 @@ public abstract class ArrayMemory extends AbstractArray {
             if (array.length % dimension != 0) {
                 throw new IllegalArgumentException("Array size is not compatible, expected n*" + dimension + " but size is " + array.length);
             }
+        }
+
+        @Override
+        public ArrayFactory getFactory() {
+            return JavaFactory.INSTANCE;
         }
 
         @Override
@@ -734,7 +804,7 @@ public abstract class ArrayMemory extends AbstractArray {
 
     }
 
-    static final class Int extends ArrayMemory {
+    static final class Int extends AbstractArray {
 
         private SampleSystem type;
         private final int dimension;
@@ -747,6 +817,11 @@ public abstract class ArrayMemory extends AbstractArray {
             if (array.length % dimension != 0) {
                 throw new IllegalArgumentException("Array size is not compatible, expected n*" + dimension + " but size is " + array.length);
             }
+        }
+
+        @Override
+        public ArrayFactory getFactory() {
+            return JavaFactory.INSTANCE;
         }
 
         @Override
@@ -907,7 +982,7 @@ public abstract class ArrayMemory extends AbstractArray {
         }
     }
 
-    static final class UInt extends ArrayMemory {
+    static final class UInt extends AbstractArray {
 
         private SampleSystem type;
         private final int dimension;
@@ -929,6 +1004,11 @@ public abstract class ArrayMemory extends AbstractArray {
             if (array.size() % dimension != 0) {
                 throw new IllegalArgumentException("Array size is not compatible, expected n*" + dimension + " but size is " + array.size());
             }
+        }
+
+        @Override
+        public ArrayFactory getFactory() {
+            return JavaFactory.INSTANCE;
         }
 
         @Override
@@ -1090,7 +1170,7 @@ public abstract class ArrayMemory extends AbstractArray {
         }
     }
 
-    static final class Long extends ArrayMemory {
+    static final class Long extends AbstractArray {
 
         private SampleSystem type;
         private final int dimension;
@@ -1103,6 +1183,11 @@ public abstract class ArrayMemory extends AbstractArray {
             if (array.length % dimension != 0) {
                 throw new IllegalArgumentException("Array size is not compatible, expected n*" + dimension + " but size is " + array.length);
             }
+        }
+
+        @Override
+        public ArrayFactory getFactory() {
+            return JavaFactory.INSTANCE;
         }
 
         @Override
@@ -1252,7 +1337,7 @@ public abstract class ArrayMemory extends AbstractArray {
         }
     }
 
-    static final class Float extends ArrayMemory {
+    static final class Float extends AbstractArray {
 
         private SampleSystem type;
         private final int dimension;
@@ -1265,6 +1350,11 @@ public abstract class ArrayMemory extends AbstractArray {
             if (array.length % dimension != 0) {
                 throw new IllegalArgumentException("Array size is not compatible, expected n*" + dimension + " but size is " + array.length);
             }
+        }
+
+        @Override
+        public ArrayFactory getFactory() {
+            return JavaFactory.INSTANCE;
         }
 
         @Override
@@ -1431,7 +1521,7 @@ public abstract class ArrayMemory extends AbstractArray {
         }
     }
 
-    static final class Double extends ArrayMemory {
+    static final class Double extends AbstractArray {
 
         private SampleSystem type;
         private final int dimension;
@@ -1444,6 +1534,11 @@ public abstract class ArrayMemory extends AbstractArray {
             if (array.length % dimension != 0) {
                 throw new IllegalArgumentException("Array size is not compatible, expected n*" + dimension + " but size is " + array.length);
             }
+        }
+
+        @Override
+        public ArrayFactory getFactory() {
+            return JavaFactory.INSTANCE;
         }
 
         @Override

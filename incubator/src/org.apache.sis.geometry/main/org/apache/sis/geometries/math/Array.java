@@ -34,6 +34,11 @@ import org.apache.sis.util.ArgumentChecks;
 public interface Array extends NDArray {
 
     /**
+     * @return the factory which created this array.
+     */
+    ArrayFactory getFactory();
+
+    /**
      * @return if length is zero.
      */
     @Override

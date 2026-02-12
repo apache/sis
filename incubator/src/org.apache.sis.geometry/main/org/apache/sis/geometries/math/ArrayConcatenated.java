@@ -53,6 +53,11 @@ final class ArrayConcatenated extends AbstractArray {
     }
 
     @Override
+    public ArrayFactory getFactory() {
+        return arrays[0].getFactory();
+    }
+
+    @Override
     public SampleSystem getSampleSystem() {
         return arrays[0].getSampleSystem();
     }
