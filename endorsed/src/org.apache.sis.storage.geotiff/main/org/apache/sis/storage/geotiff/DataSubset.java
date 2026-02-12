@@ -512,8 +512,8 @@ class DataSubset extends TiledGridCoverage implements Localized {
     {
         final DataType type = getDataType();
         final int sampleSize = type.size();     // Assumed same as `SampleModel.getSampleSize(…)` by preconditions.
-        final long width  = subtractExact(upper[X_DIMENSION], lower[X_DIMENSION]);
-        final long height = subtractExact(upper[Y_DIMENSION], lower[Y_DIMENSION]);
+        final long width  = subtractExact(upper[xDimension], lower[xDimension]);
+        final long height = subtractExact(upper[yDimension], lower[yDimension]);
         /*
          * The number of bytes to read should not be greater than `byteCount`. It may be smaller however if only
          * a subregion is read. Note that the `length` value may be different than `capacity` if the tile to read
@@ -521,15 +521,15 @@ class DataSubset extends TiledGridCoverage implements Localized {
          * This length is used only for verification purpose so it does not need to be exact.
          */
         final long length = ceilDiv(width * height * sourcePixelStride * sampleSize, Byte.SIZE);
-        final long[] size = new long[] {sourceScanlineStride, getTileSize(Y_DIMENSION)};
+        final long[] size = new long[] {sourceScanlineStride, getTileSize(yDimension)};
         /*
          * If we use an interleaved sample model, each "element" from `HyperRectangleReader` perspective is actually a
          * group of `sourcePixelStride` values. Note that in such case, we cannot handle subsampling on the first axis.
          * Such case should be handled by the `CompressedSubset` subclass instead, even if there is no compression.
          */
-        assert sourcePixelStride == 1 || subsampling[X_DIMENSION] == 1;
-        lower[X_DIMENSION] *= sourcePixelStride;
-        upper[X_DIMENSION] *= sourcePixelStride;
+        assert sourcePixelStride == 1 || subsampling[xDimension] == 1;
+        lower[xDimension] *= sourcePixelStride;
+        upper[xDimension] *= sourcePixelStride;
         /*
          * Read each plane ("banks" in Java2D terminology). Note that a single bank contains all bands
          * in the interleaved sample model case. This block assumes that each bank element contains

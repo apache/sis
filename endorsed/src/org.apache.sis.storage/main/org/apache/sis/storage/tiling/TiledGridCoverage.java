@@ -82,12 +82,6 @@ import org.opengis.coordinate.MismatchedDimensionException;
  */
 public abstract class TiledGridCoverage extends GridCoverage {
     /**
-     * The dimensions of <var>x</var> and <var>y</var> axes.
-     * Static constants for now, may become configurable fields in the future.
-     */
-    protected static final int X_DIMENSION = 0, Y_DIMENSION = 1;
-
-    /**
      * The area to read in unit of the full coverage (without subsampling).
      * This is the intersection between user-specified domain and the source
      * {@link TiledGridResource} domain, expanded to an integer number of chunks.
@@ -210,6 +204,26 @@ public abstract class TiledGridCoverage extends GridCoverage {
     protected final int[] includedBands;
 
     /**
+     * The dimension of the grid which is mapped to the <var>x</var> axis (column indexes) in rendered images.
+     * This is the value of the {@code xDimension} argument in the last call to the
+     * {@link TiledGridResource#setRasterDimension(int, int)} method before this coverage has been constructed.
+     * This value is usually 0.
+     *
+     * @see #readTiles(TileIterator)
+     */
+    protected final int xDimension;
+
+    /**
+     * The dimension of the grid which is mapped to the <var>y</var> axis (row indexes) in rendered images.
+     * This is the value of the {@code yDimension} argument in the last call to the
+     * {@link TiledGridResource#setRasterDimension(int, int)} method before this coverage has been constructed.
+     * This value is usually 1.
+     *
+     * @see #readTiles(TileIterator)
+     */
+    protected final int yDimension;
+
+    /**
      * Cache of rasters read by this {@code TiledGridCoverage}. This cache may be shared with other coverages
      * created for the same {@link TiledGridResource} resource. For each value, the raster {@code minX} and
      * {@code minY} values can be anything, depending which {@code TiledGridCoverage} was first to load the tile.
@@ -262,7 +276,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
      */
     protected TiledGridCoverage(final TiledGridResource.Subset subset) {
         super(subset.domain, subset.ranges);
-        final GridExtent extent = subset.domain.getExtent();
+        xDimension          = subset.xDimension();
+        yDimension          = subset.yDimension();
         deferredTileReading = subset.deferredTileReading();     // May be shorter than other arrays or the grid geometry.
         readExtent          = subset.readExtent;
         subsampling         = subset.subsampling;
@@ -274,7 +289,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
         tmcOfFirstTile      = new long[dimension];
         tileStrides         = new int [dimension];
         final int[] subSize = new int [dimension];
-
+        final GridExtent extent = subset.domain.getExtent();
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         long indexOfFirstTile = 0;
         int  tileStride       = 1;
@@ -295,8 +310,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
          */
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         SampleModel model = subset.modelForBandSubset;
-        if (model.getWidth() != subSize[X_DIMENSION] || model.getHeight() != subSize[Y_DIMENSION]) {
-            model = model.createCompatibleSampleModel(subSize[X_DIMENSION], subSize[Y_DIMENSION]);
+        if (model.getWidth() != subSize[xDimension] || model.getHeight() != subSize[yDimension]) {
+            model = model.createCompatibleSampleModel(subSize[xDimension], subSize[yDimension]);
         }
         this.model      = model;
         this.colors     = subset.colorsForBandSubset;
@@ -484,10 +499,10 @@ public abstract class TiledGridCoverage extends GridCoverage {
         if (extent == null) {
             return null;
         }
-        return new Rectangle(toIntExact(extent.getLow (X_DIMENSION)),
-                             toIntExact(extent.getLow (Y_DIMENSION)),
-                             toIntExact(extent.getSize(X_DIMENSION)),
-                             toIntExact(extent.getSize(Y_DIMENSION)));
+        return new Rectangle(toIntExact(extent.getLow (xDimension)),
+                             toIntExact(extent.getLow (yDimension)),
+                             toIntExact(extent.getSize(xDimension)),
+                             toIntExact(extent.getSize(yDimension)));
     }
 
     /**
@@ -512,9 +527,9 @@ public abstract class TiledGridCoverage extends GridCoverage {
             }
         }
         final int[] selectedDimensions = sliceExtent.getSubspaceDimensions(BIDIMENSIONAL);
-        if (selectedDimensions[1] != 1) {
+        if (selectedDimensions[0] != xDimension || selectedDimensions[1] != yDimension) {
             // TODO
-            throw new UnsupportedOperationException("Non-horizontal slices not yet implemented.");
+            throw new UnsupportedOperationException("Slices in arbitrary dimensions not yet implemented.");
         }
         final RenderedImage image;
         try {
@@ -550,7 +565,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
              * Prepare an iterator over all tiles to read, together with the following properties:
              *    - Two-dimensional conversion from pixel coordinates to "real world" coordinates.
              */
-            final var iterator = new TileIterator(tileLower, tileUpper, offsetAOI, dimension);
+            final var iterator = new TileIterator(tileLower, tileUpper, offsetAOI, dimension, xDimension, yDimension);
             final Map<String,Object> properties = DeferredProperty.forGridGeometry(gridGeometry, selectedDimensions);
             if (deferredTileReading) {
                 image = new TiledDeferredImage(imageSize, tileLower, properties, iterator);
@@ -561,8 +576,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
                  */
                 final Raster[] result = readTiles(iterator);
                 image = new TiledImage(properties, colors,
-                        imageSize[X_DIMENSION], imageSize[Y_DIMENSION],
-                        tileLower[X_DIMENSION], tileLower[Y_DIMENSION], result);
+                        imageSize[xDimension], imageSize[yDimension],
+                        tileLower[xDimension], tileLower[yDimension], result);
             }
         } catch (DisjointExtentException | CannotEvaluateException e) {
             throw e;
@@ -582,6 +597,11 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * of the iterator position as an instant ({@link Snapshot}).
      */
     protected static abstract class AOI {
+        /**
+         * The dimension of the <var>x</var> and <var>y</var> axes in rendered images.
+         */
+        final int xDimension, yDimension;
+
         /**
          * Tile Matrix Coordinates (TMC) relative to the enclosing {@link TiledGridCoverage}.
          * Tile (0,0) is the tile in the upper-left corner of this {@link TiledGridCoverage},
@@ -628,7 +648,9 @@ public abstract class TiledGridCoverage extends GridCoverage {
         /**
          * Creates a new area of interest.
          */
-        AOI(final int[] tmcInSubset, final int[] uncroppedTileLocation) {
+        AOI(final int xDimension, final int yDimension, final int[] tmcInSubset, final int[] uncroppedTileLocation) {
+            this.xDimension  = xDimension;
+            this.yDimension  = yDimension;
             this.tmcInSubset = tmcInSubset;
             this.uncroppedTileLocation = uncroppedTileLocation;
         }
@@ -703,8 +725,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
                  * Found a tile, but the sample model may be different because band order may be different.
                  * In any cases, we need to make sure that the raster starts at the expected coordinates.
                  */
-                final int x = getTileOrigin(X_DIMENSION);
-                final int y = getTileOrigin(Y_DIMENSION);
+                final int x = getTileOrigin(xDimension);
+                final int y = getTileOrigin(yDimension);
                 final SampleModel model = coverage.model;
                 if (model.equals(tile.getSampleModel())) {
                     if (tile.getMinX() == x && tile.getMinY() == y) {
@@ -763,8 +785,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * @return a newly created, initially empty raster.
          */
         public WritableRaster createRaster() {
-            final int x = getTileOrigin(X_DIMENSION);
-            final int y = getTileOrigin(Y_DIMENSION);
+            final int x = getTileOrigin(xDimension);
+            final int y = getTileOrigin(yDimension);
             return Raster.createWritableRaster(getCoverage().model, new Point(x, y));
         }
 
@@ -781,8 +803,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * @see Raster#createTranslatedChild(int, int)
          */
         public Raster moveRaster(final Raster raster) {
-            final int x = getTileOrigin(X_DIMENSION);
-            final int y = getTileOrigin(Y_DIMENSION);
+            final int x = getTileOrigin(xDimension);
+            final int y = getTileOrigin(yDimension);
             if (raster.getMinX() == x && raster.getMinY() == y) {
                 return raster;
             }
@@ -811,8 +833,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
             if (uncroppedTileLocation == null) {
                 return Optional.empty();    // Usual case.
             }
-            return Optional.of(new Point(uncroppedTileLocation[X_DIMENSION],
-                                         uncroppedTileLocation[Y_DIMENSION]));
+            return Optional.of(new Point(uncroppedTileLocation[xDimension],
+                                         uncroppedTileLocation[yDimension]));
         }
 
         /**
@@ -861,10 +883,10 @@ public abstract class TiledGridCoverage extends GridCoverage {
             final long[] upper = new long[BIDIMENSIONAL];
             if (getRegionInsideTile(lower, upper, null, subsampled)) {
                 return new Rectangle(
-                        toIntExact(lower[X_DIMENSION]),
-                        toIntExact(lower[Y_DIMENSION]),
-                        toIntExact(subtractExact(upper[X_DIMENSION], lower[X_DIMENSION])),
-                        toIntExact(subtractExact(upper[Y_DIMENSION], lower[Y_DIMENSION])));
+                        toIntExact(lower[xDimension]),
+                        toIntExact(lower[yDimension]),
+                        toIntExact(subtractExact(upper[xDimension], lower[xDimension])),
+                        toIntExact(subtractExact(upper[yDimension], lower[yDimension])));
             }
             return null;
         }
@@ -1000,8 +1022,14 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * @param  offsetAOI  pixel coordinates to assign to the upper-left corner of the subsampled region to render.
          * @param  dimension  number of dimension of the {@code TiledGridCoverage} grid extent.
          */
-        TileIterator(final int[] tileLower, final int[] tileUpper, final int[] offsetAOI, final int dimension) {
-            super(tileLower.clone(), uncroppedTileLocation(tileLower));
+        TileIterator(final int[] tileLower,
+                     final int[] tileUpper,
+                     final int[] offsetAOI,
+                     final int dimension,
+                     final int xDimension,
+                     final int yDimension)
+        {
+            super(xDimension, yDimension, tileLower.clone(), uncroppedTileLocation(tileLower));
             this.tileLower = tileLower;
             this.tileUpper = tileUpper;
             this.offsetAOI = offsetAOI;
@@ -1060,7 +1088,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
             for (int i = Math.min(endTile.length, upper.length); --i >= 0;) {
                 upper[i] = Math.max(lower[i], Math.min(upper[i], endTile[i]));
             }
-            return new TileIterator(lower, upper, offset, offset.length);
+            return new TileIterator(lower, upper, offset, offset.length, xDimension, yDimension);
         }
 
         /**
@@ -1145,10 +1173,10 @@ public abstract class TiledGridCoverage extends GridCoverage {
             long x, y;      // Convenience for casting `int` to `long`.
             final long d = tight ? 1 : 0;
             final var r = new Rectangle();
-            r.x      = toIntExact(resourceToImage(x = bounds.x,          X_DIMENSION, false));
-            r.y      = toIntExact(resourceToImage(y = bounds.y,          Y_DIMENSION, false));
-            r.width  = toIntExact(resourceToImage(x + bounds.width  - d, X_DIMENSION, true) - r.x + d);
-            r.height = toIntExact(resourceToImage(y + bounds.height - d, Y_DIMENSION, true) - r.y + d);
+            r.x      = toIntExact(resourceToImage(x = bounds.x,          xDimension, false));
+            r.y      = toIntExact(resourceToImage(y = bounds.y,          yDimension, false));
+            r.width  = toIntExact(resourceToImage(x + bounds.width  - d, xDimension, true) - r.x + d);
+            r.height = toIntExact(resourceToImage(y + bounds.height - d, yDimension, true) - r.y + d);
             return r;
         }
 
@@ -1173,10 +1201,10 @@ public abstract class TiledGridCoverage extends GridCoverage {
             long x, y;      // Convenience for casting `int` to `long`.
             final long d = tight ? 1 : 0;
             final var r = new Rectangle();
-            r.x      = toIntExact(imageToResource(x = bounds.x,          X_DIMENSION));
-            r.y      = toIntExact(imageToResource(y = bounds.y,          Y_DIMENSION));
-            r.width  = toIntExact(imageToResource(x + bounds.width  - d, X_DIMENSION) - r.x + d);
-            r.height = toIntExact(imageToResource(y + bounds.height - d, Y_DIMENSION) - r.y + d);
+            r.x      = toIntExact(imageToResource(x = bounds.x,          xDimension));
+            r.y      = toIntExact(imageToResource(y = bounds.y,          yDimension));
+            r.width  = toIntExact(imageToResource(x + bounds.width  - d, xDimension) - r.x + d);
+            r.height = toIntExact(imageToResource(y + bounds.height - d, yDimension) - r.y + d);
             return r;
         }
 
@@ -1275,12 +1303,12 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * @param iterator  the iterator for which to create a snapshot of its current position.
          */
         public Snapshot(final AOI iterator) {
-            super(iterator.tmcInSubset.clone(), iterator.uncroppedTileLocation);
+            super(iterator.xDimension, iterator.yDimension, iterator.tmcInSubset.clone(), iterator.uncroppedTileLocation);
             coverage           = iterator.getCoverage();
             indexInResultArray = iterator.indexInResultArray;
             indexInTileVector  = iterator.indexInTileVector;
-            originX            = iterator.getTileOrigin(X_DIMENSION);
-            originY            = iterator.getTileOrigin(Y_DIMENSION);
+            originX            = iterator.getTileOrigin(xDimension);
+            originY            = iterator.getTileOrigin(yDimension);
         }
 
         /**
@@ -1299,11 +1327,9 @@ public abstract class TiledGridCoverage extends GridCoverage {
          */
         @Override
         final int getTileOrigin(final int dimension) {
-            switch (dimension) {
-                case X_DIMENSION: return originX;
-                case Y_DIMENSION: return originY;
-                default: throw new AssertionError(dimension);
-            }
+            if (dimension == xDimension) return originX;
+            if (dimension == yDimension) return originY;
+            throw new AssertionError(dimension);
         }
     }
 
@@ -1356,10 +1382,14 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * (0,0) is the tile in the upper-left corner of this {@code TiledGridCoverage} (not necessarily the upper-left
      * corner of the image in the {@link TiledGridResource}).
      *
-     * The {@link Raster#getMinX()} and {@code getMinY()} coordinates of returned rasters
+     * <p>The {@link Raster#getMinX()} and {@code getMinY()} coordinates of returned rasters
      * shall start at the values given by {@link TileIterator#getTileOrigin(int)}.
      * Each tile in the returned array shall be stored at the index given by
-     * {@link TileIterator#getTileIndexInResultArray()}.
+     * {@link TileIterator#getTileIndexInResultArray()}.</p>
+     *
+     * <p>The <var>x</var> axis of the raster shall be the grid dimension specified by {@link #xDimension}.
+     * Likewise, the <var>y</var> axis shall be the dimension specified by {@link #yDimension}.
+     * These dimensions are usually 0 and 1 respectively.</p>
      *
      * <p>This method must be thread-safe. It is implementer responsibility to ensure synchronization,
      * for example using {@link TiledGridResource#getSynchronizationLock()}.</p>
@@ -1370,6 +1400,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
      *         but the main ones are {@link java.io.IOException} for I/O errors and various {@link RuntimeException}
      *         subtypes for Java2D errors.
      *
+     * @see #xDimension
+     * @see #yDimension
      * @see TileIterator#createRaster()
      * @see TileIterator#getTileIndexInResultArray()
      */

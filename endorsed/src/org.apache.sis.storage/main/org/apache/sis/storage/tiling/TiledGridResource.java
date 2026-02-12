@@ -47,10 +47,10 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.collection.WeakValueHashMap;
-import static org.apache.sis.storage.tiling.TiledGridCoverage.X_DIMENSION;
-import static org.apache.sis.storage.tiling.TiledGridCoverage.Y_DIMENSION;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.CannotEvaluateException;
@@ -92,6 +92,9 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
     /**
      * Number of dimensions in a rendered image.
      * Used for identifying codes where a two-dimensional slice is assumed.
+     *
+     * @see #xDimension
+     * @see #yDimension
      */
     private static final int BIDIMENSIONAL = 2;
 
@@ -157,12 +160,53 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
     private RasterLoadingStrategy loadingStrategy;
 
     /**
+     * The dimension of the grid which is mapped to the <var>x</var> axis (column indexes) in rendered images.
+     * The default value is 0.
+     */
+    private int xDimension;
+
+    /**
+     * The dimension of the grid which is mapped to the <var>y</var> axis (row indexes) in rendered images.
+     * The default value is 1.
+     */
+    private int yDimension;
+
+    /**
      * Creates a new resource.
      *
      * @param  parent  the parent resource, or {@code null} if none.
      */
     protected TiledGridResource(final Resource parent) {
         super(parent);
+        yDimension = 1;
+    }
+
+    /**
+     * Sets the mapping from grid dimensions to image axes.
+     * This method specifies the dimensions of the slices obtained
+     * when {@linkplain TiledGridCoverage#readTiles reading tiles}.
+     *
+     * <p>If this method is never invoked, then by default
+     * the dimension 0 of the grid is mapped to the image <var>x</var> axis and
+     * the dimension 1 of the grid is mapped to the image <var>y</var> axis.</p>
+     *
+     * @param  xDimension  dimension of the grid which is mapped to the <var>x</var> axis (column indexes) in rendered images.
+     * @param  yDimension  dimension of the grid which is mapped to the <var>y</var> axis (row indexes) in rendered images.
+     * @throws IllegalArgumentException if {@code xDimension} or {@code yDimension} is negative, or the two values are equal.
+     * @throws DataStoreException if another error occurred while setting the mapping from grid dimensions to image axes.
+     *
+     * @see TiledGridCoverage#xDimension
+     * @see TiledGridCoverage#yDimension
+     */
+    protected void setRasterDimension(final int xDimension, final int yDimension) throws DataStoreException {
+        final int max = getGridGeometry().getDimension() - 1;
+        ArgumentChecks.ensureBetween("xDimension", 0, max, xDimension);
+        ArgumentChecks.ensureBetween("yDimension", 0, max, yDimension);
+        if (xDimension == yDimension) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "yDimension", "xDimension"));
+        }
+        this.xDimension = xDimension;
+        this.yDimension = yDimension;
     }
 
     /**
@@ -315,8 +359,8 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      */
     protected SampleModel getSampleModel(final int[] bands) throws DataStoreException {
         final int[] tileSize = getTileSize();
-        final int width  = tileSize[X_DIMENSION];
-        final int height = tileSize[Y_DIMENSION];
+        final int width  = tileSize[xDimension];
+        final int height = tileSize[yDimension];
         final ColorModel colors = getColorModel(bands);
         if (colors != null) {
             return colors.createCompatibleSampleModel(width, height);
@@ -471,7 +515,7 @@ check:  if (dataType.isInteger()) {
 
         /**
          * The sample model for the bands to read (not the full set of bands in the resource).
-         * The width is {@code tileSize[X_DIMENSION]} and the height it {@code tileSize[Y_DIMENSION]},
+         * The width is {@code tileSize[xDimension]} and the height it {@code tileSize[yDimension]},
          * i.e. subsampling is <strong>not</strong> applied.
          */
         final SampleModel modelForBandSubset;
@@ -553,7 +597,7 @@ check:  if (dataType.isInteger()) {
                      * ("atome size" of 1) and disable subsampling otherwise for avoiding code complexity.
                      */
                     maxSubsmp[i] = (atomSize == 1) ? Long.MAX_VALUE : 1;
-                    chunkSize[i] = (i == X_DIMENSION || i == Y_DIMENSION) ? span : 1;
+                    chunkSize[i] = (i == xDimension() || i == yDimension()) ? span : 1;
                 }
                 /*
                  * Build the domain in units of subsampled pixels, and get the same extent (`readExtent`)
@@ -673,7 +717,23 @@ check:  if (dataType.isInteger()) {
          * @return whether the values to read on a row are contiguous.
          */
         public boolean isXContiguous() {
-            return includedBands == null && subsampling[X_DIMENSION] == 1;
+            return includedBands == null && subsampling[xDimension()] == 1;
+        }
+
+        /**
+         * Returns dimension of the grid which is mapped to the <var>x</var> axis (column indexes) in rendered images.
+         * This is usually 0.
+         */
+        final int xDimension() {
+            return xDimension;
+        }
+
+        /**
+         * Returns dimension of the grid which is mapped to the <var>y</var> axis (row indexes) in rendered images.
+         * This is usually 1.
+         */
+        final int yDimension() {
+            return yDimension;
         }
 
         /**

@@ -197,7 +197,7 @@ abstract class DataCube extends TiledGridResource implements StoreResource {
      */
     @Override
     protected final boolean canReadTruncatedTiles(int dim, boolean suggested) {
-        return suggested | (dim >= 1);      // Y_DIMENSION.
+        return suggested | (dim >= 1);      // yDimension = 1.
     }
 
     /**

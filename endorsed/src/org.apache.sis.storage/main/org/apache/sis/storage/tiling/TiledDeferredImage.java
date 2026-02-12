@@ -61,10 +61,10 @@ final class TiledDeferredImage extends BatchComputedImage {
                        final TiledGridCoverage.TileIterator iterator)
     {
         super(iterator.getCoverage().model, properties);
-        this.width    = imageSize[TiledGridCoverage.X_DIMENSION];
-        this.height   = imageSize[TiledGridCoverage.Y_DIMENSION];
-        this.minTileX = tileLower[TiledGridCoverage.X_DIMENSION];
-        this.minTileY = tileLower[TiledGridCoverage.Y_DIMENSION];
+        this.width    = imageSize[iterator.xDimension];
+        this.height   = imageSize[iterator.yDimension];
+        this.minTileX = tileLower[iterator.xDimension];
+        this.minTileY = tileLower[iterator.yDimension];
         this.iterator = iterator;
     }
 
@@ -75,12 +75,12 @@ final class TiledDeferredImage extends BatchComputedImage {
 
     /** Returns the minimum <var>x</var> coordinate (inclusive) of this image. */
     @Override public final int getMinX() {
-        return iterator.getTileOrigin(TiledGridCoverage.X_DIMENSION);
+        return iterator.getTileOrigin(iterator.xDimension);
     }
 
     /** Returns the minimum <var>y</var> coordinate (inclusive) of this image. */
     @Override public final int getMinY() {
-        return iterator.getTileOrigin(TiledGridCoverage.Y_DIMENSION);
+        return iterator.getTileOrigin(iterator.yDimension);
     }
 
     /** Returns the number of pixels along X axis in the whole rendered image. */
