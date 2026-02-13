@@ -19,6 +19,7 @@ package org.apache.sis.storage.geotiff;
 import java.util.Arrays;
 import java.util.Locale;
 import java.nio.Buffer;
+import java.nio.file.Path;
 import java.io.Closeable;
 import java.io.IOException;
 import java.awt.Point;
@@ -193,6 +194,16 @@ class DataSubset extends TiledGridCoverage implements Localized {
     @Override
     public final Locale getLocale() {
         return source.listeners().getLocale();
+    }
+
+    /**
+     * Returns the path to the content of the specified data, or {@code null} if none or unknown.
+     *
+     * @param  tileIndices  indices of the tile, or {@code null} for the whole coverage.
+     */
+    @Override
+    protected final Path getContentPath(final long... tileIndices) {
+        return (tileIndices == null) ? source.reader.store.path : super.getContentPath(tileIndices);
     }
 
     /**

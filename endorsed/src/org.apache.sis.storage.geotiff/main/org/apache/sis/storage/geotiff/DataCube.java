@@ -26,12 +26,11 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.geotiff.base.Tags;
 import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.storage.geotiff.base.Predictor;
 import org.apache.sis.storage.geotiff.base.Compression;
+import org.apache.sis.storage.tiling.TiledGridCoverage;
 import org.apache.sis.storage.tiling.TiledGridResource;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.math.Vector;
@@ -238,41 +237,32 @@ abstract class DataCube extends TiledGridResource implements StoreResource {
     }
 
     /**
-     * Creates a {@link GridCoverage} which will load pixel data in the given domain.
+     * Creates a coverage which will read the specified subset from this resource when first requested.
+     * Synchronization, immediate loading (if requested), logging of read time
+     * and handling of {@link RuntimeException} are done by the caller.
      *
-     * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
-     * @param  ranges  0-based index of sample dimensions to read, or an empty sequence for reading all ranges.
-     * @return the grid coverage for the specified domain and ranges.
+     * @param  subset  desired grid extent, resolution and sample dimensions to read.
+     * @return the grid coverage for the specified domain, resolution and ranges.
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
+     * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.
+     * @throws RuntimeException if the given subset is invalid.
      */
     @Override
-    public final GridCoverage read(final GridGeometry domain, final int... ranges) throws DataStoreException {
-        final long startTime = System.nanoTime();
-        GridCoverage coverage;
-        try {
-            synchronized (getSynchronizationLock()) {
-                final Subset subset = new Subset(domain, ranges);
-                final Compression compression = getCompression();
-                if (compression == null) {
-                    throw new DataStoreContentException(reader.resources().getString(
-                            Resources.Keys.MissingValue_2, Tags.name((short) TAG_COMPRESSION)));
-                }
-                /*
-                 * The `DataSubset` parent class is the most efficient but has many limitations
-                 * documented in the javadoc of its `readSlice(…)` method. If any precondition
-                 * is not met, we need to fallback on the less direct `CompressedSubset` class.
-                 */
-                if (compression == Compression.NONE && getPredictor() == Predictor.NONE && canReadDirect(subset)) {
-                    coverage = new DataSubset(this, subset);
-                } else {
-                    coverage = new CompressedSubset(this, subset);
-                }
-                coverage = preload(coverage);
-            }
-        } catch (RuntimeException e) {
-            throw canNotRead(filename(), domain, e);
+    protected final TiledGridCoverage read(final Subset subset) throws DataStoreException {
+        final Compression compression = getCompression();
+        if (compression == null) {
+            throw new DataStoreContentException(reader.resources().getString(
+                    Resources.Keys.MissingValue_2, Tags.name((short) TAG_COMPRESSION)));
         }
-        logReadOperation(reader.store.path, coverage.getGridGeometry(), startTime);
-        return coverage;
+        /*
+         * The `DataSubset` parent class is the most efficient but has many limitations
+         * documented in the javadoc of its `readSlice(…)` method. If any precondition
+         * is not met, we need to fallback on the less direct `CompressedSubset` class.
+         */
+        if (compression == Compression.NONE && getPredictor() == Predictor.NONE && canReadDirect(subset)) {
+            return new DataSubset(this, subset);
+        } else {
+            return new CompressedSubset(this, subset);
+        }
     }
 }

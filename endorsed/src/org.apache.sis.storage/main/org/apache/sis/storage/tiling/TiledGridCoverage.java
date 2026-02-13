@@ -19,6 +19,7 @@ package org.apache.sis.storage.tiling;
 import java.util.Map;
 import java.util.Locale;
 import java.util.Optional;
+import java.nio.file.Path;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
@@ -43,6 +44,7 @@ import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.image.internal.shared.DeferredProperty;
 import org.apache.sis.image.internal.shared.TiledImage;
 import org.apache.sis.storage.internal.Resources;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.Numerics;
@@ -268,11 +270,11 @@ public abstract class TiledGridCoverage extends GridCoverage {
 
     /**
      * Creates a new tiled grid coverage. This constructor does not load any tile.
-     * Callers should invoke {@link TiledGridResource#preload(GridCoverage)} after
-     * construction for loading tiles when immediate loading was requested by user.
      *
      * @param  subset  description of the {@link TiledGridResource} subset to cover.
      * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.
+     *
+     * @see TiledGridResource#read(TiledGridResource.Subset)
      */
     protected TiledGridCoverage(final TiledGridResource.Subset subset) {
         super(subset.domain, subset.ranges);
@@ -320,15 +322,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
     }
 
     /**
-     * Returns a unique name that identifies this coverage.
-     * The name shall be unique in the {@link TileMatrixSet}.
-     *
-     * @return an human-readable identification of this coverage.
-     */
-    protected abstract GenericName getIdentifier();
-
-    /**
      * Returns the locale for error messages, or {@code null} for the default.
+     * The default implementation returns {@code null}.
      *
      * @return the locale for warning or error messages, or {@code null} if unspecified.
      */
@@ -337,8 +332,35 @@ public abstract class TiledGridCoverage extends GridCoverage {
     }
 
     /**
+     * Returns a unique name that identifies this coverage.
+     * The name shall be unique in the {@link TileMatrixSet}.
+     *
+     * @return an human-readable identification of this coverage.
+     */
+    protected abstract GenericName getIdentifier();
+
+    /**
+     * Returns the path to the content of the specified data, or {@code null} if none or unknown.
+     * If {@code tileIndices} is {@code null}, then this method returns a path to the content of
+     * the whole coverage (if known). Otherwise, this method returns a path to the content of the
+     * tile at the specified indices.
+     *
+     * <p>The default implementation returns {@code null}.</p>
+     *
+     * @param  tileIndices  indices of the tile, or {@code null} for the whole coverage.
+     * @return path to the content of the coverage (if {@code tileIndices} was null) or
+     *         to the specified tile, or {@code null} if none or unknown.
+     *
+     * @see Tile#getContentPath()
+     */
+    protected Path getContentPath(final long... tileIndices) {
+        ArgumentChecks.ensureDimensionMatches("tileIndices", gridGeometry.getDimension(), tileIndices);
+        return null;
+    }
+
+    /**
      * Returns the size of all tiles in the domain of this {@code TiledGridCoverage}, without sub-sampling.
-     * This usually the same size as the tiles in the storage which is read by {@link TiledGridResource},
+     * This is usually the same size as the tiles in the storage which is read by {@link TiledGridResource},
      * but not necessarily. It may be larger if the {@link TiledGridResource} subclass decided to coalesce
      * many real tiles into larger virtual tiles, or it may be smaller when reading a sub-region of an
      * effectively untiled coverage.

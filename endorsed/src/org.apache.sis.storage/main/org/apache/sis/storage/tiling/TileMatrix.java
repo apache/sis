@@ -211,8 +211,9 @@ public interface TileMatrix {
 
     /**
      * Retrieves a stream of existing tiles in the specified region. The stream contains
-     * the {@linkplain TileStatus#EXISTS existing} tiles that are inside the given region
-     * and excludes all {@linkplain TileStatus#MISSING missing} tiles.
+     * the {@linkplain TileStatus#EXISTS existing} tiles that are inside the given region.
+     * Tiles that are {@linkplain TileStatus#MISSING missing} or
+     * {@linkplain TileStatus#OUTSIDE_EXTENT outside} the coverage extent are excluded..
      * If a tile is {@linkplain TileStatus#IN_ERROR in error},
      * then the stream should nevertheless return a {@link Tile} instance
      * but its {@link Tile#getResource()} method should throw the exception.
@@ -222,11 +223,11 @@ public interface TileMatrix {
      * If {@code true}, the stream may or may not be parallel;
      * implementations are free to ignore this argument if they do not support parallelism.</p>
      *
-     * @param  indicesRanges  ranges of tile indices in all dimensions, or {@code null} for all tiles.
+     * @param  indiceRanges  ranges of tile indices in all dimensions, or {@code null} for all tiles.
      * @param  parallel  {@code true} for a parallel stream (if supported), or {@code false} for a sequential stream.
      * @return stream of tiles, excluding {@linkplain TileStatus#MISSING missing} tiles.
      *         Iteration order of the stream may vary from one implementation to another and from one call to another.
-     * @throws DataStoreException if the stream creation failed.
+     * @throws DataStoreException if the tiles can not be fetched in the given ranges of tile indexes.
      */
-    Stream<Tile> getTiles(GridExtent indicesRanges, boolean parallel) throws DataStoreException;
+    Stream<Tile> getTiles(GridExtent indiceRanges, boolean parallel) throws DataStoreException;
 }

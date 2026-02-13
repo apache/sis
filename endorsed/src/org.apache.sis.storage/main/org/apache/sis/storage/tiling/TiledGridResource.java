@@ -32,6 +32,7 @@ import java.awt.image.RasterFormatException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverage2D;
+import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -68,21 +69,8 @@ import org.opengis.coverage.CannotEvaluateException;
  *   <li>{@link #getTileSize()}</li>
  *   <li>{@link #getSampleModel(int[])} (optional but recommended)</li>
  *   <li>{@link #getColorModel(int[])} (optional but recommended)</li>
- *   <li>{@link #read(GridGeometry, int...)}</li>
+ *   <li>{@link #read(Subset)}</li>
  * </ul>
- *
- * The read method can be implemented simply as below:
- *
- * {@snippet lang="java" :
- *     @Override
- *     public GridCoverage read(GridGeometry domain, int... ranges) throws DataStoreException {
- *         synchronized (getSynchronizationLock()) {
- *             var subset = new Subset(domain, ranges);
- *             var result = new MySubclassOfTiledGridCoverage(this, subset);
- *             return preload(result);
- *         }
- *     }
- *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
@@ -172,6 +160,11 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
     private int yDimension;
 
     /**
+     * The grid coverage processor to use when tiles use a subset of the bands.
+     */
+    final GridCoverageProcessor processor;
+
+    /**
      * Creates a new resource.
      *
      * @param  parent  the parent resource, or {@code null} if none.
@@ -179,6 +172,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
     protected TiledGridResource(final Resource parent) {
         super(parent);
         yDimension = 1;
+        processor = new GridCoverageProcessor();
     }
 
     /**
@@ -755,27 +749,59 @@ check:  if (dataType.isInteger()) {
     }
 
     /**
-     * If the loading strategy is to load all tiles at {@code read(…)} time, replaces the given coverage
-     * by a coverage will all data in memory. This method should be invoked by subclasses at the end of
-     * their {@link #read(GridGeometry, int...)} method implementation if the tile loading strategy is not
-     * {@link RasterLoadingStrategy#AT_GET_TILE_TIME}.
+     * Creates a coverage which will read the specified subset from this resource when first requested.
+     * This method is invoked by the default implementation of {@link #read(GridGeometry, int...)}.
+     * This method creates a subclass of {@link TiledGridCoverage} which will read tiles later, when first requested.
+     * The implementation of this method does not need to care about synchronization, immediate (rather than deferred)
+     * loading of tiles, logging of loading time and handling of {@link RuntimeException}.
+     * Those tasks should be handled by the caller.
      *
-     * @param  coverage  the {@link TiledGridCoverage} to potentially replace by a coverage with preloaded data.
-     * @return a coverage with preloaded data, or the given coverage if preloading is not enabled.
-     * @throws DataStoreException if an error occurred while preloading data.
+     * @param  subset  desired grid extent, resolution and sample dimensions to read.
+     * @return the grid coverage for the specified domain, resolution and ranges.
+     * @throws DataStoreException if the coverage cannot be created.
+     * @throws RuntimeException if the coverage cannot be created for a reason not handled as a data store exception.
+     *
+     * @see TiledGridCoverage#TiledGridCoverage(Subset)
      */
-    protected GridCoverage preload(final GridCoverage coverage) throws DataStoreException {
-        assert Thread.holdsLock(getSynchronizationLock());
-        // Note: `loadingStrategy` may still be null if unitialized.
-        if (loadingStrategy == null || loadingStrategy == RasterLoadingStrategy.AT_READ_TIME) {
-            /*
-             * In theory the following condition is redundant with `supportImmediateLoading()`.
-             * We apply it anyway in case the coverage geometry is not what was announced.
-             * This condition is also necessary if `loadingStrategy` has not been initialized.
-             */
-            if (coverage.getGridGeometry().getDimension() == BIDIMENSIONAL) try {
+    protected abstract TiledGridCoverage read(Subset subset) throws DataStoreException;
+
+    /**
+     * Loads a subset of the grid coverage represented by this resource.
+     * While this method name suggests an immediate reading, the actual reading may be deferred.
+     *
+     * <p>This method invokes {@link #read(Subset)} inside a block synchronized
+     * on the {@linkplain #getSynchronizationLock() synchronization lock}.
+     * Then, if the {@linkplain #getLoadingStrategy() current loading strategy}
+     * is {@link RasterLoadingStrategy#AT_READ_TIME}, this method forces the immediate reading of tiles.
+     * and logs the time required for this operation.</p>
+     *
+     * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
+     * @param  ranges  0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
+     * @return the grid coverage for the specified domain and ranges.
+     * @throws DataStoreException if an error occurred while reading the grid coverage data.
+     */
+    @Override
+    public GridCoverage read(final GridGeometry domain, final int... ranges) throws DataStoreException {
+        final TiledGridCoverage coverage;
+        final GridCoverage loaded;
+        final boolean preload;
+        final long startTime;
+        synchronized (getSynchronizationLock()) {
+            // Note: `loadingStrategy` may still be null if unitialized.
+            preload = (loadingStrategy == null || loadingStrategy == RasterLoadingStrategy.AT_READ_TIME);
+            startTime = preload ? System.nanoTime() : 0;
+            try {
+                coverage = read(new Subset(domain, ranges));
+                /*
+                 * In theory the following condition is redundant with `supportImmediateLoading()`.
+                 * We apply it anyway in case the coverage geometry is not what was announced.
+                 * This condition is also necessary if `loadingStrategy` has not been initialized.
+                 */
+                if (!preload || coverage.getGridGeometry().getDimension() != BIDIMENSIONAL) {
+                    return coverage;
+                }
                 final RenderedImage image = coverage.render(null);
-                return new GridCoverage2D(coverage.getGridGeometry(), coverage.getSampleDimensions(), image);
+                loaded = new GridCoverage2D(coverage.getGridGeometry(), coverage.getSampleDimensions(), image);
             } catch (RuntimeException e) {
                 /*
                  * The `coverage.render(…)` implementation may have wrapped the checked `DataStoreException`
@@ -794,10 +820,11 @@ check:  if (dataType.isInteger()) {
                 if (cause == null || !(e instanceof CannotEvaluateException)) {
                     cause = e;
                 }
-                throw new DataStoreException(e.getLocalizedMessage(), cause);
+                throw canNotRead(listeners.getSourceName(), domain, cause);
             }
         }
-        return coverage;
+        logReadOperation(coverage.getContentPath(null), coverage.getGridGeometry(), startTime);
+        return loaded;
     }
 
     /**

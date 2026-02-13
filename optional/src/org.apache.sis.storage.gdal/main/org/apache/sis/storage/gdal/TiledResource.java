@@ -42,13 +42,13 @@ import org.apache.sis.image.ImageLayout;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.image.internal.shared.ColorModelBuilder;
 import org.apache.sis.image.internal.shared.ColorModelFactory;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.tiling.TiledGridCoverage;
 import org.apache.sis.storage.tiling.TiledGridResource;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.util.ArraysExt;
@@ -453,6 +453,7 @@ final class TiledResource extends TiledGridResource {
      *
      * @param  bandIndices  indices of the selected bands, or {@code null} for all bands.
      */
+    @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
     private void createColorAndSampleModel(final int[] bandIndices) throws DataStoreException {
         final Band[] selectedBands = bands(bandIndices);
         final GDAL gdal = parent.getProvider().GDAL();
@@ -615,23 +616,21 @@ final class TiledResource extends TiledGridResource {
     }
 
     /**
-     * Loads a subset of the grid coverage represented by this resource.
-     * The actual loading may be deferred until a tile is requested for the first time.
+     * Creates a coverage which will read the specified subset from this resource when first requested.
+     * Synchronization, immediate loading (if requested), logging of read time
+     * and handling of {@link RuntimeException} are done by the caller.
      *
-     * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
-     * @param  ranges  0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
-     * @return the grid coverage for the specified domain and ranges.
+     * @param  subset  desired grid extent, resolution and sample dimensions to read.
+     * @return the grid coverage for the specified domain, resolution and ranges.
+     * @throws DataStoreException if an error occurred while reading the grid coverage data.
+     * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.
      */
     @Override
-    public GridCoverage read(final GridGeometry domain, final int... ranges) throws DataStoreException {
-        synchronized (getSynchronizationLock()) {
-            try {
-                final var subset = new Subset(domain, ranges);
-                final var result = new TiledCoverage(this, subset);
-                return preload(result);
-            } finally {
-                ErrorHandler.report(parent, "read");
-            }
+    protected TiledGridCoverage read(final Subset subset) throws DataStoreException {
+        try {
+            return new TiledCoverage(this, subset);
+        } finally {
+            ErrorHandler.report(parent, "read");
         }
     }
 }
