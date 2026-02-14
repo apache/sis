@@ -33,6 +33,7 @@ import org.apache.sis.test.TestUtilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DecimalFunctionsTest extends TestCase {
     /**
      * Creates a new test case.
@@ -269,14 +270,14 @@ public final class DecimalFunctionsTest extends TestCase {
      */
     @Test
     public void testFloorLog10() {
-        assertEquals(   0, floorLog10(   1));
-        assertEquals(   0, floorLog10(   9));
-        assertEquals(   1, floorLog10(  10));
-        assertEquals(   1, floorLog10(  11));
-        assertEquals(   1, floorLog10(  99));
-        assertEquals(   2, floorLog10( 100));
-        assertEquals(   2, floorLog10( 999));
-        assertEquals(   3, floorLog10(1000));
+        assertEquals(   0, floorLog10(   1d));
+        assertEquals(   0, floorLog10(   9d));
+        assertEquals(   1, floorLog10(  10d));
+        assertEquals(   1, floorLog10(  11d));
+        assertEquals(   1, floorLog10(  99d));
+        assertEquals(   2, floorLog10( 100d));
+        assertEquals(   2, floorLog10( 999d));
+        assertEquals(   3, floorLog10(1000d));
         assertEquals(  -1, floorLog10(0.100));
         assertEquals(  -2, floorLog10(0.099));
         assertEquals(  -2, floorLog10(0.010));
@@ -289,6 +290,21 @@ public final class DecimalFunctionsTest extends TestCase {
         try {floorLog10(NaN);               fail("Expected ArithmeticException.");} catch (ArithmeticException e) {}
         try {floorLog10(NEGATIVE_INFINITY); fail("Expected ArithmeticException.");} catch (ArithmeticException e) {}
         try {floorLog10(POSITIVE_INFINITY); fail("Expected ArithmeticException.");} catch (ArithmeticException e) {}
+    }
+
+    /**
+     * Tests {@link DecimalFunctions#floorLog10(long)} method.
+     */
+    @Test
+    public void testFloorLog10OnFromInteger() {
+        assertEquals(0, floorLog10(   1L));
+        assertEquals(0, floorLog10(   9L));
+        assertEquals(1, floorLog10(  10L));
+        assertEquals(1, floorLog10(  11L));
+        assertEquals(1, floorLog10(  99L));
+        assertEquals(2, floorLog10( 100L));
+        assertEquals(2, floorLog10( 999L));
+        assertEquals(3, floorLog10(1000L));
     }
 
     /**

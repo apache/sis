@@ -28,6 +28,7 @@ import static java.lang.Math.min;
 import static java.lang.Math.max;
 import static java.lang.Math.addExact;
 import static java.lang.Math.subtractExact;
+import static java.lang.Math.multiplyFull;
 import static java.lang.Math.floorDiv;
 import static java.lang.Math.toIntExact;
 import org.apache.sis.image.PlanarImage;
@@ -105,6 +106,30 @@ public final class ReshapedImage extends PlanarImage {
         this.height   = height;
         this.minTileX = minTileX;
         this.minTileY = minTileY;
+    }
+
+    /**
+     * Returns an image for a single tile.
+     * The indices of the unique tile are set to (0,0).
+     * The coordinate of the image upper-left corner is set to (0,0).
+     *
+     * @param  source  the image for which to wrap a single tile.
+     * @param  tileX   column index of the tile.
+     * @param  tileY   row index of the tile.
+     * @return the single tile. May be the given source or one of its sources.
+     * @throws ArithmeticException if image indices overflow 32-bits integer capacity.
+     */
+    public static RenderedImage singleTile(final RenderedImage source, final int tileX, final int tileY) {
+        final int tileWidth  = source.getTileWidth();
+        final int tileHeight = source.getTileHeight();
+        final var image = new ReshapedImage(source,
+                -(multiplyFull(tileX, tileWidth)  + source.getTileGridXOffset()),   // This negate cannot overflow.
+                -(multiplyFull(tileY, tileHeight) + source.getTileGridYOffset()),
+                0, 0,
+                tileWidth,
+                tileHeight,
+                0, 0);
+        return image.isIdentity() ? image.source : image;
     }
 
     /**

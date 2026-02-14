@@ -30,9 +30,7 @@ import org.apache.sis.storage.Resource;
  * <p>A {@code TiledResource} may contain multiple {@link TileMatrixSet} instances,
  * each one for a different {@link org.opengis.referencing.crs.CoordinateReferenceSystem}.
  * Most format specifications only support a single {@link TileMatrixSet},
- * but a few ones like WMTS may have several.</p>
- *
- * <p>All methods in this interface return non-null values.</p>
+ * but a few ones like <abbr>WMTS</abbr> may have several.</p>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

@@ -1540,7 +1540,10 @@ final class ImageFileDirectory extends DataCube {
                     domain = new GridGeometry(new GridExtent(imageWidth, imageHeight), null, null);
                 }
                 final CoverageModifier.Source source = source();
-                gridGeometry = (source != null) ? reader.store.customizer.customize(source, domain) : domain;
+                if (source != null) {
+                    domain = reader.store.customizer.customize(source, domain);
+                }
+                gridGeometry = domain;
             }
             return domain;
         }

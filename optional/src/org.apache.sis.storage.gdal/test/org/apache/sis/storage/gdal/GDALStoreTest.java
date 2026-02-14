@@ -50,8 +50,9 @@ import static org.junit.jupiter.api.Assertions.*;
  * Tests {@link GDALStore}.
  *
  * @author Johann Sorel (Geomatys)
- * @author Quentin BIALOTA (Geomatys)
+ * @author Quentin Bialota (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class GDALStoreTest {
     /**
      * Name of the test file.

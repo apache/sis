@@ -61,6 +61,7 @@ import org.apache.sis.referencing.operation.HardCodedConversions;
  * @author  Erwan Roussel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class WriterTest extends TestCase {
     /**
      * Arbitrary size (in pixels) of tiles in the image to test. The TIFF specification restricts those sizes

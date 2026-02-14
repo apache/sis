@@ -208,7 +208,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
     /**
      * The dimension of the grid which is mapped to the <var>x</var> axis (column indexes) in rendered images.
      * This is the value of the {@code xDimension} argument in the last call to the
-     * {@link TiledGridCoverageResource#setRasterDimension(int, int)} method before this coverage has been constructed.
+     * {@link TiledGridCoverageResource#setRasterSubspaceDimensions(int, int)} method
+     * before this coverage has been constructed.
      * This value is usually 0.
      *
      * @see #readTiles(TileIterator)
@@ -218,7 +219,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
     /**
      * The dimension of the grid which is mapped to the <var>y</var> axis (row indexes) in rendered images.
      * This is the value of the {@code yDimension} argument in the last call to the
-     * {@link TiledGridCoverageResource#setRasterDimension(int, int)} method before this coverage has been constructed.
+     * {@link TiledGridCoverageResource#setRasterSubspaceDimensions(int, int)} method
+     * before this coverage has been constructed.
      * This value is usually 1.
      *
      * @see #readTiles(TileIterator)
@@ -266,7 +268,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * This is true if the user explicitly {@linkplain TiledGridCoverageResource#setLoadingStrategy requested
      * such deferred loading strategy} and the resource considers that it is worth to do so.
      */
-    private final boolean deferredTileReading;
+    final boolean deferredTileReading;
 
     /**
      * Creates a new tiled grid coverage. This constructor does not load any tile.

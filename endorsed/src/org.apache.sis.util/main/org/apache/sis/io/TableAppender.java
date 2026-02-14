@@ -68,7 +68,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  *   ╚═════════╧═════════╧════════╝</pre>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 1.0
+ * @version 1.7
  *
  * @see org.apache.sis.util.collection.TreeTableFormat
  *
@@ -224,6 +224,20 @@ public class TableAppender extends Appender implements Flushable {
      */
     public TableAppender(final String separator) {
         this(new StringBuilder(256), separator);
+        ownOut = true;
+    }
+
+    /**
+     * Creates a new table formatter writing in an internal buffer with the specified column separator and border.
+     *
+     * @param leftBorder   string to write on the left side of the table.
+     * @param separator    string to write between columns.
+     * @param rightBorder  string to write on the right side of the table.
+     *
+     * @since 1.7
+     */
+    public TableAppender(final String leftBorder, final String separator, final String rightBorder) {
+        this(new StringBuilder(256), leftBorder, separator, rightBorder);
         ownOut = true;
     }
 

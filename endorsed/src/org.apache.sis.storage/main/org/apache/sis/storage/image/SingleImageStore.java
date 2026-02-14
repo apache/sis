@@ -34,7 +34,7 @@ import org.apache.sis.util.collection.BackingStoreException;
 /**
  * A world file store which is expected to contain exactly one image.
  * This class is used for image formats that are restricted to one image per file.
- * Examples: PNG and BMP image formats.
+ * Examples: <abbr>PNG</abbr> and <abbr>BMP</abbr> image formats.
  *
  * <p>See {@link WritableSingleImageStore} for the writable variant of this class.</p>
  *

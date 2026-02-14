@@ -419,7 +419,7 @@ final class Reader extends IOBase {
             lastIFD = null;     // Clear now in case of error.
             imageIndex++;       // In case next image is full-resolution.
             ImageFileDirectory image;
-            final List<ImageFileDirectory> overviews = new ArrayList<>();
+            final var overviews = new ArrayList<ImageFileDirectory>();
             while ((image = readNextIFD(imageIndex)) != null) {
                 if (image.isReducedResolution()) {
                     overviews.add(image);
@@ -430,7 +430,7 @@ final class Reader extends IOBase {
             }
             /*
              * All pyramid levels have been read. If there is only one level,
-             * use the image directly. Otherwise create the pyramid.
+             * use the image directly. Otherwise, create the pyramid.
              */
             if (overviews.isEmpty()) {
                 images.add(fullResolution);

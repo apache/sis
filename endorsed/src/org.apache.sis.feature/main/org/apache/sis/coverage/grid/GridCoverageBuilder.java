@@ -76,9 +76,12 @@ import org.apache.sis.util.resources.Errors;
  *             }
  *         }
  *         var builder = new GridCoverageBuilder();
- *         builder.setValues(data).flixAxis(1);
+ *         builder.setValues(data).flipGridAxis(1);
  *
- *         Envelope domain = ...;                       // Specify here the "real world" coordinates.
+ *         // Real world coordinates, around Tokyo in this example.
+ *         var domain = new GeneralEnvelope(CommonCRS.WGS84.normalizedGeographic());
+ *         domain.setRange(1,  32,  40);    // Range of latitude values.
+ *         domain.setRange(0, 137, 140);    // Range of longitude values.
  *         return builder.setDomain(domain).build();
  *     }
  * }

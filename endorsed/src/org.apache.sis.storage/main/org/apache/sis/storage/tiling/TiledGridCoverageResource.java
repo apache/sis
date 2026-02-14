@@ -19,6 +19,7 @@ package org.apache.sis.storage.tiling;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Collection;
 import java.lang.reflect.Array;
 import java.awt.image.DataBuffer;
 import java.awt.image.ColorModel;
@@ -29,6 +30,8 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.RasterFormatException;
+import org.opengis.util.GenericName;
+import org.opengis.util.NameFactory;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverage2D;
@@ -52,6 +55,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.util.iso.DefaultNameFactory;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.CannotEvaluateException;
@@ -76,7 +80,7 @@ import org.opengis.coverage.CannotEvaluateException;
  * @version 1.7
  * @since   1.7
  */
-public abstract class TiledGridCoverageResource extends AbstractGridCoverageResource {
+public abstract class TiledGridCoverageResource extends AbstractGridCoverageResource implements TiledResource {
     /**
      * Number of dimensions in a rendered image.
      * Used for identifying codes where a two-dimensional slice is assumed.
@@ -148,6 +152,13 @@ public abstract class TiledGridCoverageResource extends AbstractGridCoverageReso
     private RasterLoadingStrategy loadingStrategy;
 
     /**
+     * The tile matrix sets, created when first requested.
+     *
+     * @see #getTileMatrixSets()
+     */
+    private Collection<TileMatrixSet> tileMatrixSets;
+
+    /**
      * The dimension of the grid which is mapped to the <var>x</var> axis (column indexes) in rendered images.
      * The default value is 0.
      */
@@ -160,11 +171,6 @@ public abstract class TiledGridCoverageResource extends AbstractGridCoverageReso
     private int yDimension;
 
     /**
-     * The grid coverage processor to use when tiles use a subset of the bands.
-     */
-    final GridCoverageProcessor processor;
-
-    /**
      * Creates a new resource.
      *
      * @param  parent  the parent resource, or {@code null} if none.
@@ -172,7 +178,6 @@ public abstract class TiledGridCoverageResource extends AbstractGridCoverageReso
     protected TiledGridCoverageResource(final Resource parent) {
         super(parent);
         yDimension = 1;
-        processor = new GridCoverageProcessor();
     }
 
     /**
@@ -191,8 +196,9 @@ public abstract class TiledGridCoverageResource extends AbstractGridCoverageReso
      *
      * @see TiledGridCoverage#xDimension
      * @see TiledGridCoverage#yDimension
+     * @see GridExtent#getSubspaceDimensions(int)
      */
-    protected void setRasterDimension(final int xDimension, final int yDimension) throws DataStoreException {
+    protected void setRasterSubspaceDimensions(final int xDimension, final int yDimension) throws DataStoreException {
         final int max = getGridGeometry().getDimension() - 1;
         ArgumentChecks.ensureBetween("xDimension", 0, max, xDimension);
         ArgumentChecks.ensureBetween("yDimension", 0, max, yDimension);
@@ -828,6 +834,26 @@ check:  if (dataType.isInteger()) {
     }
 
     /**
+     * Returns a coverage which will read the tiles as late as possible.
+     *
+     * @return the coverage.
+     * @throws DataStoreException if an error occurred while reading the grid coverage data.
+     */
+    final TiledGridCoverage readAtGetTileTime() throws DataStoreException {
+        synchronized (getSynchronizationLock()) {
+            final RasterLoadingStrategy old = loadingStrategy;
+            try {
+                loadingStrategy = RasterLoadingStrategy.AT_GET_TILE_TIME;
+                return read(new Subset(null, null));
+            } catch (RuntimeException e) {
+                throw canNotRead(listeners.getSourceName(), null, e);
+            } finally {
+                loadingStrategy = old;
+            }
+        }
+    }
+
+    /**
      * Whether this resource supports immediate loading of raster data.
      * Current implementation does not support immediate loading if the data cube has more than 2 dimensions.
      * Non-immediate loading allows users to specify two-dimensional slices.
@@ -881,5 +907,140 @@ check:  if (dataType.isInteger()) {
     private void setLoadingStrategy(final boolean loadAtReadTime) {
         loadingStrategy = loadAtReadTime ? RasterLoadingStrategy.AT_READ_TIME
                                          : RasterLoadingStrategy.AT_RENDER_TIME;
+    }
+
+    /**
+     * Returns the collection of all available tile matrix sets in this resource.
+     * The returned collection typically contains exactly one instance.
+     *
+     * <p>The default implementation uses the information provided by {@link #getPyramids()}
+     * for creating default {@link TileMatrixSet} instances.
+     * It is generally easier for subclasses to override {@link #getPyramids()} instead of this method.</p>
+     *
+     * @return all available {@link TileMatrixSet} instances, or an empty collection if none.
+     * @throws DataStoreException if an error occurred while fetching the tile matrix sets.
+     */
+    @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")     // The collection is unmodifiable.
+    public Collection<? extends TileMatrixSet> getTileMatrixSets() throws DataStoreException {
+        synchronized (getSynchronizationLock()) {
+            if (tileMatrixSets == null) {
+                final List<Pyramid> pyramids = getPyramids();
+                final var sets = new TileMatrixSet[pyramids.size()];
+                final GenericName scope = getIdentifier().orElseGet(
+                            () -> pyramids.get(0).nameFactory().createLocalName(null, listeners.getSourceName()));
+                final var processor = new GridCoverageProcessor();
+                for (int i=0; i<sets.length; i++) {
+                    sets[i] = new ImagePyramid(scope, pyramids.get(i), processor);
+                }
+                tileMatrixSets = List.of(sets);
+            }
+            return tileMatrixSets;
+        }
+    }
+
+    /**
+     * Returns information about the {@code TileMatrixSet} instances to create.
+     * This method is invoked by the default implementation of {@link #getTileMatrixSets()} when first needed.
+     * By default, this method returns a list of only one element, which itself describes a pyramid of only one level.
+     * This single level describes a {@link TileMatrix} at the resolution of this {@code TiledGridCoverageResource}.
+     *
+     * @return information about the tile matrix sets to create.
+     */
+    protected List<Pyramid> getPyramids() {
+        return List.of((level) -> (level == 0) ? this : null);
+    }
+
+    /**
+     * Description of a {@code TileMatrixSet} implemented as an image pyramid.
+     * This interface is used by the default implementation of {@link #getTileMatrixSets()}.
+     * There is usually only one pyramid per {@link TiledGridCoverageResource} instance,
+     * but many pyramids may exist, for example, if data are offered in different
+     * Coordinate Reference System (<abbr>CRS</abbr>).
+     *
+     * <p>Each pyramid can have an arbitrary number of levels.
+     * It is recommended to have one pyramid level for each {@linkplain #getResolutions() preferred resolutions}.
+     * The pyramid levels must be sorted from finest resolution (at level 0) to coarsest resolution.</p>
+     *
+     * <p>The number of levels is unspecified because some data stores cannot provide this information in advance.
+     * Instead, the {@link #forPyramidLevel(int)} method will be invoked with different argument values when each
+     * level is first requested, until that method returns {@code null} for a level too high.</p>
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 1.7
+     * @since   1.7
+     */
+    protected static interface Pyramid {
+        /**
+         * Returns an identifier for this pyramid. The default implementation returns <abbr>TMS</abbr>
+         * as the abbreviation of "Tile Matrix Set". This is often sufficient in the common case where
+         * there is only one Tile Matrix Set per Grid Coverage Resource.
+         *
+         * <p>This value is used for building the value of {@link TileMatrixSet#getIdentifier()}.</p>
+         *
+         * @return an identifier for this pyramid. Default is {@code "TMS"}.
+         *
+         * @see TileMatrixSet#getIdentifier()
+         */
+        default String identifier() {
+            return "TMS";
+        }
+
+        /**
+         * Returns an identifier for the given level of this pyramid. The returned identifier
+         * will be local in the namespace of the pyramid {@linkplain #identifier() identifier}.
+         *
+         * @param  level  the pyramid level where 0 is the level with the finest resolution.
+         * @return a local identifier for the specified level.
+         */
+        default String identifierOfLevel(int level) {
+            return "L" + level;
+        }
+
+        /**
+         * Returns the level in this pyramid for the given local identifier.
+         * This method is the converse of {@link #identifierOfLevel(int)}.
+         *
+         * @param  identifier  the identifier for which to get the pyramid level.
+         * @return pyramid level associated to the given identifier.
+         * @throws IllegalArgumentException if the given identifier is not recognized by this pyramid.
+         */
+        default int levelOfIdentifier(final String identifier) {
+            if (identifier.isEmpty() || identifier.charAt(0) != 'L') {
+                throw new IllegalArgumentException(identifier);
+            }
+            // Note: `NumberFormatException` is a subtype of `IllegalArgumentException`.
+            return Integer.parseInt(identifier.substring(1));
+        }
+
+        /**
+         * Returns a resource for the same data as this resource but at a different resolution level.
+         * The resource at index 0 shall be the resource with the finest resolution, and resources at
+         * increasing index values shall be resources with increasingly coarser resolutions.
+         * If the specified level is equal or greater than the number of levels in this pyramid,
+         * then this method shall return {@code null}.
+         *
+         * <p>If this method returns a non-null instance <var>r</var>, then the following condition should hold:
+         * {@code r.getGridGeometry().getResolution(false)} should be equal, ignoring NaN values and rounding
+         * errors, to {@code getResolutions().get(level)}.</p>
+         *
+         * @param  level  the pyramid level where 0 is the level with the finest resolution.
+         * @return a resource for data at the specified pyramid level, or {@code null} if the given level is too high.
+         * @throws DataStoreException if an error occurred while creating the resource.
+         *
+         * @see #getResolutions()
+         */
+        TiledGridCoverageResource forPyramidLevel(int level) throws DataStoreException;
+
+        /**
+         * Returns the name factory to use for creating identifiers of tiles and tile matrices.
+         * The default implementation returns {@link DefaultNameFactory#provider()}.
+         * Subclasses can override for more control on the identifiers to create.
+         *
+         * @return the name factory to use for creating identifiers of tiles and tile matrices.
+         */
+        default NameFactory nameFactory() {
+            return DefaultNameFactory.provider();
+        }
     }
 }
