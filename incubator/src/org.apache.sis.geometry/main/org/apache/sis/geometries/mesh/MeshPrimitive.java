@@ -777,7 +777,7 @@ public interface MeshPrimitive extends Geometry {
         public void computeSmoothNormals() {
 
             final Array positions = getAttribute(ATT_POSITION);
-            final Array normals = NDArrays.of(positions.getSampleSystem(), DataType.FLOAT, positions.getLength()*3);
+            final Array normals = NDArrays.of(positions.getSampleSystem(), DataType.FLOAT, positions.getLength());
 
             //compute smooth normals
             final Vector pos0 = Vectors.createDouble(3);
