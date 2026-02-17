@@ -26,7 +26,7 @@ import org.opengis.util.GenericName;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.tiling.TiledGridCoverage;
-import org.apache.sis.storage.tiling.TiledGridResource;
+import org.apache.sis.storage.tiling.TiledGridCoverageResource;
 
 // Test dependencies
 import org.apache.sis.image.internal.shared.AssertionMessages;
@@ -47,9 +47,9 @@ final class TiledCoverage extends TiledGridCoverage {
      * Creates a new tiled grid coverage.
      *
      * @param  owner   the resource from which this coverage has been read.
-     * @param  subset  description of the {@link TiledGridResource} subset to cover.
+     * @param  subset  description of the {@link TiledGridCoverageResource} subset to cover.
      */
-    TiledCoverage(final TiledResource owner, final TiledGridResource.Subset subset) {
+    TiledCoverage(final TiledResource owner, final TiledGridCoverageResource.Subset subset) {
         super(subset);
         this.owner = owner;
     }
@@ -72,12 +72,12 @@ final class TiledCoverage extends TiledGridCoverage {
 
     /**
      * Returns all tiles in the given area of interest. Tile indices (0,0) locates the tile in the upper-left corner
-     * of this {@code TiledGridCoverage} (not necessarily the upper-left corner of the {@link TiledGridResource}).
+     * of this {@code TiledGridCoverage} (not necessarily the upper-left corner of the {@link TiledGridCoverageResource}).
      * The {@link Raster#getMinX()} and {@code getMinY()} coordinates of returned rasters
      * shall start at the given {@code iterator.offsetAOI} values.
      *
      * @param  iterator  an iterator over the tiles that intersect the Area Of Interest specified by user.
-     * @return tiles decoded from the {@link TiledGridResource}.
+     * @return tiles decoded from the {@link TiledGridCoverageResource}.
      * @throws ArithmeticException if an integer overflow occurred.
      */
     @Override

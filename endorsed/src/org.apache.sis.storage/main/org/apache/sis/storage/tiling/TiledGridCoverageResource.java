@@ -76,7 +76,7 @@ import org.opengis.coverage.CannotEvaluateException;
  * @version 1.7
  * @since   1.7
  */
-public abstract class TiledGridResource extends AbstractGridCoverageResource {
+public abstract class TiledGridCoverageResource extends AbstractGridCoverageResource {
     /**
      * Number of dimensions in a rendered image.
      * Used for identifying codes where a two-dimensional slice is assumed.
@@ -88,7 +88,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
 
     /**
      * A key in the {@link #rasters} cache of tiles.
-     * Each key shall be unique within its enclosing {@link TiledGridResource} instance.
+     * Each key shall be unique within its enclosing {@link TiledGridCoverageResource} instance.
      */
     static final class CacheKey {
         /** Index in a row-major array of tiles. */ private final int    indexInTileVector;
@@ -131,7 +131,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      * All tiles loaded by any {@link TiledGridCoverage} created from this resource.
      * Keys contains tile indices in a row-major array of tiles.
      * For each value, the {@link Raster#getMinX()} and {@code minY} values
-     * can be anything, depending which {@link TiledGridResource} was first to load the tile.
+     * can be anything, depending which {@link TiledGridCoverageResource} was first to load the tile.
      *
      * @see TiledGridCoverage#rasters
      * @see TiledGridCoverage.AOI#getCachedTile()
@@ -169,7 +169,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      *
      * @param  parent  the parent resource, or {@code null} if none.
      */
-    protected TiledGridResource(final Resource parent) {
+    protected TiledGridCoverageResource(final Resource parent) {
         super(parent);
         yDimension = 1;
         processor = new GridCoverageProcessor();
@@ -433,12 +433,12 @@ check:  if (dataType.isInteger()) {
 
     /**
      * Parameters that describe the resource subset to be accepted by the {@link TiledGridCoverage} constructor.
-     * Instances of this class are temporary and used only for transferring information from {@link TiledGridResource}
+     * Instances of this class are temporary and used only for transferring information from {@link TiledGridCoverageResource}
      * to {@link TiledGridCoverage}. This class does not perform I/O operations.
      */
     public final class Subset {
         /**
-         * The full size of the coverage in the enclosing {@link TiledGridResource}.
+         * The full size of the coverage in the enclosing {@link TiledGridCoverageResource}.
          * This is taken from {@link #getGridGeometry()} and does not take sub-sampling in account.
          */
         final GridExtent sourceExtent;
@@ -446,7 +446,7 @@ check:  if (dataType.isInteger()) {
         /**
          * The area to read in unit of the full coverage (without subsampling).
          * This is the intersection between user-specified domain and enclosing
-         * {@link TiledGridResource} domain, expanded to an integer number of chunks.
+         * {@link TiledGridCoverageResource} domain, expanded to an integer number of chunks.
          * A chunk size is usually a tile size, but not necessarily as there is other
          * criteria to take in account such as "atom" size and subsampling.
          */
@@ -469,7 +469,7 @@ check:  if (dataType.isInteger()) {
         final List<? extends SampleDimension> ranges;
 
         /**
-         * Indices of {@link TiledGridResource} bands which have been retained for inclusion
+         * Indices of {@link TiledGridCoverageResource} bands which have been retained for inclusion
          * in the {@link TiledGridCoverage} to construct, in strictly increasing order.
          * An "included" band is stored in memory but not necessarily visible to the user,
          * because the {@link SampleModel} can be configured for ignoring some bands.
@@ -485,13 +485,13 @@ check:  if (dataType.isInteger()) {
 
         /**
          * Coordinate conversion from subsampled grid to the grid at full resolution.
-         * This array contains the factors by which to divide {@link TiledGridResource}
+         * This array contains the factors by which to divide {@link TiledGridCoverageResource}
          * cell coordinates in order to obtain {@link TiledGridCoverage} cell coordinates.
          */
         final long[] subsampling;
 
         /**
-         * Remainder of the divisions of {@link TiledGridResource} cell coordinates by subsampling factors.
+         * Remainder of the divisions of {@link TiledGridCoverageResource} cell coordinates by subsampling factors.
          */
         final long[] subsamplingOffsets;
 
@@ -528,7 +528,7 @@ check:  if (dataType.isInteger()) {
 
         /**
          * Cache to use for tiles loaded by the {@link TiledGridCoverage}.
-         * It is a reference to {@link TiledGridResource#rasters} if shareable.
+         * It is a reference to {@link TiledGridCoverageResource#rasters} if shareable.
          */
         final WeakValueHashMap<CacheKey, Raster> cache;
 
@@ -539,7 +539,7 @@ check:  if (dataType.isInteger()) {
          * @param  range   the range argument specified by user in a call to {@code GridCoverageResource.read(…)}.
          *
          * @throws ArithmeticException if pixel indices exceed 64 bits integer capacity.
-         * @throws DataStoreException if a call to {@link TiledGridResource} method failed.
+         * @throws DataStoreException if a call to {@link TiledGridCoverageResource} method failed.
          * @throws RasterFormatException if the sample model is not recognized.
          * @throws IllegalArgumentException if an error occurred in an operation
          *         such as creating the {@code SampleModel} subset for selected bands.
@@ -551,7 +551,7 @@ check:  if (dataType.isInteger()) {
             /*
              * Normally, the number of dimensions of `tileSize` should be equal to the number of dimensions
              * of the grid geometry (determined by its `GridExtent`). However, we are tolerant to situation
-             * where the `TiledGridResource` is a two dimensional image associated to a 3-dimensional CRS.
+             * where the `TiledGridCoverageResource` is a two dimensional image associated to a 3-dimensional CRS.
              * This is not recommended, but can happen with GeoTIFF for example. What to do with the extra
              * dimension is unclear (the GeoTIFF specification itself said nothing), so we just ignore it.
              */

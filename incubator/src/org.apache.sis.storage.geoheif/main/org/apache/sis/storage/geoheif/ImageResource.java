@@ -41,7 +41,7 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.storage.tiling.TiledGridCoverage;
-import org.apache.sis.storage.tiling.TiledGridResource;
+import org.apache.sis.storage.tiling.TiledGridCoverageResource;
 import org.apache.sis.storage.isobmff.ByteRanges;
 import org.apache.sis.io.stream.ChannelDataInput;
 
@@ -52,7 +52,7 @@ import org.apache.sis.io.stream.ChannelDataInput;
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */
-final class ImageResource extends TiledGridResource implements StoreResource {
+final class ImageResource extends TiledGridCoverageResource implements StoreResource {
     /**
      * The data store that produced this resource.
      *
@@ -274,10 +274,10 @@ final class ImageResource extends TiledGridResource implements StoreResource {
         /**
          * Creates a new tiled grid coverage.
          *
-         * @param  subset  description of the {@link TiledGridResource} subset to cover.
+         * @param  subset  description of the {@link TiledGridCoverageResource} subset to cover.
          * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.
          */
-        Coverage(TiledGridResource.Subset subset) {
+        Coverage(TiledGridCoverageResource.Subset subset) {
             super(subset);
         }
 
@@ -292,7 +292,7 @@ final class ImageResource extends TiledGridResource implements StoreResource {
         /**
          * Returns all tiles in the given area of interest. Tile indices are relative to this {@code Coverage}:
          * (0,0) is the tile in the upper-left corner of this {@code Coverage} (not necessarily the upper-left
-         * corner of the image in the {@link TiledGridResource}). This method must be thread-safe.
+         * corner of the image in the {@link TiledGridCoverageResource}). This method must be thread-safe.
          *
          * @param  iterator  an iterator over the tiles that intersect the Area Of Interest specified by user.
          * @return tiles decoded from the enclosing resource.

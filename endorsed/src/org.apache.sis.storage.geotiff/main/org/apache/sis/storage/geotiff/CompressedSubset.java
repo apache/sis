@@ -23,7 +23,7 @@ import java.awt.Point;
 import java.awt.image.Raster;
 import static java.lang.Math.toIntExact;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.tiling.TiledGridResource;
+import org.apache.sis.storage.tiling.TiledGridCoverageResource;
 import org.apache.sis.storage.geotiff.inflater.Inflater;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.internal.shared.RasterFactory;
@@ -99,7 +99,7 @@ final class CompressedSubset extends DataSubset {
      * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.
      */
     @SuppressWarnings("LocalVariableHidesMemberVariable")
-    CompressedSubset(final DataCube source, final TiledGridResource.Subset subset) throws DataStoreException {
+    CompressedSubset(final DataCube source, final TiledGridCoverageResource.Subset subset) throws DataStoreException {
         super(source, subset);
         long afterLastBand = sourceScanlineStride - sourcePixelStride;
         final int between  = Math.multiplyExact(sourcePixelStride, Math.toIntExact(getSubsampling(xDimension) - 1));
@@ -200,7 +200,7 @@ final class CompressedSubset extends DataSubset {
          * in the bank. The `pixelsPerElement` factor is usually 1, except when more than one pixel is packed in
          * each single primitive type (e.g. 8 bits per byte in bilevel image). The `head` needs to be a multiple
          * of `pixelsPerElement`; this restriction is documented in `Inflater.skip(long)` and should have been
-         * verified by `TiledGridResource`.
+         * verified by `TiledGridCoverageResource`.
          */
         final int pixelsPerElement = getPixelsPerElement();                 // Always ≥ 1 and usually = 1.
         assert (head % pixelsPerElement) == 0 : head;

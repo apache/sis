@@ -49,7 +49,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.tiling.TiledGridCoverage;
-import org.apache.sis.storage.tiling.TiledGridResource;
+import org.apache.sis.storage.tiling.TiledGridCoverageResource;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Vocabulary;
@@ -64,7 +64,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @author  Quentin Bialota (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class TiledResource extends TiledGridResource {
+final class TiledResource extends TiledGridCoverageResource {
     /**
      * Arbitrary number of pixels for considering a tile as too large.
      * Tile larger than this size will be divided in smaller tiles.

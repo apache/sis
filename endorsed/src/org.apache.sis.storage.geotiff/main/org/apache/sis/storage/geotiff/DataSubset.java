@@ -45,7 +45,7 @@ import org.apache.sis.image.internal.shared.RasterFactory;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.tiling.TiledGridCoverage;
-import org.apache.sis.storage.tiling.TiledGridResource;
+import org.apache.sis.storage.tiling.TiledGridCoverageResource;
 import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.storage.geotiff.reader.ReversedBitsChannel;
 import org.apache.sis.io.stream.Region;
@@ -158,7 +158,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * @param  subset  description of the {@code owner} subset to cover.
      * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.
      */
-    DataSubset(final DataCube source, final TiledGridResource.Subset subset) throws DataStoreException {
+    DataSubset(final DataCube source, final TiledGridCoverageResource.Subset subset) throws DataStoreException {
         super(subset);
         this.source         = source;
         this.numTiles       = toIntExact(source.getNumTiles());
@@ -496,7 +496,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * The default implementation in this base class assumes uncompressed data without band subset.
      * Subsampling on the <var>X</var> axis is not supported if the image has interleaved pixels.
      * Packed pixels (é.g. bilevel images with 8 pixels per byte) are not supported.
-     * Those restrictions are verified by {@link DataCube#canReadDirect(TiledGridResource.Subset)}.
+     * Those restrictions are verified by {@link DataCube#canReadDirect(TiledGridCoverageResource.Subset)}.
      * Subclasses must override for handling decompression or for resolving above-cited limitations.
      *
      * @todo It is possible to relax a little bit some restrictions. If the tile width is a divisor
@@ -516,7 +516,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * @throws RuntimeException if the Java2D image cannot be created for another reason
      *         (too many exception types to list them all).
      *
-     * @see DataCube#canReadDirect(TiledGridResource.Subset)
+     * @see DataCube#canReadDirect(TiledGridCoverageResource.Subset)
      */
     Raster readSlice(final long[] offsets, final long[] byteCounts, final long[] lower, final long[] upper,
                      final long[] subsampling, final Point location) throws IOException, DataStoreException

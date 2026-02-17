@@ -70,7 +70,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * Conversions can be done by {@link #coverageToResourceCoordinate(long, int)}.
  *
  * <p><b>Design note:</b> {@code TiledGridCoverage} uses the same cell coordinates as the originating
- * {@link TiledGridResource} (when no subsampling) because those two classes use {@code long} integers.
+ * {@link TiledGridCoverageResource} (when no subsampling) because those two classes use {@code long} integers.
  * There is no integer overflow to avoid, contrarily to tile indices described below.</p>
  *
  * <h2>Tile matrix coordinate (<abbr>TMC</abbr>)</h2>
@@ -86,7 +86,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
     /**
      * The area to read in unit of the full coverage (without subsampling).
      * This is the intersection between user-specified domain and the source
-     * {@link TiledGridResource} domain, expanded to an integer number of chunks.
+     * {@link TiledGridCoverageResource} domain, expanded to an integer number of chunks.
      * A chunk size is usually a tile size, but not necessarily as there is other
      * criteria to take in account such as "atom" size and subsampling.
      *
@@ -104,7 +104,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * However, there is a few exceptions where the read extent should not be forced to the tile size:
      *
      * <ul>
-     *   <li>If the image is untiled, then the {@link org.apache.sis.storage.base.TiledGridResource.Subset}
+     *   <li>If the image is untiled, then the {@link org.apache.sis.storage.base.TiledGridCoverageResource.Subset}
      *       constructor assumes that only the requested region of the tile will be read.</li>
      *   <li>If the tile is truncated on the storage as well
      *       (note: this is rare. GeoTIFF for example always stores whole tiles).</li>
@@ -123,17 +123,17 @@ public abstract class TiledGridCoverage extends GridCoverage {
 
     /**
      * Size of all tiles in the domain of this {@code TiledGridCoverage}, without sub-sampling.
-     * All coverages created from the same {@link TiledGridResource} shall have the same tile size values.
+     * All coverages created from the same {@link TiledGridCoverageResource} shall have the same tile size values.
      * The length of this array is the number of dimensions in the source {@link GridExtent}.
      * This is often {@value #BIDIMENSIONAL} but can also be more.
      *
      * <h4>What is a "virtual" size</h4>
      * The tile size stored in this field is usually the size of tiles used by the binary encoding of the file
-     * which is read by {@link TiledGridResource}. However, this tile size may differ in two circumstances.
+     * which is read by {@link TiledGridCoverageResource}. However, this tile size may differ in two circumstances.
      * In such case, this tile size is said "virtual".
      *
      * <h5>Tiles coalescence</h5>
-     * The first circumstance is when the {@link TiledGridResource} subclass
+     * The first circumstance is when the {@link TiledGridCoverageResource} subclass
      * decided to coalesce many tiles from the file in bigger tiles in memory.
      * This is sometime useful when a sub-sampling is applied,
      * for avoiding that the sub-sampled tiles become too small.
@@ -151,7 +151,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
     /**
      * Values by which to multiply each tile coordinates for obtaining the index in the tile vector.
      * The length of this array is the same as {@link #virtualTileSize}. All coverages created from
-     * the same {@link TiledGridResource} have the same stride values.
+     * the same {@link TiledGridCoverageResource} have the same stride values.
      */
     private final int[] tileStrides;
 
@@ -163,7 +163,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
 
     /**
      * The Tile Matrix Coordinates (<abbr>TMC</abbr>) that tile (0,0) of this coverage
-     * would have in the originating {@code TiledGridResource}.
+     * would have in the originating {@code TiledGridCoverageResource}.
      * This is the value to subtract from tile indices computed from cell coordinates.
      *
      * <p>The current implementation assumes that the tile (0,0) in the resource starts
@@ -193,8 +193,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
     private final long[] subsampling, subsamplingOffsets;
 
     /**
-     * Indices of {@link TiledGridResource} bands which have been retained for
-     * inclusion in this {@code TiledGridCoverage}, in strictly increasing order.
+     * Indices of {@link TiledGridCoverageResource} bands which have been retained
+     * for inclusion in this {@code TiledGridCoverage}, in strictly increasing order.
      * An included band is stored in memory but not necessarily visible to users,
      * depending on how the {@link SampleModel} uses each band.
      * This array is {@code null} if all bands shall be included.
@@ -208,7 +208,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
     /**
      * The dimension of the grid which is mapped to the <var>x</var> axis (column indexes) in rendered images.
      * This is the value of the {@code xDimension} argument in the last call to the
-     * {@link TiledGridResource#setRasterDimension(int, int)} method before this coverage has been constructed.
+     * {@link TiledGridCoverageResource#setRasterDimension(int, int)} method before this coverage has been constructed.
      * This value is usually 0.
      *
      * @see #readTiles(TileIterator)
@@ -218,7 +218,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
     /**
      * The dimension of the grid which is mapped to the <var>y</var> axis (row indexes) in rendered images.
      * This is the value of the {@code yDimension} argument in the last call to the
-     * {@link TiledGridResource#setRasterDimension(int, int)} method before this coverage has been constructed.
+     * {@link TiledGridCoverageResource#setRasterDimension(int, int)} method before this coverage has been constructed.
      * This value is usually 1.
      *
      * @see #readTiles(TileIterator)
@@ -227,14 +227,14 @@ public abstract class TiledGridCoverage extends GridCoverage {
 
     /**
      * Cache of rasters read by this {@code TiledGridCoverage}. This cache may be shared with other coverages
-     * created for the same {@link TiledGridResource} resource. For each value, the raster {@code minX} and
+     * created for the same {@link TiledGridCoverageResource} resource. For each value, the raster {@code minX} and
      * {@code minY} values can be anything, depending which {@code TiledGridCoverage} was first to load the tile.
      *
-     * @see TiledGridResource#rasters
+     * @see TiledGridCoverageResource#rasters
      * @see AOI#getCachedTile()
      * @see #createCacheKey(int)
      */
-    private final WeakValueHashMap<TiledGridResource.CacheKey, Raster> rasters;
+    private final WeakValueHashMap<TiledGridCoverageResource.CacheKey, Raster> rasters;
 
     /**
      * The sample model for all rasters. The width and height of this sample model are computed
@@ -242,14 +242,14 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * The components may be a subset of the bands in the resource if the user requested to read
      * only a subset of those bands.
      *
-     * @see TiledGridResource#getSampleModel(int[])
+     * @see TiledGridCoverageResource#getSampleModel(int[])
      */
     protected final SampleModel model;
 
     /**
      * The Java2D color model for images rendered from this coverage.
      *
-     * @see TiledGridResource#getColorModel(int[])
+     * @see TiledGridCoverageResource#getColorModel(int[])
      */
     protected final ColorModel colors;
 
@@ -257,26 +257,26 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * The values to use for filling empty spaces in rasters, or {@code null} if zero in all bands.
      * If non-null, the array length is equal to the number of bands.
      *
-     * @see TiledGridResource#getFillValues(int[])
+     * @see TiledGridCoverageResource#getFillValues(int[])
      */
     protected final Number[] fillValues;
 
     /**
      * Whether the reading of tiles is deferred until {@link RenderedImage#getTile(int, int)} is invoked.
-     * This is true if the user explicitly {@linkplain TiledGridResource#setLoadingStrategy requested such
-     * deferred loading strategy} and the resource considers that it is worth to do so.
+     * This is true if the user explicitly {@linkplain TiledGridCoverageResource#setLoadingStrategy requested
+     * such deferred loading strategy} and the resource considers that it is worth to do so.
      */
     private final boolean deferredTileReading;
 
     /**
      * Creates a new tiled grid coverage. This constructor does not load any tile.
      *
-     * @param  subset  description of the {@link TiledGridResource} subset to cover.
+     * @param  subset  description of the {@link TiledGridCoverageResource} subset to cover.
      * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.
      *
-     * @see TiledGridResource#read(TiledGridResource.Subset)
+     * @see TiledGridCoverageResource#read(TiledGridCoverageResource.Subset)
      */
-    protected TiledGridCoverage(final TiledGridResource.Subset subset) {
+    protected TiledGridCoverage(final TiledGridCoverageResource.Subset subset) {
         super(subset.domain, subset.ranges);
         xDimension          = subset.xDimension();
         yDimension          = subset.yDimension();
@@ -360,10 +360,10 @@ public abstract class TiledGridCoverage extends GridCoverage {
 
     /**
      * Returns the size of all tiles in the domain of this {@code TiledGridCoverage}, without sub-sampling.
-     * This is usually the same size as the tiles in the storage which is read by {@link TiledGridResource},
-     * but not necessarily. It may be larger if the {@link TiledGridResource} subclass decided to coalesce
-     * many real tiles into larger virtual tiles, or it may be smaller when reading a sub-region of an
-     * effectively untiled coverage.
+     * This is usually the same size as the tiles in the storage which is read by {@link TiledGridCoverageResource},
+     * but not necessarily. It may be larger if the {@link TiledGridCoverageResource} subclass decided to
+     * coalesce many real tiles into larger virtual tiles, or it may be smaller when reading a sub-region
+     * of an effectively untiled coverage.
      *
      * @param  dimension  dimension for which to get tile size.
      * @return tile size in the given dimension, without clipping and subsampling.
@@ -408,14 +408,14 @@ public abstract class TiledGridCoverage extends GridCoverage {
     }
 
     /**
-     * Converts a cell coordinate of this coverage to the {@code TiledGridResource} coordinate space.
+     * Converts a cell coordinate of this coverage to the {@code TiledGridCoverageResource} coordinate space.
      * This method removes the subsampling effect,
      * i.e. returns the coordinate that we would have if this coverage was at full resolution.
      * The result is the given {@code coordinate} value unchanged when there is no subsampling.
      *
      * @param  coordinate  coordinate in this {@code TiledGridCoverage} domain.
      * @param  dimension   the dimension of the coordinate to convert.
-     * @return coordinate in the {@code TiledGridResource} domain with no subsampling applied.
+     * @return coordinate in the {@code TiledGridCoverageResource} domain with no subsampling applied.
      * @throws ArithmeticException if the coordinate cannot be represented as a 64 bits integer.
      */
     protected final long coverageToResourceCoordinate(final long coordinate, final int dimension) {
@@ -423,12 +423,12 @@ public abstract class TiledGridCoverage extends GridCoverage {
     }
 
     /**
-     * Converts a cell coordinate from the {@code TiledGridResource} to this coverage coordinate space.
+     * Converts a cell coordinate from the {@code TiledGridCoverageResource} to this coverage coordinate space.
      * This method is the converse of {@link #coverageToResourceCoordinate(long, int)}.
      * The result is the given {@code coordinate} value unchanged when there is no subsampling.
      * If there is a subsampling, the returned value is rounded toward negative infinity.
      *
-     * @param  coordinate  coordinate in the {@code TiledGridResource} domain.
+     * @param  coordinate  coordinate in the {@code TiledGridCoverageResource} domain.
      * @param  dimension   the dimension of the coordinate to convert.
      * @return coordinates in this subsampled {@code TiledGridCoverage} domain.
      * @throws ArithmeticException if the coordinate cannot be represented as a 64 bits integer.
@@ -454,7 +454,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
     /**
      * Converts a cell coordinate from this {@code TiledGridCoverage} coordinate space to
      * the Tile Matrix Coordinate (<abbr>TMC</abbr>) of the tile which contains that cell.
-     * The returned <abbr>TMC</abbr> is relative to the full {@link TiledGridResource},
+     * The returned <abbr>TMC</abbr> is relative to the full {@link TiledGridCoverageResource},
      * i.e. without subtraction of {@link #tmcOfFirstTile}.
      *
      * @param  coordinate  coordinates in this {@code TiledGridCoverage} domain.
@@ -645,7 +645,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
         int indexInResultArray;
 
         /**
-         * Current iterator position as an index in the vector of tiles in the {@link TiledGridResource}.
+         * Current iterator position as an index in the vector of tiles in the {@link TiledGridCoverageResource}.
          * Tiles are assumed stored in a row-major fashion. This field is incremented by calls to {@link #next()}.
          * This index is also used as key in the {@link TiledGridCoverage#rasters} map.
          *
@@ -869,7 +869,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
          *
          * <h4>Subsampling</h4>
          * If the {@code subsampled} argument is {@code false}, then this method returns coordinates
-         * relative to the tile in the originating {@link TiledGridResource}, i.e. without subsampling.
+         * relative to the tile in the originating {@link TiledGridCoverageResource}, i.e. without subsampling.
          * If {@code subsampled} is {@code true}, then this method returns coordinates relative to the
          * {@linkplain #createRaster() raster}, i.e. with {@linkplain #getSubsampling(int) subsampling}.
          *
@@ -1154,7 +1154,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * @param  coordinate  pixel coordinate in the {@link RenderedImage} coordinate system.
          * @param  dimension   the dimension of the coordinate to convert.
          * @param  ceil        {@code true} for rounding up, or {@code false} for rounding down.
-         * @return cell coordinate in the {@link TiledGridResource} coordinate system.
+         * @return cell coordinate in the {@link TiledGridCoverageResource} coordinate system.
          */
         private long resourceToImage(long coordinate, final int dimension, final boolean ceil) {
             coordinate = subtractExact(coordinate, coverageTileToResourceCell(tileLower[dimension], dimension));
@@ -1171,7 +1171,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
          *
          * @param  coordinate  pixel coordinate in the {@link RenderedImage} coordinate system.
          * @param  dimension   the dimension of the coordinate to convert.
-         * @return cell coordinate in the {@link TiledGridResource} coordinate system.
+         * @return cell coordinate in the {@link TiledGridCoverageResource} coordinate system.
          */
         private long imageToResource(long coordinate, final int dimension) {
             coordinate = subtractExact(coordinate, offsetAOI[dimension]);       // (0,0) at image origin instead of AOI.
@@ -1358,8 +1358,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
     /**
      * Creates the key to use for caching the tile at given index.
      */
-    private TiledGridResource.CacheKey createCacheKey(final int indexInTileVector) {
-        return new TiledGridResource.CacheKey(indexInTileVector, includedBands, subsampling, subsamplingOffsets);
+    private TiledGridCoverageResource.CacheKey createCacheKey(final int indexInTileVector) {
+        return new TiledGridCoverageResource.CacheKey(indexInTileVector, includedBands, subsampling, subsamplingOffsets);
     }
 
     /**
@@ -1374,7 +1374,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * Caches the given raster. See {@link AOI#cache(Raster)} for more information.
      */
     private Raster cacheTile(final int indexInTileVector, final Raster tile) {
-        final TiledGridResource.CacheKey key = createCacheKey(indexInTileVector);
+        final TiledGridCoverageResource.CacheKey key = createCacheKey(indexInTileVector);
         Raster existing = rasters.put(key, tile);
         /*
          * If a tile already exists, verify if its layout is compatible with the given tile.
@@ -1402,7 +1402,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
     /**
      * Returns all tiles in the given area of interest. Tile indices are relative to this {@code TiledGridCoverage}:
      * (0,0) is the tile in the upper-left corner of this {@code TiledGridCoverage} (not necessarily the upper-left
-     * corner of the image in the {@link TiledGridResource}).
+     * corner of the image in the {@link TiledGridCoverageResource}).
      *
      * <p>The {@link Raster#getMinX()} and {@code getMinY()} coordinates of returned rasters
      * shall start at the values given by {@link TileIterator#getTileOrigin(int)}.
@@ -1414,10 +1414,10 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * These dimensions are usually 0 and 1 respectively.</p>
      *
      * <p>This method must be thread-safe. It is implementer responsibility to ensure synchronization,
-     * for example using {@link TiledGridResource#getSynchronizationLock()}.</p>
+     * for example using {@link TiledGridCoverageResource#getSynchronizationLock()}.</p>
      *
      * @param  iterator  an iterator over the tiles that intersect the Area Of Interest specified by user.
-     * @return tiles decoded from the {@link TiledGridResource}.
+     * @return tiles decoded from the {@link TiledGridCoverageResource}.
      * @throws Exception if the tile cannot be created. There is too many possible exceptions for listing all types,
      *         but the main ones are {@link java.io.IOException} for I/O errors and various {@link RuntimeException}
      *         subtypes for Java2D errors.

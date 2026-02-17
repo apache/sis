@@ -31,7 +31,7 @@ import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.storage.geotiff.base.Predictor;
 import org.apache.sis.storage.geotiff.base.Compression;
 import org.apache.sis.storage.tiling.TiledGridCoverage;
-import org.apache.sis.storage.tiling.TiledGridResource;
+import org.apache.sis.storage.tiling.TiledGridCoverageResource;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.math.Vector;
 
@@ -47,7 +47,7 @@ import org.apache.sis.math.Vector;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-abstract class DataCube extends TiledGridResource implements StoreResource {
+abstract class DataCube extends TiledGridCoverageResource implements StoreResource {
     /**
      * The GeoTIFF reader which contain this {@code DataCube}.
      * Used for fetching information like the input channel and where to report warnings.
