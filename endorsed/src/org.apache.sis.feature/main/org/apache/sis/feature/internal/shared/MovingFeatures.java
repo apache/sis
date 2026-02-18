@@ -99,9 +99,9 @@ public class MovingFeatures {
     }
 
     /**
-     * Sets the "datetimes" characteristic on the given attribute.
+     * Sets the "datetimes" characteristic on the given attribute to a sequence of temporal values.
      * If the {@code converter} is non-null, it will be used for converting values to {@link Instant} instances.
-     * Otherwise values are stored as-is as time elapsed in arbitrary units since an arbitrary epoch.
+     * Otherwise, values are stored as-is as time elapsed in arbitrary units since an arbitrary epoch.
      *
      * <p>Values should be in chronological order, but this is not verified.
      * Current implementation does not cache the values, but this policy may be revisited in a future version.</p>
@@ -121,6 +121,30 @@ public class MovingFeatures {
         } else {
             final Attribute<Number> c = TIME_AS_NUMBERS.newInstance();
             c.setValues(values);
+            ct = c;
+        }
+        dest.characteristics().values().add(ct);
+    }
+
+    /**
+     * Sets the "datetimes" characteristic on the given attribute to a single temporal value.
+     * If the {@code converter} is non-null, it will be used for converting the value to an {@link Instant} instance.
+     * Otherwise, the value is stored as-is as time elapsed in arbitrary units since an arbitrary epoch.
+     *
+     * @param  dest       the attribute on which to set time characteristic.
+     * @param  value      time in arbitrary units since an arbitrary epoch.
+     * @param  converter  the CRS to use for converting values to {@link Instant} instances, or {@code null}.
+     */
+    public static void setTime(final Attribute<?> dest, final double value, final DefaultTemporalCRS converter) {
+        final Attribute<?> ct;
+        if (converter != null) {
+            final Instant instant = converter.toInstant(value);
+            final Attribute<Instant> c = TIME_AS_INSTANTS.newInstance();
+            c.setValue(instant);
+            ct = c;
+        } else {
+            final Attribute<Number> c = TIME_AS_NUMBERS.newInstance();
+            c.setValue(value);
             ct = c;
         }
         dest.characteristics().values().add(ct);
