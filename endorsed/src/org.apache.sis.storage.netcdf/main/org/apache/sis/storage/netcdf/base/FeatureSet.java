@@ -842,14 +842,34 @@ makeGeom:   if (!isEmpty) {
                      */
                     if (isFloat) {
                         final float x = coordinateValues[0].floatValue(offset);
-                        final float y = coordinateValues[0].floatValue(offset);
-                        if (Float.isNaN(x) && Float.isNaN(y)) break makeGeom;
-                        geometry = factory.createPoint(x, y);
+                        final float y = coordinateValues[1].floatValue(offset);
+                        if (geometryDimension >= 3) {
+                            final float z = coordinateValues[2].floatValue(offset);
+                            if (Float.isNaN(x) && Float.isNaN(y) && Float.isNaN(z)) {
+                                break makeGeom;
+                            }
+                            geometry = factory.createPoint(x, y, z);
+                        } else {
+                            if (Float.isNaN(x) && Float.isNaN(y)) {
+                                break makeGeom;
+                            }
+                            geometry = factory.createPoint(x, y);
+                        }
                     } else {
                         final double x = coordinateValues[0].doubleValue(offset);
                         final double y = coordinateValues[1].doubleValue(offset);
-                        if (Double.isNaN(x) && Double.isNaN(y)) break makeGeom;
-                        geometry = factory.createPoint(x, y);
+                        if (geometryDimension >= 3) {
+                            final double z = coordinateValues[2].doubleValue(offset);
+                            if (Double.isNaN(x) && Double.isNaN(y) && Double.isNaN(z)) {
+                                break makeGeom;
+                            }
+                            geometry = factory.createPoint(x, y, z);
+                        } else {
+                            if (Double.isNaN(x) && Double.isNaN(y)) {
+                                break makeGeom;
+                            }
+                            geometry = factory.createPoint(x, y);
+                        }
                     }
                 }
                 feature.setPropertyValue(TRAJECTORY, geometry);
