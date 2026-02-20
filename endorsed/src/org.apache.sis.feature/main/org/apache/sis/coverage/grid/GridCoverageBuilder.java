@@ -21,7 +21,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Hashtable;
-import static java.util.Objects.requireNonNull;
+import java.util.Objects;
+import java.util.function.IntBinaryOperator;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -34,6 +35,7 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.image.DataType;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.image.internal.shared.ColorScaleBuilder;
@@ -92,7 +94,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  *
  * @see GridCoverage2D
  * @see SampleDimension.Builder
@@ -301,7 +303,7 @@ public class GridCoverageBuilder {
      * @see SampleDimension.Builder
      */
     public GridCoverageBuilder addRange(final SampleDimension band) {
-        requireNonNull(band);
+        Objects.requireNonNull(band);
         if (!(ranges instanceof ArrayList<?>)) {
             ranges = (ranges != null) ? new ArrayList<>(ranges) : new ArrayList<>();
         }
@@ -325,7 +327,7 @@ public class GridCoverageBuilder {
      * @see BufferedImage
      */
     public GridCoverageBuilder setValues(final RenderedImage data) {
-        image  = requireNonNull(data);
+        image  = Objects.requireNonNull(data);
         raster = null;
         buffer = null;
         size   = null;
@@ -348,7 +350,7 @@ public class GridCoverageBuilder {
      * @see Raster#createBandedRaster(int, int, int, int, Point)
      */
     public GridCoverageBuilder setValues(final Raster data) {
-        raster = requireNonNull(data);
+        raster = Objects.requireNonNull(data);
         image  = null;
         buffer = null;
         size   = null;
@@ -384,6 +386,60 @@ public class GridCoverageBuilder {
         image  = null;
         raster = null;
         return this;
+    }
+
+    /**
+     * Sets a two-dimensional slice to the values computed by the given functions.
+     * The number of bands is the number of functions and the color model defaults to gray scale.
+     * The tiling is unspecified and may change in future versions of Apache <abbr>SIS</abbr>.
+     *
+     * <p>Each functions will receive pixel coordinates (<var>x</var>, <var>y</var>)
+     * and shall return the sample value to store in one band of the image at that pixel position.
+     * The <var>x</var> values will be between 0 inclusive and {@link Dimension#width} exclusive.
+     * The <var>y</var> values will be between 0 inclusive and {@link Dimension#height} exclusive.
+     * The functions may be invoked with pixel coordinates in any order.</p>
+     *
+     * @param  type   the type of values to store in the image.
+     * @param  size   the image size in pixels.
+     * @param  bands  functions providing sample values in each band, in order.
+     * @return {@code this} for method invocation chaining.
+     * @throws IllegalArgumentException if {@code width} or {@code height} is negative or equals to zero.
+     *
+     * @since 1.7
+     */
+    public GridCoverageBuilder setValues(final DataType type, final Dimension size, IntBinaryOperator... bands) {
+        final int width, height;
+        ArgumentChecks.ensureStrictlyPositive("width",  width  = size.width);
+        ArgumentChecks.ensureStrictlyPositive("height", height = size.height);
+        ArgumentChecks.ensureNonEmpty("bands", bands);
+        bands = bands.clone();
+        for (int b=0; b<bands.length; b++) {
+            ArgumentChecks.ensureNonNullElement("bands", b, bands[b]);
+        }
+        final WritableRaster data = Raster.createBandedRaster(type.toDataBufferType(), width, height, bands.length, null);
+        if (bands.length == 1) {
+            /*
+             * This block is not strictly necessary, as the following block is general.
+             * But it is a slight optimization for a common case.
+             */
+            final IntBinaryOperator band = bands[0];
+            for (int y=0; y<height; y++) {
+                for (int x=0; x<width; x++) {
+                    data.setSample(x, y, 0, band.applyAsInt(x, y));
+                }
+            }
+        } else {
+            final int[] samples = new int[bands.length];
+            for (int y=0; y<height; y++) {
+                for (int x=0; x<width; x++) {
+                    for (int b=0; b<bands.length; b++) {
+                        samples[b] = bands[b].applyAsInt(x, y);
+                    }
+                    data.setPixel(x, y, samples);
+                }
+            }
+        }
+        return setValues(data);
     }
 
     /**
@@ -426,7 +482,7 @@ public class GridCoverageBuilder {
      */
     @SuppressWarnings("UseOfObsoleteCollectionType")
     public GridCoverageBuilder addImageProperty(final String key, final Object value) {
-        if (properties.putIfAbsent(requireNonNull(key, "key"), requireNonNull(value, "value")) != null) {
+        if (properties.putIfAbsent(Objects.requireNonNull(key, "key"), Objects.requireNonNull(value, "value")) != null) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, key));
         }
         return this;

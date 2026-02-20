@@ -16,14 +16,23 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import java.util.Arrays;
 import java.nio.file.Path;
 import java.nio.file.Files;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.image.DataType;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStores;
-import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -31,6 +40,7 @@ import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverageBuilder;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 
@@ -48,11 +58,17 @@ import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
 
 /**
  * integration tests for {@link GeoTiffStore}.
+ * This class tests indirectly (via {@link GeoTiffStore}) the {@link Reader} and {@link Writer} classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
 @SuppressWarnings("exports")
 public final class GeoTiffStoreTest extends TestCase {
+    /**
+     * Name of a test file for an untiled image with a single band in gray-scale.
+     */
+    static final String UNTILED = "untiled.tiff";
+
     /**
      * Creates a new test case.
      */
@@ -62,7 +78,7 @@ public final class GeoTiffStoreTest extends TestCase {
     /**
      * Tests writing an image with a non-linear vertical component in the "grid to CRS" transform.
      * This method merely tests that no exception is thrown during the execution, and that reading
-     * the image back can give back the three-dimensional <abbr>CRS</abbr>.
+     * the image gives back the three-dimensional <abbr>CRS</abbr>.
      *
      * @throws Exception if an error occurred while preparing or running the test.
      */
@@ -81,14 +97,14 @@ public final class GeoTiffStoreTest extends TestCase {
         final GridCoverage coverage = builder.build();
         final Path file = Files.createTempFile("sis-test-", ".tiff");
         try {
-            try (DataStore store = DataStores.openWritable(new StorageConnector(file), "GeoTIFF")) {
+            try (DataStore store = DataStores.openWritable(file, "GeoTIFF")) {
                 assertInstanceOf(GeoTiffStore.class, store).append(coverage, null);
             }
             /*
              * Read the image that we wrote in above block. This block merely tests that no exception is thrown,
              * and that the result has the expected number of dimensions, axis order and scale factors.
              */
-            try (DataStore store = DataStores.open(new StorageConnector(file), "GeoTIFF")) {
+            try (DataStore store = DataStores.open(file, "GeoTIFF")) {
                 GridCoverageResource r = assertSingleton(assertInstanceOf(GeoTiffStore.class, store).components());
                 GridGeometry gg = r.getGridGeometry();
                 assertEquals(3, gg.getDimension());
@@ -107,6 +123,49 @@ public final class GeoTiffStoreTest extends TestCase {
             }
         } finally {
             Files.delete(file);
+        }
+    }
+
+    /**
+     * Writes an image and compare with the {@code "untiled.tiff"} file.
+     * This is an anti-regression test, as this test does not inspect the
+     * content of the file.
+     *
+     * @throws TransformException if an error occurred while computing the domain of the image.
+     * @throws DataStoreException if an error occurred while writing the GeoTIFF file.
+     * @throws IOException if an error occurred while reading the file of expected content.
+     */
+    @Test
+    public void testWriteUntiled() throws TransformException, DataStoreException, IOException {
+        var geographicArea = new GeneralEnvelope(CommonCRS.WGS84.geographic());
+        geographicArea.setRange(0,  32,  40);   // Range of latitude values.
+        geographicArea.setRange(1, 137, 140);   // Range of longitude values.
+        final GridCoverage coverage = new GridCoverageBuilder()
+                .setDomain(Envelopes.transform(geographicArea, CommonCRS.WGS84.universal(35, 139)))
+                .setValues(DataType.BYTE, new Dimension(32, 16), (x, y) -> 100 * y + x)
+                .flipGridAxis(1)
+                .build();
+
+        final var buffer = new ByteArrayOutputStream(2284);
+        try (DataStore ds = DataStores.openWritable(buffer, "geotiff")) {
+            assertInstanceOf(GeoTiffStore.class, ds).append(coverage, null);
+        }
+        final byte[] actual = buffer.toByteArray();
+        final byte[] expected;
+        try (InputStream in = GeoTiffStoreTest.class.getResourceAsStream(UNTILED)) {
+            assertNotNull(in, UNTILED);
+            expected = in.readAllBytes();
+        }
+        /*
+         * We tolerance mismatch far enough in the file, because they may be caused
+         * by differences in the way that the CRS is encoded. So we verify that at
+         * least the beginning of the header matches.
+         */
+        final int i = Arrays.mismatch(expected, actual);
+        if (i >= 0 && i < 1000) {
+            assertArrayEquals(expected, actual);
+        } else {
+            assertEquals(expected.length, actual.length);
         }
     }
 }

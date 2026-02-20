@@ -41,6 +41,8 @@ import org.apache.sis.test.TestCase;
 
 /**
  * Tests a few read operations.
+ * Despite the name of this test class, the {@link Reader} class is not tested directly
+ * but indirectly via {@link GeoTiffStore}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
@@ -48,11 +50,6 @@ import org.apache.sis.test.TestCase;
  */
 @SuppressWarnings("exports")
 public class ReaderTest extends TestCase {
-    /**
-     * Name of the test file.
-     */
-    private static final String FILENAME = "untiled.tiff";
-
     /**
      * Creates a new test case.
      */
@@ -66,7 +63,7 @@ public class ReaderTest extends TestCase {
      * @throws DataStoreException if an error occurred while creating the data store.
      */
     private static GeoTiffStore createStore() throws DataStoreException {
-        return new GeoTiffStore(null, new StorageConnector(ReaderTest.class.getResource(FILENAME)));
+        return new GeoTiffStore(null, new StorageConnector(ReaderTest.class.getResource(GeoTiffStoreTest.UNTILED)));
     }
 
     /**

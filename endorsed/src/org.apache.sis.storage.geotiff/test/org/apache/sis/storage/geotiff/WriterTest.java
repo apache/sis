@@ -57,6 +57,8 @@ import org.apache.sis.referencing.operation.HardCodedConversions;
 
 /**
  * Tests {@link Writer}.
+ * Despite the name of this test class, the {@link Writer} class is not tested directly
+ * but indirectly via {@link GeoTiffStore}.
  *
  * @author  Erwan Roussel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -88,7 +90,7 @@ public final class WriterTest extends TestCase {
 
     /**
      * The channel where the image is written.
-     * The data can be obtained by a call to {@link ByteArrayChannel#toBuffer()}.
+     * The data can be obtained by a call to {@lingk ByteArrayChannel#toBuffer()}.
      */
     private ByteArrayChannel output;
 
