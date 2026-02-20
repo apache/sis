@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.geotiff;
 
-import java.util.Arrays;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.io.IOException;
@@ -40,7 +39,6 @@ import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverageBuilder;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 
@@ -51,6 +49,7 @@ import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.feature.Assertions.assertGridToCornerEquals;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.operation.HardCodedConversions;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
@@ -137,11 +136,11 @@ public final class GeoTiffStoreTest extends TestCase {
      */
     @Test
     public void testWriteUntiled() throws TransformException, DataStoreException, IOException {
-        var geographicArea = new GeneralEnvelope(CommonCRS.WGS84.geographic());
-        geographicArea.setRange(0,  32,  40);   // Range of latitude values.
-        geographicArea.setRange(1, 137, 140);   // Range of longitude values.
+        var geographicArea = new GeneralEnvelope(HardCodedCRS.WGS84);
+        geographicArea.setRange(0, 132, 145);   // Range of longitude values.
+        geographicArea.setRange(1,  30,  42);   // Range of latitude values.
         final GridCoverage coverage = new GridCoverageBuilder()
-                .setDomain(Envelopes.transform(geographicArea, CommonCRS.WGS84.universal(35, 139)))
+                .setDomain(Envelopes.transform(geographicArea, HardCodedConversions.mercator()))
                 .setValues(DataType.BYTE, new Dimension(32, 16), (x, y) -> 100 * y + x)
                 .flipGridAxis(1)
                 .build();
@@ -156,16 +155,6 @@ public final class GeoTiffStoreTest extends TestCase {
             assertNotNull(in, UNTILED);
             expected = in.readAllBytes();
         }
-        /*
-         * We tolerance mismatch far enough in the file, because they may be caused
-         * by differences in the way that the CRS is encoded. So we verify that at
-         * least the beginning of the header matches.
-         */
-        final int i = Arrays.mismatch(expected, actual);
-        if (i >= 0 && i < 1000) {
-            assertArrayEquals(expected, actual);
-        } else {
-            assertEquals(expected.length, actual.length);
-        }
+        assertArrayEquals(expected, actual);
     }
 }
