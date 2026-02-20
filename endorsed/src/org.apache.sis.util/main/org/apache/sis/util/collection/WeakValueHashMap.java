@@ -45,8 +45,8 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  * as soon as the garbage collector determines that they are no longer in use. If caching
  * service are wanted, or if concurrency are wanted, consider using {@link Cache} instead.</p>
  *
- * <p>This class is convenient for avoiding the creation of duplicated elements, as in the
- * example below:</p>
+ * <p>This class is convenient for avoiding the creation of duplicated elements,
+ * as in the example below:</p>
  *
  * {@snippet lang="java" :
  *     K key = ...
@@ -61,7 +61,7 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  *     }
  *
  * In the above example, the calculation of a new value needs to be fast because it is performed inside a synchronized
- * statement blocking all other access to the map. This is okay if that particular {@code WeakValueHashMap} instance
+ * statement blocking all other accesses to the map. This is okay if that particular {@code WeakValueHashMap} instance
  * is not expected to be used in a highly concurrent environment.
  *
  * <p>{@code WeakValueHashMap} works with array keys as one would expect. For example, arrays of {@code int[]} are
