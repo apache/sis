@@ -23,7 +23,9 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
+import java.util.function.IntBinaryOperator;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.util.ArgumentChecks;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.grid.SequenceType;
@@ -54,7 +56,7 @@ import org.opengis.coverage.grid.SequenceType;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.7
  * @since   1.0
  */
 public class WritablePixelIterator extends PixelIterator implements Closeable {
@@ -113,7 +115,6 @@ public class WritablePixelIterator extends PixelIterator implements Closeable {
                           final Rectangle subArea, final Dimension window, final SequenceType order)
     {
         super(input, subArea, window, order);
-        destRaster  = null;
         destination = output;
         if (output != null) {
             if (!input.getSampleModel().equals(output.getSampleModel())) {
@@ -250,6 +251,51 @@ public class WritablePixelIterator extends PixelIterator implements Closeable {
      */
     public void setPixel(final double[] values) {
         destRaster.setPixel(x, y, values);
+    }
+
+    /**
+     * Returns a clone of the given array where all elements are guaranteed non-null.
+     */
+    final IntBinaryOperator[] validate(IntBinaryOperator[] bands) {
+        if (bands.length != numBands) {
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.UnexpectedNumberOfBands_2, numBands, bands.length));
+        }
+        bands = bands.clone();
+        for (int i=0; i<bands.length; i++) {
+            ArgumentChecks.ensureNonNullElement("bands", i, bands[i]);
+        }
+        return bands;
+    }
+
+    /**
+     * Sets all remaining pixels to sample values computed by the given functions.
+     * Each function will receive pixel coordinates (<var>x</var>, <var>y</var>)
+     * and shall return the sample value to store in one band of the image at that pixel position.
+     * The functions shall be given in the same order as the bands.
+     * Therefore, the function at index <var>i</var> computes the sample values of band <var>i</var>.
+     *
+     * @param  bands  functions providing sample values in each band, in order.
+     * @throws IllegalArgumentException if the number of functions is not equal
+     *         to the {@linkplain #getNumBands() number of bands}.
+     *
+     * @since 1.7
+     */
+    public void setRemainingPixels(IntBinaryOperator... bands) {
+        bands = validate(bands);
+        if (bands.length == 1) {    // Slight optimization for a common case.
+            final IntBinaryOperator band = bands[0];
+            while (next()) {
+                destRaster.setSample(x, y, 0, band.applyAsInt(x, y));
+            }
+        } else {
+            final int[] samples = new int[bands.length];
+            while (next()) {
+                for (int i=0; i<bands.length; i++) {
+                    samples[i] = bands[i].applyAsInt(x, y);
+                }
+                destRaster.setPixel(x, y, samples);
+            }
+        }
     }
 
     /**

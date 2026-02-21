@@ -37,11 +37,12 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.PlanarImage;
-import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.image.WritablePixelIterator;
 import org.apache.sis.image.internal.shared.ColorScaleBuilder;
 import org.apache.sis.image.internal.shared.ObservableImage;
 import org.apache.sis.image.internal.shared.TiledImage;
 import org.apache.sis.image.internal.shared.WritableTiledImage;
+import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -393,7 +394,7 @@ public class GridCoverageBuilder {
      * The number of bands is the number of functions and the color model defaults to gray scale.
      * The tiling is unspecified and may change in future versions of Apache <abbr>SIS</abbr>.
      *
-     * <p>Each functions will receive pixel coordinates (<var>x</var>, <var>y</var>)
+     * <p>Each function will receive pixel coordinates (<var>x</var>, <var>y</var>)
      * and shall return the sample value to store in one band of the image at that pixel position.
      * The <var>x</var> values will be between 0 inclusive and {@link Dimension#width} exclusive.
      * The <var>y</var> values will be between 0 inclusive and {@link Dimension#height} exclusive.
@@ -405,40 +406,15 @@ public class GridCoverageBuilder {
      * @return {@code this} for method invocation chaining.
      * @throws IllegalArgumentException if {@code width} or {@code height} is negative or equals to zero.
      *
+     * @see WritablePixelIterator#setRemainingPixels(IntBinaryOperator...)
+     *
      * @since 1.7
      */
-    public GridCoverageBuilder setValues(final DataType type, final Dimension size, IntBinaryOperator... bands) {
-        final int width, height;
-        ArgumentChecks.ensureStrictlyPositive("width",  width  = size.width);
-        ArgumentChecks.ensureStrictlyPositive("height", height = size.height);
-        ArgumentChecks.ensureNonEmpty("bands", bands);
-        bands = bands.clone();
-        for (int b=0; b<bands.length; b++) {
-            ArgumentChecks.ensureNonNullElement("bands", b, bands[b]);
-        }
-        final WritableRaster data = Raster.createBandedRaster(type.toDataBufferType(), width, height, bands.length, null);
-        if (bands.length == 1) {
-            /*
-             * This block is not strictly necessary, as the following block is general.
-             * But it is a slight optimization for a common case.
-             */
-            final IntBinaryOperator band = bands[0];
-            for (int y=0; y<height; y++) {
-                for (int x=0; x<width; x++) {
-                    data.setSample(x, y, 0, band.applyAsInt(x, y));
-                }
-            }
-        } else {
-            final int[] samples = new int[bands.length];
-            for (int y=0; y<height; y++) {
-                for (int x=0; x<width; x++) {
-                    for (int b=0; b<bands.length; b++) {
-                        samples[b] = bands[b].applyAsInt(x, y);
-                    }
-                    data.setPixel(x, y, samples);
-                }
-            }
-        }
+    public GridCoverageBuilder setValues(final DataType type, final Dimension size, final IntBinaryOperator... bands) {
+        // Number of bands, width and height are verified by `Raster.createBandedRaster(…)`
+        final WritableRaster data = Raster.createBandedRaster(type.toDataBufferType(), size.width, size.height, bands.length, null);
+        final WritablePixelIterator i = new WritablePixelIterator.Builder().createWritable(data);
+        i.setRemainingPixels(bands);
         return setValues(data);
     }
 
