@@ -16,29 +16,13 @@
  */
 
 /**
- * Raster imagery and geometry features.
+ * A set of helper classes for the SIS implementation.
  *
- * @author  Johann Sorel (Geomatys)
+ * <STRONG>Do not use!</STRONG>
+ *
+ * This package is for internal use by SIS only. Classes in this package
+ * may change in incompatible ways in any future version without notice.
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.7
- * @since   1.2
  */
-module org.apache.sis.portrayal {
-    requires transitive org.apache.sis.storage;
-    requires jakarta.xml.bind;
-
-    exports org.apache.sis.style;
-    exports org.apache.sis.portrayal;
-
-    exports org.apache.sis.map.coverage to
-            org.apache.sis.gui;                         // In the "optional" sub-project.
-
-    exports org.apache.sis.style.se1 to
-            org.apache.sis.portrayal.map;               // In the "incubator" sub-project.
-
-    /*
-     * Allow JAXB to use reflection for marshalling and
-     * unmarshalling Apache SIS objects in XML documents.
-     */
-    opens org.apache.sis.style.se1 to jakarta.xml.bind;
-}
+package org.apache.sis.map.internal;

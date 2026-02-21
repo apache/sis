@@ -1125,11 +1125,11 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Verifies that the given rectangle, if non-null, is non-empty.
+     * Verifies that the given rectangle is non-empty.
      * This method assumes that the argument name is "bounds".
      */
     private static void ensureNonEmpty(final Rectangle bounds) {
-        if (bounds != null && bounds.isEmpty()) {
+        if (bounds.isEmpty()) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "bounds"));
         }
     }

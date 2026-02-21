@@ -14,31 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.map.internal;
+
 
 /**
- * Raster imagery and geometry features.
- *
- * @author  Johann Sorel (Geomatys)
- * @author  Martin Desruisseaux (Geomatys)
- * @version 1.7
- * @since   1.2
+ * Resource in English language.
  */
-module org.apache.sis.portrayal {
-    requires transitive org.apache.sis.storage;
-    requires jakarta.xml.bind;
-
-    exports org.apache.sis.style;
-    exports org.apache.sis.portrayal;
-
-    exports org.apache.sis.map.coverage to
-            org.apache.sis.gui;                         // In the "optional" sub-project.
-
-    exports org.apache.sis.style.se1 to
-            org.apache.sis.portrayal.map;               // In the "incubator" sub-project.
-
-    /*
-     * Allow JAXB to use reflection for marshalling and
-     * unmarshalling Apache SIS objects in XML documents.
+public class Resources_en extends Resources {
+    /**
+     * Constructs a new resource bundle loading data from
+     * the resource file of the same name as this class.
      */
-    opens org.apache.sis.style.se1 to jakarta.xml.bind;
+    public Resources_en() {
+    }
 }
