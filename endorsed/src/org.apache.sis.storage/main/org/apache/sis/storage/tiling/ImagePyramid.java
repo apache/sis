@@ -208,7 +208,11 @@ final class ImagePyramid extends AbstractMap<GenericName, ImageTileMatrix>
      */
     @Override
     public Comparator<GenericName> comparator() {
-        return (GenericName o1, GenericName o2) -> indexOf(o1, false) - indexOf(o2, false);
+        return (GenericName o1, GenericName o2) -> {
+            synchronized (matrices) {
+                return indexOf(o1, false) - indexOf(o2, false);
+            }
+        };
     }
 
     /**
@@ -379,7 +383,9 @@ final class ImagePyramid extends AbstractMap<GenericName, ImageTileMatrix>
      */
     @Override
     public SortedMap<GenericName, ImageTileMatrix> headMap(GenericName toKey) {
-        return subMap(lowerMatrixIndex, indexOf(toKey, true));
+        synchronized (matrices) {
+            return subMap(lowerMatrixIndex, indexOf(toKey, true));
+        }
     }
 
     /**
@@ -389,7 +395,9 @@ final class ImagePyramid extends AbstractMap<GenericName, ImageTileMatrix>
      */
     @Override
     public SortedMap<GenericName, ImageTileMatrix> tailMap(GenericName fromKey) {
-        return subMap(indexOf(fromKey, true), upperMatrixIndex);
+        synchronized (matrices) {
+            return subMap(indexOf(fromKey, true), upperMatrixIndex);
+        }
     }
 
     /**
@@ -400,7 +408,9 @@ final class ImagePyramid extends AbstractMap<GenericName, ImageTileMatrix>
      */
     @Override
     public SortedMap<GenericName, ImageTileMatrix> subMap(GenericName fromKey, GenericName toKey) {
-        return subMap(indexOf(fromKey, true), indexOf(toKey, true));
+        synchronized (matrices) {
+            return subMap(indexOf(fromKey, true), indexOf(toKey, true));
+        }
     }
 
     /**

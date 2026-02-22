@@ -327,16 +327,18 @@ final class Reader extends IOBase {
     }
 
     /**
-     * Reads all entries that were deferred.
+     * Reads all entries that were deferred, then verifies that the mandatory tags
+     * are present and consistent with each others.
      *
      * @param dir  the IFD for which to resolve deferred entries regardless stream position or {@code ignoreAfter} value.
+     * @return {@code true} if the method has been invoked for the first time.
      */
-    final void resolveDeferredEntries(final ImageFileDirectory dir) throws IOException, DataStoreException {
+    final boolean resolveDeferredEntries(final ImageFileDirectory dir) throws IOException, DataStoreException {
         if (dir.hasDeferredEntries) {
             resolveDeferredEntries(dir, Long.MAX_VALUE);
             dir.hasDeferredEntries = false;
         }
-        dir.validateMandatoryTags();
+        return dir.validateMandatoryTags();
     }
 
     /**
@@ -428,16 +430,8 @@ final class Reader extends IOBase {
                     break;
                 }
             }
-            /*
-             * All pyramid levels have been read. If there is only one level,
-             * use the image directly. Otherwise, create the pyramid.
-             */
-            if (overviews.isEmpty()) {
-                images.add(fullResolution);
-            } else {
-                overviews.add(0, fullResolution);
-                images.add(new MultiResolutionImage(overviews));
-            }
+            fullResolution.setOverviews(overviews);
+            images.add(fullResolution);
         }
         final GridCoverageResource image = images.get(index);
         if (image instanceof ImageFileDirectory) {

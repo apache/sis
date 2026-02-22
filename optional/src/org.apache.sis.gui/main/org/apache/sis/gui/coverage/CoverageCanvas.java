@@ -65,6 +65,7 @@ import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.image.Colorizer;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.Interpolation;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
@@ -80,6 +81,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.measure.Units;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
@@ -91,7 +93,7 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  * instance (given by {@link #coverageProperty}) will change automatically according the zoom level.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.6
+ * @version 1.7
  *
  * @see CoverageExplorer
  *
@@ -608,10 +610,12 @@ public class CoverageCanvas extends MapCanvasAWT {
                             domain = coverage.getGridGeometry();
                             ranges = coverage.getSampleDimensions();
                             scales = null;
-                        } else {
+                        } else try {
                             domain = resource.getGridGeometry();
                             ranges = resource.getSampleDimensions();
                             scales = lastNonNull(resource.getResolutions());
+                        } catch (BackingStoreException e) {
+                            throw e.unwrapOrRethrow(DataStoreException.class);
                         }
                         if (domain != null) {
                             /*
@@ -640,7 +644,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                                 final Envelope bounds = domain.getEnvelope();
                                 final int dimension = Math.min(BIDIMENSIONAL, Math.min(bounds.getDimension(), scales.length));
                                 for (int i=0; i<dimension; i++) {
-                                    ratio *= scales[i] / bounds.getSpan(i);  // Equivalent to /= span_in_pixels.
+                                    ratio *= scales[i] / bounds.getSpan(i);  // Equivalent to `ratio /= span_in_pixels`.
                                 }
                                 if (ratio < 1) {
                                     ratio = Math.pow(ratio, 1d / dimension);

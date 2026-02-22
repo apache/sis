@@ -63,7 +63,7 @@ import org.opengis.coverage.CannotEvaluateException;
  */
 public abstract class GridCoverage extends BandedCoverage {
     /**
-     * A constant for making easier to identify codes working on two dimensional data.
+     * Number of dimensions in a two-dimensional slice of data represented as a rendered image.
      * This constant can be used for making easier to identify codes where a two-dimensional slice is assumed.
      *
      * @see #render(GridExtent)

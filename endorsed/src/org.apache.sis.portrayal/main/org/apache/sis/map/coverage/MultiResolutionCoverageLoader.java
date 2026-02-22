@@ -38,6 +38,7 @@ import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.pending.jdk.JDK16;
+import org.apache.sis.util.collection.BackingStoreException;
 
 
 /**
@@ -124,7 +125,12 @@ public class MultiResolutionCoverageLoader {
         this.resource  = resource;
         areaOfInterest = domain;
         readRanges     = range;
-        double[][] resolutions = resource.getResolutions().toArray(double[][]::new);
+        double[][] resolutions;
+        try {
+            resolutions = resource.getResolutions().toArray(double[][]::new);
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(DataStoreException.class);
+        }
         if (resolutions.length <= 1) {
             final GridGeometry gg = resource.getGridGeometry();
             if (resolutions.length != 0) {

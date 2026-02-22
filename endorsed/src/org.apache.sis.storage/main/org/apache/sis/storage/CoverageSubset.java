@@ -36,6 +36,7 @@ import org.apache.sis.referencing.internal.shared.DirectPositionView;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.pending.jdk.JDK16;
 
 
@@ -142,9 +143,11 @@ final class CoverageSubset extends AbstractGridCoverageResource {
     @Override
     public List<double[]> getResolutions() throws DataStoreException {
         List<double[]> resolutions = source.getResolutions();
-        if (reduction != null) {
+        if (reduction != null) try {
             JDK16.toList(resolutions.stream()
                     .map((resolution) -> reduction.apply(new DirectPositionView.Double(resolution)).getCoordinates()));
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(DataStoreException.class);
         }
         return resolutions;
     }
