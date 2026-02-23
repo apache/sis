@@ -78,9 +78,7 @@ public final class FileAccessView extends Widget implements UnaryOperator<Channe
     }
 
     /**
-     * Returns the node to show in a window.
-     *
-     * @return the node to show.
+     * Returns the encapsulated JavaFX component to add in a scene graph for making the widget visible.
      */
     @Override
     public Region getView() {

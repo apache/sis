@@ -134,7 +134,7 @@ public final class SyncWindowList extends TabularWidget implements ListChangeLis
      * @param  vocabulary  localized resources, given because already known by the caller
      *                     (those arguments would be removed if this constructor was public API).
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"this-escape", "unchecked"})
     public SyncWindowList(final WindowHandler owner, final Resources resources, final Vocabulary vocabulary) {
         this.owner = owner;
         table = newTable();
@@ -171,7 +171,7 @@ public final class SyncWindowList extends TabularWidget implements ListChangeLis
      * @return the new row.
      */
     private static TableRow<Link> newRow(final TableView<Link> table) {
-        TableRow<Link> row = new TableRow<>();
+        final var row = new TableRow<Link>();
         row.addEventFilter(MouseEvent.MOUSE_CLICKED, SyncWindowList::onMouseClicked);
         return row;
     }
@@ -198,7 +198,7 @@ public final class SyncWindowList extends TabularWidget implements ListChangeLis
     }
 
     /**
-     * Returns the encapsulated JavaFX component to add in a scene graph for making the table visible.
+     * Returns the encapsulated JavaFX component to add in a scene graph for making the widget visible.
      * The {@code Region} subclass is implementation dependent and may change in any future SIS version.
      *
      * @return the JavaFX component to insert in a scene graph.

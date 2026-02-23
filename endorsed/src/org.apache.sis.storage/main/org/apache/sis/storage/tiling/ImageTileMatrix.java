@@ -38,6 +38,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage2D;
 import org.apache.sis.coverage.grid.GridCoverageProcessor;
+import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.image.internal.shared.ReshapedImage;
 import org.apache.sis.pending.jdk.JDK18;
 import org.apache.sis.util.ArgumentChecks;
@@ -183,6 +184,9 @@ final class ImageTileMatrix implements TileMatrix {
      * Returns the resolution (in units of CRS axes) at which tiles in this matrix should be used.
      * The array length is the number of <abbr>CRS</abbr> dimensions, and value at index <var>i</var>
      * is the resolution along CRS dimension <var>i</var> in units of the CRS axis <var>i</var>.
+     *
+     * @throws IncompleteGridGeometryException if the tiling scheme has no resolution.
+     *         Tile matrices with such tiling scheme should not have been constructed.
      */
     @Override
     public double[] getResolution() {
@@ -191,6 +195,14 @@ final class ImageTileMatrix implements TileMatrix {
         } catch (DataStoreException e) {
             throw new BackingStoreException(e);
         }
+    }
+
+    /**
+     * Returns the tile size of the given matrix if known, or {@code null} otherwise.
+     * This method returns a direct reference to the internal array, caller shall not modify.
+     */
+    static int[] getTileSize(final TileMatrix matrix) {
+        return (matrix instanceof ImageTileMatrix) ? ((ImageTileMatrix) matrix).tileSize : null;
     }
 
     /**
@@ -367,7 +379,7 @@ final class ImageTileMatrix implements TileMatrix {
                 low [i] = Math.max(extent.getLow(i), tileToCell(indiceRanges.getLow(i), i));
                 final long span = high[i] - low[i];
                 if (span < 0 || span > Integer.MAX_VALUE) {
-                    throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Integer.SIZE));
+                    throw new ArithmeticException(resource.errors().getString(Errors.Keys.IntegerOverflow_1, Integer.SIZE));
                 }
                 if (coverage.deferredTileReading) {
                     final long remain = Math.min(extent.getSize(i), Integer.MAX_VALUE) - span;

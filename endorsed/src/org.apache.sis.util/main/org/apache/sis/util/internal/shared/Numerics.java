@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.internal.shared;
 
+import java.util.Arrays;
 import java.text.Format;
 import java.text.DecimalFormat;
 import java.math.BigInteger;
@@ -220,7 +221,7 @@ public final class Numerics {
     public static int snapToCeil(int value, final int divisor) {
         final int r = value % divisor;      // Always has the sign of `value`.
         if (r > 0) {
-            value += Math.abs(divisor) - r;
+            value += abs(divisor) - r;
         } else {
             value -= r;
         }
@@ -295,8 +296,8 @@ public final class Numerics {
      * @return the value clamped to the range convertible to {@code double} without precision lost.
      */
     public static long roundAndClamp(final double value) {
-        return Math.max(-MAX_INTEGER_CONVERTIBLE_TO_DOUBLE,
-               Math.min(+MAX_INTEGER_CONVERTIBLE_TO_DOUBLE, Math.round(value)));
+        return max(-MAX_INTEGER_CONVERTIBLE_TO_DOUBLE,
+               min(+MAX_INTEGER_CONVERTIBLE_TO_DOUBLE, Math.round(value)));
     }
 
     /**
@@ -553,7 +554,7 @@ public final class Numerics {
     }
 
     /**
-     * Suggests an number of fraction digits for formatting in base 10 numbers of the given accuracy.
+     * Suggests a number of fraction digits for formatting in base 10 numbers of the given accuracy.
      * This method uses heuristic rules that may change in any future SIS version:
      *
      * <ul>
@@ -574,34 +575,54 @@ public final class Numerics {
      * @see DecimalFunctions#fractionDigitsForDelta(double, boolean)
      */
     public static int fractionDigitsForDelta(final double ulp) {
-        return (ulp != 0) ? Math.max(0, Math.min(16, DecimalFunctions.fractionDigitsForDelta(ulp, false))) : 0;
+        return (ulp != 0) ? max(0, min(16, DecimalFunctions.fractionDigitsForDelta(ulp, false))) : 0;
     }
 
     /**
-     * Suggests an number of fraction digits for the given values, ignoring NaN and infinities.
-     * This method uses heuristic rules that may change in any future SIS version.
-     * Current implementation returns a value which avoid printing "garbage" digits
-     * with highest numbers, at the cost of loosing significant digits on smallest numbers.
+     * Suggests a number of fraction digits for the given values, ignoring NaN and infinities.
+     * This method uses heuristic rules that may change in any future <abbr>SIS</abbr> version.
+     * Current implementation returns a value which avoid printing "garbage" digits with highest numbers,
+     * at the cost of loosing significant digits on smallest numbers. It may further reduce the number of
+     * digits if this is sufficient for distinguishing the given values.
      * An arbitrary limit is set to 16 digits, which is the number of digits for {@code Math.ulp(1.0)}}.
+     *
+     * <p>This method modifies the given array in-place. Callers should not pass original data.</p>
      *
      * @param  values  the values for which to get suggested number of fraction digits.
      * @return suggested number of fraction digits for the given values. Always positive.
      */
     public static int suggestFractionDigits(final double... values) {
+        switch (values.length) {
+            case 0: return 0;
+            case 1: return DecimalFunctions.fractionDigitsForValue(values[0]);
+        }
+        for (int i=0; i<values.length; i++) {
+            values[i] = abs(values[i]);
+        }
+        Arrays.sort(values);
         double ulp = 0;
-        if (values != null) {
-            for (final double v : values) {
-                final double e = Math.ulp(v);
-                if (e > ulp && e != Double.POSITIVE_INFINITY) {
-                    ulp = e;
+        double delta = Double.POSITIVE_INFINITY;
+        for (int i = values.length; --i >= 0;) {
+            double value = values[i];
+            if (Double.isFinite(value)) {
+                ulp = ulp(value);
+                while (--i >= 0) {
+                    final double lower = values[i];
+                    final double diff = value - lower;
+                    if (diff > 0 && diff < delta) {
+                        delta = diff;
+                    }
+                    value = lower;
                 }
+                break;
             }
         }
-        return fractionDigitsForDelta(ulp);
+        // Arbitrarily add 6 digits the the difference between values.
+        return min(fractionDigitsForDelta(ulp), fractionDigitsForDelta(delta) + 6);
     }
 
     /**
-     * Suggests an number of fraction digits for data having the given statistics.
+     * Suggests a number of fraction digits for data having the given statistics.
      * This method uses heuristic rules that may be modified in any future SIS version.
      *
      * @param  stats  statistics on the data to format.
@@ -646,7 +667,7 @@ public final class Numerics {
             final DecimalFormat df = (DecimalFormat) format;
             final int maxFD = df.getMaximumFractionDigits();
             final double m = abs(((Number) value).doubleValue());
-            if (m > 0 && (m >= 1E+9 || m < MathFunctions.pow10(-Math.min(maxFD, 6)))) {
+            if (m > 0 && (m >= 1E+9 || m < MathFunctions.pow10(-min(maxFD, 6)))) {
                 final int minFD = df.getMinimumFractionDigits();
                 final String pattern = df.toPattern();
                 try {

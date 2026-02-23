@@ -344,13 +344,13 @@ public class CoverageExplorer extends Widget {
      * {@code CoverageExplorer}. The {@link Region} subclass returned by this method is implementation dependent
      * and may change in any future version.
      *
-     * @return the region to show.
+     * @return the JavaFX component to insert in a scene graph.
      *
      * @see #getDataView(View)
      * @see #getControls(View)
      */
     @Override
-    public final Region getView() {
+    public Region getView() {
         assert Platform.isFxApplicationThread();
         /*
          * We build when first requested because `ResourceExplorer` for example will never request this view.

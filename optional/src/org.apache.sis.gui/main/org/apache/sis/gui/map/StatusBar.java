@@ -635,10 +635,11 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     }
 
     /**
-     * Returns the node to add to the scene graph for showing the status bar.
+     * Returns the encapsulated JavaFX component to add in a scene graph for making the status bar visible.
+     * The {@code Region} subclass is implementation dependent and may change in any future SIS version.
      */
     @Override
-    public final Region getView() {
+    public Region getView() {
         return view;
     }
 
@@ -1347,6 +1348,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @param  y  the <var>y</var> coordinate local to the view.
      * @return string representation of coordinates or an error message.
      */
+    @SuppressWarnings("UseSpecificCatch")
     private String formatLocalCoordinates(final double x, final double y) {
         sourceCoordinates[xDimension] = x;
         sourceCoordinates[yDimension] = y;

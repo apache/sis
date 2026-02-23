@@ -433,7 +433,7 @@ public final class DecimalFunctions {
      * is a choice:
      *
      * <ul>
-     *   <li>If after rounding the given {@code value} to an number of fraction digits given by ({@code fractionDigits}
+     *   <li>If after rounding the given {@code value} to a number of fraction digits given by ({@code fractionDigits}
      *       - {@code uncertainDigits}) the 4 last fraction digits before the rounded ones are zero, then this method
      *       returns {@code fractionDigits} - {@code uncertainDigits}.</li>
      *   <li>Otherwise this method returns {@code fractionDigits}.</li>

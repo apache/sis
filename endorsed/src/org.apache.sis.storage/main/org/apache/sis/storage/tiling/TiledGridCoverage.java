@@ -334,6 +334,13 @@ public abstract class TiledGridCoverage extends GridCoverage {
     }
 
     /**
+     * Returns the localized resources for error messages.
+     */
+    private Errors errors() {
+        return Errors.forLocale(getLocale());
+    };
+
+    /**
      * Returns a unique name that identifies this coverage.
      * The name shall be unique in the {@link TileMatrixSet}.
      *
@@ -546,8 +553,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
         } else {
             final int sd = sliceExtent.getDimension();
             if (sd < dimension || sd > available.getDimension()) {
-                throw new MismatchedDimensionException(Errors.format(
-                        Errors.Keys.MismatchedDimension_3, "sliceExtent", dimension, sd));
+                throw new MismatchedDimensionException(errors().getString(
+                            Errors.Keys.MismatchedDimension_3, "sliceExtent", dimension, sd));
             }
         }
         final int[] selectedDimensions = sliceExtent.getSubspaceDimensions(BIDIMENSIONAL);
@@ -569,8 +576,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 final long tileUp = incrementExact(coverageCellToResourceTile(Math.min(aoiMax, max), i));
                 final long tileLo =                coverageCellToResourceTile(Math.max(aoiMin, min), i);
                 if (tileUp <= tileLo) {
-                    final String message = Errors.forLocale(getLocale())
-                            .getString(Errors.Keys.IllegalRange_2, aoiMin, aoiMax);
+                    final String message = errors().getString(Errors.Keys.IllegalRange_2, aoiMin, aoiMax);
                     if (aoiMin > aoiMax) {
                         throw new IllegalArgumentException(message);
                     } else {

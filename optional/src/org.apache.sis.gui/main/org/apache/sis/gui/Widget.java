@@ -22,13 +22,13 @@ import org.apache.sis.util.Localized;
 
 
 /**
- * Base class of user interfaces provided by Apache SIS.
+ * Base class of user interfaces provided by Apache <abbr>SIS</abbr>.
  * This base class is used for components that encapsulate JavaFX controls instead of extending them.
- * We use this indirection level for hiding implementation details such as the exact JavaFX classes used
- * for implementing the widget.
+ * We use this indirection level for hiding implementation details such as the exact JavaFX classes
+ * used for implementing the widget.
  *
  * <h2>Other controls</h2>
- * Not all Apache SIS widgets extent this class.
+ * Not all Apache <abbr>SIS</abbr> widgets extent this class.
  * Other widgets extending directly a JavaFX control or other classes are
  * {@link org.apache.sis.gui.metadata.MetadataTree},
  * {@link org.apache.sis.gui.dataset.ResourceTree},

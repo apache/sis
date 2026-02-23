@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.SortedMap;
@@ -32,7 +33,6 @@ import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
-import org.apache.sis.measure.NumberRange;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -40,7 +40,6 @@ import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.AbstractMap;
-import org.apache.sis.util.internal.shared.Strings;
 
 
 /**
@@ -99,19 +98,27 @@ final class ImagePyramid extends AbstractMap<GenericName, ImageTileMatrix>
     private final GridCoverageProcessor processor;
 
     /**
+     * The locale for error messages, or {@code null} for the default locale.
+     */
+    final Locale locale;
+
+    /**
      * Creates a new tile matrix set.
      *
      * @param  parent     identifier of the {@code TiledResource} that contains this {@code TileMatrixSet}.
      * @param  provider   information about the tile matrices to create, and provider of pyramid levels.
      * @param  processor  the grid coverage processor to use when tiles use a subset of the bands.
+     * @param  locale     the locale for error messages, or {@code null} for the default locale.
      */
     @SuppressWarnings("LocalVariableHidesMemberVariable")
     ImagePyramid(final GenericName parent,
                  final TiledGridCoverageResource.Pyramid provider,
-                 final GridCoverageProcessor processor)
+                 final GridCoverageProcessor processor,
+                 final Locale locale)
     {
         this.provider  = provider;
         this.processor = processor;
+        this.locale    = locale;
         identifier = Names.createScopedName(parent, null, provider.identifier());
         matrices = new ArrayList<>();
         lowerMatrixIndex = 0;
@@ -125,6 +132,7 @@ final class ImagePyramid extends AbstractMap<GenericName, ImageTileMatrix>
         this.identifier = parent.identifier;
         this.provider   = parent.provider;
         this.processor  = parent.processor;
+        this.locale     = parent.locale;
         this.matrices   = parent.matrices;
         this.lowerMatrixIndex = lowerMatrixIndex;
         this.upperMatrixIndex = upperMatrixIndex;
@@ -196,7 +204,7 @@ final class ImagePyramid extends AbstractMap<GenericName, ImageTileMatrix>
             }
         }
         if (required) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.NoSuchValue_1, name));
+            throw new IllegalArgumentException(Errors.forLocale(locale).getString(Errors.Keys.NoSuchValue_1, name));
         }
         return -1;
     }
@@ -432,16 +440,15 @@ final class ImagePyramid extends AbstractMap<GenericName, ImageTileMatrix>
 
     /**
      * Returns a string representation for debugging purposes.
+     * The tile matrices are formatted in a table.
      *
      * @return a string representation for debugging purposes.
      */
     @Override
     public String toString() {
-        final Object upper;
+        final var f = new TileMatrixFormatter(locale);
         synchronized (matrices) {
-            final Integer max = (upperMatrixIndex == Integer.MAX_VALUE) ? null : upperMatrixIndex;
-            upper = (matrices.size() >= upperMatrixIndex) ? max : new NumberRange<>(Integer.class, lowerMatrixIndex, true, max, true);
+            return f.format(this);
         }
-        return Strings.toString(getClass(), null, identifier.toString(), "lowerMatrixIndex", lowerMatrixIndex, "upperMatrixIndex", upper);
     }
 }

@@ -1250,6 +1250,11 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short Thermal = 260;
 
         /**
+         * Tile count
+         */
+        public static final short TileCount = 284;
+
+        /**
          * Tile matrix sets
          */
         public static final short TileMatrixSets = 282;
@@ -1258,6 +1263,11 @@ public class Vocabulary extends IndexedResourceBundle {
          * Tile size
          */
         public static final short TileSize = 194;
+
+        /**
+         * Tiling
+         */
+        public static final short Tiling = 283;
 
         /**
          * Time

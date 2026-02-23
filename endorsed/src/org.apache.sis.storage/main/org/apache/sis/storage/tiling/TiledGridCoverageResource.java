@@ -173,13 +173,6 @@ public abstract class TiledGridCoverageResource extends AbstractGridCoverageReso
     private int yDimension;
 
     /**
-     * The resolutions of each levels of the default pyramid. Computed when first needed, then cached.
-     *
-     * @see #getResolutions()
-     */
-    private List<double[]> resolutions;
-
-    /**
      * Creates a new resource.
      *
      * @param  parent  the parent resource, or {@code null} if none.
@@ -497,7 +490,7 @@ check:  if (dataType.isInteger()) {
                                 () -> pyramids.get(0).nameFactory().createLocalName(null, listeners.getSourceName()));
                     final var processor = new GridCoverageProcessor();
                     for (int i=0; i<sets.length; i++) {
-                        sets[i] = new ImagePyramid(scope, pyramids.get(i), processor);
+                        sets[i] = new ImagePyramid(scope, pyramids.get(i), processor, listeners.getLocale());
                     }
                 }
                 tileMatrixSets = List.of(sets);
@@ -1072,7 +1065,7 @@ check:  if (dataType.isInteger()) {
         ArgumentChecks.ensureBetween("xDimension", 0, max, xDimension);
         ArgumentChecks.ensureBetween("yDimension", 0, max, yDimension);
         if (xDimension == yDimension) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "yDimension", "xDimension"));
+            throw new IllegalArgumentException(errors().getString(Errors.Keys.IllegalArgumentValue_2, "yDimension", "xDimension"));
         }
         this.xDimension = xDimension;
         this.yDimension = yDimension;
@@ -1210,5 +1203,12 @@ check:  if (dataType.isInteger()) {
         default NameFactory nameFactory() {
             return DefaultNameFactory.provider();
         }
+    }
+
+    /**
+     * Returns the localized resources for error messages.
+     */
+    final Errors errors() {
+        return Errors.forLocale(listeners.getLocale());
     }
 }

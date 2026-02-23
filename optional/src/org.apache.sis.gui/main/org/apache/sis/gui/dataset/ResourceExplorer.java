@@ -44,6 +44,7 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.tiling.TiledResource;
 import org.apache.sis.gui.Widget;
 import org.apache.sis.gui.metadata.MetadataSummary;
 import org.apache.sis.gui.metadata.MetadataTree;
@@ -65,7 +66,8 @@ import org.apache.sis.gui.internal.LogHandler;
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.7
  * @since   1.1
  */
 public class ResourceExplorer extends Widget {
@@ -97,7 +99,7 @@ public class ResourceExplorer extends Widget {
      * The widget showing selected resource tile matrix sets.
      * Its content will be updated only when the tab is visible.
      */
-    private final TileMatrixSetPane matrices;
+    private final TileMatrixSetPane tiling;
 
     /**
      * The tab containing {@link #nativeMetadata}.
@@ -106,9 +108,9 @@ public class ResourceExplorer extends Widget {
     private final Tab nativeMetadataTab;
 
     /**
-     * The tab containing TileMatrixSet view.
+     * The tab containing the view over the tile matrices of a resource.
      */
-    private final Tab tileMatrixSetTab;
+    private final Tab tilingTab;
 
     /**
      * Default label for {@link #nativeMetadataTab} when no resource is selected.
@@ -190,7 +192,7 @@ public class ResourceExplorer extends Widget {
         resources.getSelectionModel().getSelectedItems().addListener(this::onResourceSelected);
         resources.setPrefWidth(400);
         final Vocabulary vocabulary = Vocabulary.forLocale(resources.locale);
-        final TitledPane resourcesPane = new TitledPane(vocabulary.getString(Vocabulary.Keys.Resources), resources);
+        final var resourcesPane = new TitledPane(vocabulary.getString(Vocabulary.Keys.Resources), resources);
         controls = new Accordion(resourcesPane);
         controls.setExpandedPane(resourcesPane);
         expandedPane = new EnumMap<>(CoverageExplorer.View.class);
@@ -202,24 +204,25 @@ public class ResourceExplorer extends Widget {
          */
         metadata = new MetadataSummary();
         nativeMetadata = new MetadataTree(metadata);
-        matrices = new TileMatrixSetPane();
-        final LogViewer logging = new LogViewer(vocabulary);
+        tiling = new TileMatrixSetPane();
+        final var logging = new LogViewer(vocabulary);
         selectedResource = new ReadOnlyObjectWrapper<>(this, "selectedResource");
         logging.source.bind(selectedResource);
         final Tab summaryTab, metadataTab, loggingTab;
-        final TabPane tabs = new TabPane(
+        final var tabs = new TabPane(
             summaryTab        = new Tab(vocabulary.getString(Vocabulary.Keys.Summary),  metadata.getView()),
             viewTab           = new Tab(vocabulary.getString(Vocabulary.Keys.Visual)),
             tableTab          = new Tab(vocabulary.getString(Vocabulary.Keys.Data)),
             metadataTab       = new Tab(vocabulary.getString(Vocabulary.Keys.Metadata), new StandardMetadataTree(metadata)),
             nativeMetadataTab = new Tab(vocabulary.getString(Vocabulary.Keys.Format),   nativeMetadata),
-            tileMatrixSetTab  = new Tab(vocabulary.getString(Vocabulary.Keys.TileMatrixSets),   matrices),
+            tilingTab         = new Tab(vocabulary.getString(Vocabulary.Keys.Tiling),   tiling.getView()),
             loggingTab        = new Tab(vocabulary.getString(Vocabulary.Keys.Logs),     logging.getView()));
 
         tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         tabs.setTabDragPolicy(TabPane.TabDragPolicy.REORDER);
         defaultNativeTabLabel = nativeMetadataTab.getText();
         nativeMetadataTab.setDisable(true);
+        tilingTab.setDisable(true);
         /*
          * Build the main pane which put everything together.
          */
@@ -267,10 +270,10 @@ public class ResourceExplorer extends Widget {
      * by this {@code ResourceExplorer}. The subclass is implementation dependent and may change in
      * any future version.
      *
-     * @return the region to show.
+     * @return the JavaFX component to insert in a scene graph.
      */
     @Override
-    public final Region getView() {
+    public Region getView() {
         return content;
     }
 
@@ -400,6 +403,7 @@ public class ResourceExplorer extends Widget {
         selectedResource.set(resource);
         metadata.setMetadata(metadataShown.get() ? resource : null);
         updateDataTabWithDefault(dataShown.get() ? resource : null);
+        updateTilingTab(resource);
         /*
          * Update the label and disabled state of the native metadata tab. We do not have a reliable way
          * to know if metadata are present without trying to fetch them, so current implementation only
@@ -426,6 +430,15 @@ public class ResourceExplorer extends Widget {
         if (nativeMetadataTab.isSelected()) {
             loadNativeMetadata();
         }
+    }
+
+    /**
+     * Updates the "Tiling" tab with the content of the given resource.
+     */
+    private void updateTilingTab(final Resource resource) {
+        final TiledResource tiled = (resource instanceof TiledResource) ? (TiledResource) resource : null;
+        tilingTab.setDisable(tiled == null);
+        tiling.setContent(tiled);
     }
 
     /**
@@ -481,7 +494,6 @@ public class ResourceExplorer extends Widget {
      * @see #updateDataTabWithDefault(Resource)
      */
     private boolean updateDataTab(final Resource resource) {
-        if (resource != null) System.out.println(resource.getClass().getName());
         Region       image  = null;
         Region       table  = null;
         FeatureSet   data   = null;
@@ -502,7 +514,6 @@ public class ResourceExplorer extends Widget {
             }
             grid = new ImageRequest((GridCoverageResource) resource, null, null);
             cpanes = coverage.getControls(type);
-            matrices.setContent(resource);
         } else if (resource instanceof FeatureSet) {
             data = (FeatureSet) resource;
             if (features == null) {
@@ -578,7 +589,9 @@ public class ResourceExplorer extends Widget {
                 /** Invoked in JavaFX thread for showing the resource. */
                 @Override protected void succeeded() {
                     if (getSelectedResource() == resource) {
-                        updateDataTab(getValue());
+                        Resource result = getValue();
+                        updateTilingTab(result);
+                        updateDataTab(result);
                     }
                 }
 
