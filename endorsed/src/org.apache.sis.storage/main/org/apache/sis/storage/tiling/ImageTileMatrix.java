@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
 import java.nio.file.Path;
 import org.opengis.util.GenericName;
@@ -39,6 +40,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage2D;
 import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
+import org.apache.sis.image.ComputedImage;
 import org.apache.sis.image.internal.shared.ReshapedImage;
 import org.apache.sis.pending.jdk.JDK18;
 import org.apache.sis.util.ArgumentChecks;
@@ -272,17 +274,25 @@ final class ImageTileMatrix implements TileMatrix {
 
     /**
      * Returns the status of the tile at the given index.
+     * If the image is an instance of {@link ComputedImage},
+     * then this method checks whether the tile is in error.
+     *
+     * This method does not check whether the tile indexes are outside the image domain
+     * ({@link TileStatus#OUTSIDE_EXTENT}). This verification must be done by the caller.
      *
      * @param  image  image from which to get a tile status.
      * @param  tileX  row index of the tile for which to get the status.
      * @param  tileY  column index of the tile for which to get the status.
      * @return status of the tile at the specified indexes.
-     *
-     * @todo We should check if the image is an instance of {@code ComputedImage},
-     *       then check if the tile is in the cache. But it would require that we merge
-     *       the feature and storage modules if we want to reuse {@link TileStatus} enumeration.
      */
     private static TileStatus getTileStatus(final RenderedImage image, final int tileX, final int tileY) {
+        if (image instanceof ComputedImage) {
+            final var computed = (ComputedImage) image;
+            final var tiles = new Rectangle(tileX, tileY, 1, 1);
+            if (computed.hasErrorFlag(tiles)) {
+                return TileStatus.IN_ERROR;
+            }
+        }
         return TileStatus.EXISTS;
     }
 
@@ -439,6 +449,8 @@ final class ImageTileMatrix implements TileMatrix {
 
         /**
          * Creates the tile at the given indexes.
+         * The caller must ensure that the arguments are valid image tile indexes.
+         * This condition is not verified by this method.
          */
         @Override
         protected Tile createTile(final int tileX, final int tileY) {

@@ -115,6 +115,7 @@ public class ReaderTest extends TestCase {
             assertTrue(tile.getContentPath().isEmpty());
 
             final Raster raster = raster(tile);
+            assertEquals(TileStatus.EXISTS, tile.getStatus());
             assertArrayEquals(tile.getIndices(), assertSingleton(matrix.getTiles(null, false).toList()).getIndices());
             assertSame(raster, raster(assertSingleton(matrix.getTiles(null, false).toList())));
         }

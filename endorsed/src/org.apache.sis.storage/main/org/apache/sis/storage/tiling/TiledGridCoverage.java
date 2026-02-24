@@ -271,6 +271,11 @@ public abstract class TiledGridCoverage extends GridCoverage {
     final boolean deferredTileReading;
 
     /**
+     * The locale for warnings or error messages, or {@code null} for the default locale.
+     */
+    private final Locale locale;
+
+    /**
      * Creates a new tiled grid coverage. This constructor does not load any tile.
      *
      * @param  subset  description of the {@link TiledGridCoverageResource} subset to cover.
@@ -280,6 +285,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      */
     protected TiledGridCoverage(final TiledGridCoverageResource.Subset subset) {
         super(subset.domain, subset.ranges);
+        locale              = subset.getLocale();
         xDimension          = subset.xDimension();
         yDimension          = subset.yDimension();
         deferredTileReading = subset.deferredTileReading();     // May be shorter than other arrays or the grid geometry.
@@ -324,20 +330,10 @@ public abstract class TiledGridCoverage extends GridCoverage {
     }
 
     /**
-     * Returns the locale for error messages, or {@code null} for the default.
-     * The default implementation returns {@code null}.
-     *
-     * @return the locale for warning or error messages, or {@code null} if unspecified.
-     */
-    protected Locale getLocale() {
-        return null;
-    }
-
-    /**
      * Returns the localized resources for error messages.
      */
     private Errors errors() {
-        return Errors.forLocale(getLocale());
+        return Errors.forLocale(locale);
     };
 
     /**
@@ -612,7 +608,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
         } catch (DisjointExtentException | CannotEvaluateException e) {
             throw e;
         } catch (Exception e) {     // Too many exception types for listing them all.
-            throw new CannotEvaluateException(Resources.forLocale(getLocale()).getString(
+            throw new CannotEvaluateException(Resources.forLocale(locale).getString(
                     Resources.Keys.CanNotRenderImage_1, getIdentifier().toFullyQualifiedName()), e);
         }
         return image;

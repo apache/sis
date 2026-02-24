@@ -18,6 +18,7 @@ package org.apache.sis.storage.tiling;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Collection;
 import java.util.Spliterator;
@@ -813,6 +814,14 @@ check:  if (dataType.isInteger()) {
                 }
             }
             return true;
+        }
+
+        /**
+         * Returns the locale for warnings and error messages.
+         * This is often {@code null}, which means to use the default locale.
+         */
+        final Locale getLocale() {
+            return listeners.getLocale();
         }
     }
 

@@ -17,7 +17,6 @@
 package org.apache.sis.storage.geotiff;
 
 import java.util.Arrays;
-import java.util.Locale;
 import java.nio.Buffer;
 import java.nio.file.Path;
 import java.io.Closeable;
@@ -32,7 +31,6 @@ import static java.lang.Math.subtractExact;
 import static java.lang.Math.multiplyExact;
 import static java.lang.Math.toIntExact;
 import org.opengis.util.GenericName;
-import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.internal.shared.Numerics;
@@ -72,7 +70,7 @@ import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-class DataSubset extends TiledGridCoverage implements Localized {
+class DataSubset extends TiledGridCoverage {
     /**
      * The resource which contain this {@code DataSubset}.
      * Used for fetching information like the input channel and where to report warnings.
@@ -186,14 +184,6 @@ class DataSubset extends TiledGridCoverage implements Localized {
             throw new DataStoreContentException(source.reader.errors().getString(
                     Errors.Keys.TooFewCollectionElements_3, "tileOffsets", (maxBank + 1) * numTiles, n));
         }
-    }
-
-    /**
-     * Returns the locale for warning or error messages, or {@code null} if unspecified.
-     */
-    @Override
-    public final Locale getLocale() {
-        return source.listeners().getLocale();
     }
 
     /**

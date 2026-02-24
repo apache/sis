@@ -77,8 +77,9 @@ abstract class IterationDomain<T> {
     }
 
     /**
-     * Creates a new item for the tile at the given indexes. If this method returns {@code null},
-     * then the tile is assumed missing and this iterator searches for the next tile.
+     * Creates a new item for the tile at the given indexes, or {@code null} if the tile is missing.
+     * The caller must ensure that the arguments are valid image tile indexes.
+     * This condition is not verified by this method.
      *
      * @param  tileX  column index of the tile.
      * @param  tileY  row index of the tile.

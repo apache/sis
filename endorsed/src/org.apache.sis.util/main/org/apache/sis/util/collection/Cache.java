@@ -768,8 +768,8 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     /**
      * Returns {@code true} if this map contains the specified key.
      * If the value is under computation in another thread, this method returns {@code true}
-     * without waiting for the computation result. This behavior is consistent with other
-     * {@code Map} methods in the following ways:
+     * without waiting for the computation result.
+     * For comparison, the behavior of other {@code Map} methods are:
      *
      * <ul>
      *   <li>{@link #get(Object)} blocks until the computation is completed.</li>
