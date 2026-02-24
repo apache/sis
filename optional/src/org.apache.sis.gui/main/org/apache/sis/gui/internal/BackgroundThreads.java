@@ -113,7 +113,7 @@ public final class BackgroundThreads extends AtomicInteger implements ThreadFact
              * are doing below is guaranteed to be executed after the calls done by `task.run()`.
              * The timeout is low because the tasks on JavaFX threads are supposed to be very short.
              */
-            final CountDownLatch c = new CountDownLatch(1);
+            final var c = new CountDownLatch(1);
             Platform.runLater(c::countDown);
             try {
                 c.await(5, TimeUnit.SECONDS);
@@ -133,7 +133,7 @@ public final class BackgroundThreads extends AtomicInteger implements ThreadFact
      * @return the task result, or {@code null} if an error occurred.
      */
     public static <V> V runAndWaitDialog(final Callable<V> task) {
-        final FutureTask<V> f = new FutureTask<>(task);
+        final var f = new FutureTask<V>(task);
         Platform.runLater(f);
         try {
             return f.get();
@@ -155,7 +155,7 @@ public final class BackgroundThreads extends AtomicInteger implements ThreadFact
      * @throws Exception if the task threw an exception.
      */
     public static <V> V runAndWait(final Callable<V> task) throws Exception {
-        final FutureTask<V> f = new FutureTask<>(task);
+        final var f = new FutureTask<V>(task);
         Platform.runLater(f);
         try {
             return f.get();

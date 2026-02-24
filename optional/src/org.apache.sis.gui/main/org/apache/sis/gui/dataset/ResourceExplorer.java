@@ -204,7 +204,7 @@ public class ResourceExplorer extends Widget {
          */
         metadata = new MetadataSummary();
         nativeMetadata = new MetadataTree(metadata);
-        tiling = new TileMatrixSetPane();
+        tiling = new TileMatrixSetPane(resources.locale);
         final var logging = new LogViewer(vocabulary);
         selectedResource = new ReadOnlyObjectWrapper<>(this, "selectedResource");
         logging.source.bind(selectedResource);

@@ -96,7 +96,7 @@ public final class ExceptionReporter extends Widget {
     public ExceptionReporter(final Throwable exception) {
         this.exception = exception;
         trace = new Text(getStackTrace(exception));
-        final ScrollPane pane = new ScrollPane(trace);
+        final var pane = new ScrollPane(trace);
         pane.setFitToWidth(true);
         pane.setFitToHeight(true);
         pane.setPadding(MARGIN);
@@ -132,7 +132,7 @@ public final class ExceptionReporter extends Widget {
      * @return the stack trace.
      */
     public static String getStackTrace(final Throwable exception) {
-        final StringWriter buffer = new StringWriter();
+        final var buffer = new StringWriter();
         exception.printStackTrace(new PrintWriter(buffer));
         return buffer.toString();
     }
@@ -196,8 +196,11 @@ public final class ExceptionReporter extends Widget {
      * @param  exception  the error that occurred.
      */
     public static void canNotReadFile(final Node owner, final String file, final Throwable exception) {
-        show(GUIUtilities.getWindow(owner), Resources.Keys.ErrorOpeningFile, Resources.Keys.CanNotReadFile_1,
-                new Object[] {file}, exception);
+        show(GUIUtilities.getWindow(owner),
+                Resources.Keys.ErrorOpeningFile,
+                Resources.Keys.CanNotReadFile_1,
+                new Object[] {file},
+                exception);
     }
 
     /**
@@ -209,8 +212,11 @@ public final class ExceptionReporter extends Widget {
      * @param  exception  the error that occurred.
      */
     public static void canNotCloseFile(final Node owner, final String file, final Throwable exception) {
-        show(GUIUtilities.getWindow(owner), Resources.Keys.ErrorClosingFile, Resources.Keys.CanNotClose_1,
-                new Object[] {file}, exception);
+        show(GUIUtilities.getWindow(owner),
+                Resources.Keys.ErrorClosingFile,
+                Resources.Keys.CanNotClose_1,
+                new Object[] {file},
+                exception);
     }
 
     /**
@@ -222,8 +228,11 @@ public final class ExceptionReporter extends Widget {
      * @param  exception  the error that occurred.
      */
     public static void canNotCreateCRS(final Window owner, final String code, final Throwable exception) {
-        show(owner, Resources.Keys.ErrorCreatingCRS, Resources.Keys.CanNotCreateCRS_1,
-                new Object[] {code}, exception);
+        show(owner,
+                Resources.Keys.ErrorCreatingCRS,
+                Resources.Keys.CanNotCreateCRS_1,
+                new Object[] {code},
+                exception);
     }
 
     /**
@@ -234,8 +243,11 @@ public final class ExceptionReporter extends Widget {
      * @param  exception  the error that occurred.
      */
     public static void canNotUseResource(final Node owner, final Throwable exception) {
-        show(GUIUtilities.getWindow(owner), Resources.Keys.ErrorDataAccess, Resources.Keys.ErrorDataAccess,
-                new Object[0], exception);
+        show(GUIUtilities.getWindow(owner),
+                Resources.Keys.ErrorDataAccess,
+                Resources.Keys.ErrorDataAccess,
+                new Object[0],
+                exception);
     }
 
     /**
@@ -303,7 +315,7 @@ public final class ExceptionReporter extends Widget {
             alert = new Alert(Alert.AlertType.ERROR);
             alert.initOwner(owner);
             alert.setOnHidden((event) -> currentlyShown = null);
-            final ExceptionReporter content = new ExceptionReporter(exception);
+            final var content = new ExceptionReporter(exception);
             final DialogPane pane = alert.getDialogPane();
             pane.setExpandableContent(content.getView());
             pane.setPrefWidth(650);
@@ -335,7 +347,7 @@ public final class ExceptionReporter extends Widget {
      * @param event ignored.
      */
     private void copy(final ActionEvent event) {
-        final ClipboardContent content = new ClipboardContent();
+        final var content = new ClipboardContent();
         content.putString(trace.getText());
         Clipboard.getSystemClipboard().setContent(content);
     }

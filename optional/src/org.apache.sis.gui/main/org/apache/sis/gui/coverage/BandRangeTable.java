@@ -40,7 +40,7 @@ import org.apache.sis.gui.internal.Styles;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class BandRangeTable implements Callback<TableColumn<SampleDimension,Number>, TableCell<SampleDimension,Number>> {
+final class BandRangeTable implements Callback<TableColumn<SampleDimension, Number>, TableCell<SampleDimension, Number>> {
     /**
      * Identifier of columns shown in the sample dimension table.
      */
@@ -70,7 +70,7 @@ final class BandRangeTable implements Callback<TableColumn<SampleDimension,Numbe
      */
     @SuppressWarnings("unchecked")     // Generic array construction.
     TableView<SampleDimension> create(final Vocabulary vocabulary) {
-        final TableView<SampleDimension> table = new TableView<>();
+        final var table = new TableView<SampleDimension>();
         table.setPrefHeight(NUM_VISIBLE_ROW * Styles.ROW_HEIGHT);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         table.getColumns().setAll(
@@ -85,7 +85,7 @@ final class BandRangeTable implements Callback<TableColumn<SampleDimension,Numbe
      * Creates a new column with a title identified by the given key.
      */
     private static TableColumn<SampleDimension,String> createStringColumn(final Vocabulary vocabulary, final short key, final String id) {
-        final TableColumn<SampleDimension,String> column = new TableColumn<>(vocabulary.getString(key));
+        final var column = new TableColumn<SampleDimension, String>(vocabulary.getString(key));
         column.setCellValueFactory(BandRangeTable::getStringValue);
         column.setId(id);
         return column;
@@ -95,7 +95,7 @@ final class BandRangeTable implements Callback<TableColumn<SampleDimension,Numbe
      * Creates a new column with a title identified by the given key.
      */
     private TableColumn<SampleDimension,Number> createNumberColumn(final Vocabulary vocabulary, final short key, final String id) {
-        final TableColumn<SampleDimension,Number> column = new TableColumn<>(vocabulary.getString(key));
+        final var column = new TableColumn<SampleDimension, Number>(vocabulary.getString(key));
         column.setCellValueFactory(this::getNumberValue);
         column.setCellFactory(this);
         column.setId(id);
