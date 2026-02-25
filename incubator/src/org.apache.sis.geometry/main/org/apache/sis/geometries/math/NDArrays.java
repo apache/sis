@@ -47,15 +47,15 @@ public final class NDArrays {
         final int dimension = type.getSize();
         final Array array;
         switch (dataType) {
-            case BYTE : array = new JavaFactory.Byte(type, new byte[vectors.size() * dimension]); break;
-            case UBYTE : array = new JavaFactory.UByte(type, new byte[vectors.size() * dimension]); break;
-            case SHORT : array = new JavaFactory.Short(type, new short[vectors.size() * dimension]); break;
-            case USHORT : array = new JavaFactory.UShort(type, new short[vectors.size() * dimension]); break;
-            case INT : array = new JavaFactory.Int(type, new int[vectors.size() * dimension]); break;
-            case UINT : array = new JavaFactory.UInt(type, new int[vectors.size() * dimension]); break;
-            case LONG : array = new JavaFactory.Long(type, new long[vectors.size() * dimension]); break;
-            case FLOAT : array = new JavaFactory.Float(type, new float[vectors.size() * dimension]); break;
-            case DOUBLE : array = new JavaFactory.Double(type, new double[vectors.size() * dimension]); break;
+            case BYTE : array = new ArrayFactoryJava.Byte(type, new byte[vectors.size() * dimension]); break;
+            case UBYTE : array = new ArrayFactoryJava.UByte(type, new byte[vectors.size() * dimension]); break;
+            case SHORT : array = new ArrayFactoryJava.Short(type, new short[vectors.size() * dimension]); break;
+            case USHORT : array = new ArrayFactoryJava.UShort(type, new short[vectors.size() * dimension]); break;
+            case INT : array = new ArrayFactoryJava.Int(type, new int[vectors.size() * dimension]); break;
+            case UINT : array = new ArrayFactoryJava.UInt(type, new int[vectors.size() * dimension]); break;
+            case LONG : array = new ArrayFactoryJava.Long(type, new long[vectors.size() * dimension]); break;
+            case FLOAT : array = new ArrayFactoryJava.Float(type, new float[vectors.size() * dimension]); break;
+            case DOUBLE : array = new ArrayFactoryJava.Double(type, new double[vectors.size() * dimension]); break;
             default : throw new IllegalArgumentException("Unexpected data type " + dataType);
         }
 
@@ -72,15 +72,15 @@ public final class NDArrays {
         final int isize = Math.toIntExact(size);
         final Array array;
         switch (dataType) {
-            case BYTE : array = new JavaFactory.Byte(type, new byte[isize]); break;
-            case UBYTE : array = new JavaFactory.UByte(type, new byte[isize]); break;
-            case SHORT : array = new JavaFactory.Short(type, new short[isize]); break;
-            case USHORT : array = new JavaFactory.UShort(type, new short[isize]); break;
-            case INT : array = new JavaFactory.Int(type, new int[isize]); break;
-            case UINT : array = new JavaFactory.UInt(type, new int[isize]); break;
-            case LONG : array = new JavaFactory.Long(type, new long[isize]); break;
-            case FLOAT : array = new JavaFactory.Float(type, new float[isize]); break;
-            case DOUBLE : array = new JavaFactory.Double(type, new double[isize]); break;
+            case BYTE : array = new ArrayFactoryJava.Byte(type, new byte[isize]); break;
+            case UBYTE : array = new ArrayFactoryJava.UByte(type, new byte[isize]); break;
+            case SHORT : array = new ArrayFactoryJava.Short(type, new short[isize]); break;
+            case USHORT : array = new ArrayFactoryJava.UShort(type, new short[isize]); break;
+            case INT : array = new ArrayFactoryJava.Int(type, new int[isize]); break;
+            case UINT : array = new ArrayFactoryJava.UInt(type, new int[isize]); break;
+            case LONG : array = new ArrayFactoryJava.Long(type, new long[isize]); break;
+            case FLOAT : array = new ArrayFactoryJava.Float(type, new float[isize]); break;
+            case DOUBLE : array = new ArrayFactoryJava.Double(type, new double[isize]); break;
             default : throw new IllegalArgumentException("Unexpected data type " + dataType);
         }
         return array;
@@ -131,7 +131,7 @@ public final class NDArrays {
     }
 
     public static Array of(SampleSystem type, byte ... values) {
-        return new JavaFactory.Byte(type, values);
+        return new ArrayFactoryJava.Byte(type, values);
     }
 
     public static Array of(CoordinateReferenceSystem crs, int ... values) {
@@ -139,7 +139,7 @@ public final class NDArrays {
     }
 
     public static Array of(SampleSystem type, int ... values) {
-        return new JavaFactory.Int(type, values);
+        return new ArrayFactoryJava.Int(type, values);
     }
 
     public static Array of(CoordinateReferenceSystem crs, short ... values) {
@@ -147,7 +147,7 @@ public final class NDArrays {
     }
 
     public static Array of(SampleSystem type, short ... values) {
-        return new JavaFactory.Short(type, values);
+        return new ArrayFactoryJava.Short(type, values);
     }
 
     public static Array of(CoordinateReferenceSystem crs, long ... values) {
@@ -155,7 +155,7 @@ public final class NDArrays {
     }
 
     public static Array of(SampleSystem type, long ... values) {
-        return new JavaFactory.Long(type, values);
+        return new ArrayFactoryJava.Long(type, values);
     }
 
     public static Array of(CoordinateReferenceSystem crs, float ... values) {
@@ -163,7 +163,7 @@ public final class NDArrays {
     }
 
     public static Array of(SampleSystem type, float ... values) {
-        return new JavaFactory.Float(type, values);
+        return new ArrayFactoryJava.Float(type, values);
     }
 
     public static Array of(CoordinateReferenceSystem crs, double ... values) {
@@ -171,23 +171,23 @@ public final class NDArrays {
     }
 
     public static Array of(SampleSystem type, double ... values) {
-        return new JavaFactory.Double(type, values);
+        return new ArrayFactoryJava.Double(type, values);
     }
 
     public static Array ofUnsigned(SampleSystem type, byte ... values) {
-        return new JavaFactory.UByte(type, values);
+        return new ArrayFactoryJava.UByte(type, values);
     }
 
     public static Array ofUnsigned(SampleSystem type, short ... values) {
-        return new JavaFactory.UShort(type, values);
+        return new ArrayFactoryJava.UShort(type, values);
     }
 
     public static Array ofUnsigned(SampleSystem type, int ... values) {
-        return new JavaFactory.UInt(type, values);
+        return new ArrayFactoryJava.UInt(type, values);
     }
 
     public static Array ofUnsigned(SampleSystem type, List<Integer> values) {
-        return new JavaFactory.UInt(type, values);
+        return new ArrayFactoryJava.UInt(type, values);
     }
 
     /**

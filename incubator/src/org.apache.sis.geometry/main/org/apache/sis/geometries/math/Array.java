@@ -86,6 +86,17 @@ public interface Array extends NDArray {
     void get(long index, Tuple buffer);
 
     /**
+     * {@inheritDoc }
+     */
+    @Override
+    default void set(Tuple buffer) {
+        Cursor cursor = cursor();
+        while (cursor.next()) {
+            cursor.samples().set(buffer);
+        }
+    }
+
+    /**
      * Set tuple.
      *
      * @param index tuple index

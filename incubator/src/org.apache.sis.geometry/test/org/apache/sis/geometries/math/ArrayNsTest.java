@@ -30,7 +30,7 @@ public class ArrayNsTest extends AbstractArrayTest {
 
     @Override
     protected Array create(int dim, int length) {
-        return new JavaFactory.Short(SampleSystem.ofSize(dim), new short[length*dim]);
+        return new ArrayFactoryJava.Short(SampleSystem.ofSize(dim), new short[length*dim]);
     }
 
 }

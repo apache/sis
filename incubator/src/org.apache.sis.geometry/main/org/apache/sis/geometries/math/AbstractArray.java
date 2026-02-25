@@ -16,6 +16,8 @@
  */
 package org.apache.sis.geometries.math;
 
+import java.util.Arrays;
+
 
 /**
  *
@@ -25,7 +27,11 @@ public abstract class AbstractArray implements Array {
 
     @Override
     public Array resize(long newSize) {
-        final Array copy = NDArrays.of(getSampleSystem(), getDataType(), newSize);
+        final Array copy = getFactory().builder()
+                .dataType(getDataType())
+                .system(getSampleSystem())
+                .shape(newSize)
+                .build();
         final Cursor cursor = cursor();
         while (cursor.next()) {
             final long idx = cursor.coordinate();
@@ -75,5 +81,16 @@ public abstract class AbstractArray implements Array {
     @Override
     public int hashCode() {
         return getDataType().hashCode() | (getDimension() * 21) | ((int)getLength() * 7);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("Array(");
+        sb.append(getDataType().name()).append(',');
+        sb.append("shape:").append(Arrays.toString(getShape())).append(',');
+        sb.append("systemSize:").append(getSampleSystem().getSize()).append(',');
+        sb.append(getFactory().getClass().getSimpleName()).append(')');
+        return sb.toString();
     }
 }

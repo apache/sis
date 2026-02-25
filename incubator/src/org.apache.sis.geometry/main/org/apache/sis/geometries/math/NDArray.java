@@ -116,6 +116,13 @@ public interface NDArray {
     void get(long[] index, Tuple buffer);
 
     /**
+     * Fill array with given tuple value.
+     *
+     * @param buffer fill value
+     */
+    void set(Tuple buffer);
+
+    /**
      * Set tuple.
      *
      * @param index tuple index

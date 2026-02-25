@@ -18,6 +18,15 @@ package org.apache.sis.geometries.math;
 
 import java.util.Arrays;
 import java.util.List;
+import static org.apache.sis.geometries.math.DataType.BYTE;
+import static org.apache.sis.geometries.math.DataType.DOUBLE;
+import static org.apache.sis.geometries.math.DataType.FLOAT;
+import static org.apache.sis.geometries.math.DataType.INT;
+import static org.apache.sis.geometries.math.DataType.LONG;
+import static org.apache.sis.geometries.math.DataType.SHORT;
+import static org.apache.sis.geometries.math.DataType.UBYTE;
+import static org.apache.sis.geometries.math.DataType.UINT;
+import static org.apache.sis.geometries.math.DataType.USHORT;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -26,11 +35,11 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class JavaFactory implements ArrayFactory {
+public final class ArrayFactoryJava implements ArrayFactory {
 
-    public static final JavaFactory INSTANCE = new JavaFactory();
+    public static final ArrayFactoryJava INSTANCE = new ArrayFactoryJava();
 
-    private JavaFactory() {
+    private ArrayFactoryJava() {
     }
 
     @Override
@@ -38,32 +47,7 @@ public final class JavaFactory implements ArrayFactory {
         return new JavaBuilder();
     }
 
-    private static final class JavaBuilder implements Builder {
-
-        @Override
-        public Builder shape(long... shape) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Builder system(SampleSystem system) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Builder dataType(DataType type) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Builder values(Object values) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Builder fill(Object values) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+    private static final class JavaBuilder extends AbstractBuilder<JavaBuilder> {
 
         @Override
         public NDArray buildND() {
@@ -72,39 +56,61 @@ public final class JavaFactory implements ArrayFactory {
 
         @Override
         public Array build() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            final long[] shape = getShape();
+            if (shape.length != 1) throw new IllegalArgumentException("Array shape has more then one dimension");
+            final long nbTuple = shape[0];
+
+            final SampleSystem system = getSystem();
+            final DataType dataType = getDataType();
+            final int nbSample = system.getSize();
+
+            final long arraySize = nbTuple * nbSample;
+            if (arraySize > Integer.MAX_VALUE) throw new IllegalArgumentException("Array shape exceed " + Integer.MAX_VALUE + ". Use FFM factory for very large arrays");
+            final int arraySizeI = (int) arraySize;
+
+            final Array array;
+            switch (dataType) {
+                case BYTE : array = new ArrayFactoryJava.Byte(system, new byte[arraySizeI]); break;
+                case UBYTE : array = new ArrayFactoryJava.UByte(system, new byte[arraySizeI]); break;
+                case SHORT : array = new ArrayFactoryJava.Short(system, new short[arraySizeI]); break;
+                case USHORT : array = new ArrayFactoryJava.UShort(system, new short[arraySizeI]); break;
+                case INT : array = new ArrayFactoryJava.Int(system, new int[arraySizeI]); break;
+                case UINT : array = new ArrayFactoryJava.UInt(system, new int[arraySizeI]); break;
+                case LONG : array = new ArrayFactoryJava.Long(system, new long[arraySizeI]); break;
+                case FLOAT : array = new ArrayFactoryJava.Float(system, new float[arraySizeI]); break;
+                case DOUBLE : array = new ArrayFactoryJava.Double(system, new double[arraySizeI]); break;
+                default : throw new IllegalArgumentException("Unexpected data type " + dataType);
+            }
+
+            //todo, check if we can reuse the values array
+            copyOrFillValues(array);
+            return array;
         }
 
     }
 
+    private static abstract class JavaArray extends AbstractArray {
 
-    static final class Byte extends AbstractArray {
+        protected SampleSystem type;
+        protected final int dimension;
 
-        private SampleSystem type;
-        private final int dimension;
-        private final byte[] array;
-
-        Byte(SampleSystem type, byte[] array) {
+        public JavaArray(SampleSystem type) {
             this.type = type;
             this.dimension = type.getSize();
-            this.array = array;
-            if (array.length % dimension != 0) {
-                throw new IllegalArgumentException("Array size is not compatible, expected n*" + dimension + " but size is " + array.length);
-            }
         }
 
         @Override
-        public ArrayFactory getFactory() {
-            return JavaFactory.INSTANCE;
+        public final ArrayFactory getFactory() {
+            return ArrayFactoryJava.INSTANCE;
         }
 
         @Override
-        public SampleSystem getSampleSystem() {
+        public final SampleSystem getSampleSystem() {
             return type;
         }
 
         @Override
-        public void setSampleSystem(SampleSystem type) {
+        public final void setSampleSystem(SampleSystem type) {
             if (dimension != type.getSize()) {
                 throw new IllegalArgumentException("Target crs has a different number of dimensions");
             }
@@ -112,19 +118,31 @@ public final class JavaFactory implements ArrayFactory {
         }
 
         @Override
-        public long getLength() {
-            return array.length / dimension;
-        }
-
-        @Override
-        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
+        public final CoordinateReferenceSystem getCoordinateReferenceSystem() {
             return type.getCoordinateReferenceSystem();
         }
 
+        @Override
+        public final int getDimension() {
+            return dimension;
+        }
+    }
+
+    static final class Byte extends JavaArray {
+
+        private final byte[] array;
+
+        Byte(SampleSystem type, byte[] array) {
+            super(type);
+            this.array = array;
+            if (array.length % dimension != 0) {
+                throw new IllegalArgumentException("Array size is not compatible, expected n*" + dimension + " but size is " + array.length);
+            }
+        }
 
         @Override
-        public int getDimension() {
-            return dimension;
+        public long getLength() {
+            return array.length / dimension;
         }
 
         @Override
@@ -250,22 +268,14 @@ public final class JavaFactory implements ArrayFactory {
             };
         }
 
-        @Override
-        public String toString() {
-            return "TupleArrayNb{" + "dimension=" + dimension + ", tuple.length=" + getLength() + ", array.length=" + array.length + '}';
-        }
-
     }
 
-    static final class UByte extends AbstractArray {
+    static final class UByte extends JavaArray {
 
-        private SampleSystem type;
-        private final int dimension;
         private final byte[] array;
 
         UByte(SampleSystem type, byte[] array) {
-            this.type = type;
-            this.dimension = type.getSize();
+            super(type);
             this.array = array;
             if (array.length % dimension != 0) {
                 throw new IllegalArgumentException("Array size is not compatible, expected n*" + dimension + " but size is " + array.length);
@@ -273,36 +283,8 @@ public final class JavaFactory implements ArrayFactory {
         }
 
         @Override
-        public ArrayFactory getFactory() {
-            return JavaFactory.INSTANCE;
-        }
-
-        @Override
-        public SampleSystem getSampleSystem() {
-            return type;
-        }
-
-        @Override
         public long getLength() {
             return array.length / dimension;
-        }
-
-        @Override
-        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return type.getCoordinateReferenceSystem();
-        }
-
-        @Override
-        public void setSampleSystem(SampleSystem type) {
-            if (dimension != type.getSize()) {
-                throw new IllegalArgumentException("Target crs has a different number of dimensions");
-            }
-            this.type = type;
-        }
-
-        @Override
-        public int getDimension() {
-            return dimension;
         }
 
         @Override
@@ -429,22 +411,14 @@ public final class JavaFactory implements ArrayFactory {
             };
         }
 
-        @Override
-        public String toString() {
-            return "TupleArrayNub{" + "dimension=" + dimension + ", tuple.length=" + getLength() + ", array.length=" + array.length + '}';
-        }
-
     }
 
-    static final class Short extends AbstractArray {
+    static final class Short extends JavaArray {
 
-        private SampleSystem type;
-        private final int dimension;
         private final short[] array;
 
         Short(SampleSystem type, short[] array) {
-            this.type = type;
-            this.dimension = type.getSize();
+            super(type);
             this.array = array;
             if (array.length % dimension != 0) {
                 throw new IllegalArgumentException("Array size is not compatible, expected n*" + dimension + " but size is " + array.length);
@@ -452,36 +426,8 @@ public final class JavaFactory implements ArrayFactory {
         }
 
         @Override
-        public ArrayFactory getFactory() {
-            return JavaFactory.INSTANCE;
-        }
-
-        @Override
-        public SampleSystem getSampleSystem() {
-            return type;
-        }
-
-        @Override
         public long getLength() {
             return array.length / dimension;
-        }
-
-        @Override
-        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return type.getCoordinateReferenceSystem();
-        }
-
-        @Override
-        public void setSampleSystem(SampleSystem type) {
-            if (dimension != type.getSize()) {
-                throw new IllegalArgumentException("Target crs has a different number of dimensions");
-            }
-            this.type = type;
-        }
-
-        @Override
-        public int getDimension() {
-            return dimension;
         }
 
         @Override
@@ -617,22 +563,14 @@ public final class JavaFactory implements ArrayFactory {
             };
         }
 
-        @Override
-        public String toString() {
-            return "TupleArrayNs{" + "dimension=" + dimension + ", tuple.length=" + getLength() + ", array.length=" + array.length + '}';
-        }
-
     }
 
-    static final class UShort extends AbstractArray {
+    static final class UShort extends JavaArray {
 
-        private SampleSystem type;
-        private final int dimension;
         private final short[] array;
 
         UShort(SampleSystem type, short[] array) {
-            this.type = type;
-            this.dimension = type.getSize();
+            super(type);
             this.array = array;
             if (array.length % dimension != 0) {
                 throw new IllegalArgumentException("Array size is not compatible, expected n*" + dimension + " but size is " + array.length);
@@ -640,36 +578,8 @@ public final class JavaFactory implements ArrayFactory {
         }
 
         @Override
-        public ArrayFactory getFactory() {
-            return JavaFactory.INSTANCE;
-        }
-
-        @Override
-        public SampleSystem getSampleSystem() {
-            return type;
-        }
-
-        @Override
         public long getLength() {
             return array.length / dimension;
-        }
-
-        @Override
-        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return type.getCoordinateReferenceSystem();
-        }
-
-        @Override
-        public void setSampleSystem(SampleSystem type) {
-            if (dimension != type.getSize()) {
-                throw new IllegalArgumentException("Target crs has a different number of dimensions");
-            }
-            this.type = type;
-        }
-
-        @Override
-        public int getDimension() {
-            return dimension;
         }
 
         @Override
@@ -797,22 +707,14 @@ public final class JavaFactory implements ArrayFactory {
             };
         }
 
-        @Override
-        public String toString() {
-            return "TupleArrayNus{" + "dimension=" + dimension + ", tuple.length=" + getLength() + ", array.length=" + array.length + '}';
-        }
-
     }
 
-    static final class Int extends AbstractArray {
+    static final class Int extends JavaArray {
 
-        private SampleSystem type;
-        private final int dimension;
         private final int[] array;
 
         Int(SampleSystem type, int[] array) {
-            this.type = type;
-            this.dimension = type.getSize();
+            super(type);
             this.array = array;
             if (array.length % dimension != 0) {
                 throw new IllegalArgumentException("Array size is not compatible, expected n*" + dimension + " but size is " + array.length);
@@ -820,36 +722,8 @@ public final class JavaFactory implements ArrayFactory {
         }
 
         @Override
-        public ArrayFactory getFactory() {
-            return JavaFactory.INSTANCE;
-        }
-
-        @Override
-        public SampleSystem getSampleSystem() {
-            return type;
-        }
-
-        @Override
         public long getLength() {
             return array.length / dimension;
-        }
-
-        @Override
-        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return type.getCoordinateReferenceSystem();
-        }
-
-        @Override
-        public void setSampleSystem(SampleSystem type) {
-            if (dimension != type.getSize()) {
-                throw new IllegalArgumentException("Target crs has a different number of dimensions");
-            }
-            this.type = type;
-        }
-
-        @Override
-        public int getDimension() {
-            return dimension;
         }
 
         @Override
@@ -976,21 +850,14 @@ public final class JavaFactory implements ArrayFactory {
             };
         }
 
-        @Override
-        public String toString() {
-            return "TupleArrayNi{" + "dimension=" + dimension + ", tuple.length=" + getLength() + ", array.length=" + array.length + '}';
-        }
     }
 
-    static final class UInt extends AbstractArray {
+    static final class UInt extends JavaArray {
 
-        private SampleSystem type;
-        private final int dimension;
         private final int[] array;
 
         UInt(SampleSystem type, int[] array) {
-            this.type = type;
-            this.dimension = type.getSize();
+            super(type);
             this.array = array;
             if (array.length % dimension != 0) {
                 throw new IllegalArgumentException("Array size is not compatible, expected n*" + dimension + " but size is " + array.length);
@@ -998,8 +865,7 @@ public final class JavaFactory implements ArrayFactory {
         }
 
         UInt(SampleSystem type, List<Integer> array) {
-            this.type = type;
-            this.dimension = type.getSize();
+            super(type);
             this.array = array.stream().mapToInt(Integer::intValue).toArray();
             if (array.size() % dimension != 0) {
                 throw new IllegalArgumentException("Array size is not compatible, expected n*" + dimension + " but size is " + array.size());
@@ -1007,36 +873,8 @@ public final class JavaFactory implements ArrayFactory {
         }
 
         @Override
-        public ArrayFactory getFactory() {
-            return JavaFactory.INSTANCE;
-        }
-
-        @Override
-        public SampleSystem getSampleSystem() {
-            return type;
-        }
-
-        @Override
         public long getLength() {
             return array.length / dimension;
-        }
-
-        @Override
-        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return type.getCoordinateReferenceSystem();
-        }
-
-        @Override
-        public void setSampleSystem(SampleSystem type) {
-            if (dimension != type.getSize()) {
-                throw new IllegalArgumentException("Target crs has a different number of dimensions");
-            }
-            this.type = type;
-        }
-
-        @Override
-        public int getDimension() {
-            return dimension;
         }
 
         @Override
@@ -1164,21 +1002,14 @@ public final class JavaFactory implements ArrayFactory {
             };
         }
 
-        @Override
-        public String toString() {
-            return "TupleArrayNui{" + "dimension=" + dimension + ", tuple.length=" + getLength() + ", array.length=" + array.length + '}';
-        }
     }
 
-    static final class Long extends AbstractArray {
+    static final class Long extends JavaArray {
 
-        private SampleSystem type;
-        private final int dimension;
         private final long[] array;
 
         Long(SampleSystem type, long[] array) {
-            this.type = type;
-            this.dimension = type.getSize();
+            super(type);
             this.array = array;
             if (array.length % dimension != 0) {
                 throw new IllegalArgumentException("Array size is not compatible, expected n*" + dimension + " but size is " + array.length);
@@ -1186,36 +1017,8 @@ public final class JavaFactory implements ArrayFactory {
         }
 
         @Override
-        public ArrayFactory getFactory() {
-            return JavaFactory.INSTANCE;
-        }
-
-        @Override
-        public SampleSystem getSampleSystem() {
-            return type;
-        }
-
-        @Override
         public long getLength() {
             return array.length / dimension;
-        }
-
-        @Override
-        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return type.getCoordinateReferenceSystem();
-        }
-
-        @Override
-        public void setSampleSystem(SampleSystem type) {
-            if (dimension != type.getSize()) {
-                throw new IllegalArgumentException("Target crs has a different number of dimensions");
-            }
-            this.type = type;
-        }
-
-        @Override
-        public int getDimension() {
-            return dimension;
         }
 
         @Override
@@ -1331,21 +1134,14 @@ public final class JavaFactory implements ArrayFactory {
             };
         }
 
-        @Override
-        public String toString() {
-            return "TupleArrayNl{" + "dimension=" + dimension + ", tuple.length=" + getLength() + ", array.length=" + array.length + '}';
-        }
     }
 
-    static final class Float extends AbstractArray {
+    static final class Float extends JavaArray {
 
-        private SampleSystem type;
-        private final int dimension;
         private final float[] array;
 
         Float(SampleSystem type, float[] array) {
-            this.type = type;
-            this.dimension = type.getSize();
+            super(type);
             this.array = array;
             if (array.length % dimension != 0) {
                 throw new IllegalArgumentException("Array size is not compatible, expected n*" + dimension + " but size is " + array.length);
@@ -1353,36 +1149,8 @@ public final class JavaFactory implements ArrayFactory {
         }
 
         @Override
-        public ArrayFactory getFactory() {
-            return JavaFactory.INSTANCE;
-        }
-
-        @Override
-        public SampleSystem getSampleSystem() {
-            return type;
-        }
-
-        @Override
         public long getLength() {
             return array.length / dimension;
-        }
-
-        @Override
-        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return type.getCoordinateReferenceSystem();
-        }
-
-        @Override
-        public void setSampleSystem(SampleSystem type) {
-            if (dimension != type.getSize()) {
-                throw new IllegalArgumentException("Target crs has a different number of dimensions");
-            }
-            this.type = type;
-        }
-
-        @Override
-        public int getDimension() {
-            return dimension;
         }
 
         @Override
@@ -1515,21 +1283,14 @@ public final class JavaFactory implements ArrayFactory {
             };
         }
 
-        @Override
-        public String toString() {
-            return "TupleArrayNf{" + "dimension=" + dimension + ", tuple.length=" + getLength() + ", array.length=" + array.length + '}';
-        }
     }
 
-    static final class Double extends AbstractArray {
+    static final class Double extends JavaArray {
 
-        private SampleSystem type;
-        private final int dimension;
         private final double[] array;
 
         Double(SampleSystem type, double[] array) {
-            this.type = type;
-            this.dimension = type.getSize();
+            super(type);
             this.array = array;
             if (array.length % dimension != 0) {
                 throw new IllegalArgumentException("Array size is not compatible, expected n*" + dimension + " but size is " + array.length);
@@ -1537,36 +1298,8 @@ public final class JavaFactory implements ArrayFactory {
         }
 
         @Override
-        public ArrayFactory getFactory() {
-            return JavaFactory.INSTANCE;
-        }
-
-        @Override
-        public SampleSystem getSampleSystem() {
-            return type;
-        }
-
-        @Override
         public long getLength() {
             return array.length / dimension;
-        }
-
-        @Override
-        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return type.getCoordinateReferenceSystem();
-        }
-
-        @Override
-        public void setSampleSystem(SampleSystem type) {
-            if (dimension != type.getSize()) {
-                throw new IllegalArgumentException("Target crs has a different number of dimensions");
-            }
-            this.type = type;
-        }
-
-        @Override
-        public int getDimension() {
-            return dimension;
         }
 
         @Override
@@ -1699,10 +1432,6 @@ public final class JavaFactory implements ArrayFactory {
             };
         }
 
-        @Override
-        public String toString() {
-            return "TupleArrayNd{" + "dimension=" + dimension + ", tuple.length=" + getLength() + ", array.length=" + array.length + '}';
-        }
     }
 
 }
