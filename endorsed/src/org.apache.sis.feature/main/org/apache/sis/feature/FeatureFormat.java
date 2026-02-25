@@ -64,7 +64,8 @@ import org.opengis.feature.Operation;
 
 /**
  * Formats {@linkplain AbstractFeature features} or {@linkplain DefaultFeatureType feature types} in a tabular format.
- * This format assumes a monospaced font and an encoding supporting drawing box characters (e.g. UTF-8).
+ * This format assumes a monospaced font and a character encoding which supports the drawing of box characters,
+ * such as <abbr>UTF</abbr>-8.
  *
  * <h2>Example</h2>
  * A feature named “City” and containing 3 properties (“name”, “population” and “twin town”)
@@ -83,7 +84,7 @@ import org.opengis.feature.Operation;
  *
  * <h2>Limitations</h2>
  * <ul>
- *   <li>The current implementation can only format features — parsing is not yet implemented.</li>
+ *   <li>The current implementation can only format features — parsing is not supported.</li>
  *   <li>{@code FeatureFormat}, like most {@code java.text.Format} subclasses, is not thread-safe.</li>
  * </ul>
  *
@@ -759,10 +760,11 @@ format:                     for (final AttributeType<?> ct : ((AttributeType<?>)
     }
 
     /**
-     * Not yet supported.
+     * Not supported.
      *
      * @return currently never return.
      * @throws ParseException currently always thrown.
+     * @hidden Not implemented.
      */
     @Override
     public Object parse(final CharSequence text, final ParsePosition pos) throws ParseException {

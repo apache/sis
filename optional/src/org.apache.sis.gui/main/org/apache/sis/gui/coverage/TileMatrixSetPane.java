@@ -16,9 +16,11 @@
  */
 package org.apache.sis.gui.coverage;
 
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.List;
+import java.util.Map;
+import java.util.function.IntFunction;
 import javafx.collections.ObservableList;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ObjectProperty;
@@ -38,29 +40,30 @@ import javafx.util.StringConverter;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.metadata.spatial.DimensionNameType;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.tiling.TileMatrix;
 import org.apache.sis.storage.tiling.TileMatrixSet;
 import org.apache.sis.storage.tiling.TiledResource;
-import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.storage.tiling.TileMatrixSetFormat;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.gui.Widget;
+import org.apache.sis.gui.internal.AlignedTableCell;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.ExceptionReporter;
-import org.apache.sis.util.collection.Containers;
 
 
 /**
  * A visual representation of the internal tile matrices defined in a {@link TiledResource}.
+ * Each {@link TileMatrix} instance is presented as a row in a table. The columns are the tile
+ * matrix identifier, the resolution, the number of tiles and (if applicable) the tile size.
  *
- * @todo change the text area to a split pane with a tree view on the left and a description pane on the right
- * @todo if the resource is writable, add tiling modification controls
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.7
  *
- * @author Johann Sorel (Geomatys)
+ * @see TileMatrixSetFormat
  *
- * @sinec 1.7
+ * @since 1.7
  */
 public class TileMatrixSetPane extends Widget {
     /**
@@ -86,12 +89,12 @@ public class TileMatrixSetPane extends Widget {
     };
 
     /**
-     * The locale for texts in controls, or {@code null} for the default locale.
+     * The object to use for formatting Tile Matrix Set properties.
      */
-    private final Locale locale;
+    private final TileMatrixSetFormat formatter;
 
     /**
-     * The data shown in this widget.
+     * The resource for which this widget is showing the Tile Matrix Sets (<abbr>TMS</abbr>).
      *
      * @see #getContent()
      * @see #setContent(TiledResource)
@@ -104,7 +107,7 @@ public class TileMatrixSetPane extends Widget {
     private final ComboBox<TileMatrixSet> tileMatriceSets;
 
     /**
-     * The label where to write the name of the Coordinate Reference System.
+     * The label where to write the name of the Coordinate Reference System of the selected <abbr>TMS</abbr>.
      */
     private final Label crsName;
 
@@ -116,91 +119,106 @@ public class TileMatrixSetPane extends Widget {
     /**
      * The columns for the resolution along each <abbr>CRS</abbr> axis.
      * The number of columns is the number of <abbr>CRS</abbr> dimensions.
+     * Values are {@link Double} numbers, for formatted as {@link String}s
+     * by {@link TileMatrixSetFormat}.
      */
-    private final TableColumn<Row, Double> tileResolutionColumns;
+    private final TableColumn<Row, String> tileResolutionColumns;
 
     /**
      * The columns for the number of tiles in each dimension.
      * The number of columns is the number of grid dimensions.
+     * Values are {@link Long}s, for formatted as {@link String}s by {@link TileMatrixSetFormat}.
      */
-    private final TableColumn<Row, Long> tileCountColumns;
+    private final TableColumn<Row, String> tileCountColumns;
+
+    /**
+     * The columns for the tile size in each dimension.
+     * The number of columns is the number of grid dimensions.
+     * Values are {@link Integer}s, for formatted as {@link String}s by {@link TileMatrixSetFormat}.
+     */
+    private final TableColumn<Row, String> tileSizeColumns;
 
     /**
      * A row in the table of tile matrices shown by {@link #tileMatrices}.
-     * The resolution and tile count are group of columns.
+     * The resolution, tile count and tile size are groups of columns.
      */
     private static final class Row {
         /**
          * Property for the Tile Matrix identifier.
          */
-        private final SimpleStringProperty identifier;
+        final SimpleStringProperty identifier;
 
         /**
          * Resolution along each <abbr>CRS</abbr> dimension.
          * They are the values to show in the group of {@link #tileResolutionColumns}.
          */
-        private final SimpleObjectProperty<Double>[] resolution;
+        final SimpleStringProperty[] resolution;
 
         /**
          * Number of tiles along each grid dimension.
          * They are the values to show in the group {@link #tileCountColumns}.
          */
-        private final SimpleObjectProperty<Long>[] tileCount;
+        final SimpleStringProperty[] tileCount;
 
         /**
-         * Creates a new row for the given tile matrix.
-         *
-         * @param  matrix  the matrix for which to create a row in the table.
+         * Tile size along each grid dimension.
+         * They are the values to show in the group {@link #tileSizeColumns}.
          */
-        @SuppressWarnings({"this-escape", "rawtypes", "unchecked"})
-        Row(final TileMatrix matrix) {
-            identifier = new SimpleStringProperty(this, "identifier");
-            final GenericName id = matrix.getIdentifier();
-            if (id != null) {
-                identifier.setValue(id.toString());
-            }
-            final double[] r = matrix.getResolution();
-            resolution = new SimpleObjectProperty[r.length];
-            for (int i=0; i<resolution.length; i++) {
-                (resolution[i] = new SimpleObjectProperty<>(this, "resolution")).set(r[i]);
-            }
-            final GridExtent extent = matrix.getTilingScheme().getExtent();
-            tileCount = new SimpleObjectProperty[extent.getDimension()];
-            for (int i=0; i<tileCount.length; i++) {
-                (tileCount[i] = new SimpleObjectProperty<>(this, "tileCount")).set(extent.getSize(i));
+        final SimpleStringProperty[] tileSize;
+
+        /**
+         * Creates a new row for the given properties at the specified row index.
+         */
+        @SuppressWarnings("this-escape")
+        Row(final int row,
+            final String[]   identifiers,
+            final String[][] resolutions,
+            final String[][] tileCounts,
+            final String[][] tileSizes)
+        {
+            identifier = new SimpleStringProperty(this, "identifier", identifiers == null ? null : identifiers[row]);
+            resolution = new SimpleStringProperty[resolutions != null ? resolutions.length : 0];
+            tileCount  = new SimpleStringProperty[tileCounts  != null ?  tileCounts.length : 0];
+            tileSize   = new SimpleStringProperty[tileSizes   != null ?   tileSizes.length : 0];
+            Arrays.setAll(resolution, (i) -> new SimpleStringProperty(this, "resolution", resolutions[i][row]));
+            Arrays.setAll(tileCount,  (i) -> new SimpleStringProperty(this, "tileCount",  tileCounts [i][row]));
+            Arrays.setAll(tileSize,   (i) -> new SimpleStringProperty(this, "tileSize",   tileSizes  [i][row]));
+        }
+
+        /**
+         * Returns the group of columns identified by the given index.
+         *
+         * @param  groupIndex  1 for resolution, 2 for tile count or 3 for tile size. 0 is reserved for identifier.
+         * @return group of columns at the given index.
+         */
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")
+        final SimpleStringProperty[] group(final int groupIndex) {
+            switch (groupIndex) {
+                case 1: return resolution;
+                case 2: return tileCount;
+                case 3: return tileSize;
+                default: throw new AssertionError(groupIndex);
             }
         }
 
         /**
-         * The callback for getting the identifier value of a row.
+         * The callback for getting the value of the "identifier" column of a row.
          */
         static final Callback<TableColumn.CellDataFeatures<Row, String>, ObservableValue<String>>
-                IDENTIFIER = (cell) -> cell.getValue().identifier;
+                IDENTIFIER_GETTER = (cell) -> cell.getValue().identifier;
 
         /**
-         * The callback for getting resolution values in the specified <abbr>CRS</abbr> dimension.
+         * The callback for getting the value of a column other than "identifier".
          *
-         * @param  i  a <abbr>CRS</abbr> dimension.
-         * @return getter of resolution values in the specified <abbr>CRS</abbr> dimension.
+         * @param  groupIndex   1 for resolution, 2 for tile count or 3 for tile size. 0 is reserved for identifier.
+         * @param  columnIndex  the column index in the specified group. This is a <abbr>CRS</abbr> or grid dimension.
+         * @return getter of values in the specified column of the specified group of columns.
          */
-        static Callback<TableColumn.CellDataFeatures<Row, Double>, ObservableValue<Double>> resolution(final int i) {
-            return (cell) -> {
-                final SimpleObjectProperty<Double>[] resolution = cell.getValue().resolution;
-                return (i >= 0 && i < resolution.length) ? resolution[i] : null;
-            };
-        }
-
-        /**
-         * The callback for getting tile count values of a row in the specified dimension.
-         *
-         * @param  i  a grid dimension.
-         * @return getter of tile count values in the specified grid dimension.
-         */
-        static Callback<TableColumn.CellDataFeatures<Row, Long>, ObservableValue<Long>> tileCount(final int i) {
-            return (cell) -> {
-                final SimpleObjectProperty<Long>[] tileCount = cell.getValue().tileCount;
-                return (i >= 0 && i < tileCount.length) ? tileCount[i] : null;
-            };
+        static Callback<TableColumn.CellDataFeatures<Row, String>, ObservableValue<String>>
+                getter(final int groupIndex, final int columnIndex)
+        {
+            // Index should never be out of bounds because of the way that we built the arrays.
+            return (cell) -> cell.getValue().group(groupIndex)[columnIndex];
         }
     }
 
@@ -226,11 +244,11 @@ public class TileMatrixSetPane extends Widget {
      */
     @SuppressWarnings("this-escape")
     public TileMatrixSetPane(final Locale locale) {
+        formatter = new TileMatrixSetFormat(locale, null);
         view = new GridPane();
         view.setPadding(SPACE_ON_TOP);
         view.setVgap(9);
         view.setHgap(12);
-        this.locale = locale;
         final Vocabulary vocabulary = Vocabulary.forLocale(locale);
         /*
          * Combox box for choosing the Tile Matrix Set.
@@ -270,12 +288,13 @@ public class TileMatrixSetPane extends Widget {
             identifier            = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.Identifier));
             tileResolutionColumns = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.Resolution));
             tileCountColumns      = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.TileCount));
-            identifier.setCellValueFactory(Row.IDENTIFIER);
+            tileSizeColumns       = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.TileSize));
+            identifier.setCellValueFactory(Row.IDENTIFIER_GETTER);
 
             tileMatrices = new TableView<>();
             tileMatrices.setEditable(false);
             tileMatrices.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_SUBSEQUENT_COLUMNS);
-            tileMatrices.getColumns().setAll(List.of(identifier, tileResolutionColumns, tileCountColumns));
+            tileMatrices.getColumns().setAll(List.of(identifier, tileResolutionColumns, tileCountColumns, tileSizeColumns));
             GridPane.setHgrow(tileMatrices, Priority.ALWAYS);
             GridPane.setVgrow(tileMatrices, Priority.ALWAYS);
             GridPane.setColumnSpan(tileMatrices, 2);
@@ -284,6 +303,45 @@ public class TileMatrixSetPane extends Widget {
         contentProperty = new SimpleObjectProperty<>(this, "content");
         contentProperty.addListener(TileMatrixSetPane::resourceChanged);
         tileMatriceSets.getSelectionModel().selectedItemProperty().addListener((p,o,n) -> tileMatrixSetChanged(n));
+    }
+
+    /**
+     * Adds or removes columns in the "resolution", "tile count" or "tile size" group of columns.
+     * After this method calls, the number of columns of the group will be equal to {@code numCols}.
+     * If that number is zero, the element is removed from the table.
+     *
+     * @param row         any row that can be used for determining {@code numCols}, or {@code null} if none.
+     * @param groupIndex  1 for resolution, 2 for tile count or 3 for tile size. 0 is reserved for identifier.
+     * @param group       group of columns identified by {@code groupIndex}.
+     * @param headerText  provider of labels for the column header. The function can return {@code null}.
+     */
+    private void addOrRemoveColumns(final Row row, final int groupIndex,
+                                    final TableColumn<Row, String> group,
+                                    final IntFunction<String> headerText)
+    {
+        final int numCols = (row != null) ? row.group(groupIndex).length : 0;
+        final ObservableList<TableColumn<Row, ?>> columns = group.getColumns();
+        for (int columnIndex = 0; columnIndex < numCols; columnIndex++) {
+            String header = headerText.apply(columnIndex);
+            if (header == null) {
+                header = String.valueOf(columnIndex);
+            }
+            if (columnIndex < columns.size()) {
+                columns.get(columnIndex).setText(header);
+            } else {
+                final var column = new TableColumn<Row, String>(header);
+                column.setCellFactory(AlignedTableCell.baselineRight());
+                column.setCellValueFactory(Row.getter(groupIndex, columnIndex));
+                columns.add(column);
+            }
+        }
+        columns.remove(numCols, columns.size());
+        final ObservableList<TableColumn<Row, ?>> table = tileMatrices.getColumns();
+        if (columns.isEmpty()) {
+            table.remove(group);
+        } else if (!table.contains(group)) {
+            table.add(group);
+        }
     }
 
     /**
@@ -365,91 +423,57 @@ public class TileMatrixSetPane extends Widget {
         tileMatrices.getItems().clear();
         crsName.setText(null);
         if (newValue != null) {
-            BackgroundThreads.execute(new Task<TileMatrix[]>() {
-                /** The coordinate reference system. */
-                private CoordinateReferenceSystem crs;
+            BackgroundThreads.execute(new Task<Map<?,?>>() {
+                /** The number of rows. */
+                private int numRows;
 
-                /** Name of the Coordinate Reference System. */
-                private String crsDisplayName;
+                /** The warning, or {@code null} if none. */
+                private Throwable warning;
 
-                /** The grid extent of the tiling scheme, using the first row as a representative value. */
-                private GridExtent tilingScheme;
-
-                /** Fetches the Tile Matrices in a background thread. */
-                @Override protected TileMatrix[] call() {
-                    crs = newValue.getCoordinateReferenceSystem();
-                    if (crs != null) {
-                        crsDisplayName = IdentifiedObjects.getDisplayName(crs, locale);
+                /** Fetches the Tile Matrix properties in a background thread. */
+                @Override protected Map<?,?> call() {
+                    final Map<String, Object> properties;
+                    synchronized (formatter) {
+                        try {
+                            properties = formatter.formatHeader(newValue);
+                            numRows = formatter.formatTable(newValue.getTileMatrices().values(), properties);
+                            warning = formatter.getError().orElse(null);
+                        } finally {
+                            formatter.clear();
+                        }
                     }
-                    final Collection<? extends TileMatrix> matrices = newValue.getTileMatrices().values();
-                    final TileMatrix first = Containers.peekFirst(matrices);
-                    if (first != null) {
-                        tilingScheme = first.getTilingScheme().getExtent();
-                    }
-                    return matrices.toArray(TileMatrix[]::new);
+                    return properties;
                 }
 
                 /** Invoked in JavaFX thread on success. */
                 @Override protected void succeeded() {
-                    crsName.setText(crsDisplayName);
-                    final TileMatrix[] matrices = getValue();
-                    final Row[] rows = new Row[matrices.length];
-                    int crsDimension = 0, gridDimension = 0;
+                    final Map<?,?> properties = getValue();
+                    crsName.setText((String) properties.get("crsName"));
+                    final var identifiers = (String[])   properties.get("identifiers");
+                    final var resolutions = (String[][]) properties.get("resolutions");
+                    final var tileCounts  = (String[][]) properties.get("tileCounts");
+                    final var tileSizes   = (String[][]) properties.get("tileSizes");
+                    final var rows        = new Row[numRows];
                     for (int i=0; i<rows.length; i++) {
-                        final var row = new Row(matrices[i]);
-                        crsDimension  = Math.max(crsDimension, row.resolution.length);
-                        gridDimension = Math.max(gridDimension, row.tileCount.length);
-                        rows[i] = row;
+                        rows[i] = new Row(i, identifiers, resolutions, tileCounts, tileSizes);
                     }
                     tileMatrices.getItems().setAll(rows);
-                    /*
-                     * Add or remove columns for the CRS dimensions.
-                     */
-                    {
-                        final CoordinateSystem cs = (crs != null) ? crs.getCoordinateSystem() : null;
-                        final ObservableList<TableColumn<Row, ?>> columns = tileResolutionColumns.getColumns();
-                        for (int i=0; i<crsDimension; i++) {
-                            final String header = (i < cs.getDimension())
-                                    ? cs.getAxis(i).getAbbreviation() : String.valueOf(i);
-                            if (i < columns.size()) {
-                                columns.get(i).setText(header);
-                            } else {
-                                final var column = new TableColumn<Row, Double>(header);
-                                column.setCellValueFactory(Row.resolution(i));
-                                columns.add(column);
-                            }
-                        }
-                        final int size = columns.size();
-                        if (crsDimension < size) {
-                            columns.remove(crsDimension, size);
-                        }
-                    }
-                    /*
-                     * Add or remove columns for the grid dimensions.
-                     * We use the first row for getting the grid axis identifiers.
-                     */
-                    final ObservableList<TableColumn<Row, ?>> columns = tileCountColumns.getColumns();
-                    if (rows.length != 0) {
-                        for (int i=0; i<gridDimension; i++) {
-                            String header = null;
-                            if (i < tilingScheme.getDimension()) {
-                                header = tilingScheme.getAxisType(i).flatMap(DimensionNameType::identifier).orElse(null);
-                            }
-                            if (header == null) {
-                                header = String.valueOf(i);
-                            }
-                            if (i < columns.size()) {
-                                columns.get(i).setText(header);
-                            } else {
-                                final var column = new TableColumn<Row, Long>(header);
-                                column.setCellValueFactory(Row.tileCount(i));
-                                columns.add(column);
-                            }
-                        }
-                    }
-                    final int size = columns.size();
-                    if (crsDimension < size) {
-                        columns.remove(crsDimension, size);
+                    final Row first = (rows.length != 0) ? rows[0] : null;
+                    final var crs = (CoordinateReferenceSystem) properties.get("crs");
+                    final CoordinateSystem cs = (crs != null) ? crs.getCoordinateSystem() : null;
+                    addOrRemoveColumns(first, 1, tileResolutionColumns, (columnIndex) -> {
+                        if (cs == null || columnIndex >= cs.getDimension()) return null;
+                        return cs.getAxis(columnIndex).getAbbreviation();
+                    });
+                    final var gridAxes = (String[]) properties.get("gridAxes");
+                    final IntFunction<String> headerText = (columnIndex) -> {
+                        if (gridAxes == null || columnIndex >= gridAxes.length) return null;
+                        return gridAxes[columnIndex];
+                    };
+                    addOrRemoveColumns(first, 2, tileCountColumns, headerText);
+                    addOrRemoveColumns(first, 3, tileSizeColumns,  headerText);
+                    if (warning != null) {
+                        reportError(warning);
                     }
                 }
 
@@ -463,6 +487,8 @@ public class TileMatrixSetPane extends Widget {
 
     /**
      * Invoked when a background task failed.
+     *
+     * @todo Should write the message somewhere instead of a window popup.
      */
     private void reportError(final Throwable exception) {
         ExceptionReporter.canNotUseResource(view, exception);

@@ -23,6 +23,7 @@ import java.util.stream.StreamSupport;
 import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
 import java.nio.file.Path;
+import java.util.logging.Logger;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -34,7 +35,6 @@ import org.apache.sis.storage.NoSuchDataException;
 import org.apache.sis.storage.UnsupportedQueryException;
 import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage2D;
@@ -63,6 +63,11 @@ import org.apache.sis.storage.internal.Resources;
  * @author  Martin Desruisseaux (Geomatys)
  */
 final class ImageTileMatrix implements TileMatrix {
+    /**
+     * Logger for the tiling package.
+     */
+    static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.tiling");
+
     /**
      * An alphanumeric identifier which is unique in the {@code TileMatrixSet} that contains this {@code TileMatrix}.
      * The identifier contains the zoom level as a number encoded in <abbr>ASCII</abbr>.
@@ -267,7 +272,7 @@ final class ImageTileMatrix implements TileMatrix {
             }
             return TileStatus.UNKNOWN;
         } catch (ArithmeticException e) {
-            Logging.ignorableException(StoreUtilities.LOGGER, ImageTileMatrix.class, "getTileStatus", e);
+            Logging.ignorableException(LOGGER, ImageTileMatrix.class, "getTileStatus", e);
         }
         return TileStatus.OUTSIDE_EXTENT;
     }

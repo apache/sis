@@ -34,7 +34,6 @@ import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.logging.Logging;
@@ -194,7 +193,7 @@ final class ImagePyramid extends AbstractMap<GenericName, ImageTileMatrix>
                 level = provider.levelOfIdentifier(tip.toString());
             } catch (IllegalArgumentException e) {
                 if (required) throw e;
-                Logging.ignorableException(StoreUtilities.LOGGER, ImagePyramid.class, "indexOf", e);
+                Logging.ignorableException(ImageTileMatrix.LOGGER, ImagePyramid.class, "indexOf", e);
                 return -1;
             }
             if (level >= lowerMatrixIndex && level < upperMatrixIndex) {
@@ -446,9 +445,9 @@ final class ImagePyramid extends AbstractMap<GenericName, ImageTileMatrix>
      */
     @Override
     public String toString() {
-        final var f = new TileMatrixFormatter(locale);
+        final var f = new TileMatrixSetFormat(locale, null);
         synchronized (matrices) {
-            return f.format(this);
+            return f.format(this, true);
         }
     }
 }
