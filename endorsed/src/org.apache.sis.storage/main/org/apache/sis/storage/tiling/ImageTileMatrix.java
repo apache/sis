@@ -105,6 +105,10 @@ final class ImageTileMatrix implements TileMatrix {
 
     /**
      * Size of tiles, in number of {@linkplain #coverage} cells.
+     * The length of this array may be shorter than the number of dimensions of the grid coverage,
+     * because some {@link TiledGridCoverage} implementations may use some metadata (typically the
+     * image date) as a third grid dimension, but still manage all tiles as two-dimensional.
+     * In such case, all extra dimensions are assumed to have a size of 1.
      */
     private final int[] tileSize;
 
@@ -160,12 +164,16 @@ final class ImageTileMatrix implements TileMatrix {
         this.tileToCell = new long[dimension];
         final var pattern = new StringBuilder(6 * dimension);
         for (int i=0; i<dimension; i++) {
+            long size = extent.getSize(i);
             final long offset = extent.getLow(i);
-            final int  scale  = tileSize[i];
-            toCells.setNumber(i, i, scale);
+            if (i < tileSize.length) {
+                final int scale = tileSize[i];
+                toCells.setNumber(i, i, scale);
+                size = JDK18.ceilDiv(size, scale);
+            }
             toCells.setNumber(i, dimension, offset);
             tileToCell[i] = offset;
-            tileCount [i] = JDK18.ceilDiv(extent.getSize(i), scale);
+            tileCount [i] = size;
             /*
              * Prepare a pattern for formatting the tile indices.
              * Indices are formatted with fixed number of digits,
@@ -419,8 +427,11 @@ final class ImageTileMatrix implements TileMatrix {
      * @return the cell coordinate.
      * @throws ArithmeticException if the result overflows the capacity of 64-bits integers.
      */
-    private long tileToCell(final long coordinate, final int dimension) {
-        return Math.addExact(tileToCell[dimension], Math.multiplyExact(coordinate, tileSize[dimension]));
+    private long tileToCell(long coordinate, final int dimension) {
+        if (dimension < tileSize.length) {
+            coordinate = Math.multiplyExact(coordinate, tileSize[dimension]);
+        }
+        return Math.addExact(tileToCell[dimension], coordinate);
     }
 
     /**
@@ -506,7 +517,7 @@ final class ImageTileMatrix implements TileMatrix {
         final long[] low  = new long[indices.length];
         final long[] high = new long[indices.length];
         for (int i=0; i<indices.length; i++) {
-            final long size = tileSize[i];
+            final long size = (i < tileSize.length) ? tileSize[i] : 1;
             low [i] = Math.addExact(tileToCell[i], Math.multiplyExact(indices[i], size));
             high[i] = Math.addExact(low[i], size - 1);
         }
