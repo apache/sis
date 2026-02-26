@@ -38,7 +38,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class Model {
+public class Model {
 
     private CoordinateReferenceSystem crs;
     private String name;

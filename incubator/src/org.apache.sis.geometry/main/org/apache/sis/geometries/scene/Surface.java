@@ -26,7 +26,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class Surface {
+public class Surface {
 
     private Geometry geometry;
     private Material material;

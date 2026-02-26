@@ -30,6 +30,18 @@ import org.apache.sis.util.ArgumentChecks;
  */
 public class Material extends HashMap<String,Object> {
 
+    public static enum Technique {
+        BLINN_PHONG,
+        /**
+         * Physically-Based Rendering
+         */
+        PBR,
+        /**
+         * Specular-glossiness material model from Physically-Based Rendering (PBR)
+         */
+        PBRSG
+    }
+
     public static final String ALPHA_MODE_OPAQUE = "OPAQUE";
     public static final String ALPHA_MODE_MASK = "MASK";
     public static final String ALPHA_MODE_BLEND = "BLEND";
@@ -122,6 +134,7 @@ public class Material extends HashMap<String,Object> {
 
 
     private String id;
+    private Technique technique = Technique.PBR;
 
     public Material() {
 
@@ -139,6 +152,23 @@ public class Material extends HashMap<String,Object> {
      */
     public void setIdentifier(String id) {
         this.id = id;
+    }
+
+    /**
+     * Get material rendering technique.
+     * Blinn-Phong and PBR are the most common.
+     * @return technique, never null.
+     */
+    public Technique getTechnique() {
+        return technique;
+    }
+
+    /**
+     * @param technique rendering technique
+     */
+    public void setTechnique(Technique technique) {
+        ArgumentChecks.ensureNonNull("technique", technique);
+        this.technique = technique;
     }
 
     /**

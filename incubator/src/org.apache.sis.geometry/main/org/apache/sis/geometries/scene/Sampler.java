@@ -20,6 +20,7 @@ import java.util.Objects;
 import org.apache.sis.util.ArgumentChecks;
 
 /**
+ * A sampler defines how textures are to be interpolated and clipped/repeated when applied on a surface.
  *
  * @author Johann Sorel (Geomatys)
  */

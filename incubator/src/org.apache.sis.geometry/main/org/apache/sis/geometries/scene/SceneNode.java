@@ -45,7 +45,7 @@ import org.opengis.referencing.operation.TransformException;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class SceneNode {
+public class SceneNode {
 
     private final Similarity3D parentToNode = new Similarity3D();
     private SceneNode parent = null;
