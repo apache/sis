@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+import java.util.List;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
@@ -24,15 +25,21 @@ import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.math.Vectors;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.ArgumentChecks;
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.metadata.Identifier;
 
 
 /**
  * A sphere geometry defined by a center and a radius.
  * Even if it is called a Sphere this class can handle 2 to N dimensions.
  *
+ * ISO 19107 : classified as a conic surface
  * @author Johann Sorel (Geomatys)
  */
-public final class Sphere extends AbstractGeometry {
+@UML(identifier="Sphere", specification=ISO_19107) // section 8.5.2
+public final class Sphere extends AbstractGeometry implements ParametricCurveSurface {
 
     private Tuple center;
     private double radius = 1.0;
@@ -118,6 +125,63 @@ public final class Sphere extends AbstractGeometry {
             }
         }
         return env;
+    }
+
+    // methods from ParametricCurveSurface
+
+    @Override
+    public int getRows() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public int getColumns() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public List<DirectPosition> getControlPoints() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public List<DirectPosition> getDataPoints() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public GeometryType getHorizontalCurveType() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public GeometryType getVerticalCurveType() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public List<Knot> getKnots() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Curve getHorizontalCurve(double v) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Curve getVerticalCurve(double u) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public DirectPosition getSurface(double u, double v) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Identifier getName() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

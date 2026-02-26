@@ -14,13 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.conicsurfaces;
+package org.apache.sis.geometries;
+
+import org.apache.sis.geometries.ParametricCurveSurface;
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public interface Cylinder {
+@UML(identifier="BilinearGrid", specification=ISO_19107) // section 8.3.4
+public interface BilinearGrid extends ParametricCurveSurface{
 
 }

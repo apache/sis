@@ -22,7 +22,7 @@ import org.opengis.annotation.UML;
 import org.opengis.geometry.coordinate.BSplineSurfaceForm;
 import org.apache.sis.geometries.Knot;
 import org.apache.sis.geometries.GeometryType;
-import org.apache.sis.geometries.parametriccurvesurfaces.ParametricCurveSurface;
+import org.apache.sis.geometries.ParametricCurveSurface;
 import org.apache.sis.geometries.splines.KnotType;
 
 

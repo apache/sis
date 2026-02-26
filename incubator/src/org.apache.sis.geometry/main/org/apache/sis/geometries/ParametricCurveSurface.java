@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.parametriccurvesurfaces;
+package org.apache.sis.geometries;
 
 import java.util.List;
 import static org.opengis.annotation.Specification.ISO_19107;
