@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.triangulate.delaunay;
+package org.apache.sis.geometries.operation.triangulate.delaunay;
 
 import java.util.Iterator;
 import org.opengis.geometry.Envelope;
