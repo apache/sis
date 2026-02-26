@@ -127,9 +127,9 @@ public class TileMatrixSetFormat extends CompoundFormat<TileMatrixSet> {
 
         /**
          * Updates the axis name in the dimension <var>i</var> of the grid extent.
-         * This method verifies that all grid dimensions have the same name.
+         * This method verifies that grid dimensions in all rows have the same axis names.
          */
-        private final void searchCommonAxisName(final String[] gridAxes, final int i) {
+        private void searchCommonAxisName(final String[] gridAxes, final int i) {
             tilingScheme.getAxisType(i).ifPresent((axis) -> {
                 final String name = axis.identifier().orElseGet(() -> axis.name().toLowerCase(Locale.US));
                 final String current = gridAxes[i];
@@ -163,9 +163,15 @@ public class TileMatrixSetFormat extends CompoundFormat<TileMatrixSet> {
                 final int n = Numerics.suggestFractionDigits(ArraysExt.resize(values, count));
                 format.setMinimumFractionDigits(n);
                 format.setMaximumFractionDigits(n);
-                for (final Row row : rows) {
-                    if (i < row.resolution.length) {
-                        row.formattedResolution[i] = format.format(row.resolution[i]);
+                final int column = i;   // Because lambda requires final values.
+                final String[] formatted = Numerics.formatAndTrimTrailingZeros(format, values.length, (j) -> {
+                    final double[] resolution = rows.get(j).resolution;
+                    return (column < resolution.length) ? resolution[column] : Double.NaN;
+                });
+                for (int j=0; j<values.length; j++) {
+                    final String[] resolution = rows.get(j).formattedResolution;
+                    if (i < resolution.length) {
+                        resolution[i] = formatted[j];
                     }
                 }
             }

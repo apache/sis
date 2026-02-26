@@ -418,6 +418,8 @@ public class TileMatrixSetPane extends Widget {
      * The Tile Matrix Set properties are fetched in a background thread.
      *
      * @param  newValue  the Tile Matrix Set to use for building new content.
+     *
+     * @todo Defer the execution of the background task if this pane is not currently visible.
      */
     private void tileMatrixSetChanged(final TileMatrixSet newValue) {
         tileMatrices.getItems().clear();
