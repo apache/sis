@@ -14,9 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.geometries.math;
 
 /**
- * Code from this package is inspired (and sometimes copied) from the public domain Unlicense-Lib project math package.
- * With authors :Johann Sorel and Bertrand COTE
+ *
+ * @author Johann Sorel
  */
-package org.apache.sis.geometries.math;
+public final class Affines {
+
+    private Affines(){}
+
+    public static Tuple<?> transformNormal(Affine<?> affine, Tuple<?> t, Tuple<?> buffer) {
+        final Vector<?> v = Vectors.castOrCopy(t).extend(0.0);
+        affine.toMatrix().transform(v, v);
+        if (buffer == null) {
+            return v.shrink(3);
+        } else {
+            buffer.set(v);
+            return buffer;
+        }
+    }
+
+}

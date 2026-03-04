@@ -24,7 +24,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.apache.sis.geometries.Geometries;
-import org.apache.sis.geometries.math.Similarity3D;
+import org.apache.sis.geometries.math.Similarity;
+import org.apache.sis.geometries.math.SimilarityND;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.measure.NumberRange;
@@ -47,7 +48,7 @@ import org.opengis.referencing.operation.TransformException;
  */
 public class SceneNode {
 
-    private final Similarity3D parentToNode = new Similarity3D();
+    private final SimilarityND parentToNode = (SimilarityND) SimilarityND.create(3);
     private SceneNode parent = null;
     private final List<SceneNode> children = new NotifiedCheckedList<SceneNode>(){
         @Override
@@ -180,7 +181,7 @@ public class SceneNode {
      *
      * @return Transform, never null.
      */
-    public Similarity3D getTransform() {
+    public SimilarityND getTransform() {
         return parentToNode;
     }
 
@@ -296,9 +297,9 @@ public class SceneNode {
 
         // apply transform
         if (applyTransform && e != null) {
-            final Similarity3D transform = getTransform();
+            final Similarity<?> transform = getTransform();
             if (!transform.isIdentity()) {
-                LinearTransform trs = MathTransforms.linear(transform.toMatrix());
+                LinearTransform trs = MathTransforms.linear(transform.toMatrix().toMatrixSIS());
                 e.setEnvelope(Envelopes.transform(trs, e));
             }
         }
@@ -468,7 +469,7 @@ public class SceneNode {
         @Override
         public void clear() throws UnsupportedOperationException {
             if(!isEmpty()){
-                final Collection<E> copy = new ArrayList<E>(this);
+                final Collection<E> copy = new ArrayList<>(this);
                 final NumberRange<Integer> range = NumberRange.create(0, true, copy.size()-1, true);
                 super.clear();
                 notifyRemove(copy, range);

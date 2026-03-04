@@ -288,6 +288,17 @@ public interface Tuple<T extends Tuple <T>> {
     }
 
     /**
+     * Apply given transform on this tuple.
+     *
+     * @param trs not null
+     * @return this tuple
+     */
+    default T transform(Transform trs) {
+        trs.transform(this, this);
+        return (T) this;
+    }
+
+    /**
      * Transform this tuple and store the result in given tuple.
      *
      * @param trs not null

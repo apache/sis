@@ -16,12 +16,6 @@
  */
 package org.apache.sis.geometries.math;
 
-import org.apache.sis.referencing.operation.matrix.Matrix2;
-import org.apache.sis.referencing.operation.matrix.Matrix3;
-import org.apache.sis.referencing.operation.matrix.Matrix4;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-
-
 /**
  * Original code from Unlicense.science
  *
@@ -30,57 +24,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
  */
 public final class Matrices {
 
-    public static Matrix2 toMatrix2(double[][] m) {
-        return new Matrix2(
-                m[0][0], m[0][1],
-                m[1][0], m[1][1]);
-    }
-
-    public static Matrix3 toMatrix3(double[][] m) {
-        return new Matrix3(
-                m[0][0], m[0][1], m[0][2],
-                m[1][0], m[1][1], m[1][2],
-                m[2][0], m[2][1], m[2][2]);
-    }
-
-    public static Matrix4 toMatrix4(double[][] m) {
-        return new Matrix4(
-                m[0][0], m[0][1], m[0][2], m[0][3],
-                m[1][0], m[1][1], m[1][2], m[1][3],
-                m[2][0], m[2][1], m[2][2], m[2][3],
-                m[3][0], m[3][1], m[3][2], m[3][3]);
-    }
-
-    public static double[][] toArray(Matrix2 m) {
-        return new double[][]
-            {{m.m00, m.m01},
-             {m.m10, m.m11}};
-    }
-
-    public static double[][] toArray(Matrix3 m) {
-        return new double[][]
-            {{m.m00, m.m01, m.m02},
-             {m.m10, m.m11, m.m12},
-             {m.m20, m.m21, m.m22}};
-    }
-
-    public static double[][] toArray(Matrix4 m) {
-        return new double[][]
-            {{m.m00, m.m01, m.m02, m.m03},
-             {m.m10, m.m11, m.m12, m.m13},
-             {m.m20, m.m21, m.m22, m.m13},
-             {m.m30, m.m31, m.m32, m.m33}};
-    }
-
-    public static double[][] toArray(MatrixSIS m) {
-        final double[][] array = new double[m.getNumRow()][m.getNumCol()];
-        for (int r = 0; r < array.length; r++) {
-            for (int c = 0; c < array[0].length; c++) {
-                array[r][c] = m.getElement(r, c);
-            }
-        }
-        return array;
-    }
+    private Matrices(){}
 
     /**
      * Checks if the given matrix is the identity matrix.
@@ -689,18 +633,18 @@ public final class Matrices {
      * @param v2
      * @return
      */
-    public static Matrix4 createRotation(Vector<?> v1, Vector<?> v2){
+    public static Matrix4D createRotation(Vector<?> v1, Vector<?> v2){
         v1 = v1.normalize();
         v2 = v2.normalize();
         final double angle = Math.acos(v1.dot(v2));
         if (angle==0){
             //vectors are colinear
-            Matrix4 identity = new Matrix4();
+            Matrix4D identity = new Matrix4D();
             return identity;
         }
         final Vector axis = v1.copy().cross(v2).normalize();
         double[][] m = Matrices.createRotation4(angle, axis, null);
-        return Matrices.toMatrix4(m);
+        return new Matrix4D(m);
     }
 
     /**
@@ -826,7 +770,7 @@ public final class Matrices {
         return buffer;
     }
 
-    public static Matrix3 createFromUpAndRight(Vector<?> v, Vector<?> u) {
+    public static Matrix3D createFromUpAndRight(Vector<?> v, Vector<?> u) {
         v = v.copy();
         u = u.copy();
         v.normalize();
@@ -841,28 +785,93 @@ public final class Matrices {
         u = w.cross(v);
         u.normalize();
 
-        return new Matrix3(
+        return new Matrix3D(
                 u.get(0), w.get(0), v.get(0),
                 u.get(1), w.get(1), v.get(1),
                 u.get(2), w.get(2), v.get(2));
     }
 
     /**
-     * Decompose a matrix in rotation, scale and translation.
+     * Create and orbit matrix 4x4 focus on the root point (0,0,0).
+     *
+     * @param xAngle horizontal angle
+     * @param yAngle vertical angle
+     * @param rollAngle roll angle
+     * @param distance distance from base
+     * @return orbit matrix 4x4
      */
-    public static void decomposeMatrix(Matrix4 trs, Matrix3 rotation, Tuple scale, Tuple translation){
-        final double scaleX = Math.sqrt(trs.m00 * trs.m00 + trs.m10 * trs.m10 + trs.m20 * trs.m20);
-        final double scaleY = Math.sqrt(trs.m01 * trs.m01 + trs.m11 * trs.m11 + trs.m21 * trs.m21);
-        final double scaleZ = Math.sqrt(trs.m02 * trs.m02 + trs.m12 * trs.m12 + trs.m22 * trs.m22);
-        final double[] invertScale = new double[]{1d / scaleX, 1d / scaleY, 1d / scaleZ};
-        rotation.m00 = trs.m00 * invertScale[0]; rotation.m01 = trs.m01 * invertScale[1]; rotation.m02 = trs.m02 * invertScale[2];
-        rotation.m10 = trs.m10 * invertScale[0]; rotation.m11 = trs.m11 * invertScale[1]; rotation.m12 = trs.m12 * invertScale[2];
-        rotation.m20 = trs.m20 * invertScale[0]; rotation.m21 = trs.m21 * invertScale[1]; rotation.m22 = trs.m22 * invertScale[2];
-        scale.set(0, scaleX);
-        scale.set(1, scaleY);
-        scale.set(2, scaleZ);
-        translation.set(0,trs.getElement(0,3));
-        translation.set(1,trs.getElement(1,3));
-        translation.set(2,trs.getElement(2,3));
+    public static double[][] focusedOrbit(final double xAngle, final double yAngle,
+            double rollAngle, double distance){
+
+        final Vector4D.Double forward = new Vector4D.Double(1*distance, 0, 0, 0);
+
+        //calculate rotation matrix
+        final MatrixND rotateMatrix = new MatrixND(createRotation4(xAngle, new Vector3D.Double(0, 0, 1),null));
+        final MatrixND mv = new MatrixND(createRotation4(yAngle, new Vector3D.Double(0, -1, 0), null));
+        rotateMatrix.multiply(mv);
+
+        //calculate translation vector
+        final Tuple<?> translation = rotateMatrix.transform(forward, null);
+
+        //calculate roll matrix
+//        final Matrix4 rollMatrix = new Matrix4();
+//        Matrices.createRotation4(rollAngle, new Vector(translation).normalize(), rollMatrix.getValues());
+
+        //apply in reverse order
+        final MatrixND result = new MatrixND(4,4).setToIdentity();
+//        result.localMultiply(rollMatrix);
+        result.multiply(rotateMatrix);
+        result.set(0,3, translation.get(0));
+        result.set(1,3, translation.get(1));
+        result.set(2,3, translation.get(2));
+        return result.getValues();
+    }
+
+    /**
+     * Decompose a matrix in rotation, scale and translation.
+     * The matrix is expected to be orthogonal of size 3x3 or 4x4.
+     */
+    public static void decomposeMatrix(Matrix<?> trs, Matrix<?> rotation, Tuple<?> scale, Tuple<?> translation){
+        final int dimension = trs.getNbCol()-1;
+        if (dimension == 2){
+            final double scaleX = Math.sqrt(trs.get(0,0)*trs.get(0,0)
+                                          + trs.get(1,0)*trs.get(1,0));
+            final double scaleY = Math.sqrt(trs.get(0,1)*trs.get(0,1)
+                                          + trs.get(1,1)*trs.get(1,1));
+
+            final double[] invertScale = new double[]{1d/scaleX,1d/scaleY};
+            final Matrix<?> rot = trs.getRange(0, 1, 0, 1);
+            rot.scale(invertScale);
+
+            rotation.set(rot);
+            scale.set(0,scaleX);
+            scale.set(1,scaleY);
+            translation.set(0, trs.get(0,2));
+            translation.set(1, trs.get(1,2));
+        } else if (dimension == 3){
+            final double scaleX = Math.sqrt(trs.get(0,0)*trs.get(0,0)
+                                          + trs.get(1,0)*trs.get(1,0)
+                                          + trs.get(2,0)*trs.get(2,0));
+            final double scaleY = Math.sqrt(trs.get(0,1)*trs.get(0,1)
+                                          + trs.get(1,1)*trs.get(1,1)
+                                          + trs.get(2,1)*trs.get(2,1));
+            final double scaleZ = Math.sqrt(trs.get(0,2)*trs.get(0,2)
+                                          + trs.get(1,2)*trs.get(1,2)
+                                          + trs.get(2,2)*trs.get(2,2));
+            final double[] invertScale = new double[]{1d/scaleX,1d/scaleY,1d/scaleZ};
+            final Matrix rot = trs.getRange(0, 2, 0, 2);
+            rot.scale(invertScale);
+
+            rotation.set(rot);
+            scale.set(0, scaleX);
+            scale.set(1, scaleY);
+            scale.set(2, scaleZ);
+            translation.set(0,trs.get(0,3));
+            translation.set(1,trs.get(1,3));
+            translation.set(2,trs.get(2,3));
+
+        } else {
+            throw new IllegalArgumentException("Only works for 2D and 3D for now. TODO");
+        }
     }
 }

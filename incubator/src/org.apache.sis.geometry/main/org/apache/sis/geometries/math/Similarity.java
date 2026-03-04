@@ -32,23 +32,135 @@ package org.apache.sis.geometries.math;
  *
  * @author Johann Sorel (Geomatys)
  */
-public interface Similarity {
+public interface Similarity<T extends Similarity<T>> extends Affine<T> {
 
     /**
-     * Test if this transform is identity.
-     * <ul>
-     *  <li>Scale must be all at 1</li>
-     *  <li>Translation must be all at 0</li>
-     *  <li>Rotation must be an identity matrix</li>
-     * </ul>
+     * Dimension of the transform.
+     * @return int
+     */
+    int getDimension();
+
+    /**
+     * Get transform rotation.
+     * Call notifyChanged after if you modified the values.
      *
-     * @return true if transform is identity.
+     * @return Matrix
      */
-    boolean isIdentity();
+    Matrix getRotation();
 
     /**
-     * Set this transformation to identity.
+     * Get transform scale.
+     * Call notifyChanged after if you modified the values.
+     *
+     * @return Vector
      */
-    void toIdentity();
+    Vector<?> getScale();
+
+    /**
+     * Get transform translation.
+     * Call notifyChanged after if you modified the values.
+     *
+     * @return Vector
+     */
+    Vector<?> getTranslation();
+
+    /**
+     * Get a general matrix view of size : dimension+1
+     * This matrix combine rotation, scale and translation
+     *
+     * [R*S, R*S, R*S, T]
+     * [R*S, R*S, R*S, T]
+     * [R*S, R*S, R*S, T]
+     * [  0,   0,   0, 1]
+     *
+     * @return Matrix, never null
+     */
+    Matrix viewMatrix();
+
+    /**
+     * Get a general inverse matrix view of size : dimension+1
+     *
+     * @return Matrix, never null
+     */
+    Matrix viewMatrixInverse();
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    void transform(double[] in, int sourceOffset, double[] out, int destOffset, int nbTuple);
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    void transform(float[] in, int sourceOffset, float[] out, int destOffset, int nbTuple);
+
+    /**
+     * Inverse transform a single tuple.
+     *
+     * @param source tuple, can not be null.
+     * @param dest tuple, can be null.
+     * @return destination tuple.
+     */
+    Tuple<?> inverseTransform(Tuple<?> source, Tuple<?> dest);
+
+    /**
+     * Inverse view of this transform.
+     * The returned affine is no modifiable.
+     * The returned affine reflects any change made to this transform
+     *
+     * @return inverse transform view
+     */
+    Affine<?> inverse();
+
+    T multiply(Similarity<?> other);
+
+    /**
+     * Copy values from given transform.
+     * @param trs
+     * @return this instance
+     */
+    T set(Similarity<?> trs);
+
+    /**
+     * Set transform from given matrix.
+     * Matrix must be orthogonal of size dimension+1.
+     *
+     * @param trs
+     */
+    @Override
+    T setFromMatrix(Matrix trs);
+
+    /**
+     * Set transform from given matrix.
+     * Affine must be of same size.
+     *
+     * @param trs
+     */
+    @Override
+    T set(Affine<?> trs);
+
+    /**
+     * Set to identity.
+     * This method will send a change event if values have changed.
+     */
+    @Override
+    T setToIdentity();
+
+    /**
+     * Set this transform to given translation.
+     * This will reset rotation and scale values.
+     *
+     * This method will send a change event if values have changed.
+     * @param trs
+     */
+    T setToTranslation(double[] trs);
+
+    /**
+     * Flag to indicate the transform parameters has changed.
+     * This is used to recalculate the general matrix when needed.
+     */
+    void notifyChanged();
 
 }

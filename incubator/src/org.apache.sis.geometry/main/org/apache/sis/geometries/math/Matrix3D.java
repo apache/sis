@@ -17,54 +17,410 @@
 package org.apache.sis.geometries.math;
 
 import org.apache.sis.referencing.operation.matrix.Matrix3;
-
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 
 /**
+ * 3x3 matrix
  *
- * @author Johann Sorel (Geomatys)
- * @todo Remove this class when all elements are merged in Matrix3
+ * @author Johann Sorel
  */
-public class Matrix3D extends Matrix3{
+public class Matrix3D extends AbstractMatrix<Matrix3D> {
+
+    //package private for fast access by other classes
+    double m00,m01,m02;
+    double m10,m11,m12;
+    double m20,m21,m22;
 
     public Matrix3D() {
+        super(3, 3);
     }
 
-    public Matrix3D(
-            double m00, double m01, double m02,
-            double m10, double m11, double m12,
-            double m20, double m21, double m22
-            ) {
-        super(  m00, m01, m02,
-                m10, m11, m12,
-                m20, m21, m22);
+    public Matrix3D(Matrix<?> m) {
+        super(3, 3);
+        m00 = m.get(0, 0);
+        m01 = m.get(0, 1);
+        m02 = m.get(0, 2);
+        m10 = m.get(1, 0);
+        m11 = m.get(1, 1);
+        m12 = m.get(1, 2);
+        m20 = m.get(2, 0);
+        m21 = m.get(2, 1);
+        m22 = m.get(2, 2);
     }
 
-    public Matrix3D(double[] elements) {
-        super(elements);
+    public Matrix3D(double[][] values) {
+        super(3, 3);
+        if (values[0].length != 3 || values.length != 3){
+            throw new IllegalArgumentException("Size must be 3x3");
+        }
+        m00 = values[0][0];
+        m01 = values[0][1];
+        m02 = values[0][2];
+        m10 = values[1][0];
+        m11 = values[1][1];
+        m12 = values[1][2];
+        m20 = values[2][0];
+        m21 = values[2][1];
+        m22 = values[2][2];
     }
 
-    public void transform(Tuple tuple, Tuple result) {
-        //TODO not efficient
-        result.set(multiply(tuple.toArrayDouble()));
+    public Matrix3D(double m00, double m01, double m02,
+                   double m10, double m11, double m12,
+                   double m20, double m21, double m22) {
+        super(3, 3);
+        this.m00 = m00;
+        this.m01 = m01;
+        this.m02 = m02;
+        this.m10 = m10;
+        this.m11 = m11;
+        this.m12 = m12;
+        this.m20 = m20;
+        this.m21 = m21;
+        this.m22 = m22;
+    }
+
+    @Override
+    public double get(int row, int col) {
+        switch(row){
+            case 0 : switch(col){case 0:return m00;case 1:return m01;case 2:return m02;}
+            case 1 : switch(col){case 0:return m10;case 1:return m11;case 2:return m12;}
+            case 2 : switch(col){case 0:return m20;case 1:return m21;case 2:return m22;}
+        }
+        throw new IllegalArgumentException("Invalid row/col index "+row+":"+col);
+    }
+
+    @Override
+    public Matrix3D set(int row, int col, double value) {
+        switch(row){
+            case 0 : switch(col){case 0:m00=value;break;case 1:m01=value;break;case 2:m02=value;break;} return this;
+            case 1 : switch(col){case 0:m10=value;break;case 1:m11=value;break;case 2:m12=value;break;} return this;
+            case 2 : switch(col){case 0:m20=value;break;case 1:m21=value;break;case 2:m22=value;break;} return this;
+        }
+        throw new IllegalArgumentException("Invalid row/col index "+row+":"+col);
+    }
+
+    @Override
+    public Matrix3D set(final Matrix<?> toCopy){
+        if (toCopy instanceof Matrix3D o){
+            m00 = o.m00;m01 = o.m01;m02 = o.m02;
+            m10 = o.m10;m11 = o.m11;m12 = o.m12;
+            m20 = o.m20;m21 = o.m21;m22 = o.m22;
+            return this;
+        }
+        return super.set(toCopy);
+    }
+
+    public void setAll(double value) {
+        m00 = value;
+        m01 = value;
+        m02 = value;
+        m10 = value;
+        m11 = value;
+        m12 = value;
+        m20 = value;
+        m21 = value;
+        m22 = value;
+    }
+
+    @Override
+    public Matrix3D setToIdentity() {
+        m00=1.0; m01=0.0; m02=0.0;
+        m10=0.0; m11=1.0; m12=0.0;
+        m20=0.0; m21=0.0; m22=1.0;
+        return this;
+    }
+
+    @Override
+    public boolean isIdentity() {
+        return m00==1.0 && m01==0.0 && m02==0.0
+            && m10==0.0 && m11==1.0 && m12==0.0
+            && m20==0.0 && m21==0.0 && m22==1.0 ;
+    }
+
+    @Override
+    public boolean isFinite() {
+        return !(
+                Double.isNaN(m00) || Double.isInfinite(m00) ||
+                Double.isNaN(m01) || Double.isInfinite(m01) ||
+                Double.isNaN(m02) || Double.isInfinite(m02) ||
+                Double.isNaN(m10) || Double.isInfinite(m10) ||
+                Double.isNaN(m11) || Double.isInfinite(m11) ||
+                Double.isNaN(m12) || Double.isInfinite(m12) ||
+                Double.isNaN(m20) || Double.isInfinite(m20) ||
+                Double.isNaN(m21) || Double.isInfinite(m21) ||
+                Double.isNaN(m22) || Double.isInfinite(m22)
+                );
+    }
+
+    @Override
+    public Matrix3D add(Matrix<?> other) {
+        if (other instanceof Matrix3D o){
+            //usual case
+            this.m00 += o.m00;
+            this.m01 += o.m01;
+            this.m02 += o.m02;
+            this.m10 += o.m10;
+            this.m11 += o.m11;
+            this.m12 += o.m12;
+            this.m20 += o.m20;
+            this.m21 += o.m21;
+            this.m22 += o.m22;
+        } else {
+            this.m00 += other.get(0,0);
+            this.m01 += other.get(0,1);
+            this.m02 += other.get(0,2);
+            this.m10 += other.get(1,0);
+            this.m11 += other.get(1,1);
+            this.m12 += other.get(1,2);
+            this.m20 += other.get(2,0);
+            this.m21 += other.get(2,1);
+            this.m22 += other.get(2,2);
+        }
+
+        return this;
+    }
+
+    @Override
+    public Matrix3D invert() {
+        if (m20==0 && m21==0 && m22==1){
+            //affine transform
+            double m00 = this.m00;
+            double m10 = this.m10;
+            double m01 = this.m01;
+            double m11 = this.m11;
+            double m02 = this.m02;
+            double m12 = this.m12;
+            double dt = m00 * m11 - m10 * m01;
+            this.m00 = m11/dt;
+            this.m10 = -m10/dt;
+            this.m01 = -m01/dt;
+            this.m11 = m00/dt;
+            this.m02 = (m01 * m12 - m11 * m02) / dt;
+            this.m12 = -(m00 * m12 - m10 * m02) / dt;
+            return this;
+        }
+        return super.invert();
+    }
+
+    @Override
+    public Matrix3D scale(double scale) {
+        m00 *= scale;m01 *= scale;m02 *= scale;
+        m10 *= scale;m11 *= scale;m12 *= scale;
+        m20 *= scale;m21 *= scale;m22 *= scale;
+        return this;
+    }
+
+    @Override
+    public Matrix3D scale(double[] scale) {
+        m00 *= scale[0];m01 *= scale[1];m02 *= scale[2];
+        m10 *= scale[0];m11 *= scale[1];m12 *= scale[2];
+        m20 *= scale[0];m21 *= scale[1];m22 *= scale[2];
+        return this;
+    }
+
+    @Override
+    public Matrix3D multiply(Matrix other) {
+        if (other instanceof Matrix3D o){
+            //usual case
+            double b00 = this.m00 * o.m00 + this.m01 * o.m10 + this.m02 * o.m20;
+            double b01 = this.m00 * o.m01 + this.m01 * o.m11 + this.m02 * o.m21;
+            double b02 = this.m00 * o.m02 + this.m01 * o.m12 + this.m02 * o.m22;
+            double b10 = this.m10 * o.m00 + this.m11 * o.m10 + this.m12 * o.m20;
+            double b11 = this.m10 * o.m01 + this.m11 * o.m11 + this.m12 * o.m21;
+            double b12 = this.m10 * o.m02 + this.m11 * o.m12 + this.m12 * o.m22;
+            double b20 = this.m20 * o.m00 + this.m21 * o.m10 + this.m22 * o.m20;
+            double b21 = this.m20 * o.m01 + this.m21 * o.m11 + this.m22 * o.m21;
+            double b22 = this.m20 * o.m02 + this.m21 * o.m12 + this.m22 * o.m22;
+            m00 = b00;m01 = b01;m02 = b02;
+            m10 = b10;m11 = b11;m12 = b12;
+            m20 = b20;m21 = b21;m22 = b22;
+            return this;
+        }
+        return super.multiply(other);
+    }
+
+    @Override
+    protected void transform1(double[] source, int sourceOffset, double[] dest, int destOffset) {
+        double d0 = m00*source[sourceOffset] + m01*source[sourceOffset+1] + m02*source[sourceOffset+2];
+        double d1 = m10*source[sourceOffset] + m11*source[sourceOffset+1] + m12*source[sourceOffset+2];
+        double d2 = m20*source[sourceOffset] + m21*source[sourceOffset+1] + m22*source[sourceOffset+2];
+        dest[destOffset  ] = d0;
+        dest[destOffset+1] = d1;
+        dest[destOffset+2] = d2;
+    }
+
+    @Override
+    protected void transform1(float[] source, int sourceOffset, float[] dest, int destOffset) {
+        double d0 = m00*source[sourceOffset] + m01*source[sourceOffset+1] + m02*source[sourceOffset+2];
+        double d1 = m10*source[sourceOffset] + m11*source[sourceOffset+1] + m12*source[sourceOffset+2];
+        double d2 = m20*source[sourceOffset] + m21*source[sourceOffset+1] + m22*source[sourceOffset+2];
+        dest[destOffset  ] = (float) d0;
+        dest[destOffset+1] = (float) d1;
+        dest[destOffset+2] = (float) d2;
+    }
+
+    @Override
+    public Tuple transform(Tuple vector, Tuple buffer) {
+        if (buffer == null) buffer = new Vector3D.Double();
+
+        if (vector instanceof Vector3D.Double v && buffer instanceof Vector3D.Double b) {
+            double rx = m00*v.x + m01*v.y + m02*v.z;
+            double ry = m10*v.x + m11*v.y + m12*v.z;
+            double rz = m20*v.x + m21*v.y + m22*v.z;
+            b.x = rx;
+            b.y = ry;
+            b.z = rz;
+            return b;
+        }
+
+        return super.transform(vector, buffer);
     }
 
     /**
-     * Casts or copies the given matrix to a {@code Matrix3D} implementation. If the given {@code matrix}
-     * is already an instance of {@code Matrix3D}, then it is returned unchanged. Otherwise this method
-     * verifies the matrix size, then copies all elements in a new {@code Matrix3D} object.
-     *
-     * @param  matrix  the matrix to cast or copy, or {@code null}.
-     * @return the matrix argument if it can be safely cast (including {@code null} argument),
-     *         or a copy of the given matrix otherwise.
-     * @throws IllegalArgumentException if the size of the given matrix is not {@value #SIZE}×{@value #SIZE}.
+     * Transform rotation matrix in quaternion.
+     * @return Quaternion
      */
-    public static Matrix3D castOrCopy(final org.opengis.referencing.operation.Matrix matrix) throws IllegalArgumentException {
-        if (matrix == null || matrix instanceof Matrix3D) {
-            return (Matrix3D) matrix;
-        }
-        if (matrix.getNumCol() != 3 || matrix.getNumRow() != 3) {
-            throw new IllegalArgumentException("Matrix is not of size 3x3");
-        }
-        return new Matrix3D(Matrix3.castOrCopy(matrix).getElements());
+    public Quaternion toQuaternion(){
+        final Quaternion q = new Quaternion();
+        q.setFromMatrix(this);
+        return q;
     }
+
+    /**
+     * Convert to euler angles.
+     * @return euler angle in radians (heading/yaw , elevation/pitch , bank/roll)
+     */
+    public Vector<?> toEuler(){
+        return new VectorND.Double(Matrices.toEuler(toArray2DoubleRowOrder(), null));
+    }
+
+    /**
+     *
+     * @param euler in radians (heading/yaw , elevation/pitch , bank/roll)
+     * @return
+     */
+    public Matrix3D fromEuler(Tuple<?> euler){
+        set(Matrices.fromEuler(euler.toArrayDouble(), new double[3][3]));
+        return this;
+    }
+
+    public Matrix3D fromAngle(final double angle, final Tuple<?> rotationAxis){
+        final double fCos = Math.cos(angle);
+        final double fSin = Math.sin(angle);
+        final double fOneMinusCos = (1.0) - fCos;
+        final double fX2 = rotationAxis.get(0) * rotationAxis.get(0);
+        final double fY2 = rotationAxis.get(1) * rotationAxis.get(1);
+        final double fZ2 = rotationAxis.get(2) * rotationAxis.get(2);
+        final double fXYM = rotationAxis.get(0) * rotationAxis.get(1) * fOneMinusCos;
+        final double fXZM = rotationAxis.get(0) * rotationAxis.get(2) * fOneMinusCos;
+        final double fYZM = rotationAxis.get(1) * rotationAxis.get(2) * fOneMinusCos;
+        final double fXSin = rotationAxis.get(0) * fSin;
+        final double fYSin = rotationAxis.get(1) * fSin;
+        final double fZSin = rotationAxis.get(2) * fSin;
+
+        m00 = fX2 * fOneMinusCos + fCos;
+        m01 = fXYM - fZSin;
+        m02 = fXZM + fYSin;
+        m10 = fXYM + fZSin;
+        m11 = fY2 * fOneMinusCos + fCos;
+        m12 = fYZM - fXSin;
+        m20 = fXZM - fYSin;
+        m21 = fYZM + fXSin;
+        m22 = fZ2 * fOneMinusCos + fCos;
+        return this;
+    }
+
+    @Override
+    public Matrix3D copy() {
+        return new Matrix3D(this);
+    }
+
+    @Override
+    public MatrixSIS toMatrixSIS() {
+        return new Matrix3(m00, m01, m02, m10, m11, m12, m20, m21, m22);
+    }
+
+    /**
+     * @return determinant
+     */
+    public double getDeterminant(){
+        return m00 * (m11 * m22 - m12 * m21) -
+               m01 * (m10 * m22 - m12 * m20) +
+               m02 * (m10 * m21 - m11 * m20);
+    }
+
+    /**
+     * Create rotation matrix to move v1 on v2.
+     *
+     * @param v1
+     * @param v2
+     * @return
+     */
+    public static Matrix3D createRotation(Vector<?> v1, Vector<?> v2){
+        v1 = v1.normalize();
+        v2 = v2.normalize();
+        final double angle = Math.acos(v1.dot(v2));
+        if (angle == 0){
+            //vectors are colinear
+            Matrix3D identity = new Matrix3D().setToIdentity();
+            return identity;
+        }
+        final Vector<?> axis = v1.cross(v2).normalize();
+        return createRotation3(angle, axis);
+    }
+
+    /**
+     *
+     * @param angle in radians
+     * @param rotateAxis, rotation axis
+     * @return
+     */
+    public static Matrix3D createRotation3(final double angle, final Tuple rotateAxis){
+        return new Matrix3D().fromAngle(angle, rotateAxis);
+    }
+
+    /**
+     * Build rotation matrix from euler angle.
+     *
+     * @param euler angles in radians (heading/yaw , elevation/pitch , bank/roll)
+     * @return Matrix3
+     */
+    public static Matrix3D createRotationEuler(final Tuple euler){
+        return new Matrix3D().fromEuler(euler);
+    }
+
+    /**
+     * Create rotation matrix from 3 axis.
+     * Each Tuple must be unit length(normalized)
+     *
+     * @param xAxis values are copied in 1th row
+     * @param yAxis values are copied in 2nd row
+     * @param zAxis values are copied in 3rd row
+     * @return rotation matrix
+     */
+    public static Matrix3D createFromAxis(final Tuple xAxis, final Tuple yAxis, final Tuple zAxis){
+        final Matrix3D m = new Matrix3D().setToIdentity();
+        m.setRow(0, xAxis.toArrayDouble());
+        m.setRow(1, yAxis.toArrayDouble());
+        m.setRow(2, zAxis.toArrayDouble());
+        return m;
+    }
+
+    /**
+     * Create a rotation matrix as the concatenation of rotation on x,y,z axis.
+     *
+     * @param x in radians
+     * @param y in radians
+     * @param z in radians
+     * @return
+     */
+    public static Matrix3D createFromAngles(double x, double y, double z){
+        Matrix3D r1 = Matrix3D.createRotation3(x, new Vector3D.Double(1, 0, 0));
+        Matrix3D r2 = Matrix3D.createRotation3(y, new Vector3D.Double(0, 1, 0));
+        Matrix3D r3 = Matrix3D.createRotation3(z, new Vector3D.Double(0, 0, 1));
+        r1.multiply(r2);
+        r1.multiply(r3);
+        return r1;
+    }
+
 }

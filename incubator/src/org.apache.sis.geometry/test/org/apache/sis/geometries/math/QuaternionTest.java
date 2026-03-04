@@ -16,9 +16,6 @@
  */
 package org.apache.sis.geometries.math;
 
-import org.apache.sis.referencing.operation.matrix.Matrix3;
-import org.apache.sis.referencing.operation.matrix.Matrix4;
-
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
@@ -39,8 +36,8 @@ public class QuaternionTest {
 
         //test identity
         Quaternion qt = new Quaternion();
-        Matrix3 result = qt.toMatrix3();
-        assertEquals(new Matrix3( 1,  0,  0,
+        Matrix3D result = qt.toMatrix3();
+        assertEquals(new Matrix3D( 1,  0,  0,
                              0,  1,  0,
                              0,  0,  1),
                 result);
@@ -48,21 +45,21 @@ public class QuaternionTest {
 
         qt = new Quaternion(1, 0, 0, 0);
         result = qt.toMatrix3();
-        assertEquals(new Matrix3( 1,  0,  0,
+        assertEquals(new Matrix3D( 1,  0,  0,
                              0, -1,  0,
                              0,  0, -1),
                 result);
 
         qt = new Quaternion(0, 1, 0, 0);
         result = qt.toMatrix3();
-        assertEquals(new Matrix3(-1,  0,  0,
+        assertEquals(new Matrix3D(-1,  0,  0,
                              0,  1,  0,
                              0,  0, -1),
                 result);
 
         qt = new Quaternion(0, 0, 1, 0);
         result = qt.toMatrix3();
-        assertEquals(new Matrix3(-1,  0,  0,
+        assertEquals(new Matrix3D(-1,  0,  0,
                              0, -1,  0,
                              0,  0,  1),
                 result);
@@ -72,7 +69,7 @@ public class QuaternionTest {
     public void testFromMatrix(){
         final double angle = 12.37;
 
-        final Matrix4 m = Matrices.toMatrix4(new double[][]{
+        final Matrix4D m = new Matrix4D(new double[][]{
             {1,    0,                  0,                  0},
             {0,    Math.cos(angle),    -Math.sin(angle),   0},
             {0,    Math.sin(angle),    Math.cos(angle),    0},
@@ -80,30 +77,30 @@ public class QuaternionTest {
             });
 
         Quaternion q = new Quaternion();
-        q.fromMatrix(m);
+        q.setFromMatrix(m);
 
-        assertArrayEquals(m.getElements(),q.toMatrix4().getElements(), DELTA);
+        assertArrayEquals(m.toArrayDoubleColOrder(),q.toMatrix4().toArrayDoubleColOrder(), DELTA);
     }
 
     @Test
     public void testFromEuler(){
 
         Vector euler = new Vector3D.Double(0, 0, 0);
-        Quaternion q = new Quaternion().fromEuler(euler);
+        Quaternion q = new Quaternion().setFromEuler(euler);
         assertArrayEquals(new double[]{0, 0, 0, 1}, q.values, DELTA);
 
         euler = new Vector3D.Double(Math.PI, 0, 0);
-        q = new Quaternion().fromEuler(euler);
+        q = new Quaternion().setFromEuler(euler);
         assertArrayEquals(new double[]{0, 0, 1, 0}, q.values, DELTA);
 
         euler = new Vector3D.Double(0, Math.PI / 2.0, 0);
-        q = new Quaternion().fromEuler(euler);
+        q = new Quaternion().setFromEuler(euler);
         assertArrayEquals(new double[]{0, Math.cos(Math.PI / 4.0), 0, Math.cos(Math.PI / 4.0)}, q.values, DELTA);
         euler = q.toEuler();
         assertArrayEquals(new double[]{0, Math.PI / 2.0, 0}, euler.toArrayDouble(), DELTA);
 
         euler = new Vector3D.Double(0, 0, Math.PI);
-        q = new Quaternion().fromEuler(euler);
+        q = new Quaternion().setFromEuler(euler);
         assertArrayEquals(new double[]{1, 0, 0, 0}, q.values, DELTA);
 
     }
@@ -112,16 +109,16 @@ public class QuaternionTest {
     public void testToEuler(){
 
         Quaternion q = new Quaternion(0, 0, 0, 1);
-        VectorND.Double euler = q.toEuler();
-        assertArrayEquals(new double[]{0, 0, 0}, euler.values, DELTA);
+        Vector<?> euler = q.toEuler();
+        assertArrayEquals(new double[]{0, 0, 0}, euler.toArrayDouble(), DELTA);
 
         q = new Quaternion(0, 0, 1, 0);
         euler = q.toEuler();
-        assertArrayEquals(new double[]{Math.PI, 0, 0}, euler.values, DELTA);
+        assertArrayEquals(new double[]{Math.PI, 0, 0}, euler.toArrayDouble(), DELTA);
 
         q = new Quaternion(1, 0, 0, 0);
         euler = q.toEuler();
-        assertArrayEquals(new double[]{0, 0, Math.PI}, euler.values, DELTA);
+        assertArrayEquals(new double[]{0, 0, Math.PI}, euler.toArrayDouble(), DELTA);
     }
 
 

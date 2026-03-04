@@ -80,6 +80,32 @@ public interface Vector<T extends Vector<T>> extends Tuple<T> {
     }
 
     /**
+     * Multiply other vector values to this vector.
+     * @param other
+     * @return this vector
+     */
+    default T multiply(Tuple<?> other) {
+        return set(Vectors.multiply(toArrayDouble(), other.toArrayDouble()));
+    }
+
+    /**
+     * Divide other vector values to this vector.
+     * @param other
+     * @return this vector
+     */
+    default T divide(Tuple<?> other) {
+        return set(Vectors.divide(toArrayDouble(), other.toArrayDouble()));
+    }
+
+    /**
+     * Negate this vector values.
+     * @return this vector
+     */
+    default T negate() {
+        return set(Vectors.negate(toArrayDouble()));
+    }
+
+    /**
      * Scale vector by given value.
      *
      * @param scale scaling factor
@@ -134,6 +160,21 @@ public interface Vector<T extends Vector<T>> extends Tuple<T> {
             v.set(i, get(i));
         }
         v.set(dim, d);
+        return v;
+    }
+
+    /**
+     * Decrease size of the tuple by one value.
+     * Vector CRS will be lost.
+     *
+     * @param size number of dimension to preserve
+     * @return Vector
+     */
+    default Vector<?> shrink(int size) {
+        final Vector<?> v = Vectors.create(size, getDataType());
+        for (int i = 0; i < size; i++) {
+            v.set(i, get(i));
+        }
         return v;
     }
 }

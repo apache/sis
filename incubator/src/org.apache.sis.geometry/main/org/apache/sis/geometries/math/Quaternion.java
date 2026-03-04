@@ -16,11 +16,6 @@
  */
 package org.apache.sis.geometries.math;
 
-import org.apache.sis.referencing.operation.matrix.Matrix3;
-import org.apache.sis.referencing.operation.matrix.Matrix4;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-
-
 /**
  * Quaternion object.
  *
@@ -233,9 +228,8 @@ public class Quaternion extends VectorND.Double {
      */
     public Vector<?> rotate(Vector<?> v, Vector<?> buffer){
         if (buffer == null) buffer = v.copy();
-        Matrix3 m = toMatrix3();
-        double[] r = m.multiply(v.toArrayDouble());
-        buffer.set(r);
+        Matrix3D m = toMatrix3();
+        m.transform(v, buffer);
         return buffer;
     }
 
@@ -245,7 +239,7 @@ public class Quaternion extends VectorND.Double {
      * @param buffer can be null
      * @return rotated vector
      */
-    public Vector rotate(Vector3D.Double v, Vector<?> buffer) {
+    public Vector<?> rotate(Vector3D.Double v, Vector<?> buffer) {
         if (buffer == null) buffer = v.copy();
         double qx = values[0];
         double qy = values[1];
@@ -283,7 +277,6 @@ public class Quaternion extends VectorND.Double {
      *
      * @param other not null
      * @param ratio range [0...1]
-     * @param buffer can be null
      * @return this interpolated quaternion
      */
     public Quaternion lerp(final Quaternion other, final double ratio){
@@ -299,7 +292,6 @@ public class Quaternion extends VectorND.Double {
      *
      * @param other not null
      * @param ratio range [0...1]
-     * @param buffer can be null
      * @return this interpolated quaternion
      */
     public Quaternion slerp(final Quaternion other, final double ratio){
@@ -314,27 +306,27 @@ public class Quaternion extends VectorND.Double {
      *
      * @return Matrix3
      */
-    public Matrix3 toMatrix3() {
-        return Matrices.toMatrix3(Quaternions.toMatrix(values, null));
+    public Matrix3D toMatrix3() {
+        return new Matrix3D(Quaternions.toMatrix(values, null));
     }
 
     /**
      * Transform quaternion in a rotation matrix 4x4.
      * @return Matrix4
      */
-    public Matrix4 toMatrix4() {
+    public Matrix4D toMatrix4() {
         final double[][] matrix = new double[4][4];
         Quaternions.toMatrix(values, matrix);
         matrix[3][3] = 1;
-        return Matrices.toMatrix4(matrix);
+        return new Matrix4D(matrix);
     }
 
     /**
      * Convert to euler angles.
      * @return euler angle in radians (heading/yaw , elevation/pitch , bank/roll)
      */
-    public VectorND.Double toEuler(){
-        return new VectorND.Double(Matrices.toEuler(Matrices.toArray(toMatrix3()), null));
+    public Vector<?> toEuler(){
+        return toMatrix3().toEuler();
     }
 
     /**
@@ -355,10 +347,10 @@ public class Quaternion extends VectorND.Double {
      * http://jeux.developpez.com/faq/math/?page=quaternions#Q55
      *
      * @param matrix
-     * @return Quaternion
+     * @return this Quaternion
      */
-    public Quaternion fromMatrix(final MatrixSIS matrix){
-        final double[][] m = Matrices.toArray(matrix);
+    public Quaternion setFromMatrix(final Matrix matrix){
+        final double[][] m = matrix.toArray2DoubleRowOrder();
         final double trace = m[0][0] + m[1][1] + m[2][2] + 1;
 
         final double s,x,y,z,w;
@@ -397,7 +389,7 @@ public class Quaternion extends VectorND.Double {
      * @param angle rotation angle, in radians
      * @return this quaternion
      */
-    public Quaternion fromAngle(Tuple axis, double angle) {
+    public Quaternion setFromAngle(Tuple axis, double angle) {
         Quaternions.fromAngle(axis, angle, values);
         return this;
     }
@@ -408,9 +400,9 @@ public class Quaternion extends VectorND.Double {
      * @param euler angles in radians (heading/yaw , elevation/pitch , bank/roll)
      * @return this quaternion
      */
-    public Quaternion fromEuler(Vector euler) {
-        double[][] matrix = Matrices.fromEuler(euler.toArrayDouble(), new double[3][3]); //row / col
-        return fromMatrix(Matrices.toMatrix3(matrix));
+    public Quaternion setFromEuler(Vector euler) {
+        final Matrix3D matrix = Matrix3D.createRotationEuler(euler);
+        return setFromMatrix(matrix);
     }
 
     /**
@@ -420,7 +412,7 @@ public class Quaternion extends VectorND.Double {
      * @param target target vector of unit length
      * @return this quaternion
      */
-    public Quaternion fromUnitVectors(Vector base, Vector target) {
+    public Quaternion setFromUnitVectors(Vector<?> base, Vector<?> target) {
         final double dot = base.dot(target);
         if (dot < -0.999999) {
             //try to find a better value on other axis
@@ -429,7 +421,7 @@ public class Quaternion extends VectorND.Double {
                 tmpvec3 = UNIT_Y.cross(base);
             }
             tmpvec3.normalize();
-            fromAngle(tmpvec3, Math.PI);
+            setFromAngle(tmpvec3, Math.PI);
         } else if (dot > 0.999999) {
             //no rotation
             values[0] = 0;

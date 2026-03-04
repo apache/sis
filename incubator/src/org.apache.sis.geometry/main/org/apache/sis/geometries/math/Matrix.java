@@ -17,22 +17,197 @@
 package org.apache.sis.geometries.math;
 
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
-
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  * @todo Remove this class when all elements are merged in MatrixSIS
  */
-public abstract class Matrix extends MatrixSIS {
+public interface Matrix<T extends Matrix<T>> extends Transform {
 
-    public abstract void transform(Tuple tuple, Tuple result);
+    int getNbRow();
 
-    public Tuple transformLocal(Tuple tuple) {
-        transform(tuple, tuple);
-        return tuple;
-    }
+    int getNbCol();
 
-    public abstract Matrix inverse() throws NoninvertibleMatrixException;
+    double get(int row, int col);
+
+    double[] getRow(int row);
+
+    double[] getColumn(int col);
+
+    Vector<?> getColumnTuple(int col);
+
+    double[] getLastColumn();
+
+    Vector<?> getLastColumnTuple();
+
+    /**
+     * Get a submatrix.
+     *
+     * @param i0 Initial row index
+     * @param i1 Final row index
+     * @param j0 Initial column index
+     * @param j1 Final column index
+     * @return A(i0:i1,j0:j1)
+     * @exception ArrayIndexOutOfBoundsException Submatrix indices
+     */
+    Matrix<?> getRange(int i0, int i1, int j0, int j1);
+
+    /**
+     * Get a submatrix.
+     *
+     * @param r Array of row indices.
+     * @param c Array of column indices.
+     * @return A(r(:),c(:))
+     * @exception ArrayIndexOutOfBoundsException Submatrix indices
+     */
+    Matrix<?> getRange(int[] r, int[] c);
+
+    /**
+     * Get a submatrix.
+     *
+     * @param i0 Initial row index
+     * @param i1 Final row index
+     * @param c Array of column indices.
+     * @return A(i0:i1,c(:))
+     * @exception ArrayIndexOutOfBoundsException Submatrix indices
+     */
+    Matrix<?> getRange(int i0, int i1, int[] c);
+
+    /**
+     * Get a submatrix.
+     *
+     * @param r Array of row indices.
+     * @param j0 Initial column index
+     * @param j1 Final column index
+     * @return A(r(:),j0:j1)
+     * @exception ArrayIndexOutOfBoundsException Submatrix indices
+     */
+    Matrix<?> getRange(int[] r, int j0, int j1);
+
+    T set(int row, int col, double value);
+
+    T set(final Matrix<?> toCopy);
+
+    T set(final double[] values);
+
+    T set(final double[][] values);
+
+    T setRow(int row, double[] values);
+
+    T setCol(int col, double[] values);
+
+    /**
+     * Set a submatrix.
+     *
+     * @param i0 Initial row index
+     * @param i1 Final row index
+     * @param j0 Initial column index
+     * @param j1 Final column index
+     * @param X A(i0:i1,j0:j1)
+     * @exception ArrayIndexOutOfBoundsException Submatrix indices
+     */
+    T setRange(int i0, int i1, int j0, int j1, Matrix<?> X);
+
+    /**
+     * Set a submatrix.
+     *
+     * @param r Array of row indices.
+     * @param c Array of column indices.
+     * @param X A(r(:),c(:))
+     * @exception ArrayIndexOutOfBoundsException Submatrix indices
+     */
+    T setRange(int[] r, int[] c, Matrix<?> X);
+
+    /**
+     * Set a submatrix.
+     *
+     * @param r Array of row indices.
+     * @param j0 Initial column index
+     * @param j1 Final column index
+     * @param X A(r(:),j0:j1)
+     * @exception ArrayIndexOutOfBoundsException Submatrix indices
+     */
+    T setRange(int[] r, int j0, int j1, Matrix<?> X);
+
+    /**
+     * Set a submatrix.
+     *
+     * @param i0 Initial row index
+     * @param i1 Final row index
+     * @param c Array of column indices.
+     * @param X A(i0:i1,c(:))
+     * @exception ArrayIndexOutOfBoundsException Submatrix indices
+     */
+    T setRange(int i0, int i1, int[] c, Matrix<?> X);
+
+    /**
+     * Matrix as 2D double array, in row order.
+     *
+     * @return 2D double array, in row order.
+     */
+    double[][] toArray2DoubleRowOrder();
+
+    /**
+     * Matrix as 1D double array, in column order.
+     *
+     * @return 1D double array, in column order.
+     */
+    double[] toArrayDoubleColOrder();
+
+    /**
+     * Matrix as 1D double array, in row order.
+     *
+     * @return 1D double array, in row order.
+     */
+    double[] toArrayDoubleRowOrder();
+
+    /**
+     * Set Matrix value to identity matrix.
+     * @return this matrix
+     */
+    T setToIdentity();
+
+    /**
+     * invert matrix
+     */
+    T invert();
+
+    T add(Matrix<?> other);
+
+    T subtract(Matrix<?> other);
+
+    T scale(double[] tuple);
+
+    T scale(double scale);
+
+    T multiply(Matrix<?> other);
+
+    T transpose();
+
+    T copy();
+
+    /**
+     * Test if all cells in the matrix equals given value.
+     * @param scalar scalar
+     * @param tolerance tolerance
+     * @return true if all values match
+     */
+    boolean allEquals(double scalar, double tolerance);
+
+    double dot(Matrix<?> other);
+
+    /**
+     * Returns true if matrix do not contains any NaN or Infinite values.
+     *
+     * @return true is matrix is finite
+     */
+    boolean isFinite();
+
+    /**
+     * For compatibility with MatrixSIS.
+     *
+     * @return sis matrix equivalent
+     */
+    MatrixSIS toMatrixSIS();
 }

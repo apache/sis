@@ -23,7 +23,7 @@ import java.util.Arrays;
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class AbstractArray implements Array {
+abstract class AbstractArray implements Array {
 
     @Override
     public Array resize(long newSize) {
