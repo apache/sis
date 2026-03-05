@@ -102,6 +102,8 @@ public class SceneNode {
     private Model model;
     private String name;
     private Feature feature;
+    private Skin skin;
+    private final List<Animation> animations = new ArrayList<>();
     //user properties
     private Map<String,Object> properties;
 
@@ -242,6 +244,27 @@ public class SceneNode {
     }
 
     /**
+     * @return skin attached, may be null
+     */
+    public Skin getSkin() {
+        return skin;
+    }
+
+    /**
+     * @param skin model skin to attach, may be null
+     */
+    public void setSkin(Skin skin) {
+        this.skin = skin;
+    }
+
+    /**
+     * @return animations attached to this node
+     */
+    public List<Animation> getAnimations() {
+        return animations;
+    }
+
+    /**
      * @return Feature this node represent
      *         used to attach atttributes on scene models.
      */
@@ -368,6 +391,12 @@ public class SceneNode {
             return false;
         }
         if (!Objects.equals(this.model, other.model)) {
+            return false;
+        }
+        if (!Objects.equals(this.skin, other.skin)) {
+            return false;
+        }
+        if (!Objects.equals(this.animations, other.animations)) {
             return false;
         }
         return true;

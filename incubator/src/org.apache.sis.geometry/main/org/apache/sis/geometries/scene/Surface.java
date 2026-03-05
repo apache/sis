@@ -16,6 +16,8 @@
  */
 package org.apache.sis.geometries.scene;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.util.ArgumentChecks;
@@ -30,6 +32,7 @@ public class Surface {
 
     private Geometry geometry;
     private Material material;
+    private final List<MorphTarget> targets = new ArrayList<>();
 
     public Surface(Geometry geometry) {
         ArgumentChecks.ensureNonNull("geometry", geometry);
@@ -76,6 +79,13 @@ public class Surface {
         this.material = material;
     }
 
+    /**
+     * @return morph targets, list is never nul, can be empty.
+     */
+    public List<MorphTarget> targets() {
+        return targets;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -94,7 +104,7 @@ public class Surface {
         if (!Objects.equals(this.material, other.material)) {
             return false;
         }
-        return true;
+        return Objects.equals(this.targets, other.targets);
     }
 
     @Override
