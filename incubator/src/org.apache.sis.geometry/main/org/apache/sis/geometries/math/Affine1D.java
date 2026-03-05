@@ -22,8 +22,8 @@ package org.apache.sis.geometries.math;
  */
 public final class Affine1D extends AbstractAffine<Affine1D> implements Transform1D {
 
-    private double m00;
-    private double m01;
+    double m00;
+    double m01;
 
     public Affine1D() {
         super(1);

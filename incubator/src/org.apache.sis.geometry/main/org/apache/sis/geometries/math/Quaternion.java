@@ -16,6 +16,8 @@
  */
 package org.apache.sis.geometries.math;
 
+import static org.apache.sis.geometries.math.Matrix.ROW_ORDER;
+
 /**
  * Quaternion object.
  *
@@ -350,7 +352,7 @@ public class Quaternion extends VectorND.Double {
      * @return this Quaternion
      */
     public Quaternion setFromMatrix(final Matrix matrix){
-        final double[][] m = matrix.toArray2DoubleRowOrder();
+        final double[][] m = matrix.toArray2Double(ROW_ORDER);
         final double trace = m[0][0] + m[1][1] + m[2][2] + 1;
 
         final double s,x,y,z,w;
@@ -389,7 +391,7 @@ public class Quaternion extends VectorND.Double {
      * @param angle rotation angle, in radians
      * @return this quaternion
      */
-    public Quaternion setFromAngle(Tuple axis, double angle) {
+    public Quaternion setFromAngle(Tuple<?> axis, double angle) {
         Quaternions.fromAngle(axis, angle, values);
         return this;
     }
@@ -400,9 +402,8 @@ public class Quaternion extends VectorND.Double {
      * @param euler angles in radians (heading/yaw , elevation/pitch , bank/roll)
      * @return this quaternion
      */
-    public Quaternion setFromEuler(Vector euler) {
-        final Matrix3D matrix = Matrix3D.createRotationEuler(euler);
-        return setFromMatrix(matrix);
+    public Quaternion setFromEuler(Vector<?> euler) {
+        return setFromMatrix(new Matrix3D().setFromEuler(euler));
     }
 
     /**
@@ -416,7 +417,7 @@ public class Quaternion extends VectorND.Double {
         final double dot = base.dot(target);
         if (dot < -0.999999) {
             //try to find a better value on other axis
-            Vector tmpvec3 = UNIT_X.cross(base);
+            Vector<?> tmpvec3 = UNIT_X.cross(base);
             if (tmpvec3.length() < 0.000001) {
                 tmpvec3 = UNIT_Y.cross(base);
             }
@@ -429,7 +430,7 @@ public class Quaternion extends VectorND.Double {
             values[2] = 0;
             values[3] = 1;
         } else {
-            final Vector cross = base.cross(target);
+            final Vector<?> cross = base.cross(target);
             values[0] = cross.get(0);
             values[1] = cross.get(1);
             values[2] = cross.get(2);

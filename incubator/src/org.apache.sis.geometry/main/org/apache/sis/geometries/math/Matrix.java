@@ -23,11 +23,26 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
  * @author Johann Sorel (Geomatys)
  * @todo Remove this class when all elements are merged in MatrixSIS
  */
-public interface Matrix<T extends Matrix<T>> extends Transform {
+public interface Matrix<T extends Matrix<T>> extends Transform, org.opengis.referencing.operation.Matrix {
 
-    int getNbRow();
+    public static final boolean ROW_ORDER = true;
+    public static final boolean COL_ORDER = false;
 
-    int getNbCol();
+    @Override
+    int getNumRow();
+
+    @Override
+    int getNumCol();
+
+    @Override
+    default boolean isIdentity() {
+        return org.opengis.referencing.operation.Matrix.super.isIdentity();
+    }
+
+    @Override
+    default double getElement(int row, int col) {
+        return get(row,col);
+    }
 
     double get(int row, int col);
 
@@ -85,13 +100,18 @@ public interface Matrix<T extends Matrix<T>> extends Transform {
      */
     Matrix<?> getRange(int[] r, int j0, int j1);
 
+    @Override
+    default void setElement(int row, int col, double value) {
+        set(row, col, value);
+    }
+
     T set(int row, int col, double value);
 
     T set(final Matrix<?> toCopy);
 
-    T set(final double[] values);
+    T set(final double[] values, boolean rowOrder);
 
-    T set(final double[][] values);
+    T set(final double[][] values, boolean rowOrder);
 
     T setRow(int row, double[] values);
 
@@ -142,25 +162,20 @@ public interface Matrix<T extends Matrix<T>> extends Transform {
     T setRange(int i0, int i1, int[] c, Matrix<?> X);
 
     /**
-     * Matrix as 2D double array, in row order.
+     * Matrix as 2D double array.
      *
-     * @return 2D double array, in row order.
+     * @param rowOrder true for row order, col order otherwise
+     * @return 2D double array
      */
-    double[][] toArray2DoubleRowOrder();
+    double[][] toArray2Double(boolean rowOrder);
 
     /**
-     * Matrix as 1D double array, in column order.
+     * Matrix as 1D double array.
      *
-     * @return 1D double array, in column order.
+     * @param rowOrder true for row order, col order otherwise
+     * @return 1D double array
      */
-    double[] toArrayDoubleColOrder();
-
-    /**
-     * Matrix as 1D double array, in row order.
-     *
-     * @return 1D double array, in row order.
-     */
-    double[] toArrayDoubleRowOrder();
+    double[] toArrayDouble(boolean rowOrder);
 
     /**
      * Set Matrix value to identity matrix.
@@ -187,6 +202,11 @@ public interface Matrix<T extends Matrix<T>> extends Transform {
 
     T copy();
 
+    @Override
+    default org.opengis.referencing.operation.Matrix clone() {
+        return copy();
+    }
+
     /**
      * Test if all cells in the matrix equals given value.
      * @param scalar scalar
@@ -210,4 +230,6 @@ public interface Matrix<T extends Matrix<T>> extends Transform {
      * @return sis matrix equivalent
      */
     MatrixSIS toMatrixSIS();
+
+    T set(org.opengis.referencing.operation.Matrix matrix);
 }

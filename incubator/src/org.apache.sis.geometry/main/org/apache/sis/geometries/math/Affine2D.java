@@ -23,12 +23,12 @@ package org.apache.sis.geometries.math;
  */
 public final class Affine2D extends AbstractAffine<Affine2D> {
 
-    private double m00;
-    private double m01;
-    private double m02;
-    private double m10;
-    private double m11;
-    private double m12;
+    double m00;
+    double m01;
+    double m02;
+    double m10;
+    double m11;
+    double m12;
 
     public Affine2D() {
         super(2);

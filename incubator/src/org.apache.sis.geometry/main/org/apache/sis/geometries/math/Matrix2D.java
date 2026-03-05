@@ -30,11 +30,16 @@ public class Matrix2D extends AbstractMatrix<Matrix2D> {
     double m00,m01;
     double m10,m11;
 
+    /**
+     * New identity matrix2D
+     */
     public Matrix2D() {
         super(2, 2);
+        m00 = 1;
+        m11 = 1;
     }
 
-    public Matrix2D(Matrix m) {
+    public Matrix2D(Matrix<?> m) {
         super(2, 2);
         m00 = m.get(0, 0);
         m01 = m.get(0, 1);
@@ -81,7 +86,7 @@ public class Matrix2D extends AbstractMatrix<Matrix2D> {
     }
 
     @Override
-    public Matrix2D set(final Matrix toCopy){
+    public Matrix2D set(final Matrix<?> toCopy){
         if (toCopy instanceof Matrix2D){
             Matrix2D o = (Matrix2D) toCopy;
             m00 = o.m00;m01 = o.m01;
@@ -158,7 +163,7 @@ public class Matrix2D extends AbstractMatrix<Matrix2D> {
     }
 
     @Override
-    public Matrix2D multiply(Matrix other) {
+    public Matrix2D multiply(Matrix<?> other) {
         if (other instanceof Matrix2D){
             //usual case
             Matrix2D o = (Matrix2D) other;
@@ -191,7 +196,7 @@ public class Matrix2D extends AbstractMatrix<Matrix2D> {
     }
 
     @Override
-    public Tuple transform(Tuple vector, Tuple buffer) {
+    public Tuple<?> transform(Tuple<?> vector, Tuple<?> buffer) {
         if (buffer == null) buffer = new Vector2D.Double();
 
         if (vector instanceof Vector2D.Double && buffer instanceof Vector2D.Double) {
@@ -215,21 +220,6 @@ public class Matrix2D extends AbstractMatrix<Matrix2D> {
     @Override
     public MatrixSIS toMatrixSIS() {
         return new Matrix2(m00, m01, m10, m11);
-    }
-
-    /**
-     * Create rotation matrix from angle.
-     *
-     * @param angle in radians
-     * @return Matrix2
-     */
-    public static Matrix2D fromAngle(double angle) {
-        final Matrix2D m = new Matrix2D();
-        m.set(0, 0, Math.cos(angle));
-        m.set(0, 1, -Math.sin(angle));
-        m.set(1, 0, Math.sin(angle));
-        m.set(1, 1, Math.cos(angle));
-        return m;
     }
 
 }

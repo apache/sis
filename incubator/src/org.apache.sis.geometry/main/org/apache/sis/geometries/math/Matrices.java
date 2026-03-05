@@ -627,27 +627,6 @@ public final class Matrices {
     }
 
     /**
-     * Create rotation matrix to move v1 on v2.
-     *
-     * @param v1
-     * @param v2
-     * @return
-     */
-    public static Matrix4D createRotation(Vector<?> v1, Vector<?> v2){
-        v1 = v1.normalize();
-        v2 = v2.normalize();
-        final double angle = Math.acos(v1.dot(v2));
-        if (angle==0){
-            //vectors are colinear
-            Matrix4D identity = new Matrix4D();
-            return identity;
-        }
-        final Vector axis = v1.copy().cross(v2).normalize();
-        double[][] m = Matrices.createRotation4(angle, axis, null);
-        return new Matrix4D(m);
-    }
-
-    /**
      * Build rotation matrix from Euler angle.
      * Sources :
      * http://en.wikipedia.org/wiki/Axes_conventions
@@ -770,27 +749,6 @@ public final class Matrices {
         return buffer;
     }
 
-    public static Matrix3D createFromUpAndRight(Vector<?> v, Vector<?> u) {
-        v = v.copy();
-        u = u.copy();
-        v.normalize();
-        u.normalize();
-
-        //W = Normalized(Cross(V,U))
-        Vector w = v.cross(u);
-        w.normalize();
-
-        //to ensure it is correctly perpendicular
-        //U = Normalized(Cross(W,V))
-        u = w.cross(v);
-        u.normalize();
-
-        return new Matrix3D(
-                u.get(0), w.get(0), v.get(0),
-                u.get(1), w.get(1), v.get(1),
-                u.get(2), w.get(2), v.get(2));
-    }
-
     /**
      * Create and orbit matrix 4x4 focus on the root point (0,0,0).
      *
@@ -832,7 +790,7 @@ public final class Matrices {
      * The matrix is expected to be orthogonal of size 3x3 or 4x4.
      */
     public static void decomposeMatrix(Matrix<?> trs, Matrix<?> rotation, Tuple<?> scale, Tuple<?> translation){
-        final int dimension = trs.getNbCol()-1;
+        final int dimension = trs.getNumCol()-1;
         if (dimension == 2){
             final double scaleX = Math.sqrt(trs.get(0,0)*trs.get(0,0)
                                           + trs.get(1,0)*trs.get(1,0));

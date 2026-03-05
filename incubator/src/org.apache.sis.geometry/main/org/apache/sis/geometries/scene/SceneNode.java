@@ -25,7 +25,7 @@ import java.util.Objects;
 import java.util.Optional;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.math.Similarity;
-import org.apache.sis.geometries.math.SimilarityND;
+import org.apache.sis.geometries.math.Similarity3D;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.measure.NumberRange;
@@ -48,7 +48,7 @@ import org.opengis.referencing.operation.TransformException;
  */
 public class SceneNode {
 
-    private final SimilarityND parentToNode = (SimilarityND) SimilarityND.create(3);
+    private final Similarity3D parentToNode = new Similarity3D();
     private SceneNode parent = null;
     private final List<SceneNode> children = new NotifiedCheckedList<SceneNode>(){
         @Override
@@ -181,7 +181,7 @@ public class SceneNode {
      *
      * @return Transform, never null.
      */
-    public SimilarityND getTransform() {
+    public Similarity3D getTransform() {
         return parentToNode;
     }
 

@@ -55,6 +55,7 @@ import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.internal.shared.ArraySequence;
+import org.apache.sis.geometries.math.Matrix3D;
 import org.apache.sis.geometry.wrapper.jts.JTS;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CRS;
@@ -63,7 +64,6 @@ import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.cs.DefaultLinearCS;
 import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
-import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.util.ArgumentChecks;
@@ -228,21 +228,10 @@ public final class Geometries {
     /**
      * Get rotation matrix from Geometry crs to another.
      */
-    public static Matrix3 createRotation(CoordinateReferenceSystem crs1, CoordinateReferenceSystem crs2) throws FactoryException {
+    public static Matrix3D createRotation(CoordinateReferenceSystem crs1, CoordinateReferenceSystem crs2) throws FactoryException {
         final MathTransform trs = CRS.findOperation(crs1, crs2, null).getMathTransform();
         final LinearTransform lt = (LinearTransform) trs;
-        final Matrix m = lt.getMatrix();
-        final Matrix3 rotation = new Matrix3();
-        rotation.m00 = m.getElement(0, 0);
-        rotation.m01 = m.getElement(0, 1);
-        rotation.m02 = m.getElement(0, 2);
-        rotation.m10 = m.getElement(1, 0);
-        rotation.m11 = m.getElement(1, 1);
-        rotation.m12 = m.getElement(1, 2);
-        rotation.m20 = m.getElement(2, 0);
-        rotation.m21 = m.getElement(2, 1);
-        rotation.m22 = m.getElement(2, 2);
-        return rotation;
+        return new Matrix3D().set(lt.getMatrix());
     }
 
     /**

@@ -22,29 +22,29 @@ package org.apache.sis.geometries.math;
  */
 public final class Affine4D extends AbstractAffine<Affine4D> {
 
-    private double m00;
-    private double m01;
-    private double m02;
-    private double m03;
-    private double m04;
+    double m00;
+    double m01;
+    double m02;
+    double m03;
+    double m04;
 
-    private double m10;
-    private double m11;
-    private double m12;
-    private double m13;
-    private double m14;
+    double m10;
+    double m11;
+    double m12;
+    double m13;
+    double m14;
 
-    private double m20;
-    private double m21;
-    private double m22;
-    private double m23;
-    private double m24;
+    double m20;
+    double m21;
+    double m22;
+    double m23;
+    double m24;
 
-    private double m30;
-    private double m31;
-    private double m32;
-    private double m33;
-    private double m34;
+    double m30;
+    double m31;
+    double m32;
+    double m33;
+    double m34;
 
     public Affine4D() {
         super(4);

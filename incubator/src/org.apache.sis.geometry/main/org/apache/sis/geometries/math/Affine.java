@@ -155,7 +155,7 @@ public interface Affine<T extends Affine<T>> extends Transform {
      * @param buffer to store matrix values in
      * @return matrix
      */
-    Matrix<?> toMatrix(Matrix buffer);
+    Matrix<?> toMatrix(Matrix<?> buffer);
 
     /**
      * Create a copy of this Affine.

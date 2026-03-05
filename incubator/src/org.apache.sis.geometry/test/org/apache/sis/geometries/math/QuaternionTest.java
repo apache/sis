@@ -79,7 +79,7 @@ public class QuaternionTest {
         Quaternion q = new Quaternion();
         q.setFromMatrix(m);
 
-        assertArrayEquals(m.toArrayDoubleColOrder(),q.toMatrix4().toArrayDoubleColOrder(), DELTA);
+        assertArrayEquals(m.toArrayDouble(Matrix.COL_ORDER),q.toMatrix4().toArrayDouble(Matrix.COL_ORDER), DELTA);
     }
 
     @Test

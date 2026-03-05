@@ -16,6 +16,9 @@
  */
 package org.apache.sis.geometries.math;
 
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.opengis.referencing.operation.MathTransform;
+
 /**
  * A similarity is the equivalent of a affine transform but preserving angles by avoiding
  * shearing value not rotations.
@@ -32,7 +35,7 @@ package org.apache.sis.geometries.math;
  *
  * @author Johann Sorel (Geomatys)
  */
-public interface Similarity<T extends Similarity<T>> extends Affine<T> {
+public interface Similarity<T extends Similarity<T>> extends Transform {
 
     /**
      * Dimension of the transform.
@@ -46,7 +49,7 @@ public interface Similarity<T extends Similarity<T>> extends Affine<T> {
      *
      * @return Matrix
      */
-    Matrix getRotation();
+    Matrix<?> getRotation();
 
     /**
      * Get transform scale.
@@ -59,7 +62,8 @@ public interface Similarity<T extends Similarity<T>> extends Affine<T> {
     /**
      * Get transform translation.
      * Call notifyChanged after if you modified the values.
-     *
+     *ç&é ,
+     * +
      * @return Vector
      */
     Vector<?> getTranslation();
@@ -75,26 +79,25 @@ public interface Similarity<T extends Similarity<T>> extends Affine<T> {
      *
      * @return Matrix, never null
      */
-    Matrix viewMatrix();
+    Matrix<?> viewMatrix();
 
     /**
      * Get a general inverse matrix view of size : dimension+1
      *
      * @return Matrix, never null
      */
-    Matrix viewMatrixInverse();
+    Matrix<?> viewMatrixInverse();
+
+    Affine<?> viewAffine();
 
     /**
-     * {@inheritDoc }
+     * Inverse view of this transform.
+     * The returned affine is no modifiable.
+     * The returned affine reflects any change made to this transform
+     *
+     * @return inverse transform view
      */
-    @Override
-    void transform(double[] in, int sourceOffset, double[] out, int destOffset, int nbTuple);
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    void transform(float[] in, int sourceOffset, float[] out, int destOffset, int nbTuple);
+    Affine<?> viewAffineInverse();
 
     /**
      * Inverse transform a single tuple.
@@ -106,14 +109,11 @@ public interface Similarity<T extends Similarity<T>> extends Affine<T> {
     Tuple<?> inverseTransform(Tuple<?> source, Tuple<?> dest);
 
     /**
-     * Inverse view of this transform.
-     * The returned affine is no modifiable.
-     * The returned affine reflects any change made to this transform
+     * Multiply this similarity by given similarity and store the result in this similarity.
      *
-     * @return inverse transform view
+     * @param other multiplying similarity
+     * @return this similarity
      */
-    Affine<?> inverse();
-
     T multiply(Similarity<?> other);
 
     /**
@@ -128,24 +128,22 @@ public interface Similarity<T extends Similarity<T>> extends Affine<T> {
      * Matrix must be orthogonal of size dimension+1.
      *
      * @param trs
+     * @throws IllegalArgumentException if matrix is not affine
      */
-    @Override
-    T setFromMatrix(Matrix trs);
+    T setFromMatrix(Matrix<?> trs) throws IllegalArgumentException;
 
     /**
-     * Set transform from given matrix.
+     * Set transform from given affine.
      * Affine must be of same size.
      *
      * @param trs
      */
-    @Override
-    T set(Affine<?> trs);
+    T setFromAffine(Affine<?> trs);
 
     /**
      * Set to identity.
      * This method will send a change event if values have changed.
      */
-    @Override
     T setToIdentity();
 
     /**
@@ -158,9 +156,53 @@ public interface Similarity<T extends Similarity<T>> extends Affine<T> {
     T setToTranslation(double[] trs);
 
     /**
+     * Inverse this affine transform.
+     *
+     * @return this affine instance
+     */
+    T invert();
+
+    /**
+     * Create a square matrix of size dimensions+1
+     * The last matrix line will be [0,...,1]
+     *
+     * @return matrix
+     */
+    Matrix<?> toMatrix();
+
+    /**
+     * Create a square matrix of size dimensions+1
+     * The last matrix line will be [0,...,1]
+     *
+     * @param buffer to store matrix values in
+     * @return matrix
+     */
+    Matrix<?> toMatrix(Matrix<?> buffer);
+
+    /**
+     * Create and affine transform.
+     *
+     * @return 
+     */
+    Affine<?> toAffine();
+
+    /**
+     * Create a copy of this Affine.
+     *
+     * @return copy
+     */
+    T copy();
+
+    /**
      * Flag to indicate the transform parameters has changed.
      * This is used to recalculate the general matrix when needed.
      */
     void notifyChanged();
 
+    /**
+     * Combine the different elements to obtain a linear transform of dimension 3.
+     */
+    default MathTransform toMathTransform() {
+        return MathTransforms.linear(toMatrix().toMatrixSIS());
+    }
 }

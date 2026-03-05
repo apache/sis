@@ -24,7 +24,7 @@ import java.util.Arrays;
  * @author Johann Sorel
  * @aurhor Bertrand COTE
  */
-abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTransform implements Matrix<T>{
+abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTransform implements Matrix<T> {
 
     protected final int nbRow;
     protected final int nbCol;
@@ -42,12 +42,12 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
     }
 
     @Override
-    public int getNbRow() {
+    public int getNumRow() {
         return nbRow;
     }
 
     @Override
-    public int getNbCol() {
+    public int getNumCol() {
         return nbCol;
     }
 
@@ -61,19 +61,25 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
         return nbRow;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // get/set matrix values ///////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-
     @Override
-    public double[][] toArray2DoubleRowOrder() {
-        final double[][] C = new double[nbRow][nbCol];
-        for (int r = 0; r < nbRow; r++) {
-            for (int c = 0; c < nbCol; c++) {
-                C[r][c] = get(r,c);
+    public double[][] toArray2Double(boolean rowOrder) {
+        if (rowOrder) {
+            final double[][] C = new double[nbRow][nbCol];
+            for (int r = 0; r < nbRow; r++) {
+                for (int c = 0; c < nbCol; c++) {
+                    C[r][c] = get(r,c);
+                }
             }
+            return C;
+        } else {
+            final double[][] C = new double[nbCol][nbRow];
+            for (int r = 0; r < nbRow; r++) {
+                for (int c = 0; c < nbCol; c++) {
+                    C[c][r] = get(r,c);
+                }
+            }
+            return C;
         }
-        return C;
     }
 
     @Override
@@ -207,8 +213,8 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
 
     @Override
     public T set(final Matrix<?> toCopy){
-        final int rm = Math.min(this.nbRow, toCopy.getNbRow());
-        final int cm = Math.min(this.nbCol, toCopy.getNbCol());
+        final int rm = Math.min(this.nbRow, toCopy.getNumRow());
+        final int cm = Math.min(this.nbCol, toCopy.getNumCol());
         for (int r=0;r<rm;r++){
             for (int c=0;c<cm;c++){
                 set(r, c, toCopy.get(r, c));
@@ -218,20 +224,36 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
     }
 
     @Override
-    public T set(final double[] values){
-        for (int i=0,r=0;r<nbRow;r++){
-            for (int c=0;c<nbCol;c++,i++){
-                set(r, c, values[i]);
+    public T set(final double[] values, boolean rowOrder){
+        if (rowOrder) {
+            for (int i=0,r=0;r<nbRow;r++){
+                for (int c=0;c<nbCol;c++,i++){
+                    set(r, c, values[i]);
+                }
+            }
+        } else {
+            for (int i=0,c=0;c<nbCol;c++){
+                for (int r=0;r<nbRow;r++,i++){
+                    set(r, c, values[i]);
+                }
             }
         }
         return (T) this;
     }
 
     @Override
-    public T set(final double[][] values){
-        for (int r=0;r<nbRow;r++){
-            for (int c=0;c<nbCol;c++){
-                set(r, c, values[r][c]);
+    public T set(final double[][] values, boolean rowOrder){
+        if (rowOrder) {
+            for (int r=0;r<nbRow;r++){
+                for (int c=0;c<nbCol;c++){
+                    set(r, c, values[r][c]);
+                }
+            }
+        } else {
+            for (int r=0;r<nbRow;r++){
+                for (int c=0;c<nbCol;c++){
+                    set(r, c, values[c][r]);
+                }
             }
         }
         return (T) this;
@@ -345,6 +367,18 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
         return (T) this;
     }
 
+    @Override
+    public T set(org.opengis.referencing.operation.Matrix toCopy) {
+        final int rm = Math.min(this.nbRow, toCopy.getNumRow());
+        final int cm = Math.min(this.nbCol, toCopy.getNumCol());
+        for (int r=0;r<rm;r++){
+            for (int c=0;c<cm;c++){
+                set(r, c, toCopy.getElement(r, c));
+            }
+        }
+        return (T) this;
+
+    }
     /**
      * Set Matrix value to identity matrix.
      * @return this matrix
@@ -415,41 +449,41 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
      */
     @Override
     public T invert(){
-        final double[][] inverse = Matrices.localInvert(toArray2DoubleRowOrder());
+        final double[][] inverse = Matrices.localInvert(toArray2Double(ROW_ORDER));
         if (inverse == null){
             throw new IllegalArgumentException("Can not inverse");
         }
-        set(inverse);
+        set(inverse, ROW_ORDER);
         return (T) this;
     }
 
     @Override
     public T add(Matrix<?> other){
-        set(Matrices.localAdd(dArray(this), dArray(other)));
+        set(Matrices.localAdd(dArray(this), dArray(other)), ROW_ORDER);
         return (T) this;
     }
 
     @Override
     public T subtract(Matrix<?> other){
-        set(Matrices.localSubtract(dArray(this), dArray(other)));
+        set(Matrices.localSubtract(dArray(this), dArray(other)), ROW_ORDER);
         return (T) this;
     }
 
     @Override
     public T scale(double[] tuple){
-        set(Matrices.localScale(dArray(this), tuple));
+        set(Matrices.localScale(dArray(this), tuple), ROW_ORDER);
         return (T) this;
     }
 
     @Override
     public T scale(double scale){
-        set(Matrices.localScale(dArray(this), scale));
+        set(Matrices.localScale(dArray(this), scale), ROW_ORDER);
         return (T) this;
     }
 
     @Override
     public T multiply(Matrix<?> other){
-        set(Matrices.localMultiply(dArray(this), dArray(other)));
+        set(Matrices.localMultiply(dArray(this), dArray(other)), ROW_ORDER);
         return (T) this;
     }
 
@@ -470,33 +504,20 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
         }
     }
 
-    /**
-     * Matrix as 1D double array, in column order.
-     *
-     * @return 1D double array, in column order.
-     */
     @Override
-    public double[] toArrayDoubleColOrder(){
+    public double[] toArrayDouble(boolean rowOrder){
         final double[] array = new double[nbRow*nbCol];
-        for (int p=0,c=0;c<nbCol;c++){
-            for (int r=0;r<nbRow;r++,p++){
-                array[p] = get(r, c);
+        if (rowOrder) {
+            for (int p=0,r=0;r<nbRow;r++){
+                for (int c=0;c<nbCol;c++,p++){
+                    array[p] = get(r, c);
+                }
             }
-        }
-        return array;
-    }
-
-    /**
-     * Matrix as 1D double array, in row order.
-     *
-     * @return 1D double array, in row order.
-     */
-    @Override
-    public double[] toArrayDoubleRowOrder(){
-        final double[] array = new double[nbRow*nbCol];
-        for (int p=0,r=0;r<nbRow;r++){
-            for (int c=0;c<nbCol;c++,p++){
-                array[p] = get(r, c);
+        } else {
+            for (int p=0,c=0;c<nbCol;c++){
+                for (int r=0;r<nbRow;r++,p++){
+                    array[p] = get(r, c);
+                }
             }
         }
         return array;
@@ -537,21 +558,26 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
             return false;
         }
         final Matrix other = (Matrix) obj;
-        if (this.nbRow != other.getNbRow()) {
+        if (this.nbRow != other.getNumRow()) {
             return false;
         }
-        if (this.nbCol != other.getNbCol()) {
+        if (this.nbCol != other.getNumCol()) {
             return false;
         }
 
         //check values
-        if (!Arrays.equals(toArrayDoubleRowOrder(), other.toArrayDoubleRowOrder())){
+        if (!Arrays.equals(toArrayDouble(ROW_ORDER), other.toArrayDouble(ROW_ORDER))){
             return false;
         }
         return true;
     }
 
+    @Override
+    public org.opengis.referencing.operation.Matrix clone() {
+        return copy();
+    }
+
     protected static double[][] dArray(Matrix matrix){
-        return matrix instanceof MatrixND ? ((MatrixND) matrix).values : matrix.toArray2DoubleRowOrder();
+        return matrix instanceof MatrixND ? ((MatrixND) matrix).values : matrix.toArray2Double(ROW_ORDER);
     }
 }

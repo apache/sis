@@ -36,7 +36,7 @@ public class MatrixND extends AbstractMatrix<MatrixND>{
      * @param nbcol
      * @return
      */
-    public static Matrix create(int nbrow, int nbcol){
+    public static Matrix<?> create(int nbrow, int nbcol){
         if (nbrow==nbcol) {
             switch(nbrow){
                 case 2 : return new Matrix2D();
@@ -49,8 +49,8 @@ public class MatrixND extends AbstractMatrix<MatrixND>{
 
     /**
      * Create a new matrix of given size.
-     * It is recommended to use statice create method to benefit from specialized
-     * matrices implementations such as Matric2,Matric4,Matrix4.
+     * It is recommended to use static create method to benefit from specialized
+     * matrices implementations such as Matrix2D,Matrix3D,Matrix4D.
      *
      * @param nbrow
      * @param nbcol
@@ -60,44 +60,14 @@ public class MatrixND extends AbstractMatrix<MatrixND>{
         values = new double[nbrow][nbcol];
     }
 
-    protected MatrixND(final double m00, final double m01,
-                  final double m10, final double m11){
-        this(new double[][]{
-            {m00,m01},
-            {m10,m11}
-        });
-    }
-
-    protected MatrixND(final double m00, final double m01, final double m02,
-                  final double m10, final double m11, final double m12,
-                  final double m20, final double m21, final double m22){
-        this(new double[][]{
-            {m00,m01,m02},
-            {m10,m11,m12},
-            {m20,m21,m22}
-        });
-    }
-
-    protected MatrixND(final double m00, final double m01, final double m02, final double m03,
-                  final double m10, final double m11, final double m12, final double m13,
-                  final double m20, final double m21, final double m22, final double m23,
-                  final double m30, final double m31, final double m32, final double m33){
-        this(new double[][]{
-            {m00,m01,m02,m03},
-            {m10,m11,m12,m13},
-            {m20,m21,m22,m23},
-            {m30,m31,m32,m33}
-        });
-    }
-
     public MatrixND(final double[][] values) {
         super(values.length,values[0].length);
         this.values = values;
     }
 
-    public MatrixND(Matrix m) {
-        super(m.getNbRow(),m.getNbCol());
-        values = m.toArray2DoubleRowOrder();
+    public MatrixND(Matrix<?> m) {
+        super(m.getNumRow(),m.getNumCol());
+        values = m.toArray2Double(ROW_ORDER);
     }
 
     public double[][] getValues() {

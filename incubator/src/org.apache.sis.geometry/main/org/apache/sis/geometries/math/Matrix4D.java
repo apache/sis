@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.math;
 
+import static org.apache.sis.geometries.math.Matrix.ROW_ORDER;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 
@@ -26,16 +27,23 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
  */
 public class Matrix4D extends AbstractMatrix<Matrix4D> {
 
-    private double m00,m01,m02,m03;
-    private double m10,m11,m12,m13;
-    private double m20,m21,m22,m23;
-    private double m30,m31,m32,m33;
+    double m00,m01,m02,m03;
+    double m10,m11,m12,m13;
+    double m20,m21,m22,m23;
+    double m30,m31,m32,m33;
 
+    /**
+     * New identity matrix4D
+     */
     public Matrix4D() {
         super(4, 4);
+        m00 = 1;
+        m11 = 1;
+        m22 = 1;
+        m33 = 1;
     }
 
-    public Matrix4D(Matrix m) {
+    public Matrix4D(Matrix<?> m) {
         super(4, 4);
         m00 = m.get(0, 0);m01 = m.get(0, 1);m02 = m.get(0, 2);m03 = m.get(0, 3);
         m10 = m.get(1, 0);m11 = m.get(1, 1);m12 = m.get(1, 2);m13 = m.get(1, 3);
@@ -228,9 +236,8 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
      * @param euler angles in radians (heading/yaw , elevation/pitch , bank/roll)
      * @return Matrix4
      */
-    public Matrix4D fromEuler(Tuple<?> euler){
-        set(Matrices.fromEuler(euler.toArrayDouble(), null));
-        return this;
+    public Matrix4D setFromEuler(Tuple<?> euler){
+        return set(Matrices.fromEuler(euler.toArrayDouble(), null), ROW_ORDER);
     }
 
     @Override
@@ -279,7 +286,7 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
 
     @Override
     public Matrix4D transpose(){
-        return set(new Matrix4D(Matrices.transpose(toArray2DoubleRowOrder())));
+        return set(new Matrix4D(Matrices.transpose(toArray2Double(ROW_ORDER))));
     }
 
     /**
@@ -321,26 +328,16 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
      * @param rotation Matrix[3x3]
      * @param scale Tuple[3]
      * @param translation Tuple[3]
-     * @return Matrix4
+     * @return this matrix
      */
-    public static Matrix4D createFromComponents(final MatrixND rotation, Tuple<?> scale, Tuple<?> translation){
-        final Matrix4D matrix = new Matrix4D()
-            .set(rotation)
-            .scale(new VectorND.Double(scale).extend(1).toArrayDouble());
+    public Matrix4D setFromComponents(final MatrixND rotation, Tuple<?> scale, Tuple<?> translation){
+        setToIdentity();
+        set(rotation);
+        scale(new VectorND.Double(scale).extend(1).toArrayDouble());
         for (int i=0;i<translation.getDimension();i++){
-            matrix.set(i, 3, translation.get(i));
+            set(i, 3, translation.get(i));
         }
-        return matrix;
-    }
-
-    /**
-     * Build rotation matrix from euler angle.
-     *
-     * @param euler angles in radians (heading/yaw , elevation/pitch , bank/roll)
-     * @return Matrix4
-     */
-    public static Matrix4D createRotationEuler(final Tuple<?> euler){
-        return new Matrix4D(Matrices.fromEuler(euler.toArrayDouble(), new double[4][4]));
+        return this;
     }
 
     /**
@@ -350,16 +347,15 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
      * @param xAxis values are copied in 1th row
      * @param yAxis values are copied in 2nd row
      * @param zAxis values are copied in 3rd row
-     * @return rotation matrix
+     * @return this matrix
      */
-    public static Matrix4D createFromAxis(final Tuple<?> xAxis, final Tuple<?> yAxis, final Tuple<?> zAxis){
-        final Matrix4D m = new Matrix4D().setToIdentity();
-        m.setRow(0, xAxis.toArrayDouble());
-        m.setRow(1, yAxis.toArrayDouble());
-        m.setRow(2, zAxis.toArrayDouble());
-        return m;
+    public Matrix4D setFromAxis(final Tuple<?> xAxis, final Tuple<?> yAxis, final Tuple<?> zAxis){
+        setToIdentity();
+        setRow(0, xAxis.toArrayDouble());
+        setRow(1, yAxis.toArrayDouble());
+        setRow(2, zAxis.toArrayDouble());
+        return this;
     }
-
 
     /**
      * Create and orbit matrix 4x4 focus on the root point (0,0,0).
@@ -368,18 +364,39 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
      * @param yAngle vertical angle
      * @param rollAngle roll angle
      * @param distance distance from base
-     * @return orbit matrix 4x4
+     * @return this matrix, orbit matrix 4x4
      */
-    public static Matrix4D focusedOrbit(final double xAngle,
+    public Matrix4D setFocusedOrbit(final double xAngle,
             final double yAngle, double rollAngle, double distance){
-        return new Matrix4D(Matrices.focusedOrbit(xAngle, yAngle, rollAngle, distance));
+        return set(Matrices.focusedOrbit(xAngle, yAngle, rollAngle, distance), ROW_ORDER);
     }
 
-    ///////////////////////////////////////////////////////////////////////////////
+    /**
+     * Create rotation matrix to move v1 on v2.
+     *
+     * @param v1
+     * @param v2
+     * @return
+     */
+    public Matrix4D setFromVectors(Vector<?> v1, Vector<?> v2){
+        v1 = v1.normalize();
+        v2 = v2.normalize();
+        final double angle = Math.acos(v1.dot(v2));
+        if (angle==0){
+            //vectors are colinear
+            Matrix4D identity = new Matrix4D();
+            return identity;
+        }
+        final Vector<?> axis = v1.copy().cross(v2).normalize();
+        double[][] m = Matrices.createRotation4(angle, axis, null);
+        return set(m, ROW_ORDER);
+    }
+
+    // /////////////////////////////////////////////////////////////////////////////
     // compute cofactor of 3x3 minor matrix without sign
     // input params are 9 elements of the minor matrix
     // NOTE: The caller must know its sign.
-    ///////////////////////////////////////////////////////////////////////////////
+    // /////////////////////////////////////////////////////////////////////////////
     private static double getCofactor(
             double m0, double m1, double m2,
             double m3, double m4, double m5,
@@ -414,7 +431,7 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
     }
 
     @Override
-    public Tuple transform(Tuple vector, Tuple buffer) {
+    public Tuple<?> transform(Tuple<?> vector, Tuple<?> buffer) {
         if (buffer == null) buffer = new Vector4D.Double();
 
         if (vector instanceof Vector4D.Double && buffer instanceof Vector4D.Double) {

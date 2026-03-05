@@ -22,18 +22,18 @@ package org.apache.sis.geometries.math;
  */
 public final class Affine3D extends AbstractAffine<Affine3D> {
 
-    private double m00;
-    private double m01;
-    private double m02;
-    private double m03;
-    private double m10;
-    private double m11;
-    private double m12;
-    private double m13;
-    private double m20;
-    private double m21;
-    private double m22;
-    private double m23;
+    double m00;
+    double m01;
+    double m02;
+    double m03;
+    double m10;
+    double m11;
+    double m12;
+    double m13;
+    double m20;
+    double m21;
+    double m22;
+    double m23;
 
     public Affine3D() {
         super(3);
@@ -263,7 +263,7 @@ public final class Affine3D extends AbstractAffine<Affine3D> {
     }
 
     @Override
-    public Affine3D setFromMatrix(Matrix m) {
+    public Affine3D setFromMatrix(Matrix<?> m) {
         m00 = m.get(0, 0);
         m01 = m.get(0, 1);
         m02 = m.get(0, 2);
@@ -331,7 +331,7 @@ public final class Affine3D extends AbstractAffine<Affine3D> {
     }
 
     @Override
-    public Matrix toMatrix(Matrix buffer) {
+    public Matrix<?> toMatrix(Matrix<?> buffer) {
         if (buffer == null) return toMatrix();
         buffer.set(0, 0, m00);
         buffer.set(0, 1, m01);

@@ -31,8 +31,14 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
     double m10,m11,m12;
     double m20,m21,m22;
 
+    /**
+     * New identity matrix3D
+     */
     public Matrix3D() {
         super(3, 3);
+        m00 = 1;
+        m11 = 1;
+        m22 = 1;
     }
 
     public Matrix3D(Matrix<?> m) {
@@ -219,7 +225,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
     }
 
     @Override
-    public Matrix3D multiply(Matrix other) {
+    public Matrix3D multiply(Matrix<?> other) {
         if (other instanceof Matrix3D o){
             //usual case
             double b00 = this.m00 * o.m00 + this.m01 * o.m10 + this.m02 * o.m20;
@@ -260,7 +266,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
     }
 
     @Override
-    public Tuple transform(Tuple vector, Tuple buffer) {
+    public Tuple<?> transform(Tuple<?> vector, Tuple<?> buffer) {
         if (buffer == null) buffer = new Vector3D.Double();
 
         if (vector instanceof Vector3D.Double v && buffer instanceof Vector3D.Double b) {
@@ -291,20 +297,26 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
      * @return euler angle in radians (heading/yaw , elevation/pitch , bank/roll)
      */
     public Vector<?> toEuler(){
-        return new VectorND.Double(Matrices.toEuler(toArray2DoubleRowOrder(), null));
+        return new VectorND.Double(Matrices.toEuler(toArray2Double(ROW_ORDER), null));
     }
 
     /**
+     * Build rotation matrix from euler angle.
      *
      * @param euler in radians (heading/yaw , elevation/pitch , bank/roll)
-     * @return
+     * @return this matrix
      */
-    public Matrix3D fromEuler(Tuple<?> euler){
-        set(Matrices.fromEuler(euler.toArrayDouble(), new double[3][3]));
+    public Matrix3D setFromEuler(Tuple<?> euler){
+        set(Matrices.fromEuler(euler.toArrayDouble(), new double[3][3]), ROW_ORDER);
         return this;
     }
 
-    public Matrix3D fromAngle(final double angle, final Tuple<?> rotationAxis){
+    /**
+     * @param angle in radians
+     * @param rotationAxis rotation axis
+     * @return this matrix
+     */
+    public Matrix3D setFromAngle(final double angle, final Tuple<?> rotationAxis){
         final double fCos = Math.cos(angle);
         final double fSin = Math.sin(angle);
         final double fOneMinusCos = (1.0) - fCos;
@@ -330,6 +342,75 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
         return this;
     }
 
+    /**
+     * Create a rotation matrix as the concatenation of rotation on x,y,z axis.
+     *
+     * @param x in radians
+     * @param y in radians
+     * @param z in radians
+     * @return
+     */
+    public Matrix3D setFromAngles(double x, double y, double z){
+        setFromAngle(x, new Vector3D.Double(1, 0, 0));
+        Matrix3D r2 = new Matrix3D().setFromAngle(y, new Vector3D.Double(0, 1, 0));
+        Matrix3D r3 = new Matrix3D().setFromAngle(z, new Vector3D.Double(0, 0, 1));
+        this.multiply(r2);
+        this.multiply(r3);
+        return this;
+    }
+
+    /**
+     * Create rotation matrix from 3 axis.
+     * Each Tuple must be unit length(normalized)
+     *
+     * @param xAxis values are copied in 1th row
+     * @param yAxis values are copied in 2nd row
+     * @param zAxis values are copied in 3rd row
+     * @return rotation matrix
+     */
+    public Matrix3D setFromAxis(final Tuple<?> xAxis, final Tuple<?> yAxis, final Tuple<?> zAxis){
+        setToIdentity();
+        this.setRow(0, xAxis.toArrayDouble());
+        this.setRow(1, yAxis.toArrayDouble());
+        this.setRow(2, zAxis.toArrayDouble());
+        return this;
+    }
+
+    /**
+     * Create rotation matrix to move v1 on v2.
+     *
+     * @param v1 moving vector
+     * @param v2 target vector
+     * @return this matrix
+     */
+    public Matrix3D setFromVectors(Vector<?> v1, Vector<?> v2) {
+        v1 = v1.normalize();
+        v2 = v2.normalize();
+        final double angle = Math.acos(v1.dot(v2));
+        if (angle == 0){
+            //vectors are colinear
+            return setToIdentity();
+        }
+        final Vector<?> axis = v1.cross(v2).normalize();
+        return setFromAngle(angle, axis);
+    }
+
+    public Matrix3D setFromUpAndRight(Vector<?> v, Vector<?> u) {
+        v = v.copy().normalize();
+        u = u.copy().normalize();
+
+        //W = Normalized(Cross(V,U))
+        Vector<?> w = v.cross(u).normalize();
+
+        //to ensure it is correctly perpendicular
+        //U = Normalized(Cross(W,V))
+        u = w.cross(v).normalize();
+        setCol(0, u.toArrayDouble());
+        setCol(1, w.toArrayDouble());
+        setCol(2, v.toArrayDouble());
+        return this;
+    }
+
     @Override
     public Matrix3D copy() {
         return new Matrix3D(this);
@@ -347,80 +428,6 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
         return m00 * (m11 * m22 - m12 * m21) -
                m01 * (m10 * m22 - m12 * m20) +
                m02 * (m10 * m21 - m11 * m20);
-    }
-
-    /**
-     * Create rotation matrix to move v1 on v2.
-     *
-     * @param v1
-     * @param v2
-     * @return
-     */
-    public static Matrix3D createRotation(Vector<?> v1, Vector<?> v2){
-        v1 = v1.normalize();
-        v2 = v2.normalize();
-        final double angle = Math.acos(v1.dot(v2));
-        if (angle == 0){
-            //vectors are colinear
-            Matrix3D identity = new Matrix3D().setToIdentity();
-            return identity;
-        }
-        final Vector<?> axis = v1.cross(v2).normalize();
-        return createRotation3(angle, axis);
-    }
-
-    /**
-     *
-     * @param angle in radians
-     * @param rotateAxis, rotation axis
-     * @return
-     */
-    public static Matrix3D createRotation3(final double angle, final Tuple rotateAxis){
-        return new Matrix3D().fromAngle(angle, rotateAxis);
-    }
-
-    /**
-     * Build rotation matrix from euler angle.
-     *
-     * @param euler angles in radians (heading/yaw , elevation/pitch , bank/roll)
-     * @return Matrix3
-     */
-    public static Matrix3D createRotationEuler(final Tuple euler){
-        return new Matrix3D().fromEuler(euler);
-    }
-
-    /**
-     * Create rotation matrix from 3 axis.
-     * Each Tuple must be unit length(normalized)
-     *
-     * @param xAxis values are copied in 1th row
-     * @param yAxis values are copied in 2nd row
-     * @param zAxis values are copied in 3rd row
-     * @return rotation matrix
-     */
-    public static Matrix3D createFromAxis(final Tuple xAxis, final Tuple yAxis, final Tuple zAxis){
-        final Matrix3D m = new Matrix3D().setToIdentity();
-        m.setRow(0, xAxis.toArrayDouble());
-        m.setRow(1, yAxis.toArrayDouble());
-        m.setRow(2, zAxis.toArrayDouble());
-        return m;
-    }
-
-    /**
-     * Create a rotation matrix as the concatenation of rotation on x,y,z axis.
-     *
-     * @param x in radians
-     * @param y in radians
-     * @param z in radians
-     * @return
-     */
-    public static Matrix3D createFromAngles(double x, double y, double z){
-        Matrix3D r1 = Matrix3D.createRotation3(x, new Vector3D.Double(1, 0, 0));
-        Matrix3D r2 = Matrix3D.createRotation3(y, new Vector3D.Double(0, 1, 0));
-        Matrix3D r3 = Matrix3D.createRotation3(z, new Vector3D.Double(0, 0, 1));
-        r1.multiply(r2);
-        r1.multiply(r3);
-        return r1;
     }
 
 }
