@@ -70,7 +70,7 @@ public class Quaternion extends VectorND.Double {
      * Expect an tuple of size 4.
      * @param v quaternion values to copy from
      */
-    public Quaternion(Tuple<?> v) {
+    public Quaternion(ReadOnly.Tuple<?> v) {
         super(v);
         if (v.getDimension()!= 4){
             throw new IllegalArgumentException("Tuple must be of size 4");
@@ -228,7 +228,7 @@ public class Quaternion extends VectorND.Double {
      * @param buffer can be null
      * @return rotated vector
      */
-    public Vector<?> rotate(Vector<?> v, Vector<?> buffer){
+    public Vector<?> rotate(ReadOnly.Vector<?> v, Vector<?> buffer){
         if (buffer == null) buffer = v.copy();
         Matrix3D m = toMatrix3();
         m.transform(v, buffer);
@@ -336,7 +336,7 @@ public class Quaternion extends VectorND.Double {
      * @param axisBuffer
      * @return angle in radians
      */
-    public double toAxisAngle(Tuple axisBuffer){
+    public double toAxisAngle(Tuple<?> axisBuffer){
         final double[] values = Vectors.normalize(this.values);
         final double[] array = new double[4];
         final double angle = Quaternions.toAxisAngle(values,array);
@@ -351,7 +351,7 @@ public class Quaternion extends VectorND.Double {
      * @param matrix
      * @return this Quaternion
      */
-    public Quaternion setFromMatrix(final Matrix matrix){
+    public Quaternion setFromMatrix(final ReadOnly.Matrix<?> matrix){
         final double[][] m = matrix.toArray2Double(ROW_ORDER);
         final double trace = m[0][0] + m[1][1] + m[2][2] + 1;
 
@@ -391,7 +391,7 @@ public class Quaternion extends VectorND.Double {
      * @param angle rotation angle, in radians
      * @return this quaternion
      */
-    public Quaternion setFromAngle(Tuple<?> axis, double angle) {
+    public Quaternion setFromAngle(ReadOnly.Tuple<?> axis, double angle) {
         Quaternions.fromAngle(axis, angle, values);
         return this;
     }
@@ -402,7 +402,7 @@ public class Quaternion extends VectorND.Double {
      * @param euler angles in radians (heading/yaw , elevation/pitch , bank/roll)
      * @return this quaternion
      */
-    public Quaternion setFromEuler(Vector<?> euler) {
+    public Quaternion setFromEuler(ReadOnly.Tuple<?> euler) {
         return setFromMatrix(new Matrix3D().setFromEuler(euler));
     }
 
@@ -413,7 +413,7 @@ public class Quaternion extends VectorND.Double {
      * @param target target vector of unit length
      * @return this quaternion
      */
-    public Quaternion setFromUnitVectors(Vector<?> base, Vector<?> target) {
+    public Quaternion setFromUnitVectors(ReadOnly.Vector<?> base, ReadOnly.Vector<?> target) {
         final double dot = base.dot(target);
         if (dot < -0.999999) {
             //try to find a better value on other axis

@@ -64,7 +64,7 @@ public final class Similarity3D extends AbstractSimilarity<Similarity3D> {
     }
 
     @Override
-    public Similarity3D multiply(Similarity<?> other) {
+    public Similarity3D multiply(ReadOnly.Similarity<?> other) {
         final Vector<?> resTrans = other.getTranslation().copy()
                 .transform(rotation)
                 .multiply(scale)
@@ -78,7 +78,7 @@ public final class Similarity3D extends AbstractSimilarity<Similarity3D> {
     }
 
     @Override
-    public Similarity3D set(Similarity<?> trs) {
+    public Similarity3D set(ReadOnly.Similarity<?> trs) {
         if (rotation.equals(trs.getRotation()) && scale.equals(trs.getScale()) && translation.equals(trs.getTranslation())){
             //nothing changes
             return this;

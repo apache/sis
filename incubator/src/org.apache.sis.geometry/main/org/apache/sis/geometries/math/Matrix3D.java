@@ -41,7 +41,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
         m22 = 1;
     }
 
-    public Matrix3D(Matrix<?> m) {
+    public Matrix3D(ReadOnly.Matrix<?> m) {
         super(3, 3);
         m00 = m.get(0, 0);
         m01 = m.get(0, 1);
@@ -106,7 +106,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
     }
 
     @Override
-    public Matrix3D set(final Matrix<?> toCopy){
+    public Matrix3D set(final ReadOnly.Matrix<?> toCopy){
         if (toCopy instanceof Matrix3D o){
             m00 = o.m00;m01 = o.m01;m02 = o.m02;
             m10 = o.m10;m11 = o.m11;m12 = o.m12;
@@ -159,7 +159,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
     }
 
     @Override
-    public Matrix3D add(Matrix<?> other) {
+    public Matrix3D add(ReadOnly.Matrix<?> other) {
         if (other instanceof Matrix3D o){
             //usual case
             this.m00 += o.m00;
@@ -225,7 +225,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
     }
 
     @Override
-    public Matrix3D multiply(Matrix<?> other) {
+    public Matrix3D multiply(ReadOnly.Matrix<?> other) {
         if (other instanceof Matrix3D o){
             //usual case
             double b00 = this.m00 * o.m00 + this.m01 * o.m10 + this.m02 * o.m20;
@@ -266,7 +266,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
     }
 
     @Override
-    public Tuple<?> transform(Tuple<?> vector, Tuple<?> buffer) {
+    public Tuple<?> transform(ReadOnly.Tuple<?> vector, Tuple<?> buffer) {
         if (buffer == null) buffer = new Vector3D.Double();
 
         if (vector instanceof Vector3D.Double v && buffer instanceof Vector3D.Double b) {
@@ -306,7 +306,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
      * @param euler in radians (heading/yaw , elevation/pitch , bank/roll)
      * @return this matrix
      */
-    public Matrix3D setFromEuler(Tuple<?> euler){
+    public Matrix3D setFromEuler(ReadOnly.Tuple<?> euler){
         set(Matrices.fromEuler(euler.toArrayDouble(), new double[3][3]), ROW_ORDER);
         return this;
     }
@@ -316,7 +316,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
      * @param rotationAxis rotation axis
      * @return this matrix
      */
-    public Matrix3D setFromAngle(final double angle, final Tuple<?> rotationAxis){
+    public Matrix3D setFromAngle(final double angle, final ReadOnly.Tuple<?> rotationAxis){
         final double fCos = Math.cos(angle);
         final double fSin = Math.sin(angle);
         final double fOneMinusCos = (1.0) - fCos;
@@ -368,7 +368,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
      * @param zAxis values are copied in 3rd row
      * @return rotation matrix
      */
-    public Matrix3D setFromAxis(final Tuple<?> xAxis, final Tuple<?> yAxis, final Tuple<?> zAxis){
+    public Matrix3D setFromAxis(final ReadOnly.Tuple<?> xAxis, final ReadOnly.Tuple<?> yAxis, final ReadOnly.Tuple<?> zAxis){
         setToIdentity();
         this.setRow(0, xAxis.toArrayDouble());
         this.setRow(1, yAxis.toArrayDouble());
@@ -383,9 +383,9 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
      * @param v2 target vector
      * @return this matrix
      */
-    public Matrix3D setFromVectors(Vector<?> v1, Vector<?> v2) {
-        v1 = v1.normalize();
-        v2 = v2.normalize();
+    public Matrix3D setFromVectors(ReadOnly.Vector<?> v1, ReadOnly.Vector<?> v2) {
+        v1 = v1.copy().normalize();
+        v2 = v2.copy().normalize();
         final double angle = Math.acos(v1.dot(v2));
         if (angle == 0){
             //vectors are colinear
@@ -395,7 +395,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
         return setFromAngle(angle, axis);
     }
 
-    public Matrix3D setFromUpAndRight(Vector<?> v, Vector<?> u) {
+    public Matrix3D setFromUpAndRight(ReadOnly.Vector<?> v, ReadOnly.Vector<?> u) {
         v = v.copy().normalize();
         u = u.copy().normalize();
 

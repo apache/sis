@@ -43,7 +43,7 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
         m33 = 1;
     }
 
-    public Matrix4D(Matrix<?> m) {
+    public Matrix4D(ReadOnly.Matrix<?> m) {
         super(4, 4);
         m00 = m.get(0, 0);m01 = m.get(0, 1);m02 = m.get(0, 2);m03 = m.get(0, 3);
         m10 = m.get(1, 0);m11 = m.get(1, 1);m12 = m.get(1, 2);m13 = m.get(1, 3);
@@ -96,7 +96,7 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
     }
 
     @Override
-    public Matrix4D set(final Matrix<?> toCopy){
+    public Matrix4D set(final ReadOnly.Matrix<?> toCopy){
         if (toCopy instanceof Matrix3D o){
             m00 = o.m00;m01 = o.m01;m02 = o.m02;
             m10 = o.m10;m11 = o.m11;m12 = o.m12;
@@ -131,7 +131,7 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
     }
 
     @Override
-    public Matrix4D multiply(Matrix<?> other) {
+    public Matrix4D multiply(ReadOnly.Matrix<?> other) {
         if (other instanceof Matrix4D o){
             //usual case
             double b00 = this.m00 * o.m00 + this.m01 * o.m10 + this.m02 * o.m20 + this.m03 * o.m30;
@@ -204,7 +204,7 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
         return new Vector4D.Double(m03, m13, m23, 1);
     }
 
-    public void setTranslation(Tuple<?> translation){
+    public void setTranslation(ReadOnly.Tuple<?> translation){
         m03 = translation.get(0);
         m13 = translation.get(1);
         m23 = translation.get(2);
@@ -236,7 +236,7 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
      * @param euler angles in radians (heading/yaw , elevation/pitch , bank/roll)
      * @return Matrix4
      */
-    public Matrix4D setFromEuler(Tuple<?> euler){
+    public Matrix4D setFromEuler(ReadOnly.Tuple<?> euler){
         return set(Matrices.fromEuler(euler.toArrayDouble(), null), ROW_ORDER);
     }
 
@@ -349,7 +349,7 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
      * @param zAxis values are copied in 3rd row
      * @return this matrix
      */
-    public Matrix4D setFromAxis(final Tuple<?> xAxis, final Tuple<?> yAxis, final Tuple<?> zAxis){
+    public Matrix4D setFromAxis(final ReadOnly.Tuple<?> xAxis, final ReadOnly.Tuple<?> yAxis, final ReadOnly.Tuple<?> zAxis){
         setToIdentity();
         setRow(0, xAxis.toArrayDouble());
         setRow(1, yAxis.toArrayDouble());
@@ -378,9 +378,9 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
      * @param v2
      * @return
      */
-    public Matrix4D setFromVectors(Vector<?> v1, Vector<?> v2){
-        v1 = v1.normalize();
-        v2 = v2.normalize();
+    public Matrix4D setFromVectors(ReadOnly.Vector<?> v1, ReadOnly.Vector<?> v2){
+        v1 = v1.copy().normalize();
+        v2 = v2.copy().normalize();
         final double angle = Math.acos(v1.dot(v2));
         if (angle==0){
             //vectors are colinear
@@ -431,7 +431,7 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
     }
 
     @Override
-    public Tuple<?> transform(Tuple<?> vector, Tuple<?> buffer) {
+    public Tuple<?> transform(ReadOnly.Tuple<?> vector, Tuple<?> buffer) {
         if (buffer == null) buffer = new Vector4D.Double();
 
         if (vector instanceof Vector4D.Double && buffer instanceof Vector4D.Double) {

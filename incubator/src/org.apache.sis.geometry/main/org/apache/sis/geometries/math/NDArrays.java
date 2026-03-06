@@ -39,11 +39,11 @@ import org.apache.sis.util.ArraysExt;
  */
 public final class NDArrays {
 
-    public static Array of(List<? extends Tuple> vectors, int dimension, DataType dataType) {
+    public static Array of(List<? extends ReadOnly.Tuple<?>> vectors, int dimension, DataType dataType) {
         return of(vectors, SampleSystem.ofSize(dimension), dataType);
     }
 
-    public static Array of(List<? extends Tuple> vectors, SampleSystem type, DataType dataType) {
+    public static Array of(List<? extends ReadOnly.Tuple<?>> vectors, SampleSystem type, DataType dataType) {
         final int dimension = type.getSize();
         final Array array;
         switch (dataType) {
@@ -402,7 +402,7 @@ public final class NDArrays {
      * Sort tuple array, in place, using quick sort algorithm.
      * Inspired by : https://www.geeksforgeeks.org/quick-sort-algorithm/
      */
-    public static void quickSort(Array array, Comparator<Tuple> comparator) {
+    public static void quickSort(Array array, Comparator<ReadOnly.Tuple<?>> comparator) {
         quickSort(array, array.cursor(), array.cursor(), comparator, 0, array.getLength() - 1);
     }
 
@@ -415,11 +415,11 @@ public final class NDArrays {
      * @param low inclusive
      * @param high inclusive
      */
-    public static void quickSort(Array array, Comparator<Tuple> comparator, long low, long high) {
+    public static void quickSort(Array array, Comparator<ReadOnly.Tuple<?>> comparator, long low, long high) {
         quickSort(array, array.cursor(), array.cursor(), comparator, low, high);
     }
 
-    private static long partition(Array array, Cursor cursor1, Cursor cursor2, Comparator<Tuple> comparator, long low, long high) {
+    private static long partition(Array array, Cursor cursor1, Cursor cursor2, Comparator<ReadOnly.Tuple<?>> comparator, long low, long high) {
         //pick the middle point as pivot, in case of already sorted arrays
         //it speeds up the operation and prevents the quicksort to make a java.lang.StackOverflowError
         array.swap((low+high)/2, high);
@@ -437,7 +437,7 @@ public final class NDArrays {
         return i + 1;
     }
 
-    private static void quickSort(Array array, Cursor cursor1, Cursor cursor2, Comparator<Tuple> comparator, long low, long high) {
+    private static void quickSort(Array array, Cursor cursor1, Cursor cursor2, Comparator<ReadOnly.Tuple<?>> comparator, long low, long high) {
 
         if (low < high) {
             final long pi = partition(array, cursor1, cursor2, comparator, low, high);
@@ -458,7 +458,7 @@ public final class NDArrays {
      *          This action returns quickly, but forked tasks continue to be submitted to the pool
      *        Therefor awaiting pool completion is necessary to ensure the operation is finished.
      */
-    public static RecursiveAction quickSortAction(Array array, Comparator<Tuple> comparator, long low, long high) {
+    public static RecursiveAction quickSortAction(Array array, Comparator<ReadOnly.Tuple<?>> comparator, long low, long high) {
         return new QuickSortAction(array, array.cursor(), array.cursor(), comparator, low, high);
     }
 
@@ -467,11 +467,11 @@ public final class NDArrays {
         private final Array array;
         private final Cursor cursor1;
         private final Cursor cursor2;
-        private final Comparator<Tuple> comparator;
+        private final Comparator<ReadOnly.Tuple<?>> comparator;
         private final long low;
         private final long high;
 
-        public QuickSortAction(Array array, Cursor cursor1, Cursor cursor2, Comparator<Tuple> comparator, long low, long high) {
+        public QuickSortAction(Array array, Cursor cursor1, Cursor cursor2, Comparator<ReadOnly.Tuple<?>> comparator, long low, long high) {
             this.array = array;
             this.cursor1 = cursor1;
             this.cursor2 = cursor2;
@@ -555,12 +555,12 @@ public final class NDArrays {
         }
 
         @Override
-        public void get(long index, Tuple buffer) {
+        public void get(long index, Tuple<?> buffer) {
             base.get(this.index[Math.toIntExact(index)], buffer);
         }
 
         @Override
-        public void set(long index, Tuple buffer) {
+        public void set(long index, ReadOnly.Tuple<?> buffer) {
             base.set(this.index[Math.toIntExact(index)], buffer);
         }
 

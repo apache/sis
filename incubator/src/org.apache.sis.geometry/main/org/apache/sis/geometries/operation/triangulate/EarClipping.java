@@ -147,7 +147,7 @@ public class EarClipping {
     private void run(SimplePolygon part){
 
         //build a single geometry linking inner holes.
-        final List<Tuple> borderCoords = new ArrayList<>();
+        final List<Tuple<?>> borderCoords = new ArrayList<>();
         part.outter.getPoints().getAttributeArray(AttributesType.ATT_POSITION).stream(false).forEach(borderCoords::add);
         //sort inner holes by minimum x value
         orderHoles(part);
@@ -425,8 +425,8 @@ public class EarClipping {
      * @param offset : will store the segment offset of the nearest points
      * @param epsilon tolerance factor
      */
-    public static void nearest(List<Tuple> line1Coords, double[] buffer1,
-                                List<Tuple> line2Coords, double[] buffer2,
+    public static void nearest(List<Tuple<?>> line1Coords, double[] buffer1,
+                                List<Tuple<?>> line2Coords, double[] buffer2,
                                 double[] ratio, int[] offset, double epsilon){
 
         double distance = Double.MAX_VALUE;
@@ -439,11 +439,11 @@ public class EarClipping {
         final int nb2 = line2Coords.size()-1;
 
         for(int i=0;i<nb1;i++){
-            final Tuple s1 = line1Coords.get(i);
-            final Tuple e1 = line1Coords.get(i+1);
+            final Tuple<?> s1 = line1Coords.get(i);
+            final Tuple<?> e1 = line1Coords.get(i+1);
             for(int k=0;k<nb2;k++){
-                final Tuple s2 = line2Coords.get(k);
-                final Tuple e2 = line2Coords.get(k+1);
+                final Tuple<?> s2 = line2Coords.get(k);
+                final Tuple<?> e2 = line2Coords.get(k+1);
 
                 final double dist = Math.sqrt(distanceSquare(
                                 new double[]{s1.get(0),s1.get(1)}, new double[]{e1.get(0),e1.get(1)}, tempC1,

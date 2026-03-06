@@ -83,6 +83,27 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
     }
 
     @Override
+    public float[][] toArray2Float(boolean rowOrder) {
+        if (rowOrder) {
+            final float[][] C = new float[nbRow][nbCol];
+            for (int r = 0; r < nbRow; r++) {
+                for (int c = 0; c < nbCol; c++) {
+                    C[r][c] = (float) get(r,c);
+                }
+            }
+            return C;
+        } else {
+            final float[][] C = new float[nbCol][nbRow];
+            for (int r = 0; r < nbRow; r++) {
+                for (int c = 0; c < nbCol; c++) {
+                    C[c][r] = (float) get(r,c);
+                }
+            }
+            return C;
+        }
+    }
+
+    @Override
     public double[] getRow(int row){
         final double[] rowval = new double[nbCol];
         for (int i=0;i<nbCol;i++) rowval[i] = get(row,i);
@@ -124,7 +145,7 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
      */
     @Override
     public Matrix<?> getRange(int i0, int i1, int j0, int j1) {
-        final Matrix X = MatrixND.create(i1 - i0 + 1, j1 - j0 + 1);
+        final Matrix<?> X = MatrixND.create(i1 - i0 + 1, j1 - j0 + 1);
         try {
             for (int i = i0; i <= i1; i++) {
                 for (int j = j0; j <= j1; j++) {
@@ -212,7 +233,7 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
     }
 
     @Override
-    public T set(final Matrix<?> toCopy){
+    public T set(final ReadOnly.Matrix<?> toCopy){
         final int rm = Math.min(this.nbRow, toCopy.getNumRow());
         final int cm = Math.min(this.nbCol, toCopy.getNumCol());
         for (int r=0;r<rm;r++){
@@ -286,7 +307,7 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
      * @exception ArrayIndexOutOfBoundsException Submatrix indices
      */
     @Override
-    public T setRange(int i0, int i1, int j0, int j1, Matrix<?> X) {
+    public T setRange(int i0, int i1, int j0, int j1, ReadOnly.Matrix<?> X) {
         try {
             for (int i = i0; i <= i1; i++) {
                 for (int j = j0; j <= j1; j++) {
@@ -308,7 +329,7 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
      * @exception ArrayIndexOutOfBoundsException Submatrix indices
      */
     @Override
-    public T setRange(int[] r, int[] c, Matrix<?> X) {
+    public T setRange(int[] r, int[] c, ReadOnly.Matrix<?> X) {
         try {
             for (int i = 0; i < r.length; i++) {
                 for (int j = 0; j < c.length; j++) {
@@ -331,7 +352,7 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
      * @exception ArrayIndexOutOfBoundsException Submatrix indices
      */
     @Override
-    public T setRange(int[] r, int j0, int j1, Matrix<?> X) {
+    public T setRange(int[] r, int j0, int j1, ReadOnly.Matrix<?> X) {
         try {
             for (int i = 0; i < r.length; i++) {
                 for (int j = j0; j <= j1; j++) {
@@ -354,7 +375,7 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
      * @exception ArrayIndexOutOfBoundsException Submatrix indices
      */
     @Override
-    public T setRange(int i0, int i1, int[] c, Matrix<?> X) {
+    public T setRange(int i0, int i1, int[] c, ReadOnly.Matrix<?> X) {
         try {
             for (int i = i0; i <= i1; i++) {
                 for (int j = 0; j < c.length; j++) {
@@ -368,7 +389,7 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
     }
 
     @Override
-    public T set(org.opengis.referencing.operation.Matrix toCopy) {
+    public T setFromGeoapi(org.opengis.referencing.operation.Matrix toCopy) {
         final int rm = Math.min(this.nbRow, toCopy.getNumRow());
         final int cm = Math.min(this.nbCol, toCopy.getNumCol());
         for (int r=0;r<rm;r++){
@@ -441,7 +462,7 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
                 t.set(x,y, get(y,x));
             }
         }
-        return set(t);
+        return set((ReadOnly.Matrix)t);
     }
 
     /**
@@ -458,13 +479,13 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
     }
 
     @Override
-    public T add(Matrix<?> other){
+    public T add(ReadOnly.Matrix<?> other){
         set(Matrices.localAdd(dArray(this), dArray(other)), ROW_ORDER);
         return (T) this;
     }
 
     @Override
-    public T subtract(Matrix<?> other){
+    public T subtract(ReadOnly.Matrix<?> other){
         set(Matrices.localSubtract(dArray(this), dArray(other)), ROW_ORDER);
         return (T) this;
     }
@@ -482,18 +503,18 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
     }
 
     @Override
-    public T multiply(Matrix<?> other){
+    public T multiply(ReadOnly.Matrix<?> other){
         set(Matrices.localMultiply(dArray(this), dArray(other)), ROW_ORDER);
         return (T) this;
     }
 
     @Override
-    public double dot(Matrix other){
+    public double dot(ReadOnly.Matrix<?> other){
         return Matrices.dot(dArray(this), dArray(other));
     }
 
     @Override
-    public Tuple<?> transform(final Tuple<?> vector, Tuple<?> dest) {
+    public Tuple<?> transform(final ReadOnly.Tuple<?> vector, Tuple<?> dest) {
         final double[] array = new double[nbRow];
         transform(vector.toArrayDouble(), 0, array, 0, 1);
         if (dest == null) {
@@ -517,6 +538,25 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
             for (int p=0,c=0;c<nbCol;c++){
                 for (int r=0;r<nbRow;r++,p++){
                     array[p] = get(r, c);
+                }
+            }
+        }
+        return array;
+    }
+
+    @Override
+    public float[] toArrayFloat(boolean rowOrder){
+        final float[] array = new float[nbRow*nbCol];
+        if (rowOrder) {
+            for (int p=0,r=0;r<nbRow;r++){
+                for (int c=0;c<nbCol;c++,p++){
+                    array[p] = (float) get(r, c);
+                }
+            }
+        } else {
+            for (int p=0,c=0;c<nbCol;c++){
+                for (int r=0;r<nbRow;r++,p++){
+                    array[p] = (float) get(r, c);
                 }
             }
         }
@@ -554,10 +594,10 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof Matrix)) {
+        if (!(obj instanceof ReadOnly.Matrix)) {
             return false;
         }
-        final Matrix other = (Matrix) obj;
+        final ReadOnly.Matrix<?> other = (ReadOnly.Matrix) obj;
         if (this.nbRow != other.getNumRow()) {
             return false;
         }
@@ -577,7 +617,7 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
         return copy();
     }
 
-    protected static double[][] dArray(Matrix matrix){
+    protected static double[][] dArray(ReadOnly.Matrix<?> matrix){
         return matrix instanceof MatrixND ? ((MatrixND) matrix).values : matrix.toArray2Double(ROW_ORDER);
     }
 }

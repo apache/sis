@@ -70,7 +70,7 @@ public abstract class AbstractSimilarity<T extends AbstractSimilarity<T>> extend
      * @return Matrix, never null
      */
     @Override
-    public Matrix<?> viewMatrix(){
+    public ReadOnly.Matrix<?> viewMatrix(){
         if (dirty){
             dirty = false;
             //update matrix
@@ -98,7 +98,7 @@ public abstract class AbstractSimilarity<T extends AbstractSimilarity<T>> extend
      * @return Matrix, never null
      */
     @Override
-    public Matrix<?> viewMatrixInverse(){
+    public ReadOnly.Matrix<?> viewMatrixInverse(){
         if (dirty){
             viewMatrix();
         }
@@ -111,7 +111,7 @@ public abstract class AbstractSimilarity<T extends AbstractSimilarity<T>> extend
     }
 
     @Override
-    public Affine<?> viewAffine() {
+    public ReadOnly.Affine<?> viewAffine() {
         if (dirty || affineDirty) {
             affine.setFromMatrix(viewMatrix());
             inverseAffine.setFromMatrix(viewMatrixInverse());
@@ -121,7 +121,7 @@ public abstract class AbstractSimilarity<T extends AbstractSimilarity<T>> extend
     }
 
     @Override
-    public Affine<?> viewAffineInverse() {
+    public ReadOnly.Affine<?> viewAffineInverse() {
         if (dirty || affineDirty) {
             affine.setFromMatrix(viewMatrix());
             inverseAffine.setFromMatrix(viewMatrixInverse());
@@ -131,13 +131,13 @@ public abstract class AbstractSimilarity<T extends AbstractSimilarity<T>> extend
     }
 
     @Override
-    public T setFromAffine(Affine<?> trs){
+    public T setFromAffine(ReadOnly.Affine<?> trs){
         setFromMatrix(trs.toMatrix());
         return (T) this;
     }
 
     @Override
-    public T setFromMatrix(Matrix<?> matrix) {
+    public T setFromMatrix(ReadOnly.Matrix<?> matrix) {
         Matrices.decomposeMatrix(matrix, getRotation(), getScale(), getTranslation());
         notifyChanged();
         return (T) this;
@@ -216,7 +216,7 @@ public abstract class AbstractSimilarity<T extends AbstractSimilarity<T>> extend
     }
 
     @Override
-    public Tuple<?> transform(Tuple<?> source, Tuple<?> out) {
+    public Tuple<?> transform(ReadOnly.Tuple<?> source, Tuple<?> out) {
         return toAffine().transform(source, out);
     }
 
@@ -241,7 +241,7 @@ public abstract class AbstractSimilarity<T extends AbstractSimilarity<T>> extend
     }
 
     @Override
-    public Tuple<?> inverseTransform(Tuple<?> source, Tuple<?> dest) {
+    public Tuple<?> inverseTransform(ReadOnly.Tuple<?> source, Tuple<?> dest) {
         return toAffine().invert().transform(source, dest);
     }
 

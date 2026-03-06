@@ -257,9 +257,9 @@ public interface ArrayFactory {
                 }
             } else if (fill != null) {
 
-                Tuple f;
-                if (fill instanceof Tuple t) {
-                    f = t;
+                Tuple<?> f;
+                if (fill instanceof ReadOnly.Tuple<?> t) {
+                    f = t.copy();
                 } else if (fill.getClass().isArray()) {
                     f = Vectors.create(system, target.getDataType());
                     for (int i = 0; i < nbDim; i++) {

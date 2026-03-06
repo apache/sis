@@ -17,10 +17,8 @@
 package org.apache.sis.geometries.math;
 
 import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.CRS;
 
 
 /**
@@ -28,40 +26,7 @@ import org.apache.sis.referencing.CRS;
  *
  * @author Johann Sorel (Geomatys)
  */
-public interface Tuple<T extends Tuple <T>> {
-
-    /**
-     * @return sample system, never null.
-     */
-    SampleSystem getSampleSystem();
-
-    /**
-     * @return sample system size.
-     */
-    default int getDimension() {
-        return getSampleSystem().getSize();
-    }
-
-    /**
-     * @return sample system CRS, may be null.
-     */
-    default CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return getSampleSystem().getCoordinateReferenceSystem();
-    }
-
-    /**
-     * @return data type of primitives in this array
-     */
-    DataType getDataType();
-
-    /**
-     * Get sample at index.
-     *
-     * @param indice sample index
-     * @return value at index
-     * @throws IndexOutOfBoundsException if index is not valid
-     */
-    double get(int indice) throws IndexOutOfBoundsException;
+public interface Tuple<T extends Tuple <T>> extends ReadOnly.Tuple<T>{
 
     /**
      * Set sample value at index.
@@ -140,7 +105,7 @@ public interface Tuple<T extends Tuple <T>> {
      * @return this tuple
      * @throws IndexOutOfBoundsException if dimension is smaller then this tuple
      */
-    default T set(Tuple<?> values) throws IndexOutOfBoundsException {
+    default T set(ReadOnly.Tuple<?> values) throws IndexOutOfBoundsException {
         for (int i = 0, n = getDimension(); i < n; i++) {
             set(i, values.get(i));
         }
@@ -157,121 +122,6 @@ public interface Tuple<T extends Tuple <T>> {
             set(i, value);
         }
         return (T) this;
-    }
-
-    /**
-     * Tuple to array.
-     *
-     * @return values as cast byte array
-     */
-    default byte[] toArrayByte() {
-        byte[] buffer = new byte[getDimension()];
-        toArrayByte(buffer, 0);
-        return buffer;
-    }
-
-    /**
-     * Tuple to array.
-     *
-     * @return values as cast short array
-     */
-    default short[] toArrayShort() {
-        short[] buffer = new short[getDimension()];
-        toArrayShort(buffer, 0);
-        return buffer;
-    }
-
-    /**
-     * Tuple to array.
-     *
-     * @return values as cast integer array
-     */
-    default int[] toArrayInt() {
-        int[] buffer = new int[getDimension()];
-        toArrayInt(buffer, 0);
-        return buffer;
-    }
-
-    /**
-     * Tuple to array.
-     *
-     * @return values as cast float array
-     */
-    default float[] toArrayFloat() {
-        float[] buffer = new float[getDimension()];
-        toArrayFloat(buffer, 0);
-        return buffer;
-    }
-
-    /**
-     * Tuple to array.
-     *
-     * @return values as double array
-     */
-    default double[] toArrayDouble() {
-        double[] buffer = new double[getDimension()];
-        toArrayDouble(buffer, 0);
-        return buffer;
-    }
-
-    /**
-     * Tuple to array.
-     *
-     * @param buffer array to write into
-     * @param offset offset at which to write
-     */
-    default void toArrayByte(byte[] buffer, int offset) {
-        for (int i = 0, n = getDimension(); i < n; i++) {
-            buffer[offset+i] = (byte) get(i);
-        }
-    }
-
-    /**
-     * Tuple to array.
-     *
-     * @param buffer array to write into
-     * @param offset offset at which to write
-     */
-    default void toArrayShort(short[] buffer, int offset) {
-        for (int i = 0, n = getDimension(); i < n; i++) {
-            buffer[offset+i] = (short) get(i);
-        }
-    }
-
-    /**
-     * Tuple to array.
-     *
-     * @param buffer array to write into
-     * @param offset offset at which to write
-     */
-    default void toArrayInt(int[] buffer, int offset) {
-        for (int i = 0, n = getDimension(); i < n; i++) {
-            buffer[offset+i] = (int) get(i);
-        }
-    }
-
-    /**
-     * Tuple to array.
-     *
-     * @param buffer array to write into
-     * @param offset offset at which to write
-     */
-    default void toArrayFloat(float[] buffer, int offset) {
-        for (int i = 0, n = getDimension(); i < n; i++) {
-            buffer[offset+i] = (float) get(i);
-        }
-    }
-
-    /**
-     * Tuple to array.
-     *
-     * @param buffer array to write into
-     * @param offset offset at which to write
-     */
-    default void toArrayDouble(double[] buffer, int offset) {
-        for (int i = 0, n = getDimension(); i < n; i++) {
-            buffer[offset+i] = get(i);
-        }
     }
 
     /**
@@ -321,78 +171,6 @@ public interface Tuple<T extends Tuple <T>> {
         T tuple = (T) Vectors.create(getSampleSystem(), getDataType());
         tuple.set(this);
         return tuple;
-    }
-
-    /**
-     * @return true if all values are finite (not infinite or NaN)
-     */
-    default boolean isFinite(){
-        for (int i = 0, n = getDimension(); i < n; i++) {
-            if (!Double.isFinite(get(i))) return false;
-        }
-        return true;
-    }
-
-    /**
-     * @return true if all samples match given value.
-     */
-    default boolean isAll(double value) {
-        for (int i = 0, n = getDimension(); i < n; i++) {
-            if (value != get(i)) return false;
-        }
-        return true;
-    }
-
-    /**
-     * Tuples are equal when all samples and CRS match.
-     */
-    @Override
-    boolean equals(Object candidate);
-
-    /**
-     * Test tuples equality.
-     *
-     * Tuples are a key element in OpenGL and GPU which have variable bits representation of numbers
-     * including half-floats, oct-compression, normalisation, quantization, unsigned values and more.
-     *
-     * This equality test checks values and CRS but does not verify that data types are identical.
-     * This behavior allows to compare Tuple following their contract ignoring the storage backend.
-     *
-     * @param obj second tuple to test against
-     * @param tolerance tolerance value for compare operation
-     * @return true if tuples are value equal
-     */
-    default boolean equals(Tuple<?> other, double tolerance) {
-        if (this == other) {
-            return true;
-        }
-        if (other == null) {
-            return false;
-        }
-
-        final int dim = getDimension();
-        if (dim != other.getDimension()) {
-            return false;
-        }
-        for (int i = 0; i < dim; i++) {
-            double v1 = get(i);
-            double v2 = other.get(i);
-            if (v1 != v2) {
-                //check with tolerance
-                if (Math.abs(v1 - v2) <= tolerance) {
-                    continue;
-                }
-                //check for NaN equality
-                if (Double.doubleToRawLongBits(v1) != Double.doubleToRawLongBits(v2)) {
-                    return false;
-                }
-            }
-        }
-        //checking crs is expensive, do it last
-        if (!CRS.equivalent(getCoordinateReferenceSystem(), other.getCoordinateReferenceSystem())) {
-            return false;
-        }
-        return true;
     }
 
 }

@@ -176,9 +176,9 @@ final class WTriangle extends AbstractGeometry implements Triangle {
     /**
      * triangle points in counter clockwise order
      */
-    public final Tuple p0;
-    public final Tuple p1;
-    public final Tuple p2;
+    public final Tuple<?> p0;
+    public final Tuple<?> p1;
+    public final Tuple<?> p2;
 
     private final List<Candidate> candidates;
     private Candidate max;

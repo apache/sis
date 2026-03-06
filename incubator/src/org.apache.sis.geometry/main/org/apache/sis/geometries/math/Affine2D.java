@@ -50,7 +50,7 @@ public final class Affine2D extends AbstractAffine<Affine2D> {
         this.m12 = m12;
     }
 
-    public Affine2D(Affine<?> affine) {
+    public Affine2D(ReadOnly.Affine<?> affine) {
         super(2);
         this.m00 = affine.get(0, 0);
         this.m01 = affine.get(0, 1);
@@ -60,7 +60,7 @@ public final class Affine2D extends AbstractAffine<Affine2D> {
         this.m12 = affine.get(1, 2);
     }
 
-    public Affine2D(Matrix m) {
+    public Affine2D(ReadOnly.Matrix<?> m) {
         super(2);
         setFromMatrix(m);
     }
@@ -143,7 +143,7 @@ public final class Affine2D extends AbstractAffine<Affine2D> {
     }
 
     @Override
-    public Tuple<?> transform(Tuple<?> source, Tuple<?> dest) {
+    public Tuple<?> transform(ReadOnly.Tuple<?> source, Tuple<?> dest) {
         if (dest == null) dest = new Vector2D.Double();
         dest.set(0, m00*source.get(0) + m01*source.get(1) + m02);
         dest.set(1, m10*source.get(0) + m11*source.get(1) + m12);
@@ -167,7 +167,7 @@ public final class Affine2D extends AbstractAffine<Affine2D> {
     }
 
     @Override
-    public Affine2D setFromMatrix(Matrix m) {
+    public Affine2D setFromMatrix(ReadOnly.Matrix<?> m) {
         m00 = m.get(0, 0);
         m01 = m.get(0, 1);
         m02 = m.get(0, 2);
@@ -178,7 +178,7 @@ public final class Affine2D extends AbstractAffine<Affine2D> {
     }
 
     @Override
-    public Affine2D multiply(Affine<?> affine) {
+    public Affine2D multiply(ReadOnly.Affine<?> affine) {
         double b00,b01,b02,b10,b11,b12;
 
         if (affine instanceof Affine2D o) {
@@ -189,7 +189,7 @@ public final class Affine2D extends AbstractAffine<Affine2D> {
             b11 = this.m10 * o.m01 + this.m11 * o.m11;
             b12 = this.m10 * o.m02 + this.m11 * o.m12 + this.m12;
         } else {
-            final Affine<?> o = affine;
+            final ReadOnly.Affine<?> o = affine;
             b00 = this.m00 * o.get(0, 0) + this.m01 * o.get(1, 0);
             b01 = this.m00 * o.get(0, 1) + this.m01 * o.get(1, 1);
             b02 = this.m00 * o.get(0, 2) + this.m01 * o.get(1, 2) + this.m02;
@@ -207,12 +207,12 @@ public final class Affine2D extends AbstractAffine<Affine2D> {
     }
 
     @Override
-    public Matrix toMatrix() {
+    public Matrix<?> toMatrix() {
         return new Matrix3D(m00, m01, m02, m10, m11, m12, 0, 0, 1);
     }
 
     @Override
-    public Matrix toMatrix(Matrix buffer) {
+    public Matrix<?> toMatrix(Matrix<?> buffer) {
         if (buffer == null) return toMatrix();
         buffer.set(0, 0, m00);
         buffer.set(0, 1, m01);

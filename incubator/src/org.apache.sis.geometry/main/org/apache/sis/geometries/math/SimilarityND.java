@@ -87,7 +87,7 @@ public class SimilarityND extends AbstractSimilarity<SimilarityND> {
      * @param trs
      */
     @Override
-    public SimilarityND set(Similarity<?> trs){
+    public SimilarityND set(ReadOnly.Similarity<?> trs){
         if (rotation.equals(trs.getRotation()) && scale.equals(trs.getScale()) && translation.equals(trs.getTranslation())){
             //nothing changes
             return this;
@@ -130,7 +130,7 @@ public class SimilarityND extends AbstractSimilarity<SimilarityND> {
     }
 
     @Override
-    public SimilarityND multiply(Similarity<?> other) {
+    public SimilarityND multiply(ReadOnly.Similarity<?> other) {
         /*
         b00 = A.r00*A.s0 * B.r00*B.s0 + A.r01*A.s0 * B.r10*B.s1 + A.r02*A.s0 * B.r20*B.s2;
         b01 = A.r00*A.s0 * B.r01*B.s0 + A.r01*A.s0 * B.r11*B.s1 + A.r02*A.s0 * B.r21*B.s2;

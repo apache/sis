@@ -16,17 +16,12 @@
  */
 package org.apache.sis.geometries.math;
 
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-
 /**
  *
  * @author Johann Sorel (Geomatys)
  * @todo Remove this class when all elements are merged in MatrixSIS
  */
-public interface Matrix<T extends Matrix<T>> extends Transform, org.opengis.referencing.operation.Matrix {
-
-    public static final boolean ROW_ORDER = true;
-    public static final boolean COL_ORDER = false;
+public interface Matrix<T extends Matrix<T>> extends ReadOnly.Matrix<T>, org.opengis.referencing.operation.Matrix {
 
     @Override
     int getNumRow();
@@ -44,62 +39,6 @@ public interface Matrix<T extends Matrix<T>> extends Transform, org.opengis.refe
         return get(row,col);
     }
 
-    double get(int row, int col);
-
-    double[] getRow(int row);
-
-    double[] getColumn(int col);
-
-    Vector<?> getColumnTuple(int col);
-
-    double[] getLastColumn();
-
-    Vector<?> getLastColumnTuple();
-
-    /**
-     * Get a submatrix.
-     *
-     * @param i0 Initial row index
-     * @param i1 Final row index
-     * @param j0 Initial column index
-     * @param j1 Final column index
-     * @return A(i0:i1,j0:j1)
-     * @exception ArrayIndexOutOfBoundsException Submatrix indices
-     */
-    Matrix<?> getRange(int i0, int i1, int j0, int j1);
-
-    /**
-     * Get a submatrix.
-     *
-     * @param r Array of row indices.
-     * @param c Array of column indices.
-     * @return A(r(:),c(:))
-     * @exception ArrayIndexOutOfBoundsException Submatrix indices
-     */
-    Matrix<?> getRange(int[] r, int[] c);
-
-    /**
-     * Get a submatrix.
-     *
-     * @param i0 Initial row index
-     * @param i1 Final row index
-     * @param c Array of column indices.
-     * @return A(i0:i1,c(:))
-     * @exception ArrayIndexOutOfBoundsException Submatrix indices
-     */
-    Matrix<?> getRange(int i0, int i1, int[] c);
-
-    /**
-     * Get a submatrix.
-     *
-     * @param r Array of row indices.
-     * @param j0 Initial column index
-     * @param j1 Final column index
-     * @return A(r(:),j0:j1)
-     * @exception ArrayIndexOutOfBoundsException Submatrix indices
-     */
-    Matrix<?> getRange(int[] r, int j0, int j1);
-
     @Override
     default void setElement(int row, int col, double value) {
         set(row, col, value);
@@ -107,11 +46,13 @@ public interface Matrix<T extends Matrix<T>> extends Transform, org.opengis.refe
 
     T set(int row, int col, double value);
 
-    T set(final Matrix<?> toCopy);
+    T set(ReadOnly.Matrix<?> toCopy);
 
-    T set(final double[] values, boolean rowOrder);
+    T setFromGeoapi(org.opengis.referencing.operation.Matrix matrix);
 
-    T set(final double[][] values, boolean rowOrder);
+    T set(double[] values, boolean rowOrder);
+
+    T set(double[][] values, boolean rowOrder);
 
     T setRow(int row, double[] values);
 
@@ -127,7 +68,7 @@ public interface Matrix<T extends Matrix<T>> extends Transform, org.opengis.refe
      * @param X A(i0:i1,j0:j1)
      * @exception ArrayIndexOutOfBoundsException Submatrix indices
      */
-    T setRange(int i0, int i1, int j0, int j1, Matrix<?> X);
+    T setRange(int i0, int i1, int j0, int j1, ReadOnly.Matrix<?> X);
 
     /**
      * Set a submatrix.
@@ -137,7 +78,7 @@ public interface Matrix<T extends Matrix<T>> extends Transform, org.opengis.refe
      * @param X A(r(:),c(:))
      * @exception ArrayIndexOutOfBoundsException Submatrix indices
      */
-    T setRange(int[] r, int[] c, Matrix<?> X);
+    T setRange(int[] r, int[] c, ReadOnly.Matrix<?> X);
 
     /**
      * Set a submatrix.
@@ -148,7 +89,7 @@ public interface Matrix<T extends Matrix<T>> extends Transform, org.opengis.refe
      * @param X A(r(:),j0:j1)
      * @exception ArrayIndexOutOfBoundsException Submatrix indices
      */
-    T setRange(int[] r, int j0, int j1, Matrix<?> X);
+    T setRange(int[] r, int j0, int j1, ReadOnly.Matrix<?> X);
 
     /**
      * Set a submatrix.
@@ -159,23 +100,7 @@ public interface Matrix<T extends Matrix<T>> extends Transform, org.opengis.refe
      * @param X A(i0:i1,c(:))
      * @exception ArrayIndexOutOfBoundsException Submatrix indices
      */
-    T setRange(int i0, int i1, int[] c, Matrix<?> X);
-
-    /**
-     * Matrix as 2D double array.
-     *
-     * @param rowOrder true for row order, col order otherwise
-     * @return 2D double array
-     */
-    double[][] toArray2Double(boolean rowOrder);
-
-    /**
-     * Matrix as 1D double array.
-     *
-     * @param rowOrder true for row order, col order otherwise
-     * @return 1D double array
-     */
-    double[] toArrayDouble(boolean rowOrder);
+    T setRange(int i0, int i1, int[] c, ReadOnly.Matrix<?> X);
 
     /**
      * Set Matrix value to identity matrix.
@@ -188,15 +113,15 @@ public interface Matrix<T extends Matrix<T>> extends Transform, org.opengis.refe
      */
     T invert();
 
-    T add(Matrix<?> other);
+    T add(ReadOnly.Matrix<?> other);
 
-    T subtract(Matrix<?> other);
+    T subtract(ReadOnly.Matrix<?> other);
 
     T scale(double[] tuple);
 
     T scale(double scale);
 
-    T multiply(Matrix<?> other);
+    T multiply(ReadOnly.Matrix<?> other);
 
     T transpose();
 
@@ -206,30 +131,4 @@ public interface Matrix<T extends Matrix<T>> extends Transform, org.opengis.refe
     default org.opengis.referencing.operation.Matrix clone() {
         return copy();
     }
-
-    /**
-     * Test if all cells in the matrix equals given value.
-     * @param scalar scalar
-     * @param tolerance tolerance
-     * @return true if all values match
-     */
-    boolean allEquals(double scalar, double tolerance);
-
-    double dot(Matrix<?> other);
-
-    /**
-     * Returns true if matrix do not contains any NaN or Infinite values.
-     *
-     * @return true is matrix is finite
-     */
-    boolean isFinite();
-
-    /**
-     * For compatibility with MatrixSIS.
-     *
-     * @return sis matrix equivalent
-     */
-    MatrixSIS toMatrixSIS();
-
-    T set(org.opengis.referencing.operation.Matrix matrix);
 }

@@ -35,13 +35,7 @@ import org.opengis.referencing.operation.MathTransform;
  *
  * @author Johann Sorel (Geomatys)
  */
-public interface Similarity<T extends Similarity<T>> extends Transform {
-
-    /**
-     * Dimension of the transform.
-     * @return int
-     */
-    int getDimension();
+public interface Similarity<T extends Similarity<T>> extends ReadOnly.Similarity<T> {
 
     /**
      * Get transform rotation.
@@ -49,6 +43,7 @@ public interface Similarity<T extends Similarity<T>> extends Transform {
      *
      * @return Matrix
      */
+    @Override
     Matrix<?> getRotation();
 
     /**
@@ -57,6 +52,7 @@ public interface Similarity<T extends Similarity<T>> extends Transform {
      *
      * @return Vector
      */
+    @Override
     Vector<?> getScale();
 
     /**
@@ -66,6 +62,7 @@ public interface Similarity<T extends Similarity<T>> extends Transform {
      * +
      * @return Vector
      */
+    @Override
     Vector<?> getTranslation();
 
     /**
@@ -79,16 +76,16 @@ public interface Similarity<T extends Similarity<T>> extends Transform {
      *
      * @return Matrix, never null
      */
-    Matrix<?> viewMatrix();
+    ReadOnly.Matrix<?> viewMatrix();
 
     /**
      * Get a general inverse matrix view of size : dimension+1
      *
      * @return Matrix, never null
      */
-    Matrix<?> viewMatrixInverse();
+    ReadOnly.Matrix<?> viewMatrixInverse();
 
-    Affine<?> viewAffine();
+    ReadOnly.Affine<?> viewAffine();
 
     /**
      * Inverse view of this transform.
@@ -97,16 +94,7 @@ public interface Similarity<T extends Similarity<T>> extends Transform {
      *
      * @return inverse transform view
      */
-    Affine<?> viewAffineInverse();
-
-    /**
-     * Inverse transform a single tuple.
-     *
-     * @param source tuple, can not be null.
-     * @param dest tuple, can be null.
-     * @return destination tuple.
-     */
-    Tuple<?> inverseTransform(Tuple<?> source, Tuple<?> dest);
+    ReadOnly.Affine<?> viewAffineInverse();
 
     /**
      * Multiply this similarity by given similarity and store the result in this similarity.
@@ -114,14 +102,14 @@ public interface Similarity<T extends Similarity<T>> extends Transform {
      * @param other multiplying similarity
      * @return this similarity
      */
-    T multiply(Similarity<?> other);
+    T multiply(ReadOnly.Similarity<?> other);
 
     /**
      * Copy values from given transform.
      * @param trs
      * @return this instance
      */
-    T set(Similarity<?> trs);
+    T set(ReadOnly.Similarity<?> trs);
 
     /**
      * Set transform from given matrix.
@@ -130,7 +118,7 @@ public interface Similarity<T extends Similarity<T>> extends Transform {
      * @param trs
      * @throws IllegalArgumentException if matrix is not affine
      */
-    T setFromMatrix(Matrix<?> trs) throws IllegalArgumentException;
+    T setFromMatrix(ReadOnly.Matrix<?> trs) throws IllegalArgumentException;
 
     /**
      * Set transform from given affine.
@@ -138,7 +126,7 @@ public interface Similarity<T extends Similarity<T>> extends Transform {
      *
      * @param trs
      */
-    T setFromAffine(Affine<?> trs);
+    T setFromAffine(ReadOnly.Affine<?> trs);
 
     /**
      * Set to identity.
@@ -163,34 +151,11 @@ public interface Similarity<T extends Similarity<T>> extends Transform {
     T invert();
 
     /**
-     * Create a square matrix of size dimensions+1
-     * The last matrix line will be [0,...,1]
-     *
-     * @return matrix
-     */
-    Matrix<?> toMatrix();
-
-    /**
-     * Create a square matrix of size dimensions+1
-     * The last matrix line will be [0,...,1]
-     *
-     * @param buffer to store matrix values in
-     * @return matrix
-     */
-    Matrix<?> toMatrix(Matrix<?> buffer);
-
-    /**
-     * Create and affine transform.
-     *
-     * @return 
-     */
-    Affine<?> toAffine();
-
-    /**
      * Create a copy of this Affine.
      *
      * @return copy
      */
+    @Override
     T copy();
 
     /**

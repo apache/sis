@@ -402,11 +402,11 @@ public final class Matrices {
         }
     }
 
-    public static Tuple transformLocal(final double[][] matrix, final Tuple vector) {
+    public static Tuple<?> transformLocal(final double[][] matrix, final Tuple<?> vector) {
         return transform(matrix, vector, vector);
     }
 
-    public static Tuple transform(final double[][] matrix, final Tuple vector, Tuple buffer) {
+    public static Tuple<?> transform(final double[][] matrix, final ReadOnly.Tuple<?> vector, Tuple<?> buffer) {
         if (buffer==null) buffer = Vectors.createDouble(matrix.length);
         final double[] array = new double[matrix.length];
         transform(matrix, vector.toArrayDouble(), array);
@@ -545,7 +545,7 @@ public final class Matrices {
      * @param buffer Matrix 3x3
      * @return rotation matrix
      */
-    public static double[][] createRotation3(final double angle, final Tuple<?> rotationAxis, double[][] buffer) {
+    public static double[][] createRotation3(final double angle, final ReadOnly.Tuple<?> rotationAxis, double[][] buffer) {
 
         if (buffer == null){
             buffer = new double[3][3];
@@ -587,7 +587,7 @@ public final class Matrices {
      * @param buffer Matrix 4x4
      * @return rotation matrix
      */
-    public static double[][] createRotation4(final double angle, final Tuple<?> rotationAxis, double[][] buffer) {
+    public static double[][] createRotation4(final double angle, final ReadOnly.Tuple<?> rotationAxis, double[][] buffer) {
 
         if (buffer == null){
             buffer = new double[4][4];
@@ -789,7 +789,7 @@ public final class Matrices {
      * Decompose a matrix in rotation, scale and translation.
      * The matrix is expected to be orthogonal of size 3x3 or 4x4.
      */
-    public static void decomposeMatrix(Matrix<?> trs, Matrix<?> rotation, Tuple<?> scale, Tuple<?> translation){
+    public static void decomposeMatrix(ReadOnly.Matrix<?> trs, Matrix<?> rotation, Tuple<?> scale, Tuple<?> translation){
         final int dimension = trs.getNumCol()-1;
         if (dimension == 2){
             final double scaleX = Math.sqrt(trs.get(0,0)*trs.get(0,0)

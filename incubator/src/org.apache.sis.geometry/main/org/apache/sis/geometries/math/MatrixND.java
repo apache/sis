@@ -65,7 +65,7 @@ public class MatrixND extends AbstractMatrix<MatrixND>{
         this.values = values;
     }
 
-    public MatrixND(Matrix<?> m) {
+    public MatrixND(ReadOnly.Matrix<?> m) {
         super(m.getNumRow(),m.getNumCol());
         values = m.toArray2Double(ROW_ORDER);
     }
@@ -226,7 +226,7 @@ public class MatrixND extends AbstractMatrix<MatrixND>{
      * @exception ArrayIndexOutOfBoundsException Submatrix indices
      */
     @Override
-    public MatrixND setRange(int i0, int i1, int j0, int j1, Matrix<?> X) {
+    public MatrixND setRange(int i0, int i1, int j0, int j1, ReadOnly.Matrix<?> X) {
         try {
             for (int i = i0; i <= i1; i++) {
                 for (int j = j0; j <= j1; j++) {
@@ -248,7 +248,7 @@ public class MatrixND extends AbstractMatrix<MatrixND>{
      * @exception ArrayIndexOutOfBoundsException Submatrix indices
      */
     @Override
-    public MatrixND setRange(int[] r, int[] c, Matrix<?> X) {
+    public MatrixND setRange(int[] r, int[] c, ReadOnly.Matrix<?> X) {
         try {
             for (int i = 0; i < r.length; i++) {
                 for (int j = 0; j < c.length; j++) {
@@ -271,7 +271,7 @@ public class MatrixND extends AbstractMatrix<MatrixND>{
      * @exception ArrayIndexOutOfBoundsException Submatrix indices
      */
     @Override
-    public MatrixND setRange(int[] r, int j0, int j1, Matrix<?> X) {
+    public MatrixND setRange(int[] r, int j0, int j1, ReadOnly.Matrix<?> X) {
         try {
             for (int i = 0; i < r.length; i++) {
                 for (int j = j0; j <= j1; j++) {
@@ -294,7 +294,7 @@ public class MatrixND extends AbstractMatrix<MatrixND>{
      * @exception ArrayIndexOutOfBoundsException Submatrix indices
      */
     @Override
-    public MatrixND setRange(int i0, int i1, int[] c, Matrix<?> X) {
+    public MatrixND setRange(int i0, int i1, int[] c, ReadOnly.Matrix<?> X) {
         try {
             for (int i = i0; i <= i1; i++) {
                 for (int j = 0; j < c.length; j++) {
@@ -335,13 +335,13 @@ public class MatrixND extends AbstractMatrix<MatrixND>{
     }
 
     @Override
-    public MatrixND add(Matrix other){
+    public MatrixND add(ReadOnly.Matrix<?> other){
         Matrices.localAdd(values, dArray(other));
         return this;
     }
 
     @Override
-    public MatrixND subtract(Matrix other){
+    public MatrixND subtract(ReadOnly.Matrix<?> other){
         Matrices.localSubtract(values, dArray(other));
         return this;
     }
@@ -359,7 +359,7 @@ public class MatrixND extends AbstractMatrix<MatrixND>{
     }
 
     @Override
-    public MatrixND multiply(Matrix other){
+    public MatrixND multiply(ReadOnly.Matrix<?> other){
         Matrices.localMultiply(values, dArray(other));
         return this;
     }
@@ -370,7 +370,7 @@ public class MatrixND extends AbstractMatrix<MatrixND>{
     }
 
     @Override
-    public double dot(Matrix other){
+    public double dot(ReadOnly.Matrix<?> other){
         return Matrices.dot(values, dArray(other));
     }
 

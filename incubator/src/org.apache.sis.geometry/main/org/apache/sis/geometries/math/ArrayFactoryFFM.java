@@ -18,9 +18,6 @@ package org.apache.sis.geometries.math;
 
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SegmentAllocator;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.List;
 import static org.apache.sis.geometries.math.DataType.BYTE;
 import static org.apache.sis.geometries.math.DataType.DOUBLE;
 import static org.apache.sis.geometries.math.DataType.FLOAT;
@@ -31,7 +28,6 @@ import static org.apache.sis.geometries.math.DataType.UBYTE;
 import static org.apache.sis.geometries.math.DataType.UINT;
 import static org.apache.sis.geometries.math.DataType.USHORT;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -160,12 +156,12 @@ public final class ArrayFactoryFFM implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Tuple buffer) {
+        public void get(long index, Tuple<?> buffer) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void set(long index, Tuple tuple) {
+        public void set(long index, ReadOnly.Tuple<?> tuple) {
             throw new UnsupportedOperationException();
         }
 
@@ -198,12 +194,12 @@ public final class ArrayFactoryFFM implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Tuple buffer) {
+        public void get(long index, Tuple<?> buffer) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void set(long index, Tuple tuple) {
+        public void set(long index, ReadOnly.Tuple<?> tuple) {
             throw new UnsupportedOperationException();
         }
 
@@ -236,12 +232,12 @@ public final class ArrayFactoryFFM implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Tuple buffer) {
+        public void get(long index, Tuple<?> buffer) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void set(long index, Tuple tuple) {
+        public void set(long index, ReadOnly.Tuple<?> tuple) {
             throw new UnsupportedOperationException();
         }
 
@@ -274,12 +270,12 @@ public final class ArrayFactoryFFM implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Tuple buffer) {
+        public void get(long index, Tuple<?> buffer) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void set(long index, Tuple tuple) {
+        public void set(long index, ReadOnly.Tuple<?> tuple) {
             throw new UnsupportedOperationException();
         }
 
@@ -312,12 +308,12 @@ public final class ArrayFactoryFFM implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Tuple buffer) {
+        public void get(long index, Tuple<?> buffer) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void set(long index, Tuple tuple) {
+        public void set(long index, ReadOnly.Tuple<?> tuple) {
             throw new UnsupportedOperationException();
         }
 
@@ -350,12 +346,12 @@ public final class ArrayFactoryFFM implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Tuple buffer) {
+        public void get(long index, Tuple<?> buffer) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void set(long index, Tuple tuple) {
+        public void set(long index, ReadOnly.Tuple<?> tuple) {
             throw new UnsupportedOperationException();
         }
 
@@ -388,12 +384,12 @@ public final class ArrayFactoryFFM implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Tuple buffer) {
+        public void get(long index, Tuple<?> buffer) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void set(long index, Tuple tuple) {
+        public void set(long index, ReadOnly.Tuple<?> tuple) {
             throw new UnsupportedOperationException();
         }
 
@@ -426,12 +422,12 @@ public final class ArrayFactoryFFM implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Tuple buffer) {
+        public void get(long index, Tuple<?> buffer) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void set(long index, Tuple tuple) {
+        public void set(long index, ReadOnly.Tuple<?> tuple) {
             throw new UnsupportedOperationException();
         }
 
@@ -464,12 +460,12 @@ public final class ArrayFactoryFFM implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Tuple buffer) {
+        public void get(long index, Tuple<?> buffer) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void set(long index, Tuple tuple) {
+        public void set(long index, ReadOnly.Tuple<?> tuple) {
             throw new UnsupportedOperationException();
         }
 

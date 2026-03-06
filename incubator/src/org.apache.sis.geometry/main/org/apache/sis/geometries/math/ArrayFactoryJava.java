@@ -151,7 +151,7 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Tuple buffer) {
+        public void get(long index, Tuple<?> buffer) {
             final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 buffer.set(i, array[offset+i]);
@@ -159,7 +159,7 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void set(long index, Tuple tuple) {
+        public void set(long index, ReadOnly.Tuple<?> tuple) {
             final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 array[offset+i] = (byte) tuple.get(i);
@@ -293,7 +293,7 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Tuple buffer) {
+        public void get(long index, Tuple<?> buffer) {
             final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 buffer.set(i, array[offset+i] & 0xFF);
@@ -301,7 +301,7 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void set(long index, Tuple tuple) {
+        public void set(long index, ReadOnly.Tuple<?> tuple) {
             final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 array[offset+i] = (byte) tuple.get(i);
@@ -436,7 +436,7 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Tuple buffer) {
+        public void get(long index, Tuple<?> buffer) {
             final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 buffer.set(i, array[offset+i]);
@@ -444,7 +444,7 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void set(long index, Tuple tuple) {
+        public void set(long index, ReadOnly.Tuple<?> tuple) {
             final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 array[offset+i] = (short) tuple.get(i);
@@ -588,7 +588,7 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Tuple buffer) {
+        public void get(long index, Tuple<?> buffer) {
             final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 buffer.set(i, java.lang.Short.toUnsignedInt(array[offset+i]));
@@ -596,7 +596,7 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void set(long index, Tuple tuple) {
+        public void set(long index, ReadOnly.Tuple<?> tuple) {
             final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 array[offset+i] = (short) tuple.get(i);
@@ -732,7 +732,7 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Tuple buffer) {
+        public void get(long index, Tuple<?> buffer) {
             final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 buffer.set(i, array[offset+i]);
@@ -740,7 +740,7 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void set(long index, Tuple tuple) {
+        public void set(long index, ReadOnly.Tuple<?> tuple) {
             final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 array[offset+i] = (int) tuple.get(i);
@@ -883,7 +883,7 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Tuple buffer) {
+        public void get(long index, Tuple<?> buffer) {
             final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 buffer.set(i, Integer.toUnsignedLong(array[offset+i]));
@@ -891,7 +891,7 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void set(long index, Tuple tuple) {
+        public void set(long index, ReadOnly.Tuple<?> tuple) {
             final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 array[offset+i] = (int) tuple.get(i);
@@ -1027,7 +1027,7 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Tuple buffer) {
+        public void get(long index, Tuple<?> buffer) {
             final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 buffer.set(i, array[offset+i]);
@@ -1035,7 +1035,7 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void set(long index, Tuple tuple) {
+        public void set(long index, ReadOnly.Tuple<?> tuple) {
             final int offset = Math.toIntExact(index * dimension);
             for (int i=0;i<dimension;i++) {
                 array[offset+i] = (int) tuple.get(i);
@@ -1165,7 +1165,7 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Tuple buffer) {
+        public void get(long index, Tuple<?> buffer) {
             if (dimension != buffer.getDimension()) {
                 throw new IllegalArgumentException("TupleArray and Tuple must have the same number of dimensions");
             }
@@ -1173,7 +1173,7 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void set(long index, Tuple tuple) {
+        public void set(long index, ReadOnly.Tuple<?> tuple) {
             if (dimension != tuple.getDimension()) {
                 throw new IllegalArgumentException("TupleArray and Tuple must have the same number of dimensions");
             }
@@ -1314,7 +1314,7 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void get(long index, Tuple buffer) {
+        public void get(long index, Tuple<?> buffer) {
             if (dimension != buffer.getDimension()) {
                 throw new IllegalArgumentException("TupleArray and Tuple must have the same number of dimensions");
             }
@@ -1322,7 +1322,7 @@ public final class ArrayFactoryJava implements ArrayFactory {
         }
 
         @Override
-        public void set(long index, Tuple tuple) {
+        public void set(long index, ReadOnly.Tuple<?> tuple) {
             if (dimension != tuple.getDimension()) {
                 throw new IllegalArgumentException("TupleArray and Tuple must have the same number of dimensions");
             }

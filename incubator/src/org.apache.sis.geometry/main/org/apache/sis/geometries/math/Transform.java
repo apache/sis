@@ -106,7 +106,7 @@ public interface Transform {
      * @param dest tuple, can be null.
      * @return destination tuple.
      */
-    default Tuple<?> transform(Tuple<?> source, Tuple<?> dest) {
+    default Tuple<?> transform(ReadOnly.Tuple<?> source, Tuple<?> dest) {
         final int outSize = getOutputDimensions();
         if (dest == null) dest = Vectors.create(outSize, source.getDataType());
 

@@ -68,7 +68,7 @@ abstract class AbstractAffine<T extends AbstractAffine<T>> extends SimplifiedTra
     }
 
     @Override
-    public T set(final Affine<?> toCopy) {
+    public T set(final ReadOnly.Affine<?> toCopy) {
         final int dim = toCopy.getInputDimensions();
         for (int x = 0; x <= dim; x++) {
             for (int y = 0; y < dim; y++) {
@@ -124,7 +124,8 @@ abstract class AbstractAffine<T extends AbstractAffine<T>> extends SimplifiedTra
         return (T) this;
     }
 
-    public T multiply(Affine<?> affine) {
+    @Override
+    public T multiply(ReadOnly.Affine<?> affine) {
         setFromMatrix(this.toMatrix().multiply(affine.toMatrix()));
         return (T) this;
     }
@@ -138,7 +139,7 @@ abstract class AbstractAffine<T extends AbstractAffine<T>> extends SimplifiedTra
     public boolean equals(Object obj) {
         if (!(obj instanceof Affine)) return false;
 
-        final Affine<?> aff = (Affine) obj;
+        final ReadOnly.Affine<?> aff = (ReadOnly.Affine) obj;
         final int dim = aff.getInputDimensions();
         if (aff.getInputDimensions() != getInputDimensions()) {
             return false;

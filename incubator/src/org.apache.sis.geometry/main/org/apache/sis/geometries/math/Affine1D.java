@@ -42,13 +42,13 @@ public final class Affine1D extends AbstractAffine<Affine1D> implements Transfor
         this.m01 = m01;
     }
 
-    public Affine1D(Affine<?> affine) {
+    public Affine1D(ReadOnly.Affine<?> affine) {
         super(1);
         this.m00 = affine.get(0, 0);
         this.m01 = affine.get(0, 1);
     }
 
-    public Affine1D(Matrix m) {
+    public Affine1D(ReadOnly.Matrix<?> m) {
         super(1);
         setFromMatrix(m);
     }
@@ -118,7 +118,7 @@ public final class Affine1D extends AbstractAffine<Affine1D> implements Transfor
     }
 
     @Override
-    public Tuple<?> transform(Tuple<?> source, Tuple<?> dest) {
+    public Tuple<?> transform(ReadOnly.Tuple<?> source, Tuple<?> dest) {
         if (dest == null) dest = new Vector1D.Double();
         dest.set(0, m00*source.get(0) + m01);
         return dest;
@@ -142,19 +142,19 @@ public final class Affine1D extends AbstractAffine<Affine1D> implements Transfor
     }
 
     @Override
-    public Affine1D setFromMatrix(Matrix m) {
+    public Affine1D setFromMatrix(ReadOnly.Matrix<?> m) {
         m00 = m.get(0, 0);
         m01 = m.get(0, 1);
         return this;
     }
 
     @Override
-    public Matrix toMatrix() {
+    public Matrix<?> toMatrix() {
         return new Matrix2D(m00, m01, 0, 1);
     }
 
     @Override
-    public Matrix toMatrix(Matrix buffer) {
+    public Matrix<?> toMatrix(Matrix<?> buffer) {
         if (buffer==null) return toMatrix();
         buffer.set(0, 0, m00);
         buffer.set(0, 1, m01);

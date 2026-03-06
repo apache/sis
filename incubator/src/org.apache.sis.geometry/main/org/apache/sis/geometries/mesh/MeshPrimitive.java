@@ -879,14 +879,14 @@ public interface MeshPrimitive extends Geometry {
         public void removeDuplicatesByPosition() {
 
             final Set<String> attNames = attributes.keySet();
-            final Map<String,List<Tuple>> atts = new HashMap();
-            final List<Entry<List<Tuple>,Array>> mapping = new ArrayList<>();
+            final Map<String,List<Tuple<?>>> atts = new HashMap<>();
+            final List<Entry<List<Tuple<?>>,Array>> mapping = new ArrayList<>();
             for (String attName : attNames) {
-                final List<Tuple> lst = new ArrayList<>();
+                final List<Tuple<?>> lst = new ArrayList<>();
                 atts.put(attName, lst);
                 mapping.add(new AbstractMap.SimpleImmutableEntry<>(lst, attributes.get(attName)));
             }
-            final List<Tuple> aNewAttribute = mapping.get(0).getKey();
+            final List<Tuple<?>> aNewAttribute = mapping.get(0).getKey();
 
             final Map<Tuple, Integer> reindex = new HashMap<>();
             final Cursor cursorIdx = index.cursor();
@@ -902,7 +902,7 @@ public interface MeshPrimitive extends Geometry {
                 Integer previous = reindex.putIfAbsent(position, newIdx);
                 if (previous == null) {
                     //copy attributes
-                    for (Entry<List<Tuple>,Array> entry : mapping) {
+                    for (Entry<List<Tuple<?>>,Array> entry : mapping) {
                         entry.getKey().add(entry.getValue().get(idx).copy());
                     }
                     newIndex.add(new Vector1D.Int(newIdx));
@@ -913,7 +913,7 @@ public interface MeshPrimitive extends Geometry {
 
             setIndex(NDArrays.of(newIndex, 1, index.getDataType()));
 
-            final Map<String, Array> newAttributes = new HashMap();
+            final Map<String, Array> newAttributes = new HashMap<>();
             for (String attName : attNames) {
                 final Array model = attributes.get(attName);
                 final Array array = NDArrays.of(atts.get(attName), model.getSampleSystem(), model.getDataType());

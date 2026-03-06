@@ -101,7 +101,7 @@ public interface NDArray {
      * @param index tuple index.
      * @return tuple values, tuple is a copy.
      */
-    default Tuple get(long[] index) {
+    default Tuple<?> get(long[] index) {
         Tuple tuple = Vectors.create(getSampleSystem(), getDataType());
         get(index, tuple);
         return tuple;
@@ -113,14 +113,14 @@ public interface NDArray {
      * @param index tuple index.
      * @param buffer tuple to write into.
      */
-    void get(long[] index, Tuple buffer);
+    void get(long[] index, Tuple<?> buffer);
 
     /**
      * Fill array with given tuple value.
      *
      * @param buffer fill value
      */
-    void set(Tuple buffer);
+    void set(ReadOnly.Tuple<?> buffer);
 
     /**
      * Set tuple.
@@ -128,7 +128,7 @@ public interface NDArray {
      * @param index tuple index
      * @param buffer new tuple values.
      */
-    void set(long[] index, Tuple buffer);
+    void set(long[] index, ReadOnly.Tuple<?> buffer);
 
     /**
      * Apply given transformation to all tuples.

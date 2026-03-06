@@ -39,7 +39,7 @@ public class Matrix2D extends AbstractMatrix<Matrix2D> {
         m11 = 1;
     }
 
-    public Matrix2D(Matrix<?> m) {
+    public Matrix2D(ReadOnly.Matrix<?> m) {
         super(2, 2);
         m00 = m.get(0, 0);
         m01 = m.get(0, 1);
@@ -86,7 +86,7 @@ public class Matrix2D extends AbstractMatrix<Matrix2D> {
     }
 
     @Override
-    public Matrix2D set(final Matrix<?> toCopy){
+    public Matrix2D set(final ReadOnly.Matrix<?> toCopy){
         if (toCopy instanceof Matrix2D){
             Matrix2D o = (Matrix2D) toCopy;
             m00 = o.m00;m01 = o.m01;
@@ -163,7 +163,7 @@ public class Matrix2D extends AbstractMatrix<Matrix2D> {
     }
 
     @Override
-    public Matrix2D multiply(Matrix<?> other) {
+    public Matrix2D multiply(ReadOnly.Matrix<?> other) {
         if (other instanceof Matrix2D){
             //usual case
             Matrix2D o = (Matrix2D) other;
@@ -196,7 +196,7 @@ public class Matrix2D extends AbstractMatrix<Matrix2D> {
     }
 
     @Override
-    public Tuple<?> transform(Tuple<?> vector, Tuple<?> buffer) {
+    public Tuple<?> transform(ReadOnly.Tuple<?> vector, Tuple<?> buffer) {
         if (buffer == null) buffer = new Vector2D.Double();
 
         if (vector instanceof Vector2D.Double && buffer instanceof Vector2D.Double) {

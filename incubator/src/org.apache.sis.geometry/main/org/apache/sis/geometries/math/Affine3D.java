@@ -75,7 +75,7 @@ public final class Affine3D extends AbstractAffine<Affine3D> {
 
     }
 
-    public Affine3D(Affine<?> affine) {
+    public Affine3D(ReadOnly.Affine<?> affine) {
         super(3);
         this.m00 = affine.get(0, 0);
         this.m01 = affine.get(0, 1);
@@ -93,7 +93,7 @@ public final class Affine3D extends AbstractAffine<Affine3D> {
         this.m23 = affine.get(2, 3);
     }
 
-    public Affine3D(Matrix m) {
+    public Affine3D(ReadOnly.Matrix<?> m) {
         super(3);
         setFromMatrix(m);
     }
@@ -226,7 +226,7 @@ public final class Affine3D extends AbstractAffine<Affine3D> {
     }
 
     @Override
-    public Tuple<?> transform(Tuple<?> source, Tuple<?> dest) {
+    public Tuple<?> transform(ReadOnly.Tuple<?> source, Tuple<?> dest) {
         if (dest==null) dest = new Vector3D.Double();
 
         if (source instanceof Vector3D.Double s && dest instanceof Vector3D.Double d) {
@@ -263,7 +263,7 @@ public final class Affine3D extends AbstractAffine<Affine3D> {
     }
 
     @Override
-    public Affine3D setFromMatrix(Matrix<?> m) {
+    public Affine3D setFromMatrix(ReadOnly.Matrix<?> m) {
         m00 = m.get(0, 0);
         m01 = m.get(0, 1);
         m02 = m.get(0, 2);
@@ -282,7 +282,7 @@ public final class Affine3D extends AbstractAffine<Affine3D> {
     }
 
     @Override
-    public Affine3D multiply(Affine<?> affine) {
+    public Affine3D multiply(ReadOnly.Affine<?> affine) {
         double b00,b01,b02,b03;
         double b10,b11,b12,b13;
         double b20,b21,b22,b23;
@@ -301,7 +301,7 @@ public final class Affine3D extends AbstractAffine<Affine3D> {
             b22 = this.m20 * o.m02 + this.m21 * o.m12 + this.m22 * o.m22;
             b23 = this.m20 * o.m03 + this.m21 * o.m13 + this.m22 * o.m23 + this.m23;
         } else {
-            final Affine<?> o = affine;
+            final ReadOnly.Affine<?> o = affine;
             b00 = this.m00 * o.get(0,0) + this.m01 * o.get(1,0) + this.m02 * o.get(2,0);
             b01 = this.m00 * o.get(0,1) + this.m01 * o.get(1,1) + this.m02 * o.get(2,1);
             b02 = this.m00 * o.get(0,2) + this.m01 * o.get(1,2) + this.m02 * o.get(2,2) ;
@@ -364,7 +364,7 @@ public final class Affine3D extends AbstractAffine<Affine3D> {
      * @param rotationAxis Tuple 3
      * @return this affine
      */
-    public Affine3D setToRotation(final double angle, final Tuple<?> rotationAxis) {
+    public Affine3D setToRotation(final double angle, final ReadOnly.Tuple<?> rotationAxis) {
 
         final double[][] rot = Matrices.createRotation4(angle, rotationAxis, null);
         m00 = rot[0][0];

@@ -22,35 +22,7 @@ package org.apache.sis.geometries.math;
  *
  * @author Johann Sorel (Geomatys)
  */
-public interface Affine<T extends Affine<T>> extends Transform {
-
-    /**
-     * Get value at coordinate.
-     *
-     * @param row value row index
-     * @param col value column index
-     * @return affine cell value
-     * @throws IllegalArgumentException if coordinate is out of affine range
-     */
-    double get(int row, int col) throws IllegalArgumentException;
-
-    /**
-     * Get affine row values.
-     *
-     * @param row row index
-     * @return row values
-     * @throws IllegalArgumentException if coordinate is out of affine range
-     */
-    double[] getRow(int row) throws IllegalArgumentException;
-
-    /**
-     * Get affine column values.
-     *
-     * @param col column index
-     * @return column values
-     * @throws IllegalArgumentException if coordinate is out of affine range
-     */
-    double[] getCol(int col) throws IllegalArgumentException;
+public interface Affine<T extends Affine<T>> extends ReadOnly.Affine<T> {
 
     /**
      * Copy all values from given transform.
@@ -58,7 +30,7 @@ public interface Affine<T extends Affine<T>> extends Transform {
      * @param toCopy transform to copy from
      * @return this Affine
      */
-    T set(final Affine<?> toCopy);
+    T set(final ReadOnly.Affine<?> toCopy);
 
     /**
      * Set one affine value.
@@ -106,7 +78,7 @@ public interface Affine<T extends Affine<T>> extends Transform {
      * @return this Affine
      * @throws IllegalArgumentException if matrix is not affine
      */
-    T setFromMatrix(Matrix<?> m) throws IllegalArgumentException;
+    T setFromMatrix(ReadOnly.Matrix<?> m) throws IllegalArgumentException;
 
     /**
      * Multiply this affine by given affine and store the result in this affine.
@@ -114,7 +86,7 @@ public interface Affine<T extends Affine<T>> extends Transform {
      * @param affine multiplying affine
      * @return this Affine
      */
-    T multiply(Affine<?> affine);
+    T multiply(ReadOnly.Affine<?> affine);
 
     /**
      * Scale this affine.
@@ -139,23 +111,6 @@ public interface Affine<T extends Affine<T>> extends Transform {
      * @return this affine instance
      */
     T invert();
-
-    /**
-     * Create a square matrix of size dimensions+1
-     * The last matrix line will be [0,...,1]
-     *
-     * @return matrix
-     */
-    Matrix<?> toMatrix();
-
-    /**
-     * Create a square matrix of size dimensions+1
-     * The last matrix line will be [0,...,1]
-     *
-     * @param buffer to store matrix values in
-     * @return matrix
-     */
-    Matrix<?> toMatrix(Matrix<?> buffer);
 
     /**
      * Create a copy of this Affine.

@@ -24,8 +24,8 @@ public final class Affines {
 
     private Affines(){}
 
-    public static Tuple<?> transformNormal(Affine<?> affine, Tuple<?> t, Tuple<?> buffer) {
-        final Vector<?> v = Vectors.castOrCopy(t).extend(0.0);
+    public static Tuple<?> transformNormal(ReadOnly.Affine<?> affine, ReadOnly.Tuple<?> t, Tuple<?> buffer) {
+        final Vector<?> v = Vectors.castOrCopy(t.copy()).extend(0.0);
         affine.toMatrix().transform(v, v);
         if (buffer == null) {
             return v.shrink(3);

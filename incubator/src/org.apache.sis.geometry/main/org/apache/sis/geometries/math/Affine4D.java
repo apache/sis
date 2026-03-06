@@ -104,7 +104,7 @@ public final class Affine4D extends AbstractAffine<Affine4D> {
         this.m34 = m34;
     }
 
-    public Affine4D(Affine<?> affine) {
+    public Affine4D(ReadOnly.Affine<?> affine) {
         super(4);
         this.m00 = affine.get(0, 0);
         this.m01 = affine.get(0, 1);
@@ -131,7 +131,7 @@ public final class Affine4D extends AbstractAffine<Affine4D> {
         this.m34 = affine.get(3, 4);
     }
 
-    public Affine4D(Matrix m) {
+    public Affine4D(ReadOnly.Matrix<?> m) {
         super(4);
         setFromMatrix(m);
     }
@@ -330,7 +330,7 @@ public final class Affine4D extends AbstractAffine<Affine4D> {
     }
 
     @Override
-    public Tuple<?> transform(Tuple<?> source, Tuple<?> dest) {
+    public Tuple<?> transform(ReadOnly.Tuple<?> source, Tuple<?> dest) {
         if (dest == null) dest = new Vector4D.Double();
 
         if (source instanceof Vector4D.Double s && dest instanceof Vector4D.Double d) {
@@ -373,7 +373,7 @@ public final class Affine4D extends AbstractAffine<Affine4D> {
     }
 
     @Override
-    public Affine4D setFromMatrix(Matrix m) {
+    public Affine4D setFromMatrix(ReadOnly.Matrix<?> m) {
         m00 = m.get(0, 0);
         m01 = m.get(0, 1);
         m02 = m.get(0, 2);
@@ -401,7 +401,7 @@ public final class Affine4D extends AbstractAffine<Affine4D> {
     }
 
     @Override
-    public Affine4D multiply(Affine<?> affine) {
+    public Affine4D multiply(ReadOnly.Affine<?> affine) {
         double b00,b01,b02,b03,b04;
         double b10,b11,b12,b13,b14;
         double b20,b21,b22,b23,b24;
@@ -432,7 +432,7 @@ public final class Affine4D extends AbstractAffine<Affine4D> {
             b33 = this.m30 * o.m03 + this.m31 * o.m13 + this.m32 * o.m23 + this.m33 * o.m33;
             b34 = this.m30 * o.m04 + this.m31 * o.m14 + this.m32 * o.m24 + this.m33 * o.m34 + this.m34;
         } else {
-            final Affine<?> o = affine;
+            final ReadOnly.Affine<?> o = affine;
             b00 = this.m00 * o.get(0,0) + this.m01 * o.get(1,0) + this.m02 * o.get(2,0) + this.m03 * o.get(3,0);
             b01 = this.m00 * o.get(0,1) + this.m01 * o.get(1,1) + this.m02 * o.get(2,1) + this.m03 * o.get(3,1);
             b02 = this.m00 * o.get(0,2) + this.m01 * o.get(1,2) + this.m02 * o.get(2,2) + this.m03 * o.get(3,2);
@@ -465,8 +465,8 @@ public final class Affine4D extends AbstractAffine<Affine4D> {
     }
 
     @Override
-    public Matrix toMatrix() {
-        final Matrix m = MatrixND.create(5, 5);
+    public Matrix<?> toMatrix() {
+        final Matrix<?> m = MatrixND.create(5, 5);
         m.set(0, 0, m00);m.set(0, 1, m01);m.set(0, 2, m02);m.set(0, 3, m03);m.set(0, 4, m04);
         m.set(1, 0, m10);m.set(1, 1, m11);m.set(1, 2, m12);m.set(1, 3, m13);m.set(1, 4, m14);
         m.set(2, 0, m20);m.set(2, 1, m21);m.set(2, 2, m22);m.set(2, 3, m23);m.set(2, 4, m24);
@@ -476,7 +476,7 @@ public final class Affine4D extends AbstractAffine<Affine4D> {
     }
 
     @Override
-    public Matrix toMatrix(Matrix buffer) {
+    public Matrix<?> toMatrix(Matrix<?> buffer) {
         if (buffer == null) return toMatrix();
         buffer.set(0, 0, m00);
         buffer.set(0, 1, m01);

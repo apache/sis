@@ -26,11 +26,11 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author Johann Sorel (Geomatys)
  */
-final class TupleUnmodifiable extends AbstractTuple {
+final class TupleUnmodifiable extends AbstractTuple<TupleUnmodifiable> {
 
-    private final Tuple parent;
+    private final Tuple<?> parent;
 
-    public TupleUnmodifiable(Tuple parent) {
+    public TupleUnmodifiable(Tuple<?> parent) {
         super(parent.getSampleSystem());
         ArgumentChecks.ensureNonNull("parent", parent);
         this.parent = parent;
@@ -62,37 +62,37 @@ final class TupleUnmodifiable extends AbstractTuple {
     }
 
     @Override
-    public Tuple set(DirectPosition values) throws IndexOutOfBoundsException {
+    public TupleUnmodifiable set(DirectPosition values) throws IndexOutOfBoundsException {
         throw new UnsupportedOperationException("This implementation is unmodifiable");
     }
 
     @Override
-    public Tuple set(double[] values) throws IndexOutOfBoundsException {
+    public TupleUnmodifiable set(double[] values) throws IndexOutOfBoundsException {
         throw new UnsupportedOperationException("This implementation is unmodifiable");
     }
 
     @Override
-    public Tuple set(double[] values, int offset) throws IndexOutOfBoundsException {
+    public TupleUnmodifiable set(double[] values, int offset) throws IndexOutOfBoundsException {
         throw new UnsupportedOperationException("This implementation is unmodifiable");
     }
 
     @Override
-    public Tuple set(float[] values) throws IndexOutOfBoundsException {
+    public TupleUnmodifiable set(float[] values) throws IndexOutOfBoundsException {
         throw new UnsupportedOperationException("This implementation is unmodifiable");
     }
 
     @Override
-    public Tuple set(float[] values, int offset) throws IndexOutOfBoundsException {
+    public TupleUnmodifiable set(float[] values, int offset) throws IndexOutOfBoundsException {
         throw new UnsupportedOperationException("This implementation is unmodifiable");
     }
 
     @Override
-    public Tuple set(Tuple values) throws IndexOutOfBoundsException {
+    public TupleUnmodifiable set(ReadOnly.Tuple<?> values) throws IndexOutOfBoundsException {
         throw new UnsupportedOperationException("This implementation is unmodifiable");
     }
 
     @Override
-    public Tuple setAll(double value) {
+    public TupleUnmodifiable setAll(double value) {
         throw new UnsupportedOperationException("This implementation is unmodifiable");
     }
 
@@ -147,8 +147,8 @@ final class TupleUnmodifiable extends AbstractTuple {
     }
 
     @Override
-    public Tuple copy() {
-        return parent.copy();
+    public TupleUnmodifiable copy() {
+        return (TupleUnmodifiable) parent.copy();
     }
 
     @Override

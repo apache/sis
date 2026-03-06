@@ -47,7 +47,7 @@ abstract class SimplifiedTransform implements Transform{
     }
 
     @Override
-    public Tuple<?> transform(Tuple<?> source, Tuple<?> dest) {
+    public Tuple<?> transform(ReadOnly.Tuple<?> source, Tuple<?> dest) {
         final double[] array = new double[getOutputDimensions()];
         transform(source.toArrayDouble(), 0, array, 0, 1);
         if (dest == null) {

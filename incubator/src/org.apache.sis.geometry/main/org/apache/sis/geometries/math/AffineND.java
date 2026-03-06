@@ -36,7 +36,7 @@ public final class AffineND extends AbstractAffine<AffineND> {
         }
     }
 
-    public static Affine<?> create(Affine<?> toCopy) {
+    public static Affine<?> create(ReadOnly.Affine<?> toCopy) {
         final Affine<?> cp = create(toCopy.getInputDimensions());
         cp.set(toCopy);
         return cp;
@@ -49,12 +49,12 @@ public final class AffineND extends AbstractAffine<AffineND> {
     }
 
     @Override
-    public Matrix toMatrix() {
+    public Matrix<?> toMatrix() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public AffineND setFromMatrix(Matrix m) {
+    public AffineND setFromMatrix(ReadOnly.Matrix<?> m) {
         for (int y = 0; y < dim; y++) {
             for (int x = 0; x <= dim; x++) {
                 values[y][x] = m.get(y, x);
@@ -85,7 +85,7 @@ public final class AffineND extends AbstractAffine<AffineND> {
     }
 
     @Override
-    public Matrix toMatrix(Matrix buffer) {
+    public Matrix<?> toMatrix(Matrix<?> buffer) {
         if (buffer == null) buffer = MatrixND.create(dim+1, +1);
         for (int y=0;y<dim;y++) {
             for (int x=0;x<=dim;x++) {

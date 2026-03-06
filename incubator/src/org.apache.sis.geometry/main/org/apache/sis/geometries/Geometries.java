@@ -40,7 +40,6 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.Matrix;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.geometries.math.DataType;
@@ -231,7 +230,7 @@ public final class Geometries {
     public static Matrix3D createRotation(CoordinateReferenceSystem crs1, CoordinateReferenceSystem crs2) throws FactoryException {
         final MathTransform trs = CRS.findOperation(crs1, crs2, null).getMathTransform();
         final LinearTransform lt = (LinearTransform) trs;
-        return new Matrix3D().set(lt.getMatrix());
+        return new Matrix3D().setFromGeoapi(lt.getMatrix());
     }
 
     /**
@@ -605,7 +604,7 @@ public final class Geometries {
 
         int inc = -1;
         final Map<Integer, Integer> mapping = new HashMap<>();
-        final Map<String,List<Tuple>> rebuild = new IdentityHashMap<>();
+        final Map<String,List<Tuple<?>>> rebuild = new IdentityHashMap<>();
         final int[] index = indexArray.toArrayInt();
 
         for (String name : primitive.getAttributesType().getAttributeNames()) {
@@ -621,7 +620,7 @@ public final class Geometries {
 
                 for (String name : rebuild.keySet()) {
                     final Array oldTa = primitive.getAttribute(name);
-                    final List<Tuple> newTa = rebuild.get(name);
+                    final List<Tuple<?>> newTa = rebuild.get(name);
                     newTa.add(newIndex, oldTa.get(oldIndex));
                 }
             }
@@ -631,7 +630,7 @@ public final class Geometries {
         //rebuild attributes arrays
         for (String name : rebuild.keySet()) {
             final Array oldTa = primitive.getAttribute(name);
-            final List<Tuple> newTa = rebuild.get(name);
+            final List<Tuple<?>> newTa = rebuild.get(name);
             final Array ta = NDArrays.of(newTa, oldTa.getSampleSystem(), oldTa.getDataType());
             primitive.setAttribute(name, ta);
         }

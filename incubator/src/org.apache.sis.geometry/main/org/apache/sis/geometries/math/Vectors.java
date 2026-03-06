@@ -217,7 +217,7 @@ public final class Vectors {
         }
     }
 
-    public static Vector<?> castOrCopy(Tuple pos) {
+    public static Vector<?> castOrCopy(Tuple<?> pos) {
         if (pos instanceof Vector) {
             return (Vector) pos;
         } else {
@@ -240,7 +240,7 @@ public final class Vectors {
         }
     }
 
-    public static Vector<?> castOrWrap(Tuple tuple) {
+    public static Vector<?> castOrWrap(Tuple<?> tuple) {
         if (tuple instanceof Vector) {
             return (Vector) tuple;
         } else {
@@ -248,7 +248,7 @@ public final class Vectors {
         }
     }
 
-    public static DirectPosition asDirectPostion(Tuple tuple) {
+    public static DirectPosition asDirectPostion(Tuple<?> tuple) {
         return new AsDirectPosition(tuple);
     }
     /**
@@ -263,14 +263,14 @@ public final class Vectors {
 
     private static class WrapTuple extends AbstractTuple<WrapTuple> implements Vector<WrapTuple> {
 
-        private final Tuple pos;
+        private final Tuple<?> pos;
 
-        public WrapTuple(Tuple pos, int size) {
+        public WrapTuple(Tuple<?> pos, int size) {
             super(size);
             this.pos = pos;
         }
 
-        public WrapTuple(Tuple pos) {
+        public WrapTuple(Tuple<?> pos) {
             super(pos.getSampleSystem());
             this.pos = pos;
         }
@@ -293,6 +293,11 @@ public final class Vectors {
         @Override
         public int getDimension() {
             return pos.getDimension();
+        }
+
+        @Override
+        public WrapTuple copy() {
+            return super.copy();
         }
     }
 
@@ -328,6 +333,11 @@ public final class Vectors {
         @Override
         public int getDimension() {
             return pos.getDimension();
+        }
+
+        @Override
+        public WrapDirectPostion copy() {
+            return super.copy();
         }
     }
 
@@ -1713,7 +1723,7 @@ public final class Vectors {
      * @param unitVector unencoded unit vector value of size 3
      * @return encoded value
      */
-    public static Vector2D.Float toOctEncoding(Tuple<?> unitVector){
+    public static Vector2D.Float toOctEncoding(ReadOnly.Tuple<?> unitVector){
         ArgumentChecks.ensureCountBetween("dimension", true, 3, 3, unitVector.getDimension());
         final double x = unitVector.get(0);
         final double y = unitVector.get(1);
@@ -1736,7 +1746,7 @@ public final class Vectors {
      * @param unitVector unencoded unit vector value of size 3
      * @return encoded value
      */
-    public static Vector2D.UShort toOctUShort(Tuple<?> unitVector){
+    public static Vector2D.UShort toOctUShort(ReadOnly.Tuple<?> unitVector){
         final Vector2D.Float oct = toOctEncoding(unitVector);
         return new Vector2D.UShort(
             (short) ( (oct.x + 1f) / 2f * 65535f),
@@ -1750,7 +1760,7 @@ public final class Vectors {
      * @param unitVector unencoded unit vector value of size 3
      * @return encoded value
      */
-    public static byte[] toOctByte(Tuple<?> unitVector){
+    public static byte[] toOctByte(ReadOnly.Tuple<?> unitVector){
         final Vector2D.Float oct = toOctEncoding(unitVector);
         final byte[] b = new byte[2];
         b[0] = (byte) ( (oct.x + 1f) / 2f * 255f);
@@ -1836,7 +1846,7 @@ public final class Vectors {
      * @param quantizeRange resulting quantized values will range between 0 and this value inclusive.
      * @param buffer where quantized value is stored
      */
-    public static <R extends Tuple<?>> R toQuantizedEncoding(Tuple<?> tuple, Envelope quantizeBox, int quantizeRange, R buffer) throws MismatchedDimensionException, TransformException {
+    public static <R extends Tuple<?>> R toQuantizedEncoding(ReadOnly.Tuple<?> tuple, Envelope quantizeBox, int quantizeRange, R buffer) throws MismatchedDimensionException, TransformException {
         final MathTransform trs = quantizedTransform(quantizeBox, quantizeRange);
         if (buffer == null) {
             final DataType dt = DataType.forRange(NumberRange.create(0, true, quantizeRange, true), true);
