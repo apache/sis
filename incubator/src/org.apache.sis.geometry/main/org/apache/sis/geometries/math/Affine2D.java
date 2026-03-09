@@ -207,23 +207,8 @@ public final class Affine2D extends AbstractAffine<Affine2D> {
     }
 
     @Override
-    public Matrix<?> toMatrix() {
+    public Matrix3D toMatrix() {
         return new Matrix3D(m00, m01, m02, m10, m11, m12, 0, 0, 1);
-    }
-
-    @Override
-    public Matrix<?> toMatrix(Matrix<?> buffer) {
-        if (buffer == null) return toMatrix();
-        buffer.set(0, 0, m00);
-        buffer.set(0, 1, m01);
-        buffer.set(0, 2, m02);
-        buffer.set(1, 0, m10);
-        buffer.set(1, 1, m11);
-        buffer.set(1, 2, m12);
-        buffer.set(2, 0, 0);
-        buffer.set(2, 1, 0);
-        buffer.set(2, 2, 1);
-        return buffer;
     }
 
     public Matrix4D toMatrix4() {

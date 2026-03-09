@@ -476,41 +476,6 @@ public final class Affine4D extends AbstractAffine<Affine4D> {
     }
 
     @Override
-    public Matrix<?> toMatrix(Matrix<?> buffer) {
-        if (buffer == null) return toMatrix();
-        buffer.set(0, 0, m00);
-        buffer.set(0, 1, m01);
-        buffer.set(0, 2, m02);
-        buffer.set(0, 3, m03);
-        buffer.set(0, 4, m04);
-
-        buffer.set(1, 0, m10);
-        buffer.set(1, 1, m11);
-        buffer.set(1, 2, m12);
-        buffer.set(1, 3, m13);
-        buffer.set(1, 4, m14);
-
-        buffer.set(2, 0, m20);
-        buffer.set(2, 1, m21);
-        buffer.set(2, 2, m22);
-        buffer.set(2, 3, m23);
-        buffer.set(2, 4, m24);
-
-        buffer.set(3, 0, m30);
-        buffer.set(3, 1, m31);
-        buffer.set(3, 2, m32);
-        buffer.set(3, 3, m33);
-        buffer.set(3, 4, m34);
-
-        buffer.set(4, 0, 0);
-        buffer.set(4, 1, 0);
-        buffer.set(4, 2, 0);
-        buffer.set(4, 3, 0);
-        buffer.set(4, 4, 1);
-        return buffer;
-    }
-
-    @Override
     public Affine4D copy() {
         return new Affine4D(m00, m01, m02, m03, m04, m10, m11, m12, m13, m14, m20, m21, m22, m23, m24, m30, m31, m32, m33, m34);
     }

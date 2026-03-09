@@ -385,15 +385,6 @@ public final class ReadOnly {
         org.apache.sis.geometries.math.Matrix<?> toMatrix();
 
         /**
-         * Create a square matrix of size dimensions+1
-         * The last matrix line will be [0,...,1]
-         *
-         * @param buffer to store matrix values in
-         * @return matrix
-         */
-        org.apache.sis.geometries.math.Matrix<?> toMatrix(org.apache.sis.geometries.math.Matrix<?> buffer);
-
-        /**
          * Create a copy of this Affine.
          *
          * @return copy

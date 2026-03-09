@@ -155,7 +155,7 @@ public class EarClipping {
         //attach holes to the main geometry
         for(int i=0,n=part.inners.size();i<n;i++){
             //we must find the minimum x coordinate in the inner loop
-            final List<Tuple> loop = part.inners.get(i).getPoints().getAttributeArray(AttributesType.ATT_POSITION).stream(false).toList();
+            final List<Tuple<?>> loop = part.inners.get(i).getPoints().getAttributeArray(AttributesType.ATT_POSITION).stream(false).toList();
             int index = 0;
             Tuple min = loop.get(index);
             for(int k=1,p=loop.size();k<p;k++){

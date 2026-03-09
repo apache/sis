@@ -392,6 +392,30 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
         return set(m, ROW_ORDER);
     }
 
+    @Override
+    public Matrix4D setFromAffine(ReadOnly.Affine<?> affine) {
+        m00 = affine.get(0, 0);
+        m01 = affine.get(0, 1);
+        m02 = affine.get(0, 2);
+        m03 = affine.get(0, 3);
+
+        m10 = affine.get(1, 0);
+        m11 = affine.get(1, 1);
+        m12 = affine.get(1, 2);
+        m13 = affine.get(1, 3);
+
+        m20 = affine.get(2, 0);
+        m21 = affine.get(2, 1);
+        m22 = affine.get(2, 2);
+        m23 = affine.get(2, 3);
+
+        m30 = 0;
+        m31 = 0;
+        m32 = 0;
+        m33 = 1;
+        return this;
+    }
+
     // /////////////////////////////////////////////////////////////////////////////
     // compute cofactor of 3x3 minor matrix without sign
     // input params are 9 elements of the minor matrix

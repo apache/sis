@@ -318,6 +318,18 @@ public class MatrixND extends AbstractMatrix<MatrixND>{
     }
 
     @Override
+    public MatrixND setFromAffine(ReadOnly.Affine<?> affine) {
+        setToIdentity();
+        final int dim = affine.getInputDimensions();
+        for (int y=0;y<dim;y++) {
+            for (int x=0;x<=dim;x++) {
+                set(y, x, affine.get(y, x));
+            }
+        }
+        return this;
+    }
+
+    @Override
     public boolean isIdentity(){
         return Matrices.isIdentity(values);
     }

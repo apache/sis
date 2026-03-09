@@ -24,7 +24,7 @@ import java.util.function.Consumer;
  *
  * @author Johann Sorel (Geomatys)
  */
-final class ArraySpliterator implements Spliterator<Tuple>{
+final class ArraySpliterator implements Spliterator<Tuple<?>>{
 
     private final Array array;
     /**
@@ -52,7 +52,7 @@ final class ArraySpliterator implements Spliterator<Tuple>{
     }
 
     @Override
-    public boolean tryAdvance(Consumer<? super Tuple> action) {
+    public boolean tryAdvance(Consumer<? super Tuple<?>> action) {
         if (rangeStart >= rangeEnd) return false;
         if (cursor == null) cursor = array.cursor();
         cursor.moveTo(rangeStart);
@@ -62,7 +62,7 @@ final class ArraySpliterator implements Spliterator<Tuple>{
     }
 
     @Override
-    public Spliterator<Tuple> trySplit() {
+    public Spliterator<Tuple<?>> trySplit() {
         long remaining = rangeEnd - rangeStart;
         if (remaining < 5) {
             //too few elements to split it

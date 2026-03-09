@@ -360,7 +360,7 @@ public interface Array extends NDArray {
      * @return tuple stream over this array.
      */
     @Override
-    default Stream<Tuple> stream(boolean parallel) {
+    default Stream<Tuple<?>> stream(boolean parallel) {
         return StreamSupport.stream(new ArraySpliterator(this), parallel);
     }
 

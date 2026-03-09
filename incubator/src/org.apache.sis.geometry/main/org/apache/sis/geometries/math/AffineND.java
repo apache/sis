@@ -50,7 +50,13 @@ public final class AffineND extends AbstractAffine<AffineND> {
 
     @Override
     public Matrix<?> toMatrix() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        final Matrix<?> buffer = MatrixND.create(dim+1, +1);
+        for (int y=0;y<dim;y++) {
+            for (int x=0;x<=dim;x++) {
+                buffer.set(y, x, values[y][x]);
+            }
+        }
+        return buffer;
     }
 
     @Override
@@ -82,17 +88,6 @@ public final class AffineND extends AbstractAffine<AffineND> {
     @Override
     protected void transform1(float[] source, int sourceOffset, float[] dest, int destOffset) {
         throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Matrix<?> toMatrix(Matrix<?> buffer) {
-        if (buffer == null) buffer = MatrixND.create(dim+1, +1);
-        for (int y=0;y<dim;y++) {
-            for (int x=0;x<=dim;x++) {
-                buffer.set(y, x, values[y][x]);
-            }
-        }
-        return buffer;
     }
 
     @Override

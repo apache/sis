@@ -133,6 +133,15 @@ public class Matrix2D extends AbstractMatrix<Matrix2D> {
     }
 
     @Override
+    public Matrix2D setFromAffine(ReadOnly.Affine<?> affine) {
+        m00 = affine.get(0, 0);
+        m01 = affine.get(0, 1);
+        m10 = 0;
+        m11 = 1;
+        return this;
+    }
+
+    @Override
     public boolean isIdentity() {
         return m00==1.0 && m01==0.0
             && m10==0.0 && m11==1.0;

@@ -50,6 +50,14 @@ public interface Matrix<T extends Matrix<T>> extends ReadOnly.Matrix<T>, org.ope
 
     T setFromGeoapi(org.opengis.referencing.operation.Matrix matrix);
 
+    /**
+     * set to ad square matrix of size dimensions+1
+     * The last matrix line will be [0,...,1]
+     *
+     * @return this matrix
+     */
+    T setFromAffine(ReadOnly.Affine<?> affine);
+
     T set(double[] values, boolean rowOrder);
 
     T set(double[][] values, boolean rowOrder);

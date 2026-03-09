@@ -184,6 +184,6 @@ public interface NDArray {
     /**
      * @return tuple stream over this array.
      */
-    Stream<Tuple> stream(boolean parallel);
+    Stream<Tuple<?>> stream(boolean parallel);
 
 }

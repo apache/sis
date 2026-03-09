@@ -330,31 +330,6 @@ public final class Affine3D extends AbstractAffine<Affine3D> {
                   0,   0,   0,   1);
     }
 
-    @Override
-    public Matrix<?> toMatrix(Matrix<?> buffer) {
-        if (buffer == null) return toMatrix();
-        buffer.set(0, 0, m00);
-        buffer.set(0, 1, m01);
-        buffer.set(0, 2, m02);
-        buffer.set(0, 3, m03);
-
-        buffer.set(1, 0, m10);
-        buffer.set(1, 1, m11);
-        buffer.set(1, 2, m12);
-        buffer.set(1, 3, m13);
-
-        buffer.set(2, 0, m20);
-        buffer.set(2, 1, m21);
-        buffer.set(2, 2, m22);
-        buffer.set(2, 3, m23);
-
-        buffer.set(3, 0, 0);
-        buffer.set(3, 1, 0);
-        buffer.set(3, 2, 0);
-        buffer.set(3, 3, 1);
-        return buffer;
-    }
-
     /**
      * Create a rotation matrix from given angle and axis.
      *

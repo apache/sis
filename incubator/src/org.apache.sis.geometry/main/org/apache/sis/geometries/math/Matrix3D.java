@@ -412,6 +412,20 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
     }
 
     @Override
+    public Matrix3D setFromAffine(ReadOnly.Affine<?> affine) {
+        m00 = affine.get(0, 0);
+        m01 = affine.get(0, 1);
+        m02 = affine.get(0, 2);
+        m10 = affine.get(1, 0);
+        m11 = affine.get(1, 1);
+        m12 = affine.get(1, 2);
+        m20 = 0;
+        m21 = 0;
+        m22 = 1;
+        return this;
+    }
+
+    @Override
     public Matrix3D copy() {
         return new Matrix3D(this);
     }

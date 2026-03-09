@@ -149,18 +149,8 @@ public final class Affine1D extends AbstractAffine<Affine1D> implements Transfor
     }
 
     @Override
-    public Matrix<?> toMatrix() {
+    public Matrix2D toMatrix() {
         return new Matrix2D(m00, m01, 0, 1);
-    }
-
-    @Override
-    public Matrix<?> toMatrix(Matrix<?> buffer) {
-        if (buffer==null) return toMatrix();
-        buffer.set(0, 0, m00);
-        buffer.set(0, 1, m01);
-        buffer.set(1, 0, 0);
-        buffer.set(1, 1, 1);
-        return buffer;
     }
 
     @Override
