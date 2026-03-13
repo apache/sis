@@ -510,6 +510,11 @@ public final class ReadOnly {
         boolean isFinite();
 
         /**
+         * @return true if matrix has the same number of rows and columns.
+         */
+        boolean isSquare();
+
+        /**
          * For compatibility with MatrixSIS.
          *
          * @return sis matrix equivalent
@@ -567,15 +572,6 @@ public final class ReadOnly {
          * @return matrix
          */
         org.apache.sis.geometries.math.Matrix<?> toMatrix();
-
-        /**
-         * Create a square matrix of size dimensions+1
-         * The last matrix line will be [0,...,1]
-         *
-         * @param buffer to store matrix values in
-         * @return matrix
-         */
-        org.apache.sis.geometries.math.Matrix<?> toMatrix(org.apache.sis.geometries.math.Matrix<?> buffer);
 
         /**
          * Create and affine transform.

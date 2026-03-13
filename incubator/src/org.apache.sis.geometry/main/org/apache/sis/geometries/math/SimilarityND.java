@@ -38,9 +38,9 @@ package org.apache.sis.geometries.math;
 public class SimilarityND extends AbstractSimilarity<SimilarityND> {
 
     private final int dimension;
-    public final Matrix<?> rotation;
-    public final Vector<?> scale;
-    public final Vector<?> translation;
+    private final Matrix<?> rotation;
+    private final Vector<?> scale;
+    private final Vector<?> translation;
 
     public static Similarity<?> create(int dimension) {
         return new SimilarityND(dimension);
@@ -115,18 +115,25 @@ public class SimilarityND extends AbstractSimilarity<SimilarityND> {
     }
 
     @Override
-    public Matrix<?> getRotation() {
+    public ReadOnly.Matrix<?> getRotation() {
         return rotation;
     }
 
     @Override
-    public Vector<?> getScale() {
+    public ReadOnly.Vector<?> getScale() {
         return scale;
     }
 
     @Override
-    public Vector<?> getTranslation() {
+    public ReadOnly.Vector<?> getTranslation() {
         return translation;
+    }
+
+    @Override
+    public SimilarityND update(TriFunction<Matrix<?>, Vector<?>, Vector<?>, Integer> updater) {
+        final Integer changed = updater.apply(rotation, scale, translation);
+        if (changed != 0) notifyChanged();
+        return this;
     }
 
     @Override
@@ -157,41 +164,6 @@ public class SimilarityND extends AbstractSimilarity<SimilarityND> {
         translation.set(resTrans);
         notifyChanged();
         return this;
-    }
-
-    @Override
-    public Matrix<?> toMatrix() {
-        final Matrix<?> matrix = MatrixND.create(dimension+1, dimension+1);
-        final Vector<?> translation = getTranslation();
-        final Matrix<?> rotation = getRotation();
-        final Vector<?> scale = getScale();
-        matrix.setToIdentity();
-        matrix.set(rotation);
-        matrix.scale(scale.extend(1).toArrayDouble());
-        for (int i = 0, dimension = getDimension(); i < dimension; i++) {
-            matrix.set(i, dimension, translation.get(i));
-        }
-        return matrix;
-    }
-
-    @Override
-    public Matrix<?> toMatrix(Matrix<?> matrix) {
-        if (matrix == null) matrix = MatrixND.create(dimension+1, dimension+1);
-        final Vector<?> translation = getTranslation();
-        final Matrix<?> rotation = getRotation();
-        final Vector<?> scale = getScale();
-        matrix.setToIdentity();
-        matrix.set(rotation);
-        matrix.scale(scale.extend(1).toArrayDouble());
-        for (int i = 0, dimension = getDimension(); i < dimension; i++) {
-            matrix.set(i, dimension, translation.get(i));
-        }
-        return matrix;
-    }
-
-    @Override
-    public Affine<?> toAffine() {
-        return AffineND.create(dimension).setFromMatrix(toMatrix());
     }
 
     @Override

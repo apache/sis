@@ -37,33 +37,19 @@ import org.opengis.referencing.operation.MathTransform;
  */
 public interface Similarity<T extends Similarity<T>> extends ReadOnly.Similarity<T> {
 
-    /**
-     * Get transform rotation.
-     * Call notifyChanged after if you modified the values.
-     *
-     * @return Matrix
-     */
-    @Override
-    Matrix<?> getRotation();
+    public static final int ROTATION_UPDATED = 1;
+    public static final int SCALE_UPDATED = 1 << 1;
+    public static final int TRANSLATION_UPDATED = 1 << 2;
+    public static final int ALL_UPDATED = ROTATION_UPDATED | SCALE_UPDATED | TRANSLATION_UPDATED;
 
     /**
-     * Get transform scale.
-     * Call notifyChanged after if you modified the values.
+     * Update this similarity.
+     * This method will send a change event if values have changed.
      *
-     * @return Vector
+     * @param updater, gets rotation,scale,translation as input and returns the modified elements.
+     * @return this similarity
      */
-    @Override
-    Vector<?> getScale();
-
-    /**
-     * Get transform translation.
-     * Call notifyChanged after if you modified the values.
-     *ç&é ,
-     * +
-     * @return Vector
-     */
-    @Override
-    Vector<?> getTranslation();
+    T update(TriFunction<Matrix<?>,Vector<?>,Vector<?>,Integer> updater);
 
     /**
      * Get a general matrix view of size : dimension+1
@@ -85,11 +71,20 @@ public interface Similarity<T extends Similarity<T>> extends ReadOnly.Similarity
      */
     ReadOnly.Matrix<?> viewMatrixInverse();
 
+    /**
+     * Get an affine view of size : dimension+1
+     * This affine combine rotation, scale and translation
+     *
+     * [R*S, R*S, R*S, T]
+     * [R*S, R*S, R*S, T]
+     * [R*S, R*S, R*S, T]
+     *
+     * @return Affine, never null
+     */
     ReadOnly.Affine<?> viewAffine();
 
     /**
      * Inverse view of this transform.
-     * The returned affine is no modifiable.
      * The returned affine reflects any change made to this transform
      *
      * @return inverse transform view
@@ -98,6 +93,7 @@ public interface Similarity<T extends Similarity<T>> extends ReadOnly.Similarity
 
     /**
      * Multiply this similarity by given similarity and store the result in this similarity.
+     * This method will send a change event if values have changed.
      *
      * @param other multiplying similarity
      * @return this similarity
@@ -106,6 +102,8 @@ public interface Similarity<T extends Similarity<T>> extends ReadOnly.Similarity
 
     /**
      * Copy values from given transform.
+     * This method will send a change event if values have changed.
+     *
      * @param trs
      * @return this instance
      */
@@ -114,6 +112,7 @@ public interface Similarity<T extends Similarity<T>> extends ReadOnly.Similarity
     /**
      * Set transform from given matrix.
      * Matrix must be orthogonal of size dimension+1.
+     * This method will send a change event if values have changed.
      *
      * @param trs
      * @throws IllegalArgumentException if matrix is not affine
@@ -123,6 +122,7 @@ public interface Similarity<T extends Similarity<T>> extends ReadOnly.Similarity
     /**
      * Set transform from given affine.
      * Affine must be of same size.
+     * This method will send a change event if values have changed.
      *
      * @param trs
      */
@@ -137,14 +137,15 @@ public interface Similarity<T extends Similarity<T>> extends ReadOnly.Similarity
     /**
      * Set this transform to given translation.
      * This will reset rotation and scale values.
-     *
      * This method will send a change event if values have changed.
+     *
      * @param trs
      */
     T setToTranslation(double[] trs);
 
     /**
      * Inverse this affine transform.
+     * This method will send a change event if values have changed.
      *
      * @return this affine instance
      */
@@ -159,15 +160,14 @@ public interface Similarity<T extends Similarity<T>> extends ReadOnly.Similarity
     T copy();
 
     /**
-     * Flag to indicate the transform parameters has changed.
-     * This is used to recalculate the general matrix when needed.
-     */
-    void notifyChanged();
-
-    /**
      * Combine the different elements to obtain a linear transform of dimension 3.
      */
     default MathTransform toMathTransform() {
         return MathTransforms.linear(toMatrix().toMatrixSIS());
+    }
+
+    @FunctionalInterface
+    public static interface TriFunction<T, U, V, R> {
+        R apply(T t, U u, V v);
     }
 }

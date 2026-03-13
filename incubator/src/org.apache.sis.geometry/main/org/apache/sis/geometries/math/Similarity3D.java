@@ -25,9 +25,9 @@ import java.util.Objects;
  */
 public final class Similarity3D extends AbstractSimilarity<Similarity3D> {
 
-    public final Vector3D.Double scale = new Vector3D.Double(1, 1, 1);
-    public final Vector3D.Double translation = new Vector3D.Double(0, 0, 0);
-    public final Matrix3D rotation = new Matrix3D(1,0,0, 0,1,0, 0,0,1);
+    private final Vector3D.Double scale = new Vector3D.Double(1, 1, 1);
+    private final Vector3D.Double translation = new Vector3D.Double(0, 0, 0);
+    private final Matrix3D rotation = new Matrix3D(1,0,0, 0,1,0, 0,0,1);
 
     public Similarity3D(){
         super(3);
@@ -49,18 +49,25 @@ public final class Similarity3D extends AbstractSimilarity<Similarity3D> {
     }
 
     @Override
-    public Matrix3D getRotation() {
+    public ReadOnly.Matrix<?> getRotation() {
         return rotation;
     }
 
     @Override
-    public Vector3D.Double getScale() {
+    public ReadOnly.Vector<?> getScale() {
         return scale;
     }
 
     @Override
-    public Vector3D.Double getTranslation() {
+    public ReadOnly.Vector<?> getTranslation() {
         return translation;
+    }
+
+    @Override
+    public Similarity3D update(TriFunction<Matrix<?>, Vector<?>, Vector<?>, Integer> updater) {
+        final Integer changed = updater.apply(rotation, scale, translation);
+        if (changed != 0) notifyChanged();
+        return this;
     }
 
     @Override
@@ -134,13 +141,6 @@ public final class Similarity3D extends AbstractSimilarity<Similarity3D> {
         affine.m23 = translation.z;
 
         return affine;
-    }
-
-    @Override
-    public Matrix<?> toMatrix(Matrix<?> buffer) {
-        if (buffer == null) return toMatrix();
-        buffer.set(toMatrix());
-        return buffer;
     }
 
     @Override

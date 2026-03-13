@@ -35,6 +35,11 @@ public interface Matrix<T extends Matrix<T>> extends ReadOnly.Matrix<T>, org.ope
     }
 
     @Override
+    default boolean isSquare() {
+        return getNumRow() == getNumCol();
+    }
+
+    @Override
     default double getElement(int row, int col) {
         return get(row,col);
     }
@@ -132,6 +137,14 @@ public interface Matrix<T extends Matrix<T>> extends ReadOnly.Matrix<T>, org.ope
     T multiply(ReadOnly.Matrix<?> other);
 
     T transpose();
+
+    /**
+     * replace valeus close to 0 with zero, removing -0 if present
+     *
+     * @param epsilon tolerance
+     * @return this matrix
+     */
+    T roundZeros(double epsilon);
 
     T copy();
 

@@ -465,6 +465,19 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
         return set((ReadOnly.Matrix)t);
     }
 
+    @Override
+    public T roundZeros(double epsilon){
+        for (int x=0;x<nbCol;x++){
+            for (int y=0;y<nbRow;y++){
+                double d = get(y, x);
+                if (!(d>epsilon || d<-epsilon)){
+                    set(y,x, 0.0);
+                }
+            }
+        }
+        return (T) this;
+    }
+
     /**
      * invert matrix
      */

@@ -307,13 +307,20 @@ public class MatrixND extends AbstractMatrix<MatrixND>{
         return this;
     }
 
-    /**
-     * Set Matrix value to identity matrix.
-     * @return this matrix
-     */
     @Override
     public MatrixND setToIdentity(){
-        Matrices.setToIdentity(values);
+        if (values.length != values[0].length) {
+            throw new IllegalArgumentException("The matrix is not a square matrix.");
+        }
+        for (int x = 0; x < values[0].length; x++) {
+            for (int y = 0; y < values.length; y++) {
+                if (x == y) {
+                    values[y][x] = 1.;
+                } else {
+                    values[y][x] = 0.;
+                }
+            }
+        }
         return this;
     }
 
@@ -330,8 +337,24 @@ public class MatrixND extends AbstractMatrix<MatrixND>{
     }
 
     @Override
-    public boolean isIdentity(){
-        return Matrices.isIdentity(values);
+    public boolean isIdentity() {
+        if (values.length != values[0].length) {
+            return false; // m must be a square matrix
+        }
+        for (int x = 0; x < values[0].length; x++) {
+            for (int y = 0; y < values.length; y++) {
+                if (x == y) {
+                    if (values[y][x] != 1) {
+                        return false;
+                    }
+                } else {
+                    if (values[y][x] != 0) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -419,7 +442,7 @@ public class MatrixND extends AbstractMatrix<MatrixND>{
         //TODO improve it, slow and memory greedy
         final double[] v = Arrays.copyOfRange(source, sourceOffset, sourceOffset + getInputDimensions());
         final double[] d = new double[getOutputDimensions()];
-        Matrices.transform(values, v, d);
+        internalTransform(v, d);
         System.arraycopy(d,0,dest,destOffset,d.length);
     }
 
@@ -431,8 +454,24 @@ public class MatrixND extends AbstractMatrix<MatrixND>{
             v[i] = source[sourceOffset+i];
         }
         final double[] d = new double[getOutputDimensions()];
-        Matrices.transform(values, v, d);
+        internalTransform(v, d);
         for (int i=0;i<d.length;i++) dest[destOffset+i] = (float) d[i];
     }
 
+    /**
+     * Transform given vector.
+     *
+     * @param vector vector to transform
+     * @param buffer result vector buffer, not null
+     * @return the product of matrix and vector.
+     */
+    private void internalTransform(final double[] vector, double[] buffer) {
+        for (int r = 0; r < nbRow; r++) {
+            double s = 0;
+            for (int c = 0; c < nbCol; c++) {
+                s += values[r][c] * vector[c];
+            }
+            buffer[r] = s;
+        }
+    }
 }

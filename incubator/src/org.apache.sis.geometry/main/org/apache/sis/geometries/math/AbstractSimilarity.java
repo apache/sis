@@ -74,9 +74,9 @@ public abstract class AbstractSimilarity<T extends AbstractSimilarity<T>> extend
         if (dirty){
             dirty = false;
             //update matrix
-            final Vector<?> translation = getTranslation();
-            final Matrix<?> rotation = getRotation();
-            final Vector<?> scale = getScale();
+            final ReadOnly.Vector<?> translation = getTranslation();
+            final ReadOnly.Matrix<?> rotation = getRotation();
+            final ReadOnly.Vector<?> scale = getScale();
             matrix.setToIdentity();
             matrix.set(rotation);
             matrix.scale(scale.extend(1).toArrayDouble());
@@ -136,58 +136,96 @@ public abstract class AbstractSimilarity<T extends AbstractSimilarity<T>> extend
         return (T) this;
     }
 
+    /**
+     * Decompose a matrix in rotation, scale and translation.
+     * The matrix is expected to be orthogonal of size 3x3 or 4x4.
+     */
     @Override
     public T setFromMatrix(ReadOnly.Matrix<?> matrix) {
-        Matrices.decomposeMatrix(matrix, getRotation(), getScale(), getTranslation());
-        notifyChanged();
-        return (T) this;
+        return update((Matrix<?> rotation, Vector<?> scale, Vector<?> translation) -> {
+            final int dimension = matrix.getNumCol()-1;
+            if (dimension == 2){
+                final double scaleX = Math.sqrt(matrix.get(0,0)*matrix.get(0,0)
+                        + matrix.get(1,0)*matrix.get(1,0));
+                final double scaleY = Math.sqrt(matrix.get(0,1)*matrix.get(0,1)
+                        + matrix.get(1,1)*matrix.get(1,1));
+
+                final double[] invertScale = new double[]{1d/scaleX,1d/scaleY};
+                final Matrix<?> rot = matrix.getRange(0, 1, 0, 1);
+                rot.scale(invertScale);
+
+                rotation.set(rot);
+                scale.set(0,scaleX);
+                scale.set(1,scaleY);
+                translation.set(0, matrix.get(0,2));
+                translation.set(1, matrix.get(1,2));
+            } else if (dimension == 3){
+                final double scaleX = Math.sqrt(matrix.get(0,0)*matrix.get(0,0)
+                        + matrix.get(1,0)*matrix.get(1,0)
+                        + matrix.get(2,0)*matrix.get(2,0));
+                final double scaleY = Math.sqrt(matrix.get(0,1)*matrix.get(0,1)
+                        + matrix.get(1,1)*matrix.get(1,1)
+                        + matrix.get(2,1)*matrix.get(2,1));
+                final double scaleZ = Math.sqrt(matrix.get(0,2)*matrix.get(0,2)
+                        + matrix.get(1,2)*matrix.get(1,2)
+                        + matrix.get(2,2)*matrix.get(2,2));
+                final double[] invertScale = new double[]{1d/scaleX,1d/scaleY,1d/scaleZ};
+                final Matrix<?> rot = matrix.getRange(0, 2, 0, 2);
+                rot.scale(invertScale);
+
+                rotation.set(rot);
+                scale.set(0, scaleX);
+                scale.set(1, scaleY);
+                scale.set(2, scaleZ);
+                translation.set(0,matrix.get(0,3));
+                translation.set(1,matrix.get(1,3));
+                translation.set(2,matrix.get(2,3));
+
+            } else {
+                throw new UnsupportedOperationException("Only works for 2D and 3D for now. TODO");
+            }
+            return ALL_UPDATED;
+        });
     }
 
     @Override
     public T setToTranslation(double[] trs){
-        boolean change = false;
-        final Matrix<?> rotation = getRotation();
-        if (!rotation.isIdentity()){
-            change = true;
-            rotation.setToIdentity();
-        }
-        final Vector<?> scale = getScale();
-        if (!scale.isAll(1.0)){
-            change = true;
-            scale.setAll(1.0);
-        }
-        final Vector<?> translation = getTranslation();
-        if (!Arrays.equals(trs, translation.toArrayDouble())){
-            change = true;
-            translation.set(trs);
-        }
-
-        if (change) notifyChanged();
-
-        return (T) this;
+        return update((Matrix<?> rotation, Vector<?> scale, Vector<?> translation) -> {
+            boolean change = false;
+            if (!rotation.isIdentity()){
+                change = true;
+                rotation.setToIdentity();
+            }
+            if (!scale.isAll(1.0)){
+                change = true;
+                scale.setAll(1.0);
+            }
+            if (!Arrays.equals(trs, translation.toArrayDouble())){
+                change = true;
+                translation.set(trs);
+            }
+            return change ? ALL_UPDATED : 0;
+        });
     }
 
     @Override
     public T setToIdentity(){
-        boolean change = false;
-        final Matrix<?> rotation = getRotation();
-        if (!rotation.isIdentity()){
-            change = true;
-            rotation.setToIdentity();
-        }
-        final Vector<?> scale = getScale();
-        if (!scale.isAll(1.0)){
-            change = true;
-            scale.setAll(1.0);
-        }
-        final Vector<?> translation = getTranslation();
-        if (!translation.isAll(0.0)){
-            change = true;
-            translation.setAll(0.0);
-        }
-
-        if (change) notifyChanged();
-        return (T) this;
+        return update((Matrix<?> rotation, Vector<?> scale, Vector<?> translation) -> {
+            boolean change = false;
+            if (!rotation.isIdentity()){
+                change = true;
+                rotation.setToIdentity();
+            }
+            if (!scale.isAll(1.0)){
+                change = true;
+                scale.setAll(1.0);
+            }
+            if (!translation.isAll(0.0)){
+                change = true;
+                translation.setAll(0.0);
+            }
+            return change ? ALL_UPDATED : 0;
+        });
     }
 
     @Override
@@ -251,10 +289,8 @@ public abstract class AbstractSimilarity<T extends AbstractSimilarity<T>> extend
     }
 
     @Override
-    public Matrix<?> toMatrix(Matrix<?> buffer) {
-        if (buffer == null) return toMatrix();
-        buffer.set(viewMatrix());
-        return buffer;
+    public Affine<?> toAffine() {
+        return viewAffine().copy();
     }
 
     protected PropertyChangeSupport getEventManager() {
@@ -280,8 +316,7 @@ public abstract class AbstractSimilarity<T extends AbstractSimilarity<T>> extend
      * Flag to indicate the transform parameters has changed.
      * This is used to recalculate the general matrix when needed.
      */
-    @Override
-    public void notifyChanged(){
+    protected void notifyChanged(){
         dirty = true;
         inverseDirty = true;
         affineDirty = true;

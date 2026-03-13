@@ -294,10 +294,44 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
 
     /**
      * Convert to euler angles.
+     * Source :
+     * http://www.soi.city.ac.uk/~sbbh653/publications/euler.pdf
+     * http://jeux.developpez.com/faq/math/?page=transformations#Q37
+     *
      * @return euler angle in radians (heading/yaw , elevation/pitch , bank/roll)
      */
-    public Vector<?> toEuler(){
-        return new VectorND.Double(Matrices.toEuler(toArray2Double(ROW_ORDER), null));
+    public Vector3D.Double toEuler(){
+
+        double angle_x;
+        double angle_y;
+        double angle_z;
+
+        if (m20 != -1 && m20 != +1){
+            //first possible solution
+            angle_y = -Math.asin(m20);
+            double cosy1 = Math.cos(angle_y);
+            angle_x = Math.atan2(m21/cosy1, m22/cosy1);
+            angle_z = Math.atan2(m10/cosy1, m00/cosy1);
+
+            //second possible solution
+            //angle_y = Angles.PI - y1;
+            //double cosy2 = Math.cos(angle_y);
+            //angle_x = Math.atan2(mat[2][1]/cosy2, mat[2][2]/cosy2);
+            //angle_z = Math.atan2(mat[1][0]/cosy2, mat[0][0]/cosy2);
+
+        } else {
+            // Gimbal lock
+            angle_z = 0;
+            if (m20 == -1){
+                angle_y = Math.PI / 2.0;
+                angle_x = angle_z + Math.atan2(m01, m02);
+            } else {
+                angle_y = -Math.PI / 2.0;
+                angle_x = -angle_z + Math.atan2(-m01, -m02);
+            }
+        }
+
+        return new Vector3D.Double(angle_z, angle_y, angle_x);
     }
 
     /**
