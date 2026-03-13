@@ -149,13 +149,16 @@ final class FromImageIO extends Image {
     protected Reader computeByteRanges(final ImageResource.Coverage.ReadContext context) throws DataStoreException {
         locator.resolve(0, -1, context);
         return (final ChannelDataInput input) -> {
+            final int tx = Math.toIntExact(context.subTileX);
+            final int ty = Math.toIntExact(context.subTileY);
             final ImageReader reader = context.getReader(provider);
             setReaderInput(reader, input, context);
             final BufferedImage image;
             try {
-                image = reader.readTile(IMAGE_INDEX,
-                        Math.toIntExact(context.subTileX),
-                        Math.toIntExact(context.subTileY));
+                if (reader.canReadRaster()) {
+                    return reader.readTileRaster(IMAGE_INDEX, tx, ty);
+                }
+                image = reader.readTile(IMAGE_INDEX, tx, ty);
             } finally {
                 reader.setInput(null);
             }

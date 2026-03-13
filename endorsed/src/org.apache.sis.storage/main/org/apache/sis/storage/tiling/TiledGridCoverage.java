@@ -17,7 +17,6 @@
 package org.apache.sis.storage.tiling;
 
 import java.util.Map;
-import java.util.Locale;
 import java.util.Optional;
 import java.nio.file.Path;
 import java.awt.Point;
@@ -43,6 +42,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.image.internal.shared.DeferredProperty;
 import org.apache.sis.image.internal.shared.TiledImage;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.WeakValueHashMap;
@@ -193,6 +193,15 @@ public abstract class TiledGridCoverage extends GridCoverage {
     private final long[] subsampling, subsamplingOffsets;
 
     /**
+     * Zero-based index of the pyramid level of this grid coverage.
+     * This is not used directly by this class, but this information is
+     * stored for providing it to {@link TileReadEvent.Context#pyramidLevel}.
+     *
+     * @see TileReadEvent#getPyramidLevel()
+     */
+    private final int pyramidLevel;
+
+    /**
      * Indices of {@link TiledGridCoverageResource} bands which have been retained
      * for inclusion in this {@code TiledGridCoverage}, in strictly increasing order.
      * An included band is stored in memory but not necessarily visible to users,
@@ -271,9 +280,16 @@ public abstract class TiledGridCoverage extends GridCoverage {
     final boolean deferredTileReading;
 
     /**
-     * The locale for warnings or error messages, or {@code null} for the default locale.
+     * The listeners to notify for tile read events.
+     * This is the value of {@link TiledGridCoverageResource#listeners} for the resource at level 0.
      */
-    private final Locale locale;
+    private final StoreListeners listeners;
+
+    /**
+     * A flag for avoiding to report the same warning many times when an error blocks us from notifying
+     * listeners about tile read events.
+     */
+    private volatile boolean cannotNotifyListeners;
 
     /**
      * Creates a new tiled grid coverage. This constructor does not load any tile.
@@ -285,9 +301,10 @@ public abstract class TiledGridCoverage extends GridCoverage {
      */
     protected TiledGridCoverage(final TiledGridCoverageResource.Subset subset) {
         super(subset.domain, subset.ranges);
-        locale              = subset.getLocale();
+        listeners           = subset.listenersOfLevel0;
         xDimension          = subset.xDimension();
         yDimension          = subset.yDimension();
+        pyramidLevel        = subset.pyramidLevel();
         deferredTileReading = subset.deferredTileReading();     // May be shorter than other arrays or the grid geometry.
         readExtent          = subset.readExtent;
         subsampling         = subset.subsampling;
@@ -333,7 +350,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * Returns the localized resources for error messages.
      */
     private Errors errors() {
-        return Errors.forLocale(locale);
+        return Errors.forLocale(listeners.getLocale());
     };
 
     /**
@@ -591,8 +608,16 @@ public abstract class TiledGridCoverage extends GridCoverage {
              * Prepare an iterator over all tiles to read, together with the following properties:
              *    - Two-dimensional conversion from pixel coordinates to "real world" coordinates.
              */
-            final var iterator = new TileIterator(tileLower, tileUpper, offsetAOI, dimension, xDimension, yDimension);
-            final Map<String,Object> properties = DeferredProperty.forGridGeometry(gridGeometry, selectedDimensions);
+            TileReadEvent.Context eventContext = null;
+            if (listeners.hasListeners(TileReadEvent.class) && !cannotNotifyListeners) try {
+                eventContext = new TileReadEvent.Context(pyramidLevel, gridGeometry, sliceExtent, xDimension, yDimension);
+            } catch (RuntimeException e) {
+                cannotNotifyListeners = true;
+                listeners.warning(e);
+                // Leave `eventContext` to null: no event will be fired.
+            }
+            final var iterator = new TileIterator(tileLower, tileUpper, offsetAOI, dimension, xDimension, yDimension, eventContext);
+            final Map<String, Object> properties = DeferredProperty.forGridGeometry(gridGeometry, selectedDimensions);
             if (deferredTileReading) {
                 image = new TiledDeferredImage(imageSize, tileLower, properties, iterator);
             } else {
@@ -608,7 +633,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
         } catch (DisjointExtentException | CannotEvaluateException e) {
             throw e;
         } catch (Exception e) {     // Too many exception types for listing them all.
-            throw new CannotEvaluateException(Resources.forLocale(locale).getString(
+            throw new CannotEvaluateException(Resources.forLocale(listeners.getLocale()).getString(
                     Resources.Keys.CanNotRenderImage_1, getIdentifier().toFullyQualifiedName()), e);
         }
         return image;
@@ -672,13 +697,36 @@ public abstract class TiledGridCoverage extends GridCoverage {
         final int[] uncroppedTileLocation;
 
         /**
-         * Creates a new area of interest.
+         * The context of all {@link TileReadEvent}s, or {@code null} if this type of event will never be fired.
+         * The context contains information needed for computing the outline of the tile that has been read.
          */
-        AOI(final int xDimension, final int yDimension, final int[] tmcInSubset, final int[] uncroppedTileLocation) {
+        final TileReadEvent.Context eventContext;
+
+        /**
+         * Whether to fire a {@code TileReadEvent}. This is {@code true} if {@link #eventContext} is non-null
+         * and no event has been fired yet for the current tile. This is reset to {@code false} after an event
+         * has been sent for avoiding to sent the event twice for the same tile.
+         */
+        boolean fireTileReadEvent;
+
+        /**
+         * Creates a new area of interest.
+         *
+         * @param xDimension   the dimension of the <var>x</var> axis in rendered images.
+         * @param yDimension   the dimension of the <var>y</var> axis in rendered images.
+         * @param tmcInSubset  Tile Matrix Coordinates (TMC) relative to the enclosing {@link TiledGridCoverage}.
+         * @param uncroppedTileLocation  coordinates (relative to the cropped tile) of the upper-left corner of the uncropped tile.
+         * @param eventContext the context of all {@link TileReadEvent}s, or {@code null} if this type of event will never be fired.
+         */
+        AOI(final int xDimension, final int yDimension, final int[] tmcInSubset,
+                final int[] uncroppedTileLocation, final TileReadEvent.Context eventContext)
+        {
             this.xDimension  = xDimension;
             this.yDimension  = yDimension;
             this.tmcInSubset = tmcInSubset;
             this.uncroppedTileLocation = uncroppedTileLocation;
+            this.eventContext = eventContext;
+            fireTileReadEvent = (eventContext != null);
         }
 
         /**
@@ -808,33 +856,46 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * <p>The raster is <em>not</em> filled with {@link #fillValues}.
          * Filling, if needed, should be done by the caller.</p>
          *
+         * <p>If some {@linkplain TiledGridCoverageResource#listeners resource's listeners} have
+         * registered an interest for tile read events, and if these listeners have not yet been notified
+         * about the reading of the specified tile, then a {@link TileReadEvent} is sent to these listeners.
+         * This policy is based on the fact that this method is typically invoked before a tile is read.</p>
+         *
          * @return a newly created, initially empty raster.
          */
         public WritableRaster createRaster() {
             final int x = getTileOrigin(xDimension);
             final int y = getTileOrigin(yDimension);
-            return Raster.createWritableRaster(getCoverage().model, new Point(x, y));
+            final WritableRaster tile = Raster.createWritableRaster(getCoverage().model, new Point(x, y));
+            if (fireTileReadEvent) {
+                fireTileReadEvent(tile.getBounds());
+            }
+            return tile;
         }
 
         /**
          * Returns the given raster relocated at the current <abbr>AOI</abbr> position.
          * This method does not need to be invoked for tiles created by {@link #createRaster()},
-         * but may need to be invoked for tiles created by a method external to this class.
+         * but may need to be invoked for tiles created by a method external to this class,
+         * such as {@link javax.imageio.ImageReader#readTileRaster(int, int, int)}.
          * If the given raster is already at the current <abbr>AOI</abbr> position,
          * then this method returns that raster directly.
          *
-         * @param  raster  the raster to move at the current <abbr>AOI</abbr> position.
+         * @param  tile  the raster to move at the current <abbr>AOI</abbr> position.
          * @return the relocated raster (may be {@code raster} itself).
          *
          * @see Raster#createTranslatedChild(int, int)
          */
-        public Raster moveRaster(final Raster raster) {
+        public Raster moveRaster(Raster tile) {
             final int x = getTileOrigin(xDimension);
             final int y = getTileOrigin(yDimension);
-            if (raster.getMinX() == x && raster.getMinY() == y) {
-                return raster;
+            if (tile.getMinX() != x || tile.getMinY() != y) {
+                tile = tile.createTranslatedChild(x, y);
             }
-            return raster.createTranslatedChild(x, y);
+            if (fireTileReadEvent) {
+                fireTileReadEvent(tile.getBounds());
+            }
+            return tile;
         }
 
         /**
@@ -997,6 +1058,19 @@ public abstract class TiledGridCoverage extends GridCoverage {
             }
             return true;
         }
+
+        /**
+         * Notifies listeners that a tile is about to be read. This method shall be invoked only if
+         * {@link #fireTileReadEvent} is true, otherwise a {@link NullPointerException} may occur.
+         *
+         * @param  bounds  bounds of the raster which is about to be read, in pixel coordinates.
+         * @throws NullPointerException if {@link #eventContext} is null.
+         */
+        final void fireTileReadEvent(final Rectangle bounds) {
+            fireTileReadEvent = false;
+            final StoreListeners listeners = getCoverage().listeners;
+            listeners.fire(TileReadEvent.class, new TileReadEvent(listeners.getSource(), eventContext, bounds));
+        }
     }
 
 
@@ -1053,9 +1127,14 @@ public abstract class TiledGridCoverage extends GridCoverage {
                      final int[] offsetAOI,
                      final int dimension,
                      final int xDimension,
-                     final int yDimension)
+                     final int yDimension,
+                     final TileReadEvent.Context eventContext)
         {
-            super(xDimension, yDimension, tileLower.clone(), uncroppedTileLocation(tileLower));
+            super(xDimension,
+                  yDimension,
+                  tileLower.clone(),
+                  uncroppedTileLocation(tileLower),
+                  eventContext);
             this.tileLower = tileLower;
             this.tileUpper = tileUpper;
             this.offsetAOI = offsetAOI;
@@ -1114,7 +1193,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
             for (int i = Math.min(endTile.length, upper.length); --i >= 0;) {
                 upper[i] = Math.max(lower[i], Math.min(upper[i], endTile[i]));
             }
-            return new TileIterator(lower, upper, offset, offset.length, xDimension, yDimension);
+            return new TileIterator(lower, upper, offset, offset.length, xDimension, yDimension, eventContext);
         }
 
         /**
@@ -1275,6 +1354,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
          */
         public boolean next() {
             if (++indexInResultArray >= tileCountInQuery) {
+                fireTileReadEvent = false;
                 return false;
             }
             /*
@@ -1299,6 +1379,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 tmcInSubset   [i]  = tileLower[i];
                 tileOffsetFull[i]  = multiplyExact(getSubsampling(i), offsetAOI[i]);
             }
+            fireTileReadEvent = (eventContext != null);
             return true;
         }
     }
@@ -1329,7 +1410,11 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * @param iterator  the iterator for which to create a snapshot of its current position.
          */
         public Snapshot(final AOI iterator) {
-            super(iterator.xDimension, iterator.yDimension, iterator.tmcInSubset.clone(), iterator.uncroppedTileLocation);
+            super(iterator.xDimension,
+                  iterator.yDimension,
+                  iterator.tmcInSubset.clone(),
+                  iterator.uncroppedTileLocation,
+                  iterator.eventContext);
             coverage           = iterator.getCoverage();
             indexInResultArray = iterator.indexInResultArray;
             indexInTileVector  = iterator.indexInTileVector;
@@ -1356,6 +1441,21 @@ public abstract class TiledGridCoverage extends GridCoverage {
             if (dimension == xDimension) return originX;
             if (dimension == yDimension) return originY;
             throw new AssertionError(dimension);
+        }
+
+        /**
+         * Sends to the listeners a notification that the reading of the tile identified by this snapshot started.
+         * If this event has not already been sent for this snapshot, this method creates a {@link TileReadEvent}
+         * and gives this event to the {@linkplain TiledGridCoverageResource#listeners resource's listeners}.
+         *
+         * <p>This event is sent only once per {@code Snapshot} instance.
+         * If this method is invoked more than once, the extra calls are no-operation.</p>
+         */
+        public void fireTileReadStarted() {
+            if (fireTileReadEvent) {
+                final SampleModel model = coverage.model;
+                fireTileReadEvent(new Rectangle(originX, originY, model.getWidth(), model.getHeight()));
+            }
         }
     }
 

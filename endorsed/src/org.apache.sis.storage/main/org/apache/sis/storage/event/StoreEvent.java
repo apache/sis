@@ -66,7 +66,7 @@ public abstract class StoreEvent extends EventObject implements Localized {
 
     /**
      * Returns the resource where the event occurred. It is not necessarily the {@linkplain Resource#addListener
-     * resource in which listeners have been registered}; it may be one of the resource children.
+     * resource in which listeners have been registered}. It may be one of the resource children.
      *
      * @return the resource where the event occurred.
      */

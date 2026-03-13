@@ -131,7 +131,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   1.1
  */
 public abstract class MapCanvas extends PlanarCanvas {
@@ -723,6 +723,7 @@ public abstract class MapCanvas extends PlanarCanvas {
          * Creates and registers a new handler for showing a contextual menu in the enclosing canvas.
          * It is caller responsibility to ensure that this method is invoked only once.
          */
+        @SuppressWarnings("this-escape")
         MenuHandler(final ContextMenu menu) {
             super(getDisplayCRS());
             this.menu = menu;
@@ -763,6 +764,7 @@ public abstract class MapCanvas extends PlanarCanvas {
          * Invoked when user selected a projection centered on mouse position. Those CRS are generated on-the-fly
          * and are generally not on the list of CRS managed by {@link RecentReferenceSystems}.
          */
+        @SuppressWarnings("UseSpecificCatch")
         final void createProjectedCRS(final PositionableProjection projection) {
             try {
                 DirectPosition2D center = new DirectPosition2D();
@@ -809,7 +811,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @param  anchor    the point to keep at fixed display coordinates, or {@code null} for default value.
      * @param  property  the property to reset if the operation fails, or {@code null} if none.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "UseSpecificCatch"})
     private void setObjectiveCRS(final CoordinateReferenceSystem crs, DirectPosition anchor,
                                  final ObservableValue<? extends ReferenceSystem> property)
     {
@@ -1016,7 +1018,7 @@ public abstract class MapCanvas extends PlanarCanvas {
 
     /**
      * Returns {@link #transform} as a Java2D affine transform. This is the change to append to
-     * {@link #objectiveToDisplay} for getting the transform that user currently see on screen.
+     * {@link #objectiveToDisplay} for getting the transform that user currently sees on screen.
      * This is a temporary transform, for immediate feedback to user before the map is re-rendered.
      *
      * @param modifiable  whether the returned transform should be modifiable.
@@ -1370,6 +1372,15 @@ public abstract class MapCanvas extends PlanarCanvas {
         final Point2D p = changeInProgress.transform(xPanStart, yPanStart);
         xPanStart = p.getX();
         yPanStart = p.getY();
+        Affine copyOfChanges = null;
+        for (final Node child : floatingPane.getChildren()) {
+            if (needsPositionUpdateAfterRepaint(child)) {
+                if (copyOfChanges == null) {
+                    copyOfChanges = new Affine(changeInProgress);
+                }
+                child.getTransforms().add(0, copyOfChanges);
+            }
+        }
         try {
             changeInProgress.invert();
             transform.append(changeInProgress);
@@ -1406,6 +1417,15 @@ public abstract class MapCanvas extends PlanarCanvas {
             // `runAfterRendering(…)` is the documented method providing this feature.
             unexpectedException("runAfterRendering", e);
         }
+    }
+
+    /**
+     * Returns whether the given element of the {@link #floatingPane} children list needs to have its position
+     * updated after a repaint event. If {@code true}, the position is updated with the addition of an affine
+     * transform which contains the zoom changes applied by the repaint event.
+     */
+    boolean needsPositionUpdateAfterRepaint(final Node child) {
+        return true;
     }
 
     /**

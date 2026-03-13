@@ -18,7 +18,6 @@ package org.apache.sis.storage.tiling;
 
 import java.util.List;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Collection;
 import java.util.Spliterator;
@@ -52,6 +51,7 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.RasterLoadingStrategy;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
@@ -160,6 +160,15 @@ public abstract class TiledGridCoverageResource extends AbstractGridCoverageReso
      * @see #getTileMatrixSets()
      */
     private Collection<TileMatrixSet> tileMatrixSets;
+
+    /**
+     * Zero-based index of the pyramid level of this grid coverage resource.
+     * This is not used directly by this class, but this information is stored
+     * for providing it to {@link TileReadEvent.Context#pyramidLevel}.
+     *
+     * @see TileReadEvent#getPyramidLevel()
+     */
+    private int pyramidLevel;
 
     /**
      * The dimension of the grid which is mapped to the <var>x</var> axis (column indexes) in rendered images.
@@ -602,6 +611,11 @@ check:  if (dataType.isInteger()) {
         final WeakValueHashMap<CacheKey, Raster> cache;
 
         /**
+         * The listeners of the resource at level 0.
+         */
+        StoreListeners listenersOfLevel0;
+
+        /**
          * Creates parameters for the given domain and range.
          *
          * @param  domain  the domain argument specified by user in a call to {@code GridCoverageResource.read(…)}.
@@ -741,6 +755,7 @@ check:  if (dataType.isInteger()) {
              * If they read only sub-regions or apply subsampling, then they will need their own cache.
              */
             cache = sharedCache ? rasters : new WeakValueHashMap<>(CacheKey.class);
+            listenersOfLevel0 = listeners;
         }
 
         /**
@@ -817,11 +832,12 @@ check:  if (dataType.isInteger()) {
         }
 
         /**
-         * Returns the locale for warnings and error messages.
-         * This is often {@code null}, which means to use the default locale.
+         * Returns the zero-based index of the pyramid level of this grid coverage resource.
+         *
+         * @see TileReadEvent#getPyramidLevel()
          */
-        final Locale getLocale() {
-            return listeners.getLocale();
+        final int pyramidLevel() {
+            return pyramidLevel;
         }
     }
 
@@ -874,11 +890,11 @@ check:  if (dataType.isInteger()) {
              */
             final Pyramid pyramid = choosePyramid(domain, ranges);
             if (pyramid == null || (bestFit = pyramid.forPyramidLevel(0)) == null) {
-                return readAtThisPyramidLevel(domain, ranges);
+                return readAtThisPyramidLevel(domain, ranges, null);
             }
+            int level = 0;
             final double[] request = bestFit.convertResolutionOf(domain);
             if (request != null) {
-                int level = 0;
                 TiledGridCoverageResource c;
                 while ((c = pyramid.forPyramidLevel(level)) != null) {
                     final double[] resolution = c.getGridGeometry().getResolution(true);
@@ -889,14 +905,15 @@ check:  if (dataType.isInteger()) {
                 }
             }
             if (bestFit == this) {
-                return readAtThisPyramidLevel(domain, ranges);
+                return readAtThisPyramidLevel(domain, ranges, null);
             }
+            bestFit.pyramidLevel = level;
             bestFit.xDimension = xDimension;
             bestFit.yDimension = yDimension;
             bestFit.loadingStrategy = loadingStrategy;
         }
         // Invoke outside the synchronization lock because the new lock may be different.
-        return bestFit.readAtThisPyramidLevel(domain, ranges);
+        return bestFit.readAtThisPyramidLevel(domain, ranges, listeners);
     }
 
     /**
@@ -905,10 +922,13 @@ check:  if (dataType.isInteger()) {
      *
      * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
      * @param  ranges  0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
+     * @param  listenersOfLevel0  listeners of the resource at level 0, can be {@code null} if that resource is {@code this}.
      * @return the grid coverage for the specified domain and ranges.
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
      */
-    private GridCoverage readAtThisPyramidLevel(final GridGeometry domain, final int... ranges) throws DataStoreException {
+    private GridCoverage readAtThisPyramidLevel(final GridGeometry domain, final int[] ranges, final StoreListeners listenersOfLevel0)
+            throws DataStoreException
+    {
         final TiledGridCoverage coverage;
         final GridCoverage loaded;
         final boolean preload;
@@ -918,7 +938,11 @@ check:  if (dataType.isInteger()) {
             preload = (loadingStrategy == null || loadingStrategy == RasterLoadingStrategy.AT_READ_TIME);
             startTime = preload ? System.nanoTime() : 0;
             try {
-                coverage = read(new Subset(domain, ranges));
+                final var subset = new Subset(domain, ranges);
+                if (listenersOfLevel0 != null) {
+                    subset.listenersOfLevel0 = listenersOfLevel0;
+                }
+                coverage = read(subset);
                 /*
                  * In theory the following condition is redundant with `supportImmediateLoading()`.
                  * We apply it anyway in case the coverage geometry is not what was announced.

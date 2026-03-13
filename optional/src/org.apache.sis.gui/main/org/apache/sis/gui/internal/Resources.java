@@ -387,6 +387,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short SendTo = 31;
 
         /**
+         * Visual indication of tile readings
+         */
+        public static final short ShowTileReadEvents = 77;
+
+        /**
          * Size or position
          */
         public static final short SizeOrPosition = 40;

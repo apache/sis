@@ -117,7 +117,7 @@ abstract class Image {
      * Instances are prepared and returned by {@link #computeByteRanges computeByteRanges(…)}.
      */
     @FunctionalInterface
-    protected interface Reader {
+    interface Reader {
         /**
          * Reads a single tile from a sequence of bytes in the given input.
          * The implementation is responsible for setting the stream position before to start reading bytes.
@@ -127,6 +127,7 @@ abstract class Image {
          *
          * @param  input  a view of the byte sequences as if they were stored in one single large extent.
          * @return tile filled with the pixel values read by this method.
+         * @throws Exception any I/O error, arithmetic error or other kinds of error.
          */
         Raster readTile(ChannelDataInput input) throws Exception;
     }

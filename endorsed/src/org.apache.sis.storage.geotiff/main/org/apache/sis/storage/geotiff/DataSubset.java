@@ -404,6 +404,7 @@ class DataSubset extends TiledGridCoverage {
                     for (int i=0; i<numMissings; i++) {
                         final Tile tile = missings[i];
                         if (tile.getRegionInsideTile(lower, upper, subsampling, false)) {
+                            tile.fireTileReadStarted();
                             origin.x = tile.originX;
                             origin.y = tile.originY;
                             tile.copyTileInfo(tileOffsets,    offsets,    includedBanks, numTiles);

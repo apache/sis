@@ -137,7 +137,7 @@ public abstract class PlanarImage implements RenderedImage {
      *   <li>The {@linkplain GridGeometry#getDimension() number of grid dimensions} is always 2.</li>
      *   <li>The number of {@linkplain GridGeometry#getCoordinateReferenceSystem() CRS} dimensions is always 2.</li>
      *   <li>The {@linkplain GridGeometry#getExtent() grid extent} is the {@linkplain #getBounds() image bounds}.</li>
-     *   <li>The {@linkplain GridGeometry#getGridToCRS grid to CRS} map pixel coordinates "real world" coordinates
+     *   <li>The {@linkplain GridGeometry#getGridToCRS grid to CRS} map pixel coordinates to "real world" coordinates
      *       (always two-dimensional).</li>
      * </ul>
      *

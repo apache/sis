@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Locale;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
@@ -129,12 +130,18 @@ final class CoverageControls extends ViewAndControls {
             categoryTable = styling.createCategoryTable(resources, vocabulary);
             VBox.setVgrow(categoryTable, Priority.ALWAYS);
             /*
+             * Whether to show a visual indication of which tiles are read.
+             */
+            final var showTileReads = new CheckBox(resources.getString(Resources.Keys.ShowTileReadEvents));
+            showTileReads.selectedProperty().addListener((p,o,n) -> view.showTileReads(n));
+            /*
              * All sections put together.
              */
             displayPane = new VBox(
                     labelOfGroup(vocabulary, Vocabulary.Keys.ReferenceSystem, crsControl,    true),  crsControl,
                     labelOfGroup(vocabulary, Vocabulary.Keys.Values,          valuesControl, false), valuesControl,
-                    labelOfGroup(vocabulary, Vocabulary.Keys.Categories,      categoryTable, false), categoryTable);
+                    labelOfGroup(vocabulary, Vocabulary.Keys.Categories,      categoryTable, false), categoryTable,
+                    showTileReads);
         }
         /*
          * "Isolines" section with the following controls:

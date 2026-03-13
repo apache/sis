@@ -68,7 +68,7 @@ public final class BackgroundThreads extends AtomicInteger implements ThreadFact
      * The executor for background tasks. This is actually an {@link ExecutorService} instance,
      * but only the {@link Executor} method should be used according JavaFX documentation.
      */
-    private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool(new BackgroundThreads());
+    public static final ExecutorService EXECUTOR = Executors.newCachedThreadPool(new BackgroundThreads());
 
     /**
      * For the singleton {@link #EXECUTOR}.

@@ -20,6 +20,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.util.Optional;
+import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Path;
@@ -34,6 +35,7 @@ import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.collections.ObservableList;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.portrayal.TransformChangeEvent;
@@ -57,7 +59,7 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  * All events should be processed in the JavaFX thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   1.3
  */
 public class GestureFollower extends CanvasFollower implements EventHandler<MouseEvent> {
@@ -146,6 +148,8 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
      */
     private void followCursor(final boolean enabled) {
         final Pane pane = ((MapCanvas) source).floatingPane;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        Path cursor = this.cursor;
         if (enabled) {
             if (cursor == null) {
                 cursor = new Path(CURSOR_SHAPE);
@@ -156,8 +160,9 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
                 cursor.setManaged(false);
                 cursor.setSmooth(false);
                 cursor.setCache(true);
+                this.cursor = cursor;
             }
-            (((MapCanvas) target).floatingPane).getChildren().add(cursor);
+            getChildrenOfTargetPane().add(cursor);
             pane.addEventHandler(MouseEvent.MOUSE_ENTERED, this);
             pane.addEventHandler(MouseEvent.MOUSE_EXITED,  this);
             pane.addEventHandler(MouseEvent.MOUSE_MOVED,   this);
@@ -170,9 +175,16 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
             pane.removeEventHandler(MouseEvent.MOUSE_MOVED,   this);
             pane.removeEventHandler(MouseEvent.MOUSE_DRAGGED, this);
             if (cursor != null) {
-                (((MapCanvas) target).floatingPane).getChildren().remove(cursor);
+                getChildrenOfTargetPane().remove(cursor);
             }
         }
+    }
+
+    /**
+     * Returns the list of children in the target pane where the cursor is shown.
+     */
+    private ObservableList<Node> getChildrenOfTargetPane() {
+        return (((MapCanvas) target).floatingPane).getChildren();
     }
 
     /**
