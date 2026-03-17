@@ -71,6 +71,27 @@ public final class Similarity3D extends AbstractSimilarity<Similarity3D> {
     }
 
     @Override
+    public Similarity3D setRotation(ReadOnly.Matrix<?> rotation) {
+        this.rotation.set(rotation);
+        notifyChanged();
+        return this;
+    }
+
+    @Override
+    public Similarity3D setScale(ReadOnly.Tuple<?> scale) {
+        this.scale.set(scale);
+        notifyChanged();
+        return this;
+    }
+
+    @Override
+    public Similarity3D setTranslation(ReadOnly.Tuple<?> translation) {
+        this.translation.set(translation);
+        notifyChanged();
+        return this;
+    }
+
+    @Override
     public Similarity3D multiply(ReadOnly.Similarity<?> other) {
         final Vector<?> resTrans = other.getTranslation().copy()
                 .transform(rotation)

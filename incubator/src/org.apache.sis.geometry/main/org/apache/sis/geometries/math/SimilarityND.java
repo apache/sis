@@ -137,6 +137,27 @@ public class SimilarityND extends AbstractSimilarity<SimilarityND> {
     }
 
     @Override
+    public SimilarityND setRotation(ReadOnly.Matrix<?> rotation) {
+        this.rotation.set(rotation);
+        notifyChanged();
+        return this;
+    }
+
+    @Override
+    public SimilarityND setScale(ReadOnly.Tuple<?> scale) {
+        this.scale.set(scale);
+        notifyChanged();
+        return this;
+    }
+
+    @Override
+    public SimilarityND setTranslation(ReadOnly.Tuple<?> translation) {
+        this.translation.set(translation);
+        notifyChanged();
+        return this;
+    }
+
+    @Override
     public SimilarityND multiply(ReadOnly.Similarity<?> other) {
         /*
         b00 = A.r00*A.s0 * B.r00*B.s0 + A.r01*A.s0 * B.r10*B.s1 + A.r02*A.s0 * B.r20*B.s2;

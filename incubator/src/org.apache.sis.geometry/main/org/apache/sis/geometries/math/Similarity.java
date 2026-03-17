@@ -110,6 +110,33 @@ public interface Similarity<T extends Similarity<T>> extends ReadOnly.Similarity
     T set(ReadOnly.Similarity<?> trs);
 
     /**
+     * Update the rotation.
+     * This method will send a change event if values have changed.
+     *
+     * @param rotation new rotation
+     * @return this instance
+     */
+    T setRotation(ReadOnly.Matrix<?> rotation);
+
+    /**
+     * Update the scale.
+     * This method will send a change event if values have changed.
+     *
+     * @param scale new scale
+     * @return this instance
+     */
+    T setScale(ReadOnly.Tuple<?> scale);
+
+    /**
+     * Update the translation.
+     * This method will send a change event if values have changed.
+     *
+     * @param translation new translation
+     * @return this instance
+     */
+    T setTranslation(ReadOnly.Tuple<?> translation);
+
+    /**
      * Set transform from given matrix.
      * Matrix must be orthogonal of size dimension+1.
      * This method will send a change event if values have changed.
