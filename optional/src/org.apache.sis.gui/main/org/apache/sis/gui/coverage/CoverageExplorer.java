@@ -93,12 +93,12 @@ public class CoverageExplorer extends Widget {
         /**
          * Shows the coverage visual as an image. This view uses {@link CoverageCanvas}.
          */
-        IMAGE(FontGIS.Code.WORLD_MAP_ALT, "\uD83D\uDDFA\uFE0F", Resources.Keys.TabularData),    // 🗺 — World map.
+        IMAGE(FontGIS.Code.WORLD_MAP_ALT, "\uD83D\uDDFA\uFE0F", Resources.Keys.Visualize),    // 🗺 — World map.
 
         /**
          * Shows the coverage numerical value in a table. This view uses {@link GridView}.
          */
-        TABLE(FontGIS.Code.GRID, "\uD83D\uDD22\uFE0F", Resources.Keys.Visualize);   // 🔢 — Input symbol for numbers.
+        TABLE(FontGIS.Code.GRID, "\uD83D\uDD22\uFE0F", Resources.Keys.TabularData);   // 🔢 — Input symbol for numbers.
 
         /**
          * Number of enumeration values.
@@ -208,7 +208,7 @@ public class CoverageExplorer extends Widget {
      * @see #getDataView(View)
      * @see #getControls(View)
      */
-    private final EnumMap<View,ViewAndControls> views;
+    private final EnumMap<View, ViewAndControls> views;
 
     /**
      * The control that put everything together, created when first requested.

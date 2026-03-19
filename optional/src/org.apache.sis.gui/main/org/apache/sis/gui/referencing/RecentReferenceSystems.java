@@ -323,7 +323,7 @@ public class RecentReferenceSystems {
      * @since 1.3
      */
     public void setGridReferencing(final boolean replaceByAuthoritativeDefinition,
-            final Map<String,GridGeometry> geometries)
+                                   final Map<String, GridGeometry> geometries)
     {
         /*
          * Fetch or compute information needed, but without modifying the state of this object yet.
