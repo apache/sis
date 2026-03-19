@@ -212,10 +212,14 @@ public class TileMatrixSetFormat extends CompoundFormat<TileMatrixSet> {
      *   <caption>Tile Matrix Set (<abbr>TMS</abbr>) formatted properties</caption>
      *   <tr><th>Key</th>                  <th>Value type</th>                           <th>Description</th></tr>
      *   <tr><td>{@code "identifier"}</td> <td>{@link String}</td>                       <td>Identifier of the <abbr>TMS</abbr>.</td></tr>
-     *   <tr><td>{@code "crsName"}</td>    <td>{@link String}</td>                       <td>Name of the <abbr>CRS</abbr>.</td></tr>
+     *   <tr><td>{@code "referencing"}</td><td>{@link String}</td>                       <td>Name of the <abbr>CRS</abbr>, or reason why not available.</td></tr>
      *   <tr><td>{@code "crs"}</td>        <td>{@link CoordinateReferenceSystem}</td>    <td>The <abbr>CRS</abbr>.</td></tr>
      *   <tr><td>{@code "bbox"}</td>       <td>{@link DefaultGeographicBoundingBox}</td> <td>Bounding box of the <abbr>TMS</abbr>.</td></tr>
      * </table>
+     *
+     * <p>If the {@code "crs"} property is non-null, then the {@code "referencing"} property is the <abbr>CRS</abbr> name.
+     * Conversely, if the {@code "crs"} property is null, then the {@code "referencing"} property is a message saying that
+     * the <abbr>CRS</abbr> was not available or the reason why it was not available.</p>
      *
      * The returned properties can be completed by a call to {@link #formatTable(Iterable, Map)}.
      *
@@ -226,9 +230,13 @@ public class TileMatrixSetFormat extends CompoundFormat<TileMatrixSet> {
         final var addTo = new HashMap<String, Object>();
         addTo.put("identifier", matrices.getIdentifier());
         try {
-            final CoordinateReferenceSystem crs = matrices.getCoordinateReferenceSystem();
-            addTo.put("crsName", IdentifiedObjects.getDisplayName(crs, getLocale()));
-            addTo.put("crs", crs);
+            try {
+                final CoordinateReferenceSystem crs = matrices.getCoordinateReferenceSystem();
+                addTo.put("referencing", IdentifiedObjects.getDisplayName(crs, getLocale()));
+                addTo.put("crs", crs);
+            } catch (IncompleteGridGeometryException e) {
+                addTo.put("referencing", e.getLocalizedMessage());
+            }
             matrices.getEnvelope().ifPresent((envelope) -> {
                 try {
                     final var bbox = new DefaultGeographicBoundingBox();
@@ -390,10 +398,13 @@ public class TileMatrixSetFormat extends CompoundFormat<TileMatrixSet> {
                       .append(vocabulary.getString(Vocabulary.Keys.Quoted_1, value))
                       .append(System.lineSeparator());
         }
-        value = properties.get("crsName");
+        value = properties.get("referencing");
         if (value != null) {
-            vocabulary.appendLabel(Vocabulary.Keys.ReferenceSystem, toAppendTo);
-            toAppendTo.append(' ').append(value.toString()).append(System.lineSeparator());
+            if (properties.get("crs") != null) {
+                vocabulary.appendLabel(Vocabulary.Keys.ReferenceSystem, toAppendTo);
+                toAppendTo.append(' ');
+            }
+            toAppendTo.append(value.toString()).append(System.lineSeparator());
         }
         value = properties.get("bbox");
         if (value != null) {

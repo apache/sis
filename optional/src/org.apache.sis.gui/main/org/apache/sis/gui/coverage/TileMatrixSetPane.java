@@ -26,6 +26,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
@@ -146,25 +147,25 @@ public class TileMatrixSetPane extends Widget {
         /**
          * Property for the Tile Matrix identifier.
          */
-        final SimpleStringProperty identifier;
+        final StringProperty identifier;
 
         /**
          * Resolution along each <abbr>CRS</abbr> dimension.
          * They are the values to show in the group of {@link #tileResolutionColumns}.
          */
-        final SimpleStringProperty[] resolution;
+        final StringProperty[] resolution;
 
         /**
          * Number of tiles along each grid dimension.
          * They are the values to show in the group {@link #tileCountColumns}.
          */
-        final SimpleStringProperty[] tileCount;
+        final StringProperty[] tileCount;
 
         /**
          * Tile size along each grid dimension.
          * They are the values to show in the group {@link #tileSizeColumns}.
          */
-        final SimpleStringProperty[] tileSize;
+        final StringProperty[] tileSize;
 
         /**
          * Creates a new row for the given properties at the specified row index.
@@ -192,7 +193,7 @@ public class TileMatrixSetPane extends Widget {
          * @return group of columns at the given index.
          */
         @SuppressWarnings("ReturnOfCollectionOrArrayField")
-        final SimpleStringProperty[] group(final int groupIndex) {
+        final StringProperty[] group(final int groupIndex) {
             switch (groupIndex) {
                 case 1: return resolution;
                 case 2: return tileCount;
@@ -450,7 +451,7 @@ public class TileMatrixSetPane extends Widget {
                 /** Invoked in JavaFX thread on success. */
                 @Override protected void succeeded() {
                     final Map<?,?> properties = getValue();
-                    crsName.setText((String) properties.get("crsName"));
+                    crsName.setText((String) properties.get("referencing"));
                     final var identifiers = (String[])   properties.get("identifiers");
                     final var resolutions = (String[][]) properties.get("resolutions");
                     final var tileCounts  = (String[][]) properties.get("tileCounts");
