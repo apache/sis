@@ -276,7 +276,7 @@ public enum NumberType {
      *
      * @see #isInteger()
      * @see #isFractional()
-     * @see #isNumber()
+     * @see #isReal()
      */
     private final byte category;
 
