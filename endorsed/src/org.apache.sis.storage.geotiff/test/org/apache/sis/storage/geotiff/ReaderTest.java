@@ -101,7 +101,8 @@ public class ReaderTest extends TestCase {
             assertTrue(matrices.subMap(matrices.firstKey(), matrices.lastKey()).isEmpty());
 
             final TileMatrix matrix = assertSingleton(matrices.values());
-            assertEquals("untiled:1:TMS:L0", matrix.getIdentifier().toString());
+            assertEquals("untiled:1:TMS:L0", matrix.getIdentifier().toFullyQualifiedName().toString());
+            assertEquals("TMS:L0", matrix.getIdentifier().toString());
             assertEquals(assertSingleton(matrices.keySet()), matrix.getIdentifier());
             assertArrayEquals(resource.getGridGeometry().getResolution(false), matrix.getResolution());
             assertSame(TileStatus.OUTSIDE_EXTENT, matrix.getTileStatus(1, 0));

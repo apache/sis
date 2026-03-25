@@ -163,7 +163,7 @@ final class ImagePyramid extends AbstractMap<GenericName, ImageTileMatrix>
                 upperMatrixIndex = level;
                 return null;
             }
-            GenericName id = Names.createScopedName(identifier, null, provider.identifierOfLevel(level));
+            GenericName id = Names.createScopedName(identifier.tip(), null, provider.identifierOfLevel(level));
             tm = new ImageTileMatrix(id, resource, processor);
         } catch (DataStoreException | TransformException e) {
             throw new BackingStoreException(e);
@@ -187,7 +187,7 @@ final class ImagePyramid extends AbstractMap<GenericName, ImageTileMatrix>
      */
     private int indexOf(final GenericName name, final boolean required) {
         final LocalName tip = name.tip();
-        if (tip.scope().name().equals(identifier)) {
+        if (endsWith(identifier.getParsedNames(), tip.scope().name().toFullyQualifiedName().getParsedNames())) {
             final int level;
             try {
                 level = provider.levelOfIdentifier(tip.toString());
@@ -206,6 +206,24 @@ final class ImagePyramid extends AbstractMap<GenericName, ImageTileMatrix>
             throw new IllegalArgumentException(Errors.forLocale(locale).getString(Errors.Keys.NoSuchValue_1, name));
         }
         return -1;
+    }
+
+    /**
+     * Returns whether the given name ends with the expected values.
+     * If one list is longer than the other, the extra elements are ignored.
+     * The comparison is case-insensitive.
+     *
+     * @param  expected  the expected path.
+     * @param  name      the actual name to test.
+     * @return whether {@code name} ends with {@code expected}.
+     */
+    private static boolean endsWith(final List<? extends LocalName> expected, final List<? extends LocalName> name) {
+        for (int i = expected.size(), j = name.size(); (--i | --j) >= 0;) {
+            if (!expected.get(i).toString().equalsIgnoreCase(name.get(j).toString())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
