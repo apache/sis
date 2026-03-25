@@ -210,8 +210,9 @@ final class ImagePyramid extends AbstractMap<GenericName, ImageTileMatrix>
 
     /**
      * Compares two generic names for order based on the resolution of the associated tile matrix.
-     * If a call to {@code compare(o1, o2)}, the comparator returns a positive number of {@code o1}
-     * is the identifier of a tile matrix having a finer resolution than {@code o2}.
+     * If a call to {@code compare(o1, o2)}, the comparator returns a positive number if {@code o1}
+     * is the identifier of a tile matrix having a finer resolution than {@code o2}
+     * (i.e., is ordered after the coarser tile matrix).
      */
     @Override
     public Comparator<GenericName> comparator() {
@@ -375,7 +376,7 @@ final class ImagePyramid extends AbstractMap<GenericName, ImageTileMatrix>
         final ImageTileMatrix tm;
         synchronized (matrices) {
             final int size = size();     // Implementation of `size()` fills the list.
-            tm = (size != 0) ? matrices.get(size - 1) : null;
+            tm = (size != 0) ? matrices.get(lowerMatrixIndex + (size - 1)) : null;
         }
         if (tm != null) {
             return tm.getIdentifier();

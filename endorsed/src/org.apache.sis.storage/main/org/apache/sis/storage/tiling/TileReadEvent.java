@@ -64,7 +64,7 @@ public class TileReadEvent extends StoreEvent {
 
         /**
          * Zero-based index of the pyramid level of the tile which is read.
-         * The level with finest resolution is the level 0.
+         * The level with coarsest resolution (the overview) is the level 0.
          *
          * @see #getPyramidLevel()
          * @see #getResolution()
@@ -101,7 +101,7 @@ public class TileReadEvent extends StoreEvent {
         /**
          * Creates a new context.
          *
-         * @param  pyramidLevel  index of the pyramid level of the tile which is read, where 0 is the level with finest resolution.
+         * @param  pyramidLevel  index of the pyramid level of the tile which is read, where 0 is the level with coarsest resolution.
          * @param  domain        the grid geometry of the coverage of which a slice is rendered as an image.
          * @param  aoi           the coordinates requested by the user.
          * @param  xDimension    dimension of the grid which is mapped to the <var>x</var> axis in rendered images.
@@ -170,7 +170,7 @@ public class TileReadEvent extends StoreEvent {
      * Returns the zero-based index of the pyramid level of the tile which is read.
      * This is typically the index in the {@linkplain TiledGridCoverageResource#getResolutions() list
      * of resource's resolution} where the values returned by {@link #getResolution()} can be found.
-     * The level with finest resolution is the level 0.
+     * The level with coarsest resolution (the overview) is the level 0.
      *
      * @return zero-based index of the pyramid level of the tile which is read.
      *

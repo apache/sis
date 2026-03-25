@@ -422,7 +422,7 @@ check:  if (dataType.isInteger()) {
 
     /**
      * Returns the preferred resolutions (in units of <abbr>CRS</abbr> axes) for read operations in this data store.
-     * The list elements are ordered from finest (smallest numerical values) to coarsest (largest numerical values).
+     * The list elements are ordered from coarsest (largest numerical values) to finest (smallest numerical values).
      *
      * <p>The default implementation uses information in the first element returned by {@link #getPyramids()}.
      * It is generally easier for subclasses to override {@link #getPyramids()} instead of this method.</p>
@@ -889,22 +889,33 @@ check:  if (dataType.isInteger()) {
              * the requested resolution.
              */
             final Pyramid pyramid = choosePyramid(domain, ranges);
-            if (pyramid == null || (bestFit = pyramid.forPyramidLevel(0)) == null) {
+            if (pyramid == null || (bestFit = pyramid.representative()) == null) {
                 return readAtThisPyramidLevel(domain, ranges, null);
             }
             int level = 0;
             final double[] request = bestFit.convertResolutionOf(domain);
-            if (request != null) {
-                TiledGridCoverageResource c;
-                while ((c = pyramid.forPyramidLevel(level)) != null) {
-                    final double[] resolution = c.getGridGeometry().getResolution(true);
-                    if (!(request[xDimension] >= resolution[xDimension] &&  // Use `!` for catching NaN.
-                          request[yDimension] >= resolution[yDimension])) break;
-                    bestFit = c;
-                    level++;
+            bestFit = null;
+            if (request == null) {
+                final OptionalInt numberOfLevels = pyramid.numberOfLevels();
+                if (numberOfLevels.isPresent()) {
+                    level   = numberOfLevels.getAsInt() - 1;
+                    bestFit = pyramid.forPyramidLevel(level);
                 }
             }
-            if (bestFit == this) {
+            if (bestFit == null) {
+                level = -1;
+                TiledGridCoverageResource c;
+                while ((c = pyramid.forPyramidLevel(level + 1)) != null) {
+                    bestFit = c;
+                    level++;
+                    if (request != null) {
+                        final double[] resolution = c.getGridGeometry().getResolution(true);
+                        if (!(request[xDimension] < resolution[xDimension] ||  // Use `!` for catching NaN.
+                              request[yDimension] < resolution[yDimension])) break;
+                    }
+                }
+            }
+            if (bestFit == null || bestFit == this) {
                 return readAtThisPyramidLevel(domain, ranges, null);
             }
             bestFit.pyramidLevel = level;
@@ -1141,7 +1152,7 @@ check:  if (dataType.isInteger()) {
      *
      * <p>Each pyramid can have an arbitrary number of levels.
      * It is recommended to have one pyramid level for each {@linkplain #getResolutions() preferred resolutions}.
-     * The pyramid levels must be sorted from finest resolution (at level 0) to coarsest resolution.</p>
+     * The pyramid levels must be sorted from coarsest resolution (at level 0) to finest resolution.</p>
      *
      * <p>The number of levels is unspecified because some data stores cannot provide this information in advance.
      * Instead, the {@link #forPyramidLevel(int)} method will be invoked with different argument values when each
@@ -1171,7 +1182,7 @@ check:  if (dataType.isInteger()) {
          * Returns an identifier for the given level of this pyramid. The returned identifier
          * will be local in the namespace of the pyramid {@linkplain #identifier() identifier}.
          *
-         * @param  level  the pyramid level where 0 is the level with the finest resolution.
+         * @param  level  the pyramid level where 0 is the level with the coarsest resolution.
          * @return a local identifier for the specified level.
          */
         default String identifierOfLevel(int level) {
@@ -1208,17 +1219,33 @@ check:  if (dataType.isInteger()) {
         }
 
         /**
+         * Returns a resource which is representative of all pyramid levels except for the resolution.
+         * The default implementation returns the resource at level 0, <i>i.e.</i> the overview.
+         * Some formats such as <abbr>TIFF</abbr> rather use the image at the finest resolution
+         * as the base image from which other images are derived.
+         *
+         * <p>This method is invoked for fetching metadata such as the Coordinate Reference System.
+         * It is usually not invoked for reading pixel values, as the resolution can be anything.</p>
+         *
+         * @return a resource representative of all levels (ignoring resolution), or {@code null} if none.
+         * @throws DataStoreException if an error occurred while creating the resource.
+         */
+        default TiledGridCoverageResource representative() throws DataStoreException {
+            return forPyramidLevel(0);
+        }
+
+        /**
          * Returns a resource for the same data as this resource but at a different resolution level.
-         * The resource at index 0 shall be the resource with the finest resolution, and resources at
-         * increasing index values shall be resources with increasingly coarser resolutions.
+         * The resource at index 0 shall be the resource with the coarsest resolution (the overview),
+         * and resources at increasing index values shall be resources with increasingly finer resolutions.
          * If the specified level is equal or greater than the number of levels in this pyramid,
          * then this method shall return {@code null}.
          *
          * <p>If this method returns a non-null instance <var>r</var>, then the following condition should hold:
-         * {@code r.getGridGeometry().getResolution(false)} should be equal, ignoring NaN values and rounding
-         * errors, to {@code getResolutions().get(level)}.</p>
+         * {@code r.getGridGeometry().getResolution(false)} should be equal, ignoring NaN values and rounding errors,
+         * to {@code getResolutions().get(level)}.</p>
          *
-         * @param  level  the pyramid level where 0 is the level with the finest resolution.
+         * @param  level  the pyramid level where 0 is the level with the coarsest resolution (the overview).
          * @return a resource for data at the specified pyramid level, or {@code null} if the given level is too high.
          * @throws DataStoreException if an error occurred while creating the resource.
          *

@@ -42,7 +42,7 @@ import org.apache.sis.util.ArraysExt;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   1.0
  */
 public interface GridCoverageResource extends DataSet {
@@ -131,9 +131,13 @@ public interface GridCoverageResource extends DataSet {
     /**
      * Returns the preferred resolutions (in units of CRS axes) for read operations in this data store.
      * If the storage supports pyramid, then the list should contain the resolution at each pyramid level
-     * ordered from finest (smallest numerical values) to coarsest (largest numerical values) resolution.
-     * Otherwise, the list contains a single element which is the {@linkplain #getGridGeometry() grid geometry}
-     * resolution, or an empty list if no resolution is applicable to the coverage (e.g. because non-constant).
+     * ordered from coarsest (largest numerical values) resolution to finest (smallest numerical values).
+     * This ordering should be the same as in {@link org.apache.sis.storage.tiling.TileMatrixSet},
+     * which is itself based on the order specified by <abbr>OGC</abbr> tile matrix specifications.
+     *
+     * <p>If the storage does not support pyramid, then the returned list contains a single element which
+     * is the {@linkplain #getGridGeometry() grid geometry} resolution, or an empty list if no resolution
+     * is applicable to the coverage (e.g. because non-constant).</p>
      *
      * <p>Each element shall be an array with a length equals to the number of <abbr>CRS</abbr> dimensions.
      * In each array, value at index <var>i</var> is the cell size along <abbr>CRS</abbr> dimension <var>i</var>
@@ -147,6 +151,7 @@ public interface GridCoverageResource extends DataSet {
      * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
      *
      * @see GridGeometry#getResolution(boolean)
+     * @see org.apache.sis.storage.tiling.TileMatrixSet#getTileMatrices()
      *
      * @since 1.2
      */

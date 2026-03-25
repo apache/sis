@@ -2024,7 +2024,7 @@ final class ImageFileDirectory extends DataCube {
     }
 
     /**
-     * Sets a list of overviews from finest resolution to coarsest resolution.
+     * Sets a list of overviews from coarsest resolution (the overview) to finest resolution.
      * The full-resolution image shall be {@code this} and shall not be included in the given list.
      */
     final void setOverviews(final List<ImageFileDirectory> images) {
@@ -2034,7 +2034,7 @@ final class ImageFileDirectory extends DataCube {
     }
 
     /**
-     * A list of Image File Directories (FID) where the first entry is the image at finest resolution
+     * A list of Image File Directories (FID) where the first entry is the image at coarsest resolution
      * and following entries are images at finer resolutions. The entry at finest resolution is the
      * enclosing {@link ImageFileDirectory}.
      */
@@ -2052,7 +2052,7 @@ final class ImageFileDirectory extends DataCube {
         private final ImageFileDirectory[] levels;
 
         /**
-         * Creates a list of overviews from finest resolution to coarsest resolution.
+         * Creates a list of overviews from coarsest resolution to finest resolution.
          * The full-resolution image shall be the enclosing {@link ImageFileDirectory}
          * and is not included in the given list.
          */
@@ -2069,23 +2069,37 @@ final class ImageFileDirectory extends DataCube {
         }
 
         /**
-         * Completes and returns the image at the given pyramid level.
-         * Indices are in the same order as the images appear in the <abbr>TIFF</abbr> file,
-         * with 0 for the full resolution image.
+         * Returns a resource which is representative of all pyramid levels except for the resolution.
+         * This method is invoked for fetching metadata such as the Coordinate Reference System
+         * when the resolution does not matter. For a <abbr>TIFF</abbr> file, this is the image
+         * with the finest resolution.
          *
-         * @param  level  image index (level) in the pyramid, with 0 for finest resolution.
+         * @return a resource representative of all levels (ignoring resolution).
+         */
+        @Override
+        public TiledGridCoverageResource representative() {
+            return ImageFileDirectory.this;
+        }
+
+        /**
+         * Completes and returns the image at the given pyramid level.
+         * Indices are in the reverse order of the images in the <abbr>TIFF</abbr> file,
+         * with 0 for the image at the coarsest resolution (the overview).
+         *
+         * @param  level  image index (level) in the pyramid, with 0 for coarsest resolution (the overview).
          * @return image at the given pyramid level, or {@code null} if the given level is out of bounds.
          */
         @Override
         public TiledGridCoverageResource forPyramidLevel(final int level) throws DataStoreException {
-            if (level == 0) {
-                return ImageFileDirectory.this;
-            }
-            if (level > levels.length) {
+            final int n;
+            if (level < 0 || (n = levels.length - 1 - level) < -1) {
                 return null;
             }
+            if (n == -1) {
+                return ImageFileDirectory.this;
+            }
             synchronized (getSynchronizationLock()) {
-                final ImageFileDirectory image = levels[level - 1];
+                final ImageFileDirectory image = levels[n];
                 final Reader reader = image.reader;
                 try {
                     // Effective the first time that this method is invoked, no-op on other invocations.

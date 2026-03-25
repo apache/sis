@@ -96,7 +96,7 @@ public final class MultiResolutionCoverageLoaderTest extends TestCase {
 
     /**
      * A dummy resource with arbitrary resolutions for testing purpose.
-     * Resolutions are ordered from finest (smallest numbers) to coarsest (largest numbers).
+     * Resolutions are ordered from coarsest (largest numbers) to finest (smallest numbers).
      */
     private static final class DummyResource extends AbstractGridCoverageResource {
         /** Creates a dummy resource. */
@@ -106,9 +106,9 @@ public final class MultiResolutionCoverageLoaderTest extends TestCase {
 
         /** Returns the preferred resolutions in units of CRS axes. */
         @Override public List<double[]> getResolutions() {
-            return List.of(new double[] {2, 3, 1},
+            return List.of(new double[] {8, 9, 5},
                            new double[] {4, 4, 3},
-                           new double[] {8, 9, 5});
+                           new double[] {2, 3, 1});
         }
 
         /** Returns a grid geometry with the resolution of finest level. */
@@ -141,10 +141,10 @@ public final class MultiResolutionCoverageLoaderTest extends TestCase {
      */
     @Test
     public void testFindPyramidLevel() throws TransformException {
-        assertLevelEquals(3, 2, 2, 0);
-        assertLevelEquals(4, 5, 2, 0);
+        assertLevelEquals(3, 2, 2, 2);
+        assertLevelEquals(4, 5, 2, 2);
         assertLevelEquals(4, 5, 4, 1);
-        assertLevelEquals(9, 9, 5, 2);
+        assertLevelEquals(9, 9, 5, 0);
         assertLevelEquals(9, 8, 5, 1);
     }
 
@@ -168,8 +168,8 @@ public final class MultiResolutionCoverageLoaderTest extends TestCase {
      */
     @Test
     public void testGetOrLoad() throws DataStoreException {
-        assertLoadEquals(2, 8, 9, 5);
-        assertLoadEquals(0, 2, 3, 1);
+        assertLoadEquals(0, 8, 9, 5);
+        assertLoadEquals(2, 2, 3, 1);
         assertLoadEquals(1, 4, 4, 3);
     }
 }

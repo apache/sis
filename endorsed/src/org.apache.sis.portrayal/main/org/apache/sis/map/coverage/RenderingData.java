@@ -148,7 +148,7 @@ public class RenderingData implements CloneAccess {
 
     /**
      * The pyramid level of {@linkplain #data} loaded by the {@linkplain #coverageLoader}.
-     * Value 0 is finest resolution.
+     * Value 0 is coarsest resolution (the overview).
      */
     private int currentPyramidLevel;
 
@@ -546,13 +546,12 @@ public class RenderingData implements CloneAccess {
             RenderedImage image = data;
             final MultiResolutionCoverageLoader loader = coverageLoader;
             if (loader != null) {
-                final int level = loader.getLastLevel();
-                if (level != currentPyramidLevel) {
+                if (currentPyramidLevel != 0) {
                     /*
                      * If coarser data are available, we will compute statistics on those data instead of on the
                      * current pyramid level. We need to adjust the slice extent to the coordinates of coarser data.
                      */
-                    final GridCoverage coarse = loader.getOrLoad(level).forConvertedValues(true);
+                    final GridCoverage coarse = loader.getOrLoad(0).forConvertedValues(true);
                     GridExtent sliceExtent = currentSlice;
                     if (sliceExtent != null) {
                         if (sliceExtent.getDimension() <= BIDIMENSIONAL) {
