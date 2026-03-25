@@ -36,6 +36,7 @@ import org.opengis.filter.MatchAction;
 import org.opengis.filter.ComparisonOperatorName;
 import org.opengis.filter.BinaryComparisonOperator;
 import org.opengis.filter.BetweenComparisonOperator;
+import org.opengis.filter.Literal;
 
 
 /**
@@ -174,6 +175,47 @@ abstract class ComparisonFilter<R> extends BinaryFunctionWidening<R, Object, Obj
     public abstract ComparisonFilter<R> recreate(Expression<R,?>[] effective);
 
     /**
+     * If one of the expressions is a filter compared to a Boolean literal, returns the filter directly.
+     * This optimization should be attempted only when the return value of both expressions are Boolean.
+     *
+     * @param  optimization  the simplifications or optimizations to apply on this filter.
+     * @param  swap          whether to swap the {@code expression1} and {@code expression2} order.
+     * @return the filter, or {@code null} if none.
+     */
+    private Filter<R> extractFilter(final Optimization optimization, final boolean swap) {
+        Expression<R,?> e = swap ? expression1 : expression2;
+        if (e instanceof Literal<?,?>) {
+            final Boolean literal = (Boolean) ((Literal<?,?>) e).getValue();
+            if (literal == null) {
+                return Filter.exclude();
+            }
+            final int c0, c1;
+            if (swap) {
+                c0 = literal.compareTo(Boolean.FALSE);
+                c1 = literal.compareTo(Boolean.TRUE);
+            } else {
+                c0 = Boolean.FALSE.compareTo(literal);
+                c1 = Boolean.TRUE .compareTo(literal);
+            }
+            final boolean ifFalse = fromCompareTo(c0);
+            final boolean ifTrue  = fromCompareTo(c1);
+            if (ifFalse == ifTrue) {
+                return ifTrue ? Filter.include() : Filter.exclude();
+            }
+            e = swap ? expression2 : expression1;
+            if (e instanceof Filter<?>) {
+                @SuppressWarnings("unchecked")
+                var filter = (Filter<R>) e;
+                if (ifFalse) {
+                    filter = new LogicalFilter.Not<>(filter).optimize(optimization);
+                }
+                return filter;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Tries to optimize this filter. Fist, this method applies the optimization documented
      * in the {@linkplain Optimization.OnFilter#optimize default method impmementation}.
      * Then, if it is possible to avoid to inspect the number types every time that the
@@ -201,6 +243,14 @@ abstract class ComparisonFilter<R> extends BinaryFunctionWidening<R, Object, Obj
                 }
                 if (Comparable.class.isAssignableFrom(t1) && t1.isAssignableFrom(t2)) {
                     if (isMatchingCase || !CharSequence.class.isAssignableFrom(t1)) {
+                        if (t1 == Boolean.class) {
+                            Filter<R> filter;
+                            if ((filter = extractFilter(optimization, false)) != null ||
+                                (filter = extractFilter(optimization, true))  != null)
+                            {
+                                return filter;
+                            }
+                        }
                         return new Comparables();
                     }
                 }
@@ -307,6 +357,11 @@ abstract class ComparisonFilter<R> extends BinaryFunctionWidening<R, Object, Obj
         @Override public    List<Expression<R,?>> getExpressions()   {return ComparisonFilter.this.getExpressions();}
         @Override protected Collection<?>         getChildren()      {return ComparisonFilter.this.getChildren();}
 
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<R> recreate(Expression<R,?>[] effective) {
+            return ComparisonFilter.this.recreate(effective).new Comparables();
+        }
+
         /** Determines if the test represented by this filter passes with the given operands. */
         @Override public boolean test(final R candidate) {
             final Object left = expression1.apply(candidate);
@@ -321,11 +376,6 @@ abstract class ComparisonFilter<R> extends BinaryFunctionWidening<R, Object, Obj
                 }
             }
             return false;
-        }
-
-        /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<R> recreate(Expression<R,?>[] effective) {
-            return ComparisonFilter.this.recreate(effective).new Comparables();
         }
     }
 
@@ -406,7 +456,7 @@ abstract class ComparisonFilter<R> extends BinaryFunctionWidening<R, Object, Obj
      *
      * @todo Delegate all comparisons of temporal objects to {@link TemporalFilter}.
      */
-    private boolean evaluate(Object left, Object right) {
+    private boolean evaluate(final Object left, final Object right) {
         /*
          * For numbers, the apply(…) method inherited from parent class will delegate to specialized methods like
          * applyAsDouble(…). All implementations of those specialized methods in ComparisonFilter return integer,
@@ -659,6 +709,11 @@ abstract class ComparisonFilter<R> extends BinaryFunctionWidening<R, Object, Obj
             super(expression1, expression2, isMatchingCase, matchAction);
         }
 
+        /** Creates a new filter with the same expressions as the given parent. */
+        EqualTo(final ComparisonFilter<R> parent) {
+            super(parent.expression1, parent.expression2, parent.isMatchingCase, parent.matchAction);
+        }
+
         /** Creates a new filter of the same type but different parameters. */
         @Override public ComparisonFilter<R> recreate(final Expression<R,?>[] effective) {
             return new EqualTo<>(effective[0], effective[1], isMatchingCase, matchAction);
@@ -697,6 +752,11 @@ abstract class ComparisonFilter<R> extends BinaryFunctionWidening<R, Object, Obj
                    boolean isMatchingCase, MatchAction matchAction)
         {
             super(expression1, expression2, isMatchingCase, matchAction);
+        }
+
+        /** Creates a new filter with the same expressions as the given parent. */
+        NotEqualTo(final ComparisonFilter<R> parent) {
+            super(parent.expression1, parent.expression2, parent.isMatchingCase, parent.matchAction);
         }
 
         /** Creates a new filter of the same type but different parameters. */
