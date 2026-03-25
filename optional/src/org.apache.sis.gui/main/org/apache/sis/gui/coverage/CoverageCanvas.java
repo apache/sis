@@ -666,7 +666,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                         } else try {
                             domain = resource.getGridGeometry();
                             ranges = resource.getSampleDimensions();
-                            scales = Containers.peekFirst(resource.getResolutions());
+                            scales = Containers.peekFirst(resource.getAvailableResolutions());
                         } catch (BackingStoreException e) {
                             throw e.unwrapOrRethrow(DataStoreException.class);
                         }

@@ -153,9 +153,9 @@ public interface GridCoverageResource extends DataSet {
      * @see GridGeometry#getResolution(boolean)
      * @see org.apache.sis.storage.tiling.TileMatrixSet#getTileMatrices()
      *
-     * @since 1.2
+     * @since 1.7
      */
-    default List<double[]> getResolutions() throws DataStoreException {
+    default List<double[]> getAvailableResolutions() throws DataStoreException {
         final GridGeometry gg = getGridGeometry();
         if (gg != null && gg.isDefined(GridGeometry.RESOLUTION)) {      // Should never be null but we are paranoiac.
             final double[] resolution = gg.getResolution(false);
@@ -164,6 +164,24 @@ public interface GridCoverageResource extends DataSet {
             }
         }
         return List.of();
+    }
+
+    /**
+     * Returns the preferred resolutions ordered from finest to coarsest resolution.
+     *
+     * @return preferred resolutions for read operations in this data store, or an empty list if none.
+     * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
+     *
+     * @since 1.2
+     *
+     * @deprecated Replaced by {@link #getAvailableResolutions()} but with opposite order.
+     *             The new order is more conform to <abbr>OGC</abbr> specifications.
+     */
+    @Deprecated(since = "1.7", forRemoval = true)
+    default List<double[]> getResolutions() throws DataStoreException {
+        final var resolutions = new java.util.ArrayList<>(getAvailableResolutions());
+        java.util.Collections.reverse(resolutions);
+        return resolutions;
     }
 
     /**

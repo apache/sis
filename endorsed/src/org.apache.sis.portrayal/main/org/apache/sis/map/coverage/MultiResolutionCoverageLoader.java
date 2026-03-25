@@ -43,7 +43,7 @@ import org.apache.sis.util.collection.BackingStoreException;
 
 /**
  * A helper class for reading {@link GridCoverage} instances at various resolutions.
- * The resolutions are inferred from {@link GridCoverageResource#getResolutions()},
+ * The resolutions are inferred from {@link GridCoverageResource#getAvailableResolutions()},
  * using default values if necessary. The objective CRS does not need to be the same
  * than the coverage CRS, in which case transformations are applied at the point in
  * the center of the display bounds.
@@ -86,8 +86,8 @@ public class MultiResolutionCoverageLoader {
 
     /**
      * Squares of resolution at each pyramid level, from coarsest (largest numbers) to finest (smaller numbers).
-     * This is same same order as {@link GridCoverageResource#getResolutions()}. For a given level, the array
-     * {@code resolutionSquared[level]} gives the squares of the resolution for each CRS dimension.
+     * This is same same order as {@link GridCoverageResource#getAvailableResolutions()}. For a given level,
+     * the array {@code resolutionSquared[level]} gives the squares of the resolution for each CRS dimension.
      */
     private final double[][] resolutionSquared;
 
@@ -127,7 +127,7 @@ public class MultiResolutionCoverageLoader {
         readRanges     = range;
         double[][] resolutions;
         try {
-            resolutions = resource.getResolutions().toArray(double[][]::new);
+            resolutions = resource.getAvailableResolutions().toArray(double[][]::new);
         } catch (BackingStoreException e) {
             throw e.unwrapOrRethrow(DataStoreException.class);
         }
@@ -251,7 +251,7 @@ dimensions: for (int j=0; j<tgtDim; j++) {
                 }
                 /*
                  * Cannot use `Arrays.binarySearch(…)` because elements are not guaranteed to be sorted.
-                 * Even if `GridCoverageResource.getResolutions()` contract said "coarsest to finest",
+                 * Even if `GridCoverageResource.getAvailableResolutions()` contract said "coarsest to finest",
                  * it may not be possible to respect this condition on all dimensions in same time.
                  * The main goal is to have a `level` value as high as possible while having a resolution
                  * equals or better than `sum`.

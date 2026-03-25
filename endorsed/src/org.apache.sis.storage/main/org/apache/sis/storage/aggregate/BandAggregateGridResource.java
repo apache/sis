@@ -79,7 +79,7 @@ final class BandAggregateGridResource extends AggregatedResource implements Grid
      * Can be an empty array after computation.
      * Shall be read-only after computation.
      *
-     * @see #getResolutions()
+     * @see #getAvailableResolutions()
      */
     private double[][] resolutions;
 
@@ -310,7 +310,7 @@ final class BandAggregateGridResource extends AggregatedResource implements Grid
      * @throws DataStoreException if an error occurred while reading definitions from an underlying resource.
      */
     @Override
-    public List<double[]> getResolutions() throws DataStoreException {
+    public List<double[]> getAvailableResolutions() throws DataStoreException {
         synchronized (getSynchronizationLock()) {
             if (resolutions == null) {
                 resolutions = ConcatenatedGridResource.commonResolutions(sources);

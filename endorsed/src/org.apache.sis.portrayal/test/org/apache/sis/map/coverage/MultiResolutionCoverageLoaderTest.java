@@ -105,7 +105,7 @@ public final class MultiResolutionCoverageLoaderTest extends TestCase {
         }
 
         /** Returns the preferred resolutions in units of CRS axes. */
-        @Override public List<double[]> getResolutions() {
+        @Override public List<double[]> getAvailableResolutions() {
             return List.of(new double[] {8, 9, 5},
                            new double[] {4, 4, 3},
                            new double[] {2, 3, 1});

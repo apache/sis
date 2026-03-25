@@ -107,8 +107,8 @@ final class SingleImageStore extends WorldFileStore implements GridCoverageResou
      * Returns the preferred resolutions (in units of CRS axes) for read operations in this data store.
      */
     @Override
-    public final List<double[]> getResolutions() throws DataStoreException {
-        return delegate().getResolutions();
+    public final List<double[]> getAvailableResolutions() throws DataStoreException {
+        return delegate().getAvailableResolutions();
     }
 
     /**

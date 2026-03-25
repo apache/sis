@@ -436,11 +436,11 @@ check:  if (dataType.isInteger()) {
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public List<double[]> getResolutions() throws DataStoreException {
+    public List<double[]> getAvailableResolutions() throws DataStoreException {
         synchronized (getSynchronizationLock()) {
             final Pyramid pyramid = Containers.peekFirst(getPyramids());
             if (pyramid == null) {
-                return super.getResolutions();
+                return super.getAvailableResolutions();
             }
             return new ListOfUnknownSize<double[]>() {
                 /** Returns characteristics of this collection as a combination of {@code Spliterator} bits. */
@@ -1128,7 +1128,7 @@ check:  if (dataType.isInteger()) {
      * @return information about the tile matrix sets to create.
      * @throws DataStoreException if an error occurred while fetching information about the pyramid.
      *
-     * @see #getResolutions()
+     * @see #getAvailableResolutions()
      * @see #getTileMatrixSets()
      */
     protected List<Pyramid> getPyramids() throws DataStoreException {
@@ -1151,7 +1151,7 @@ check:  if (dataType.isInteger()) {
      * Coordinate Reference System (<abbr>CRS</abbr>).
      *
      * <p>Each pyramid can have an arbitrary number of levels.
-     * It is recommended to have one pyramid level for each {@linkplain #getResolutions() preferred resolutions}.
+     * It is recommended to have one pyramid level for each {@link #getAvailableResolutions() preferred resolutions}.
      * The pyramid levels must be sorted from coarsest resolution (at level 0) to finest resolution.</p>
      *
      * <p>The number of levels is unspecified because some data stores cannot provide this information in advance.
@@ -1243,13 +1243,13 @@ check:  if (dataType.isInteger()) {
          *
          * <p>If this method returns a non-null instance <var>r</var>, then the following condition should hold:
          * {@code r.getGridGeometry().getResolution(false)} should be equal, ignoring NaN values and rounding errors,
-         * to {@code getResolutions().get(level)}.</p>
+         * to {@code getAvailableResolutions().get(level)}.</p>
          *
          * @param  level  the pyramid level where 0 is the level with the coarsest resolution (the overview).
          * @return a resource for data at the specified pyramid level, or {@code null} if the given level is too high.
          * @throws DataStoreException if an error occurred while creating the resource.
          *
-         * @see #getResolutions()
+         * @see #getAvailableResolutions()
          */
         TiledGridCoverageResource forPyramidLevel(int level) throws DataStoreException;
 

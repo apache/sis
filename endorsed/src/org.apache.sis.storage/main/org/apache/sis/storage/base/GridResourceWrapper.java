@@ -163,8 +163,8 @@ public abstract class GridResourceWrapper implements GridCoverageResource {
      * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
      */
     @Override
-    public List<double[]> getResolutions() throws DataStoreException {
-        return source().getResolutions();
+    public List<double[]> getAvailableResolutions() throws DataStoreException {
+        return source().getAvailableResolutions();
     }
 
     /**

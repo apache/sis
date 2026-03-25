@@ -141,8 +141,8 @@ final class CoverageSubset extends AbstractGridCoverageResource {
      * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
      */
     @Override
-    public List<double[]> getResolutions() throws DataStoreException {
-        List<double[]> resolutions = source.getResolutions();
+    public List<double[]> getAvailableResolutions() throws DataStoreException {
+        List<double[]> resolutions = source.getAvailableResolutions();
         if (reduction != null) try {
             resolutions = JDK16.toList(resolutions.stream()
                     .map((resolution) -> reduction.apply(new DirectPositionView.Double(resolution)).getCoordinates()));

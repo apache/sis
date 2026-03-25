@@ -168,8 +168,8 @@ public class TileReadEvent extends StoreEvent {
 
     /**
      * Returns the zero-based index of the pyramid level of the tile which is read.
-     * This is typically the index in the {@linkplain TiledGridCoverageResource#getResolutions() list
-     * of resource's resolution} where the values returned by {@link #getResolution()} can be found.
+     * This is typically the index in the {@linkplain TiledGridCoverageResource#getAvailableResolutions()
+     * list of resource's resolution} where the values returned by {@link #getResolution()} can be found.
      * The level with coarsest resolution (the overview) is the level 0.
      *
      * @return zero-based index of the pyramid level of the tile which is read.
