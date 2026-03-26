@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import javafx.application.Platform;
+import javafx.beans.property.StringProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.concurrent.Task;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
@@ -32,59 +34,69 @@ import org.apache.sis.storage.aggregate.MergeStrategy;
 import org.apache.sis.storage.folder.UnstructuredAggregate;
 import org.apache.sis.gui.internal.DataStoreOpener;
 import org.apache.sis.gui.internal.BackgroundThreads;
-import org.apache.sis.gui.internal.GUIUtilities;
 import org.apache.sis.gui.internal.LogHandler;
 
 
 /**
- * An item of the {@link Resource} tree completed with additional information.
+ * An item of the {@link ResourceTree} completed with additional information.
  * The {@linkplain #getChildren() list of children} is fetched in a background thread when first needed.
- * This node contains only the data; for visual appearance, see {@link ResourceCell}.
+ * This node contains only the data. For visual appearance, see {@link ResourceCell}.
+ *
+ * <p>The initial {@link Resource} value of this item is usually {@code null} and should be set only once.
+ * Resource shall be set by a call to {@link #setValue(Resource, String)} instead of {@code setValue(T)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
- * @see Cell
+ * @see ResourceCell
  */
 final class ResourceItem extends TreeItem<Resource> {
     /**
-     * The path to the resource, or {@code null} if none or unknown. This is used for notifications only;
-     * this information does not play an important role for {@link ResourceTree} itself.
+     * The path to the resource, or {@code null} if none or unknown.
+     * This is used by {@link ResourceTree} merely for notifications.
      */
     Path path;
 
     /**
-     * The text of this node, computed and cached when first needed. Computation is done by invoking
+     * The text of this node, computed when first needed. Computation is done by invoking
      * {@link DataStoreOpener#findLabel(Resource, Locale, boolean)} in a background thread.
+     * May contain a temporary text such as "Loading…".
      *
      * @see ResourceTree#fetchLabel(ResourceItem.Completer)
      */
-    String label;
+    final StringProperty label = new SimpleStringProperty();
 
     /**
      * Whether this node is in process of loading data. There are two kinds of loading:
      * <ul>
-     *   <li>The {@link Resource} itself, in which case {@link #getValue()} is null.</li>
-     *   <li>The resource {@link #title}, in which case {@link #getValue()} has a valid value.</li>
+     *   <li>The {@link Resource} itself, in which case {@link #getValue()} is null until the loading is completed.</li>
+     *   <li>The resource {@link #label}, in which case {@link #getValue()} has a valid value.</li>
      * </ul>
+     *
+     * @see #isLoading()
      */
-    boolean isLoading;
+    private boolean isLoading;
 
     /**
      * If an error occurred while loading the resource, the cause. The {@link #getValue()} property may
-     * be null or non-null, depending if the error occurred while loading the resource or only its title.
+     * be null or non-null, depending if the error occurred while loading the resource or only its label.
+     *
+     * @see #error()
      */
-    Throwable error;
+    private Throwable error;
 
     /**
      * Whether the resource is a leaf. A resource is a leaf if it is not an
      * instance of {@link Aggregate}, in which case it cannot have children.
      * This information is cached because requested often.
+     *
+     * @see #isLeaf()
      */
-    private final boolean isLeaf;
+    private boolean isLeaf;
 
     /**
      * Whether the list of children has been determined. We use this flag in order
      * to fetch children only when first requested, since this process is costly.
+     * This flag is ignored if {@link #isLeaf} is {@code true}.
      *
      * @todo Register {@link org.apache.sis.storage.event.StoreListener} and reset
      *       this flag to {@code false} if the resource content or structure changed.
@@ -92,42 +104,73 @@ final class ResourceItem extends TreeItem<Resource> {
     private boolean isChildrenKnown;
 
     /**
-     * Creates a temporary item with null value for a resource in process of being loaded.
-     * This item will be replaced (not updated) by a fresh {@code ResourceItem} instance
-     * when the resource will become available.
+     * Creates an item with null value for a resource in process of being loaded.
+     * The {@linkplain #label} should be "Loading…", but this is not set by this constructor.
+     * Instead, it will be set by {@link ResourceCell} the first time that this item will be shown.
      */
-    ResourceItem() {
+    private ResourceItem() {
         isLeaf    = true;
         isLoading = true;
     }
 
     /**
      * Creates an item for a resource that we failed to load.
+     * This constructor is used when all previous items are discarded.
+     * It happens when we failed to load the components of an aggregate.
+     *
+     * <p>The {@linkplain #label} should be the error message, but this is not set by this constructor.
+     * Instead, it will be set by {@link ResourceCell} the first time that this item will be shown.</p>
      */
-    private ResourceItem(final Throwable exception) {
+    private ResourceItem(final Throwable failure) {
         isLeaf = true;
-        error  = exception;
+        error  = failure;
     }
 
     /**
      * Creates a new node for the given resource.
+     * The {@linkplain #label} should be the resource name, but this is not set by this constructor.
+     * Instead, it will be set by {@link ResourceCell} by fetching the name in a background thread.
      *
      * @param resource  the resource to show in the tree.
      */
     ResourceItem(final Resource resource) {
         super(resource);
         isLoading = true;       // Means that the label still need to be fetched.
-        isLeaf    = !(resource instanceof Aggregate);
+        configure(resource);
+    }
+
+    /**
+     * Updates the internal fields of this item for a new resource.
+     * Also redirects logging messages emitted by the resource.
+     */
+    private void configure(final Resource resource) {
+        isLeaf = !(resource instanceof Aggregate);
         LogHandler.installListener(resource);
     }
 
     /**
+     * Sets the resource after the loading in a background thread completed successfully.
+     *
+     * @param resource  the resource to show in the tree.
+     * @param text      the text to show as the resource's label.
+     */
+    public void setValue(final Resource resource, final String text) {
+        isLoading = false;
+        label.setValue(text);
+        configure(resource);
+        setValue(resource);
+    }
+
+    /**
      * Update {@link #label} with the resource label fetched in background thread.
-     * Caller should use this task only if {@link #isLoading} is {@code true}.
+     * Caller should use this task only if {@link #isLoading()} is {@code true}.
      */
     final class Completer implements Runnable {
         /** The resource for which to fetch a label. */
         private final Resource resource;
+
+        /** The cell where the resource will be shown in the tree. */
+        private final ResourceCell cell;
 
         /** Result of fetching the label of a resource. */
         private String result;
@@ -135,12 +178,14 @@ final class ResourceItem extends TreeItem<Resource> {
         /** Error that occurred while fetching the label. */
         private Throwable failure;
 
-        /** Creates a new container for the label of a resource. */
-        Completer(final Resource resource) {
+        /** Creates a new task for fetching the label of a resource. */
+        Completer(final Resource resource, final ResourceCell cell) {
             this.resource = resource;
+            this.cell = cell;
         }
 
         /** Invoked in a background thread for fetching the label. */
+        @SuppressWarnings("UseSpecificCatch")
         final void fetch(final Locale locale) {
             try {
                 result = DataStoreOpener.findLabel(resource, locale, false);
@@ -150,13 +195,27 @@ final class ResourceItem extends TreeItem<Resource> {
             Platform.runLater(this);
         }
 
-        /** Invoked in JavaFX thread after the label has been fetched. */
+        /** Invoked in JavaFX thread after the label has been fetched or failed to be fetched. */
         @Override public void run() {
             isLoading = false;
-            label     = result;
-            error     = failure;
-            GUIUtilities.forceCellUpdate(ResourceItem.this);
+            label.setValue(result);
+            if (failure != null) error = failure;
+            cell.completed(ResourceItem.this, failure);
         }
+    }
+
+    /**
+     * If an error occurred while loading the resource, the exception which was thrown.
+     */
+    final Throwable error() {
+        return error;
+    }
+
+    /**
+     * Returns whether this node is in process of loading data.
+     */
+    final boolean isLoading() {
+        return isLoading;
     }
 
     /**
@@ -207,7 +266,7 @@ final class ResourceItem extends TreeItem<Resource> {
          */
         @Override
         protected List<TreeItem<Resource>> call() throws DataStoreException {
-            final List<TreeItem<Resource>> items = new ArrayList<>();
+            final var items = new ArrayList<TreeItem<Resource>>();
             final Long id = LogHandler.loadingStart(resource);
             try {
                 for (final Resource component : resource.components()) {
@@ -226,7 +285,7 @@ final class ResourceItem extends TreeItem<Resource> {
          */
         @Override
         protected void succeeded() {
-            ResourceItem.super.getChildren().setAll(getValue());
+            getChildren().setAll(getValue());
         }
 
         /**
@@ -237,7 +296,7 @@ final class ResourceItem extends TreeItem<Resource> {
         @Override
         @SuppressWarnings("unchecked")
         protected void failed() {
-            ResourceItem.super.getChildren().setAll(new ResourceItem(getException()));
+            getChildren().setAll(new ResourceItem(getException()));
         }
     }
 
@@ -253,7 +312,7 @@ final class ResourceItem extends TreeItem<Resource> {
      * Otherwise {@code null}. This is used for switching view without recomputing the resource.
      * All {@link ResourceItem} derived from the same source will share the same map of views.
      */
-    private EnumMap<TreeViewType,ResourceItem> views;
+    private EnumMap<TreeViewType, ResourceItem> views;
 
     /**
      * Returns the resource which is the source of this item.
@@ -267,12 +326,12 @@ final class ResourceItem extends TreeItem<Resource> {
      * This method should be used instead of {@code getValue() == resource} for locating the item
      * that represents a resource.
      */
-    final boolean contains(final Resource resource) {
-        if (getValue() == resource) {
+    static boolean isWrapperOf(final TreeItem<Resource> item, final Resource resource) {
+        if (item.getValue() == resource) {
             return true;
         }
-        if (views != null) {
-            for (final ResourceItem view : views.values()) {
+        if (item instanceof ResourceItem r && r.views != null) {
+            for (final ResourceItem view : r.views.values()) {
                 if (view.getValue() == resource) {
                     return true;
                 }
@@ -342,23 +401,6 @@ final class ResourceItem extends TreeItem<Resource> {
     }
 
     /**
-     * Replaces this resource item by a newly created view.
-     * This method must be invoked on the item to replace,
-     * which may be the placeholder for the "loading" label.
-     *
-     * @param  cell  the cell which is requesting a view.
-     * @param  type  type of the newly created view.
-     * @param  view  the newly created view to select as the active view.
-     */
-    private void setNewView(final ResourceCell cell, final TreeViewType type, final ResourceItem view) {
-        view.views = views;
-        views.put(type, view);
-        if (cell == null || cell.isActiveView(type)) {
-            selectView(view);
-        }
-    }
-
-    /**
      * Enables or disables the aggregated view. This functionality is used mostly when the resource is a folder,
      * for example added by a drag-and-drop action. It usually do not apply to individual files.
      *
@@ -376,12 +418,22 @@ final class ResourceItem extends TreeItem<Resource> {
             selectView(existing);
             return;
         }
+        /*
+         * Replaces this resource item by a newly created view.
+         * The new item will initially show only "Loading…".
+         * The actual label is fetched in a background thread.
+         */
         final Resource resource = getSource();
-        final ResourceItem loading = new ResourceItem();
-        setNewView(null, type, loading);
-        BackgroundThreads.execute(new Task<ResourceItem>() {
+        final var loading = new ResourceItem();
+        loading.views = views;
+        views.put(type, loading);
+        selectView(loading);
+        BackgroundThreads.execute(new Task<Resource>() {
+            /** Value to assign to the label property. */
+            private String text;
+
             /** Fetch in a background thread the view selected by user. */
-            @Override protected ResourceItem call() throws DataStoreException {
+            @Override protected Resource call() throws DataStoreException {
                 Resource result = resource;
                 switch (type) {
                     case AGGREGATION: {
@@ -394,20 +446,20 @@ final class ResourceItem extends TreeItem<Resource> {
                     // More cases may be added in the future.
                 }
                 LogHandler.redirect(result, resource);
-                final ResourceItem item = new ResourceItem(result);
-                item.label = DataStoreOpener.findLabel(resource, locale, false);
-                item.isLoading = false;
-                return item;
+                text = DataStoreOpener.findLabel(resource, locale, false);
+                return result;
             }
 
             /** Invoked in JavaFX thread after the requested view has been obtained. */
             @Override protected void succeeded() {
-                loading.setNewView(cell, type, getValue());
+                loading.setValue(getValue(), text);
             }
 
             /** Invoked in JavaFX thread if an exception occurred while fetching the view. */
             @Override protected void failed() {
-                loading.setNewView(cell, type, new ResourceItem(getException()));
+                loading.isLoading = false;
+                loading.isLeaf = true;
+                cell.completed(loading, getException());
             }
         });
     }

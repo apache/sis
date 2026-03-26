@@ -40,7 +40,6 @@ import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Localized;
-import org.apache.sis.util.Workaround;
 
 
 /**
@@ -191,21 +190,6 @@ walk:   for (final T search : path) {
         if (removeFrom != null) {
             removeFrom.remove(removeIndex);
         }
-    }
-
-    /**
-     * Forces a {@link TreeItem} to update the {@code TreeView} when its value has been externally modified.
-     * This is a workaround for situations where the item's value is unchanged, but some state of the value
-     * has been modified.
-     *
-     * @param  <T>   type of values in the tree item.
-     * @param  item  the item for which to force an update.
-     */
-    @Workaround(library = "JavaFX", version = "17")
-    public static <T> void forceCellUpdate(final TreeItem<T> item) {
-        final T value = item.getValue();
-        item.setValue(null);
-        item.setValue(value);
     }
 
     /**

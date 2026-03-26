@@ -32,6 +32,7 @@ import javafx.concurrent.Task;
 import javafx.collections.ObservableList;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.event.EventHandler;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -52,13 +53,13 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 
 /**
- * A view of data {@link Resource}s organized as a tree.
+ * A view of data store resources organized in a tree.
  * This view can be used for showing the content of one or many {@link DataStore}s.
  * A resource can be added by a call to {@link #addResource(Resource)} or loaded from
  * a file by {@link #loadResource(Object)}.
  *
  * <p>{@code ResourceTree} registers the necessarily handlers for making this view a target
- * of "drag and drop" events. Users can drop files or URLs for opening data files.</p>
+ * of "drag and drop" events. Users can drop files or <abbr>URL</abbr>s for opening data files.</p>
  *
  * <h2>Limitations</h2>
  * <ul>
@@ -69,9 +70,11 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  *       if the resource is shared by another {@link ResourceTree} instance.</li>
  * </ul>
  *
+ * @todo We should remove automatically the {@code DataStore} instances that are closed externally.
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   1.1
  */
 public class ResourceTree extends TreeView<Resource> {
@@ -81,7 +84,7 @@ public class ResourceTree extends TreeView<Resource> {
     final Locale locale;
 
     /**
-     * Function to be called after a resource has been loaded from a file or URL.
+     * Function to be called after a resource has been loaded from a file or <abbr>URL</abbr>.
      * The default value is {@code null}.
      *
      * @see #loadResource(Object)
@@ -90,7 +93,9 @@ public class ResourceTree extends TreeView<Resource> {
     public final ObjectProperty<EventHandler<ResourceEvent>> onResourceLoaded;
 
     /**
-     * Function to be called after a resource has been closed from a file or URL.
+     * Function to be called after a resource has been closed and removed from this tree view.
+     * This event happens when the {@link #removeAndClose(Resource)} method has been invoked,
+     * which happens for example when the user selected the "close" item from the contextual menu.
      * The default value is {@code null}.
      *
      * @see #removeAndClose(Resource)
@@ -106,9 +111,9 @@ public class ResourceTree extends TreeView<Resource> {
      * All accesses to this list must be synchronized on {@code pendingItems}.
      *
      * <h4>Design note</h4>
-     * We use a list instead of creating a {@link Task} for each item because the latter can create a lot
+     * We use a queue instead of creating a {@link Task} for each item because the latter can create a lot
      * of threads, which are likely to be blocked anyway because of {@link DataStore} synchronization.
-     * Furthermore, those threads of overkill in the common case where labels are very quick to fetch.
+     * Furthermore, those threads are overkill in the common case where labels are very quick to fetch.
      *
      * @see #fetchLabel(ResourceItem.Completer)
      */
@@ -116,13 +121,16 @@ public class ResourceTree extends TreeView<Resource> {
 
     /**
      * Creates a new tree of resources with initially no resource to show.
-     * For showing a resource, invoke {@link #setResource(Resource)} after construction.
+     * For showing a resource, invoke
+     * {@link #setResource(Resource)},
+     * {@link #addResource(Resource)} or
+     * {@link #loadResource(Object)} after construction.
      */
     @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph.
     public ResourceTree() {
         locale = Locale.getDefault();
         pendingItems = new LinkedList<>();
-        setCellFactory((v) -> new ResourceCell());
+        setCellFactory(ResourceCell::new);
         setOnDragOver(ResourceTree::onDragOver);
         setOnDragDropped(this::onDragDropped);
         onResourceLoaded = new SimpleObjectProperty<>(this, "onResourceLoaded");
@@ -130,7 +138,7 @@ public class ResourceTree extends TreeView<Resource> {
     }
 
     /**
-     * Returns the root {@link Resource} of this tree.
+     * Returns the root data store {@code Resource} of this tree.
      * The returned value depends on how the resource was set:
      *
      * <ul>
@@ -149,7 +157,7 @@ public class ResourceTree extends TreeView<Resource> {
     }
 
     /**
-     * Sets the root {@link Resource} of this tree.
+     * Sets the root data store {@code Resource} of this tree.
      * The root resource is typically, but not necessarily, a {@link DataStore} instance.
      * If another root resource existed before this method call, it is discarded without being closed.
      * Closing the previous resource is caller's responsibility.
@@ -205,7 +213,7 @@ public class ResourceTree extends TreeView<Resource> {
          * but it was causing confusing events when the second resource was added.
          */
         if (addTo == null) {
-            final TreeItem<Resource> group = new TreeItem<>();
+            final var group = new TreeItem<Resource>();
             setShowRoot(false);
             setRoot(group);                                 // Also detach `item` from the TreeView root.
             addTo = new RootResource(group, item);          // Pseudo-resource for a group of data stores.
@@ -236,7 +244,7 @@ public class ResourceTree extends TreeView<Resource> {
             if (source instanceof Resource) {
                 addResource((Resource) source);
             } else {
-                final DataStoreOpener opener = new DataStoreOpener(source);
+                final var opener = new DataStoreOpener(source);
                 final DataStore existing = opener.fromCache();
                 if (existing != null) {
                     addResource(existing);
@@ -334,6 +342,26 @@ public class ResourceTree extends TreeView<Resource> {
     }
 
     /**
+     * Returns the text which is shown in the <abbr>GUI</abbr> for the given resource.
+     * This returned property may have a temporarily {@code null} value or a placeholder such as "Loading…",
+     * then be updated to its final value after a background process finished to fetch the resource's label.
+     *
+     * <p>This method must be invoked from the JavaFX application thread.</p>
+     *
+     * @param  resource  the resource for which to get the label, or {@code null}.
+     * @return the label of the given resource, or {@code null} if the resource has not been found.
+     *
+     * @since 1.7
+     */
+    public ReadOnlyStringProperty getLabelOf(final Resource resource) {
+        final TreeItem<Resource> item = findOrRemove(resource, false);
+        if (item instanceof ResourceItem) {
+            return ((ResourceItem) item).label;
+        }
+        return null;
+    }
+
+    /**
      * Removes the given resource from this tree and closes the resource if it is a {@link DataStore} instance.
      * It is caller's responsibility to ensure that the given resource is not used anymore.
      *
@@ -387,6 +415,8 @@ public class ResourceTree extends TreeView<Resource> {
      * If {@code remove} is {@code true}, then it is caller's responsibility to close
      * the resource.
      *
+     * <p>This method must be invoked from the JavaFX application thread.</p>
+     *
      * @param  resource  the resource to search of remove, or {@code null}.
      * @param  remove    {@code true} for removing the resource, or {@code false} for checking only.
      * @return the item wrapping the resource, or {@code null} if the resource has not been found in the roots.
@@ -400,8 +430,8 @@ public class ResourceTree extends TreeView<Resource> {
              */
             if (remove) {
                 final ObservableList<TreeItem<Resource>> items = getSelectionModel().getSelectedItems();
-                for (int i=items.size(); --i >= 0;) {
-                    if (((ResourceItem) items.get(i)).contains(resource)) {
+                for (int i = items.size(); --i >= 0;) {
+                    if (ResourceItem.isWrapperOf(items.get(i), resource)) {
                         getSelectionModel().clearSelection(i);
                     }
                 }
@@ -422,7 +452,7 @@ public class ResourceTree extends TreeView<Resource> {
                         return item;
                     }
                     if (root instanceof RootResource) {
-                        return ((RootResource) root).contains(resource, remove);
+                        return ((RootResource) root).findOrRemove(resource, remove);
                     }
                 }
             }

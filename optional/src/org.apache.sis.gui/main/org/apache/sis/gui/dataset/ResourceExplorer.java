@@ -60,9 +60,7 @@ import org.apache.sis.gui.internal.LogHandler;
 
 
 /**
- * A panel showing a {@linkplain ResourceTree tree of resources} together with their metadata and data views.
- * This panel also contains a "new window" button for creating new windows showing the same data but potentially
- * a different locations and times. {@code ResourceExplorer} contains a list of windows created by this widget.
+ * A panel showing a tree of resources together with their metadata and data views.
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
@@ -150,8 +148,8 @@ public class ResourceExplorer extends Widget {
     private final Accordion controls;
 
     /**
-     * The control that put everything together.
-     * The type of control may change in any future SIS version.
+     * The controls for choosing a resource or configuring its view (left) together with
+     * the visualization of the selected resource (right).
      *
      * @see #getView()
      */
@@ -229,7 +227,6 @@ public class ResourceExplorer extends Widget {
         content = new SplitPane(controls, tabs);
         content.setDividerPosition(0, 1./3);
         SplitPane.setResizableWithParent(controls, Boolean.FALSE);
-        SplitPane.setResizableWithParent(tabs,     Boolean.TRUE);
         /*
          * Register listeners last, for making sure we do not have undesired events.
          * Those listeners trig loading of various objects (data, standard metadata,

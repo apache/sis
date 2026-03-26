@@ -321,6 +321,7 @@ public final class DataStoreOpener extends Task<DataStore> {
      * @return {@code true} if the value has been removed from the cache, or {@code false}
      *         if it has not been found. Note that the data store is closed in all cases.
      */
+    @SuppressWarnings("UseSpecificCatch")
     public static boolean removeAndClose(final DataStore toClose, final Node owner) {
         /*
          * A simpler code would be as below, but cannot be used at this time because our
