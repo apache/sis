@@ -16,10 +16,9 @@
  */
 package org.apache.sis.util.collection;
 
-import java.util.List;
 import java.util.Set;
-import java.util.HashSet;
-import java.util.EnumSet;
+import java.util.List;
+import java.util.ArrayList;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
 
@@ -30,43 +29,36 @@ import org.apache.sis.test.TestCase;
 
 
 /**
- * Tests the {@link DerivedSet}. For the purpose of this test, this class implements an
- * {@link ObjectConverter} for which input values are multiplied by 10, except value
- * {@value #EXCLUDED} which is converted to {@code null} (meaning: excluded from the
- * converted set).
+ * Tests the {@link DerivedList}. For the purpose of this test, this class implements
+ * an {@link ObjectConverter} for which input values are multiplied by 10.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
 @SuppressWarnings("exports")
-public final class DerivedSetTest extends TestCase implements ObjectConverter<Integer,Integer> {
-    /**
-     * The value to replace by {@code null}.
-     */
-    protected static final int EXCLUDED = 19;                   // non-private for javadoc purpose.
-
+public final class DerivedListTest extends TestCase implements ObjectConverter<Integer,Integer> {
     /**
      * Creates a new test case.
      */
-    public DerivedSetTest() {
+    public DerivedListTest() {
     }
 
     /**
-     * Tests {@link DerivedSet} without excluded value.
+     * Tests {@link DerivedList} with read and write operations.
      */
     @Test
-    public void testNoExclusion() {
-        final Set<Integer> source = new HashSet<>(List.of(2,  7,  12,  17,  20 ));
-        final Set<Integer> target = new HashSet<>(List.of(20, 70, 120, 170, 200));
-        final Set<Integer> tested = DerivedSet.create(source, this);
+    public void testReadWrite() {
+        final List<Integer> source = new ArrayList<>(List.of(2,  7,  12,  17,  20 ));
+        final List<Integer> target = new ArrayList<>(List.of(20, 70, 120, 170, 200));
+        final List<Integer> tested = WritableDerivedList.create(source, this);
         assertEquals(target.size(), tested.size());
         assertEquals(target, tested);
 
         assertFalse(tested.contains(2 ));           // Original value.
         assertTrue (tested.contains(20));           // Derived value.
         assertTrue (source.contains(7 ));           // Test before change.
-        assertTrue (tested.remove  (70));
-        assertFalse(source.contains(7 ));           // Test after change.
-        assertTrue (target.remove  (70));           // For comparison purpose.
+        assertTrue (tested.remove(Integer.valueOf(70)));
+        assertFalse(source.contains(7 ));
+        assertTrue (target.remove(Integer.valueOf(70)));
         assertEquals(target, tested);
 
         assertFalse(source.contains(3 ));
@@ -77,39 +69,24 @@ public final class DerivedSetTest extends TestCase implements ObjectConverter<In
     }
 
     /**
-     * Tests {@link DerivedSet} with an excluded value.
-     */
-    @Test
-    public void testWithExclusion() {
-        final Set<Integer> source = new HashSet<>(List.of(2,  7,  12,  EXCLUDED, 20));
-        final Set<Integer> target = new HashSet<>(List.of(20, 70, 120, 200));
-        final Set<Integer> tested = DerivedSet.create(source, this);
-        assertEquals(target.size(), tested.size());
-        assertEquals(target, tested);
-        assertFalse(tested.contains(EXCLUDED * 10));
-    }
-
-    /**
-     * Returns the converter properties, which is injective and preserve order.
+     * Returns the converter properties.
      */
     @Override
     public Set<FunctionProperty> properties() {
-        return EnumSet.of(FunctionProperty.INJECTIVE, FunctionProperty.ORDER_PRESERVING);
+        return Set.of(FunctionProperty.INVERTIBLE);
     }
+
     @Override public Class<Integer> getSourceClass() {return Integer.class;}
     @Override public Class<Integer> getTargetClass() {return Integer.class;}
 
     /**
-     * Multiply the given value by 10, except value {@value #EXCLUDED}.
+     * Multiply the given value by 10.
      *
      * @param  value  the value to multiply.
-     * @return the multiplied value, or {@code null}.
+     * @return the multiplied value.
      */
     @Override
     public Integer apply(final Integer value) {
-        if (value == EXCLUDED) {
-            return null;
-        }
         return value * 10;
     }
 
@@ -119,12 +96,12 @@ public final class DerivedSetTest extends TestCase implements ObjectConverter<In
     @Override
     public ObjectConverter<Integer,Integer> inverse() {
         return new ObjectConverter<Integer,Integer>() {
-            @Override public ObjectConverter<Integer,Integer> inverse() {return DerivedSetTest.this;}
+            @Override public ObjectConverter<Integer,Integer> inverse() {return DerivedListTest.this;}
             @Override public Class<Integer> getSourceClass()            {return Integer.class;}
             @Override public Class<Integer> getTargetClass()            {return Integer.class;}
             @Override public Integer        apply(Integer value)        {return value / 10;}
             @Override public Set<FunctionProperty> properties() {
-                return EnumSet.of(FunctionProperty.SURJECTIVE, FunctionProperty.ORDER_PRESERVING);
+                return Set.of(FunctionProperty.INVERTIBLE);
             }
         };
     }
