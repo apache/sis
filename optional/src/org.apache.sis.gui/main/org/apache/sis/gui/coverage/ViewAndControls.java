@@ -32,7 +32,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.collections.ObservableList;
 import org.apache.sis.gui.internal.Styles;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -43,10 +42,13 @@ import org.apache.sis.gui.map.StatusBar;
 
 /**
  * A {@link GridView} or {@link CoverageCanvas} together with the controls to show in a {@link CoverageExplorer}.
- * When the image or coverage is updated in a view, the {@link #coverageChanged(Resource, GridCoverage)} method
- * is invoked, which will in turn update the {@link CoverageExplorer} properties. Coverage changes are applied
- * on the view then propagated to {@code CoverageExplorer} rather than the opposite direction because loading
- * mechanisms are implemented in the view (different views may load a different amount of data).
+ * When the image or coverage is updated in a view, the {@link #load(ImageRequest)} method is invoked,
+ * which will in turn update the {@link CoverageExplorer} properties.
+ *
+ * <h2>Design note about events</h2>
+ * Coverage changes are applied on the view, which will then propagated the event to the {@code CoverageExplorer},
+ * rather than the opposite direction because loading mechanisms are implemented in the view: different views may
+ * load a different amount of data.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

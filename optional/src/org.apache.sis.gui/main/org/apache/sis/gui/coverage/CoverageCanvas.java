@@ -987,7 +987,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                 resampledImage = canvas.resampledImage;
             }
             final Insets margin = canvas.imageMargin.get();
-            if (margin != null) {
+            if (margin != null && displayBounds != null) {
                 final double top  = margin.getTop();
                 final double left = margin.getLeft();
                 displayBounds.x      -= left;

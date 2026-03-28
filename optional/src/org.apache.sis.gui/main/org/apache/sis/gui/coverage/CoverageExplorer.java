@@ -36,6 +36,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.gui.Widget;
 import org.apache.sis.gui.internal.FontGIS;
 import org.apache.sis.gui.internal.DataStoreOpener;
@@ -43,7 +44,6 @@ import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.gui.internal.ToolbarButton;
 import org.apache.sis.gui.internal.NonNullObjectProperty;
 import org.apache.sis.gui.internal.PrivateAccess;
-import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.gui.dataset.WindowHandler;
 import org.apache.sis.gui.map.StatusBar;
@@ -72,7 +72,7 @@ import org.apache.sis.gui.map.StatusBar;
  * implementation may generalize to {@link org.opengis.coverage.Coverage} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see CoverageCanvas
  * @see GridView

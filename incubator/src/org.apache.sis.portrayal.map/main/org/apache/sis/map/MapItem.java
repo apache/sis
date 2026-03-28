@@ -44,10 +44,6 @@ import org.apache.sis.portrayal.Observable;
  * <h2>Synchronization</h2>
  * {@code MapItem} instances are not thread-safe. Synchronization, if desired, is caller responsibility.
  *
- * @todo Rename as {@code LayerNode}? "Item" suggests an element in a list, while {@link MapLayers} actually
- *       creates a tree. Furthermore, having {@code Layer} in the name would add emphasis that this is a tree
- *       of layers and not a tree of arbitrary objects.
- *
  * @author  Johann Sorel (Geomatys)
  */
 public abstract class MapItem extends Observable {
@@ -132,7 +128,7 @@ public abstract class MapItem extends Observable {
      *
      * @see #getUserProperties()
      */
-    private Map<String,Object> userMap;
+    private Map<String, Object> userMap;
 
     /**
      * Only used by classes in this package.
@@ -283,7 +279,7 @@ public abstract class MapItem extends Observable {
      *         are immediately reflected in this {@code MapItem}.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public Map<String,Object> getUserProperties() {
+    public Map<String, Object> getUserProperties() {
         if (userMap == null) {
             userMap = new HashMap<>();
         }

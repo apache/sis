@@ -32,7 +32,6 @@ import javafx.concurrent.Task;
 import javafx.collections.ObservableList;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.event.EventHandler;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -342,26 +341,6 @@ public class ResourceTree extends TreeView<Resource> {
     }
 
     /**
-     * Returns the text which is shown in the <abbr>GUI</abbr> for the given resource.
-     * This returned property may have a temporarily {@code null} value or a placeholder such as "Loading…",
-     * then be updated to its final value after a background process finished to fetch the resource's label.
-     *
-     * <p>This method must be invoked from the JavaFX application thread.</p>
-     *
-     * @param  resource  the resource for which to get the label, or {@code null}.
-     * @return the label of the given resource, or {@code null} if the resource has not been found.
-     *
-     * @since 1.7
-     */
-    public ReadOnlyStringProperty getLabelOf(final Resource resource) {
-        final TreeItem<Resource> item = findOrRemove(resource, false);
-        if (item instanceof ResourceItem) {
-            return ((ResourceItem) item).label;
-        }
-        return null;
-    }
-
-    /**
      * Removes the given resource from this tree and closes the resource if it is a {@link DataStore} instance.
      * It is caller's responsibility to ensure that the given resource is not used anymore.
      *
@@ -412,8 +391,13 @@ public class ResourceTree extends TreeView<Resource> {
 
     /**
      * Verifies if the given resource is one of the roots, and optionally removes it.
-     * If {@code remove} is {@code true}, then it is caller's responsibility to close
-     * the resource.
+     * This method is for locating {@link DataStore}s instead of arbitrary resources.
+     * If {@code remove} is {@code true}, then it is caller's responsibility to close the data store.
+     *
+     * <p>This method does not search recursively in sub-trees because listing the children is potentially
+     * costly, as it may cause the loading of resources. Note that even if we accepted to pay this cost,
+     * {@link ResourceItem#getChildren()} may return an initially empty list and populate it only later,
+     * after completion of a background thread. Therefore, it is difficult to iterate over the children.</p>
      *
      * <p>This method must be invoked from the JavaFX application thread.</p>
      *

@@ -33,9 +33,11 @@ import org.apache.sis.storage.Resource;
  */
 final class RootResource implements Aggregate {
     /**
-     * The children to expose as an unmodifiable list of components.
+     * A modifiable list of children, but viewed in public <abbr>API</abbr> as an unmodifiable list.
      * The elements of this list should be {@link ResourceItem} instances,
      * but this class is tolerant to other classes.
+     *
+     * @see #components()
      */
     private final List<TreeItem<Resource>> components;
 
@@ -55,7 +57,14 @@ final class RootResource implements Aggregate {
 
     /**
      * Checks whether this root contains the given resource as a direct child.
-     * This method does not search recursively in sub-trees.
+     * This method does not search recursively in sub-trees because listing the
+     * children is potentially costly, as it may cause the loading of resources.
+     * This method is more for locating data stores than arbitrary resources.
+     *
+     * <p>Note that even if we accepted to pay the cost of computing the list of children,
+     * {@link ResourceItem#getChildren()} may return an initially empty list and populate
+     * it only later, after completion of a background thread. Therefore, it is difficult
+     * to iterate over the children anyway.</p>
      *
      * @param  resource  the resource to search.
      * @param  remove    whether to remove the resource if found.

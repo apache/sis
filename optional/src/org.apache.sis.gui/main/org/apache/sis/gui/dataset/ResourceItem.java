@@ -94,9 +94,9 @@ final class ResourceItem extends TreeItem<Resource> {
     private boolean isLeaf;
 
     /**
-     * Whether the list of children has been determined. We use this flag in order
-     * to fetch children only when first requested, since this process is costly.
-     * This flag is ignored if {@link #isLeaf} is {@code true}.
+     * Whether the list of children has been determined or is about to be determined
+     * (pending completion of a background task). We use this flag in order to fetch
+     * children only when first requested, since this process is costly.
      *
      * @todo Register {@link org.apache.sis.storage.event.StoreListener} and reset
      *       this flag to {@code false} if the resource content or structure changed.
@@ -285,7 +285,7 @@ final class ResourceItem extends TreeItem<Resource> {
          */
         @Override
         protected void succeeded() {
-            getChildren().setAll(getValue());
+            ResourceItem.super.getChildren().setAll(getValue());
         }
 
         /**
@@ -296,7 +296,7 @@ final class ResourceItem extends TreeItem<Resource> {
         @Override
         @SuppressWarnings("unchecked")
         protected void failed() {
-            getChildren().setAll(new ResourceItem(getException()));
+            ResourceItem.super.getChildren().setAll(new ResourceItem(getException()));
         }
     }
 
