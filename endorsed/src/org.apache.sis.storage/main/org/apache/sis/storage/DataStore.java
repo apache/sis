@@ -67,7 +67,7 @@ import org.apache.sis.storage.event.StoreListeners;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.7
  *
  * @see DataStores#open(Object)
  *
@@ -132,7 +132,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
     @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph. Should not be accessible before completion.
     protected DataStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         this.provider    = provider;
-        this.displayName = connector.getStorageName();
+        this.displayName = connector.getDisplayName();
         this.locale      = Locale.getDefault(Locale.Category.DISPLAY);
         this.listeners   = new StoreListeners(connector.getOption(DataOptionKey.PARENT_LISTENERS), this);
         /*
@@ -162,7 +162,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
                         final boolean hidden) throws DataStoreException
     {
         this.provider = provider;
-        displayName = connector.getStorageName();
+        displayName = connector.getDisplayName();
         final StoreListeners forwardTo;
         if (parent != null) {
             locale = parent.locale;
@@ -263,14 +263,10 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * The name may also contain any Unicode characters, including characters usually not allowed
      * in identifiers like white spaces.</p>
      *
-     * <p>This method should never throw an exception since it may be invoked for producing error
-     * messages, in which case throwing an exception here would hide the original exception.</p>
-     *
-     * <p>This method differs from {@link #getIdentifier()} in that it is typically a file name
-     * known at construction time instead of a property read from metadata.
-     * Default implementation returns the {@link StorageConnector#getStorageName()} value,
-     * or {@code null} if this data store has been created by the no-argument constructor.
-     * Subclasses should override this method if they can provide a better name.</p>
+     * <p>This method differs from {@link #getIdentifier()} in that the returned value is typically
+     * a file name known at construction time instead of a property read from metadata.
+     * Furthermore, this method should never throw an exception because it may be invoked for producing
+     * error messages, in which case throwing an exception here would hide the original exception.</p>
      *
      * @return a short name of label for this data store, or {@code null} if unknown.
      *
