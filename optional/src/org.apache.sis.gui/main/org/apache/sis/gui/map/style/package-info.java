@@ -16,11 +16,13 @@
  */
 
 /**
- * Widgets about coordinate reference systems.
+ * Controls for styling a map.
+ *
+ * <STRONG>Do not use!</STRONG>
+ *
+ * This is an experimental package not yet ready for public usage.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.7
- * @since   1.1
  */
-package org.apache.sis.gui.referencing;
+package org.apache.sis.gui.map.style;

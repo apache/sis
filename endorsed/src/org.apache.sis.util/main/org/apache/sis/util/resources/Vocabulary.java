@@ -700,6 +700,11 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short Latitude = 112;
 
         /**
+         * Layers
+         */
+        public static final short Layers = 285;
+
+        /**
          * Layout
          */
         public static final short Layout = 235;

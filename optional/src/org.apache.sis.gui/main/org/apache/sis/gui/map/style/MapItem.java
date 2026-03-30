@@ -14,13 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.gui.map.style;
+
 
 /**
- * Widgets about coordinate reference systems.
+ * Placeholder for {@code org.apache.sis.map.MapItem}.
+ * We use this temporary class because {@code org.apache.sis.map.MapItem} is in incubator.
  *
- * @author  Johann Sorel (Geomatys)
- * @author  Martin Desruisseaux (Geomatys)
- * @version 1.7
- * @since   1.1
+ * @todo Replace by {@link org.apache.sis.map.MapItem}.
  */
-package org.apache.sis.gui.referencing;
+public class MapItem {
+    /**
+     * A human-readable short description for labeling the map item in a tree view.
+     * This title should be user friendly. It shall not be used as an identifier.
+     */
+    public final String title;
+
+    /**
+     * Creates a new map item with the given text.
+     *
+     * @param  title  a human-readable short description for labeling the map item in a tree view.
+     */
+    public MapItem(final String title) {
+        this.title = title;
+    }
+}

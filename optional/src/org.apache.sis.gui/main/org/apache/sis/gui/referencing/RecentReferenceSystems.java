@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -81,7 +83,7 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   1.1
  */
 public class RecentReferenceSystems {
@@ -202,8 +204,8 @@ public class RecentReferenceSystems {
      * then is filtered by {@link #filterReferenceSystems(ImmutableEnvelope, ComparisonMode)} for resolving authority
      * codes and removing duplicated elements.</p>
      *
-     * <p>All accesses to this field and to {@link #isModified} field shall be done in a block synchronized
-     * on {@code systemsOrCodes}.</p>
+     * <p>All accesses to this field and all accesses to the {@link #isModified}
+     * field shall be done in a block synchronized on {@code systemsOrCodes}.</p>
      */
     private final List<Object> systemsOrCodes;
 
@@ -275,6 +277,12 @@ public class RecentReferenceSystems {
     private boolean isAdjusting;
 
     /**
+     * For detecting when the {@code RecentReferenceSystems} state has been modified concurrently.
+     * Used only in contexts where the state is computed by a background thread.
+     */
+    private final AtomicInteger modificationCount;
+
+    /**
      * Creates a builder which will use a default authority factory.
      * The factory will be capable to handle at least some EPSG codes.
      */
@@ -294,11 +302,12 @@ public class RecentReferenceSystems {
     public RecentReferenceSystems(final CRSAuthorityFactory factory, final Locale locale) {
         this.factory         = factory;
         this.locale          = locale;
+        controlValues        = new ArrayList<>();
         systemsOrCodes       = new ArrayList<>();
         cellIndiceSystems    = new ArrayList<>();
+        modificationCount    = new AtomicInteger();
         areaOfInterest       = new SimpleObjectProperty<>(this, "areaOfInterest");
         duplicationCriterion = new NonNullObjectProperty<>(this, "duplicationCriterion", ComparisonMode.ALLOW_VARIANT);
-        controlValues        = new ArrayList<>();
         duplicationCriterion.addListener((e) -> listModified());
         areaOfInterest.addListener((e,o,n) -> {
             geographicAOI = Utils.toGeographic(RecentReferenceSystems.class, "areaOfInterest", n);
@@ -317,6 +326,15 @@ public class RecentReferenceSystems {
      *   <li>Sets the content of "Referencing by cell indices" sub-menu.</li>
      * </ul>
      *
+     * Above information are derived from the values of the {@code geometries} map.
+     * For each entry, the map key should be the {@link org.apache.sis.storage.Resource#getIdentifier() identifier} of
+     * the resource that provided the {@link GridGeometry} value, or other text allowing the user to identify the resource.
+     * Those keys are used for naming the <abbr>CRS</abbr>s of cell coordinates, which are different for each grid coverage.
+     *
+     * <p>This method can be invoked from any thread. The reference systems are collected in the current thread,
+     * then the state of this {@code RecentReferenceSystems} is updated in the JavaFX thread after all reference
+     * systems are ready.</p>
+     *
      * @param  replaceByAuthoritativeDefinition  whether the reference systems should be replaced by authoritative definition.
      * @param  geometries  grid coverage names together with their grid geometry. May be empty.
      *
@@ -334,8 +352,8 @@ public class RecentReferenceSystems {
         int countCIR = 0;
         final Envelope[] envelopes = new Envelope[geometries.size()];
         final DerivedCRS[] derived = new DerivedCRS[geometries.size()];
-        final CoordinateReferenceSystem[] alt = new CoordinateReferenceSystem[Math.max(derived.length - 1, 0)];
-        CoordinateReferenceSystem preferred = null;
+        final var alt = new CoordinateReferenceSystem[Math.max(derived.length - 1, 0)];
+        CoordinateReferenceSystem firstCRS = null;
         for (final Map.Entry<String,GridGeometry> entry : geometries.entrySet()) {
             final GridGeometry gg = entry.getValue();
             if (gg.isDefined(GridGeometry.ENVELOPE)) {
@@ -343,8 +361,8 @@ public class RecentReferenceSystems {
             }
             if (gg.isDefined(GridGeometry.CRS)) {
                 final CoordinateReferenceSystem crs = gg.getCoordinateReferenceSystem();
-                if (preferred == null) {
-                    preferred = crs;
+                if (firstCRS == null) {
+                    firstCRS = crs;
                 } else {
                     alt[countCRS++] = crs;
                 }
@@ -353,31 +371,40 @@ public class RecentReferenceSystems {
                 }
             }
         }
-        Envelope aoi = null;
+        Envelope union;
         try {
-            aoi = Envelopes.union(envelopes);       // No need to trim null elements.
+            union = Envelopes.union(envelopes);       // No need to trim null elements.
         } catch (TransformException e) {
             errorOccurred("setGridReferencing", e);
+            union = null;
         }
         /*
          * Modify now the state of `this` object but with `listModified()` made almost no-op.
          * The intent is to have only one effective call to `listModified()` at the end,
          * in order to have only one call to `filterReferenceSystems(…)`.
          */
-        final ObservableList<ReferenceSystem> savedReferenceSystemList = referenceSystems;
-        try {
-            referenceSystems = null;
-            if (preferred != null) {
-                setPreferred(replaceByAuthoritativeDefinition, preferred);
-                addAlternatives(replaceByAuthoritativeDefinition, alt);         // No need to trim null elements.
-                cellIndiceSystems.clear();
-                cellIndiceSystems.addAll(Containers.viewAsUnmodifiableList(derived, 0, countCIR));
+        final Envelope aoi = union;     // Because lambda functions want a final variable.
+        final CoordinateReferenceSystem preferred = firstCRS;
+        final List<DerivedCRS> cellCRS = Containers.viewAsUnmodifiableList(derived, 0, countCIR);
+        final int stamp = modificationCount.incrementAndGet();
+        Platform.runLater(() -> {
+            if (modificationCount.get() == stamp) {
+                final ObservableList<ReferenceSystem> savedReferenceSystemList = referenceSystems;
+                try {
+                    referenceSystems = null;
+                    if (preferred != null) {
+                        setPreferred(replaceByAuthoritativeDefinition, preferred);
+                        addAlternatives(replaceByAuthoritativeDefinition, alt);         // No need to trim null elements.
+                        cellIndiceSystems.clear();
+                        cellIndiceSystems.addAll(cellCRS);
+                    }
+                    areaOfInterest.set(aoi);
+                } finally {
+                    referenceSystems = savedReferenceSystemList;
+                }
+                listModified();
             }
-            areaOfInterest.set(aoi);
-        } finally {
-            referenceSystems = savedReferenceSystemList;
-        }
-        listModified();
+        });
     }
 
     /**

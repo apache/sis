@@ -18,9 +18,9 @@ package org.apache.sis.gui.coverage;
 
 import java.util.List;
 import java.util.Locale;
+import javafx.application.Platform;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
@@ -29,18 +29,25 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Priority;
 import javafx.collections.ObservableList;
+import org.apache.sis.image.Interpolation;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.gui.dataset.WindowHandler;
 import org.apache.sis.gui.map.MapMenu;
-import org.apache.sis.image.Interpolation;
+import org.apache.sis.gui.map.style.MapLayer;
+import org.apache.sis.gui.map.style.MapContextView;
 import org.apache.sis.gui.internal.GUIUtilities;
 import org.apache.sis.gui.internal.Styles;
 import org.apache.sis.gui.internal.Resources;
+import org.apache.sis.gui.internal.DataStoreOpener;
+import org.apache.sis.gui.internal.BackgroundThreads;
+import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 import org.apache.sis.gui.controls.ValueColorMapper;
 import org.apache.sis.gui.controls.SyncWindowList;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -57,6 +64,12 @@ final class CoverageControls extends ViewAndControls {
      * @see CoverageExplorer#getCanvas()
      */
     final CoverageCanvas view;
+
+    /**
+     * Provides widget for controlling the rendering of the coverage.
+     * This is the root of the {@link MapContextView} tree.
+     */
+    private final StyleController style;
 
     /**
      * The control showing categories and their colors for the current coverage.
@@ -101,6 +114,13 @@ final class CoverageControls extends ViewAndControls {
         menu.addReferenceSystems(owner.referenceSystems);
         menu.addCopyOptions(status);
         /*
+         * "Layers" section with the following controls:
+         *    - Tree of layers associated to the coverage (styling, isolines, visual indication of loaded tiles).
+         */
+        final var layers = new MapContextView(resources);
+        style = new StyleController(view, resources);
+        layers.setRootItem(style);
+        /*
          * "Display" section with the following controls:
          *    - Current CRS
          *    - Interpolation
@@ -130,18 +150,12 @@ final class CoverageControls extends ViewAndControls {
             categoryTable = styling.createCategoryTable(resources, vocabulary);
             VBox.setVgrow(categoryTable, Priority.ALWAYS);
             /*
-             * Whether to show a visual indication of which tiles are read.
-             */
-            final var showTileReads = new CheckBox(resources.getString(Resources.Keys.ShowTileReadEvents));
-            showTileReads.selectedProperty().addListener((p,o,n) -> view.showTileReads(n));
-            /*
              * All sections put together.
              */
             displayPane = new VBox(
                     labelOfGroup(vocabulary, Vocabulary.Keys.ReferenceSystem, crsControl,    true),  crsControl,
                     labelOfGroup(vocabulary, Vocabulary.Keys.Values,          valuesControl, false), valuesControl,
-                    labelOfGroup(vocabulary, Vocabulary.Keys.Categories,      categoryTable, false), categoryTable,
-                    showTileReads);
+                    labelOfGroup(vocabulary, Vocabulary.Keys.Categories,      categoryTable, false), categoryTable);
         }
         /*
          * "Isolines" section with the following controls:
@@ -168,6 +182,7 @@ final class CoverageControls extends ViewAndControls {
          */
         final TitledPane deferred;                  // Control to be built only if requested.
         controlPanes = new TitledPane[] {
+            new TitledPane(vocabulary.getString(Vocabulary.Keys.Layers),   layers.getView()),
             new TitledPane(vocabulary.getString(Vocabulary.Keys.Display),  displayPane),
             new TitledPane(vocabulary.getString(Vocabulary.Keys.Isolines), isolinesPane),
             new TitledPane(resources.getString(Resources.Keys.Windows), windows.getView()),
@@ -196,6 +211,23 @@ final class CoverageControls extends ViewAndControls {
         if (isAdjustingSlice) {
             return;
         }
+        BackgroundThreads.execute(() -> {
+            final Locale locale = owner.getLocale();
+            String name;
+            try {
+                name = DataStoreOpener.findLabel(resource, locale, true);
+            } catch (DataStoreException | RuntimeException e) {
+                // Declare `setResource` as the public method invoking (indirectly) this method.
+                Logging.recoverableException(LOGGER, CoverageExplorer.class, "setResource", e);
+                name = DataStoreOpener.fallbackLabel(resource, locale);
+            }
+            final var layer = new MapLayer<>(resource, name);
+            Platform.runLater(() -> {
+                if (owner.getResource() == resource) {      // Verify that the resource did not changed concurrently.
+                    style.setData(layer);
+                }
+            });
+        });
         final ObservableList<Category> items = categoryTable.getItems();
         if (coverage == null) {
             items.clear();

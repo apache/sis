@@ -208,6 +208,14 @@ public class CoverageCanvas extends MapCanvasAWT {
     private boolean hasCoverageOrResource;
 
     /**
+     * Whether to skip the rendering of the coverage.
+     * OTher features such as the isolines may still be rendered.
+     *
+     * @see #setCoverageHidden(boolean)
+     */
+    private boolean isCoverageHidden;
+
+    /**
      * A subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
      * May be {@code null} if the grid coverage has only two dimensions with a size greater than 1 cell.
      *
@@ -485,6 +493,19 @@ public class CoverageCanvas extends MapCanvasAWT {
         if (data.selectedDerivative != selection) {
             data.selectedDerivative = selection;
             stylingChanged();
+        }
+    }
+
+    /**
+     * Set whether to skip the rendering of the coverage.
+     * OTher features such as the isolines may still be rendered.
+     *
+     * @param  hidden  whether to skip the rendering of the coverage.
+     */
+    final void setCoverageHidden(final boolean hidden) {
+        if (isCoverageHidden != hidden) {
+            isCoverageHidden = hidden;
+            requestRepaint();
         }
     }
 
@@ -945,13 +966,13 @@ public class CoverageCanvas extends MapCanvasAWT {
         /**
          * The {@link #recoloredImage} after resampling is applied.
          * May be {@code null} if not yet computed, in which case it will be computed by {@link #render()}.
+         * This image should not be cached after rendering operation is completed.
          */
         private RenderedImage resampledImage;
 
         /**
-         * The resampled image with tiles computed in advance. The set of prefetched
-         * tiles may differ at each rendering event. This image should not be cached
-         * after rendering operation is completed.
+         * The resampled image with tiles computed in advance.
+         * The set of prefetched tiles may differ at each rendering event.
          */
         private RenderedImage prefetchedImage;
 
@@ -964,6 +985,12 @@ public class CoverageCanvas extends MapCanvasAWT {
          * @see StyledRenderingData#displayToObjective
          */
         private AffineTransform resampledToDisplay;
+
+        /**
+         * Whether to skip the rendering of the coverage.
+         * OTher features such as the isolines may still be rendered.
+         */
+        private final boolean isCoverageHidden;
 
         /**
          * Snapshot of information required for rendering isolines, or {@code null} if none.
@@ -983,6 +1010,7 @@ public class CoverageCanvas extends MapCanvasAWT {
             displayBounds      = canvas.getDisplayBounds();
             objectivePOI       = canvas.getPointOfInterest(true);
             recoloredImage     = canvas.derivedImages.get(data.selectedDerivative);
+            isCoverageHidden   = canvas.isCoverageHidden;
             if (data.validateCRS(objectiveCRS)) {
                 resampledImage = canvas.resampledImage;
             }
@@ -1092,7 +1120,9 @@ public class CoverageCanvas extends MapCanvasAWT {
                  * We cannot invoke it sooner because it needs some `resampleAndConvert(…)` results.
                  */
                 final Future<Isolines[]> newIsolines = data.generate(isolines);
-                prefetchedImage = data.prefetch(resampledImage, resampledToDisplay, displayBounds);
+                if (!isCoverageHidden) {
+                    prefetchedImage = data.prefetch(resampledImage, resampledToDisplay, displayBounds);
+                }
                 if (newIsolines != null) {
                     IsolineRenderer.complete(isolines, newIsolines);
                 }
@@ -1112,7 +1142,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                 ((TileErrorHandler.Executor) prefetchedImage).execute(
                         () -> gr.drawRenderedImage(RenderingWorkaround.wrap(prefetchedImage), resampledToDisplay),
                         new TileErrorHandler(data.processor.getErrorHandler(), CoverageCanvas.class, "paint"));
-            } else {
+            } else if (!isCoverageHidden) {
                 gr.drawRenderedImage(RenderingWorkaround.wrap(prefetchedImage), resampledToDisplay);
             }
             if (isolines != null) {
@@ -1399,7 +1429,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                 }
             });
             if (error != null) {
-                unexpectedException(error);
+                Logging.recoverableException(LOGGER, TileReadListener.class, "run", error);
             }
         }
 

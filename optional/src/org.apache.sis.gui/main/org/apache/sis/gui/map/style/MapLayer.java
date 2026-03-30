@@ -14,13 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.gui.map.style;
+
+import org.apache.sis.storage.Resource;
+
 
 /**
- * Widgets about coordinate reference systems.
+ * Placeholder for {@code org.apache.sis.map.MapLayer}.
+ * We use this temporary class because {@code org.apache.sis.map.MapLayer} is in incubator.
  *
- * @author  Johann Sorel (Geomatys)
- * @author  Martin Desruisseaux (Geomatys)
- * @version 1.7
- * @since   1.1
+ * @todo Replace by {@link org.apache.sis.map.MapLayer}.
  */
-package org.apache.sis.gui.referencing;
+public final class MapLayer<R extends Resource> extends MapItem {
+    /**
+     * The resource managed by this map layer.
+     */
+    public final R resource;
+
+    /**
+     * Creates a new map item with the given resource.
+     *
+     * @param  resource  the resource managed by this map layer.
+     */
+    public MapLayer(final R resource, final String title) {
+        super(title);
+        this.resource = resource;
+    }
+}
