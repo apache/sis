@@ -289,7 +289,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * references to {@link javafx.scene.control.TableView} list of items, which are the list of isoline levels
      * with their colors.
      */
-    IsolineRenderer isolines;
+    IsolineController isolines;
 
     /**
      * Listener notified when tiles are read, for showing them on top of the image as translucent tiles.
@@ -775,6 +775,10 @@ public class CoverageCanvas extends MapCanvasAWT {
      * If the {@link StyledRenderingData#clear()} method is not invoked, then the map projection,
      * zoom, <i>etc.</i> are preserved.
      *
+     * <p>The caller is responsible for invoking {@link #requestRepaint()} or something equivalent,
+     * possibly indirectly through a listener on a modified property. The {@link #requestRepaint()}
+     * method is not invoked by this method because the caller will typically do more cleaning.</p>
+     *
      * @see #clear()
      */
     private void clearRenderedImage() {
@@ -844,6 +848,10 @@ public class CoverageCanvas extends MapCanvasAWT {
     /**
      * Clears all information that are derived from the raw image projected to objective CRS.
      * In current version this is only isolines.
+     *
+     * <p>The caller is responsible for invoking {@link #requestRepaint()} or something equivalent,
+     * possibly indirectly through a listener on a modified property. The {@link #requestRepaint()}
+     * method is not invoked by this method because the caller will typically do more cleaning.</p>
      */
     private void clearIsolines() {
         if (isolines != null) {
@@ -995,7 +1003,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         /**
          * Snapshot of information required for rendering isolines, or {@code null} if none.
          */
-        private IsolineRenderer.Snapshot[] isolines;
+        private IsolineController.Snapshot[] isolines;
 
         /**
          * Creates a new renderer. Shall be invoked in JavaFX thread.
@@ -1124,7 +1132,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                     prefetchedImage = data.prefetch(resampledImage, resampledToDisplay, displayBounds);
                 }
                 if (newIsolines != null) {
-                    IsolineRenderer.complete(isolines, newIsolines);
+                    IsolineController.complete(isolines, newIsolines);
                 }
             } finally {
                 LogHandler.loadingStop(id);
@@ -1151,7 +1159,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                 // Arbitrarily use a line tickness of 1/8 of source pixel size for making apparent when zoom is strong.
                 gr.setStroke(new BasicStroke(data.getDataPixelSize(objectivePOI) / 8));
                 gr.transform((AffineTransform) objectiveToDisplay);     // This cast is safe in PlanarCanvas subclass.
-                for (final IsolineRenderer.Snapshot s : isolines) {
+                for (final IsolineController.Snapshot s : isolines) {
                     s.paint(gr, objectiveAOI);
                 }
                 gr.setTransform(at);
@@ -1176,7 +1184,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                 tileReadListener.takeSnapshotOfObjectiveCRS();
             }
             if (isolines != null) {
-                for (final IsolineRenderer.Snapshot s : isolines) {
+                for (final IsolineController.Snapshot s : isolines) {
                     s.commit();
                 }
             }

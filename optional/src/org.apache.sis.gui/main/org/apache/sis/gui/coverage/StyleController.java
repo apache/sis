@@ -33,25 +33,27 @@ import org.apache.sis.storage.tiling.TiledGridCoverageResource;
  */
 final class StyleController extends ItemController {
     /**
-     * Whether to show a visual indication of which tiles are read.
+     * The canvas for which to control the rendering.
      */
-    private final ItemController showTileReads;
+    private final CoverageCanvas canvas;
+
+    /**
+     * Whether to show a visual indication of which tiles are read.
+     * Creates when first needed.
+     */
+    private ItemController showTileReads;
 
     /**
      * Creates a controller for a map layer.
      * The controller is initially selected.
      *
-     * @param  view       where the coverage will be rendered.
-     * @param  resources  resources for localized <abbr>GUI</abbr> elements.
+     * @param  canvas  where the coverage will be rendered.
      */
-    StyleController(final CoverageCanvas view, final Resources resources) {
+    StyleController(final CoverageCanvas canvas) {
+        this.canvas = canvas;
         setSelected(true);
         setIndependent(true);
-        selectedProperty().addListener((p,o,n) -> view.setCoverageHidden(!n));
-        showTileReads = new ItemController(new MapItem(resources.getString(Resources.Keys.ShowTileReadEvents)));
-        showTileReads.selectedProperty().addListener((p,o,n) -> view.showTileReads(n));
-        showTileReads.setIndependent(true);
-        getChildren().add(showTileReads);
+        selectedProperty().addListener((p,o,n) -> canvas.setCoverageHidden(!n));
     }
 
     /**
@@ -68,10 +70,14 @@ final class StyleController extends ItemController {
             if (!isTiled) {
                 children.remove(last);
             }
-        } else {
-            if (isTiled) {
-                children.add(showTileReads);
+        } else if (isTiled) {
+            if (showTileReads == null) {
+                final Resources resources = Resources.forLocale(canvas.getLocale());
+                showTileReads = new ItemController(new MapItem(resources.getString(Resources.Keys.ShowTileReadEvents)));
+                showTileReads.selectedProperty().addListener((p,o,n) -> canvas.showTileReads(n));
+                showTileReads.setIndependent(true);
             }
+            children.add(showTileReads);
         }
     }
 }

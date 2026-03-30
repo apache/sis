@@ -17,6 +17,7 @@
 package org.apache.sis.gui.controls;
 
 import java.math.BigDecimal;
+import java.util.Locale;
 import java.text.Format;
 import java.text.NumberFormat;
 import java.text.DecimalFormat;
@@ -83,10 +84,11 @@ final class FormatApplicator<T> extends StringConverter<T>
      * rounding errors that may surprise the user, for example if we need to compute {@code n * scale}
      * where <var>scale</var> has been specified by user as 0.1.
      *
+     * @param  locale  the locale of the desired number format.
      * @return an instance for parsing and formatting numbers.
      */
-    public static FormatApplicator<Number> createNumberFormat() {
-        final FormatApplicator<Number> f = new FormatApplicator<>(Number.class, NumberFormat.getInstance());
+    public static FormatApplicator<Number> createNumberFormat(final Locale locale) {
+        final var f = new FormatApplicator<Number>(Number.class, NumberFormat.getInstance(locale));
         if (f.format instanceof DecimalFormat) {
             ((DecimalFormat) f.format).setParseBigDecimal(true);
         }

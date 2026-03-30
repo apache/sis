@@ -16,7 +16,6 @@
  */
 package org.apache.sis.gui.coverage;
 
-import java.util.List;
 import java.util.Locale;
 import javafx.application.Platform;
 import javafx.scene.control.TitledPane;
@@ -25,7 +24,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Priority;
 import javafx.collections.ObservableList;
@@ -44,7 +42,6 @@ import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.gui.internal.DataStoreOpener;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
-import org.apache.sis.gui.controls.ValueColorMapper;
 import org.apache.sis.gui.controls.SyncWindowList;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.Logging;
@@ -92,11 +89,6 @@ final class CoverageControls extends ViewAndControls {
     private final ChoiceBox<Interpolation> interpolation;
 
     /**
-     * The renderer of isolines.
-     */
-    private final IsolineRenderer isolines;
-
-    /**
      * Creates a new set of coverage controls.
      *
      * @param  owner   the widget which creates this view. Cannot be null.
@@ -118,7 +110,7 @@ final class CoverageControls extends ViewAndControls {
          *    - Tree of layers associated to the coverage (styling, isolines, visual indication of loaded tiles).
          */
         final var layers = new MapContextView(resources);
-        style = new StyleController(view, resources);
+        style = new StyleController(view);
         layers.setRootItem(style);
         /*
          * "Display" section with the following controls:
@@ -161,14 +153,10 @@ final class CoverageControls extends ViewAndControls {
          * "Isolines" section with the following controls:
          *    - Colors for each isoline levels
          */
-        final VBox isolinesPane;
-        {   // Block for making variables locale to this scope.
-            final ValueColorMapper mapper = new ValueColorMapper(resources, vocabulary);
-            isolines = new IsolineRenderer(view);
-            isolines.setIsolineTables(List.of(mapper.getSteps()));
-            final Region style = mapper.getView();
-            VBox.setVgrow(style, Priority.ALWAYS);
-            isolinesPane = new VBox(style);                         // TODO: add band selector
+        if (view.isolines == null) {
+            final var isolines = new IsolineController(view, vocabulary.getString(Vocabulary.Keys.Isolines));
+            style.getChildren().add(isolines);
+            view.isolines = isolines;
         }
         /*
          * Synchronized windows. A synchronized windows is a window which can reproduce the same gestures
@@ -182,9 +170,8 @@ final class CoverageControls extends ViewAndControls {
          */
         final TitledPane deferred;                  // Control to be built only if requested.
         controlPanes = new TitledPane[] {
-            new TitledPane(vocabulary.getString(Vocabulary.Keys.Layers),   layers.getView()),
-            new TitledPane(vocabulary.getString(Vocabulary.Keys.Display),  displayPane),
-            new TitledPane(vocabulary.getString(Vocabulary.Keys.Isolines), isolinesPane),
+            new TitledPane(vocabulary.getString(Vocabulary.Keys.Layers),  layers.getView()),
+            new TitledPane(vocabulary.getString(Vocabulary.Keys.Display), displayPane),
             new TitledPane(resources.getString(Resources.Keys.Windows), windows.getView()),
             deferred = new TitledPane(vocabulary.getString(Vocabulary.Keys.Properties), null)
         };

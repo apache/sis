@@ -88,6 +88,11 @@ public class MapContextView extends Widget {
     private final SplitPane itemsAndConfiguration;
 
     /**
+     * The node to show when no map item is selected.
+     */
+    private final Region noSelection;
+
+    /**
      * Creates an initially empty tree.
      *
      * @param  resources  the resource to use for localized labels.
@@ -96,8 +101,10 @@ public class MapContextView extends Widget {
     public MapContextView(final Resources resources) {
         items = new TreeView<>();
         items.setCellFactory(CellFactory.INSTANCE);
-        itemsAndConfiguration = new SplitPane(items);
+        noSelection = ItemController.createLabel(Resources.Keys.NoSelectedItem);
+        itemsAndConfiguration = new SplitPane(items, noSelection);
         itemsAndConfiguration.setOrientation(Orientation.VERTICAL);
+        items.getSelectionModel().selectedItemProperty().addListener((p,o,n) -> onSelected(n));
     }
 
     /**
@@ -118,5 +125,19 @@ public class MapContextView extends Widget {
      */
     public void setRootItem(final ItemController root) {
         items.setRoot(root);
+    }
+
+    /**
+     * Invoked when a new map item is selected.
+     * This method shows the configuration panel of the selected item.
+     *
+     * @param  item  the selected map item, or {@code null} if none.
+     */
+    private void onSelected(final TreeItem<MapItem> item) {
+        Region config = noSelection;
+        if (item instanceof ItemController) {
+            config = ((ItemController) item).getConfigurationPanel();
+        }
+        itemsAndConfiguration.getItems().set(1, config);
     }
 }

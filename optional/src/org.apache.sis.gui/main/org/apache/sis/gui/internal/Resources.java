@@ -312,6 +312,16 @@ public class Resources extends IndexedResourceBundle {
         public static final short NoFeatureTypeInfo = 27;
 
         /**
+         * No selected item.
+         */
+        public static final short NoSelectedItem = 78;
+
+        /**
+         * Nothing to configure.
+         */
+        public static final short NothingToConfigure = 79;
+
+        /**
          * Open…
          */
         public static final short Open = 28;
