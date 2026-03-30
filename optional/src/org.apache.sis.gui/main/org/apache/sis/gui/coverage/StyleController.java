@@ -16,14 +16,26 @@
  */
 package org.apache.sis.gui.coverage;
 
+import java.util.Locale;
 import javafx.scene.control.TreeItem;
+import javafx.scene.control.ChoiceBox;
 import javafx.collections.ObservableList;
-import org.apache.sis.gui.internal.Resources;
+import javafx.scene.control.TableView;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import org.apache.sis.gui.map.style.MapItem;
 import org.apache.sis.gui.map.style.ItemController;
 import org.apache.sis.gui.map.style.MapLayer;
+import org.apache.sis.gui.internal.Resources;
+import org.apache.sis.gui.internal.Styles;
+import org.apache.sis.gui.internal.GUIUtilities;
+import org.apache.sis.image.Interpolation;
+import org.apache.sis.coverage.Category;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.tiling.TiledGridCoverageResource;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -36,6 +48,32 @@ final class StyleController extends ItemController {
      * The canvas for which to control the rendering.
      */
     private final CoverageCanvas canvas;
+
+    /**
+     * The controls for configuring the appearance of the grid coverage.
+     * Created when first needed.
+     */
+    private final Region configurationPanel;
+
+    /**
+     * The control showing categories and their colors for the current coverage.
+     */
+    final TableView<Category> categoryTable;
+
+    /**
+     * The control used for selecting a color ramp for a given category.
+     */
+    private final CoverageStyling styling;
+
+    /**
+     * The control used for selecting a color stretching mode.
+     */
+    private final ChoiceBox<Stretching> stretching;
+
+    /**
+     * The control used for selecting the interpolation method.
+     */
+    private final ChoiceBox<Interpolation> interpolation;
 
     /**
      * Whether to show a visual indication of which tiles are read.
@@ -54,6 +92,58 @@ final class StyleController extends ItemController {
         setSelected(true);
         setIndependent(true);
         selectedProperty().addListener((p,o,n) -> canvas.setCoverageHidden(!n));
+        /*
+         * "Display" section with the following controls:
+         *    - Current CRS
+         *    - Interpolation
+         *    - Color stretching
+         *    - Colors for each category
+         */
+        final Locale     locale     = canvas.getLocale();
+        final Resources  resources  = Resources.forLocale(locale);
+        final Vocabulary vocabulary = Vocabulary.forLocale(locale);
+        /*
+         * Creates a "Values" sub-section with the following controls:
+         *   - Interpolation
+         *   - Color stretching
+         */
+        interpolation = InterpolationConverter.button(canvas);
+        stretching = Stretching.createButton((p,o,n) -> canvas.setStretching(n));
+        final GridPane valuesControl = Styles.createControlGrid(0,
+                CoverageControls.label(vocabulary, Vocabulary.Keys.Interpolation, interpolation),
+                CoverageControls.label(vocabulary, Vocabulary.Keys.Stretching, stretching));
+        /*
+         * Creates a "Categories" section with the category table.
+         */
+        styling = new CoverageStyling(canvas);
+        categoryTable = styling.createCategoryTable(resources, vocabulary);
+        VBox.setVgrow(categoryTable, Priority.ALWAYS);
+        /*
+         * All sections put together.
+         */
+        configurationPanel = new VBox(
+                CoverageControls.labelOfGroup(vocabulary, Vocabulary.Keys.Values,     valuesControl, true),  valuesControl,
+                CoverageControls.labelOfGroup(vocabulary, Vocabulary.Keys.Categories, categoryTable, false), categoryTable);
+    }
+
+    /**
+     * Returns a panel of JavaFX controls for configuring the appearance of the grid coverage.
+     *
+     * @return the configuration panel for the grid coverage.
+     */
+    @Override
+    protected Region getConfigurationPanel() {
+        return configurationPanel;
+    }
+
+    /**
+     * Copies the styling configuration from the given controls.
+     * This is invoked when the user click on "New window" button.
+     */
+    final void copyStyling(final StyleController c) {
+        styling.copyStyling(c.styling);
+        GUIUtilities.copySelection(c.stretching, stretching);
+        GUIUtilities.copySelection(c.interpolation, interpolation);
     }
 
     /**

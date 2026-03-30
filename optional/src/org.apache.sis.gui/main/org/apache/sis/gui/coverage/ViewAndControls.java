@@ -17,6 +17,7 @@
 package org.apache.sis.gui.coverage;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
@@ -31,7 +32,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.collections.ObservableList;
-import org.apache.sis.gui.internal.Styles;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -62,12 +62,6 @@ abstract class ViewAndControls {
      * Margin to keep around captions after the first one.
      */
     private static final Insets NEXT_CAPTION_MARGIN = new Insets(30, 0, 6, 0);
-
-    /**
-     * Same indentation as {@link Styles#FORM_INSETS}, but without the space on other sides.
-     * This is used when the node is outside a group created by {@link Styles#createControlGrid(int, Label...)}.
-     */
-    static final Insets CONTENT_MARGIN = new Insets(0, 0, 0, Styles.FORM_INSETS.getLeft());
 
     /**
      * Index of {@link #sliceSelector} in the list of children of {@link #viewAndNavigation}.
@@ -256,6 +250,8 @@ abstract class ViewAndControls {
     static Label labelOfGroup(final IndexedResourceBundle vocabulary, final short key, final Region group, final boolean isFirst) {
         final Label label = new Label(vocabulary.getString(key));
         label.setPadding(isFirst ? CAPTION_MARGIN : NEXT_CAPTION_MARGIN);
+        label.setMaxWidth(Double.MAX_VALUE);
+        label.setAlignment(Pos.CENTER);
         label.setLabelFor(group);
         label.setFont(fontOfGroup());
         return label;

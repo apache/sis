@@ -69,6 +69,12 @@ public final class Styles {
     public static final Color SELECTED_TEXT = Color.WHITE;
 
     /**
+     * Color of text for information purpose but which are not the main topic.
+     * This is using a lighter color for avoiding to be a source of distraction.
+     */
+    public static final Color FAINT_TEXT = Color.GRAY;
+
+    /**
      * Color of the text saying that data are in process of being loaded.
      */
     public static final Color LOADING_TEXT = Color.STEELBLUE;

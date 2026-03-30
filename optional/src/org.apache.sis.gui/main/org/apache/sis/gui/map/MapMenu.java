@@ -54,7 +54,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
  * In current implementation, there is no mechanism for removing menu items.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.7
  * @since   1.1
  */
 public class MapMenu extends ContextMenu {
@@ -65,9 +65,19 @@ public class MapMenu extends ContextMenu {
 
     /**
      * A handler for controlling the contextual menu.
-     * Created when first needed.
+     * Created when first needed and should be considered final after initialization.
      */
     private MapCanvas.MenuHandler menuHandler;
+
+    /**
+     * Name of the currently selected reference system.
+     * This reference needs to be cached because JavaFX binds properties using weak references.
+     * If the users invoke {@link #selectedReferenceSystem()} only for registering listeners without
+     * storing the returned instance, their listeners will be lost unless we keep a reference here.
+     *
+     * @see #selectedReferenceSystem()
+     */
+    private ObservableObjectValue<String> selectedReferenceSystem;
 
     /**
      * Groups of menu items that have been added. Bits in this mask are set when {@link #addCopyOptions(StatusBar)}
@@ -170,23 +180,22 @@ public class MapMenu extends ContextMenu {
         getItems().add(coordinates);
     }
 
-
     /**
-     * Returns an observable value for showing the currently selected CRS as a text.
+     * Returns an observable value for showing the name of the currently selected <abbr>CRS</abbr>.
      * The value is absent if {@link #addReferenceSystems(RecentReferenceSystems)} has never been invoked.
      *
-     * @return the currently selected CRS as a text.
+     * @return the currently selected <abbr>CRS</abbr> as a text.
      *
      * @see #addReferenceSystems(RecentReferenceSystems)
      */
     public Optional<ObservableObjectValue<String>> selectedReferenceSystem() {
-        if (menuHandler != null) {
+        if (selectedReferenceSystem == null && menuHandler != null) {
             final ObjectProperty<ReferenceSystem> selectedCrsProperty = menuHandler.selectedCrsProperty;
             if (selectedCrsProperty != null) {
-                return Optional.of(new SelectedCRS(selectedCrsProperty, canvas.getLocale()));
+                selectedReferenceSystem = new SelectedCRS(selectedCrsProperty, canvas.getLocale());
             }
         }
-        return Optional.empty();
+        return Optional.ofNullable(selectedReferenceSystem);
     }
 
     /**

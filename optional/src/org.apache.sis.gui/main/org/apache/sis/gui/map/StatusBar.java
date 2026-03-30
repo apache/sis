@@ -49,6 +49,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ObjectPropertyBase;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectPropertyBase;
+import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -78,17 +79,17 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.portrayal.RenderException;
-import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.gui.Widget;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.gui.internal.BackgroundThreads;
@@ -125,7 +126,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * {@link #setLocalCoordinates(double, double)} explicitly instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   1.1
  */
 public class StatusBar extends Widget implements EventHandler<MouseEvent> {
@@ -154,18 +155,33 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
 
     /**
      * The container of controls making the status bar.
-     * Contains {@link #message}, {@link #position} and {@link #sampleValues}.
+     * Contains {@link #message}, {@link #position} and {@link #sampleValues} in that order.
      *
      * @see #getView()
      */
     private final HBox view;
 
     /**
+     * The default message to show when there is no error or operation in progress.
+     *
+     * @see #setDefaultMessage(String, Tooltip)
+     */
+    private String defaultMessage;
+
+    /**
+     * The tool tip to show on the default message, or {@code null} if none.
+     */
+    private Tooltip defaultMessageTeooltip;
+
+    /**
      * Message to write in the middle of the status bar.
-     * This component usually has nothing to show; it is used mostly for error messages.
+     * This component can be used, for example, for error messages.
      * It takes all the space before {@link #position}.
      *
      * @see #getMessage()
+     * @see #setInfoMessage(String)
+     * @see #setErrorMessage(String, Throwable)
+     * @see #setDefaultMessage(String, Tooltip)
      */
     private final Label message;
 
@@ -270,6 +286,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * directly instead. We omit the "Property" suffix for making this operation more natural.
      *
      * @see #position
+     * @see #positionReferenceSystemName()
      */
     public final ReadOnlyObjectProperty<ReferenceSystem> positionReferenceSystem;
 
@@ -409,6 +426,15 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     protected final Label position;
 
     /**
+     * Tool tip of {@link #position} showing the name of the reference system of the coordinates.
+     * The text property of this tool tip may be used outside this class.
+     *
+     * @see #positionReferenceSystem
+     * @see #positionReferenceSystemName()
+     */
+    private final Tooltip positionReferenceSystemName;
+
+    /**
      * Maximal length of {@linkplain #position} text found so far. This is used for detecting when
      * to compute a minimal {@linkplain #position} width for making sure that the coordinates stay
      * visible even when an error message is shown on the left.
@@ -502,6 +528,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         position = new Label();
         position.setAlignment(Pos.CENTER_RIGHT);
         position.setTextAlignment(TextAlignment.RIGHT);
+        positionReferenceSystemName = new Tooltip();
 
         view = new HBox(6, message, position);
         view.setPadding(PADDING);
@@ -1057,7 +1084,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         targetCoordinates = target;         // Assign only after above succeed.
         formatAsIdentifiers = null;
         format.setGroundAccuracy(Quantities.max(accuracy, lowestAccuracy.get()));
-        setTooltip(crs);
+        setCoordinateTooltip(crs);
         /*
          * Prepare the text to show when the mouse is outside the canvas area.
          * We will write axis abbreviations, for example "(φ, λ)".
@@ -1271,7 +1298,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         fullOperationSearchRequired = null;
         outsideText = null;
         setErrorMessage(null, null);
-        setTooltip(coder.getReferenceSystem());
+        setCoordinateTooltip(coder.getReferenceSystem());
         position.setText(identifier);
         ((PositionSystem) positionReferenceSystem).fireValueChangedEvent();
         rewritePosition(current);
@@ -1570,18 +1597,23 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     /**
      * Sets the tooltip text to show when the mouse cursor is over the coordinate values.
      */
-    private void setTooltip(final ReferenceSystem crs) {
-        String text = IdentifiedObjects.getDisplayName(crs, getLocale());
-        Tooltip tp = null;
-        if (text != null) {
-            tp = position.getTooltip();
-            if (tp == null) {
-                tp = new Tooltip(text);
-            } else {
-                tp.setText(text);
-            }
-        }
-        position.setTooltip(tp);
+    private void setCoordinateTooltip(final ReferenceSystem crs) {
+        final String text = IdentifiedObjects.getDisplayName(crs, getLocale());
+        positionReferenceSystemName.setText(text);
+        position.setTooltip(text != null ? positionReferenceSystemName : null);
+    }
+
+    /**
+     * Returns a property for the name of the reference system used by the coordinates.
+     * This is the localized name of the {@link #positionReferenceSystem} property.
+     *
+     * @return a property for the name of the reference system used by the coordinates.
+     *
+     * @see #positionReferenceSystem
+     * @since 1.7
+     */
+    public ReadOnlyStringProperty positionReferenceSystemName() {
+        return positionReferenceSystemName.textProperty();
     }
 
     /**
@@ -1589,10 +1621,56 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      *
      * @return the current message, or an empty value if none.
      *
+     * @see #setInfoMessage(String)
+     * @see #setErrorMessage(String, Throwable)
+     * @see #setDefaultMessage(String, Tooltip)
+     *
      * @since 1.3
      */
     public Optional<String> getMessage() {
         return Optional.ofNullable(message.getText());
+    }
+
+    /**
+     * Sets the message, or restore the default message if the given text is null.
+     *
+     * @param text      the text, or {@code null} if none.
+     * @param textFill  the color to use for the text.
+     */
+    private void setMessage(String text, Color textFill) {
+        Tooltip tooltip = null;
+        if (text == null) {
+            text     = defaultMessage;
+            textFill = Styles.FAINT_TEXT;
+            tooltip  = defaultMessageTeooltip;
+        }
+        message.setVisible(text != null);
+        message.setText(text);
+        message.setTextFill(textFill);
+        message.setTooltip(tooltip);
+    }
+
+    /**
+     * Sets the default message to show when there is no error or operation in progress.
+     * If {@link #setInfoMessage(String)} or {@link #setErrorMessage(String, Throwable)}
+     * is invoked, the informative or error message has precedence over this default message.
+     * When the informative or error message is reset to {@code null}, the default message is restored.
+     *
+     * @param  text     message to show when there is no other kind of message, or {@code null} if none.
+     * @param  tooltip  optional tool tip to show on the default message, or {@code null} if none.
+     *
+     * @since 1.7
+     */
+    public void setDefaultMessage(String text, final Tooltip tooltip) {
+        text = Strings.trimOrNull(text);
+        defaultMessage = text;
+        defaultMessageTeooltip = tooltip;
+        // Use the text fill as a way to identify that the message is not an error or information.
+        if (message.getText() == null || message.getTextFill() == Styles.FAINT_TEXT) {
+            message.setTextFill(Styles.FAINT_TEXT);
+            message.setText(text);
+            message.setTooltip(tooltip);
+        }
     }
 
     /**
@@ -1604,11 +1682,8 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @since 1.3
      */
     public void setInfoMessage(String text) {
-        text = Strings.trimOrNull(text);
-        message.setVisible(text != null);
+        setMessage(Strings.trimOrNull(text), Styles.LOADING_TEXT);
         message.setGraphic(null);
-        message.setText(text);
-        message.setTextFill(Styles.LOADING_TEXT);
     }
 
     /**
@@ -1624,15 +1699,16 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         text = Strings.trimOrNull(text);
         Button more = null;
         if (details != null) {
-            final String alert = (text != null) ? text : cause(details);
+            if (text == null) {
+                text = cause(details);
+            }
+            final String alert = text;  // Because lambda functions want final variable.
             more = new Button(Styles.ERROR_DETAILS_ICON);
             more.setOnAction((e) -> ExceptionReporter.show(getView(),
                     Resources.forLocale(getLocale()).getString(Resources.Keys.ErrorDetails), alert, details));
         }
-        message.setVisible(text != null);
+        setMessage(text, Styles.ERROR_TEXT);
         message.setGraphic(more);
-        message.setText(text);
-        message.setTextFill(Styles.ERROR_TEXT);
     }
 
     /**
@@ -1669,7 +1745,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     /**
      * Returns a string representation of the message of the given exception.
      * If the exception is a wrapper, the exception cause is taken.
-     * If there is no message, the exception class name is returned.
+     * If there is no message, the exception class name is used.
      *
      * @param  e  the exception.
      * @return the exception message or class name.
@@ -1680,7 +1756,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         }
         String text = Exceptions.getLocalizedMessage(e, getLocale());
         if (text == null) {
-            text = Classes.getShortClassName(e);
+            text = CharSequences.camelCaseToWords(e.getClass().getSimpleName(), false).toString();
         }
         return text;
     }

@@ -302,6 +302,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short Mercator = 44;
 
         /**
+         * The image and the status bar use different reference systems.
+         */
+        public static final short MismatchedRS = 80;
+
+        /**
          * New window
          */
         public static final short NewWindow = 26;
