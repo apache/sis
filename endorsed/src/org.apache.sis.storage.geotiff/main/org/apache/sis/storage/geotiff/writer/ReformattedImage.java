@@ -67,7 +67,7 @@ public final class ReformattedImage {
     /**
      * The values to write in the {@code ExtraSamples} TIFF tag, or {@code null} if none.
      * Values are some of the {@code EXTRA_SAMPLES_*} constants.
-     * The alpha channel, if presents, is declared here.
+     * The alpha channel, if present, is declared here.
      */
     public short[] extraSamples;
 

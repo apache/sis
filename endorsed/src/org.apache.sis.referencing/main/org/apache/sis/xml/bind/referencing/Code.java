@@ -64,7 +64,7 @@ public final class Code {
 
     /**
      * Creates a wrapper initialized to the values of the given identifier.
-     * Version number, if presents, will be appended after the codespace with a semicolon separator.
+     * Version number, if present, will be appended after the codespace with a semicolon separator.
      * The {@link #getIdentifier()} method shall be able to perform the opposite operation (split the
      * above in separated codespace and version attributes).
      *

@@ -216,7 +216,7 @@ class TreeNode implements Node {
     /**
      * Appends an identifier for this node in the given buffer, for {@link #toString()} implementation.
      * The appended value is similar to the value returned by {@link #getIdentifier()} (except for the
-     * root node), but may contains additional information like the index in a collection.
+     * root node), but may contain additional information like the index in a collection.
      *
      * <p>The default implementation is suitable only for the root node - subclasses must override.</p>
      *

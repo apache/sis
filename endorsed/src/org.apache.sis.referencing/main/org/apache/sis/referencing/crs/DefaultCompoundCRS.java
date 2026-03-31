@@ -310,7 +310,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     /**
      * Returns the ordered list of coordinate reference systems.
      * This is the list of CRS given at construction time.
-     * This list may contains other {@code CompoundCRS} instances, as described in class Javadoc.
+     * This list may contain other {@code CompoundCRS} instances, as described in class Javadoc.
      * For a flattened list of {@link SingleCRS} instances, see {@link #getSingleComponents()}.
      *
      * @return the coordinate reference systems as an unmodifiable list.

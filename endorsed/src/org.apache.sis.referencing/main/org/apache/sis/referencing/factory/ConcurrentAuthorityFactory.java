@@ -821,7 +821,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *
      * <p>The default implementation performs the following steps:</p>
      * <ol>
-     *   <li>Removes the namespace if presents. For example if the {@linkplain #getCodeSpaces() codespace}
+     *   <li>Removes the namespace if present. For example if the {@linkplain #getCodeSpaces() codespace}
      *       is EPSG and the given code starts with the {@code "EPSG:"} prefix, then that prefix is removed.</li>
      *   <li>Removes leading and trailing spaces.</li>
      * </ol>

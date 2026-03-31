@@ -53,7 +53,7 @@ import org.apache.sis.storage.base.MetadataBuilder;
 public interface TileMatrixSet {
     /**
      * Returns an alphanumeric identifier which is unique in the {@link TiledResource} that contains
-     * this {@code TileMatrixSet}. A tiled resource may contains more than one tile matrix set if the
+     * this {@code TileMatrixSet}. A tiled resource may contain more than one tile matrix set if the
      * resource prepared different set of tiles for different CRS.
      *
      * @return a unique (within {@link TiledResource}) identifier.

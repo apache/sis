@@ -641,7 +641,7 @@ public final class Types {
     /**
      * Returns an international string for the values in the given properties map, or {@code null} if none.
      * This method is used when a property in a {@link java.util.Map} may have many localized variants.
-     * For example, the given map may contains a {@code "remarks"} property defined by values associated to
+     * For example, the given map may contain a {@code "remarks"} property defined by values associated to
      * the {@code "remarks_en"} and {@code "remarks_fr"} keys, for English and French locales respectively.
      *
      * <p>If the given map is {@code null}, then this method returns {@code null}.

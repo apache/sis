@@ -58,7 +58,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
 
     /**
      * The string values in different locales (never {@code null}).
-     * May contains the {@code null} key.
+     * May contain the {@code null} key.
      */
     @SuppressWarnings("serial")
     private Map<Locale,String> localeMap;
@@ -317,7 +317,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      *   <li>Otherwise, this method returns {@code false}.</li>
      * </ul>
      *
-     * @param  candidate  the object which may contains this international string.
+     * @param  candidate  the object which may contain this international string.
      * @return {@code true} if the given object contains all localized strings found in this international string.
      */
     public synchronized boolean isSubsetOf(final Object candidate) {

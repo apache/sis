@@ -234,7 +234,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         }
 
         /**
-         * Appends a string that may contains Unicode characters. The enumeration is responsible
+         * Appends a string that may contain Unicode characters. The enumeration is responsible
          * for converting the Unicode characters into ASCII ones if needed.
          */
         Appendable appendSymbol(final Appendable toAppendTo, final String value) throws IOException {

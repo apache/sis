@@ -59,7 +59,7 @@ final class ReferenceKeeper {
     private static final long EXPIRATION_TIME = 5L * 60 * Constants.NANOS_PER_SECOND;
 
     /**
-     * The objects to retain by strong reference. May contains duplicated values and {@code null} anywhere.
+     * The objects to retain by strong reference. May contain duplicated values and {@code null} anywhere.
      * This is used as a cyclic queue. We use an array instead of {@link java.util.LinkedHashMap} for more
      * control on which instance is retained (objet identity matter, not just object equality).
      */

@@ -120,7 +120,7 @@ abstract class CommandRunner {
 
     /**
      * Output stream to the console. This output stream uses the encoding
-     * specified by the {@code "--encoding"} argument, if presents.
+     * specified by the {@code "--encoding"} argument, if present.
      */
     protected final PrintWriter out;
 
