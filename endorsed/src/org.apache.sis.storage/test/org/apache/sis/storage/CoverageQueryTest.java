@@ -37,6 +37,7 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
  *
  * @author  Johann Sorel (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class CoverageQueryTest extends TestCase {
     /**
      * The coordinate reference system used by the tests.
@@ -82,8 +83,11 @@ public final class CoverageQueryTest extends TestCase {
      * Creates an arbitrary grid geometry included inside the {@linkplain #resource} extent.
      */
     private GridGeometry createSubGrid(final int expansion) {
-        final GridExtent extent = new GridExtent(
-                new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.ROW},
+        final var extent = new GridExtent(
+                new DimensionNameType[] {
+                    DimensionNameType.COLUMN,
+                    DimensionNameType.ROW
+                },
                 new long[] { 7 - expansion, 19 - expansion},
                 new long[] {21 + expansion, 27 + expansion}, true);
 

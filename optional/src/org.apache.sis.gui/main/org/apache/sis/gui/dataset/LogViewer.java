@@ -507,6 +507,7 @@ public class LogViewer extends Widget {
      * Invoked when a log record is selected.
      */
     private void selected(final LogRecord log) {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         String level = null, time = null, logger = null, classe = null, method = null;
         if (log != null) {
             level   = toString(log.getLevel());
@@ -613,8 +614,8 @@ public class LogViewer extends Widget {
     }
 
     /**
-     * Returns the control to show in the scene graph.
-     * The implementation class may change in any future version.
+     * Returns the encapsulated JavaFX component to add in a scene graph for making the logs visible.
+     * The {@code Region} subclass is implementation dependent and may change in any future SIS version.
      */
     @Override
     public Region getView() {

@@ -16,30 +16,27 @@
  */
 package org.apache.sis.gui.coverage;
 
-import java.util.List;
 import java.util.Locale;
-import javafx.scene.control.TitledPane;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableView;
+import javafx.application.Platform;
 import javafx.scene.control.Tooltip;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
-import javafx.scene.layout.Priority;
+import javafx.scene.control.TitledPane;
+import javafx.beans.value.ObservableObjectValue;
 import javafx.collections.ObservableList;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.gui.dataset.WindowHandler;
 import org.apache.sis.gui.map.MapMenu;
-import org.apache.sis.image.Interpolation;
-import org.apache.sis.gui.internal.GUIUtilities;
-import org.apache.sis.gui.internal.Styles;
+import org.apache.sis.gui.map.style.MapLayer;
+import org.apache.sis.gui.map.style.MapContextView;
 import org.apache.sis.gui.internal.Resources;
-import org.apache.sis.gui.controls.ValueColorMapper;
+import org.apache.sis.gui.internal.DataStoreOpener;
+import org.apache.sis.gui.internal.BackgroundThreads;
+import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 import org.apache.sis.gui.controls.SyncWindowList;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -58,29 +55,15 @@ final class CoverageControls extends ViewAndControls {
     final CoverageCanvas view;
 
     /**
-     * The control showing categories and their colors for the current coverage.
+     * Provides widget for controlling the rendering of the coverage.
+     * This is the root of the {@link MapContextView} tree.
      */
-    private final TableView<Category> categoryTable;
+    private final StyleController style;
 
     /**
-     * The control used for selecting a color ramp for a given category.
+     * Tool tip for the reference system shown in the status bar.
      */
-    private final CoverageStyling styling;
-
-    /**
-     * The control used for selecting a color stretching mode.
-     */
-    private final ChoiceBox<Stretching> stretching;
-
-    /**
-     * The control used for selecting the interpolation method.
-     */
-    private final ChoiceBox<Interpolation> interpolation;
-
-    /**
-     * The renderer of isolines.
-     */
-    private final IsolineRenderer isolines;
+    private final Tooltip referenceSystemTooltip;
 
     /**
      * Creates a new set of coverage controls.
@@ -99,55 +82,29 @@ final class CoverageControls extends ViewAndControls {
         final MapMenu menu = new MapMenu(view);
         menu.addReferenceSystems(owner.referenceSystems);
         menu.addCopyOptions(status);
-        /*
-         * "Display" section with the following controls:
-         *    - Current CRS
-         *    - Interpolation
-         *    - Color stretching
-         *    - Colors for each category
-         */
-        final VBox displayPane;
-        {   // Block for making variables locale to this scope.
-            final Label crsControl = new Label();
-            crsControl.setPadding(CONTENT_MARGIN);
-            crsControl.setTooltip(new Tooltip(resources.getString(Resources.Keys.SelectCrsByContextMenu)));
-            menu.selectedReferenceSystem().ifPresent((text) -> crsControl.textProperty().bind(text));
-            /*
-             * Creates a "Values" sub-section with the following controls:
-             *   - Interpolation
-             *   - Color stretching
-             */
-            interpolation = InterpolationConverter.button(view);
-            stretching = Stretching.createButton((p,o,n) -> view.setStretching(n));
-            final GridPane valuesControl = Styles.createControlGrid(0,
-                label(vocabulary, Vocabulary.Keys.Interpolation, interpolation),
-                label(vocabulary, Vocabulary.Keys.Stretching, stretching));
-            /*
-             * Creates a "Categories" section with the category table.
-             */
-            styling = new CoverageStyling(view);
-            categoryTable = styling.createCategoryTable(resources, vocabulary);
-            VBox.setVgrow(categoryTable, Priority.ALWAYS);
-            /*
-             * All sections put together.
-             */
-            displayPane = new VBox(
-                    labelOfGroup(vocabulary, Vocabulary.Keys.ReferenceSystem, crsControl,    true),  crsControl,
-                    labelOfGroup(vocabulary, Vocabulary.Keys.Values,          valuesControl, false), valuesControl,
-                    labelOfGroup(vocabulary, Vocabulary.Keys.Categories,      categoryTable, false), categoryTable);
+        final ObservableObjectValue<String> mapCRS = menu.selectedReferenceSystem().orElse(null);
+        if (mapCRS == null) {
+            referenceSystemTooltip = null;
+        } else {
+            referenceSystemTooltip = new Tooltip(resources.getString(Resources.Keys.SelectCrsByContextMenu));
+            mapCRS.addListener((p,o,n) -> notifyReferenceSystemChanged(n, status.getReferenceSystemName().get(), true));
+            status.getReferenceSystemName().addListener((p,o,n) -> notifyReferenceSystemChanged(mapCRS.get(), n, false));
         }
+        /*
+         * "Layers" section with the following controls:
+         *    - Tree of layers associated to the coverage (styling, isolines, visual indication of loaded tiles).
+         */
+        final var layers = new MapContextView(resources);
+        style = new StyleController(view);
+        layers.setRootItem(style);
         /*
          * "Isolines" section with the following controls:
          *    - Colors for each isoline levels
          */
-        final VBox isolinesPane;
-        {   // Block for making variables locale to this scope.
-            final ValueColorMapper mapper = new ValueColorMapper(resources, vocabulary);
-            isolines = new IsolineRenderer(view);
-            isolines.setIsolineTables(List.of(mapper.getSteps()));
-            final Region style = mapper.getView();
-            VBox.setVgrow(style, Priority.ALWAYS);
-            isolinesPane = new VBox(style);                         // TODO: add band selector
+        if (view.isolines == null) {
+            final var isolines = new IsolineController(view, vocabulary.getString(Vocabulary.Keys.Isolines));
+            style.getChildren().add(isolines);
+            view.isolines = isolines;
         }
         /*
          * Synchronized windows. A synchronized windows is a window which can reproduce the same gestures
@@ -161,8 +118,7 @@ final class CoverageControls extends ViewAndControls {
          */
         final TitledPane deferred;                  // Control to be built only if requested.
         controlPanes = new TitledPane[] {
-            new TitledPane(vocabulary.getString(Vocabulary.Keys.Display),  displayPane),
-            new TitledPane(vocabulary.getString(Vocabulary.Keys.Isolines), isolinesPane),
+            new TitledPane(vocabulary.getString(Vocabulary.Keys.Layers), layers.getView()),
             new TitledPane(resources.getString(Resources.Keys.Windows), windows.getView()),
             deferred = new TitledPane(vocabulary.getString(Vocabulary.Keys.Properties), null)
         };
@@ -178,6 +134,28 @@ final class CoverageControls extends ViewAndControls {
     }
 
     /**
+     * Invoked in JavaFX thread after the reference system of the coverage or of the status bar changed.
+     * The {@code interim} argument is {@code true} if the change was in the <abbr>CRS</abbr> of the map,
+     * and the <abbr>CRS</abbr> shown in the status bar is expected to be updated to the same value soon.
+     * In the latter case, we avoid distracting the user with a message saying that the reference systems
+     * are not consistent.
+     *
+     * @param  coverage     the name of the reference system of the rendered coverage.
+     * @param  coordinates  the name of the reference system of coordinates shown in the status bar.
+     * @param  interim      {@code true} if this event is expected to be followed soon by another event.
+     */
+    private void notifyReferenceSystemChanged(String coverage, final String coordinates, final boolean interim) {
+        if (coverage != null && coordinates != null && !coverage.equals(coordinates)) {
+            if (interim) {
+                status.setDefaultMessage(null, referenceSystemTooltip);
+                return;
+            }
+            coverage = Resources.forLocale(owner.getLocale()).getString(Resources.Keys.MismatchedRS);
+        }
+        status.setDefaultMessage(coverage, coverage == null ? null : referenceSystemTooltip);
+    }
+
+    /**
      * Invoked in JavaFX thread after {@link CoverageCanvas} resource or coverage property value changed.
      * This method updates the controls GUI with new information available and update the corresponding
      * {@link CoverageExplorer} properties.
@@ -189,7 +167,24 @@ final class CoverageControls extends ViewAndControls {
         if (isAdjustingSlice) {
             return;
         }
-        final ObservableList<Category> items = categoryTable.getItems();
+        BackgroundThreads.execute(() -> {
+            final Locale locale = owner.getLocale();
+            String name;
+            try {
+                name = DataStoreOpener.findLabel(resource, locale, true);
+            } catch (DataStoreException | RuntimeException e) {
+                // Declare `setResource` as the public method invoking (indirectly) this method.
+                Logging.recoverableException(LOGGER, CoverageExplorer.class, "setResource", e);
+                name = DataStoreOpener.fallbackLabel(resource, locale);
+            }
+            final var layer = new MapLayer<>(resource, name);
+            Platform.runLater(() -> {
+                if (owner.getResource() == resource) {      // Verify that the resource did not changed concurrently.
+                    style.setData(layer);
+                }
+            });
+        });
+        final ObservableList<Category> items = style.categoryTable.getItems();
         if (coverage == null) {
             items.clear();
         } else {
@@ -216,8 +211,6 @@ final class CoverageControls extends ViewAndControls {
      * This is invoked when the user click on "New window" button.
      */
     final void copyStyling(final CoverageControls c) {
-        styling.copyStyling(c.styling);
-        GUIUtilities.copySelection(c.stretching, stretching);
-        GUIUtilities.copySelection(c.interpolation, interpolation);
+        style.copyStyling(c.style);
     }
 }

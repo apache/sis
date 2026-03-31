@@ -478,10 +478,10 @@ otherRow:           for (int j = last.getNumRow() - 1; --j >= 0;) {     // Ignor
     }
 
     /**
-     * Whether this operation can be cached. This flag shall be {@code false} if
-     * the operation depends on parameters that may vary between two executions.
+     * Whether the operation result depends on the values of the user-supplied {@link CoordinateOperationContext}.
+     * This flag shall be {@code true} if the operation depends on parameters that may vary between two executions.
      */
-    final boolean canStoreInCache() {
-        return constantCoordinates == null;
+    final boolean resultWasContextSensitive() {
+        return constantCoordinates != null;
     }
 }

@@ -37,6 +37,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DerivedSetTest extends TestCase implements ObjectConverter<Integer,Integer> {
     /**
      * The value to replace by {@code null}.

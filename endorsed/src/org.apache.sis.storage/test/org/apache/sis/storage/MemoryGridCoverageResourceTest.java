@@ -75,9 +75,11 @@ public final class MemoryGridCoverageResourceTest extends TestCase {
      * Creates an arbitrary grid geometry included inside the {@linkplain #resource} extent.
      */
     private GridGeometry createSubGrid() {
-        final var extent = new GridExtent(null,
+        final var extent = new GridExtent(
+                null,
                 new long[] {7, 4},
-                new long[] {WIDTH - 9, HEIGHT - 11}, true);
+                new long[] {WIDTH - 9, HEIGHT - 11},
+                true);
 
         return new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, crs);
     }

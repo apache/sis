@@ -81,12 +81,19 @@ final class FeatureSet extends DiscreteSampling {
     static final String TRAJECTORY = "trajectory";
 
     /**
+     * Amount of memory (in number of bytes) to use when reading features in advance.
+     * This is used for computing the value of {@link #pageSize}, taking in account
+     * the size of each variable.
+     */
+    @Configuration
+    private static final int MEMORY_USAGE = 2 * 1024 * 1024;
+
+    /**
      * Number of features to get in one read operation. We do not read features one-by-one because it may be slow.
      * We do not read all features at once neither because it consumes a lot of memory if the netCDF file is large.
      * This value is a compromise between reducing I/O operations and reducing memory consumption.
      */
-    @Configuration
-    private static final int PAGE_SIZE = 512;
+    private final int pageSize;
 
     /**
      * The number of instances for each feature, or {@code null} if none. If non-null, then the number of features
@@ -205,6 +212,11 @@ final class FeatureSet extends DiscreteSampling {
         this.referencingDimension = selectedAxes.size();
         this.isTrajectory         = isTrajectory | (referencingDimension == 0);
         this.hasTime              = hasTime;
+        int bytesPerFeature = 0;
+        for (final Variable property : properties) {
+            bytesPerFeature += property.getDataType().size();
+        }
+        pageSize = Math.max(MEMORY_USAGE / Math.max(bytesPerFeature, 1), 1);
         /*
          * We will create a description of the features to be read with following properties:
          *
@@ -683,7 +695,7 @@ skip:           for (final Variable v : properties) {
 
         /**
          * Values of all simple properties (having a single value per feature instance).
-         * The list size should not exceed {@value FeatureSet#PAGE_SIZE} elements.
+         * The size of each list should not exceed {@value FeatureSet#pageSize} elements.
          *
          * @see FeatureSet#properties
          */
@@ -708,7 +720,7 @@ skip:           for (final Variable v : properties) {
 
         /**
          * Creates a new iterator. This constructor reads immediately data for the first
-         * {@value #PAGE_SIZE} feature instances as a way to detect problem early.
+         * {@value #pageSize} feature instances as a way to detect problem early.
          */
         Iter() throws IOException, DataStoreException {
             size = (int) Math.min(getFeatureCount().orElse(0), Integer.MAX_VALUE);
@@ -724,11 +736,11 @@ skip:           for (final Variable v : properties) {
         }
 
         /**
-         * Reads static property values for the next {@value #PAGE_SIZE} feature instances.
+         * Reads static property values for the next {@value #pageSize} feature instances.
          * Reading starts at the feature at index given by {@link #currentLowerIndex}.
          */
         private void readNextPage() throws IOException, DataStoreException {
-            final int length = Math.min(size - currentLowerIndex, PAGE_SIZE);
+            final int length = Math.min(size - currentLowerIndex, pageSize);
             read(properties, propertyIndexOffset, currentLowerIndex, length, propertyValues);
             currentUpperIndex = currentLowerIndex + length;
         }
@@ -842,14 +854,34 @@ makeGeom:   if (!isEmpty) {
                      */
                     if (isFloat) {
                         final float x = coordinateValues[0].floatValue(offset);
-                        final float y = coordinateValues[0].floatValue(offset);
-                        if (Float.isNaN(x) && Float.isNaN(y)) break makeGeom;
-                        geometry = factory.createPoint(x, y);
+                        final float y = coordinateValues[1].floatValue(offset);
+                        if (geometryDimension >= 3) {
+                            final float z = coordinateValues[2].floatValue(offset);
+                            if (Float.isNaN(x) && Float.isNaN(y) && Float.isNaN(z)) {
+                                break makeGeom;
+                            }
+                            geometry = factory.createPoint(x, y, z);
+                        } else {
+                            if (Float.isNaN(x) && Float.isNaN(y)) {
+                                break makeGeom;
+                            }
+                            geometry = factory.createPoint(x, y);
+                        }
                     } else {
                         final double x = coordinateValues[0].doubleValue(offset);
                         final double y = coordinateValues[1].doubleValue(offset);
-                        if (Double.isNaN(x) && Double.isNaN(y)) break makeGeom;
-                        geometry = factory.createPoint(x, y);
+                        if (geometryDimension >= 3) {
+                            final double z = coordinateValues[2].doubleValue(offset);
+                            if (Double.isNaN(x) && Double.isNaN(y) && Double.isNaN(z)) {
+                                break makeGeom;
+                            }
+                            geometry = factory.createPoint(x, y, z);
+                        } else {
+                            if (Double.isNaN(x) && Double.isNaN(y)) {
+                                break makeGeom;
+                            }
+                            geometry = factory.createPoint(x, y);
+                        }
                     }
                 }
                 feature.setPropertyValue(TRAJECTORY, geometry);
@@ -860,8 +892,12 @@ makeGeom:   if (!isEmpty) {
              * The time vector is the first vector after the geometry dimensions.
              */
             if (hasTime) {
-                MovingFeatures.setTimes((Attribute<?>) feature.getProperty(TRAJECTORY),
-                                        coordinateValues[geometryDimension], timeCRS);
+                final var t = (Attribute<?>) feature.getProperty(TRAJECTORY);
+                if (isTrajectory) {
+                    MovingFeatures.setTimes(t, coordinateValues[geometryDimension], timeCRS);
+                } else {
+                    MovingFeatures.setTime(t, coordinateValues[geometryDimension].doubleValue(offset), timeCRS);
+                }
             }
             action.accept(feature);
             dynamicPropertyPosition += length;         // Check for ArithmeticException is already done by `extent(…)` call.

@@ -50,7 +50,7 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractTuple<T> i
             this.values = array.clone();
         }
 
-        public Byte(Tuple tuple) {
+        public Byte(ReadOnly.Tuple<?> tuple) {
             super(tuple.getSampleSystem());
             this.values = new byte[tuple.getDimension()];
             set(tuple);
@@ -87,6 +87,11 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractTuple<T> i
             return true;
         }
 
+        @Override
+        public Byte copy() {
+            return new Byte(values);
+        }
+
     }
 
     public static class UByte extends VectorND<UByte> {
@@ -108,7 +113,7 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractTuple<T> i
             this.values = array.clone();
         }
 
-        public UByte(Tuple tuple) {
+        public UByte(ReadOnly.Tuple<?> tuple) {
             super(tuple.getSampleSystem());
             this.values = new byte[tuple.getDimension()];
             set(tuple);
@@ -145,6 +150,11 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractTuple<T> i
             return true;
         }
 
+        @Override
+        public UByte copy() {
+            return new UByte(values);
+        }
+
     }
 
     public static class Short extends VectorND<Short> {
@@ -166,7 +176,7 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractTuple<T> i
             this.values = array.clone();
         }
 
-        public Short(Tuple tuple) {
+        public Short(ReadOnly.Tuple<?> tuple) {
             super(tuple.getSampleSystem());
             this.values = new short[tuple.getDimension()];
             set(tuple);
@@ -203,6 +213,11 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractTuple<T> i
             return true;
         }
 
+        @Override
+        public Short copy() {
+            return new Short(values);
+        }
+
     }
 
     public static class UShort extends VectorND<UShort> {
@@ -224,7 +239,7 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractTuple<T> i
             this.values = array.clone();
         }
 
-        public UShort(Tuple tuple) {
+        public UShort(ReadOnly.Tuple<?> tuple) {
             super(tuple.getSampleSystem());
             this.values = new short[tuple.getDimension()];
             set(tuple);
@@ -261,6 +276,11 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractTuple<T> i
             return true;
         }
 
+        @Override
+        public UShort copy() {
+            return new UShort(values);
+        }
+
     }
 
     public static class Int extends VectorND<Int> {
@@ -282,7 +302,7 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractTuple<T> i
             this.values = array.clone();
         }
 
-        public Int(Tuple tuple) {
+        public Int(ReadOnly.Tuple<?> tuple) {
             super(tuple.getSampleSystem());
             this.values = new int[tuple.getDimension()];
             set(tuple);
@@ -319,6 +339,11 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractTuple<T> i
             return true;
         }
 
+        @Override
+        public Int copy() {
+            return new Int(values);
+        }
+
     }
 
     public static class UInt extends VectorND<UInt> {
@@ -340,7 +365,7 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractTuple<T> i
             this.values = array.clone();
         }
 
-        public UInt(Tuple tuple) {
+        public UInt(ReadOnly.Tuple<?> tuple) {
             super(tuple.getSampleSystem());
             this.values = new int[tuple.getDimension()];
             set(tuple);
@@ -377,6 +402,11 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractTuple<T> i
             return true;
         }
 
+        @Override
+        public UInt copy() {
+            return new UInt(values);
+        }
+
     }
 
     public static class Long extends VectorND<Long> {
@@ -398,7 +428,7 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractTuple<T> i
             this.values = array.clone();
         }
 
-        public Long(Tuple tuple) {
+        public Long(ReadOnly.Tuple<?> tuple) {
             super(tuple.getSampleSystem());
             this.values = new long[tuple.getDimension()];
             set(tuple);
@@ -435,6 +465,11 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractTuple<T> i
             return true;
         }
 
+        @Override
+        public Long copy() {
+            return new Long(values);
+        }
+
     }
 
     public static class Float extends VectorND<Float> {
@@ -456,7 +491,7 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractTuple<T> i
             this.values = array.clone();
         }
 
-        public Float(Tuple tuple) {
+        public Float(ReadOnly.Tuple<?> tuple) {
             super(tuple.getSampleSystem());
             this.values = new float[tuple.getDimension()];
             set(tuple);
@@ -488,6 +523,11 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractTuple<T> i
             values[indice] = (float) value;
         }
 
+        @Override
+        public Float copy() {
+            return new Float(values);
+        }
+
     }
 
     public static class Double extends VectorND<Double> {
@@ -515,7 +555,7 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractTuple<T> i
             set(array);
         }
 
-        public Double(Tuple tuple) {
+        public Double(ReadOnly.Tuple<?> tuple) {
             super(tuple.getSampleSystem());
             this.values = new double[tuple.getDimension()];
             set(tuple);
@@ -545,6 +585,11 @@ public abstract class VectorND<T extends VectorND<T>> extends AbstractTuple<T> i
                 throw new IndexOutOfBoundsException("Invalid index " + indice);
             }
             values[indice] = value;
+        }
+
+        @Override
+        public Double copy() {
+            return new Double(values);
         }
 
     }

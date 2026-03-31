@@ -26,13 +26,13 @@ import org.apache.sis.storage.base.MetadataBuilder;
 
 
 /**
- * A collection of {@code TileMatrix} in the same CRS but at different scale levels.
+ * A collection of {@code TileMatrix} in the same <abbr>CRS</abbr> but at different scale levels.
  * Each {@code TileMatrix} is optimized for a particular scale and is identified by a tile matrix identifier.
  * Tile matrices usually have 2 dimensions (width and height), but this API allows any number of dimensions.
  * However, the number of dimensions must be the same for all tile matrices.
  *
- * <p>The {@code TileMatrixSet} concept is derived from OGC standards. The same concept is called
- * <i>image pyramid</i> or <i>resolution levels</i> in some other standards.
+ * <p>The {@code TileMatrixSet} concept is derived from <abbr>OGC</abbr> standards.
+ * The same concept is called <i>image pyramid</i> or <i>resolution levels</i> in some other standards.
  * Some standards require that all scales must be related by a power of 2,
  * but {@code TileMatrixSet} does not have this restriction.</p>
  *
@@ -110,7 +110,7 @@ public interface TileMatrixSet {
      * Returns the coordinate reference system of all {@code TileMatrix} instances in this set.
      * This is the value returned by {@code TileMatrix.getTilingScheme().getCoordinateReferenceSystem()}.
      *
-     * @return the CRS used by all {@code TileMatrix} instances in this set.
+     * @return the <abbr>CRS</abbr> used by all {@code TileMatrix} instances in this set.
      *
      * @see TileMatrix#getTilingScheme()
      */
@@ -122,12 +122,12 @@ public interface TileMatrixSet {
      * of all values returned by {@code TileMatrix.getTilingScheme().getEnvelope()}.
      * May be empty if too costly to compute.
      *
-     * @return the bounding box for all tile matrices in CRS coordinates, if available.
+     * @return the bounding box for all tile matrices in <abbr>CRS</abbr> coordinates, if available.
      */
     Optional<Envelope> getEnvelope();
 
     /**
-     * Returns all {@link TileMatrix} instances in this set, together with their identifiers.
+     * Returns all {@code TileMatrix} instances in this set, together with their identifiers.
      * For each value in the map, the associated key is {@link TileMatrix#getIdentifier()}.
      * Entries are sorted from coarser resolution (highest scale denominator) to most detailed
      * resolution (lowest scale denominator).

@@ -32,7 +32,7 @@ abstract class AbstractCursor extends AbstractTuple implements Cursor {
     }
 
     @Override
-    public Tuple samples() {
+    public Tuple<?> samples() {
         return this;
     }
 

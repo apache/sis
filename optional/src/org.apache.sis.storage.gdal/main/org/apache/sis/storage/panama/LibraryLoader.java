@@ -16,36 +16,38 @@
  */
 package org.apache.sis.storage.panama;
 
+import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Optional;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.NoSuchElementException;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.function.Function;
 import java.lang.foreign.Arena;
 import java.lang.foreign.SymbolLookup;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.system.Shutdown;
+import org.apache.sis.storage.DataStoreProvider;
 
 
 /**
  * A helper class for loading a native library.
- * This object exists only for the duration of {@link NativeFunctions} construction.
+ * This object exists only for the duration of {@link NativeFunctions} construction
+ * followed by the construction of the service ({@link DataStoreProvider}) that uses
+ * the native functions.
  *
  * @param <F> the class of {@code NativeFunctions} to construct using this loader.
+ * @param <S> type of service which will use the native functions.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class LibraryLoader<F extends NativeFunctions> {
+public final class LibraryLoader<F extends NativeFunctions, S extends DataStoreProvider> {
     /**
      * Value to assign to {@link NativeFunctions#libraryName}.
      */
     String filename;
 
     /**
-     * Value to assign to {@link NativeFunctions#arena}.
+     * Value to assign to {@link NativeFunctions#libraryArena}.
      */
-    Arena arena;
+    Arena libraryArena;
 
     /**
      * Value to assign to {@link NativeFunctions#symbols}.
@@ -57,7 +59,19 @@ public final class LibraryLoader<F extends NativeFunctions> {
      * This is reset to {@code null} after usage as a way to ensure
      * that each {@code LibraryLoader} instance is used only once.
      */
-    private Function<LibraryLoader<F>, F> creator;
+    private Function<LibraryLoader<F,S>, F> functionsCreator;
+
+    /**
+     * The constructor to call for building a service using the native functions.
+     * This is reset to {@code null} after usage as a way to ensure
+     * that each {@code LibraryLoader} instance is used only once.
+     */
+    private Function<F, S> serviceCreator;
+
+    /**
+     * Exact class (not a parent class or interface) of the service to return.
+     */
+    final Class<S> serviceType;
 
     /**
      * Whether the library has been found.
@@ -67,46 +81,76 @@ public final class LibraryLoader<F extends NativeFunctions> {
     private LibraryStatus status;
 
     /**
-     * Cause of failure to load the library, or {@code null} if none.
-     */
-    private RuntimeException error;
-
-    /**
      * Creates a new instance.
      *
-     * @param  creator  the constructor to call for building a {@code NativeFunctions}.
+     * @param  functionsCreator  a callback for creating a {@code NativeFunctions} if needed.
+     * @param  serviceCreator    a callback for creating the service from the {@code NativeFunctions}.
+     * @param  serviceType       exact class (not a parent class or interface) of the service to return.
      */
-    public LibraryLoader(final Function<LibraryLoader<F>, F> creator) {
-        this.creator = creator;
+    public LibraryLoader(final Function<LibraryLoader<F,S>, F> functionsCreator,
+                         final Function<F, S> serviceCreator,
+                         final Class<S> serviceType)
+    {
+        this.functionsCreator = functionsCreator;
+        this.serviceCreator   = serviceCreator;
+        this.serviceType      = serviceType;
     }
 
     /**
-     * Loads the native library from the given file.
-     * Callers should register the returned instance in a {@link java.lang.ref.Cleaner}.
+     * Loads the native library and creates the handlers for native functions.
+     * This method can be invoked at most once.
+     *
+     * @return handler of native functions.
+     */
+    final F createNativeFunctions() {
+        Function<LibraryLoader<F,S>, F> c = functionsCreator;
+        functionsCreator = null;     // For making sure to not invoke twice.
+        return c.apply(this);
+    }
+
+    /**
+     * Creates the service which will use the given native functions.
+     * This method is invoked by {@link LibraryReference#getOrCreateService(Object, LibraryLoader)}
+     * only and should not be invoked in other circumstances, because the caller must ensure that
+     * the returned instance is registered for automatic call to {@link NativeFunctions#destroy()}
+     * when the service is garbage-collected or at <abbr>JVM</abbr> shutdown time.
+     *
+     * @param  handlers  handlers created by {@link #createNativeFunctions()}.
+     * @return service using the given native functions.
+     */
+    final S createService(final F handlers) {
+        Function<F,S> c = serviceCreator;
+        serviceCreator = null;      // For making sure to not invoke twice.
+        return c.apply(handlers);
+    }
+
+    /**
+     * Loads the native library from the given file, then builds the service using that library.
      *
      * @param  library  the library to load.
-     * @return handles to native functions needed by the data store.
-     * @throws IllegalArgumentException if the native library has not been found.
+     * @return service using the native functions in the given library.
+     * @throws IOException if an error occurred while getting a unique identifier of the library.
+     * @throws IllegalArgumentException if path does not point to a valid native library.
      * @throws IllegalCallerException if this Apache SIS module is not authorized to call native methods.
      */
     @SuppressWarnings("restricted")
-    public F load(final Path library) {
-        final var c = creator;
-        creator  = null;
-        filename = library.getFileName().toString();
-        status   = LibraryStatus.LIBRARY_NOT_FOUND;         // In case an exception occurs before completion.
-        arena    = Arena.ofShared();
-        final F instance;
+    public S load(final Path library) throws IOException {
+        final Object libraryKey;
+        libraryKey   = Files.readAttributes(library, BasicFileAttributes.class).fileKey();
+        filename     = library.getFileName().toString();
+        status       = LibraryStatus.LIBRARY_NOT_FOUND;     // In case an exception occurs before completion.
+        libraryArena = Arena.ofShared();
+        final S service;
         try {
-            symbols  = SymbolLookup.libraryLookup(library, arena);
-            status   = LibraryStatus.FUNCTION_NOT_FOUND;    // Update the status to report if we cannot complete.
-            instance = c.apply(this);
-            status   = LibraryStatus.LOADED;
+            symbols = SymbolLookup.libraryLookup(library, libraryArena);
+            status  = LibraryStatus.FUNCTION_NOT_FOUND;    // Update the status to report if we cannot complete.
+            service = LibraryReference.getOrCreateService(libraryKey, this, false);
+            status  = LibraryStatus.LOADED;
         } catch (Throwable e) {
-            arena.close();
+            libraryArena.close();
             throw e;
         }
-        return instance;
+        return service;
     }
 
     /**
@@ -118,58 +162,44 @@ public final class LibraryLoader<F extends NativeFunctions> {
      * <p><em>It is caller's responsibility to ensure that this method is invoked at most once per library.</em>
      * Invoking this method many times for the same library may cause unpredictable behavior.</p>
      *
-     * <h4>Error handling</h4>
-     * Contrarily to {@link #load(Path)}, this method does not throw exception. Callers should invoke
-     * {@link #validate()} or {@link #getError(String)} after this method call,
-     * depending on whether an error should be fatal or not.
-     *
      * @param  library   base filename (without the {@code "lib"} prefix and {@code ".so"} or
      *                   {@code ".dll"} suffix) of the native library to load.
-     * @return handles to native functions needed by the data store.
+     * @return service using the native functions in the given library.
+     * @throws IllegalCallerException if this Apache SIS module is not authorized to call native methods.
      */
     @SuppressWarnings("restricted")
-    public F global(final String library) {
-        final var c = creator;
-        creator     = null;
-        filename    = System.mapLibraryName(library);
-        status      = LibraryStatus.LIBRARY_NOT_FOUND;      // Default value if an exception occurs below.
-        F instance  = null;
-create: try {
+    public S global(final String library) {
+        filename     = System.mapLibraryName(library);
+        status       = LibraryStatus.LIBRARY_NOT_FOUND;     // Default value if an exception occurs below.
+        libraryArena = Arena.global();
+        S service = null;
+        try {
+            RuntimeException error = null;
             try {
-                symbols = SymbolLookup.libraryLookup(filename, Arena.global());
+                symbols = SymbolLookup.libraryLookup(filename, libraryArena);
             } catch (IllegalArgumentException e) {
                 error    = e;
                 filename = "system";
                 symbols  = SymbolLookup.loaderLookup();     // In case user called `System.loadLibrary(…)`.
             }
             try {
-                instance = c.apply(this);
-                status   = LibraryStatus.LOADED;
+                service = LibraryReference.getOrCreateService(serviceType, this, true);
+                status  = LibraryStatus.LOADED;
             } catch (RuntimeException e) {
+                if (e instanceof NoSuchElementException) {
+                    status = LibraryStatus.FUNCTION_NOT_FOUND;
+                }
                 if (error != null) {
                     error.addSuppressed(e);
-                } else {
-                    error = e;
+                    throw error;
                 }
-                break create;
+                throw e;
             }
-            /*
-             * Note: registering a shutdown hook cause a reference to be kept for the JVM lifetime.
-             * But such reference should exist anyway because this `global(String)` method should
-             * be invoked for initialization of a static variable. Furthermore, subclass may need
-             * to do a last native method class for flushing some cache.
-             *
-             * TODO: unregister if the library had a fatal error and should not be used anymore.
-             */
-            Shutdown.register(instance);
         } catch (IllegalCallerException e) {
-            error  = e;
             status = LibraryStatus.UNAUTHORIZED;
-        } catch (NoSuchElementException e) {
-            error  = e;
-            status = LibraryStatus.FUNCTION_NOT_FOUND;
+            throw e;
         }
-        return instance;
+        return service;
     }
 
     /**
@@ -178,9 +208,9 @@ create: try {
      * that the loading failed:
      *
      * {@snippet lang="java" :
-     *     LibraryLoader<?> loader = ...;
+     *     LibraryLoader<?,?> loader = ...;
      *     try {
-     *         loader.global("foo");
+     *         service = loader.global("foo");
      *     } finally {
      *         globalStatus = loader.status();
      *     }
@@ -190,31 +220,5 @@ create: try {
      */
     public final LibraryStatus status() {
         return status;
-    }
-
-    /**
-     * Throws an exception if the loading of the native library failed.
-     *
-     * @param  library  name of the library, used if an error message needs to be produced.
-     * @throws DataStoreException if the native library has not been found
-     *         or if SIS is not allowed to call native functions.
-     */
-    public void validate(String library) throws DataStoreException {
-        status.report(library, error);
-    }
-
-    /**
-     * Returns the error as a log message.
-     *
-     * @param  name  the library name.
-     * @return a log message describing the error, or {@code null} if the operation was successful.
-     */
-    public Optional<LogRecord> getError(final String name) {
-        if (error == null) {
-            return Optional.empty();
-        }
-        LogRecord record = Resources.forLocale(null).createLogRecord(Level.CONFIG, Resources.Keys.CannotInitialize_1, name);
-        record.setThrown(error);
-        return Optional.of(record);
     }
 }

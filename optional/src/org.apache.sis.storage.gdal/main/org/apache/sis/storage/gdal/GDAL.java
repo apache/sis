@@ -16,31 +16,25 @@
  */
 package org.apache.sis.storage.gdal;
 
-import java.nio.file.Path;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.NoSuchElementException;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.lang.foreign.Arena;
 import java.lang.foreign.ValueLayout;
-import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.invoke.MethodHandle;
-import org.apache.sis.util.internal.shared.Constants;
-import org.apache.sis.util.logging.Logging;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.panama.LibraryLoader;
 import org.apache.sis.storage.panama.LibraryStatus;
 import org.apache.sis.storage.panama.NativeFunctions;
-import org.apache.sis.storage.panama.Resources;
 
 
 /**
  * Handlers to <abbr>GDAL</abbr> native functions needed by this package.
- * The <abbr>GDAL</abbr> library can be unloaded by invoking {@link #run()}.
+ * The <abbr>GDAL</abbr> library may be unloaded with the {@link GDALStoreProvider}
+ * will be garbage collected.
  *
  * @author  Quentin Bialota (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -48,21 +42,6 @@ import org.apache.sis.storage.panama.Resources;
  * @see <a href="https://gdal.org/en/latest/api/raster_c_api.html">GDAL Raster C API</a>
  */
 final class GDAL extends NativeFunctions {
-    /**
-     * The global instance, created when first needed.
-     * This field shall be read and updated in a synchronized block.
-     * It may be reset to {@code null} if <abbr>GDAL</abbr> reported a fatal error.
-     *
-     * @see #global(boolean)
-     */
-    private static GDAL global;
-
-    /**
-     * Whether an error occurred during initialization of {@link #global}.
-     * Shall be read and updated in the same synchronization block as {@link #global}.
-     */
-    private static LibraryStatus globalStatus;
-
     /**
      * <abbr>GDAL</abbr> {@code const char *GDALGetDriverLongName(GDALDriverH)}.
      * Returns the long name of a driver. For the GeoTIFF driver, this is "GeoTIFF"
@@ -291,12 +270,12 @@ final class GDAL extends NativeFunctions {
     private OGR ogr;
 
     /**
-     * Creates the handles for all <abbr>GDAL</abbr> functions which will be needed.
+     * Creates the handles for most <abbr>GDAL</abbr> functions which will be needed.
      *
      * @param  loader  the object used for loading the library.
      * @throws NoSuchElementException if a <abbr>GDAL</abbr> function has not been found in the library.
      */
-    private GDAL(final LibraryLoader<GDAL> loader) {
+    private GDAL(final LibraryLoader<GDAL, GDALStoreProvider> loader) {
         super(loader);
 
         // A few frequently-used function signatures.
@@ -418,86 +397,17 @@ final class GDAL extends NativeFunctions {
 
         // Initialize GDAL after we found all functions.
         if (!invoke("GDALAllRegister")) {
-            log(GDAL.class, "<init>", Resources.forLocale(null)
-                    .createLogRecord(Level.WARNING, Resources.Keys.CannotInitialize_1, Constants.GDAL));
+            GDALStoreProvider.log(LibraryStatus.CANNOT_INITIALIZE, true, null);
         }
     }
 
     /**
      * Returns the helper class for loading the <abbr>GDAL</abbr> library.
-     * If {@code def} is true, then this method tries to load the library
-     * now and stores the result in {@link #global} and {@link #globalStatus}.
      *
-     * @param  now  whether this method is invoked for the default (global) library.
-     *         In such case, the caller must be synchronized and {@link #global} must be initially null.
      * @return the library loader for <abbr>GDAL</abbr>.
      */
-    private static LibraryLoader<GDAL> load(final boolean now) {
-        final var loader = new LibraryLoader<>(GDAL::new);
-        if (now) {
-            try {
-                global = loader.global("gdal");
-            } finally {
-                globalStatus = loader.status();
-            }
-            if (global != null) {
-                if (GDALStoreProvider.LOGGER.isLoggable(Level.CONFIG)) {
-                    global.version("--version").ifPresent((version) -> {
-                        log(GDAL.class, "<init>", new LogRecord(Level.CONFIG, version));
-                    });
-                }
-            }
-        }
-        return loader;
-    }
-
-    /**
-     * Loads the <abbr>GDAL</abbr> library from the given file.
-     * Callers should register the returned instance in a {@link java.lang.ref.Cleaner}.
-     *
-     * @param  library  the library to load.
-     * @return handles to native functions needed by this module.
-     * @throws IllegalArgumentException if the GDAL library has not been found.
-     * @throws NoSuchElementException if a <abbr>GDAL</abbr> function has not been found in the library.
-     * @throws IllegalCallerException if this Apache SIS module is not authorized to call native methods.
-     */
-    static GDAL load(final Path library) {
-        return load(false).load(library);
-    }
-
-    /**
-     * Returns an instance using the <abbr>GDAL</abbr> library loaded from the default library path.
-     * The handles are valid for the Java Virtual Machine lifetime, i.e. it uses the global arena.
-     * If this method has already been invoked, this method returns the previously created instance.
-     *
-     * <p>If the <abbr>GDAL</abbr> library is not found, the current default is {@link SymbolLookup#loaderLookup()}
-     * for allowing users to invoke {@link System#loadLibrary(String)} as a fallback. This policy may be revised in
-     * any future version of Apache <abbr>SIS</abbr>.</p>
-     *
-     * @return handles to native functions needed by this module.
-     * @throws DataStoreException if the native library has not been found or if SIS is not allowed to call
-     *         native functions, and {@code onError} is null.
-     */
-    static synchronized GDAL global() throws DataStoreException {
-        if (globalStatus == null) {
-            load(true).validate(Constants.GDAL);
-        }
-        globalStatus.report(Constants.GDAL, null);
-        return global;
-    }
-
-    /**
-     * Same as {@link #global}, but logs a warning instead of throwing an exception in case of error.
-     *
-     * @param  classe  the class which is invoking this method (for logging purpose).
-     * @param  method  the name of the method which is invoking this method (for logging purpose).
-     * @return handles to native functions needed by this module, or empty if not available.
-     */
-    static synchronized Optional<GDAL> tryGlobal(final Class<?> classe, final String method) {
-        if (globalStatus == null) {
-            load(true).getError(Constants.GDAL).ifPresent((record) -> log(classe, method, record));
-        }
-        return Optional.ofNullable(global);
+    static LibraryLoader<GDAL, GDALStoreProvider> loader() {
+        return new LibraryLoader<>(GDAL::new, GDALStoreProvider::new, GDALStoreProvider.class);
     }
 
     /**
@@ -505,7 +415,7 @@ final class GDAL extends NativeFunctions {
      * The handler is set by a call to {@code CPLErrorHandler CPLSetErrorHandler(CPLErrorHandler)} where
      * {@code CPLErrorHandler} is {@code void (*CPLErrorHandler)(CPLErr, CPLErrorNum, const char*)}.
      *
-     * <p><b>The error handler is valid only during the lifetime of the {@linkplain #arena() arena}.</b>
+     * <p><b>The error handler is valid only during the lifetime of the {@linkplain #libraryArena}.</b>
      * The error handle shall be uninstalled before the arena is closed.</p>
      *
      * @param  target  the function to set as an error handler, or {@link MemorySegment#NULL} for the GDAL default.
@@ -523,7 +433,7 @@ final class GDAL extends NativeFunctions {
         }
         if (target == null) {
             target = linker.upcallStub(ErrorHandler.getMethod(),
-                    FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.ADDRESS), arena());
+                    FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.ADDRESS), libraryArena);
         }
         final MethodHandle handle = linker.downcallHandle(setter,
                 FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS));
@@ -532,17 +442,6 @@ final class GDAL extends NativeFunctions {
         } catch (Throwable e) {
             throw propagate(e);
         }
-    }
-
-    /**
-     * Logs the given record as if was produced by the {@link GDALStoreProvider}, which is the public class.
-     *
-     * @param  classe  the class which is invoking this method (for logging purpose).
-     * @param  method  the name of the method which is invoking this method (for logging purpose).
-     * @param  record  the error to log.
-     */
-    private static void log(final Class<?> classe, final String method, final LogRecord record) {
-        Logging.completeAndLog(GDALStoreProvider.LOGGER, classe, method, record);
     }
 
     /**
@@ -618,18 +517,22 @@ final class GDAL extends NativeFunctions {
     }
 
     /**
-     * Unloads the <abbr>GDAL</abbr> library. If the arena is global,
-     * then this method should not be invoked before <abbr>JVM</abbr> shutdown.
-     * Otherwise, this method is invoked when {@link GDALStoreProvider} is garbage-collected.
+     * Closes the <abbr>GDAL</abbr> library. This method is invoked automatically when the last
+     * {@link NativeFunctions} instance using the native library has been garbage-collected.
      */
     @Override
-    public void run() {
-        try {
-            // Clear the error handler because the arena will be closed.
-            setErrorHandler(MemorySegment.NULL);
-            invoke("GDALDestroy");
-        } finally {
-            super.run();
-        }
+    protected void destroy() {
+        // Clear the error handler because `libraryArena` will be closed.
+        setErrorHandler(MemorySegment.NULL);
+        invoke("GDALDestroy");
+    }
+
+    /**
+     * Returns the logger where to report warnings.
+     * This is used if an exception occurred during the execution of {@link #destroy()}.
+     */
+    @Override
+    protected Logger getLogger() {
+        return GDALStoreProvider.LOGGER;
     }
 }

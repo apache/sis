@@ -110,7 +110,7 @@ import org.apache.sis.setup.OptionKey;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   0.3
  */
 public class StorageConnector implements Serializable {
@@ -269,6 +269,15 @@ public class StorageConnector implements Serializable {
      * @see #getStorageName()
      */
     private transient String name;
+
+    /**
+     * Whether {@linkplain #name} is uninformative for the purpose of {@link DataStore#getDisplayName()}.
+     * This flag is {@code true} if {@link #name} is the {@link #storage} class name, which is a fallback
+     * used in last resort only for the purpose of exception messages.
+     *
+     * @see #getDisplayName()
+     */
+    private boolean isNameUninformative;
 
     /**
      * The filename extension, or {@code null} if none.
@@ -713,10 +722,24 @@ public class StorageConnector implements Serializable {
                 name = Strings.trimOrNull(IOUtilities.toString(storage));
                 if (name == null) {
                     name = Classes.getShortClassName(storage);
+                    isNameUninformative = true;
                 }
             }
         }
         return name;
+    }
+
+    /**
+     * Returns a short name of the input/output object, or {@code null} if that name does not identify the file.
+     * The difference between this method and {@link #getStorageName()} is that this method does not return the
+     * class name of the {@link #storage} object.
+     *
+     * @return a short name of the storage object, or {@code null} if none.
+     */
+    final String getDisplayName() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final String name = getStorageName();
+        return isNameUninformative ? null : name;
     }
 
     /**

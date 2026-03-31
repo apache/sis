@@ -127,8 +127,8 @@ public class NDArraysTest {
         }
         final Array array = NDArrays.of(SampleSystem.ofSize(1), arr);
 
-        final Set<Tuple> distinct = Collections.synchronizedSet(new HashSet<>());
-        Stream<Tuple> stream = array.stream(true);
+        final Set<Tuple<?>> distinct = Collections.synchronizedSet(new HashSet<>());
+        Stream<Tuple<?>> stream = array.stream(true);
         stream.forEach((Tuple t) -> {
             distinct.add(new Vector1D.Double(t));
         });

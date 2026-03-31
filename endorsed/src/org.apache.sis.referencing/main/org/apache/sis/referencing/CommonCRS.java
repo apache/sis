@@ -393,18 +393,18 @@ public enum CommonCRS {
 
     /**
      * The Universal Transverse Mercator (UTM) or Universal Polar Stereographic (UPS) projections,
-     * created when first needed. The UPS projections are arbitrarily given zone numbers
+     * created when first needed. The <abbr>UPS</abbr> projections are arbitrarily given zone numbers
      * {@value #POLAR} and -{@value #POLAR} for North and South poles respectively.
      *
      * <p>All accesses to this map shall be synchronized on {@code cachedProjections}.</p>
      *
      * @see #universal(double, double)
      */
-    private final Map<Integer,ProjectedCRS> cachedProjections;
+    private final Map<Integer, ProjectedCRS> cachedProjections;
 
     /**
      * The special zone number used as key in {@link #cachedProjections} for polar stereographic projections.
-     * Must be outside the range of UTM zone numbers.
+     * Must be outside the range of <abbr>UTM</abbr> zone numbers.
      */
     private static final int POLAR = 90;
 
@@ -1193,7 +1193,7 @@ public enum CommonCRS {
             CartesianCS cs = null;
             if (isUTM) {
                 synchronized (DEFAULT.cachedProjections) {
-                    for (final Map.Entry<Integer,ProjectedCRS> entry : DEFAULT.cachedProjections.entrySet()) {
+                    for (final Map.Entry<Integer, ProjectedCRS> entry : DEFAULT.cachedProjections.entrySet()) {
                         if (Math.abs(entry.getKey()) != POLAR) {
                             cs = entry.getValue().getCoordinateSystem();
                             break;

@@ -454,6 +454,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short SubsetQuery_1 = 77;
 
         /**
+         * Tile indexes out of bounds.
+         */
+        public static final short TileIndexesOutOfBounds = 87;
+
+        /**
          * Cannot open {0} data store without “{1}” parameter.
          */
         public static final short UndefinedParameter_2 = 27;

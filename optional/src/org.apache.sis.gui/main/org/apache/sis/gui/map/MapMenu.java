@@ -54,7 +54,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
  * In current implementation, there is no mechanism for removing menu items.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.7
  * @since   1.1
  */
 public class MapMenu extends ContextMenu {
@@ -65,9 +65,19 @@ public class MapMenu extends ContextMenu {
 
     /**
      * A handler for controlling the contextual menu.
-     * Created when first needed.
+     * Created when first needed and should be considered final after initialization.
      */
     private MapCanvas.MenuHandler menuHandler;
+
+    /**
+     * Name of the currently selected reference system.
+     * This reference needs to be cached because JavaFX binds properties using weak references.
+     * If the users invoke {@link #selectedReferenceSystem()} only for registering listeners without
+     * storing the returned instance, their listeners will be lost unless we keep a reference here.
+     *
+     * @see #selectedReferenceSystem()
+     */
+    private ObservableObjectValue<String> selectedReferenceSystem;
 
     /**
      * Groups of menu items that have been added. Bits in this mask are set when {@link #addCopyOptions(StatusBar)}
@@ -112,7 +122,7 @@ public class MapMenu extends ContextMenu {
     }
 
     /**
-     * Adds menu items for CRS selection. The menu items are in two groups:
+     * Adds menu items for <abbr>CRS</abbr> selection. The menu items are in two groups:
      *
      * <ul>
      *   <li><i>Reference system</i> with some items from EPSG database.</li>
@@ -132,12 +142,12 @@ public class MapMenu extends ContextMenu {
         final MapCanvas.MenuHandler handler = startNewMenuItems(CRS);
         final Menu systemChoices = preferences.createMenuItems(true, handler);
         handler.selectedCrsProperty = RecentReferenceSystems.getSelectedProperty(systemChoices);
-        handler.positionables       = new ToggleGroup();
+        handler.positionables = new ToggleGroup();
 
         final Resources resources = Resources.forLocale(canvas.getLocale());
         final Menu localSystems = new Menu(resources.getString(Resources.Keys.CenteredProjection));
         for (final PositionableProjection projection : PositionableProjection.values()) {
-            final RadioMenuItem item = new RadioMenuItem(projection.toString());
+            final var item = new RadioMenuItem(projection.toString());
             item.setToggleGroup(handler.positionables);
             item.setOnAction((e) -> handler.createProjectedCRS(projection));
             localSystems.getItems().add(item);
@@ -148,10 +158,12 @@ public class MapMenu extends ContextMenu {
 
     /**
      * Adds a menu item for copying coordinates at the mouse position where right click occurred.
-     * The coordinate reference system is determined by the status bar; it is not necessarily the
-     * coordinate reference system of the map.
+     * The coordinate reference system is determined by the status bar,
+     * it is not necessarily the coordinate reference system of the map.
+     * This method can be invoked at most once.
      *
      * @param  format  status bar determining the CRS and format to use for coordinate values.
+     * @throws IllegalStateException if this method has already been invoked.
      */
     public void addCopyOptions(final StatusBar format) {
         Objects.requireNonNull(format);
@@ -160,7 +172,7 @@ public class MapMenu extends ContextMenu {
         final MenuItem coordinates = resources.menu(Resources.Keys.CopyCoordinates, (event) -> {
             try {
                 final String text = format.formatTabSeparatedCoordinates(handler.x, handler.y);
-                final ClipboardContent content = new ClipboardContent();
+                final var content = new ClipboardContent();
                 content.putString(text);
                 Clipboard.getSystemClipboard().setContent(content);
             } catch (TransformException | RuntimeException e) {
@@ -170,23 +182,22 @@ public class MapMenu extends ContextMenu {
         getItems().add(coordinates);
     }
 
-
     /**
-     * Returns an observable value for showing the currently selected CRS as a text.
+     * Returns an observable value for showing the name of the currently selected <abbr>CRS</abbr> for the map canvas.
      * The value is absent if {@link #addReferenceSystems(RecentReferenceSystems)} has never been invoked.
      *
-     * @return the currently selected CRS as a text.
+     * @return name of the currently selected <abbr>CRS</abbr> for the map canvas.
      *
      * @see #addReferenceSystems(RecentReferenceSystems)
      */
     public Optional<ObservableObjectValue<String>> selectedReferenceSystem() {
-        if (menuHandler != null) {
+        if (selectedReferenceSystem == null && menuHandler != null) {
             final ObjectProperty<ReferenceSystem> selectedCrsProperty = menuHandler.selectedCrsProperty;
             if (selectedCrsProperty != null) {
-                return Optional.of(new SelectedCRS(selectedCrsProperty, canvas.getLocale()));
+                selectedReferenceSystem = new SelectedCRS(selectedCrsProperty, canvas.getLocale());
             }
         }
-        return Optional.empty();
+        return Optional.ofNullable(selectedReferenceSystem);
     }
 
     /**

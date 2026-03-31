@@ -53,6 +53,11 @@ final class ArrayConcatenated extends AbstractArray {
     }
 
     @Override
+    public ArrayFactory getFactory() {
+        return arrays[0].getFactory();
+    }
+
+    @Override
     public SampleSystem getSampleSystem() {
         return arrays[0].getSampleSystem();
     }
@@ -95,19 +100,19 @@ final class ArrayConcatenated extends AbstractArray {
     }
 
     @Override
-    public Tuple get(long index) {
+    public Tuple<?> get(long index) {
         final int taidx = arrayIndex(index);
         return arrays[taidx].get(index - offsets[taidx]);
     }
 
     @Override
-    public void get(long index, Tuple buffer) {
+    public void get(long index, Tuple<?> buffer) {
         final int taidx = arrayIndex(index);
         arrays[taidx].get(index - offsets[taidx], buffer);
     }
 
     @Override
-    public void set(long index, Tuple buffer) {
+    public void set(long index, ReadOnly.Tuple<?> buffer) {
         final int taidx = arrayIndex(index);
         arrays[taidx].set(index - offsets[taidx], buffer);
     }

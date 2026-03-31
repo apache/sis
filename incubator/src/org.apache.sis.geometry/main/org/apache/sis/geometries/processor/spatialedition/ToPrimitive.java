@@ -28,7 +28,7 @@ import org.apache.sis.geometries.operation.GeometryOperations;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.internal.shared.ArraySequence;
 import org.apache.sis.geometries.processor.Processor;
-import org.apache.sis.geometries.triangulate.EarClipping;
+import org.apache.sis.geometries.operation.triangulate.EarClipping;
 
 
 /**

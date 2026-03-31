@@ -36,6 +36,7 @@ import org.opengis.filter.MatchAction;
 import org.opengis.filter.ComparisonOperatorName;
 import org.opengis.filter.BinaryComparisonOperator;
 import org.opengis.filter.BetweenComparisonOperator;
+import org.opengis.filter.Literal;
 
 
 /**
@@ -166,6 +167,55 @@ abstract class ComparisonFilter<R> extends BinaryFunctionWidening<R, Object, Obj
     }
 
     /**
+     * Creates a new filter of the same type and parameters than this filter, except for the expressions.
+     * The given array shall be of length 2 and shall contain the replacement for {@link #expression1}
+     * and {@link #expression2}, in that order.
+     */
+    @Override
+    public abstract ComparisonFilter<R> recreate(Expression<R,?>[] effective);
+
+    /**
+     * If one of the expressions is a filter compared to a Boolean literal, returns the filter directly.
+     * This optimization should be attempted only when the return value of both expressions are Boolean.
+     *
+     * @param  optimization  the simplifications or optimizations to apply on this filter.
+     * @param  swap          whether to swap the {@code expression1} and {@code expression2} order.
+     * @return the filter, or {@code null} if none.
+     */
+    private Filter<R> extractFilter(final Optimization optimization, final boolean swap) {
+        Expression<R,?> e = swap ? expression1 : expression2;
+        if (e instanceof Literal<?,?>) {
+            final Boolean literal = (Boolean) ((Literal<?,?>) e).getValue();
+            if (literal == null) {
+                return Filter.exclude();
+            }
+            final int c0, c1;
+            if (swap) {
+                c0 = literal.compareTo(Boolean.FALSE);
+                c1 = literal.compareTo(Boolean.TRUE);
+            } else {
+                c0 = Boolean.FALSE.compareTo(literal);
+                c1 = Boolean.TRUE .compareTo(literal);
+            }
+            final boolean ifFalse = fromCompareTo(c0);
+            final boolean ifTrue  = fromCompareTo(c1);
+            if (ifFalse == ifTrue) {
+                return ifTrue ? Filter.include() : Filter.exclude();
+            }
+            e = swap ? expression2 : expression1;
+            if (e instanceof Filter<?>) {
+                @SuppressWarnings("unchecked")
+                var filter = (Filter<R>) e;
+                if (ifFalse) {
+                    filter = new LogicalFilter.Not<>(filter).optimize(optimization);
+                }
+                return filter;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Tries to optimize this filter. Fist, this method applies the optimization documented
      * in the {@linkplain Optimization.OnFilter#optimize default method impmementation}.
      * Then, if it is possible to avoid to inspect the number types every time that the
@@ -191,6 +241,19 @@ abstract class ComparisonFilter<R> extends BinaryFunctionWidening<R, Object, Obj
                 if (temporal.evaluator != null) {
                     return temporal;
                 }
+                if (Comparable.class.isAssignableFrom(t1) && t1.isAssignableFrom(t2)) {
+                    if (isMatchingCase || !CharSequence.class.isAssignableFrom(t1)) {
+                        if (t1 == Boolean.class) {
+                            Filter<R> filter;
+                            if ((filter = extractFilter(optimization, false)) != null ||
+                                (filter = extractFilter(optimization, true))  != null)
+                            {
+                                return filter;
+                            }
+                        }
+                        return new Comparables();
+                    }
+                }
             }
         }
         return result;
@@ -208,7 +271,7 @@ abstract class ComparisonFilter<R> extends BinaryFunctionWidening<R, Object, Obj
     /**
      * An optimized versions of this filter for the case where the operands are numeric.
      */
-    private final class Numeric extends Node implements Filter<R> {
+    private final class Numeric extends Node implements Optimization.OnFilter<R> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = 4969425622445580192L;
 
@@ -228,12 +291,17 @@ abstract class ComparisonFilter<R> extends BinaryFunctionWidening<R, Object, Obj
         @Override public boolean test(final R candidate) {
             return ((Integer) evaluator.apply(candidate)) != 0;
         }
+
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<R> recreate(Expression<R,?>[] effective) {
+            return ComparisonFilter.this.recreate(effective).new Numeric();
+        }
     }
 
     /**
      * An optimized versions of this filter for the case where the operands are temporal.
      */
-    private final class Time<T,S> extends Node implements Filter<R> {
+    private final class Time<T,S> extends Node implements Optimization.OnFilter<R> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -5132906457258846016L;
 
@@ -243,6 +311,11 @@ abstract class ComparisonFilter<R> extends BinaryFunctionWidening<R, Object, Obj
         /** Creates a new filter. Callers must verifies that {@link #evaluator} is non-null. */
         Time(final TimeMethods<T> methods, final Class<S> otherType) {
             evaluator = (methods != null) ? methods.predicate(temporalTest(), otherType) : null;
+        }
+
+        /** Creates a new filter which is reusing an already determined evaluator. */
+        Time(final BiPredicate<T,S> evaluator) {
+            this.evaluator = evaluator;
         }
 
         /** Delegates to the enclosing class.*/
@@ -260,6 +333,46 @@ abstract class ComparisonFilter<R> extends BinaryFunctionWidening<R, Object, Obj
                 final S right = (S) expression2.apply(candidate);
                 if (right != null) {
                     return evaluator.test(left, right);
+                }
+            }
+            return false;
+        }
+
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<R> recreate(Expression<R,?>[] effective) {
+            return ComparisonFilter.this.recreate(effective).new Time<>(evaluator);
+        }
+    }
+
+    /**
+     * An optimized versions of this filter for the case where the operands are comparable.
+     */
+    private final class Comparables extends Node implements Optimization.OnFilter<R> {
+        /** For cross-version compatibility during (de)serialization. */
+        private static final long serialVersionUID = -8311546273569455269L;
+
+        /** Delegates to the enclosing class.*/
+        @Override public    CodeList<?>           getOperatorType()  {return ComparisonFilter.this.getOperatorType();}
+        @Override public    Class<? super R>      getResourceClass() {return ComparisonFilter.this.getResourceClass();}
+        @Override public    List<Expression<R,?>> getExpressions()   {return ComparisonFilter.this.getExpressions();}
+        @Override protected Collection<?>         getChildren()      {return ComparisonFilter.this.getChildren();}
+
+        /** Creates a new filter of the same type but different parameters. */
+        @Override public Filter<R> recreate(Expression<R,?>[] effective) {
+            return ComparisonFilter.this.recreate(effective).new Comparables();
+        }
+
+        /** Determines if the test represented by this filter passes with the given operands. */
+        @Override public boolean test(final R candidate) {
+            final Object left = expression1.apply(candidate);
+            if (left != null) {
+                final Object right = expression2.apply(candidate);
+                if (right != null) {
+                    if (left.getClass() == right.getClass()) {
+                        @SuppressWarnings("unchecked")
+                        final int result = ((Comparable) left).compareTo(right);
+                        return fromCompareTo(result);
+                    }
                 }
             }
             return false;
@@ -343,7 +456,7 @@ abstract class ComparisonFilter<R> extends BinaryFunctionWidening<R, Object, Obj
      *
      * @todo Delegate all comparisons of temporal objects to {@link TemporalFilter}.
      */
-    private boolean evaluate(Object left, Object right) {
+    private boolean evaluate(final Object left, final Object right) {
         /*
          * For numbers, the apply(…) method inherited from parent class will delegate to specialized methods like
          * applyAsDouble(…). All implementations of those specialized methods in ComparisonFilter return integer,
@@ -437,7 +550,7 @@ abstract class ComparisonFilter<R> extends BinaryFunctionWidening<R, Object, Obj
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<R> recreate(final Expression<R,?>[] effective) {
+        @Override public ComparisonFilter<R> recreate(final Expression<R,?>[] effective) {
             return new LessThan<>(effective[0], effective[1], isMatchingCase, matchAction);
         }
 
@@ -477,7 +590,7 @@ abstract class ComparisonFilter<R> extends BinaryFunctionWidening<R, Object, Obj
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<R> recreate(final Expression<R,?>[] effective) {
+        @Override public ComparisonFilter<R> recreate(final Expression<R,?>[] effective) {
             return new LessThanOrEqualTo<>(effective[0], effective[1], isMatchingCase, matchAction);
         }
 
@@ -517,7 +630,7 @@ abstract class ComparisonFilter<R> extends BinaryFunctionWidening<R, Object, Obj
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<R> recreate(final Expression<R,?>[] effective) {
+        @Override public ComparisonFilter<R> recreate(final Expression<R,?>[] effective) {
             return new GreaterThan<>(effective[0], effective[1], isMatchingCase, matchAction);
         }
 
@@ -557,7 +670,7 @@ abstract class ComparisonFilter<R> extends BinaryFunctionWidening<R, Object, Obj
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<R> recreate(final Expression<R,?>[] effective) {
+        @Override public ComparisonFilter<R> recreate(final Expression<R,?>[] effective) {
             return new GreaterThanOrEqualTo<>(effective[0], effective[1], isMatchingCase, matchAction);
         }
 
@@ -596,8 +709,13 @@ abstract class ComparisonFilter<R> extends BinaryFunctionWidening<R, Object, Obj
             super(expression1, expression2, isMatchingCase, matchAction);
         }
 
+        /** Creates a new filter with the same expressions as the given parent. */
+        EqualTo(final ComparisonFilter<R> parent) {
+            super(parent.expression1, parent.expression2, parent.isMatchingCase, parent.matchAction);
+        }
+
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<R> recreate(final Expression<R,?>[] effective) {
+        @Override public ComparisonFilter<R> recreate(final Expression<R,?>[] effective) {
             return new EqualTo<>(effective[0], effective[1], isMatchingCase, matchAction);
         }
 
@@ -636,8 +754,13 @@ abstract class ComparisonFilter<R> extends BinaryFunctionWidening<R, Object, Obj
             super(expression1, expression2, isMatchingCase, matchAction);
         }
 
+        /** Creates a new filter with the same expressions as the given parent. */
+        NotEqualTo(final ComparisonFilter<R> parent) {
+            super(parent.expression1, parent.expression2, parent.isMatchingCase, parent.matchAction);
+        }
+
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<R> recreate(final Expression<R,?>[] effective) {
+        @Override public ComparisonFilter<R> recreate(final Expression<R,?>[] effective) {
             return new NotEqualTo<>(effective[0], effective[1], isMatchingCase, matchAction);
         }
 

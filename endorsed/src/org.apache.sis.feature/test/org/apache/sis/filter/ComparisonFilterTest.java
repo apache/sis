@@ -24,6 +24,7 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
+import org.opengis.filter.Filter;
 import org.opengis.filter.Literal;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.ComparisonOperator;
@@ -49,16 +50,16 @@ public final class ComparisonFilterTest extends TestCase {
     /**
      * Expressions used as constant for the tests.
      */
-    private final Literal<Feature,Integer> c05, c10, c20;
+    private final Literal<Feature, Integer> c05, c10, c20;
 
     /**
-     * Expected name of the filter to be evaluated. The {@code evaluate(…)} methods
+     * Expected name of the filter to be evaluated. The {@code assertTestEqual(…)} methods
      * will compare {@link ComparisonFilter#getFunctionName()} against this value.
      */
     private ComparisonOperatorName expectedName;
 
     /**
-     * The filter tested by last call to {@code evaluate(…)} methods.
+     * The filter tested by last call to {@code assertTestEqual(…)} methods.
      */
     private ComparisonOperator<Feature> filter;
 
@@ -73,25 +74,44 @@ public final class ComparisonFilterTest extends TestCase {
     }
 
     /**
-     * Evaluates the given filter. The {@link #expectedName} field must be set before this method is invoked.
+     * Performs various assertions on the given filter, including serialization.
      * This method assumes that the first expression of all filters is {@link #c10}.
+     *
+     * @param expected  the expected result of evaluating the given filter.
+     * @param filter    the filter to test.
      */
-    private boolean evaluate(final BinaryComparisonOperator<Feature> filter) {
-        this.filter = filter;
-        assertInstanceOf(ComparisonFilter.class, filter);
-        assertEquals(expectedName, filter.getOperatorType());
+    private void verify(final boolean expected, final BinaryComparisonOperator<Feature> filter) {
+        assertTestEquals(expected, filter);
         assertSame(c10, filter.getExpressions().get(0));
-        return filter.test(null);
+        assertSerializedEquals(filter);
     }
 
     /**
-     * Evaluates the given "Property is between" filter.
+     * Evaluates the given filter and asserts that the returned value is equal to the expected value.
+     * The {@link #expectedName} field must be set before this method is invoked.
      */
-    private boolean evaluate(final BetweenComparisonOperator<Feature> filter) {
+    private void assertTestEquals(final boolean expected, final BinaryComparisonOperator<Feature> filter) {
+        this.filter = filter;
+        assertInstanceOf(ComparisonFilter.class, filter);
+        assertEquals(expectedName, filter.getOperatorType());
+        assertEquals(expected, filter.test(null));
+
+        // Optimization of an expression with literals should result in a literal.
+        assertSame(expected ? Filter.include() : Filter.exclude(), new Optimization().apply(filter));
+    }
+
+    /**
+     * Evaluates the given "Property is between" filter and asserts that the returned value
+     * is equal to the expected value.
+     */
+    private void assertTestEquals(final boolean expected, final BetweenComparisonOperator<Feature> filter) {
         this.filter = filter;
         assertInstanceOf(ComparisonFilter.Between.class, filter);
         assertEquals(expectedName, filter.getOperatorType());
-        return filter.test(null);
+        assertEquals(expected, filter.test(null));
+
+        // Optimization of an expression with literals should result in a literal.
+        assertSame(expected ? Filter.include() : Filter.exclude(), new Optimization().apply(filter));
     }
 
     /**
@@ -100,10 +120,9 @@ public final class ComparisonFilterTest extends TestCase {
     @Test
     public void testLess() {
         expectedName = ComparisonOperatorName.PROPERTY_IS_LESS_THAN;
-        assertTrue (evaluate(factory.less(c10, c20)));
-        assertFalse(evaluate(factory.less(c10, c10)));
-        assertFalse(evaluate(factory.less(c10, c05)));
-        assertSerializedEquals(filter);
+        verify(true,  factory.less(c10, c20));
+        verify(false, factory.less(c10, c10));
+        verify(false, factory.less(c10, c05));
     }
 
     /**
@@ -112,10 +131,9 @@ public final class ComparisonFilterTest extends TestCase {
     @Test
     public void testLessOrEqual() {
         expectedName = ComparisonOperatorName.PROPERTY_IS_LESS_THAN_OR_EQUAL_TO;
-        assertTrue (evaluate(factory.lessOrEqual(c10, c20)));
-        assertTrue (evaluate(factory.lessOrEqual(c10, c10)));
-        assertFalse(evaluate(factory.lessOrEqual(c10, c05)));
-        assertSerializedEquals(filter);
+        verify(true,  factory.lessOrEqual(c10, c20));
+        verify(true,  factory.lessOrEqual(c10, c10));
+        verify(false, factory.lessOrEqual(c10, c05));
     }
 
     /**
@@ -124,10 +142,9 @@ public final class ComparisonFilterTest extends TestCase {
     @Test
     public void testGreater() {
         expectedName = ComparisonOperatorName.PROPERTY_IS_GREATER_THAN;
-        assertFalse(evaluate(factory.greater(c10, c20)));
-        assertFalse(evaluate(factory.greater(c10, c10)));
-        assertTrue (evaluate(factory.greater(c10, c05)));
-        assertSerializedEquals(filter);
+        verify(false, factory.greater(c10, c20));
+        verify(false, factory.greater(c10, c10));
+        verify(true,  factory.greater(c10, c05));
     }
 
     /**
@@ -136,10 +153,9 @@ public final class ComparisonFilterTest extends TestCase {
     @Test
     public void testGreaterOrEqual() {
         expectedName = ComparisonOperatorName.PROPERTY_IS_GREATER_THAN_OR_EQUAL_TO;
-        assertFalse(evaluate(factory.greaterOrEqual(c10, c20)));
-        assertTrue (evaluate(factory.greaterOrEqual(c10, c10)));
-        assertTrue (evaluate(factory.greaterOrEqual(c10, c05)));
-        assertSerializedEquals(filter);
+        verify(false, factory.greaterOrEqual(c10, c20));
+        verify(true,  factory.greaterOrEqual(c10, c10));
+        verify(true,  factory.greaterOrEqual(c10, c05));
     }
 
     /**
@@ -148,10 +164,9 @@ public final class ComparisonFilterTest extends TestCase {
     @Test
     public void testEqual() {
         expectedName = ComparisonOperatorName.PROPERTY_IS_EQUAL_TO;
-        assertFalse(evaluate(factory.equal(c10, c20)));
-        assertTrue (evaluate(factory.equal(c10, c10)));
-        assertFalse(evaluate(factory.equal(c10, c05)));
-        assertSerializedEquals(filter);
+        verify(false, factory.equal(c10, c20));
+        verify(true,  factory.equal(c10, c10));
+        verify(false, factory.equal(c10, c05));
     }
 
     /**
@@ -160,10 +175,9 @@ public final class ComparisonFilterTest extends TestCase {
     @Test
     public void testNotEqual() {
         expectedName = ComparisonOperatorName.PROPERTY_IS_NOT_EQUAL_TO;
-        assertTrue (evaluate(factory.notEqual(c10, c20)));
-        assertFalse(evaluate(factory.notEqual(c10, c10)));
-        assertTrue (evaluate(factory.notEqual(c10, c05)));
-        assertSerializedEquals(filter);
+        verify(true,  factory.notEqual(c10, c20));
+        verify(false, factory.notEqual(c10, c10));
+        verify(true,  factory.notEqual(c10, c05));
     }
 
     /**
@@ -172,9 +186,19 @@ public final class ComparisonFilterTest extends TestCase {
     @Test
     public void testBetween() {
         expectedName = ComparisonOperatorName.valueOf(FunctionNames.PROPERTY_IS_BETWEEN);
-        assertTrue (evaluate(factory.between(c10, c05, c20)));
-        assertFalse(evaluate(factory.between(c20, c05, c10)));
-        assertFalse(evaluate(factory.between(c05, c10, c20)));
+        assertTestEquals(true,  factory.between(c10, c05, c20));
+        assertTestEquals(false, factory.between(c20, c05, c10));
+        assertTestEquals(false, factory.between(c05, c10, c20));
+        assertSerializedEquals(filter);
+    }
+
+    /**
+     * Tests "Equal" between Boolean values.
+     */
+    @Test
+    public void testBooleans() {
+        expectedName = ComparisonOperatorName.PROPERTY_IS_EQUAL_TO;
+        assertTestEquals(true, factory.equal(factory.function("isNaN", c10), factory.literal(Boolean.FALSE)));
         assertSerializedEquals(filter);
     }
 }

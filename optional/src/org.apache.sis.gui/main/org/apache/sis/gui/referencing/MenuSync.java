@@ -102,21 +102,28 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
     private final ToggleGroup group;
 
     /**
-     * The action to execute when a reference system is selected. This is not directly the user-specified action,
-     * but rather a {@link org.apache.sis.gui.referencing.RecentReferenceSystems.SelectionListener} instance wrapping
-     * that action. This listener is invoked explicitly instead of using {@link SimpleObjectProperty} listeners because
-     * we do not invoke it in all cases.
+     * The action to execute when a reference system is selected. This is the action given in argument to the
+     * public {@link RecentReferenceSystems#createMenuItems(boolean, ChangeListener)} method but wrapped in a
+     * {@link org.apache.sis.gui.referencing.RecentReferenceSystems.SelectionListener} instance for managing
+     * side-effects such as changing the <abbr>CRS</abbr> order in the list of menu items.
+     *
+     * <p>This listener is not registered as a {@link SimpleObjectProperty} listeners.
+     * Instead, its {@code changed(…)} method is invoked directly because we do not want
+     * to notify the listener in all cases.</p>
+     *
+     * @see RecentReferenceSystems#createMenuItems(boolean, ChangeListener)
      */
     private final RecentReferenceSystems.SelectionListener action;
 
     /**
      * Creates a new synchronization for the given list of menu items.
+     * The public method for this constructor is {@link RecentReferenceSystems#createMenuItems(boolean, ChangeListener)}.
      *
      * @param  systems  the reference systems for which to build menu items.
      * @param  byIds    whether to add a sub-menu for "Referencing by identifiers".
      * @param  derived  content of "Referencing by cell indices" sub-menu, or {@code null} for omitting that sub-menu.
      * @param  bean     the menu to keep synchronized with the list of reference systems.
-     * @param  action   the user-specified action to execute when a reference system is selected.
+     * @param  action   a wrapper over the user-specified action to execute when a reference system is selected.
      */
     MenuSync(final List<ReferenceSystem> systems, final boolean byIds, final List<DerivedCRS> derived,
              final Menu bean, final RecentReferenceSystems.SelectionListener action)
@@ -130,7 +137,7 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
         /*
          * Root menu. The list of recent reference system is dynamic and will change according user actions.
          */
-        final List<MenuItem> items = new ArrayList<>(systems.size() + 1);
+        final var items = new ArrayList<MenuItem>(systems.size() + 1);
         final Locale locale = action.owner().locale;
         for (final ReferenceSystem system : systems) {
             if (system == RecentReferenceSystems.OTHER) {
@@ -165,9 +172,9 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
      */
     private void initialize() {
         for (final ReferenceSystem system : recentSystems) {
-            if (system instanceof CoordinateReferenceSystem) {
-                if (CRS.getDimensionOrZero((CoordinateReferenceSystem) system) == BIDIMENSIONAL) {
-                    set(system);
+            if (system instanceof CoordinateReferenceSystem crs) {
+                if (CRS.getDimensionOrZero(crs) == BIDIMENSIONAL) {
+                    set(crs);
                     break;
                 }
             }
@@ -179,12 +186,12 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
      */
     private MenuItem createItem(final ReferenceSystem system, final Locale locale) {
         if (system == RecentReferenceSystems.OTHER) {
-            final MenuItem item = new MenuItem(ObjectStringConverter.other(locale));
+            final var item = new MenuItem(ObjectStringConverter.other(locale));
             item.getProperties().put(REFERENCE_SYSTEM_KEY, CHOOSER);
             item.setOnAction(this);
             return item;
         } else {
-            final RadioMenuItem item = new RadioMenuItem(IdentifiedObjects.getDisplayName(system, locale));
+            final var item = new RadioMenuItem(IdentifiedObjects.getDisplayName(system, locale));
             item.getProperties().put(REFERENCE_SYSTEM_KEY, system);
             item.setToggleGroup(group);
             item.setOnAction(this);
@@ -194,7 +201,8 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
 
     /**
      * Creates new menu items for references system by identifiers, offered in a separated sub-menu.
-     * This list of reference systems is fixed; items are not added or removed following user's selection.
+     * This list of reference systems is fixed, items are not added or removed by user's selection.
+     * This method is invoked indirectly by {@link RecentReferenceSystems#createMenuItems(boolean, ChangeListener)}.
      */
     private void addReferencingByIdentifiers(final Locale locale) {
         final GazetteerFactory factory = new GazetteerFactory();
@@ -237,7 +245,7 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
             }
         }
         for (int i = cellIndicesMenus.size(); --i >= n;) {
-            final RadioMenuItem item = (RadioMenuItem) cellIndicesMenus.remove(i);
+            final var item = (RadioMenuItem) cellIndicesMenus.remove(i);
             item.setToggleGroup(null);
             item.setOnAction(null);
         }
@@ -271,13 +279,15 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
         final var mapping  = new IdentityHashMap<Object,MenuItem>(10);
         for (final Iterator<MenuItem> it = rootMenus.iterator(); it.hasNext();) {
             final MenuItem item = it.next();
-            if (item instanceof Menu) {
-                subMenus.add((Menu) item);
-            } else if (item instanceof SeparatorMenuItem) {
-                separator = (SeparatorMenuItem) item;           // Should have only one.
-            } else if (mapping.putIfAbsent(item.getProperties().get(REFERENCE_SYSTEM_KEY), item) != null) {
-                it.remove();    // Remove duplicated item. Should never happen, but we are paranoiac.
-                dispose(item);
+            switch (item) {
+                case Menu              c -> subMenus.add(c);
+                case SeparatorMenuItem c -> separator = c;      // Should have only one.
+                default -> {
+                    if (mapping.putIfAbsent(item.getProperties().get(REFERENCE_SYSTEM_KEY), item) != null) {
+                        it.remove();    // Remove duplicated item. Should never happen, but we are paranoiac.
+                        dispose(item);
+                    }
+                }
             }
         }
         /*
@@ -367,7 +377,7 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
         if (value == CHOOSER) {
             action.changed(this, get(), RecentReferenceSystems.OTHER);
         } else {
-            final ReferenceSystem system = (ReferenceSystem) value;
+            final var system = (ReferenceSystem) value;
             if (cellIndicesMenus != null && cellIndicesMenus.contains(source)) {
                 final ReferenceSystem old = get();
                 super.set(system);                          // Set without adding to `recentSystems` list.
@@ -399,6 +409,11 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
                         ((RadioMenuItem) item).setSelected(true);
                         action.changed(this, old, system);
                         return;
+                        /*
+                         * Note: if the action was provided by `MapCanvas`, the call to `action.changed(…)`
+                         * may start a background task which will invoke `StatusBar.applyCanvasGeometry(…)`
+                         * after completion, when the `MapCanvas.isRendering` flag is reset to `false`.
+                         */
                     }
                 }
             }

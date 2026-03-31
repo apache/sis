@@ -38,11 +38,12 @@ import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.pending.jdk.JDK16;
+import org.apache.sis.util.collection.BackingStoreException;
 
 
 /**
  * A helper class for reading {@link GridCoverage} instances at various resolutions.
- * The resolutions are inferred from {@link GridCoverageResource#getResolutions()},
+ * The resolutions are inferred from {@link GridCoverageResource#getAvailableResolutions()},
  * using default values if necessary. The objective CRS does not need to be the same
  * than the coverage CRS, in which case transformations are applied at the point in
  * the center of the display bounds.
@@ -84,9 +85,9 @@ public class MultiResolutionCoverageLoader {
     public final GridCoverageResource resource;
 
     /**
-     * Squares of resolution at each pyramid level, from finest (smaller numbers) to coarsest (largest numbers).
-     * This is same same order as {@link GridCoverageResource#getResolutions()}. For a given level, the array
-     * {@code resolutionSquared[level]} gives the squares of the resolution for each CRS dimension.
+     * Squares of resolution at each pyramid level, from coarsest (largest numbers) to finest (smaller numbers).
+     * This is same same order as {@link GridCoverageResource#getAvailableResolutions()}. For a given level,
+     * the array {@code resolutionSquared[level]} gives the squares of the resolution for each CRS dimension.
      */
     private final double[][] resolutionSquared;
 
@@ -124,7 +125,12 @@ public class MultiResolutionCoverageLoader {
         this.resource  = resource;
         areaOfInterest = domain;
         readRanges     = range;
-        double[][] resolutions = resource.getResolutions().toArray(double[][]::new);
+        double[][] resolutions;
+        try {
+            resolutions = resource.getAvailableResolutions().toArray(double[][]::new);
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(DataStoreException.class);
+        }
         if (resolutions.length <= 1) {
             final GridGeometry gg = resource.getGridGeometry();
             if (resolutions.length != 0) {
@@ -150,7 +156,7 @@ public class MultiResolutionCoverageLoader {
      *
      * @param  envelope  bounding box of the coverage in units of the coverage CRS.
      * @param  base      resolution of the finest level.
-     * @return default resolutions from finest to coarsest. The first element is always {@code base}.
+     * @return default resolutions from coarsest to finest. The last element is always {@code base}.
      */
     private static double[][] defaultResolutions(final GridGeometry gg, double[] base) {
         /*
@@ -173,12 +179,13 @@ public class MultiResolutionCoverageLoader {
             numLevels = DEFAULT_NUM_LEVELS;     // Arbitrary number of levels if we cannot compute it.
         }
         /*
-         * Build the arrays of resolutions from finest to coarsest.
+         * Build the arrays of resolutions from coarsest to finest.
          * The `base` array is cloned then updated to become the base of next level.
          */
         final var resolutions = new double[numLevels][];
-        resolutions[0] = base;
-        for (int j=1; j<numLevels; j++) {
+        int j = numLevels - 1;
+        resolutions[j] = base;
+        while (--j >= 0) {
             resolutions[j] = base = base.clone();
             for (int i=0; i<base.length; i++) {
                 base[i] *= (1 << DEFAULT_SCALE_LOG);
@@ -188,9 +195,9 @@ public class MultiResolutionCoverageLoader {
     }
 
     /**
-     * Returns the maximal level (the level with coarsest resolution).
+     * Returns the maximal level (the level with finest resolution).
      */
-    final int getLastLevel() {
+    private int getLastLevel() {
         return Math.max(resolutionSquared.length - 1, 0);
     }
 
@@ -202,14 +209,14 @@ public class MultiResolutionCoverageLoader {
      * @param  objectiveToDisplay  transform used for rendering the coverage on screen.
      * @param  objectivePOI        point where to compute resolution, in coordinates of objective CRS.
      *                             Can be null if {@code dataToObjective} is null or linear.
-     * @return pyramid level for the zoom determined by the given transform. Finest level is 0.
+     * @return pyramid level for the zoom determined by the given transform. coarsest level is 0.
      * @throws TransformException if an error occurred while computing resolution from given transforms.
      */
     final int findPyramidLevel(final MathTransform dataToObjective, final LinearTransform objectiveToDisplay,
                                final DirectPosition objectivePOI) throws TransformException
     {
-        int level = getLastLevel();
-        if (level != 0) {
+        int level = 0;
+        if (resolutionSquared.length > 1) {
             final LinearTransform displayToObjective = objectiveToDisplay.inverse();
             final Matrix m = displayToObjective.getMatrix();
             final Matrix d;
@@ -244,7 +251,7 @@ dimensions: for (int j=0; j<tgtDim; j++) {
                 }
                 /*
                  * Cannot use `Arrays.binarySearch(…)` because elements are not guaranteed to be sorted.
-                 * Even if `GridCoverageResource.getResolutions()` contract said "finest to coarsest",
+                 * Even if `GridCoverageResource.getAvailableResolutions()` contract said "coarsest to finest",
                  * it may not be possible to respect this condition on all dimensions in same time.
                  * The main goal is to have a `level` value as high as possible while having a resolution
                  * equals or better than `sum`.
@@ -256,11 +263,10 @@ dimensions: for (int j=0; j<tgtDim; j++) {
                         minimum = r;
                         levelOfMin = level;
                     }
-                    if (level == 0) {
+                    if (++level == resolutionSquared.length) {
                         level = levelOfMin;
                         break dimensions;
                     }
-                    level--;
                 }
             }
         }
@@ -309,7 +315,7 @@ dimensions: for (int j=0; j<tgtDim; j++) {
     }
 
     /**
-     * If the a grid coverage for the given domain and range is in the cache, returns that coverage.
+     * If a grid coverage for the given domain and range is in the cache, returns that coverage.
      * Otherwise loads the coverage and eventually caches it. The caching happens only if the given
      * domain and range are managed by this loader.
      *
@@ -324,7 +330,7 @@ dimensions: for (int j=0; j<tgtDim; j++) {
              * Fot now we leverage the cache only at level 0.
              * Future versions of this class may try to use the cache at other levels too.
              */
-            return getOrLoad(0);
+            return getOrLoad(getLastLevel());
         }
         if (domain == null) {
             domain = resource.getGridGeometry();
@@ -344,7 +350,7 @@ dimensions: for (int j=0; j<tgtDim; j++) {
         final int count = getLastLevel();
         double delta = magnitude(0);
         if (count != 0) {
-            delta = (magnitude(count) - delta) / count;
+            delta = (delta - magnitude(count)) / count;
         }
         final int n = Math.max(Math.min(DecimalFunctions.fractionDigitsForDelta(delta, false), 6), 0);
         final NumberFormat f = NumberFormat.getInstance();

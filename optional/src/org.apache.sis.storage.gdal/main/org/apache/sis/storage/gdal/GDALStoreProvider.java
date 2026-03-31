@@ -18,11 +18,11 @@ package org.apache.sis.storage.gdal;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 import java.util.function.Function;
 import java.time.LocalDate;
 import java.nio.file.Path;
+import java.io.IOException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
@@ -42,7 +42,6 @@ import org.apache.sis.io.stream.InternalOptionKey;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.setup.OptionKey;
-import org.apache.sis.system.Cleaners;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.collection.TreeTable;
@@ -60,7 +59,7 @@ import org.apache.sis.util.collection.TreeTable;
  *
  * @author  Quentin Bialota (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   1.5
  */
 @StoreMetadata(formatName    = Constants.GDAL,
@@ -106,35 +105,110 @@ public class GDALStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * Handles to <abbr>GDAL</abbr> native functions, or {@code null} for global.
-     * Can also be reset to {@code null} if <abbr>GDAL</abbr> reported a fatal error.
+     * Handles to <abbr>GDAL</abbr> native functions, or {@code null} if none.
+     * May also be reset to {@code null} if <abbr>GDAL</abbr> reports a fatal error.
      */
     private GDAL nativeFunctions;
 
     /**
-     * The status of {@link #nativeFunctions}, or {@code null} if the global set of functions is used.
+     * The status of {@link #nativeFunctions}.
      */
     private LibraryStatus status;
 
     /**
-     * Creates a new provider which will load the <abbr>GDAL</abbr> library from the default library path.
+     * The unique instance using the global arena, created when first needed.
+     * It is important to have only one {@link GDAL} instance, otherwise duplicated
+     * calls to {@code GDALDestroy} may crash the <abbr>JVM</abbr>.
      */
-    public GDALStoreProvider() {
+    private static GDALStoreProvider GLOBAL;
+
+    /**
+     * Creates a new provider which will load the <abbr>GDAL</abbr> library from the default library path.
+     *
+     * <p>This constructor is public for compatibility with usage of <abbr>SIS</abbr> on the class-path.
+     * It may become protected in a future version of Apache <abbr>SIS</abbr>, if the use of module-path
+     * become mandatory.</p>
+     *
+     * @throws DataStoreException if the <abbr>GDAL</abbr> library has not been found
+     *         or if this Apache SIS module is not authorized to call native methods.
+     *
+     * @see #provider()
+     */
+    public GDALStoreProvider() throws DataStoreException {
+        final GDALStoreProvider global = provider();
+        nativeFunctions = global.nativeFunctions;
+        status = global.status;
+    }
+
+    /**
+     * Invoked when we failed to load the <abbr>GDAL</abbr> library.
+     *
+     * @param  status  reason why <abbr>GDAL</abbr> could not be loaded.
+     */
+    private GDALStoreProvider(final LibraryStatus status) {
+        this.status = status;
+    }
+
+    /**
+     * Creates a provider which uses the given handlers to native functions.
+     *
+     * @param  nativeFunctions  handlers of <abbr>GDAL</abbr> functions.
+     */
+    GDALStoreProvider(final GDAL nativeFunctions) {
+        this.nativeFunctions = nativeFunctions;
+        status = LibraryStatus.LOADED;
+    }
+
+    /**
+     * Returns a provider which will load the <abbr>GDAL</abbr> library from the default library path.
+     * If the <abbr>GDAL</abbr> library is not found on the library path, then this method searches in
+     * the libraries loaded with {@link System#loadLibrary(String)}.
+     *
+     * @return the default data store provider using the <abbr>GDAL</abbr> library.
+     * @throws DataStoreException if the <abbr>GDAL</abbr> library has not been found
+     *         or if this Apache SIS module is not authorized to call native methods.
+     *
+     * @since 1.7
+     */
+    public static synchronized GDALStoreProvider provider() throws DataStoreException {
+        if (GLOBAL == null) {
+            final var loader = GDAL.loader();
+            try {
+                GLOBAL = loader.global("gdal");
+            } catch (Throwable e) {
+                GLOBAL = new GDALStoreProvider(loader.status());
+                log(GLOBAL.status, false, e);
+            }
+        }
+        GLOBAL.status.throwIfFailed(Constants.GDAL);     // Should never return if `nativeFunctions` is null.
+        return GLOBAL;
     }
 
     /**
      * Creates a new provider which will load the <abbr>GDAL</abbr> library from the specified file.
-     * The library will be unloaded when this provider will be garbage-collected.
+     * This method may return an existing provider previously created for the same path.
+     * When the returned provider will be garbage collected, the following cleanup actions will be performed:
+     *
+     * <ul>
+     *   <li>The {@code GDALDestroy} native function will be invoked if this {@code GDALStoreProvider}
+     *       instance was the last one using the specified library.</li>
+     *   <li>Then the library will be unloaded. Note that the <abbr>OS</abbr> may keep the library
+     *       in memory if it is still used by another {@code GDALStoreProvider} instance.</li>
+     * </ul>
      *
      * @param  library  path to the library to load.
-     * @throws IllegalArgumentException if the GDAL library has not been found.
-     * @throws NoSuchElementException if a <abbr>GDAL</abbr> function has not been found in the library.
-     * @throws IllegalCallerException if this Apache SIS module is not authorized to call native methods.
+     * @return data store provider using the <abbr>GDAL</abbr> library at the given type.
+     * @throws DataStoreException if the <abbr>GDAL</abbr> library has not been found
+     *         or if this Apache SIS module is not authorized to call native methods.
+     *
+     * @since 1.7
      */
-    @SuppressWarnings("this-escape")
-    public GDALStoreProvider(final Path library) {
-        Cleaners.SHARED.register(this, nativeFunctions = GDAL.load(library));
-        status = LibraryStatus.LOADED;
+    public static GDALStoreProvider provider(final Path library) throws DataStoreException {
+        try {
+            return GDAL.loader().load(library);
+        } catch (IOException | RuntimeException e) {
+            throw new DataStoreException(e);
+        }
     }
 
     /**
@@ -144,25 +218,19 @@ public class GDALStoreProvider extends DataStoreProvider {
      * @throws DataStoreException if the native library is not available.
      */
     final synchronized GDAL GDAL() throws DataStoreException {
-        if (status == null) {
-            return GDAL.global();       // Fetch each time (no cache) because may have changed outside this class.
-        }
-        status.report(Constants.GDAL, null);        // Should never return if `nativeFunctions` is null.
+        status.throwIfFailed(Constants.GDAL);       // Should never return if `nativeFunctions` is null.
         return nativeFunctions;
     }
 
     /**
      * Tries to load <abbr>GDAL</abbr> if not already done, without throwing an exception in case of error.
-     * Instead, the error is logged and {@code null} is returned. This is used for probing.
+     * Instead, the error is logged and an empty value is returned. This is used for probing.
      *
      * @param  classe  the class which is invoking this method (for logging purpose).
      * @param  method  the name of the method which is invoking this method (for logging purpose).
      * @return the set of native functions, or {@code null} if not available.
      */
     final synchronized Optional<GDAL> tryGDAL(final Class<?> classe, final String method) {
-        if (status == null) {
-            return GDAL.tryGlobal(classe, method);
-        }
         return Optional.ofNullable(nativeFunctions);
     }
 
@@ -315,6 +383,18 @@ public class GDALStoreProvider extends DataStoreProvider {
             connector.setOption(DRIVERS_OPTION_KEY, drivers);
         }
         return open(connector);
+    }
+
+    /**
+     * Logs a record at the given level if the native library is not available.
+     * This method pretends that the warning come from a {@code provider()} method.
+     *
+     * @param  status    the <abbr>GDAL</abbr> status.
+     * @param  warning   whether to use the warning level. Otherwise, uses the configuration level.
+     * @param  cause     the cause of the error, or {@code null} if none.
+     */
+    static void log(final LibraryStatus status, final boolean warning, final Throwable e) {
+        status.log(LOGGER, warning, GDALStoreProvider.class, Constants.GDAL, e);
     }
 
     /**

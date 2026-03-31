@@ -26,8 +26,8 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * Thrown when an envelope cannot be transformed to a geographic, vertical or temporal extent.
- * This exception occurs when the envelope Coordinate Reference System (CRS) has no spatial or temporal component.
- * For example, it may be an engineering CRS.
+ * This exception occurs when the envelope Coordinate Reference System (<abbr>CRS</abbr>) has
+ * no spatial or temporal component. For example, it may be an engineering <abbr>CRS</abbr>.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5

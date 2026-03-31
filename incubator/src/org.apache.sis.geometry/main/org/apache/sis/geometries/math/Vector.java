@@ -22,21 +22,7 @@ package org.apache.sis.geometries.math;
  *
  * @author Johann Sorel (Geomatys)
  */
-public interface Vector<T extends Vector<T>> extends Tuple<T> {
-
-    /**
-     * @return vector length
-     */
-    default double length() {
-        return Vectors.length(toArrayDouble());
-    }
-
-    /**
-     * @return vector squere length
-     */
-    default double lengthSquare() {
-        return Vectors.lengthSquare(toArrayDouble());
-    }
+public interface Vector<T extends Vector<T>> extends Tuple<T>, ReadOnly.Vector<T> {
 
     /**
      * Normalize this vector.
@@ -48,23 +34,11 @@ public interface Vector<T extends Vector<T>> extends Tuple<T> {
     }
 
     /**
-     * Normalize this vector.
-     * @param result where to store the result
-     * @return result of the operation, this vector is unchanged
-     */
-    default <R extends Tuple<?>> R normalize(R result) {
-        if (result == null) result = (R) this.copy();
-        result.set(this);
-        Vectors.castOrWrap(result).normalize();
-        return result;
-    }
-
-    /**
      * Add other vector values to this vector.
      * @param other
      * @return this vector
      */
-    default T add(Tuple<?> other) {
+    default T add(ReadOnly.Tuple<?> other) {
         set( Vectors.add(toArrayDouble(), other.toArrayDouble()));
         return (T) this;
     }
@@ -74,9 +48,35 @@ public interface Vector<T extends Vector<T>> extends Tuple<T> {
      * @param other
      * @return this vector
      */
-    default T subtract(Tuple<?> other) {
+    default T subtract(ReadOnly.Tuple<?> other) {
         set( Vectors.subtract(toArrayDouble(), other.toArrayDouble()));
         return (T) this;
+    }
+
+    /**
+     * Multiply other vector values to this vector.
+     * @param other
+     * @return this vector
+     */
+    default T multiply(ReadOnly.Tuple<?> other) {
+        return set(Vectors.multiply(toArrayDouble(), other.toArrayDouble()));
+    }
+
+    /**
+     * Divide other vector values to this vector.
+     * @param other
+     * @return this vector
+     */
+    default T divide(ReadOnly.Tuple<?> other) {
+        return set(Vectors.divide(toArrayDouble(), other.toArrayDouble()));
+    }
+
+    /**
+     * Negate this vector values.
+     * @return this vector
+     */
+    default T negate() {
+        return set(Vectors.negate(toArrayDouble()));
     }
 
     /**
@@ -90,50 +90,7 @@ public interface Vector<T extends Vector<T>> extends Tuple<T> {
         return (T) this;
     }
 
-    /**
-     * Cross product.
-     *
-     * @param other
-     * @return cross product result
-     */
-    default T cross(Tuple<?> other) {
-        double[] v1 = toArrayDouble();
-        double[] v2 = other.toArrayDouble();
-        double[] buffer = new double[v1.length];
-        Vectors.cross(v1, v2, buffer);
-        Vector<?> res = Vectors.createDouble(buffer.length);
-        res.set(buffer);
-        return (T) res;
-    }
+    @Override
+    public T copy();
 
-    /**
-     * Dot product.
-     *
-     * @param other
-     * @return dot product result
-     */
-    default double dot(Tuple<?> other) {
-        double dot = 0;
-        for (int i=0,n=getDimension();i<n;i++){
-            dot += get(i) * other.get(i);
-        }
-        return dot;
-    }
-
-    /**
-     * Increase size of the tuple by one value.
-     * Vector CRS will be lost.
-     *
-     * @param d last dimension value
-     * @return Vector
-     */
-    default Vector<?> extend(double d) {
-        final int dim = getDimension();
-        final Vector v = Vectors.create(dim+1, getDataType());
-        for (int i = 0; i < dim; i++) {
-            v.set(i, get(i));
-        }
-        v.set(dim, d);
-        return v;
-    }
 }

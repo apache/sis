@@ -22,8 +22,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Function;
-import javafx.geometry.Pos;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.MenuItem;
@@ -36,6 +34,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.image.Colorizer;
 import org.apache.sis.gui.internal.Resources;
+import org.apache.sis.gui.internal.AlignedTableCell;
 import org.apache.sis.gui.internal.ImmutableObjectProperty;
 import org.apache.sis.gui.controls.ColorRamp;
 import org.apache.sis.gui.controls.ColorColumnHandler;
@@ -201,7 +200,7 @@ final class CoverageStyling extends ColorColumnHandler<Category>
     final TableView<Category> createCategoryTable(final Resources resources, final Vocabulary vocabulary) {
         final var name = new TableColumn<Category,String>(vocabulary.getString(Vocabulary.Keys.Name));
         name.setCellValueFactory(CoverageStyling::getCategoryName);
-        name.setCellFactory(CoverageStyling::createNameCell);
+        name.setCellFactory(AlignedTableCell.centerLeft());
         name.setEditable(false);
         name.setId("name");
         /*
@@ -220,17 +219,6 @@ final class CoverageStyling extends ColorColumnHandler<Category>
         table.setContextMenu(new ContextMenu(reset));
         table.setEditable(true);
         return table;
-    }
-
-    /**
-     * Invoked for creating a cell for the "name" column.
-     * Returns the JavaFX default cell except for vertical alignment, which is centered.
-     */
-    private static TableCell<Category,String> createNameCell(final TableColumn<Category,String> column) {
-        @SuppressWarnings("unchecked")
-        final var cell = (TableCell<Category,String>) TableColumn.DEFAULT_CELL_FACTORY.call(column);
-        cell.setAlignment(Pos.CENTER_LEFT);
-        return cell;
     }
 
     /**

@@ -33,6 +33,7 @@ import javafx.application.Platform;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelBuffer;
@@ -53,7 +54,7 @@ import org.apache.sis.system.Configuration;
  * controls by the user.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   1.1
  */
 public abstract class MapCanvasAWT extends MapCanvas {
@@ -160,6 +161,17 @@ public abstract class MapCanvasAWT extends MapCanvas {
         image = new ImageView();
         image.setPreserveRatio(true);
         floatingPane.getChildren().add(image);
+    }
+
+    /**
+     * Returns whether the given element of the {@link #floatingPane} children list needs to have its position
+     * updated after a repaint event. If {@code true}, the position is updated with the addition of an affine
+     * transform which contains the zoom changes applied by the repaint event.
+     */
+    @Override
+    final boolean needsPositionUpdateAfterRepaint(final Node child) {
+        // Exclude the image because it already contains the zoom changes applied by the repaint event.
+        return child != image;
     }
 
     /**

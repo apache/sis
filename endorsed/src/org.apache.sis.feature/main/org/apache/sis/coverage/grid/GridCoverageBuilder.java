@@ -21,7 +21,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Hashtable;
-import static java.util.Objects.requireNonNull;
+import java.util.Objects;
+import java.util.function.IntBinaryOperator;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -34,12 +35,14 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.image.DataType;
 import org.apache.sis.image.PlanarImage;
-import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.image.WritablePixelIterator;
 import org.apache.sis.image.internal.shared.ColorScaleBuilder;
 import org.apache.sis.image.internal.shared.ObservableImage;
 import org.apache.sis.image.internal.shared.TiledImage;
 import org.apache.sis.image.internal.shared.WritableTiledImage;
+import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -76,9 +79,12 @@ import org.apache.sis.util.resources.Errors;
  *             }
  *         }
  *         var builder = new GridCoverageBuilder();
- *         builder.setValues(data).flixAxis(1);
+ *         builder.setValues(data).flipGridAxis(1);
  *
- *         Envelope domain = ...;                       // Specify here the "real world" coordinates.
+ *         // Real world coordinates, around Tokyo in this example.
+ *         var domain = new GeneralEnvelope(CommonCRS.WGS84.normalizedGeographic());
+ *         domain.setRange(1,  32,  40);    // Range of latitude values.
+ *         domain.setRange(0, 137, 140);    // Range of longitude values.
  *         return builder.setDomain(domain).build();
  *     }
  * }
@@ -89,7 +95,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  *
  * @see GridCoverage2D
  * @see SampleDimension.Builder
@@ -298,7 +304,7 @@ public class GridCoverageBuilder {
      * @see SampleDimension.Builder
      */
     public GridCoverageBuilder addRange(final SampleDimension band) {
-        requireNonNull(band);
+        Objects.requireNonNull(band);
         if (!(ranges instanceof ArrayList<?>)) {
             ranges = (ranges != null) ? new ArrayList<>(ranges) : new ArrayList<>();
         }
@@ -322,7 +328,7 @@ public class GridCoverageBuilder {
      * @see BufferedImage
      */
     public GridCoverageBuilder setValues(final RenderedImage data) {
-        image  = requireNonNull(data);
+        image  = Objects.requireNonNull(data);
         raster = null;
         buffer = null;
         size   = null;
@@ -345,7 +351,7 @@ public class GridCoverageBuilder {
      * @see Raster#createBandedRaster(int, int, int, int, Point)
      */
     public GridCoverageBuilder setValues(final Raster data) {
-        raster = requireNonNull(data);
+        raster = Objects.requireNonNull(data);
         image  = null;
         buffer = null;
         size   = null;
@@ -381,6 +387,35 @@ public class GridCoverageBuilder {
         image  = null;
         raster = null;
         return this;
+    }
+
+    /**
+     * Sets a two-dimensional slice to the values computed by the given functions.
+     * The number of bands is the number of functions and the color model defaults to gray scale.
+     * The tiling is unspecified and may change in future versions of Apache <abbr>SIS</abbr>.
+     *
+     * <p>Each function will receive pixel coordinates (<var>x</var>, <var>y</var>)
+     * and shall return the sample value to store in one band of the image at that pixel position.
+     * The <var>x</var> values will be between 0 inclusive and {@link Dimension#width} exclusive.
+     * The <var>y</var> values will be between 0 inclusive and {@link Dimension#height} exclusive.
+     * The functions may be invoked with pixel coordinates in any order.</p>
+     *
+     * @param  type   the type of values to store in the image.
+     * @param  size   the image size in pixels.
+     * @param  bands  functions providing sample values in each band, in order.
+     * @return {@code this} for method invocation chaining.
+     * @throws IllegalArgumentException if {@code width} or {@code height} is negative or equals to zero.
+     *
+     * @see WritablePixelIterator#setRemainingPixels(IntBinaryOperator...)
+     *
+     * @since 1.7
+     */
+    public GridCoverageBuilder setValues(final DataType type, final Dimension size, final IntBinaryOperator... bands) {
+        // Number of bands, width and height are verified by `Raster.createBandedRaster(…)`
+        final WritableRaster data = Raster.createBandedRaster(type.toDataBufferType(), size.width, size.height, bands.length, null);
+        final WritablePixelIterator i = new WritablePixelIterator.Builder().createWritable(data);
+        i.setRemainingPixels(bands);
+        return setValues(data);
     }
 
     /**
@@ -423,7 +458,7 @@ public class GridCoverageBuilder {
      */
     @SuppressWarnings("UseOfObsoleteCollectionType")
     public GridCoverageBuilder addImageProperty(final String key, final Object value) {
-        if (properties.putIfAbsent(requireNonNull(key, "key"), requireNonNull(value, "value")) != null) {
+        if (properties.putIfAbsent(Objects.requireNonNull(key, "key"), Objects.requireNonNull(value, "value")) != null) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, key));
         }
         return this;

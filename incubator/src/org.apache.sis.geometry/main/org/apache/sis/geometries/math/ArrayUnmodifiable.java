@@ -38,6 +38,11 @@ final class ArrayUnmodifiable extends AbstractArray {
     }
 
     @Override
+    public ArrayFactory getFactory() {
+        return parent.getFactory();
+    }
+
+    @Override
     public SampleSystem getSampleSystem() {
         return parent.getSampleSystem();
     }
@@ -78,17 +83,17 @@ final class ArrayUnmodifiable extends AbstractArray {
     }
 
     @Override
-    public Tuple get(long index) {
+    public Tuple<?> get(long index) {
         return parent.get(index);
     }
 
     @Override
-    public void get(long index, Tuple buffer) {
+    public void get(long index, Tuple<?> buffer) {
         parent.get(index, buffer);
     }
 
     @Override
-    public void set(long index, Tuple buffer) {
+    public void set(long index, ReadOnly.Tuple<?> buffer) {
         throw new UnsupportedOperationException("This implementation is unmodifiable");
     }
 

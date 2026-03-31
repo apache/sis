@@ -474,7 +474,7 @@ public final class GeometryOperations {
             final MeshPrimitive p = (MeshPrimitive) geom;
 
             final AttributesType attributesType = p.getAttributesType();
-            final Map<String,List<Tuple>> atts = new HashMap<>();
+            final Map<String,List<Tuple<?>>> atts = new HashMap<>();
 
             for (String name : attributesType.getAttributeNames()) {
                 atts.put(name, new ArrayList<>());
@@ -483,7 +483,7 @@ public final class GeometryOperations {
             MeshPrimitiveVisitor pv = new MeshPrimitiveVisitor(geom) {
                 @Override
                 protected void visit(Point candidate) {
-                    for (Entry<String,List<Tuple>> entry : atts.entrySet()) {
+                    for (Entry<String,List<Tuple<?>>> entry : atts.entrySet()) {
                         entry.getValue().add(candidate.getAttribute(entry.getKey()));
                     }
                 }
@@ -492,7 +492,7 @@ public final class GeometryOperations {
                 protected void visit(LineString candidate) {
                     final Point p0 = candidate.getPointN(0);
                     final Point p1 = candidate.getPointN(1);
-                    for (Entry<String,List<Tuple>> entry : atts.entrySet()) {
+                    for (Entry<String,List<Tuple<?>>> entry : atts.entrySet()) {
                         entry.getValue().add(p0.getAttribute(entry.getKey()));
                         entry.getValue().add(p1.getAttribute(entry.getKey()));
                     }
@@ -504,7 +504,7 @@ public final class GeometryOperations {
                     final Point p0 = ring.getPointN(0);
                     final Point p1 = ring.getPointN(1);
                     final Point p2 = ring.getPointN(2);
-                    for (Entry<String,List<Tuple>> entry : atts.entrySet()) {
+                    for (Entry<String,List<Tuple<?>>> entry : atts.entrySet()) {
                         entry.getValue().add(p0.getAttribute(entry.getKey()));
                         entry.getValue().add(p1.getAttribute(entry.getKey()));
                         entry.getValue().add(p2.getAttribute(entry.getKey()));
@@ -529,7 +529,7 @@ public final class GeometryOperations {
                 default : type = MeshPrimitive.Type.TRIANGLES; break;
             }
             final MeshPrimitive sep = MeshPrimitive.create(type);
-            for (Entry<String,List<Tuple>> entry : atts.entrySet()) {
+            for (Entry<String,List<Tuple<?>>> entry : atts.entrySet()) {
                 final String name = entry.getKey();
                 final Array array = NDArrays.of(entry.getValue(), attributesType.getAttributeSystem(name), attributesType.getAttributeType(name));
                 sep.setAttribute(name, array);

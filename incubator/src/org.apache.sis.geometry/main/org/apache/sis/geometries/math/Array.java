@@ -34,6 +34,11 @@ import org.apache.sis.util.ArgumentChecks;
 public interface Array extends NDArray {
 
     /**
+     * @return the factory which created this array.
+     */
+    ArrayFactory getFactory();
+
+    /**
      * @return if length is zero.
      */
     @Override
@@ -66,8 +71,8 @@ public interface Array extends NDArray {
      * @param index tuple index.
      * @return tuple values, tuple is a copy.
      */
-    default Tuple get(long index) {
-        Tuple tuple = Vectors.create(getSampleSystem(), getDataType());
+    default Tuple<?> get(long index) {
+        Tuple<?> tuple = Vectors.create(getSampleSystem(), getDataType());
         get(index, tuple);
         return tuple;
     }
@@ -78,7 +83,18 @@ public interface Array extends NDArray {
      * @param index tuple index.
      * @param buffer tuple to write into.
      */
-    void get(long index, Tuple buffer);
+    void get(long index, Tuple<?> buffer);
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    default void set(ReadOnly.Tuple<?> buffer) {
+        Cursor cursor = cursor();
+        while (cursor.next()) {
+            cursor.samples().set(buffer);
+        }
+    }
 
     /**
      * Set tuple.
@@ -86,7 +102,7 @@ public interface Array extends NDArray {
      * @param index tuple index
      * @param buffer new tuple values.
      */
-    void set(long index, Tuple buffer);
+    void set(long index, ReadOnly.Tuple<?> buffer);
 
     /**
      * Get tuple.
@@ -95,7 +111,7 @@ public interface Array extends NDArray {
      * @param buffer tuple to write into.
      */
     @Override
-    default void get(long[] index, Tuple buffer) {
+    default void get(long[] index, Tuple<?> buffer) {
         if (index.length != 1) throw new IllegalArgumentException("New shape must have a dimension of one");
         get(index[0], buffer);
     }
@@ -107,7 +123,7 @@ public interface Array extends NDArray {
      * @param buffer new tuple values.
      */
     @Override
-    default void set(long[] index, Tuple buffer) {
+    default void set(long[] index, ReadOnly.Tuple<?> buffer) {
         if (index.length != 1) throw new IllegalArgumentException("New shape must have a dimension of one");
         set(index[0], buffer);
     }
@@ -344,7 +360,7 @@ public interface Array extends NDArray {
      * @return tuple stream over this array.
      */
     @Override
-    default Stream<Tuple> stream(boolean parallel) {
+    default Stream<Tuple<?>> stream(boolean parallel) {
         return StreamSupport.stream(new ArraySpliterator(this), parallel);
     }
 

@@ -16,12 +16,6 @@
  */
 package org.apache.sis.geometries.math;
 
-import org.apache.sis.referencing.operation.matrix.Matrix2;
-import org.apache.sis.referencing.operation.matrix.Matrix3;
-import org.apache.sis.referencing.operation.matrix.Matrix4;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-
-
 /**
  * Original code from Unlicense.science
  *
@@ -30,112 +24,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
  */
 public final class Matrices {
 
-    public static Matrix2 toMatrix2(double[][] m) {
-        return new Matrix2(
-                m[0][0], m[0][1],
-                m[1][0], m[1][1]);
-    }
-
-    public static Matrix3 toMatrix3(double[][] m) {
-        return new Matrix3(
-                m[0][0], m[0][1], m[0][2],
-                m[1][0], m[1][1], m[1][2],
-                m[2][0], m[2][1], m[2][2]);
-    }
-
-    public static Matrix4 toMatrix4(double[][] m) {
-        return new Matrix4(
-                m[0][0], m[0][1], m[0][2], m[0][3],
-                m[1][0], m[1][1], m[1][2], m[1][3],
-                m[2][0], m[2][1], m[2][2], m[2][3],
-                m[3][0], m[3][1], m[3][2], m[3][3]);
-    }
-
-    public static double[][] toArray(Matrix2 m) {
-        return new double[][]
-            {{m.m00, m.m01},
-             {m.m10, m.m11}};
-    }
-
-    public static double[][] toArray(Matrix3 m) {
-        return new double[][]
-            {{m.m00, m.m01, m.m02},
-             {m.m10, m.m11, m.m12},
-             {m.m20, m.m21, m.m22}};
-    }
-
-    public static double[][] toArray(Matrix4 m) {
-        return new double[][]
-            {{m.m00, m.m01, m.m02, m.m03},
-             {m.m10, m.m11, m.m12, m.m13},
-             {m.m20, m.m21, m.m22, m.m13},
-             {m.m30, m.m31, m.m32, m.m33}};
-    }
-
-    public static double[][] toArray(MatrixSIS m) {
-        final double[][] array = new double[m.getNumRow()][m.getNumCol()];
-        for (int r = 0; r < array.length; r++) {
-            for (int c = 0; c < array[0].length; c++) {
-                array[r][c] = m.getElement(r, c);
-            }
-        }
-        return array;
-    }
-
-    /**
-     * Checks if the given matrix is the identity matrix.
-     *
-     * @param m matrix to test.
-     * @return true if matrix is an Identity matrix.
-     */
-    public static boolean isIdentity(final double[][] m){
-        if ( m.length!=m[0].length ) return false; // m must be a square matrix
-        for ( int x=0; x<m[0].length; x++) {
-            for ( int y=0; y<m.length; y++) {
-                if (x==y){
-                    if ( m[y][x] != 1 ) return false;
-                } else {
-                    if ( m[y][x] != 0 ) return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Sets the given matrix to identity matrix.
-     *
-     * @param m a square matrix.
-     * @throws IllegalArgumentException when m is not a square matrix.
-     */
-    public static void setToIdentity( double[][] m ){
-        if (m.length != m[0].length) {
-            throw new IllegalArgumentException("The m matrix must be a square matrix.");
-        }
-        for (int x = 0; x < m[0].length; x++) {
-            for (int y = 0; y < m.length; y++) {
-                if (x == y) {
-                    m[y][x] = 1.;
-                } else {
-                    m[y][x] = 0.;
-                }
-            }
-        }
-    }
-
-    /**
-     * Creates a n*n identity matrix.
-     *
-     * @param n number of rows and columns.
-     * @return an n*n identity matrix.
-     */
-    public static double[][] identity(int n) {
-        double[][] identity = new double[n][n];
-        for (int i = 0; i < n; i++) {
-            identity[i][i] = 1.;
-        }
-        return identity;
-    }
+    private Matrices(){}
 
     /**
      * Adds m1 and m2, the result is stored in m1, returns m1.
@@ -444,99 +333,6 @@ public final class Matrices {
     }
 
     /**
-     * replace valeus close to 0 with zero, removing -0 if present
-     * @param matrix
-     * @param epsilon
-     */
-    public static void roundZeros(double[][] matrix, double epsilon){
-        for (int x=0;x<matrix.length;x++){
-            for (int y=0;y<matrix[0].length;y++){
-                if (!(matrix[x][y]>epsilon || matrix[x][y]<-epsilon)){
-                    matrix[x][y] = 0.0;
-                }
-            }
-        }
-    }
-
-    public static Tuple transformLocal(final double[][] matrix, final Tuple vector) {
-        return transform(matrix, vector, vector);
-    }
-
-    public static Tuple transform(final double[][] matrix, final Tuple vector, Tuple buffer) {
-        if (buffer==null) buffer = Vectors.createDouble(matrix.length);
-        final double[] array = new double[matrix.length];
-        transform(matrix, vector.toArrayDouble(), array);
-        buffer.set(array);
-        return buffer;
-    }
-
-    /**
-     * Transform given vector.
-     *
-     * @param matrix input matrix
-     * @param vector vector to transform
-     * @param buffer result vector buffer, can be null
-     * @return the product of matrix and vector.
-     */
-    public static double[] transform(final double[][] matrix, final double[] vector, double[] buffer) {
-        if (vector.length != matrix[0].length){
-            throw new IllegalArgumentException("matrix column size and vector size differ : "+matrix[0].length+","+vector.length);
-        }
-
-        final int nbRow = matrix.length;
-        final int nbCol = matrix[0].length;
-        final double[] res = new double[nbRow];
-
-        for (int r = 0; r < nbRow; r++) {
-            double s = 0;
-            for (int c = 0; c < nbCol; c++) {
-                s += matrix[r][c] * vector[c];
-            }
-            res[r] = s;
-        }
-
-        if ( buffer == null ) {
-            buffer = new double[matrix.length];
-        }
-        System.arraycopy(res, 0, buffer, 0, res.length);
-
-        return buffer;
-    }
-
-    /**
-     * Transforms given vector.
-     *
-     * @param matrix transformation matrix.
-     * @param vector considered as a column matrix.
-     * @param buffer result vector buffer, can be null
-     * @return the product of matrix and vector.
-     */
-    public static float[] transform(final double[][] matrix, final float[] vector, float[] buffer) {
-        if (vector.length != matrix[0].length){
-            throw new IllegalArgumentException("matrix column size and vector size differ : "+matrix[0].length+","+vector.length);
-        }
-
-        if (buffer == null) {
-            buffer = new float[matrix.length];
-        }
-
-        final int nbRow = matrix.length;
-        final int nbCol = matrix[0].length;
-        final float[] res = new float[nbRow];
-
-        for (int r = 0; r < nbRow; r++) {
-            double s = 0;
-            for (int c = 0; c < nbCol; c++) {
-                s += matrix[r][c] * vector[c];
-            }
-            res[r] = (float) s;
-        }
-
-        System.arraycopy(res, 0, buffer, 0, res.length);
-        return buffer;
-    }
-
-    /**
      * Multiply m1 by m2, result is stored in m1, returns m1.
      * see {@link Matrices#multiply(un.science.math.Matrix, un.science.math.Matrix, un.science.math.Matrix)}
      */
@@ -601,7 +397,7 @@ public final class Matrices {
      * @param buffer Matrix 3x3
      * @return rotation matrix
      */
-    public static double[][] createRotation3(final double angle, final Tuple<?> rotationAxis, double[][] buffer) {
+    public static double[][] createRotation3(final double angle, final ReadOnly.Tuple<?> rotationAxis, double[][] buffer) {
 
         if (buffer == null){
             buffer = new double[3][3];
@@ -643,7 +439,7 @@ public final class Matrices {
      * @param buffer Matrix 4x4
      * @return rotation matrix
      */
-    public static double[][] createRotation4(final double angle, final Tuple<?> rotationAxis, double[][] buffer) {
+    public static double[][] createRotation4(final double angle, final ReadOnly.Tuple<?> rotationAxis, double[][] buffer) {
 
         if (buffer == null){
             buffer = new double[4][4];
@@ -680,27 +476,6 @@ public final class Matrices {
         buffer[3][3] = 1;
 
         return buffer;
-    }
-
-    /**
-     * Create rotation matrix to move v1 on v2.
-     *
-     * @param v1
-     * @param v2
-     * @return
-     */
-    public static Matrix4 createRotation(Vector<?> v1, Vector<?> v2){
-        v1 = v1.normalize();
-        v2 = v2.normalize();
-        final double angle = Math.acos(v1.dot(v2));
-        if (angle==0){
-            //vectors are colinear
-            Matrix4 identity = new Matrix4();
-            return identity;
-        }
-        final Vector axis = v1.copy().cross(v2).normalize();
-        double[][] m = Matrices.createRotation4(angle, axis, null);
-        return Matrices.toMatrix4(m);
     }
 
     /**
@@ -775,94 +550,39 @@ public final class Matrices {
     }
 
     /**
-     * Calculate Euler angle of given matrix.
-     * Source :
-     * http://www.soi.city.ac.uk/~sbbh653/publications/euler.pdf
-     * http://jeux.developpez.com/faq/math/?page=transformations#Q37
+     * Create and orbit matrix 4x4 focus on the root point (0,0,0).
      *
-     * @param mat input matrix
-     * @param buffer euler buffer, can be null
-     * @return euler angle in radians (heading/yaw , elevation/pitch , bank/roll)
+     * @param xAngle horizontal angle
+     * @param yAngle vertical angle
+     * @param rollAngle roll angle
+     * @param distance distance from base
+     * @return orbit matrix 4x4
      */
-    public static double[] toEuler(double[][] mat, double[] buffer){
+    public static double[][] focusedOrbit(final double xAngle, final double yAngle,
+            double rollAngle, double distance){
 
-        if (buffer == null){
-            buffer = new double[3];
-        }
+        final Vector4D.Double forward = new Vector4D.Double(1*distance, 0, 0, 0);
 
-        double angle_x;
-        double angle_y;
-        double angle_z;
+        //calculate rotation matrix
+        final MatrixND rotateMatrix = new MatrixND(createRotation4(xAngle, new Vector3D.Double(0, 0, 1),null));
+        final MatrixND mv = new MatrixND(createRotation4(yAngle, new Vector3D.Double(0, -1, 0), null));
+        rotateMatrix.multiply(mv);
 
-        if (mat[2][0] != -1 && mat[2][0] != +1){
-            //first possible solution
-            angle_y = -Math.asin(mat[2][0]);
-            double cosy1 = Math.cos(angle_y);
-            angle_x = Math.atan2(mat[2][1]/cosy1, mat[2][2]/cosy1);
-            angle_z = Math.atan2(mat[1][0]/cosy1, mat[0][0]/cosy1);
+        //calculate translation vector
+        final Tuple<?> translation = rotateMatrix.transform(forward, null);
 
-            //second possible solution
-            //angle_y = Angles.PI - y1;
-            //double cosy2 = Math.cos(angle_y);
-            //angle_x = Math.atan2(mat[2][1]/cosy2, mat[2][2]/cosy2);
-            //angle_z = Math.atan2(mat[1][0]/cosy2, mat[0][0]/cosy2);
+        //calculate roll matrix
+//        final Matrix4 rollMatrix = new Matrix4();
+//        Matrices.createRotation4(rollAngle, new Vector(translation).normalize(), rollMatrix.getValues());
 
-        } else {
-            // Gimbal lock
-            angle_z = 0;
-            if (mat[2][0] == -1){
-                angle_y = Math.PI / 2.0;
-                angle_x = angle_z + Math.atan2(mat[0][1], mat[0][2]);
-            } else {
-                angle_y = -Math.PI / 2.0;
-                angle_x = -angle_z + Math.atan2(-mat[0][1], -mat[0][2]);
-            }
-        }
-
-
-        buffer[0] = angle_z;
-        buffer[1] = angle_y;
-        buffer[2] = angle_x;
-        return buffer;
+        //apply in reverse order
+        final MatrixND result = new MatrixND(4,4).setToIdentity();
+//        result.localMultiply(rollMatrix);
+        result.multiply(rotateMatrix);
+        result.set(0,3, translation.get(0));
+        result.set(1,3, translation.get(1));
+        result.set(2,3, translation.get(2));
+        return result.getValues();
     }
 
-    public static Matrix3 createFromUpAndRight(Vector<?> v, Vector<?> u) {
-        v = v.copy();
-        u = u.copy();
-        v.normalize();
-        u.normalize();
-
-        //W = Normalized(Cross(V,U))
-        Vector w = v.cross(u);
-        w.normalize();
-
-        //to ensure it is correctly perpendicular
-        //U = Normalized(Cross(W,V))
-        u = w.cross(v);
-        u.normalize();
-
-        return new Matrix3(
-                u.get(0), w.get(0), v.get(0),
-                u.get(1), w.get(1), v.get(1),
-                u.get(2), w.get(2), v.get(2));
-    }
-
-    /**
-     * Decompose a matrix in rotation, scale and translation.
-     */
-    public static void decomposeMatrix(Matrix4 trs, Matrix3 rotation, Tuple scale, Tuple translation){
-        final double scaleX = Math.sqrt(trs.m00 * trs.m00 + trs.m10 * trs.m10 + trs.m20 * trs.m20);
-        final double scaleY = Math.sqrt(trs.m01 * trs.m01 + trs.m11 * trs.m11 + trs.m21 * trs.m21);
-        final double scaleZ = Math.sqrt(trs.m02 * trs.m02 + trs.m12 * trs.m12 + trs.m22 * trs.m22);
-        final double[] invertScale = new double[]{1d / scaleX, 1d / scaleY, 1d / scaleZ};
-        rotation.m00 = trs.m00 * invertScale[0]; rotation.m01 = trs.m01 * invertScale[1]; rotation.m02 = trs.m02 * invertScale[2];
-        rotation.m10 = trs.m10 * invertScale[0]; rotation.m11 = trs.m11 * invertScale[1]; rotation.m12 = trs.m12 * invertScale[2];
-        rotation.m20 = trs.m20 * invertScale[0]; rotation.m21 = trs.m21 * invertScale[1]; rotation.m22 = trs.m22 * invertScale[2];
-        scale.set(0, scaleX);
-        scale.set(1, scaleY);
-        scale.set(2, scaleZ);
-        translation.set(0,trs.getElement(0,3));
-        translation.set(1,trs.getElement(1,3));
-        translation.set(2,trs.getElement(2,3));
-    }
 }

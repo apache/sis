@@ -116,7 +116,7 @@ import org.apache.sis.temporal.TemporalDate;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
  *
@@ -150,14 +150,6 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     private final boolean canReadFromCache;
 
     /**
-     * Whether the operation can be cached. This flag shall be {@code false} if
-     * the operation depends on parameters that may vary between two executions.
-     *
-     * @see #canStoreInCache()
-     */
-    private boolean canStoreInCache;
-
-    /**
      * Creates a new instance for the given factory and context.
      *
      * @param  registry  the factory to use for creating operations as defined by authority, or {@code null} if none.
@@ -175,7 +167,6 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         identifierOfStepCRS = new HashMap<>(8);
         previousSearches    = new HashMap<>(8);
         canReadFromCache    = (context == null || context.canReadFromCache()) && (factory == factorySIS);
-        canStoreInCache     = (context == null);
     }
 
     /**
@@ -257,13 +248,13 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         /*
          * If this method is invoked recursively, verify if the requested operation is already in the cache.
          * We do not perform this verification on the first invocation because it was already verified by
-         * DefaultCoordinateOperationFactory.createOperation(…). We do not block if the operation is in
+         * `DefaultCoordinateOperationFactory.createOperation(…)`. We do not block if the operation is in
          * process of being computed in another thread because of the risk of deadlock. If the operation
          * is not in the cache, store the key in our internal map for preventing infinite recursion.
          */
         final CRSPair key = new CRSPair(sourceCRS, targetCRS);
         if (canReadFromCache && stopAtFirst && !previousSearches.isEmpty()) {
-            final CoordinateOperation op = factorySIS.cache.peek(key);
+            final CoordinateOperation op = factorySIS.getCachedOperation(key);
             if (op != null) return asList(op);      // Must be a modifiable list as per this method contract.
         }
         if (previousSearches.put(key, Boolean.TRUE) != null) {
@@ -566,6 +557,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                 final var impl = (DefaultGeodeticDatum) sourceDatum;
                 datumShift = impl.getPositionVectorTransformation(targetDatum, areaOfInterest);
                 if (datumShift != null) typeOfChange = DATUM_SHIFT;
+                resultWasContextSensitive(specifiedAOI);
             } else if (targetDatum instanceof DefaultGeodeticDatum) {
                 final var impl = (DefaultGeodeticDatum) targetDatum;
                 Matrix matrix = impl.getPositionVectorTransformation(sourceDatum, areaOfInterest);
@@ -577,6 +569,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                     matrix = null;
                 }
                 datumShift = matrix;
+                resultWasContextSensitive(specifiedAOI);
             } else {
                 datumShift = null;
             }
@@ -593,6 +586,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             }
             method     = builder.getMethod();
             parameters = builder.parametersForMetadata();
+            resultWasContextSensitive(specifiedAccuracy);
         }
         /*
          * Adjust the accuracy information if the datum shift has been computed by an indirect path.
@@ -976,7 +970,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             final SubOperationInfo          info   = infos[i];
             final CoordinateReferenceSystem source = stepComponents[i];
             final CoordinateReferenceSystem target = info.targetComponent;
-            canStoreInCache &= info.canStoreInCache();
+            resultWasContextSensitive(info.resultWasContextSensitive());
             /*
              * In order to compute `stepTargetCRS`, replace in-place a single element in `stepComponents`.
              * For each step except the last one, `stepTargetCRS` is a mix of target CRS and source CRS.
@@ -1045,7 +1039,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                         targetCRS.getCoordinateSystem().getDimension());
             operation = concatenate(operation, createFromAffineTransform(CONSTANTS, stepSourceCRS, targetCRS, null, m));
             for (int i = stepComponents.length; i < infos.length; i++) {
-                canStoreInCache &= infos[i].canStoreInCache();
+                resultWasContextSensitive(infos[i].resultWasContextSensitive());
             }
         }
         return asList(operation);
@@ -1328,13 +1322,5 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         return Resources.forLocale(locale).getString(
                 Resources.Keys.NonInvertibleOperation_1,
                 CRSPair.label(crs.getConversionFromBase(), locale));
-    }
-
-    /**
-     * Returns whether the operation can be cached. This is {@code false} if
-     * the operation depends on parameters that may vary between two executions.
-     */
-    final boolean canStoreInCache() {
-        return canStoreInCache;
     }
 }

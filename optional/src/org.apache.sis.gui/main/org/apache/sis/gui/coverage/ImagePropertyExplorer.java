@@ -790,10 +790,10 @@ nextProp:       for (final String property : properties) {
     }
 
     /**
-     * Returns the view of this explorer. The subclass is implementation dependent
-     * and may change in any future version.
+     * Returns the encapsulated JavaFX component to add in a scene graph for making the explorer visible.
+     * The {@code Region} subclass is implementation dependent and may change in any future SIS version.
      *
-     * @return this explorer view.
+     * @return the JavaFX component to insert in a scene graph.
      */
     @Override
     public Region getView() {

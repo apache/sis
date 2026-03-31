@@ -190,7 +190,7 @@ public final class Quaternions {
      * @param buffer result buffer
      * @return quaternion, never null
      */
-    public static double[] fromAngle(Tuple axis, double angle, double[] buffer){
+    public static double[] fromAngle(ReadOnly.Tuple<?> axis, double angle, double[] buffer){
 
         if (buffer == null){
             buffer = new double[4];

@@ -27,8 +27,8 @@ import org.apache.sis.util.ArgumentChecks;
 final class CursorUnmodifiable implements Cursor {
 
     private final Cursor parent;
-    private Tuple previous;
-    private Tuple t;
+    private Tuple<?> previous;
+    private Tuple<?> t;
 
     public CursorUnmodifiable(Cursor parent) {
         ArgumentChecks.ensureNonNull("parent", parent);
@@ -36,8 +36,8 @@ final class CursorUnmodifiable implements Cursor {
     }
 
     @Override
-    public Tuple samples() {
-        Tuple cdt = parent.samples();
+    public Tuple<?> samples() {
+        Tuple<?> cdt = parent.samples();
         if (t == null || previous != cdt) {
             t = new TupleUnmodifiable(cdt);
             previous = cdt;

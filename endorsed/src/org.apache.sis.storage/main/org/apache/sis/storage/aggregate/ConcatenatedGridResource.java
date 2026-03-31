@@ -40,6 +40,7 @@ import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.Containers;
 
 
@@ -108,7 +109,7 @@ final class ConcatenatedGridResource extends AggregatedResource implements GridC
      * The resolutions, or {@code null} if not yet computed. Can be an empty array after computation.
      * Shall be read-only after computation.
      *
-     * @see #getResolutions()
+     * @see #getAvailableResolutions()
      */
     private double[][] resolutions;
 
@@ -221,7 +222,7 @@ final class ConcatenatedGridResource extends AggregatedResource implements GridC
      * @throws DataStoreException if an error occurred while reading definitions from an underlying resource.
      */
     @Override
-    public List<double[]> getResolutions() throws DataStoreException {
+    public List<double[]> getAvailableResolutions() throws DataStoreException {
         synchronized (getSynchronizationLock()) {
             if (resolutions == null) {
                 final GridSlice[] slices = locator.slices;
@@ -245,7 +246,12 @@ final class ConcatenatedGridResource extends AggregatedResource implements GridC
         int count = 0;
         double[][] resolutions = null;
         for (final GridCoverageResource slice : sources) {
-            final double[][] sr = slice.getResolutions().toArray(double[][]::new);
+            final double[][] sr;
+            try {
+                sr = slice.getAvailableResolutions().toArray(double[][]::new);
+            } catch (BackingStoreException e) {
+                throw e.unwrapOrRethrow(DataStoreException.class);
+            }
             if (sr != null) {                       // Should never be null, but we are paranoiac.
                 if (resolutions == null) {
                     resolutions = sr;

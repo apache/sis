@@ -28,8 +28,6 @@ import org.apache.sis.util.ArraysExt;
 
 /**
  * Parent class of all objects for which it is possible to register listeners.
- * This base class does not need to be public; its methods will appear as if
- * they were defined directly in sub-classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5

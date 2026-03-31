@@ -708,7 +708,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      */
     @Override
     public String toString() {
-        final var buffer = new TableAppender(" = ");
+        final var buffer = new TableAppender("", " = ", "");
         buffer.setMultiLinesCells(true);
         final EntryIterator<K,V> it = entryIterator();
         if (it != null) while (it.next()) {

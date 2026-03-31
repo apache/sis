@@ -142,7 +142,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   1.0
  */
 public class GridGeometry implements LenientComparable, Serializable {
@@ -1146,7 +1146,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * Returns the {@link #geographicBBox} value or {@code null} if none.
      * This method computes the box when first needed.
      */
-    private final GeographicBoundingBox geographicBBox() {
+    private GeographicBoundingBox geographicBBox() {
         GeographicBoundingBox bbox = geographicBBox;
         if (bbox == null) {
             if (getCoordinateReferenceSystem(envelope) != null && !envelope.isAllNaN()) {
@@ -1878,6 +1878,26 @@ public class GridGeometry implements LenientComparable, Serializable {
             throw new BackingStoreException(e);
         } catch (NoninvertibleTransformException e) {
             throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * Returns a coordinate operation for transforming coordinates from the <abbr>CRS</abbr> of this grid geometry
+     * to the given <abbr>CRS</abbr>. The {@linkplain #getGeographicExtent() geographic bounding box} of this grid
+     * geometry is used as the desired domain of validity.
+     *
+     * @param  target  the target <abbr>CRS</abbr> of the desired operation.
+     * @return coordinate operation from the <abbr>CRS</abbr> of this grid geometry to the given <abbr>CRS</abbr>.
+     * @throws IncompleteGridGeometryException if this grid geometry has no <abbr>CRS</abbr>.
+     * @throws TransformException if the coordinate operation cannot be found.
+     *
+     * @since 1.7
+     */
+    public CoordinateOperation createChangeOfCRS(final CoordinateReferenceSystem target) throws TransformException {
+        try {
+            return findOperation(getCoordinateReferenceSystem(), target, geographicBBox());
+        } catch (FactoryException e) {
+            throw new TransformException(e);
         }
     }
 

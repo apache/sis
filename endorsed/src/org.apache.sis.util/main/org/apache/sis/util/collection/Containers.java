@@ -569,17 +569,18 @@ public final class Containers {
     }
 
     /**
-     * Returns a list whose elements are derived <i>on-the-fly</i> from the given list.
+     * Returns a read/remove-only list whose elements are derived <i>on-the-fly</i> from the given list.
      * Conversions from the original elements to the derived elements are performed when needed
      * by invoking the {@link Function#apply(Object)} method on the given converter.
      * Those conversions are repeated every time that a {@code List} method needs to access values.
      * Consequently, any change in the original list is immediately visible in the derived list.
      *
+     * <p>The returned list support removal operations if the given {@code storage} list supports them.
+     * However, it does not support adding or modifying elements.</p>
+     *
      * <p>The returned list can be serialized if the given list and converter are serializable.
      * The returned list is not synchronized by itself, but is nevertheless thread-safe if the
      * given list (including its iterator) and converter are thread-safe.</p>
-     *
-     * <p>The returned list does <em>not</em> implement {@link CheckedContainer}.</p>
      *
      * @param  <S>        the type of elements in the storage (original) list.
      * @param  <E>        the type of elements in the derived list.
@@ -596,6 +597,29 @@ public final class Containers {
             return null;
         }
         return new DerivedList<>(storage, converter);
+    }
+
+    /**
+     * Returns a list whose elements are derived <i>on-the-fly</i> from the given list.
+     * This method does the same work as above {@link #derivedList(List, Function)},
+     * except that the returned list supports additions if the given {@code converter}
+     * is {@linkplain org.apache.sis.math.FunctionProperty#INVERTIBLE invertible}.
+     *
+     * @param  <S>        the type of elements in the storage (original) list.
+     * @param  <E>        the type of elements in the derived list.
+     * @param  storage    the storage list containing the original elements, or {@code null}.
+     * @param  converter  the converter from the elements in the storage list to the elements in the derived list.
+     * @return a view over the {@code storage} list containing all elements converted by the given converter,
+     *         or {@code null} if {@code storage} was null.
+     *
+     * @since 1.7
+     */
+    public static <S,E> List<E> derivedList(final List<S> storage, final ObjectConverter<S,E> converter) {
+        ArgumentChecks.ensureNonNull("converter", converter);
+        if (storage == null) {
+            return null;
+        }
+        return WritableDerivedList.create(storage, converter);
     }
 
     /**

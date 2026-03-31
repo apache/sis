@@ -86,8 +86,8 @@ public interface Tile {
 
     /**
      * Returns information about whether the tile failed to load.
-     * The return value can be {@link TileStatus#EXISTS} or {@link TileStatus#IN_ERROR};
-     * other enumeration values should not happen after a user successfully obtained this {@code Tile} instance.
+     * The return value can be {@link TileStatus#EXISTS} or {@link TileStatus#IN_ERROR}.
+     * Other enumeration values should not happen after a user successfully obtained this {@code Tile} instance.
      *
      * <h4>State transition</h4>
      * {@link TileStatus#EXISTS} is not a guarantee that a call to {@link #getResource()} will succeed.

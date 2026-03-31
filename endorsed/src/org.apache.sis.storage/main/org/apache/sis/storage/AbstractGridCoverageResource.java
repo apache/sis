@@ -26,20 +26,28 @@ import java.math.RoundingMode;
 import java.awt.image.RasterFormatException;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
-import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.internal.shared.DirectPositionView;
+import org.apache.sis.referencing.operation.CoordinateOperationContext;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.DisjointExtentException;
+import org.apache.sis.coverage.grid.PixelInCell;
+import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.AngleFormat;
-import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.io.stream.IOUtilities;
+import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.internal.shared.Constants;
-import org.apache.sis.storage.base.MetadataBuilder;
-import org.apache.sis.storage.internal.Resources;
 
 
 /**
@@ -60,10 +68,16 @@ import org.apache.sis.storage.internal.Resources;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   1.2
  */
 public abstract class AbstractGridCoverageResource extends AbstractResource implements GridCoverageResource {
+    /**
+     * The last coordinate operation returned by {@link #convertResolutionOf(GridGeometry)}.
+     * Used as an optimization in the common case where the same <abbr>CRS</abbr> is used for many requests.
+     */
+    private volatile CoordinateOperation lastOperation;
+
     /**
      * Creates a new resource, potentially as a child of another resource.
      * The parent resource is typically, but not necessarily, an {@link Aggregate}.
@@ -122,6 +136,64 @@ public abstract class AbstractGridCoverageResource extends AbstractResource impl
         final var builder = new MetadataBuilder();
         builder.addDefaultMetadata(this, listeners);
         return builder.build();
+    }
+
+    /**
+     * Returns the resolution of the given grid geometry as a resolution in units of this coverage <abbr>CRS</abbr>.
+     * If the <abbr>CRS</abbr> of the given domain is equivalent to the <abbr>CRS</abbr> of this coverage,
+     * then the returned values are equal to {@code domain.getResolution(true)}.
+     * Otherwise, a coordinate operation is applied.
+     *
+     * <p>This is a helper method for implementations of the {@code read(…)} method by subclasses.
+     * The argument given to this method is typically the {@code domain} argument given to {@code read(…)}.
+     * Subclasses can use the returned values for choosing a subsampling or a pyramid level.</p>
+     *
+     * @param  domain  the geometry from which to get the resolution, or {@code null} if unspecified.
+     * @return resolution of the given grid geometry in units of this coverage CRS, or {@code null} if none.
+     * @throws DataStoreException if an error occurred while converting the {@code domain} resolution.
+     *
+     * @see #read(GridGeometry, int...)
+     *
+     * @since 1.7
+     */
+    protected double[] convertResolutionOf(final GridGeometry domain) throws DataStoreException {
+        if (domain == null || !domain.isDefined(GridGeometry.RESOLUTION)) {
+            return null;
+        }
+        double[] resolution = domain.getResolution(true);
+        if (domain.isDefined(GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS | GridGeometry.CRS)) try {
+            CoordinateOperation op = lastOperation;
+            if (op == null || !domain.getCoordinateReferenceSystem().equals(op.getSourceCRS())) {
+                /*
+                 * The resolution in the user-supplied domain is associated to a CRS different than the CRS
+                 * of the last resolution that we computed. We must update the operation from user-supplied
+                 * resolution to the units of this grid coverage.
+                 */
+                final GridGeometry targetGrid = getGridGeometry();
+                final var context = new CoordinateOperationContext();
+                targetGrid.getGeographicExtent().ifPresent(context::addAreaOfInterest);
+                targetGrid.getConstantCoordinates().ifPresent(context::setConstantCoordinates);
+                op = CRS.findOperation(domain.getCoordinateMetadata(), targetGrid.getCoordinateMetadata(), context);
+                lastOperation = context.resultWasContextSensitive() ? null : op;
+            }
+            final MathTransform domainToCoverage = op.getMathTransform();
+            if (!domainToCoverage.isIdentity()) {
+                /*
+                 * If the `domain` grid geometry has a resolution and an envelope, then it should have
+                 * an extent and a "grid to CRS" transform (otherwise it may be a `GridGeometry` bug)
+                 */
+                DirectPosition poi = new DirectPositionView.Double(domain.getExtent().getPointOfInterest(PixelInCell.CELL_CENTER));
+                poi = domain.getGridToCRS(PixelInCell.CELL_CENTER).transform(poi, null);
+                final MatrixSIS derivative = MatrixSIS.castOrCopy(domainToCoverage.derivative(poi));
+                resolution = derivative.multiply(resolution);
+                for (int i=0; i<resolution.length; i++) {
+                    resolution[i] = Math.abs(resolution[i]);
+                }
+            }
+        } catch (FactoryException | TransformException e) {
+            throw new DataStoreReferencingException(e.getMessage(), e);
+        }
+        return resolution;
     }
 
     /**

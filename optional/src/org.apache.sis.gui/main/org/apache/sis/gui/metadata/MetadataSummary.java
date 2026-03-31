@@ -155,13 +155,13 @@ public class MetadataSummary extends Widget {
     }
 
     /**
-     * Returns the region containing the visual components managed by this {@code MetadataSummary}.
-     * The subclass is implementation dependent and may change in any future version.
+     * Returns the encapsulated JavaFX component to add in a scene graph for making the metadata visible.
+     * The {@code Region} subclass is implementation dependent and may change in any future SIS version.
      *
-     * @return the region to show.
+     * @return the JavaFX component to insert in a scene graph.
      */
     @Override
-    public final Region getView() {
+    public Region getView() {
         return content;
     }
 

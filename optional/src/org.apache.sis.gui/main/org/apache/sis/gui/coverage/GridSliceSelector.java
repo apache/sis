@@ -40,7 +40,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
-import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.TemporalCRS;
@@ -447,12 +446,9 @@ public class GridSliceSelector extends Widget {
             /*
              * Fallback on grid axis name if no CRS axis name is found.
              */
-            final DimensionNameType axis = extent.getAxisType(dimension).orElse(null);
-            if (axis != null) {
-                return Types.getCodeTitle(axis).toString(locale);
-            } else {
-                return vocabulary.getString(Vocabulary.Keys.Axis_1, dimension);
-            }
+            return extent.getAxisType(dimension)
+                    .map((axisType) -> Types.getCodeTitle(axisType).toString(locale))
+                    .orElseGet(() -> vocabulary.getString(Vocabulary.Keys.Axis_1, dimension));
         }
 
         /**
@@ -622,7 +618,7 @@ public class GridSliceSelector extends Widget {
      * @return the JavaFX component to insert in a scene graph.
      */
     @Override
-    public final Region getView() {
+    public Region getView() {
         return view;
     }
 

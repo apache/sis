@@ -28,7 +28,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.property.StringProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStoreException;
@@ -52,7 +51,7 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  * It may also be a tile in a mosaic of windows.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   1.3
  */
 public abstract class WindowHandler {
@@ -104,16 +103,20 @@ public abstract class WindowHandler {
      * @return {@code this} for method call chaining.
      */
     final WindowHandler finish() {
-        String text;
-        if (manager.main == this) {
-            text = Resources.forLocale(manager.locale).getString(Resources.Keys.MainWindow);
-        } else try {
-            text = DataStoreOpener.findLabel(getResource(), manager.locale, true);
-        } catch (DataStoreException | RuntimeException e) {
-            text = Vocabulary.forLocale(manager.locale).getString(Vocabulary.Keys.NotKnown);
-            Logging.recoverableException(LOGGER, WindowHandler.class, "<init>", e);
-        }
-        title.set(text);
+        BackgroundThreads.execute(() -> {
+            String text;
+            final Locale locale = manager.locale;
+            if (manager.main == this) {
+                text = Resources.forLocale(locale).getString(Resources.Keys.MainWindow);
+            } else try {
+                text = DataStoreOpener.findLabel(getResource(), locale, true);
+            } catch (DataStoreException | RuntimeException e) {
+                text = DataStoreOpener.fallbackLabel(getResource(), locale);
+                Logging.recoverableException(LOGGER, WindowHandler.class, "<init>", e);
+            }
+            final String label = text;      // Because lambda functions want final variable.
+            Platform.runLater(() -> title.set(label));
+        });
         manager.modifiableWindowList.add(this);
         return this;
     }

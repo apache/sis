@@ -73,7 +73,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractTuple<T> i
             this.w = array[3];
         }
 
-        public Byte(Tuple tuple) {
+        public Byte(ReadOnly.Tuple<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 4);
             set(tuple);
@@ -179,7 +179,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public Byte add(Tuple other) {
+        public Byte add(ReadOnly.Tuple<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
@@ -191,7 +191,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public Byte subtract(Tuple other) {
+        public Byte subtract(ReadOnly.Tuple<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
@@ -307,7 +307,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractTuple<T> i
             this.w = array[3];
         }
 
-        public UByte(Tuple tuple) {
+        public UByte(ReadOnly.Tuple<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 4);
             set(tuple);
@@ -498,7 +498,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractTuple<T> i
             this.w = array[3];
         }
 
-        public Short(Tuple tuple) {
+        public Short(ReadOnly.Tuple<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 4);
             set(tuple);
@@ -604,7 +604,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public Short add(Tuple other) {
+        public Short add(ReadOnly.Tuple<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
@@ -616,7 +616,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public Short subtract(Tuple other) {
+        public Short subtract(ReadOnly.Tuple<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
@@ -732,7 +732,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractTuple<T> i
             this.w = array[3];
         }
 
-        public UShort(Tuple tuple) {
+        public UShort(ReadOnly.Tuple<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 4);
             set(tuple);
@@ -838,7 +838,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public UShort add(Tuple other) {
+        public UShort add(ReadOnly.Tuple<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
@@ -850,7 +850,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public UShort subtract(Tuple other) {
+        public UShort subtract(ReadOnly.Tuple<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
@@ -981,7 +981,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractTuple<T> i
             this.w = array[3];
         }
 
-        public Int(Tuple tuple) {
+        public Int(ReadOnly.Tuple<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 4);
             set(tuple);
@@ -1087,7 +1087,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public Int add(Tuple other) {
+        public Int add(ReadOnly.Tuple<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
@@ -1099,7 +1099,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public Int subtract(Tuple other) {
+        public Int subtract(ReadOnly.Tuple<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
@@ -1215,7 +1215,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractTuple<T> i
             this.w = array[3];
         }
 
-        public UInt(Tuple tuple) {
+        public UInt(ReadOnly.Tuple<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 4);
             set(tuple);
@@ -1426,7 +1426,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractTuple<T> i
             this.w = array[3];
         }
 
-        public Long(Tuple tuple) {
+        public Long(ReadOnly.Tuple<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 4);
             set(tuple);
@@ -1617,7 +1617,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractTuple<T> i
             this.w = array[3];
         }
 
-        public Float(Tuple tuple) {
+        public Float(ReadOnly.Tuple<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 4);
             set(tuple);
@@ -1733,7 +1733,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public Float add(Tuple other) {
+        public Float add(ReadOnly.Tuple<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
@@ -1745,7 +1745,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public Float subtract(Tuple other) {
+        public Float subtract(ReadOnly.Tuple<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
@@ -1868,7 +1868,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractTuple<T> i
             this.w = array[3];
         }
 
-        public Double(Tuple tuple) {
+        public Double(ReadOnly.Tuple<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 4);
             set(tuple);
@@ -1984,7 +1984,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public Double add(Tuple other) {
+        public Double add(ReadOnly.Tuple<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
@@ -1996,7 +1996,7 @@ public abstract class Vector4D<T extends Vector4D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public Double subtract(Tuple other) {
+        public Double subtract(ReadOnly.Tuple<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }

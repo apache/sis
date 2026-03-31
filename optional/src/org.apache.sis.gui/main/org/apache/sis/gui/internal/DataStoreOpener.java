@@ -43,13 +43,13 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.folder.ConcurrentCloser;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.io.stream.ChannelFactory;
 import org.apache.sis.io.stream.InternalOptionKey;
-import org.apache.sis.storage.folder.ConcurrentCloser;
 import org.apache.sis.gui.DataViewer;
 
 
@@ -212,7 +212,7 @@ public final class DataStoreOpener extends Task<DataStore> {
     }
 
     /**
-     * Set the provider of wrappers around channels used for reading data.
+     * Sets the provider of wrappers around channels used for reading data.
      * Those wrappers can be used for listening to file accesses.
      *
      * @param  wrapper  the wrapper, or {@code null} if none.
@@ -248,21 +248,20 @@ public final class DataStoreOpener extends Task<DataStore> {
         if (resource != null) {
             final Long logID = LogHandler.loadingStart(resource);
             try {
-                /*
-                 * The data store display name is typically the file name. We give precedence to that name
-                 * instead of the citation title because the citation may be the same for many files of
-                 * the same product, while the display name have better chances to be distinct for each file.
-                 */
-                if (resource instanceof DataStore) {
-                    final String name = Strings.trimOrNull(((DataStore) resource).getDisplayName());
-                    if (name != null) return name;
+                GenericName identifier = resource.getIdentifier().orElse(null);
+                if (identifier != null) {
+                    if (qualified) {
+                        String t = string(identifier.toFullyQualifiedName().toInternationalString(), locale);
+                        if (t != null) return t;    // Should never be null, but we are paranoiac.
+                    } else {
+                        identifier = identifier.tip();
+                    }
                 }
                 /*
                  * Search for a title in metadata first because it has better chances to be human-readable
                  * compared to the resource identifier. If the title is the same text as the identifier,
                  * then execute the code path for identifier (i.e. try to find a more informative text).
                  */
-                GenericName name = resource.getIdentifier().orElse(null);
                 Collection<? extends Identification> identifications = null;
                 final Metadata metadata = resource.getMetadata();
                 if (metadata != null) {
@@ -272,7 +271,7 @@ public final class DataStoreOpener extends Task<DataStore> {
                             final Citation citation = identification.getCitation();
                             if (citation != null) {
                                 final String t = string(citation.getTitle(), locale);
-                                if (t != null && (name == null || !t.equals(name.tip().toString()))) {
+                                if (t != null && (identifier == null || !t.equals(identifier.tip().toString()))) {
                                     return t;
                                 }
                             }
@@ -284,22 +283,47 @@ public final class DataStoreOpener extends Task<DataStore> {
                  * We search for explicitly declared identifier first before to fallback on
                  * metadata identifier, because the latter is more subject to interpretation.
                  */
-                if (name != null) {
-                    name = qualified ? name.toFullyQualifiedName() : name.tip();
-                    final String t = string(name.toInternationalString(), locale);
+                if (identifier != null) {
+                    String t = string(identifier.toInternationalString(), locale);
                     if (t != null) return t;
                 }
                 if (identifications != null) {
                     for (final Identification identification : identifications) {
-                        final String t = Citations.getIdentifier(identification.getCitation());
+                        String t = Citations.getIdentifier(identification.getCitation());
                         if (t != null) return t;
                     }
+                }
+                /*
+                 * Check for data store display name in last resort, because it depends on the input object.
+                 * It may be a filename if the resource was opened from a `java.nio.Path`, but may also be a
+                 * class name if the resource was opened from a stream.
+                 */
+                if (resource instanceof DataStore) {
+                    String t = Strings.trimOrNull(((DataStore) resource).getDisplayName());
+                    if (t != null) return t;
                 }
             } finally {
                 LogHandler.loadingStop(logID);
             }
         }
         return Vocabulary.forLocale(locale).getString(Vocabulary.Keys.Unnamed);
+    }
+
+    /**
+     * Returns the label to use as a fallback if {@link #findLabel(Resource, Locale, boolean)} threw an exception.
+     * The fallback may be the "Not known" text. Note that we do not use the "Unnamed" text because we don't know
+     * if the resource is really unnamed. This method should be quick enough for invocation from the JavaFX thread.
+     *
+     * @param  resource  the resource for which to get a label, or {@code null}.
+     * @param  locale    the locale to use for localizing international strings.
+     * @return a label to use as a fallback (never {@code null}).
+     */
+    public static String fallbackLabel(final Resource resource, final Locale locale) {
+        if (resource instanceof DataStore) {
+            final String text = Strings.trimOrNull(((DataStore) resource).getDisplayName());
+            if (text != null) return text;
+        }
+        return Vocabulary.forLocale(locale).getString(Vocabulary.Keys.NotKnown);
     }
 
     /**
@@ -321,6 +345,7 @@ public final class DataStoreOpener extends Task<DataStore> {
      * @return {@code true} if the value has been removed from the cache, or {@code false}
      *         if it has not been found. Note that the data store is closed in all cases.
      */
+    @SuppressWarnings("UseSpecificCatch")
     public static boolean removeAndClose(final DataStore toClose, final Node owner) {
         /*
          * A simpler code would be as below, but cannot be used at this time because our

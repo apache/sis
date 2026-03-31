@@ -16,21 +16,19 @@
  */
 package org.apache.sis.gui.dataset;
 
-import java.util.Locale;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.TreeCell;
-import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.paint.Color;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.gui.internal.ExceptionReporter;
-import org.apache.sis.gui.internal.DataStoreOpener;
 import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.gui.internal.Styles;
 import org.apache.sis.util.Classes;
@@ -42,9 +40,8 @@ import org.apache.sis.util.resources.Vocabulary;
 /**
  * The visual appearance of an {@link ResourceItem} in a tree.
  * Cells are initially empty; their content will be specified by {@link TreeView} after construction.
- * This class gets the cell text from a resource by a call to
- * {@link DataStoreOpener#findLabel(Resource, Locale, boolean)} in a background thread.
- * The same call may be recycled many times for different {@link ResourceItem} data.
+ * The text is initially "Loading…" and the actual text is obtained from the resource in a background thread.
+ * The same {@code ResourceCell} instance may be recycled many times for different {@link ResourceItem} data.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
@@ -52,21 +49,26 @@ import org.apache.sis.util.resources.Vocabulary;
  */
 final class ResourceCell extends TreeCell<Resource> {
     /**
-     * The type of view (original resource, aggregated resources, etc.) shown in this node.
+     * Position of menu items in the contextual menu built by {@link #updateItem(Resource, boolean)}.
+     * Above method assumes that {@link #CLOSE} is the last menu item.
      */
-    private TreeViewType viewType;
+    private static final int COPY_PATH = 0, OPEN_FOLDER = 1, AGGREGATED = 2, CLOSE = 3;
 
     /**
      * Creates a new cell with initially no data.
+     *
+     * @param  tree  the tree which will contain this new cell
+     *         (ignored, defined for matching method signature of call factory).
      */
-    ResourceCell() {
+    @SuppressWarnings("unused")
+    ResourceCell(final TreeView<Resource> tree) {
     }
 
     /**
      * Invoked when a new resource needs to be shown in the tree view.
-     * This method sets the text to a label that describe the resource
-     * (possibly starting a background thread for fetching that label)
-     * and set a contextual menu.
+     * This method sets the text to a label that describes the resource,
+     * possibly starting a background thread for fetching that label.
+     * This method also sets a contextual menu.
      *
      * @param resource  the resource to show.
      * @param empty     whether this cell is used to fill out space.
@@ -75,16 +77,12 @@ final class ResourceCell extends TreeCell<Resource> {
     protected void updateItem(final Resource resource, boolean empty) {
         super.updateItem(resource, empty);          // Mandatory according JavaFX documentation.
         Color       color = Styles.NORMAL_TEXT;
-        String      text  = null;
         Button      more  = null;
         ContextMenu menu  = null;
-        final TreeItem<Resource> t;
-        if (!empty && (t = getTreeItem()) instanceof ResourceItem) {
-            final ResourceTree tree = (ResourceTree) getTreeView();
-            final ResourceItem item = (ResourceItem) t;
-            final Throwable error;
-            text = item.label;
-            if (item.isLoading) {
+        if (!empty && getTreeItem() instanceof ResourceItem item) {
+            final var tree = (ResourceTree) getTreeView();
+            textProperty().bind(item.label);
+            if (item.isLoading()) {
                 /*
                  * If the resource is in process of being loaded in a background thread, show "Loading…"
                  * with a different color. Item with null resource will be replaced by a collection of new
@@ -92,40 +90,23 @@ final class ResourceCell extends TreeCell<Resource> {
                  * Item with non-null resource only need to have their name updated.
                  */
                 color = Styles.LOADING_TEXT;
-                if (text == null) {
-                    text = item.label = tree.localized().getString(Resources.Keys.Loading);
+                if (item.label.getValue() == null) {
+                    item.label.setValue(tree.localized().getString(Resources.Keys.Loading));
                     if (resource != null) {
-                        tree.fetchLabel(item.new Completer(resource));      // Start a background thread.
+                        tree.fetchLabel(item.new Completer(resource, this));  // Start a background thread.
                     }
                 }
-            } else if ((error = item.error) != null) {
+            } else {
                 /*
                  * If an error occurred, show the exception message with a button for more details.
                  * The list of resource children may or may not be available, depending if the error
                  * occurred while fetching the children list or only their labels.
                  */
-                color = Styles.ERROR_TEXT;
-                if (text == null) {
-                    if (resource != null) {
-                        // We have the resource, we only failed to fetch its name.
-                        text = Vocabulary.forLocale(tree.locale).getString(Vocabulary.Keys.Unnamed);
-                    } else {
-                        // More serious error (no resource), show exception message.
-                        text = Strings.trimOrNull(Exceptions.getLocalizedMessage(error, tree.locale));
-                        if (text == null) text = Classes.getShortClassName(error);
-                    }
-                    item.label = text;
+                final Throwable error = item.error();
+                if (error != null) {
+                    color = Styles.ERROR_TEXT;
+                    more = createErrorDetails(tree, item, error);
                 }
-                more = (Button) getGraphic();
-                if (more == null) {
-                    more = new Button(Styles.ERROR_DETAILS_ICON);
-                }
-                more.setOnAction((e) -> {
-                    final Resources localized = tree.localized();
-                    ExceptionReporter.show(tree,
-                            localized.getString(Resources.Keys.ErrorDetails),
-                            localized.getString(Resources.Keys.CanNotReadResource), error);
-                });
             }
             /*
              * Following block is for the contextual menu. In current version,
@@ -170,18 +151,67 @@ final class ResourceCell extends TreeCell<Resource> {
                 aggregated.setDisable(!aggregatable);
                 aggregated.setSelected(aggregatable && item.isView(TreeViewType.AGGREGATION));
             }
+        } else {
+            textProperty().unbind();
+            setText(null);
         }
-        setText(text);
         setTextFill(isSelected() ? Styles.SELECTED_TEXT : color);
         setGraphic(more);
         setContextMenu(menu);
     }
 
     /**
-     * Position of menu items in the contextual menu built by {@link #updateItem(Resource, boolean)}.
-     * Above method assumes that {@link #CLOSE} is the last menu item.
+     * Invoked after a loading has been completed, either successfully or with an error.
+     * If this cell view is no longer showing the given item (for example if the content
+     * changed concurrently), then this method does nothing.
+     *
+     * @param  item   the item in which the error occurred.
+     * @param  error  the error that occurred, or {@code null} if the operation was successful.
      */
-    private static final int COPY_PATH = 0, OPEN_FOLDER = 1, AGGREGATED = 2, CLOSE = 3;
+    final void completed(final ResourceItem item, final Throwable error) {
+        if (item == getTreeItem()) {
+            Color color = Styles.NORMAL_TEXT;
+            if (error != null) {
+                color = Styles.ERROR_TEXT;
+                setGraphic(createErrorDetails((ResourceTree) getTreeView(), item, error));
+            }
+            setTextFill(isSelected() ? Styles.SELECTED_TEXT : color);
+        }
+    }
+
+    /**
+     * Creates a button for providing details about an exception that occurred while loading the data.
+     * This method also updates the label of the given item with a text that summarizes the error.
+     *
+     * @param  tree   value of {@link #getTreeView()}.
+     * @param  item   the item in which the error occurred.
+     * @param  error  the error that occurred.
+     */
+    private Button createErrorDetails(final ResourceTree tree, final ResourceItem item, final Throwable error) {
+        if (item.label.getValue() == null) {
+            String text;
+            if (item.getValue() != null) {
+                // We have the resource, we only failed to fetch its name.
+                text = Vocabulary.forLocale(tree.locale).getString(Vocabulary.Keys.Unnamed);
+            } else {
+                // More serious error (no resource), show exception message.
+                text = Strings.trimOrNull(Exceptions.getLocalizedMessage(error, tree.locale));
+                if (text == null) text = Classes.getShortClassName(error);
+            }
+            item.label.setValue(text);
+        }
+        Button more = (Button) getGraphic();
+        if (more == null) {
+            more = new Button(Styles.ERROR_DETAILS_ICON);
+        }
+        more.setOnAction((e) -> {
+            final Resources localized = tree.localized();
+            ExceptionReporter.show(tree,
+                    localized.getString(Resources.Keys.ErrorDetails),
+                    localized.getString(Resources.Keys.CanNotReadResource), error);
+        });
+        return more;
+    }
 
     /**
      * Sets the view of the resource to show in this node.
@@ -189,16 +219,6 @@ final class ResourceCell extends TreeCell<Resource> {
      * we can create an aggregated view of all components.
      */
     private void setView(final TreeViewType type) {
-        viewType = type;
         ((ResourceItem) getTreeItem()).setView(this, type, ((ResourceTree) getTreeView()).locale);
-    }
-
-    /**
-     * Returns whether the specified view is the currently active view.
-     * This is used for detecting if users changed their selection again
-     * while computation was in progress in the background thread.
-     */
-    final boolean isActiveView(final TreeViewType type) {
-        return viewType == type;
     }
 }

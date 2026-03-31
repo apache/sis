@@ -66,10 +66,10 @@ abstract class AbstractTuple<T extends AbstractTuple<T>> implements Tuple<T> {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof Tuple)) {
+        if (!(obj instanceof ReadOnly.Tuple)) {
             return false;
         }
-        final Tuple other = (Tuple) obj;
+        final ReadOnly.Tuple other = (ReadOnly.Tuple) obj;
 
         final int dim = getDimension();
         if (dim != other.getDimension()) {

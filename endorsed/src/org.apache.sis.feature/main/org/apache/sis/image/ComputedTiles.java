@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.lang.ref.WeakReference;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.image.TileObserver;
 import java.awt.image.ImagingOpException;
 import java.awt.image.WritableRenderedImage;
@@ -82,6 +83,7 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
      * @param  image  the image for which to release tiles on garbage-collection.
      * @param  ws     sources to observe for changes, or {@code null} if none.
      */
+    @SuppressWarnings("this-escape")
     ComputedTiles(final ComputedImage image, final WritableRenderedImage[] ws) {
         super(image, ReferenceQueueConsumer.QUEUE);
         cachedTiles = new HashMap<>();
@@ -273,12 +275,34 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
         synchronized (cachedTiles) {
             for (int tileY = minTileY; tileY <= maxTileY; tileY++) {
                 for (int tileX = minTileX; tileX <= maxTileX; tileX++) {
-                    final TileCache.Key key = new TileCache.Key(this, tileX, tileY);
+                    final var key = new TileCache.Key(this, tileX, tileY);
                     updated |= cachedTiles.replace(key, search, dirty);
                 }
             }
         }
         return updated;
+    }
+
+    /**
+     * Returns whether at least one tile in the given range of indices is flagged as in error.
+     *
+     * @return {@code true} if at least one tile is flagged as in error.
+     *
+     * @see ComputedImage#hasErrorFlag(Rectangle)
+     */
+    public boolean hasErrorFlag(final int minTileX, final int minTileY, final int maxTileX, final int maxTileY) {
+        synchronized (cachedTiles) {
+            for (int tileY = minTileY; tileY <= maxTileY; tileY++) {
+                for (int tileX = minTileX; tileX <= maxTileX; tileX++) {
+                    final var key = new TileCache.Key(this, tileX, tileY);
+                    final Integer status = cachedTiles.get(key);
+                    if (status != null && status == ERROR) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**

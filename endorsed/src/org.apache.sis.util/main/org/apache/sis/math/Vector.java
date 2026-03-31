@@ -669,7 +669,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
              * array to be returned. Following algorithm applies to deeper levels.
              *
              * The `skip` variable is an optimization. Code below would work with skip = 0 all the times, but this is
-             * very slow when r0 = 1 because equals(…) is invoked for all values.  Computing an number of values that
+             * very slow when r0 = 1 because equals(…) is invoked for all values.  Computing a number of values that
              * we can skip in the special case where r0 = 1 increases the speed a lot.
              */
             int candidateIndex = 0;
