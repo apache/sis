@@ -16,6 +16,8 @@
  */
 package org.apache.sis.filter;
 
+import org.apache.sis.filter.visitor.FunctionNames;
+
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,7 +26,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
-import org.apache.sis.filter.visitor.FunctionNames;
 import org.apache.sis.pending.geoapi.filter.ComparisonOperatorName;
 import org.apache.sis.pending.geoapi.filter.BetweenComparisonOperator;
 

@@ -18,9 +18,9 @@ package org.apache.sis.storage.geotiff;
 
 import java.util.Arrays;
 import java.nio.Buffer;
-import java.nio.file.Path;
 import java.io.Closeable;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.awt.Point;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.DataBuffer;
