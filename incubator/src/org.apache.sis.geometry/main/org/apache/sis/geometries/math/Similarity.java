@@ -16,8 +16,9 @@
  */
 package org.apache.sis.geometries.math;
 
-import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.opengis.referencing.operation.MathTransform;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+
 
 /**
  * A similarity is the equivalent of a affine transform but preserving angles by avoiding

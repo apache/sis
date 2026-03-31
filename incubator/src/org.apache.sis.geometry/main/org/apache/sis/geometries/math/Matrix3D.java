@@ -19,6 +19,7 @@ package org.apache.sis.geometries.math;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 
+
 /**
  * 3x3 matrix
  *

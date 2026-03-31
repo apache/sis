@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.math;
 
+
 /**
  * Single dimension transform.
  *

@@ -19,6 +19,7 @@ package org.apache.sis.geometries.math;
 import java.util.Arrays;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 
+
 /**
  *
  * @author Johann Sorel

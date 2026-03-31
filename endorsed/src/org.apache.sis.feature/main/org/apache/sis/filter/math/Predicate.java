@@ -19,7 +19,6 @@ package org.apache.sis.filter.math;
 import java.util.Objects;
 import java.util.function.DoublePredicate;
 import java.io.ObjectStreamException;
-import org.opengis.util.CodeList;
 import org.opengis.util.ScopedName;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.base.UnaryFunction;
@@ -27,6 +26,7 @@ import org.apache.sis.feature.internal.shared.FeatureExpression;
 import org.apache.sis.feature.internal.shared.FeatureProjectionBuilder;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.util.CodeList;
 import org.opengis.filter.Expression;
 import org.opengis.filter.Filter;
 

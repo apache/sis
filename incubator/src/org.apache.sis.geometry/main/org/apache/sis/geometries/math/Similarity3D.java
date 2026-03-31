@@ -18,6 +18,7 @@ package org.apache.sis.geometries.math;
 
 import java.util.Objects;
 
+
 /**
  * 3D similarity.
  *

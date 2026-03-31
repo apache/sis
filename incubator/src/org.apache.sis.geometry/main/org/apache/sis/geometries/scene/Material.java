@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Objects;
 import org.apache.sis.util.ArgumentChecks;
 
+
 /**
  * A material is a set of properties defining a visual representation.
  * Materials on there own do not suffice to obtain the visual aspect
