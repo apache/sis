@@ -41,7 +41,7 @@
  * Unicode supplementary characters}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   0.3
  */
 package org.apache.sis.io;

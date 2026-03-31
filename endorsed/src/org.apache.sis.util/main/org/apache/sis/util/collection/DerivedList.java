@@ -35,7 +35,7 @@ import java.util.function.Consumer;
  * @param  <S>  type of elements in the source list.
  * @param  <E>  type of elements in this list.
  */
-final class DerivedList<S,E> extends AbstractList<E> implements Serializable {
+class DerivedList<S,E> extends AbstractList<E> implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -45,47 +45,48 @@ final class DerivedList<S,E> extends AbstractList<E> implements Serializable {
      * The list of source elements.
      */
     @SuppressWarnings("serial")         // Not statically typed as Serializable.
-    private final List<S> source;
+    protected final List<S> storage;
 
     /**
      * The function for deriving an element in this list from an element in the source list.
      */
     @SuppressWarnings("serial")
-    private final Function<S,E> adapter;
+    protected final Function<S,E> adapter;
 
     /**
      * Creates a new derived list wrapping the given list.
      *
-     * @param  source   the list of source elements.
+     * @param  storage  the list of source elements.
      * @param  adapter  the function for deriving an element in this list from an element in the source list.
      */
-    DerivedList(final List<S> source, final Function<S,E> adapter) {
-        this.source  = source;
+    protected DerivedList(final List<S> storage, final Function<S,E> adapter) {
+        this.storage = storage;
         this.adapter = adapter;
     }
 
     /**
      * Delegates to the wrapped list.
      */
-    @Override public boolean   isEmpty()        {return source.isEmpty();}
-    @Override public int       size()           {return source.size();}
-    @Override public E         get(int i)       {return adapter.apply(source.get(i));}
-    @Override public E         remove(int i)    {return adapter.apply(source.remove(i));}
-    @Override public Stream<E> stream()         {return source.stream().map(adapter);};
-    @Override public Stream<E> parallelStream() {return source.parallelStream().map(adapter);};
+    @Override public void      clear()          {storage.clear();}
+    @Override public boolean   isEmpty()        {return storage.isEmpty();}
+    @Override public int       size()           {return storage.size();}
+    @Override public E         get(int i)       {return adapter.apply(storage.get(i));}
+    @Override public E         remove(int i)    {return adapter.apply(storage.remove(i));}
+    @Override public Stream<E> stream()         {return storage.stream().map(adapter);};
+    @Override public Stream<E> parallelStream() {return storage.parallelStream().map(adapter);};
 
     /**
      * Returns a view of the portion of this list.
      */
     @Override public List<E> subList(int fromIndex, int toIndex) {
-        return new DerivedList<>(source.subList(fromIndex, toIndex), adapter);
+        return new DerivedList<>(storage.subList(fromIndex, toIndex), adapter);
     }
 
     /**
      * Applies the given action on all elements in the list.
      */
     @Override public void forEach(final Consumer<? super E> action) {
-        source.forEach(adapt(adapter, action));
+        storage.forEach(adapt(adapter, action));
     }
 
     /**
@@ -103,7 +104,7 @@ final class DerivedList<S,E> extends AbstractList<E> implements Serializable {
      */
     @Override
     public Iterator<E> iterator() {
-        return new Iter<>(source.iterator(), adapter);
+        return new Iter<>(storage.iterator(), adapter);
     }
 
     /**

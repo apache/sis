@@ -284,7 +284,7 @@ public final class WKTUtilities {
     }
 
     /**
-     * Suggests an number of fraction digits to use for formatting numbers in each column of the given matrix.
+     * Suggests a number of fraction digits to use for formatting numbers in each column of the given matrix.
      * The number of fraction digits may be negative if we could round the numbers to 10, 100, <i>etc</i>.
      *
      * @param  rows  the matrix rows. It is not required that each row has the same length.
@@ -321,7 +321,7 @@ public final class WKTUtilities {
     }
 
     /**
-     * Suggests an number of fraction digits to use for formatting numbers in each column of the given sequence
+     * Suggests a number of fraction digits to use for formatting numbers in each column of the given sequence
      * of points. The number of fraction digits may be negative if we could round the numbers to 10, <i>etc</i>.
      *
      * @param  crs     the coordinate reference system for each points, or {@code null} if unknown.

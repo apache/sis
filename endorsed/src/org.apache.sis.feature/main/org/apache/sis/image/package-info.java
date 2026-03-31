@@ -42,7 +42,7 @@
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   1.0
  */
 package org.apache.sis.image;

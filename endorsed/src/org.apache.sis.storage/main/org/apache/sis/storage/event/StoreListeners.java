@@ -81,7 +81,7 @@ import org.apache.sis.storage.base.StoreUtilities;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   1.0
  */
 public class StoreListeners implements Localized {
@@ -823,11 +823,15 @@ public class StoreListeners implements Localized {
         // No need to synchronize this method.
         ArgumentChecks.ensureNonNull("listener",  listener);
         ArgumentChecks.ensureNonNull("eventType", eventType);
-        for (ForType<?> e = listeners; e != null; e = e.next) {
-            if (e.type == eventType && e.hasListener(listener)) {
-                return true;
+        StoreListeners m = this;
+        do {
+            for (ForType<?> e = m.listeners; e != null; e = e.next) {
+                if (e.type == eventType && e.hasListener(listener)) {
+                    return true;
+                }
             }
-        }
+            m = m.parent;
+        } while (m != null);
         return false;
     }
 

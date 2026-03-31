@@ -26,18 +26,23 @@ import org.apache.sis.feature.internal.shared.FeatureExpression;
 import org.apache.sis.feature.internal.shared.FeatureProjectionBuilder;
 
 // Specific to the main branch:
+import org.apache.sis.filter.Filter;
 import org.apache.sis.filter.Expression;
 
 
 /**
  * An operation on a single operand and returning a Boolean value.
+ * Can also be used as a filter for avoiding the need to use an
+ * expression such as {@code equals(predicate, literal(true))}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  */
 final class Predicate<R> extends UnaryFunction<R, Number>
-        implements FeatureExpression<R, Boolean>, Optimization.OnExpression<R, Boolean>
+        implements Optimization.OnExpression<R, Boolean>,
+                   FeatureExpression<R, Boolean>,
+                   Filter<R>
 {
     /**
      * For cross-version compatibility.
@@ -79,6 +84,14 @@ final class Predicate<R> extends UnaryFunction<R, Number>
     }
 
     /**
+     * Returns the nature of the operator.
+     */
+    @Override
+    public Enum<?> getOperatorType() {
+        return null;    // Supported in GeoAPI 3.1 branch.
+    }
+
+    /**
      * Returns the type of values computed by this expression.
      */
     @Override
@@ -104,5 +117,17 @@ final class Predicate<R> extends UnaryFunction<R, Number>
             return math.test(value.doubleValue());
         }
         return null;
+    }
+
+    /**
+     * Given an object, determines if the test(s) represented by this filter are passed.
+     */
+    @Override
+    public boolean test(final R feature) {
+        final Number value = expression.apply(feature);
+        if (value != null) {
+            return math.test(value.doubleValue());
+        }
+        return false;
     }
 }

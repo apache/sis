@@ -233,7 +233,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * then the current implementation of this method adds the following restrictions:
      *
      * <ul>
-     *   <li>The sub-transform must have an number of target dimensions equal to the number of source dimensions.</li>
+     *   <li>The sub-transform must have a number of target dimensions equal to the number of source dimensions.</li>
      *   <li>The sub-transform must be {@linkplain TransformSeparator separable}.</li>
      * </ul>
      *

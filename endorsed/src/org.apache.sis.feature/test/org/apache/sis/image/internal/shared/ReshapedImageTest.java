@@ -19,6 +19,7 @@ package org.apache.sis.image.internal.shared;
 import java.util.Random;
 import java.awt.image.DataBuffer;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -96,14 +97,14 @@ public final class ReshapedImageTest extends TestCase {
          */
         tileXOffset = minX = 1;
         tileYOffset = minY = 2;
-        verifySingleTile(new ReshapedImage(data, -1, -2, 4, 4));
+        verifySingleTile(ReshapedImage.relocate(data, -1, -2, 4, 4));
         /*
          * Tests with a request inside the image. Constructor should expand to
          * an integer number of tiles, which is the whole image for this test.
          */
         tileXOffset = minX = -2;
         tileYOffset = minY = -1;
-        verifySingleTile(new ReshapedImage(data, 2, 1, 1, 1));
+        verifySingleTile(ReshapedImage.relocate(data, 2, 1, 1, 1));
     }
 
     /**
@@ -111,7 +112,7 @@ public final class ReshapedImageTest extends TestCase {
      *
      * @param  image   the reshaped image.
      */
-    private void verifySingleTile(final ReshapedImage image) {
+    private void verifySingleTile(final RenderedImage image) {
         verifyLayout(image);
         assertValuesEqual(image.getData(), 0, new int[][] {
             {1, 2, 3},
@@ -124,8 +125,7 @@ public final class ReshapedImageTest extends TestCase {
      *
      * @param  image  the image to verify.
      */
-    private void verifyLayout(final ReshapedImage image) {
-        assertNull(               image.verify());
+    private void verifyLayout(final RenderedImage image) {
         assertEquals(minX,        image.getMinX());
         assertEquals(minY,        image.getMinY());
         assertEquals(width,       image.getWidth());
@@ -138,6 +138,7 @@ public final class ReshapedImageTest extends TestCase {
         assertEquals(numYTiles,   image.getNumYTiles());
         assertEquals(tileXOffset, image.getTileGridXOffset());
         assertEquals(tileYOffset, image.getTileGridYOffset());
+        assertNull(assertInstanceOf(ReshapedImage.class, image).verify());
     }
 
     /**
@@ -165,7 +166,7 @@ public final class ReshapedImageTest extends TestCase {
          */
         tileXOffset = (minX =  7) - minTileX * TILE_WIDTH;
         tileYOffset = (minY = 13) - minTileY * TILE_HEIGHT;
-        var image = new ReshapedImage(data, dataMinX - 7, dataMinY - 13, 100, 100);
+        RenderedImage image = ReshapedImage.relocate(data, dataMinX - 7, dataMinY - 13, 100, 100);
         verifyLayout(image);
         assertValuesEqual(image.getData(), 0, new int[][] {
             { 100,  101,  102  ,   200,  201,  202  ,   300,  301,  302  ,   400,  401,  402  ,   500,  501,  502},
@@ -188,7 +189,7 @@ public final class ReshapedImageTest extends TestCase {
         height      = (numYTiles = 2) * TILE_HEIGHT;
         tileXOffset = (minX = -2) - minTileX * TILE_WIDTH;
         tileYOffset = (minY = -1) - minTileY * TILE_HEIGHT;
-        image = new ReshapedImage(data, dataMinX + 5, dataMinY + 3, dataMinX + 9, dataMinY + 5);
+        image = ReshapedImage.relocate(data, dataMinX + 5, dataMinY + 3, dataMinX + 9, dataMinY + 5);
         verifyLayout(image);
         assertValuesEqual(image.getData(), 0, new int[][] {
             { 700,  701,  702  ,   800,  801,  802  ,   900,  901,  902},

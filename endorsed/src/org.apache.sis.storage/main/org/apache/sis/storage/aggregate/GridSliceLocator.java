@@ -18,7 +18,6 @@ package org.apache.sis.storage.aggregate;
 
 import java.util.Arrays;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.util.ArraysExt;
@@ -96,11 +95,9 @@ final class GridSliceLocator {
         this.sliceHighs      = new long[selected.length];
         GridExtent aoi = domain.getExtent();
         final int dimension = aoi.getDimension();
-        final var axes = new DimensionNameType[dimension];
         final var low  = new long[dimension];
         final var high = new long[dimension];
         for (int i=0; i<dimension; i++) {
-            axes[i] = aoi.getAxisType(i).orElse(null);
             low [i] = Long.MAX_VALUE;
             high[i] = Long.MIN_VALUE;
         }
@@ -114,7 +111,7 @@ final class GridSliceLocator {
                 high[j] = Math.max(high[j], extent.getHigh(j));
             }
         }
-        if (!aoi.equals(aoi = new GridExtent(axes, low, high, true))) {
+        if (!aoi.equals(aoi = aoi.reshape(low, high, true))) {
             var crs = domain.isDefined(GridGeometry.CRS) ? domain.getCoordinateReferenceSystem() : null;
             domain = new GridGeometry(aoi, GridSlice.CELL_ANCHOR, domain.getGridToCRS(GridSlice.CELL_ANCHOR), crs);
         }

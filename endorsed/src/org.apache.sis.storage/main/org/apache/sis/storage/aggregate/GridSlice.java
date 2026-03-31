@@ -215,14 +215,10 @@ search: synchronized (transforms) {
      * @return the rendered image with (0,0) locate at the beginning of the requested extent.
      */
     final RenderedImage render(final GridCoverage coverage, final GridExtent request, final int[] subdim) {
-        final RenderedImage image = coverage.render(request.translate(offset));
-        final long tx = Math.negateExact(offset[subdim[0]]);
-        final long ty = Math.negateExact(offset[subdim[1]]);
-        if ((tx | ty) == 0) {
-            return image;
-        }
-        final var translated = new ReshapedImage(image, tx, ty);
-        return translated.isIdentity() ? translated.source : translated;
+        return ReshapedImage.translate(
+                coverage.render(request.translate(offset)),
+                Math.negateExact(offset[subdim[0]]),
+                Math.negateExact(offset[subdim[1]]));
     }
 
     /**

@@ -82,7 +82,7 @@ import org.opengis.geometry.MismatchedDimensionException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   0.3
  */
 public final class ArgumentChecks {
@@ -767,6 +767,30 @@ public final class ArgumentChecks {
      * @since 1.0
      */
     public static void ensureDimensionMatches(final String name, final int expected, final int[] indices)
+            throws MismatchedDimensionException
+    {
+        if (indices != null) {
+            final int dimension = indices.length;
+            if (dimension != expected) {
+                throw new MismatchedDimensionException(Errors.format(
+                        Errors.Keys.MismatchedDimension_3, name, expected, dimension));
+            }
+        }
+    }
+
+    /**
+     * Ensures that the given array of indices, if non-null, has the expected number of dimensions
+     * (taken as its length). This method does nothing if the given array is null.
+     *
+     * @param  name      the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  expected  the expected number of dimensions.
+     * @param  indices   the array of indices to check for its number of dimensions, or {@code null}.
+     * @throws MismatchedDimensionException if the given array of indices is non-null and does not have
+     *         the expected number of dimensions (taken as its length).
+     *
+     * @since 1.7
+     */
+    public static void ensureDimensionMatches(final String name, final int expected, final long[] indices)
             throws MismatchedDimensionException
     {
         if (indices != null) {

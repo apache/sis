@@ -19,7 +19,7 @@
 /**
  * Provides interfaces and classes for dealing with different types of events fired by resources.
  * The different types of events are specified by the {@link StoreEvent} subclasses.
- * For example if a warning occurred while reading data from a file,
+ * For example, if a warning occurred while reading data from a file,
  * then the {@link org.apache.sis.storage.DataStore} implementation should fire a {@link WarningEvent}.
  *
  * <p>Events may occur in the following situations:</p>
@@ -35,7 +35,7 @@
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   1.4
+ * @since   1.7
  * @version 1.0
  */
 package org.apache.sis.storage.event;

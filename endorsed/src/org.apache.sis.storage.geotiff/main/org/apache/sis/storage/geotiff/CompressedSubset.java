@@ -23,7 +23,7 @@ import java.awt.Point;
 import java.awt.image.Raster;
 import static java.lang.Math.toIntExact;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.base.TiledGridResource;
+import org.apache.sis.storage.tiling.TiledGridCoverageResource;
 import org.apache.sis.storage.geotiff.inflater.Inflater;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.internal.shared.RasterFactory;
@@ -99,10 +99,10 @@ final class CompressedSubset extends DataSubset {
      * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.
      */
     @SuppressWarnings("LocalVariableHidesMemberVariable")
-    CompressedSubset(final DataCube source, final TiledGridResource.Subset subset) throws DataStoreException {
+    CompressedSubset(final DataCube source, final TiledGridCoverageResource.Subset subset) throws DataStoreException {
         super(source, subset);
         long afterLastBand = sourceScanlineStride - sourcePixelStride;
-        final int between  = Math.multiplyExact(sourcePixelStride, Math.toIntExact(getSubsampling(X_DIMENSION) - 1));
+        final int between  = Math.multiplyExact(sourcePixelStride, Math.toIntExact(getSubsampling(xDimension) - 1));
         if (includedBands != null && sourcePixelStride > 1) {
             final int[] skips = new int[includedBands.length];
             final int m = skips.length - 1;
@@ -184,12 +184,12 @@ final class CompressedSubset extends DataSubset {
                      final long[] subsampling, final Point location) throws IOException, DataStoreException
     {
         final DataType dataType = getDataType();
-        final int  width        = pixelCount(lower, upper, subsampling, X_DIMENSION);
-        final int  height       = pixelCount(lower, upper, subsampling, Y_DIMENSION);
+        final int  width        = pixelCount(lower, upper, subsampling, xDimension);
+        final int  height       = pixelCount(lower, upper, subsampling, yDimension);
         final int  chunksPerRow = width * (targetPixelStride / samplesPerChunk);
         final int  betweenRows  = Math.toIntExact(subsampling[1] - 1);
-        final long head         = beforeFirstBand + sourcePixelStride * (lower[X_DIMENSION]);
-        final long tail         = afterLastBand   - sourcePixelStride * (lower[X_DIMENSION] + (width-1)*subsampling[X_DIMENSION]);
+        final long head         = beforeFirstBand + sourcePixelStride * (lower[xDimension]);
+        final long tail         = afterLastBand   - sourcePixelStride * (lower[xDimension] + (width-1)*subsampling[xDimension]);
         /*
          * `head` and `tail` are the number of sample values to skip at the beginning and end of each row.
          * `betweenPixels` is the number of sample values to skip between each pixel, but the actual skips
@@ -200,7 +200,7 @@ final class CompressedSubset extends DataSubset {
          * in the bank. The `pixelsPerElement` factor is usually 1, except when more than one pixel is packed in
          * each single primitive type (e.g. 8 bits per byte in bilevel image). The `head` needs to be a multiple
          * of `pixelsPerElement`; this restriction is documented in `Inflater.skip(long)` and should have been
-         * verified by `TiledGridResource`.
+         * verified by `TiledGridCoverageResource`.
          */
         final int pixelsPerElement = getPixelsPerElement();                 // Always ≥ 1 and usually = 1.
         assert (head % pixelsPerElement) == 0 : head;
@@ -211,7 +211,7 @@ final class CompressedSubset extends DataSubset {
                     source.getCompression(),              // The compression method.
                     source.getPredictor(),                // The mathematical operator to apply after decompression.
                     sourcePixelStride,                    // Number of sample values per pixel in the source image.
-                    toIntExact(getTileSize(X_DIMENSION)), // Number of pixels in a row of source image.
+                    toIntExact(getTileSize(xDimension)),  // Number of pixels in a row of source image.
                     chunksPerRow,                         // Number of pixels per row in target image.
                     samplesPerChunk,                      // Number of sample values per pixel.
                     skipAfterChunks,                      // Number of sample values to skip between pixels.

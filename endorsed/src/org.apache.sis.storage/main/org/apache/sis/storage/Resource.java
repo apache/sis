@@ -197,10 +197,10 @@ public interface Resource {
          * Creates a new instance with the given path.
          * This is a convenience constructor for the common case where the data store uses exactly one file.
          *
-         * @param  paths  the single file to be returned by {@link #getPaths()}.
+         * @param  path  the single file to be returned by {@link #getPaths()}.
          */
         public FileSet(final Path path) {
-            this.paths = List.of(path);
+            paths = List.of(path);
         }
 
         /**

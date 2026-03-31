@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Locale;
 import java.util.logging.Logger;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -30,6 +32,7 @@ import java.awt.image.RenderedImage;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
+import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -68,9 +71,12 @@ import org.apache.sis.math.Statistics;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
+import org.apache.sis.map.internal.Resources;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.portrayal.PlanarCanvas;       // For javadoc.
 
@@ -142,7 +148,7 @@ public class RenderingData implements CloneAccess {
 
     /**
      * The pyramid level of {@linkplain #data} loaded by the {@linkplain #coverageLoader}.
-     * Value 0 is finest resolution.
+     * Value 0 is coarsest resolution (the overview).
      */
     private int currentPyramidLevel;
 
@@ -247,6 +253,11 @@ public class RenderingData implements CloneAccess {
      * The processor that we use for resampling image and recoloring the image.
      */
     public final ImageProcessor processor;
+
+    /**
+     * The locale for error message, or {@code null} for the default locale.
+     */
+    public Locale locale;
 
     /**
      * Creates a new instance initialized to no image.
@@ -535,13 +546,12 @@ public class RenderingData implements CloneAccess {
             RenderedImage image = data;
             final MultiResolutionCoverageLoader loader = coverageLoader;
             if (loader != null) {
-                final int level = loader.getLastLevel();
-                if (level != currentPyramidLevel) {
+                if (currentPyramidLevel != 0) {
                     /*
                      * If coarser data are available, we will compute statistics on those data instead of on the
                      * current pyramid level. We need to adjust the slice extent to the coordinates of coarser data.
                      */
-                    final GridCoverage coarse = loader.getOrLoad(level).forConvertedValues(true);
+                    final GridCoverage coarse = loader.getOrLoad(0).forConvertedValues(true);
                     GridExtent sliceExtent = currentSlice;
                     if (sliceExtent != null) {
                         if (sliceExtent.getDimension() <= BIDIMENSIONAL) {
@@ -668,6 +678,10 @@ public class RenderingData implements CloneAccess {
         bounds.y      = (int)  Math.ceil (resampled.getMinY() - Numerics.COMPARISON_THRESHOLD);
         bounds.width  = (int) (Math.floor(resampled.getMaxX() + Numerics.COMPARISON_THRESHOLD) - bounds.x);
         bounds.height = (int) (Math.floor(resampled.getMaxY() + Numerics.COMPARISON_THRESHOLD) - bounds.y);
+        if (bounds.isEmpty() || !Double.isFinite(resampled.getWidth()) || !Double.isFinite(resampled.getHeight())) {
+            throw new TransformException(Resources.forLocale(locale)
+                    .getString(Resources.Keys.InvalidRasterToCRS_2, getDataName(), getCRSName()));
+        }
         /*
          * Verify if wraparound is really necessary. We do this check because the `displayToCenter` transform
          * may be used for every pixels, so it is worth to make that transform more efficient if possible.
@@ -879,6 +893,37 @@ public class RenderingData implements CloneAccess {
          * (even if equal) as a way to detect that cached values have not been reused.
          */
         return (previous.dataGeometry != dataGeometry) || (previous.objectiveToCenter != objectiveToCenter);
+    }
+
+    /**
+     * Returns the identifier of the <abbr>CRS</abbr> of the data, or "unnamed" (potentially localized) if unknown.
+     * This is used for error reporting.
+     */
+    private String getCRSName() {
+        if (dataGeometry.isDefined(GridGeometry.CRS)) {
+            String name = IdentifiedObjects.getDisplayName(dataGeometry.getCoordinateReferenceSystem(), locale);
+            if (name != null) {
+                return name;
+            }
+        }
+        return Vocabulary.forLocale(locale).getString(Vocabulary.Keys.Unnamed);
+    }
+
+    /**
+     * Returns the identifier of the data to render, or "unnamed" (potentially localized) if unknown.
+     * This is used for error reporting.
+     */
+    private String getDataName() {
+        final MultiResolutionCoverageLoader loader = coverageLoader;
+        if (loader != null) try {
+            Optional<GenericName> name = loader.resource.getIdentifier();
+            if (name.isPresent()) {
+                return name.get().toString();
+            }
+        } catch (DataStoreException e) {
+            recoverableException(e);
+        }
+        return Vocabulary.forLocale(locale).getString(Vocabulary.Keys.Unnamed);
     }
 
     /**

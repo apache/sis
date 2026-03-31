@@ -269,13 +269,14 @@ abstract class LogicalFilter<R> extends Node implements LogicalOperator<R>, Opti
             if (effective == Filter.include()) return Filter.exclude();
             if (effective == Filter.exclude()) return Filter.include();
             if (effective instanceof Not<?>) {
-                return ((Not<R>) effective).operand;            // NOT(NOT(C)) == C
-            } else {
-                /*
-                 * TODO:
-                 * NOT(EQUALS(A,B)) = NOT_EQUALS(A,B)
-                 * NOT(NOT_EQUALS(A,B)) = EQUALS(A,B)
-                 */
+                // NOT(NOT(A)) == A
+                return ((Not<R>) effective).operand;
+            } else if (effective instanceof ComparisonFilter.EqualTo<?>) {
+                // NOT(EQUALS(A,B)) = NOT_EQUALS(A,B)
+                return new ComparisonFilter.NotEqualTo<>((ComparisonFilter.EqualTo<R>) effective);
+            } else if (effective instanceof ComparisonFilter.NotEqualTo<?>) {
+                // NOT(NOT_EQUALS(A,B)) = EQUALS(A,B)
+                return new ComparisonFilter.EqualTo<>((ComparisonFilter.NotEqualTo<R>) effective);
             }
             return (effective != operand) ? new Not<>(effective) : this;
         }

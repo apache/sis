@@ -44,12 +44,14 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.tiling.TiledResource;
 import org.apache.sis.gui.Widget;
 import org.apache.sis.gui.metadata.MetadataSummary;
 import org.apache.sis.gui.metadata.MetadataTree;
 import org.apache.sis.gui.metadata.StandardMetadataTree;
 import org.apache.sis.gui.coverage.ImageRequest;
 import org.apache.sis.gui.coverage.CoverageExplorer;
+import org.apache.sis.gui.coverage.TileMatrixSetPane;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.gui.internal.BackgroundThreads;
@@ -58,13 +60,12 @@ import org.apache.sis.gui.internal.LogHandler;
 
 
 /**
- * A panel showing a {@linkplain ResourceTree tree of resources} together with their metadata and data views.
- * This panel also contains a "new window" button for creating new windows showing the same data but potentially
- * a different locations and times. {@code ResourceExplorer} contains a list of windows created by this widget.
+ * A panel showing a tree of resources together with their metadata and data views.
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.7
  * @since   1.1
  */
 public class ResourceExplorer extends Widget {
@@ -93,10 +94,21 @@ public class ResourceExplorer extends Widget {
     private final MetadataTree nativeMetadata;
 
     /**
+     * The widget showing selected resource tile matrix sets.
+     * Its content will be updated only when the tab is visible.
+     */
+    private final TileMatrixSetPane tiling;
+
+    /**
      * The tab containing {@link #nativeMetadata}.
      * The table title will change depending on the selected resource.
      */
     private final Tab nativeMetadataTab;
+
+    /**
+     * The tab containing the view over the tile matrices of a resource.
+     */
+    private final Tab tilingTab;
 
     /**
      * Default label for {@link #nativeMetadataTab} when no resource is selected.
@@ -136,8 +148,8 @@ public class ResourceExplorer extends Widget {
     private final Accordion controls;
 
     /**
-     * The control that put everything together.
-     * The type of control may change in any future SIS version.
+     * The controls for choosing a resource or configuring its view (left) together with
+     * the visualization of the selected resource (right).
      *
      * @see #getView()
      */
@@ -178,7 +190,7 @@ public class ResourceExplorer extends Widget {
         resources.getSelectionModel().getSelectedItems().addListener(this::onResourceSelected);
         resources.setPrefWidth(400);
         final Vocabulary vocabulary = Vocabulary.forLocale(resources.locale);
-        final TitledPane resourcesPane = new TitledPane(vocabulary.getString(Vocabulary.Keys.Resources), resources);
+        final var resourcesPane = new TitledPane(vocabulary.getString(Vocabulary.Keys.Resources), resources);
         controls = new Accordion(resourcesPane);
         controls.setExpandedPane(resourcesPane);
         expandedPane = new EnumMap<>(CoverageExplorer.View.class);
@@ -190,29 +202,31 @@ public class ResourceExplorer extends Widget {
          */
         metadata = new MetadataSummary();
         nativeMetadata = new MetadataTree(metadata);
-        final LogViewer logging = new LogViewer(vocabulary);
+        tiling = new TileMatrixSetPane(resources.locale);
+        final var logging = new LogViewer(vocabulary);
         selectedResource = new ReadOnlyObjectWrapper<>(this, "selectedResource");
         logging.source.bind(selectedResource);
         final Tab summaryTab, metadataTab, loggingTab;
-        final TabPane tabs = new TabPane(
+        final var tabs = new TabPane(
             summaryTab        = new Tab(vocabulary.getString(Vocabulary.Keys.Summary),  metadata.getView()),
             viewTab           = new Tab(vocabulary.getString(Vocabulary.Keys.Visual)),
             tableTab          = new Tab(vocabulary.getString(Vocabulary.Keys.Data)),
             metadataTab       = new Tab(vocabulary.getString(Vocabulary.Keys.Metadata), new StandardMetadataTree(metadata)),
             nativeMetadataTab = new Tab(vocabulary.getString(Vocabulary.Keys.Format),   nativeMetadata),
+            tilingTab         = new Tab(vocabulary.getString(Vocabulary.Keys.Tiling),   tiling.getView()),
             loggingTab        = new Tab(vocabulary.getString(Vocabulary.Keys.Logs),     logging.getView()));
 
         tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         tabs.setTabDragPolicy(TabPane.TabDragPolicy.REORDER);
         defaultNativeTabLabel = nativeMetadataTab.getText();
         nativeMetadataTab.setDisable(true);
+        tilingTab.setDisable(true);
         /*
          * Build the main pane which put everything together.
          */
         content = new SplitPane(controls, tabs);
         content.setDividerPosition(0, 1./3);
         SplitPane.setResizableWithParent(controls, Boolean.FALSE);
-        SplitPane.setResizableWithParent(tabs,     Boolean.TRUE);
         /*
          * Register listeners last, for making sure we do not have undesired events.
          * Those listeners trig loading of various objects (data, standard metadata,
@@ -253,10 +267,10 @@ public class ResourceExplorer extends Widget {
      * by this {@code ResourceExplorer}. The subclass is implementation dependent and may change in
      * any future version.
      *
-     * @return the region to show.
+     * @return the JavaFX component to insert in a scene graph.
      */
     @Override
-    public final Region getView() {
+    public Region getView() {
         return content;
     }
 
@@ -386,6 +400,7 @@ public class ResourceExplorer extends Widget {
         selectedResource.set(resource);
         metadata.setMetadata(metadataShown.get() ? resource : null);
         updateDataTabWithDefault(dataShown.get() ? resource : null);
+        updateTilingTab(resource);
         /*
          * Update the label and disabled state of the native metadata tab. We do not have a reliable way
          * to know if metadata are present without trying to fetch them, so current implementation only
@@ -412,6 +427,15 @@ public class ResourceExplorer extends Widget {
         if (nativeMetadataTab.isSelected()) {
             loadNativeMetadata();
         }
+    }
+
+    /**
+     * Updates the "Tiling" tab with the content of the given resource.
+     */
+    private void updateTilingTab(final Resource resource) {
+        final TiledResource tiled = (resource instanceof TiledResource) ? (TiledResource) resource : null;
+        tilingTab.setDisable(tiled == null);
+        tiling.setContent(tiled);
     }
 
     /**
@@ -562,7 +586,9 @@ public class ResourceExplorer extends Widget {
                 /** Invoked in JavaFX thread for showing the resource. */
                 @Override protected void succeeded() {
                     if (getSelectedResource() == resource) {
-                        updateDataTab(getValue());
+                        Resource result = getValue();
+                        updateTilingTab(result);
+                        updateDataTab(result);
                     }
                 }
 

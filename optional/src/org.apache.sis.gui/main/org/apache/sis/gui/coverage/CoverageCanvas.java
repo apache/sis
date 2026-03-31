@@ -20,7 +20,9 @@ import java.util.Map;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Queue;
 import java.util.concurrent.Future;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.LogRecord;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,16 +35,24 @@ import java.awt.image.RenderedImage;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Rectangle2D;
+import javafx.scene.Node;
+import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Shape;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
 import javafx.beans.DefaultProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.animation.FadeTransition;
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.scene.image.Image;
+import javafx.util.Duration;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
@@ -65,21 +75,27 @@ import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.image.Colorizer;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.Interpolation;
+import org.apache.sis.image.processing.isoline.Isolines;
+import org.apache.sis.image.internal.shared.TileErrorHandler;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.event.StoreListener;
+import org.apache.sis.storage.tiling.TileReadEvent;
 import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
 import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.map.coverage.RenderingWorkaround;
-import org.apache.sis.image.internal.shared.TileErrorHandler;
-import org.apache.sis.image.processing.isoline.Isolines;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.ExceptionReporter;
+import org.apache.sis.gui.internal.ShapeConverter;
 import org.apache.sis.gui.internal.GUIUtilities;
 import org.apache.sis.gui.internal.LogHandler;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.measure.Units;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
@@ -91,7 +107,7 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  * instance (given by {@link #coverageProperty}) will change automatically according the zoom level.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.6
+ * @version 1.7
  *
  * @see CoverageExplorer
  *
@@ -182,7 +198,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * This is used for preventing never-ending loop when a change of resource causes a change of coverage
      * or conversely.
      *
-     * @see #onPropertySpecified(GridCoverageResource, GridCoverage, ObjectProperty, GridGeometry)
+     * @see #onPropertySpecified(GridCoverageResource, GridCoverageResource, GridCoverage, ObjectProperty, GridGeometry)
      */
     private boolean isCoverageAdjusting;
 
@@ -190,6 +206,14 @@ public class CoverageCanvas extends MapCanvasAWT {
      * Whether at least one of {@link #coverageProperty} or {@link #resourceProperty} has a non-null value.
      */
     private boolean hasCoverageOrResource;
+
+    /**
+     * Whether to skip the rendering of the coverage.
+     * OTher features such as the isolines may still be rendered.
+     *
+     * @see #setCoverageHidden(boolean)
+     */
+    private boolean isCoverageHidden;
 
     /**
      * A subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
@@ -222,7 +246,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * The {@link #data} with different operations applied on them. Currently the only supported operation is
      * color ramp stretching. The coordinate system is the one of the original image (no resampling applied).
      */
-    private final Map<Stretching,RenderedImage> derivedImages;
+    private final Map<Stretching, RenderedImage> derivedImages;
 
     /**
      * Image resampled to a CRS which can easily be mapped to the {@linkplain #getDisplayCRS() display CRS}.
@@ -265,7 +289,13 @@ public class CoverageCanvas extends MapCanvasAWT {
      * references to {@link javafx.scene.control.TableView} list of items, which are the list of isoline levels
      * with their colors.
      */
-    IsolineRenderer isolines;
+    IsolineController isolines;
+
+    /**
+     * Listener notified when tiles are read, for showing them on top of the image as translucent tiles.
+     * This is {@code null} if this effect is not shown.
+     */
+    private TileReadListener tileReadListener;
 
     /**
      * Creates a new two-dimensional canvas for {@link RenderedImage}.
@@ -290,9 +320,9 @@ public class CoverageCanvas extends MapCanvasAWT {
         coverageProperty      = new SimpleObjectProperty<>(this, "coverage");
         sliceExtentProperty   = new SimpleObjectProperty<>(this, "sliceExtent");
         interpolationProperty = new SimpleObjectProperty<>(this, "interpolation", data.processor.getInterpolation());
-        resourceProperty     .addListener((p,o,n) -> onPropertySpecified(n, null, coverageProperty, null));
-        coverageProperty     .addListener((p,o,n) -> onPropertySpecified(null, n, resourceProperty, null));
-        sliceExtentProperty  .addListener((p,o,n) -> onPropertySpecified(getResource(), getCoverage(), null, null));
+        resourceProperty     .addListener((p,o,n) -> onPropertySpecified(o, n, null, coverageProperty, null));
+        coverageProperty     .addListener((p,o,n) -> onPropertySpecified(getResource(), null, n, resourceProperty, null));
+        sliceExtentProperty  .addListener((p,o,n) -> onPropertySpecified(getResource(), getResource(), getCoverage(), null, null));
         interpolationProperty.addListener((p,o,n) -> onInterpolationSpecified(n));
         fixedPane.setBackground(BACKGROUND);
     }
@@ -467,6 +497,19 @@ public class CoverageCanvas extends MapCanvasAWT {
     }
 
     /**
+     * Set whether to skip the rendering of the coverage.
+     * OTher features such as the isolines may still be rendered.
+     *
+     * @param  hidden  whether to skip the rendering of the coverage.
+     */
+    final void setCoverageHidden(final boolean hidden) {
+        if (isCoverageHidden != hidden) {
+            isCoverageHidden = hidden;
+            requestRepaint();
+        }
+    }
+
+    /**
      * Invoked when image colors changed. Derived features such are isolines are assumed unchanged.
      * This method should be invoked explicitly when the {@link Colorizer} changes its internal state.
      *
@@ -475,6 +518,29 @@ public class CoverageCanvas extends MapCanvasAWT {
     final void stylingChanged() {
         resampledImage = null;
         requestRepaint();
+    }
+
+    /**
+     * Sets whether to show for a few seconds a visual indication of which tiles were read.
+     * If {@code true}, tiles will be shown by a translucent shape and fade away.
+     *
+     * @param  enabled  whether to show for a few seconds a visual indication of which tiles were read.
+     */
+    final void showTileReads(final boolean enabled) {
+        final GridCoverageResource resource = getResource();
+        if (enabled) {
+            if (tileReadListener == null) {
+                tileReadListener = new TileReadListener();
+                if (resource != null) {
+                    resource.addListener(TileReadEvent.class, tileReadListener);
+                }
+            }
+        } else if (tileReadListener != null) {
+            if (resource != null) {
+                resource.removeListener(TileReadEvent.class, tileReadListener);
+            }
+            tileReadListener = null;
+        }
     }
 
     /**
@@ -544,7 +610,8 @@ public class CoverageCanvas extends MapCanvasAWT {
             sliceExtent = null;
             zoom        = null;
         }
-        if (getResource() != resource || getCoverage() != coverage || getSliceExtent() != sliceExtent) {
+        final GridCoverageResource discard = getResource();
+        if (discard != resource || getCoverage() != coverage || getSliceExtent() != sliceExtent) {
             final boolean p = isCoverageAdjusting;
             try {
                 isCoverageAdjusting = true;
@@ -554,7 +621,7 @@ public class CoverageCanvas extends MapCanvasAWT {
             } finally {
                 isCoverageAdjusting = p;
             }
-            onPropertySpecified(resource, coverage, null, zoom);
+            onPropertySpecified(discard, resource, coverage, null, zoom);
         }
     }
 
@@ -564,13 +631,18 @@ public class CoverageCanvas extends MapCanvasAWT {
      * Those information will be used for initializing "objective CRS" and "objective to display" to new values.
      * Rendering will happen in another background computation.
      *
+     * @param  discard   the old resource, or {@code null} if none.
      * @param  resource  the new resource, or {@code null} if none.
      * @param  coverage  the new coverage, or {@code null} if none.
      * @param  toClear   the property which is an alternative to the property that has been set.
      * @param  zoom      initial "objective to display" transform to use, or {@code null} for automatic.
      */
-    private void onPropertySpecified(final GridCoverageResource resource, final GridCoverage coverage,
-                                     final ObjectProperty<?> toClear, final GridGeometry zoom)
+    private void onPropertySpecified(
+            final GridCoverageResource discard,
+            final GridCoverageResource resource,
+            final GridCoverage         coverage,
+            final ObjectProperty<?>    toClear,
+            final GridGeometry         zoom)
     {
         hasCoverageOrResource = (resource != null || coverage != null);
         if (isCoverageAdjusting) {
@@ -581,6 +653,10 @@ public class CoverageCanvas extends MapCanvasAWT {
             toClear.set(null);
         } finally {
             isCoverageAdjusting = false;
+        }
+        if (discard != resource && tileReadListener != null) {
+            if (discard  != null) discard.removeListener(TileReadEvent.class, tileReadListener);
+            if (resource != null) resource.addListener  (TileReadEvent.class, tileReadListener);
         }
         if (resource == null && coverage == null) {
             runAfterRendering(this::clear);
@@ -608,10 +684,12 @@ public class CoverageCanvas extends MapCanvasAWT {
                             domain = coverage.getGridGeometry();
                             ranges = coverage.getSampleDimensions();
                             scales = null;
-                        } else {
+                        } else try {
                             domain = resource.getGridGeometry();
                             ranges = resource.getSampleDimensions();
-                            scales = lastNonNull(resource.getResolutions());
+                            scales = Containers.peekFirst(resource.getAvailableResolutions());
+                        } catch (BackingStoreException e) {
+                            throw e.unwrapOrRethrow(DataStoreException.class);
                         }
                         if (domain != null) {
                             /*
@@ -640,7 +718,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                                 final Envelope bounds = domain.getEnvelope();
                                 final int dimension = Math.min(BIDIMENSIONAL, Math.min(bounds.getDimension(), scales.length));
                                 for (int i=0; i<dimension; i++) {
-                                    ratio *= scales[i] / bounds.getSpan(i);  // Equivalent to /= span_in_pixels.
+                                    ratio *= scales[i] / bounds.getSpan(i);  // Equivalent to `ratio /= span_in_pixels`.
                                 }
                                 if (ratio < 1) {
                                     ratio = Math.pow(ratio, 1d / dimension);
@@ -692,28 +770,14 @@ public class CoverageCanvas extends MapCanvasAWT {
     }
 
     /**
-     * Returns the last non-null element of the given list.
-     *
-     * @param  <T>   the type of elements contained in the list.
-     * @param  list  the list from which to get the last non-null element, or {@code null}.
-     * @return the last non-null element, or {@code null} if the given list is null or empty.
-     */
-    private static <T> T lastNonNull(final List<T> list) {
-        if (list != null) {
-            int i = list.size();
-            while (--i >= 0) {
-                T e = list.get(i);
-                if (e != null) return e;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Clears the rendered image but keep the resource, coverage, grid geometry and sample dimensions unchanged.
      * Invoking this method alone is useful when only the selected two-dimensional slice changed.
      * If the {@link StyledRenderingData#clear()} method is not invoked, then the map projection,
      * zoom, <i>etc.</i> are preserved.
+     *
+     * <p>The caller is responsible for invoking {@link #requestRepaint()} or something equivalent,
+     * possibly indirectly through a listener on a modified property. The {@link #requestRepaint()}
+     * method is not invoked by this method because the caller will typically do more cleaning.</p>
      *
      * @see #clear()
      */
@@ -784,6 +848,10 @@ public class CoverageCanvas extends MapCanvasAWT {
     /**
      * Clears all information that are derived from the raw image projected to objective CRS.
      * In current version this is only isolines.
+     *
+     * <p>The caller is responsible for invoking {@link #requestRepaint()} or something equivalent,
+     * possibly indirectly through a listener on a modified property. The {@link #requestRepaint()}
+     * method is not invoked by this method because the caller will typically do more cleaning.</p>
      */
     private void clearIsolines() {
         if (isolines != null) {
@@ -906,13 +974,13 @@ public class CoverageCanvas extends MapCanvasAWT {
         /**
          * The {@link #recoloredImage} after resampling is applied.
          * May be {@code null} if not yet computed, in which case it will be computed by {@link #render()}.
+         * This image should not be cached after rendering operation is completed.
          */
         private RenderedImage resampledImage;
 
         /**
-         * The resampled image with tiles computed in advance. The set of prefetched
-         * tiles may differ at each rendering event. This image should not be cached
-         * after rendering operation is completed.
+         * The resampled image with tiles computed in advance.
+         * The set of prefetched tiles may differ at each rendering event.
          */
         private RenderedImage prefetchedImage;
 
@@ -927,9 +995,15 @@ public class CoverageCanvas extends MapCanvasAWT {
         private AffineTransform resampledToDisplay;
 
         /**
+         * Whether to skip the rendering of the coverage.
+         * OTher features such as the isolines may still be rendered.
+         */
+        private final boolean isCoverageHidden;
+
+        /**
          * Snapshot of information required for rendering isolines, or {@code null} if none.
          */
-        private IsolineRenderer.Snapshot[] isolines;
+        private IsolineController.Snapshot[] isolines;
 
         /**
          * Creates a new renderer. Shall be invoked in JavaFX thread.
@@ -944,11 +1018,12 @@ public class CoverageCanvas extends MapCanvasAWT {
             displayBounds      = canvas.getDisplayBounds();
             objectivePOI       = canvas.getPointOfInterest(true);
             recoloredImage     = canvas.derivedImages.get(data.selectedDerivative);
+            isCoverageHidden   = canvas.isCoverageHidden;
             if (data.validateCRS(objectiveCRS)) {
                 resampledImage = canvas.resampledImage;
             }
             final Insets margin = canvas.imageMargin.get();
-            if (margin != null) {
+            if (margin != null && displayBounds != null) {
                 final double top  = margin.getTop();
                 final double left = margin.getLeft();
                 displayBounds.x      -= left;
@@ -956,6 +1031,10 @@ public class CoverageCanvas extends MapCanvasAWT {
                 displayBounds.y      -= top;
                 displayBounds.height += top  + margin.getBottom();
             }
+            /*
+             * Help for auxiliary services. They are special cases for now,
+             * but should be refactored as styling services in a future version.
+             */
             if (canvas.isolines != null) try {
                 isolines = canvas.isolines.prepare();
                 objectiveAOI = Shapes2D.transform(MathTransforms.bidimensional(objectiveToDisplay.inverse()), displayBounds, null);
@@ -1049,9 +1128,11 @@ public class CoverageCanvas extends MapCanvasAWT {
                  * We cannot invoke it sooner because it needs some `resampleAndConvert(…)` results.
                  */
                 final Future<Isolines[]> newIsolines = data.generate(isolines);
-                prefetchedImage = data.prefetch(resampledImage, resampledToDisplay, displayBounds);
+                if (!isCoverageHidden) {
+                    prefetchedImage = data.prefetch(resampledImage, resampledToDisplay, displayBounds);
+                }
                 if (newIsolines != null) {
-                    IsolineRenderer.complete(isolines, newIsolines);
+                    IsolineController.complete(isolines, newIsolines);
                 }
             } finally {
                 LogHandler.loadingStop(id);
@@ -1069,7 +1150,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                 ((TileErrorHandler.Executor) prefetchedImage).execute(
                         () -> gr.drawRenderedImage(RenderingWorkaround.wrap(prefetchedImage), resampledToDisplay),
                         new TileErrorHandler(data.processor.getErrorHandler(), CoverageCanvas.class, "paint"));
-            } else {
+            } else if (!isCoverageHidden) {
                 gr.drawRenderedImage(RenderingWorkaround.wrap(prefetchedImage), resampledToDisplay);
             }
             if (isolines != null) {
@@ -1078,7 +1159,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                 // Arbitrarily use a line tickness of 1/8 of source pixel size for making apparent when zoom is strong.
                 gr.setStroke(new BasicStroke(data.getDataPixelSize(objectivePOI) / 8));
                 gr.transform((AffineTransform) objectiveToDisplay);     // This cast is safe in PlanarCanvas subclass.
-                for (final IsolineRenderer.Snapshot s : isolines) {
+                for (final IsolineController.Snapshot s : isolines) {
                     s.paint(gr, objectiveAOI);
                 }
                 gr.setTransform(at);
@@ -1092,9 +1173,18 @@ public class CoverageCanvas extends MapCanvasAWT {
          */
         @Override
         protected boolean commit(final MapCanvas canvas) {
-            ((CoverageCanvas) canvas).cacheRenderingData(this);
+            final var cc = (CoverageCanvas) canvas;
+            cc.cacheRenderingData(this);
+            /*
+             * Help for auxiliary services. They are special cases for now,
+             * but should be refactored as styling services in a future version.
+             */
+            final TileReadListener tileReadListener = cc.tileReadListener;
+            if (tileReadListener != null) {
+                tileReadListener.takeSnapshotOfObjectiveCRS();
+            }
             if (isolines != null) {
-                for (final IsolineRenderer.Snapshot s : isolines) {
+                for (final IsolineController.Snapshot s : isolines) {
                     s.commit();
                 }
             }
@@ -1213,6 +1303,157 @@ public class CoverageCanvas extends MapCanvasAWT {
         return Shapes2D.transform(MathTransforms.bidimensional(getObjectiveToDisplay().inverse()), displayBounds, null);
     }
 
+
+
+
+    /**
+     * Object notified when a tile is about to be read. The notifications can be sent from any thread,
+     * typically a background thread which is reading the data. The tiles are enqueued for processing
+     * in another background thread for avoiding to slow down the thread that read the data.
+     */
+    private final class TileReadListener implements StoreListener<TileReadEvent>, Runnable, EventHandler<ActionEvent> {
+        /**
+         * Colors of the tiles, using different colors for different resolutions (pyramid levels).
+         */
+        private static final Color[] TILE_COLORS = {
+            Color.VIOLET, Color.RED, Color.YELLOW, Color.CYAN, Color.PALEGREEN
+        };
+
+        /**
+         * Same colors, but with transparency.
+         */
+        private static final Color[] FILL_COLORS = new Color[TILE_COLORS.length];
+        static {
+            for (int i=0; i<FILL_COLORS.length; i++) {
+                final Color c = TILE_COLORS[i];
+                FILL_COLORS[i] = Color.color(c.getRed(), c.getGreen(), c.getBlue(), 0.5);
+            }
+        }
+
+        /**
+         * Time that tiles are visible before they fade away.
+         */
+        private static final Duration DURATION = new Duration(4000);
+
+        /**
+         * The tiles to highlight, as a thread-safe queue.
+         */
+        private final Queue<TileReadEvent> tileEvents;
+
+        /**
+         * The JavaFX shapes (usually rectangles) for highlighting the tiles.
+         * Elements of this queue are derived from {@link #tileEvents}.
+         */
+        private final Queue<FadeTransition> tileShapes;
+
+        /**
+         * The objective <abbr>CRS</abbr> of the canvas.
+         * This information is updated in the JavaFX thread after each rendering.
+         *
+         * @see CoverageCanvas#getObjectiveCRS()
+         */
+        private CoordinateReferenceSystem objectiveCRS;
+
+        /**
+         * The transform from objective <abbr>CRS</abbr> to the display coordinate system of the canvas.
+         * This information is updated in the JavaFX thread after each rendering, so that creations of
+         * JavaFX shapes will use the information that reflects the image shown in the canvas.
+         *
+         * @see CoverageCanvas#objectiveToDisplay
+         */
+        private LinearTransform objectiveToDisplay;
+
+        /**
+         * Creates a new listener of tile read events.
+         */
+        TileReadListener() {
+            tileEvents = new ConcurrentLinkedQueue<>();
+            tileShapes = new ConcurrentLinkedQueue<>();
+            takeSnapshotOfObjectiveCRS();
+        }
+
+        /**
+         * Takes a snapshot of the objective <abbr>CRS</abbr> and transform to display coordinate system.
+         * This method should be invoked after each rendering, so that creations of JavaFX shapes will use
+         * the information that reflects the image shown in the canvas.
+         */
+        final synchronized void takeSnapshotOfObjectiveCRS() {
+            objectiveCRS = getObjectiveCRS();
+            objectiveToDisplay = getObjectiveToDisplay();
+        }
+
+        /**
+         * Invoked when a tile has been read. The specified tile is added to the list of tiles to highlight.
+         * Starts a background thread for deriving the JavaFX shapes if such thread is not already running.
+         */
+        @Override
+        public void eventOccured(final TileReadEvent event) {
+            tileEvents.add(event);
+            if (TRACE) {
+                trace("TileReadListener.accept(%d)", tileEvents.size());
+            }
+            BackgroundThreads.EXECUTOR.execute(this);
+        }
+
+        /**
+         * Invoked in a background thread for converting the tile events into JavaFX shapes.
+         * Usually, the calculation done in this method is faster than the reading of tiles,
+         * therefore each invocation of this method usually has only one tile to convert.
+         */
+        @Override
+        @SuppressWarnings({"UseSpecificCatch", "LocalVariableHidesMemberVariable"})
+        public void run() {
+            Exception error = null;
+            TileReadEvent event;
+            while ((event = tileEvents.poll()) != null) {
+                try {
+                    final CoordinateReferenceSystem objectiveCRS;
+                    final AffineTransform objectiveToDisplay;
+                    synchronized (this) {
+                        objectiveCRS = this.objectiveCRS;
+                        objectiveToDisplay = (AffineTransform) this.objectiveToDisplay;
+                    }
+                    final Shape tile = ShapeConverter.convert(event.outline(objectiveCRS), objectiveToDisplay);
+                    final int ic = event.getPyramidLevel() % TILE_COLORS.length;
+                    tile.setStroke(TILE_COLORS[ic]);
+                    tile.setFill(FILL_COLORS[ic]);
+                    tile.setOpacity(0.5);
+                    final var transition = new FadeTransition(DURATION, tile);
+                    transition.setFromValue(0.5);
+                    transition.setToValue(0);
+                    transition.setOnFinished(this);
+                    tileShapes.add(transition);
+                } catch (Exception e) {
+                    if (error == null) error = e;
+                    else error.addSuppressed(e);
+                }
+            }
+            Platform.runLater(() -> {
+                final ObservableList<Node> children = floatingPane.getChildren();
+                FadeTransition transition;
+                while ((transition = tileShapes.poll()) != null) {
+                    children.add(transition.getNode());
+                    transition.play();
+                }
+            });
+            if (error != null) {
+                Logging.recoverableException(LOGGER, TileReadListener.class, "run", error);
+            }
+        }
+
+        /**
+         * Invoked when the animation on a tile is finished.
+         * This method removes the JavaFX geometry object that represented the tile outline.
+         */
+        @Override
+        public void handle(final ActionEvent event) {
+            final var transition = (FadeTransition) event.getSource();
+            if (floatingPane.getChildren().remove(transition.getNode()) && TRACE) {
+                trace("TileReadListener.removeChild");
+            }
+        }
+    }
+
     /**
      * Invoked when an exception occurred while computing a transform but the painting process can continue.
      */
@@ -1251,7 +1492,7 @@ public class CoverageCanvas extends MapCanvasAWT {
     }
 
     /**
-     * Prints {@code "CoverageCanvas"} following by the given message if {@link #TRACE} is {@code true}.
+     * Prints {@code "CoverageCanvas"} followed by the given message if {@link #TRACE} is {@code true}.
      * This is used for debugging purposes only.
      *
      * @param  format     the {@code printf} format string.

@@ -234,11 +234,28 @@ class CoordinateOperationRegistry {
     protected Extent areaOfInterest;
 
     /**
+     * Whether a non-default {@link #areaOfInterest} value was specified explicitly by the context.
+     * If this flag is {@code true}, then {@link context#operationIsContextSensitive} should be set
+     * to {@code true} when {@link #areaOfInterest} is used.
+     */
+    final boolean specifiedAOI;
+
+    /**
      * The desired accuracy in metres, or 0 for the best accuracy available.
+     * When a new {@code CoordinateOperationFinder} instance is created with a non-null
+     * {@link CoordinateOperationContext}, the context is used for initializing this value.
+     * After initialization, this field may be updated at implementation discretion.
      *
      * @see CoordinateOperationContext#getDesiredAccuracy()
      */
     protected double desiredAccuracy;
+
+    /**
+     * Whether a non-default {@link #desiredAccuracy} value was specified explicitly by the context.
+     * If this flag is {@code true}, then {@link context#operationIsContextSensitive} should be set
+     * to {@code true} when {@link #desiredAccuracy} is used.
+     */
+    final boolean specifiedAccuracy;
 
     /**
      * {@code true} if {@code search(…)} should stop after the first coordinate operation found.
@@ -306,6 +323,8 @@ class CoordinateOperationRegistry {
             areaOfInterest  = context.getAreaOfInterest();
             desiredAccuracy = context.getDesiredAccuracy();
         }
+        specifiedAOI = (areaOfInterest != null);
+        specifiedAccuracy = (desiredAccuracy > 0);
     }
 
     /**
@@ -668,15 +687,18 @@ class CoordinateOperationRegistry {
          * then we need to get one from the CRS. This is necessary for preventing the transformation from
          * NAD27 to NAD83 in Idaho to select the transform for Alaska (since the latter has a larger area).
          */
-        CoordinateOperationSorter.sort(operations, Extents.getGeographicBoundingBox(areaOfInterest));
+        if (operations.size() > 1) {
+            resultWasContextSensitive(specifiedAOI);
+            CoordinateOperationSorter.sort(operations, Extents.getGeographicBoundingBox(areaOfInterest));
+        }
         final ListIterator<CoordinateOperation> it = operations.listIterator();
         while (it.hasNext()) {
             /*
              * At this point we filtered a CoordinateOperation by looking only at its metadata.
              * Code following this point will need the full coordinate operation, including its
-             * MathTransform. So if we got a deferred operation, we need to resolve it now.
+             * `MathTransform`. So if we got a deferred operation, we need to resolve it now.
              * Conversely, we should not use metadata below this point because the call to
-             * inverse(CoordinateOperation) is not guaranteed to preserve all metadata.
+             * `inverse(CoordinateOperation)` is not guaranteed to preserve all metadata.
              */
             CoordinateOperation operation = it.next();
             try {
@@ -717,19 +739,36 @@ class CoordinateOperationRegistry {
              * FactoryException propagate.
              */
             operation = complete(operation, sourceCRS, targetCRS);
-            final Predicate<CoordinateOperation> filter = (context != null) ? context.getOperationFilter() : null;
-            if (filter == null || filter.test(operation)) {
-                if (stopAtFirst) {
-                    operations.clear();
-                    operations.add(operation);
-                    break;
+            if (context != null) {
+                final Predicate<CoordinateOperation> filter = context.getOperationFilter();
+                if (filter != null) {
+                    resultWasContextSensitive(true);
+                    if (!filter.test(operation)) {
+                        it.remove();
+                        continue;
+                    }
                 }
-                it.set(operation);
-            } else {
-                it.remove();
             }
+            if (stopAtFirst) {
+                operations.clear();
+                operations.add(operation);
+                break;
+            }
+            it.set(operation);
         }
         return operations;
+    }
+
+    /**
+     * If the given flag is {@code true}, declares that the search for coordinate operations
+     * depends on the values of the {@code context} argument specified at construction time.
+     *
+     * @param  flag  whether the coordinate operation depends on the context according the caller.
+     */
+    final void resultWasContextSensitive(final boolean flag) {
+        if (flag && context != null) {
+            context.resultWasContextSensitive = true;
+        }
     }
 
     /**

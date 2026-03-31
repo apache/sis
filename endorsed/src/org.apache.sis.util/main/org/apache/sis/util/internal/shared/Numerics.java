@@ -16,10 +16,14 @@
  */
 package org.apache.sis.util.internal.shared;
 
+import java.util.Arrays;
 import java.text.Format;
+import java.text.NumberFormat;
 import java.text.DecimalFormat;
+import java.text.FieldPosition;
 import java.math.BigInteger;
 import java.util.function.BiFunction;
+import java.util.function.IntToDoubleFunction;
 import static java.lang.Math.min;
 import static java.lang.Math.max;
 import static java.lang.Math.abs;
@@ -220,7 +224,7 @@ public final class Numerics {
     public static int snapToCeil(int value, final int divisor) {
         final int r = value % divisor;      // Always has the sign of `value`.
         if (r > 0) {
-            value += Math.abs(divisor) - r;
+            value += abs(divisor) - r;
         } else {
             value -= r;
         }
@@ -295,8 +299,8 @@ public final class Numerics {
      * @return the value clamped to the range convertible to {@code double} without precision lost.
      */
     public static long roundAndClamp(final double value) {
-        return Math.max(-MAX_INTEGER_CONVERTIBLE_TO_DOUBLE,
-               Math.min(+MAX_INTEGER_CONVERTIBLE_TO_DOUBLE, Math.round(value)));
+        return max(-MAX_INTEGER_CONVERTIBLE_TO_DOUBLE,
+               min(+MAX_INTEGER_CONVERTIBLE_TO_DOUBLE, Math.round(value)));
     }
 
     /**
@@ -313,7 +317,7 @@ public final class Numerics {
 
     /**
      * Returns the given fraction as a {@link Fraction} instance if possible,
-     * or as a {@link Double} approximation otherwise.
+     * or as a {@link DoubleDouble} approximation otherwise.
      *
      * @param  numerator    numerator of the fraction to return.
      * @param  denominator  denominator of the fraction to return.
@@ -323,7 +327,7 @@ public final class Numerics {
         try {
             return Fraction.valueOf(numerator, denominator);
         } catch (ArithmeticException e) {
-            return numerator / (double) denominator;
+            return DoubleDouble.of(numerator).divide(DoubleDouble.of(denominator));
         }
     }
 
@@ -553,7 +557,7 @@ public final class Numerics {
     }
 
     /**
-     * Suggests an number of fraction digits for formatting in base 10 numbers of the given accuracy.
+     * Suggests a number of fraction digits for formatting in base 10 numbers of the given accuracy.
      * This method uses heuristic rules that may change in any future SIS version:
      *
      * <ul>
@@ -574,34 +578,54 @@ public final class Numerics {
      * @see DecimalFunctions#fractionDigitsForDelta(double, boolean)
      */
     public static int fractionDigitsForDelta(final double ulp) {
-        return (ulp != 0) ? Math.max(0, Math.min(16, DecimalFunctions.fractionDigitsForDelta(ulp, false))) : 0;
+        return (ulp != 0) ? max(0, min(16, DecimalFunctions.fractionDigitsForDelta(ulp, false))) : 0;
     }
 
     /**
-     * Suggests an number of fraction digits for the given values, ignoring NaN and infinities.
-     * This method uses heuristic rules that may change in any future SIS version.
-     * Current implementation returns a value which avoid printing "garbage" digits
-     * with highest numbers, at the cost of loosing significant digits on smallest numbers.
+     * Suggests a number of fraction digits for the given values, ignoring NaN and infinities.
+     * This method uses heuristic rules that may change in any future <abbr>SIS</abbr> version.
+     * Current implementation returns a value which avoid printing "garbage" digits with highest numbers,
+     * at the cost of loosing significant digits on smallest numbers. It may further reduce the number of
+     * digits if this is sufficient for distinguishing the given values.
      * An arbitrary limit is set to 16 digits, which is the number of digits for {@code Math.ulp(1.0)}}.
+     *
+     * <p>This method modifies the given array in-place. Callers should not pass original data.</p>
      *
      * @param  values  the values for which to get suggested number of fraction digits.
      * @return suggested number of fraction digits for the given values. Always positive.
      */
     public static int suggestFractionDigits(final double... values) {
+        switch (values.length) {
+            case 0: return 0;
+            case 1: return DecimalFunctions.fractionDigitsForValue(values[0]);
+        }
+        for (int i=0; i<values.length; i++) {
+            values[i] = abs(values[i]);
+        }
+        Arrays.sort(values);
         double ulp = 0;
-        if (values != null) {
-            for (final double v : values) {
-                final double e = Math.ulp(v);
-                if (e > ulp && e != Double.POSITIVE_INFINITY) {
-                    ulp = e;
+        double delta = Double.POSITIVE_INFINITY;
+        for (int i = values.length; --i >= 0;) {
+            double value = values[i];
+            if (Double.isFinite(value)) {
+                ulp = ulp(value);
+                while (--i >= 0) {
+                    final double lower = values[i];
+                    final double diff = value - lower;
+                    if (diff > 0 && diff < delta) {
+                        delta = diff;
+                    }
+                    value = lower;
                 }
+                break;
             }
         }
-        return fractionDigitsForDelta(ulp);
+        // Arbitrarily add 6 digits the the difference between values.
+        return min(fractionDigitsForDelta(ulp), fractionDigitsForDelta(delta) + 6);
     }
 
     /**
-     * Suggests an number of fraction digits for data having the given statistics.
+     * Suggests a number of fraction digits for data having the given statistics.
      * This method uses heuristic rules that may be modified in any future SIS version.
      *
      * @param  stats  statistics on the data to format.
@@ -632,6 +656,62 @@ public final class Numerics {
     }
 
     /**
+     * Gets the character used for zero.
+     * If the given format is not a {@link DecimalFormat}, arbitrarily returns the white space.
+     *
+     * @param  format  the format for which to get the zero digit.
+     * @return the zero digit, or {@code ' '} if the format is not decimal.
+     */
+    private static char getZeroDigit(final Format format) {
+        return (format instanceof DecimalFormat) ? ((DecimalFormat) format).getDecimalFormatSymbols().getZeroDigit() : ' ';
+    }
+
+    /**
+     * Formats values then removes the same number of trailing zeros in the fraction digits of all values.
+     * For this method to be useful, the given format should use a fixed number of fraction digits.
+     * NaN and infinite values are formatted as usual but ignored in the removal of trailing zeros.
+     *
+     * @param  format  the format to use.
+     * @param  count   number of values to format.
+     * @param  values  provider of values to format.
+     * @return an array of length {@code count} with the formatted values.
+     */
+    public static String[] formatAndTrimTrailingZeros(final NumberFormat format, final int count, final IntToDoubleFunction values) {
+        final var  formatted     = new String[count];
+        final var  buffer        = new StringBuffer();
+        final var  fractionEnd   = new int[count];
+        final var  fractionField = new FieldPosition(NumberFormat.Field.FRACTION);
+        final char zeroDigit     = getZeroDigit(format);
+        int numberOfTrailingZeros = Integer.MAX_VALUE;
+        for (int i=0; i<count; i++) {
+            final double value = values.applyAsDouble(i);
+            String text = format.format(value, buffer, fractionField).toString();
+            formatted[i] = text;
+            if (numberOfTrailingZeros != 0 && Double.isFinite(value)) {
+                final int end    = fractionField.getEndIndex();
+                fractionEnd[i]   = end;
+                int firstNonZero = end;
+                final int start  = Math.max(fractionField.getBeginIndex(), end - numberOfTrailingZeros);
+                while (--firstNonZero > start) {
+                    if (text.charAt(firstNonZero) != zeroDigit) break;
+                }
+                numberOfTrailingZeros = Math.min(numberOfTrailingZeros, end - (firstNonZero + 1));
+            }
+            buffer.setLength(0);
+        }
+        if (numberOfTrailingZeros != 0) {
+            for (int i=0; i<count; i++) {
+                final int end = fractionEnd[i];
+                if (end != 0) {
+                    formatted[i] = buffer.append(formatted[i]).delete(end - numberOfTrailingZeros, end).toString();
+                    buffer.setLength(0);
+                }
+            }
+        }
+        return formatted;
+    }
+
+    /**
      * Formats the given value with the given format, using scientific notation if needed.
      * This is a workaround for {@link DecimalFormat} not switching automatically to scientific notation for large numbers.
      *
@@ -646,7 +726,7 @@ public final class Numerics {
             final DecimalFormat df = (DecimalFormat) format;
             final int maxFD = df.getMaximumFractionDigits();
             final double m = abs(((Number) value).doubleValue());
-            if (m > 0 && (m >= 1E+9 || m < MathFunctions.pow10(-Math.min(maxFD, 6)))) {
+            if (m > 0 && (m >= 1E+9 || m < MathFunctions.pow10(-min(maxFD, 6)))) {
                 final int minFD = df.getMinimumFractionDigits();
                 final String pattern = df.toPattern();
                 try {

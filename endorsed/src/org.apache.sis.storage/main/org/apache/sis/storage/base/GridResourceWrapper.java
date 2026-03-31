@@ -157,14 +157,14 @@ public abstract class GridResourceWrapper implements GridCoverageResource {
 
     /**
      * Returns the preferred resolutions (in units of CRS axes) for read operations in this data store.
-     * Elements are ordered from finest (smallest numbers) to coarsest (largest numbers) resolution.
+     * Elements are ordered from coarsest (largest numbers) resolution to finest (smallest numbers).
      *
      * @return preferred resolutions for read operations in this data store, or an empty array if none.
      * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
      */
     @Override
-    public List<double[]> getResolutions() throws DataStoreException {
-        return source().getResolutions();
+    public List<double[]> getAvailableResolutions() throws DataStoreException {
+        return source().getAvailableResolutions();
     }
 
     /**

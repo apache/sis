@@ -16,6 +16,10 @@
  */
 package org.apache.sis.storage.panama;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.LogRecord;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
 
@@ -42,9 +46,14 @@ public enum LibraryStatus {
     LIBRARY_NOT_FOUND(Resources.Keys.LibraryNotFound_1),
 
     /**
-     * The native library was found, but not symbol that we searched.
+     * The native library was found, but one of the required symbols was not found.
      */
     FUNCTION_NOT_FOUND(Resources.Keys.FunctionNotFound_1),
+
+    /**
+     * The native library cannot be initialized.
+     */
+    CANNOT_INITIALIZE(Resources.Keys.CannotInitialize_1),
 
     /**
      * <abbr>SIS</abbr> is not authorized to perform native function calls.
@@ -71,19 +80,43 @@ public enum LibraryStatus {
     /**
      * Throws an exception if the native library is not available.
      *
-     * @param  library  the library name, of formatting the error message.
-     * @param  cause    the cause of the error, or {@code null} if none.
-     * @throws DataStoreException if this enumeration value is not {@link #LOADED} or if the given cause is not null.
+     * @param  library  the library name, for formatting the error message.
+     * @throws DataStoreException if this enumeration value is not {@link #LOADED}.
      */
-    public void report(String library, Exception cause) throws DataStoreException {
-        if (message != 0 || cause != null) {
+    public final void throwIfFailed(final String library) throws DataStoreException {
+        if (message != 0) {
             // Note: `NativeAccessNotAllowed` will ignore the `library` argument.
             String text = Resources.format(message, library);
-            if (cause != null) {
-                throw new DataStoreException(text, cause);
-            } else {
+            if (this == UNLOADED) {
                 throw new DataStoreClosedException(text);
+            } else {
+                throw new DataStoreException(text);
             }
+        }
+    }
+
+    /**
+     * Logs a record at the given level if the native library is not available.
+     * This method pretends that the warning come from a {@code provider()} method.
+     *
+     * @param  logger    the logger where to send a record.
+     * @param  warning   whether to use the warning level. Otherwise, uses the configuration level.
+     * @param  provider  the class to report as the source of the warning.
+     * @param  library   the library name, for formatting the error message.
+     * @param  cause     the cause of the error, or {@code null} if none.
+     */
+    public final void log(Logger logger, boolean warning, Class<?> provider, String library, Throwable cause) {
+        if (message != 0 || cause != null) {
+            final Level level = warning ? Level.WARNING : Level.CONFIG;
+            final LogRecord record;
+            if (message == 0) {
+                // Should never happen, but defined for safety.
+                record = new LogRecord(level, cause.toString());
+            } else {
+                record = Resources.forLocale(null).createLogRecord(level, message, library);
+            }
+            record.setThrown(cause);
+            Logging.completeAndLog(logger, provider, "provider", record);
         }
     }
 }

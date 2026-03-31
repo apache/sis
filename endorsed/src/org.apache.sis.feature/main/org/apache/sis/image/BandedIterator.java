@@ -28,6 +28,7 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
+import java.util.function.IntBinaryOperator;
 
 
 /**
@@ -291,6 +292,28 @@ final class BandedIterator extends WritablePixelIterator {
         destBuffer.setElemDouble(index, values[0]);     // See comment in `getPixel(int[])`.
         for (int i=1; i<numBands; i++) {
             destBuffer.setElemDouble(i, index, values[i]);
+        }
+    }
+
+    /**
+     * Sets all remaining pixels to sample values computed by the given functions.
+     * If the iterator is not in a valid position, then this method behavior is undetermined.
+     */
+    @Override
+    public void setRemainingPixels(IntBinaryOperator... bands) {
+        bands = validate(bands);
+        if (bands.length == 1) {    // Slight optimization for a common case.
+            final IntBinaryOperator band = bands[0];
+            while (next()) {
+                destBuffer.setElem(x + xToBuffer, band.applyAsInt(x, y));
+            }
+        } else {
+            while (next()) {
+                final int index = x + xToBuffer;
+                for (int i=0; i<bands.length; i++) {
+                    destBuffer.setElem(i, index, bands[i].applyAsInt(x, y));
+                }
+            }
         }
     }
 

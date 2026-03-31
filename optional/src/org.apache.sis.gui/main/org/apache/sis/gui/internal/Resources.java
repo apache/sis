@@ -302,6 +302,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short Mercator = 44;
 
         /**
+         * The image and the status bar use different reference systems.
+         */
+        public static final short MismatchedRS = 80;
+
+        /**
          * New window
          */
         public static final short NewWindow = 26;
@@ -310,6 +315,16 @@ public class Resources extends IndexedResourceBundle {
          * No feature type information.
          */
         public static final short NoFeatureTypeInfo = 27;
+
+        /**
+         * No selected item.
+         */
+        public static final short NoSelectedItem = 78;
+
+        /**
+         * Nothing to configure.
+         */
+        public static final short NothingToConfigure = 79;
 
         /**
          * Open…
@@ -385,6 +400,11 @@ public class Resources extends IndexedResourceBundle {
          * Send to
          */
         public static final short SendTo = 31;
+
+        /**
+         * Visual indication of tile readings
+         */
+        public static final short ShowTileReadEvents = 77;
 
         /**
          * Size or position

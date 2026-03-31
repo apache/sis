@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.logging.Logger;
 import java.util.concurrent.Callable;
 import java.lang.foreign.Arena;
 import java.lang.foreign.Linker;
@@ -30,29 +31,27 @@ import java.lang.foreign.ValueLayout;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.UndeclaredThrowableException;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.DataStoreException;
 
 
 /**
  * Base class for sets of method handles to native functions.
- * The native library can be unloaded by invoking {@link #run()}.
- * This instance can be registered in a shutdown hook or a {@link java.lang.ref.Cleaner}.
+ * The native library can be unloaded by invoking {@link #call()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public abstract class NativeFunctions implements Runnable, Callable<Object> {
+public abstract class NativeFunctions implements Callable<Object> {
     /**
      * Name of the library which has been loaded, for information purposes.
      */
     public final String libraryName;
 
     /**
-     * The arena used for loading the library, or {@code null} for the global arena.
-     * This is the arena to close for unloading the library.
-     *
-     * @see #arena()
+     * The arena used for loading the library.
+     * May be a shared or a global arena.
      */
-    private final Arena arena;
+    protected final Arena libraryArena;
 
     /**
      * The lookup for retrieving the address of a symbol in the native library.
@@ -70,18 +69,11 @@ public abstract class NativeFunctions implements Runnable, Callable<Object> {
      *
      * @param  loader  the object used for loading the library.
      */
-    protected NativeFunctions(final LibraryLoader<?> loader) {
-        libraryName = loader.filename;
-        arena       = loader.arena;
-        symbols     = loader.symbols;
-        linker      = Linker.nativeLinker();
-    }
-
-    /**
-     * Returns the arena used for loading the library.
-     */
-    protected final Arena arena() {
-        return (arena != null) ? arena : Arena.global();
+    protected NativeFunctions(final LibraryLoader<?,?> loader) {
+        libraryName  = loader.filename;
+        libraryArena = loader.libraryArena;
+        symbols      = loader.symbols;
+        linker       = Linker.nativeLinker();
     }
 
     /**
@@ -170,28 +162,6 @@ public abstract class NativeFunctions implements Runnable, Callable<Object> {
     }
 
     /**
-     * Unloads the native library. If the arena is global,
-     * then this method should not be invoked before <abbr>JVM</abbr> shutdown.
-     */
-    @Override
-    public void run() {
-        if (arena != null) {
-            arena.close();
-        }
-    }
-
-    /**
-     * Synonymous of {@link #run()}, used in shutdown hook.
-     *
-     * @return {@code null}.
-     */
-    @Override
-    public final Object call() {
-        run();
-        return null;
-    }
-
-    /**
      * Returns whether the given result is null.
      *
      * @param  result  the result of a native method call, or {@code null}.
@@ -230,4 +200,41 @@ public abstract class NativeFunctions implements Runnable, Callable<Object> {
             default: return new UndeclaredThrowableException(exception);
         }
     }
+
+    /**
+     * Disposes the native library when this {@code NativeFunctions} has been garbage-collected or during
+     * the <abbr>JVM</abbr> shutdown. This method is public as an implementation side-effect and should
+     * not be invoked directly in application code.
+     *
+     * <p>This method is invoked in contexts where we cannot propagate exceptions to the caller.
+     * Instead, exceptions are logged.</p>
+     *
+     * @return {@code null}.
+     */
+    @Override
+    public final Object call() {
+        // Note: `libraryArena` may be the global arena, which cannot be closed.
+        try {
+            destroy();
+        } catch (Throwable e) {
+            Logging.unexpectedException(getLogger(), getClass(), "destroy", e);
+        }
+        return null;
+    }
+
+    /**
+     * Releases any resources used by the native library. This method is invoked automatically when
+     * the last {@code NativeFunctions} instance using the native library has been garbage-collected,
+     * or during the <abbr>JVM</abbr> shutdown.
+     */
+    protected void destroy() {
+    }
+
+    /**
+     * Returns the logger where to report warnings.
+     * This is used if an exception occurred during the execution of {@link #destroy()}.
+     *
+     * @return the logger for warnings.
+     */
+    protected abstract Logger getLogger();
 }

@@ -336,7 +336,7 @@ public class GridDerivation {
     }
 
     /**
-     * Specifies an number of cells by which to expand {@code GridExtent} after rounding.
+     * Specifies a number of cells by which to expand {@code GridExtent} after rounding.
      * This setting modifies computations performed by the following methods:
      * <ul>
      *   <li>{@link #subgrid(GridGeometry)}</li>

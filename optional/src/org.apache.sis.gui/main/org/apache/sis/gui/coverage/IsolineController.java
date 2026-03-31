@@ -31,6 +31,9 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.RenderedImage;
 import javafx.application.Platform;
 import javafx.scene.control.TableView;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -38,7 +41,10 @@ import javafx.collections.ListChangeListener;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.gui.controls.ColorRamp;
+import org.apache.sis.gui.controls.ValueColorMapper;
 import org.apache.sis.gui.controls.ValueColorMapper.Step;
+import org.apache.sis.gui.map.style.MapItem;
+import org.apache.sis.gui.map.style.ItemController;
 import org.apache.sis.image.processing.isoline.Isolines;
 import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.geometry.wrapper.j2d.EmptyShape;
@@ -47,15 +53,16 @@ import org.apache.sis.util.ArraysExt;
 
 
 /**
- * Caches and draws isoline shapes in a {@link CoverageCanvas}. This class is designed for interactive use
- * in JavaFX widget; this is not a class for doing symbology e.g. in a web service. Most of the work done
- * by {@code IsolineRenderer} is about listening to changes in {@link TableView}, managing data exchanges
- * between JavaFX thread and background thread, and computes only isolines that are new compared to previous
- * rendering.
+ * Configures, draws and caches isoline shapes in a {@link CoverageCanvas}.
+ * This class is designed for interactive use in JavaFX widget.
+ * This is not a class for doing symbology e.g. in a web service.
+ * Most of the work done by {@code IsolineController} is about listening to changes in {@link TableView},
+ * managing data exchanges between JavaFX thread and background thread,
+ * and computes only isolines that are new compared to previous rendering.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class IsolineRenderer {
+final class IsolineController extends ItemController {
     /**
      * The canvas where isolines are drawn.
      */
@@ -67,16 +74,24 @@ final class IsolineRenderer {
     private Band[] bands;
 
     /**
+     * The widgets for configuring the isolines. Created when first requested.
+     *
+     * @see #getConfigurationPanel()
+     */
+    private Region configurationPanel;
+
+    /**
      * Creates an initially empty set of isolines.
+     * The controller is unselected by default.
      *
      * @param  canvas  the canvas where isolines are drawn.
+     * @param  title   the title to show in the tree view. Usually "Isolines" in the current locale.
      */
-    public IsolineRenderer(final CoverageCanvas canvas) {
-        if (canvas.isolines != null) {
-            throw new IllegalArgumentException();
-        }
+    public IsolineController(final CoverageCanvas canvas, final String title) {
+        super(new MapItem(title));
         this.canvas = canvas;
-        canvas.isolines = this;
+        setIndependent(true);
+        selectedProperty().addListener((invalid) -> canvas.requestRepaint());
     }
 
     /**
@@ -99,6 +114,10 @@ final class IsolineRenderer {
     /**
      * Clears the cache. This method shall be invoked when the image used for computing isolines has changed,
      * or when the {@code gridToCRS} transform has changed. This method shall be invoked in JavaFX thread.
+     *
+     * <p>The caller is responsible for invoking {@link CoverageCanvas#requestRepaint()}.
+     * This is not done by this method because the caller will typically need to do more
+     * cleaning before to request a repaint.</p>
      */
     final void clear() {
         assert Platform.isFxApplicationThread();
@@ -107,6 +126,24 @@ final class IsolineRenderer {
                 band.clear();
             }
         }
+    }
+
+    /**
+     * Returns the panel of JavaFX controls for configuring the isolines.
+     * This method must be invoked from the JavaFX thread.
+     *
+     * @return the isoline configuration panel.
+     */
+    @Override
+    protected Region getConfigurationPanel() {
+        if (configurationPanel == null) {
+            final var mapper = new ValueColorMapper(canvas.getLocale());
+            setIsolineTables(List.of(mapper.getSteps()));
+            final Region style = mapper.getView();
+            VBox.setVgrow(style, Priority.ALWAYS);
+            configurationPanel = new VBox(style);       // TODO: add band selector
+        }
+        return configurationPanel;
     }
 
     /**
@@ -152,6 +189,7 @@ final class IsolineRenderer {
          *
          * @param  steps  the list of isoline levels to render.
          */
+        @SuppressWarnings("this-escape")
         Band(final ObservableList<Step> steps) {
             this.steps = steps;
             addListeners(steps);
@@ -162,7 +200,7 @@ final class IsolineRenderer {
          * Clears the cache. This method shall be invoked when the image used for computing isolines has changed,
          * or when the {@code gridToCRS} transform has changed. This method shall be invoked in JavaFX thread.
          *
-         * @see IsolineRenderer#clear()
+         * @see IsolineController#clear()
          */
         final void clear() {
             // Force new instance instead of `Map.clear()` because previous instance may be used by `Snapshot`.
@@ -191,7 +229,11 @@ final class IsolineRenderer {
                     addListeners(change.getAddedSubList());
                 }
             }
-            canvas.requestRepaint();
+            final boolean isEmpty = isEmpty();
+            if (isSelected() == isEmpty) {
+                setSelected(!isEmpty);
+                canvas.requestRepaint();
+            }
         }
 
         /**
@@ -237,7 +279,7 @@ final class IsolineRenderer {
          * @param  keep  an empty set used by this method for listing the levels to keep in the cache.
          * @return a snapshot of current {@code Band} state for use by a background thread.
          *
-         * @see IsolineRenderer#prepare()
+         * @see IsolineController#prepare()
          */
         final Snapshot prepare(final Set<Double> keep) {
             if (isolines == null) {
@@ -271,11 +313,11 @@ final class IsolineRenderer {
      */
     final Snapshot[] prepare() {
         assert Platform.isFxApplicationThread();
-        if (isEmpty()) {
+        if (!isSelected() || isEmpty()) {
             return null;
         }
-        final Snapshot[] snapshots = new Snapshot[bands.length];
-        final Set<Double> keep = new HashSet<>();
+        final var snapshots = new Snapshot[bands.length];
+        final var keep = new HashSet<Double>();
         for (int i=0; i < snapshots.length; i++) {
             snapshots[i] = bands[i].prepare(keep);
         }
@@ -325,7 +367,7 @@ final class IsolineRenderer {
          */
         if (levels != null) {
             if (CoverageCanvas.TRACE) {
-                System.out.println("IsolineRenderer.complete(…):");
+                System.out.println("IsolineController.complete(…):");
                 for (int i=0; i<levels.length; i++) {
                     System.out.printf("\tFor band %d: %s%n", i, Arrays.toString(levels[i]));
                 }
@@ -389,7 +431,7 @@ final class IsolineRenderer {
          * the {@link #isolines} map after the isoline painting is completed. Stored in a separated map
          * because we must wait to be back to JavaFX thread before we can write in {@link #isolines}.
          */
-        private Map<Double,Shape> newIsolines;
+        private Map<Double, Shape> newIsolines;
 
         /**
          * The isoline shapes to draw. May contain {@code null} elements if some shapes are missing.
@@ -454,7 +496,7 @@ final class IsolineRenderer {
          */
         private void complete(final Isolines isolines) {
             newIsolines = isolines.polylines();
-            for (final Map.Entry<Double,Shape> entry : newIsolines.entrySet()) {
+            for (final Map.Entry<Double, Shape> entry : newIsolines.entrySet()) {
                 final Integer j = missingLevels.get(entry.getKey());
                 if (j != null) shapes[j] = entry.getValue();
             }

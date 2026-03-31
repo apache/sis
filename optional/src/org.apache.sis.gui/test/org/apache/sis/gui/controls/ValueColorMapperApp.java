@@ -16,6 +16,7 @@
  */
 package org.apache.sis.gui.controls;
 
+import java.util.Locale;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
@@ -23,8 +24,6 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.BorderPane;
 import javafx.application.Application;
-import org.apache.sis.gui.internal.Resources;
-import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -71,9 +70,7 @@ public final class ValueColorMapperApp extends Application {
      * Creates a table with arbitrary isolines to show.
      */
     private static Region createIsolineTable() {
-        final ValueColorMapper handler = new ValueColorMapper(
-                Resources.forLocale(null),
-                Vocabulary.forLocale(null));
+        final ValueColorMapper handler = new ValueColorMapper(Locale.getDefault());
         handler.getSteps().setAll(
                 new ValueColorMapper.Step( 10, Color.BLUE),
                 new ValueColorMapper.Step( 25, Color.GREEN),

@@ -117,7 +117,7 @@ import org.apache.sis.image.internal.shared.ImageUtilities;
  * if the change to dirty state happened after the call to {@link #getTile(int, int) getTile(…)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   1.1
  */
 public abstract class ComputedImage extends PlanarImage implements Disposable {
@@ -485,8 +485,8 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      */
     @Override
     public final Raster getTile(final int tileX, final int tileY) {
-        final TileCache.Key key = new TileCache.Key(reference, tileX, tileY);
-        final Cache<TileCache.Key,Raster> cache = TileCache.GLOBAL;
+        final var key = new TileCache.Key(reference, tileX, tileY);
+        final Cache<TileCache.Key, Raster> cache = TileCache.GLOBAL;
         Raster tile = cache.peek(key);
         if (tile == null || reference.isTileDirty(key)) {
             /*
@@ -767,6 +767,20 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
         return reference.markDirtyTiles(tiles.x, tiles.y,
                           Math.addExact(tiles.x, tiles.width  - 1),
                           Math.addExact(tiles.y, tiles.height - 1), true);
+    }
+
+    /**
+     * Returns whether at least one tile in the given range of indices has the error status.
+     *
+     * @param  tiles  indices of tiles for which to check the error status.
+     * @return {@code true} if at least one tile is flagged as in error.
+     *
+     * @since 1.7
+     */
+    public boolean hasErrorFlag(final Rectangle tiles) {
+        return reference.hasErrorFlag(tiles.x, tiles.y,
+                          Math.addExact(tiles.x, tiles.width  - 1),
+                          Math.addExact(tiles.y, tiles.height - 1));
     }
 
     /**

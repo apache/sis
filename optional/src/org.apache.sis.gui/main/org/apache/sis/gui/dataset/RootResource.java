@@ -27,13 +27,17 @@ import org.apache.sis.storage.Resource;
 
 /**
  * The root pseudo-resource for allowing the tree to contain more than one resource.
- * This root node should be hidden in the {@link ResourceTree}.
+ * This is created only if needed, in which case this root node should be hidden in the {@link ResourceTree}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
 final class RootResource implements Aggregate {
     /**
-     * The children to expose as an unmodifiable list of components.
+     * A modifiable list of children, but viewed in public <abbr>API</abbr> as an unmodifiable list.
+     * The elements of this list should be {@link ResourceItem} instances,
+     * but this class is tolerant to other classes.
+     *
+     * @see #components()
      */
     private final List<TreeItem<Resource>> components;
 
@@ -41,8 +45,8 @@ final class RootResource implements Aggregate {
      * Creates a new aggregate which is going to be wrapped in the given node.
      * Caller shall invoke {@code group.setValue(root)} after this constructor.
      *
-     * @param  group     the new tree root which will contain "real" resources.
-     * @param  previous  the previous root, to be added in the new group.
+     * @param  group     the new tree root which will contain the actual resources.
+     * @param  previous  the previous root to be added in the new group, or {@code null} if none.
      */
     RootResource(final TreeItem<Resource> group, final TreeItem<Resource> previous) {
         components = group.getChildren();
@@ -53,16 +57,23 @@ final class RootResource implements Aggregate {
 
     /**
      * Checks whether this root contains the given resource as a direct child.
-     * This method does not search recursively in sub-trees.
+     * This method does not search recursively in sub-trees because listing the
+     * children is potentially costly, as it may cause the loading of resources.
+     * This method is more for locating data stores than arbitrary resources.
+     *
+     * <p>Note that even if we accepted to pay the cost of computing the list of children,
+     * {@link ResourceItem#getChildren()} may return an initially empty list and populate
+     * it only later, after completion of a background thread. Therefore, it is difficult
+     * to iterate over the children anyway.</p>
      *
      * @param  resource  the resource to search.
      * @param  remove    whether to remove the resource if found.
      * @return the resource wrapper, or {@code null} if not found.
      */
-    TreeItem<Resource> contains(final Resource resource, final boolean remove) {
-        for (int i=components.size(); --i >= 0;) {
+    final TreeItem<Resource> findOrRemove(final Resource resource, final boolean remove) {
+        for (int i = components.size(); --i >= 0;) {
             final TreeItem<Resource> item = components.get(i);
-            if (((ResourceItem) item).contains(resource)) {
+            if (ResourceItem.isWrapperOf(item, resource)) {
                 return remove ? components.remove(i) : item;
             }
         }
@@ -78,18 +89,16 @@ final class RootResource implements Aggregate {
      *
      * @see ResourceTree#addResource(Resource)
      */
-    boolean add(final Resource resource) {
-        for (int i = components.size(); --i >= 0;) {
-            if (((ResourceItem) components.get(i)).contains(resource)) {
-                return false;
-            }
+    public boolean add(final Resource resource) {
+        if (findOrRemove(resource, false) != null) {
+            return false;
         }
         return components.add(new ResourceItem(resource));
     }
 
     /**
      * Returns a read-only view of the components. This method is not used directly by {@link ResourceTree}
-     * but is defined in case a user invoke {@link ResourceTree#getResource()}. For this reason, it is not
+     * but is defined in case a user invokes {@link ResourceTree#getResource()}. For this reason, it is not
      * worth to cache the list created in this method.
      */
     @Override

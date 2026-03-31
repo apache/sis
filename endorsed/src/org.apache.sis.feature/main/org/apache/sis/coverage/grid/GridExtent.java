@@ -94,7 +94,7 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   1.0
  */
 public class GridExtent implements Serializable, LenientComparable {
@@ -357,28 +357,33 @@ public class GridExtent implements Serializable, LenientComparable {
      *
      * @see #getLow()
      * @see #getHigh()
-     * @see #insertDimension(int, DimensionNameType, long, long, boolean)
+     * @see #reshape(long[], long[], boolean)
      */
     public GridExtent(final DimensionNameType[] axisTypes, final long[] low, final long[] high, final boolean isHighIncluded) {
-        final int dimension = high.length;
-        if (low != null && low.length != dimension) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedDimension_2, low.length, dimension));
-        }
-        if (axisTypes != null && axisTypes.length != dimension) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedArrayLengths));
-        }
-        coordinates = allocate(dimension);
+        ArgumentChecks.ensureNonNull("high", high);
+        coordinates = pack(axisTypes != null ? axisTypes.length : high.length, low, high, isHighIncluded);
+        types = validateAxisTypes(axisTypes);
+        validateCoordinates();
+    }
+
+    /**
+     * Returns the given coordinates packed in a single array.
+     * This method verifies that the array lengths match the expected number of dimensions.
+     */
+    private static long[] pack(final int dimension, final long[] low, final long[] high, final boolean isHighIncluded) {
+        ArgumentChecks.ensureDimensionMatches("low",  dimension, low);
+        ArgumentChecks.ensureDimensionMatches("high", dimension, high);
+        final long[] coordinates = allocate(dimension);
         if (low != null) {
             System.arraycopy(low, 0, coordinates, 0, dimension);
         }
         System.arraycopy(high, 0, coordinates, dimension, dimension);
         if (!isHighIncluded) {
-            for (int i=dimension; i < coordinates.length; i++) {
+            for (int i = dimension; i < coordinates.length; i++) {
                 coordinates[i] = Math.decrementExact(coordinates[i]);
             }
         }
-        types = validateAxisTypes(axisTypes);
-        validateCoordinates();
+        return coordinates;
     }
 
     /**
@@ -646,8 +651,8 @@ public class GridExtent implements Serializable, LenientComparable {
 
     /**
      * Creates a new grid extent with the same axes as the given extent, but different coordinates.
-     * This constructor does not invoke {@link #validateCoordinates()}; we presume that the caller's
-     * computation is correct.
+     * This constructor does not invoke {@link #validateCoordinates()}, instead it presumes that the
+     * caller's computation is correct.
      *
      * @param enclosing    the extent from which to copy axes, or {@code null} if none.
      * @param coordinates  the coordinates. This array is not cloned.
@@ -1600,6 +1605,32 @@ public class GridExtent implements Serializable, LenientComparable {
             c[i+m] = upper;
         }
         return Arrays.equals(c, coordinates) ? this : resize;
+    }
+
+    /**
+     * Returns an extent with the same number of dimensions and the same axes than this extent,
+     * but different coordinate values.
+     *
+     * @param  low             the valid minimum grid coordinates (always inclusive), or {@code null} for all zeros.
+     * @param  high            the valid maximum grid coordinates, inclusive or exclusive depending on the next argument.
+     * @param  isHighIncluded  {@code true} if the {@code high} values are inclusive, or {@code false} if they are exclusive.
+     * @throws IllegalArgumentException if a coordinate value in the low part is
+     *         greater than the corresponding coordinate value in the high part.
+     * @return a grid extent with the same axes but the given coordinates.
+     *
+     * @see #GridExtent(DimensionNameType[], long[], long[], boolean)
+     *
+     * @since 1.7
+     */
+    public GridExtent reshape(final long[] low, final long[] high, final boolean isHighIncluded) {
+        ArgumentChecks.ensureNonNull("high", high);
+        final long[] copy = pack(getDimension(), low, high, isHighIncluded);
+        if (Arrays.equals(copy, coordinates)) {
+            return this;
+        }
+        final var extent = new GridExtent(this, copy);
+        extent.validateCoordinates();
+        return extent;
     }
 
     /**

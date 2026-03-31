@@ -609,12 +609,12 @@ public final class Matrices {
      *
      * <p>This method builds a new matrix with the following content:</p>
      * <ul>
-     *   <li>An number of {@code firstAffectedCoordinate} rows and columns are inserted before the first
+     *   <li>A number of {@code firstAffectedCoordinate} rows and columns are inserted before the first
      *       row and columns of the sub-matrix. The elements for the new rows and columns are set to 1
      *       on the diagonal, and 0 elsewhere.</li>
      *   <li>The sub-matrix - except for its last row and column - is copied in the new matrix starting
      *       at index ({@code firstAffectedCoordinate}, {@code firstAffectedCoordinate}).</li>
-     *   <li>An number of {@code numTrailingCoordinates} rows and columns are appended after the above sub-matrix.
+     *   <li>A number of {@code numTrailingCoordinates} rows and columns are appended after the above sub-matrix.
      *       Their elements are set to 1 on the pseudo-diagonal ending in the lower-right corner, and 0 elsewhere.</li>
      *   <li>The last sub-matrix row is copied in the last row of the new matrix, and the last sub-matrix column
      *       is copied in the last column of the sub-matrix.</li>

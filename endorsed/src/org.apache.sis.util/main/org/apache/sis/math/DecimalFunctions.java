@@ -45,7 +45,7 @@ import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
  * since base 10 is not more "real" than base 2 for natural phenomenon.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.7
  *
  * @see MathFunctions#pow10(int)
  * @see Math#log10(double)
@@ -433,7 +433,7 @@ public final class DecimalFunctions {
      * is a choice:
      *
      * <ul>
-     *   <li>If after rounding the given {@code value} to an number of fraction digits given by ({@code fractionDigits}
+     *   <li>If after rounding the given {@code value} to a number of fraction digits given by ({@code fractionDigits}
      *       - {@code uncertainDigits}) the 4 last fraction digits before the rounded ones are zero, then this method
      *       returns {@code fractionDigits} - {@code uncertainDigits}.</li>
      *   <li>Otherwise this method returns {@code fractionDigits}.</li>
@@ -495,6 +495,31 @@ public final class DecimalFunctions {
             }
         }
         throw new ArithmeticException(String.valueOf(x));
+    }
+
+    /**
+     * Computes {@code (int) floor(log10(x))} from an integer value. For values greater than one,
+     * this is the number of digits - 1 in the decimal representation of the given number.
+     * Values smaller than 1 are not allowed.
+     *
+     * @param  x  the value for which to compute the logarithm. Must be greater than zero.
+     * @return logarithm of the given value, rounded toward zero.
+     * @throws ArithmeticException if the given value is zero or negative.
+     *
+     * @since 1.7
+     */
+    public static int floorLog10(final long x) {
+        if (x <= 0) {
+            throw new ArithmeticException(String.valueOf(x));
+        }
+        // It would be possible to do something clever, but this method is not invoked very often.
+        int p = 0;
+        long limit = 10;
+        while (x >= limit) {
+            limit *= 10;
+            p++;
+        }
+        return p;
     }
 
     /**

@@ -58,15 +58,19 @@ import org.apache.sis.coverage.CannotEvaluateException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   1.0
  */
 public abstract class GridCoverage extends BandedCoverage {
     /**
-     * A constant for making easier to identify codes working on two dimensional data.
-     * This is the minimal number of dimension required for {@link GridCoverage2D}.
+     * Number of dimensions in a two-dimensional slice of data represented as a rendered image.
+     * This constant can be used for making easier to identify codes where a two-dimensional slice is assumed.
+     *
+     * @see #render(GridExtent)
+     *
+     * @since 1.7
      */
-    static final int BIDIMENSIONAL = 2;
+    protected static final int BIDIMENSIONAL = 2;
 
     /**
      * The processor to use in calls to {@link #convert(RenderedImage, DataType, MathTransform1D[], ImageProcessor)}.

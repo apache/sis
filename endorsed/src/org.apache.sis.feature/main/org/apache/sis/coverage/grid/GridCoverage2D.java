@@ -662,8 +662,7 @@ public class GridCoverage2D extends GridCoverage {
              * with Raster.createChild(…), but that would force us to invoke RenderedImage.getTile(…) which
              * may force data loading earlier than desired.
              */
-            final var result = new ReshapedImage(data, xmin, ymin, xmax, ymax);
-            return result.isIdentity() ? result.source : result;
+            return ReshapedImage.relocate(data, xmin, ymin, xmax, ymax);
         } catch (ArithmeticException e) {
             throw new CannotEvaluateException(e.getMessage(), e);
         }

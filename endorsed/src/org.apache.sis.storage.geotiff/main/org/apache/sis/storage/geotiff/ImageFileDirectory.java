@@ -22,6 +22,7 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.nio.charset.Charset;
@@ -35,14 +36,15 @@ import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.DateType;
-import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameSpace;
+import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.geotiff.base.Tags;
 import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.storage.geotiff.base.Predictor;
@@ -51,6 +53,7 @@ import org.apache.sis.storage.geotiff.reader.Type;
 import org.apache.sis.storage.geotiff.reader.GridGeometryBuilder;
 import org.apache.sis.storage.geotiff.reader.ImageMetadataBuilder;
 import org.apache.sis.storage.modifier.CoverageModifier;
+import org.apache.sis.storage.tiling.TiledGridCoverageResource;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -73,7 +76,7 @@ import org.apache.sis.pending.jdk.JDK18;
 
 
 /**
- * An Image File Directory (FID) in a <abbr>TIFF</abbr> image.
+ * An Image File Directory (<abbr>FID</abbr>) in a <abbr>TIFF</abbr> image.
  *
  * <h2>Thread-safety</h2>
  * Public methods should be synchronized because they can be invoked directly by users.
@@ -454,6 +457,11 @@ final class ImageFileDirectory extends DataCube {
     private ColorModel colorModel;
 
     /**
+     * The overviews of this image, or {@code null} if none.
+     */
+    private Overviews overviews;
+
+    /**
      * Creates a new image file directory.
      * The index arguments is used for metadata identifier only.
      *
@@ -486,9 +494,6 @@ final class ImageFileDirectory extends DataCube {
      * If this image is an overview, then its namespace should be the name of the base image
      * and the tip should be "overview-level" where "level" is a number starting at 1.
      *
-     * <p>The returned value should never be empty. An empty value would be a
-     * failure to {@linkplain #setOverviewIdentifier initialize overviews}.</p>
-     *
      * @see #getMetadata()
      */
     @Override
@@ -496,7 +501,7 @@ final class ImageFileDirectory extends DataCube {
         synchronized (getSynchronizationLock()) {
             if (identifier == null) {
                 if (isReducedResolution()) {
-                    // Should not happen because `setOverviewIdentifier(…)` should have been invoked.
+                    // Checked for satefy, but should never happen.
                     return Optional.empty();
                 }
                 GenericName name = reader.store.createLocalName(String.valueOf(index + 1));
@@ -509,17 +514,6 @@ final class ImageFileDirectory extends DataCube {
             }
             return Optional.of(identifier);
         }
-    }
-
-    /**
-     * Sets the identifier for an overview level. This is used only for a pyramid.
-     * The image with finest resolution is used as the namespace for all overviews.
-     *
-     * @param  base      name of the image with finest resolution.
-     * @param  overview  1 for the first overview, 2 for the next one, etc.
-     */
-    final void setOverviewIdentifier(final NameSpace base, final int overview) {
-        identifier = reader.store.nameFactory.createLocalName(base, "overview-" + overview);
     }
 
     /**
@@ -1471,48 +1465,6 @@ final class ImageFileDirectory extends DataCube {
     }
 
     /**
-     * If this <abbr>IFD</abbr> has no grid geometry, derives this information
-     * by scaling the grid geometry of the specified image at full resolution.
-     * Information about bands are also copied if compatible. The scale factors are returned,
-     * with the scale of the temporal dimension defined to 1 for telling that the time does not change.
-     *
-     * <h4>Conditions</h4>
-     * This method should be invoked only when {@link #isReducedResolution()} is {@code true}.
-     *
-     * @param  fullResolution  the full-resolution image.
-     * @return <var>size of full resolution image</var> / <var>size of this image</var> for each grid axis.
-     */
-    final double[] initReducedResolution(final ImageFileDirectory fullResolution) throws DataStoreException, TransformException {
-        final GridGeometry geometry = fullResolution.getGridGeometry();
-        final GridExtent fullExtent = geometry.getExtent();
-        final int dimension = fullExtent.getDimension();
-        final var axisTypes = new DimensionNameType[dimension];
-        final var scales    = new double[dimension];
-        final var high      = new long[dimension];
-        for (int i=0; i<dimension; i++) {
-            axisTypes[i] = fullExtent.getAxisType(i).orElse(null);
-            final long size;
-            switch (i) {
-                case 0:  size = imageWidth;  break;
-                case 1:  size = imageHeight; break;
-                default: scales[i] = 1; continue;
-            }
-            scales[i] = fullExtent.getSize(i, false) / size;
-            high[i] = size - 1;
-        }
-        if (referencing == null) {
-            gridGeometry = new GridGeometry(
-                    geometry,
-                    new GridExtent(axisTypes, null, high, true),
-                    MathTransforms.scale(scales));
-        }
-        if (samplesPerPixel == fullResolution.samplesPerPixel) {
-            sampleDimensions = fullResolution.getSampleDimensions();
-        }
-        return scales;
-    }
-
-    /**
      * Returns the source to declare when invoking a {@link CoverageModifier} method.
      * This method returns {@code null} if the {@link #index} value would be invalid.
      */
@@ -1543,7 +1495,10 @@ final class ImageFileDirectory extends DataCube {
                     domain = new GridGeometry(new GridExtent(imageWidth, imageHeight), null, null);
                 }
                 final CoverageModifier.Source source = source();
-                gridGeometry = (source != null) ? reader.store.customizer.customize(source, domain) : domain;
+                if (source != null) {
+                    domain = reader.store.customizer.customize(source, domain);
+                }
+                gridGeometry = domain;
             }
             return domain;
         }
@@ -2059,4 +2014,147 @@ final class ImageFileDirectory extends DataCube {
         return new DataStoreContentException(reader.resources().getString(
                 Resources.Keys.MissingValue_2, filename(), Tags.name(missing)));
     }
+
+    /**
+     * Returns information about the overviews which form the pyramid.
+     */
+    @Override
+    protected List<Pyramid> getPyramids() throws DataStoreException {
+        return (overviews != null) ? List.of(overviews) : super.getPyramids();
+    }
+
+    /**
+     * Sets a list of overviews from coarsest resolution (the overview) to finest resolution.
+     * The full-resolution image shall be {@code this} and shall not be included in the given list.
+     */
+    final void setOverviews(final List<ImageFileDirectory> images) {
+        if (!images.isEmpty()) {
+            overviews = new Overviews(images);
+        }
+    }
+
+    /**
+     * A list of Image File Directories (FID) where the first entry is the image at coarsest resolution
+     * and following entries are images at finer resolutions. The entry at finest resolution is the
+     * enclosing {@link ImageFileDirectory}.
+     */
+    private final class Overviews implements Pyramid {
+        /**
+         * Name of the image at finest resolution.
+         * This is used as the namespace for overviews.
+         */
+        private NameSpace namespace;
+
+        /**
+         * Descriptions of all overviews in the GeoTIFF file. This array should contain at least one element.
+         * Does not include the image at finest resolution, which is the enclosing {@link ImageFileDirectory}.
+         */
+        private final ImageFileDirectory[] levels;
+
+        /**
+         * Creates a list of overviews from coarsest resolution to finest resolution.
+         * The full-resolution image shall be the enclosing {@link ImageFileDirectory}
+         * and is not included in the given list.
+         */
+        Overviews(final List<ImageFileDirectory> overviews) {
+            levels = overviews.toArray(ImageFileDirectory[]::new);
+        }
+
+        /**
+         * Returns the number of pyramid levels.
+         */
+        @Override
+        public OptionalInt numberOfLevels() {
+            return OptionalInt.of(levels.length + 1);
+        }
+
+        /**
+         * Returns a resource which is representative of all pyramid levels except for the resolution.
+         * This method is invoked for fetching metadata such as the Coordinate Reference System
+         * when the resolution does not matter. For a <abbr>TIFF</abbr> file, this is the image
+         * with the finest resolution.
+         *
+         * @return a resource representative of all levels (ignoring resolution).
+         */
+        @Override
+        public TiledGridCoverageResource representative() {
+            return ImageFileDirectory.this;
+        }
+
+        /**
+         * Completes and returns the image at the given pyramid level.
+         * Indices are in the reverse order of the images in the <abbr>TIFF</abbr> file,
+         * with 0 for the image at the coarsest resolution (the overview).
+         *
+         * @param  level  image index (level) in the pyramid, with 0 for coarsest resolution (the overview).
+         * @return image at the given pyramid level, or {@code null} if the given level is out of bounds.
+         */
+        @Override
+        public TiledGridCoverageResource forPyramidLevel(final int level) throws DataStoreException {
+            final int n;
+            if (level < 0 || (n = levels.length - 1 - level) < -1) {
+                return null;
+            }
+            if (n == -1) {
+                return ImageFileDirectory.this;
+            }
+            synchronized (getSynchronizationLock()) {
+                final ImageFileDirectory image = levels[n];
+                final Reader reader = image.reader;
+                try {
+                    // Effective the first time that this method is invoked, no-op on other invocations.
+                    if (reader.resolveDeferredEntries(image)) {
+                        final NameFactory nameFactory = nameFactory();
+                        if (namespace == null) {
+                            // Identifier should never be empty (see `DataCube.getIdentifier()` contract).
+                            namespace = nameFactory.createNameSpace(getIdentifier().get(), null);
+                        }
+                        image.identifier = nameFactory.createLocalName(namespace, identifierOfLevel(level));
+                        /*
+                         * Computes the grid geometry if the overview does not already contain georeferencing information.
+                         * This is computed by scaling the grid geometry of the enclosing `ImageFileDirectory` instance,
+                         * which is the image at full resolution. Information about bands are also copied if compatible.
+                         */
+                        if (image.referencing == null) {
+                            final GridGeometry geometry = getGridGeometry();
+                            final GridExtent fullExtent = geometry.getExtent();
+                            final int dimension = fullExtent.getDimension();
+                            final var scales    = new double[dimension];
+                            final var high      = new long[dimension];
+                            for (int i=0; i<dimension; i++) {
+                                final long size;
+                                switch (i) {
+                                    case 0:  size = image.imageWidth;  break;
+                                    case 1:  size = image.imageHeight; break;
+                                    default: scales[i] = 1; continue;
+                                }
+                                scales[i] = fullExtent.getSize(i, false) / size;
+                                high[i] = size - 1;
+                            }
+                            image.gridGeometry = new GridGeometry(
+                                    geometry,
+                                    fullExtent.reshape(null, high, true),
+                                    MathTransforms.scale(scales));
+                        }
+                        if (image.samplesPerPixel == samplesPerPixel) {
+                            image.sampleDimensions = getSampleDimensions();
+                        }
+                    }
+                } catch (IOException e) {
+                    throw reader.store.errorIO(e);
+                } catch (TransformException e) {
+                    throw new DataStoreReferencingException(e.getMessage(), e);
+                }
+                return image;
+            }
+        }
+
+        /**
+         * Returns the name factory to use for creating identifiers of tiles and tile matrices.
+         */
+        @Override
+        public NameFactory nameFactory() {
+            return reader.store.nameFactory;
+        }
+   }
 }

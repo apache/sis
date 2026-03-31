@@ -37,6 +37,7 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ClippedGridCoverageTest extends TestCase {
     /**
      * Size of the test image, in pixels.

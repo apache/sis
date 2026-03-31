@@ -35,14 +35,13 @@ import javax.imageio.spi.ImageReaderSpi;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.GenericName;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.StoreResource;
-import org.apache.sis.storage.base.TiledGridCoverage;
-import org.apache.sis.storage.base.TiledGridResource;
+import org.apache.sis.storage.tiling.TiledGridCoverage;
+import org.apache.sis.storage.tiling.TiledGridCoverageResource;
 import org.apache.sis.storage.isobmff.ByteRanges;
 import org.apache.sis.io.stream.ChannelDataInput;
 
@@ -53,7 +52,7 @@ import org.apache.sis.io.stream.ChannelDataInput;
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */
-final class ImageResource extends TiledGridResource implements StoreResource {
+final class ImageResource extends TiledGridCoverageResource implements StoreResource {
     /**
      * The data store that produced this resource.
      *
@@ -244,23 +243,18 @@ final class ImageResource extends TiledGridResource implements StoreResource {
     }
 
     /**
-     * Loads a subset of the grid coverage represented by this resource.
-     * While this method name suggests an immediate reading, the actual reading may be deferred.
+     * Creates a coverage which will read the specified subset from this resource when first requested.
+     * Synchronization, immediate loading (if requested), logging of read time
+     * and handling of {@link RuntimeException} are done by the caller.
      *
-     * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
-     * @param  ranges  0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
-     * @return the grid coverage for the specified domain and ranges.
+     * @param  subset  desired grid extent, resolution and sample dimensions to read.
+     * @return the grid coverage for the specified domain, resolution and ranges.
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
+     * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.
      */
     @Override
-    public final GridCoverage read(final GridGeometry domain, final int ... range) throws DataStoreException {
-        try {
-            synchronized (getSynchronizationLock()) {
-                return preload(new Coverage(new Subset(domain, range)));
-            }
-        } catch (RuntimeException e) {
-            throw new DataStoreException(e);
-        }
+    protected final TiledGridCoverage read(final Subset subset) throws DataStoreException {
+        return new Coverage(subset);
     }
 
     /**
@@ -280,10 +274,10 @@ final class ImageResource extends TiledGridResource implements StoreResource {
         /**
          * Creates a new tiled grid coverage.
          *
-         * @param  subset  description of the {@link TiledGridResource} subset to cover.
+         * @param  subset  description of the {@link TiledGridCoverageResource} subset to cover.
          * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.
          */
-        Coverage(TiledGridResource.Subset subset) {
+        Coverage(TiledGridCoverageResource.Subset subset) {
             super(subset);
         }
 
@@ -298,7 +292,7 @@ final class ImageResource extends TiledGridResource implements StoreResource {
         /**
          * Returns all tiles in the given area of interest. Tile indices are relative to this {@code Coverage}:
          * (0,0) is the tile in the upper-left corner of this {@code Coverage} (not necessarily the upper-left
-         * corner of the image in the {@link TiledGridResource}). This method must be thread-safe.
+         * corner of the image in the {@link TiledGridCoverageResource}). This method must be thread-safe.
          *
          * @param  iterator  an iterator over the tiles that intersect the Area Of Interest specified by user.
          * @return tiles decoded from the enclosing resource.

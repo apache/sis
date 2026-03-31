@@ -19,7 +19,7 @@
 /**
  * Base types for retrieving and saving tiles in resources.
  * A {@link TiledResource} if a resource capable to describe its tiling schemes as {@link TileMatrixSet} instances.
- * A {@link TileMatrixSet} is a collection of {@link TileMatrix} instances in the same CRS but at different scale levels.
+ * A {@link TileMatrixSet} is a collection of {@link TileMatrix} instances in the same <abbr>CRS</abbr> but at different scale levels.
  * A {@link TileMatrix} is a collection of {@link Tile} instances with the same size and properties placed on a regular grid with no overlapping.
  * The "tile" word is used because of its wide usage with two-dimensional data, but actually this package has no restriction
  * on the number of dimensions and can work with multi-dimensional "tiles" as well.
@@ -27,7 +27,7 @@
  * <h2>References</h2>
  * <ul>
  *   <li><a href="https://www.ogc.org/standards/tms">OGC Two Dimensional Tile Matrix Set</a> — the core standard used in this package.</li>
- *   <li><a href="https://www.ogc.org/standards/wmts">OGC Web Map Tile Service (WMTS)</a> — a common use of above standard.</li>
+ *   <li><a href="https://www.ogc.org/standards/wmts">OGC Web Map Tile Service (<abbr>WMTS</abbr>)</a> — a common use of above standard.</li>
  *   <li><a href="https://docs.opengeospatial.org/is/17-066r1/17-066r1.html">OGC Geopackage: Extension for Tiled Gridded Coverage Data</a> — another common use.</li>
  *   <li><a href="https://docs.ogc.org/per/18-074.html">OGC Geopackage: Extension for vector tiles</a> — experimental work for tiled geometries.</li>
  * </ul>
@@ -40,12 +40,12 @@
  * <a href="https://docs.mapbox.com/mapbox-tiling-service/guides/">MapBox Tiling service</a>.
  *
  *
- * <h2>Relationship with OGC specifications</h2>
+ * <h2>Relationship with <abbr>OGC</abbr> specifications</h2>
  * The {@code TileMatrix} and {@code TileMatrixSet} class names are reused as defined by OGC.
  * The "2D" suffix in class names is omitted because this package is fully multi-dimensional.
  * The concept of "tiling scheme" is encapsulated in a {@link org.apache.sis.coverage.grid.GridGeometry}.
  *
- * <h3>Departures with OGC specifications</h3>
+ * <h3>Departures with <abbr>OGC</abbr> specifications</h3>
  * The OGC {@code TileMatrixLimits} class is replaced by {@link org.apache.sis.coverage.grid.GridExtent}.
  * The OGC restriction against negative numbers is removed (Apache SIS accepts negative tile indices).
  * The <var>tile span</var> and <var>tile matrix min/max</var> coefficients are replaced by a more generic
@@ -68,7 +68,7 @@
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.7
  * @since   1.2
  */
 package org.apache.sis.storage.tiling;

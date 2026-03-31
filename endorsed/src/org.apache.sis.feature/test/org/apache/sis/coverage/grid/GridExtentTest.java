@@ -71,8 +71,14 @@ public final class GridExtentTest extends TestCase {
      */
     private static GridExtent create3D() {
         return new GridExtent(
-                new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.ROW, DimensionNameType.TIME},
-                new long[] {100, 200, 40}, new long[] {500, 800, 50}, false);
+                new DimensionNameType[] {
+                    DimensionNameType.COLUMN,
+                    DimensionNameType.ROW,
+                    DimensionNameType.TIME
+                },
+                new long[] {100, 200, 40},
+                new long[] {500, 800, 50},
+                false);
     }
 
     /**

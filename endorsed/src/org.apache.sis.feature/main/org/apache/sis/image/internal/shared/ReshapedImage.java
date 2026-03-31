@@ -28,6 +28,7 @@ import static java.lang.Math.min;
 import static java.lang.Math.max;
 import static java.lang.Math.addExact;
 import static java.lang.Math.subtractExact;
+import static java.lang.Math.multiplyFull;
 import static java.lang.Math.floorDiv;
 import static java.lang.Math.toIntExact;
 import org.apache.sis.image.PlanarImage;
@@ -80,34 +81,86 @@ public final class ReshapedImage extends PlanarImage {
     private final int minTileX, minTileY;
 
     /**
-     * Creates an image with the data of the given image translated by the given amount.
-     * The number of tiles and their indexes are unchanged.
+     * Creates an image with the following properties.
      *
-     * @param  source  the image to translate.
-     * @param  tx      the translation to apply on <var>x</var> coordinates.
-     * @param  ty      the translation to apply on <var>y</var> coordinates.
-     * @throws ArithmeticException if image indices would overflow 32-bits integer capacity.
+     * @throws ArithmeticException if image indices overflow 32-bits integer capacity.
      */
-    public ReshapedImage(RenderedImage source, long tx, long ty) {
+    private ReshapedImage(RenderedImage source,
+            long offsetX, long offsetY,
+            final long minX,     final long minY,
+            final int  width,    final int  height,
+            final int  minTileX, final int  minTileY)
+    {
         while (source instanceof ReshapedImage) {
             final var r = (ReshapedImage) source;
-            tx = addExact(r.offsetX, tx);
-            ty = addExact(r.offsetY, ty);
-            source = r.source;
+            offsetX = addExact(offsetX, r.offsetX);
+            offsetY = addExact(offsetY, r.offsetY);
+            source  = r.source;
         }
-        this.source = source;
-        offsetX  = toIntExact(tx);
-        offsetY  = toIntExact(ty);
-        minX     = toIntExact(tx + source.getMinX());
-        minY     = toIntExact(ty + source.getMinY());
-        width    = source.getWidth();
-        height   = source.getHeight();
-        minTileX = source.getMinTileX();
-        minTileY = source.getMinTileY();
+        this.source   = source;
+        this.offsetX  = toIntExact(offsetX);
+        this.offsetY  = toIntExact(offsetY);
+        this.minX     = toIntExact(minX);
+        this.minY     = toIntExact(minY);
+        this.width    = width;
+        this.height   = height;
+        this.minTileX = minTileX;
+        this.minTileY = minTileY;
     }
 
     /**
-     * Creates a new image with the same data as the given image but located at different coordinates.
+     * Returns an image for a single tile.
+     * The indices of the unique tile are set to (0,0).
+     * The coordinate of the image upper-left corner is set to (0,0).
+     *
+     * @param  source  the image for which to wrap a single tile.
+     * @param  tileX   column index of the tile.
+     * @param  tileY   row index of the tile.
+     * @return the single tile. May be the given source or one of its sources.
+     * @throws ArithmeticException if image indices overflow 32-bits integer capacity.
+     */
+    public static RenderedImage singleTile(final RenderedImage source, final int tileX, final int tileY) {
+        final int tileWidth  = source.getTileWidth();
+        final int tileHeight = source.getTileHeight();
+        final var image = new ReshapedImage(source,
+                -(multiplyFull(tileX, tileWidth)  + source.getTileGridXOffset()),   // This negate cannot overflow.
+                -(multiplyFull(tileY, tileHeight) + source.getTileGridYOffset()),
+                0, 0,
+                tileWidth,
+                tileHeight,
+                0, 0);
+        return image.isIdentity() ? image.source : image;
+    }
+
+    /**
+     * Returns an image with the data of the given image translated by the given amount.
+     * The number of tiles and their indexes are unchanged.
+     *
+     * @param  source   the image to translate.
+     * @param  offsetX  the translation to apply on <var>x</var> coordinates.
+     * @param  offsetY  the translation to apply on <var>y</var> coordinates.
+     * @return the translated image. May be the given source or one of its sources.
+     * @throws ArithmeticException if image indices overflow 32-bits integer capacity.
+     */
+    public static RenderedImage translate(final RenderedImage source, final long offsetX, final long offsetY) {
+        if ((offsetX | offsetY) == 0) {
+            return source;
+        }
+        final var image = new ReshapedImage(
+                source,
+                offsetX,
+                offsetY,
+                addExact(source.getMinX(), offsetX),
+                addExact(source.getMinY(), offsetY),
+                source.getWidth(),
+                source.getHeight(),
+                source.getMinTileX(),
+                source.getMinTileY());
+        return image.isIdentity() ? image.source : image;
+    }
+
+    /**
+     * Returns an image with the same data as the given image but located at different coordinates.
      * In addition, this constructor can reduce the number of tiles.
      *
      * @param  source  the image to move.
@@ -115,10 +168,10 @@ public final class ReshapedImage extends PlanarImage {
      * @param  ymin    minimal <var>y</var> coordinate of the requested region, inclusive.
      * @param  xmax    maximal <var>x</var> coordinate of the requested region, inclusive.
      * @param  ymax    maximal <var>y</var> coordinate of the requested region, inclusive.
+     * @return the relocated image. May be the given source or one of its sources.
      * @throws ArithmeticException if image indices would overflow 32-bits integer capacity.
      */
-    public ReshapedImage(final RenderedImage source, final long xmin, final long ymin, final long xmax, final long ymax) {
-        this.source = source;
+    public static RenderedImage relocate(final RenderedImage source, final long xmin, final long ymin, final long xmax, final long ymax) {
         /*
          * Compute indices of all tiles to retain in this image. All local fields are `long` in order to force
          * 64-bits integer arithmetic, because may have temporary 32-bits integer overflow during intermediate
@@ -151,20 +204,25 @@ public final class ReshapedImage extends PlanarImage {
          */
         final long x = subtractExact(sx, xmin);
         final long y = subtractExact(sy, ymin);
-        minX     = toIntExact(x);
-        minY     = toIntExact(y);
-        width    = toIntExact(min(upperX, (maxTX + 1) * tw + xo) - sx);
-        height   = toIntExact(min(upperY, (maxTY + 1) * th + yo) - sy);
-        offsetX  = toIntExact(x - sx);
-        offsetY  = toIntExact(y - sy);
-        minTileX = toIntExact(minTX);
-        minTileY = toIntExact(minTY);
+        final var image = new ReshapedImage(source,
+                x - sx,
+                y - sy,
+                x, y,
+                toIntExact(min(upperX, (maxTX + 1) * tw + xo) - sx),
+                toIntExact(min(upperY, (maxTY + 1) * th + yo) - sy),
+                toIntExact(minTX),
+                toIntExact(minTY));
+        return image.isIdentity() ? image.source : image;
     }
 
     /**
      * Returns {@code true} if this image does not move and does not subset the wrapped image.
+     * This is tested after construction in case that the result of unwrapping the source produces
+     * an identity operation.
+     *
+     * @return whether this image does not move and does not subset the wrapped image.
      */
-    public boolean isIdentity() {
+    private boolean isIdentity() {
         // The use of >= is a paranoiac check, but the > case should never happen actually.
         return offsetX == 0 && offsetY == 0 && width >= source.getWidth() && height >= source.getHeight();
     }
@@ -182,6 +240,9 @@ public final class ReshapedImage extends PlanarImage {
 
     /**
      * Delegates to the wrapped image with no change.
+     *
+     * @param  name  name of the property to get.
+     * @return property value for the given name.
      */
     @Override public Object      getProperty(String name) {return source.getProperty(name);}
     @Override public String[]    getPropertyNames()       {return source.getPropertyNames();}
@@ -330,6 +391,8 @@ public final class ReshapedImage extends PlanarImage {
 
     /**
      * Returns a hash code value for this image.
+     *
+     * @return a hash code value for this image.
      */
     @Override
     public int hashCode() {
@@ -338,6 +401,9 @@ public final class ReshapedImage extends PlanarImage {
 
     /**
      * Compares the given object with this image for equality.
+     *
+     * @param  object  the object to compare with this image.
+     * @return whether the two object wrap equal image in the same region.
      */
     @Override
     public boolean equals(final Object object) {

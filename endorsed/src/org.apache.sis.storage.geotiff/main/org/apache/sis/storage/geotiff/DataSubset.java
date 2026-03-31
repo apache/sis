@@ -17,8 +17,8 @@
 package org.apache.sis.storage.geotiff;
 
 import java.util.Arrays;
-import java.util.Locale;
 import java.nio.Buffer;
+import java.nio.file.Path;
 import java.io.Closeable;
 import java.io.IOException;
 import java.awt.Point;
@@ -31,7 +31,6 @@ import static java.lang.Math.subtractExact;
 import static java.lang.Math.multiplyExact;
 import static java.lang.Math.toIntExact;
 import org.opengis.util.GenericName;
-import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.internal.shared.Numerics;
@@ -43,8 +42,8 @@ import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.image.internal.shared.RasterFactory;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.base.TiledGridCoverage;
-import org.apache.sis.storage.base.TiledGridResource;
+import org.apache.sis.storage.tiling.TiledGridCoverage;
+import org.apache.sis.storage.tiling.TiledGridCoverageResource;
 import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.storage.geotiff.reader.ReversedBitsChannel;
 import org.apache.sis.io.stream.Region;
@@ -71,7 +70,7 @@ import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-class DataSubset extends TiledGridCoverage implements Localized {
+class DataSubset extends TiledGridCoverage {
     /**
      * The resource which contain this {@code DataSubset}.
      * Used for fetching information like the input channel and where to report warnings.
@@ -157,7 +156,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * @param  subset  description of the {@code owner} subset to cover.
      * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.
      */
-    DataSubset(final DataCube source, final TiledGridResource.Subset subset) throws DataStoreException {
+    DataSubset(final DataCube source, final TiledGridCoverageResource.Subset subset) throws DataStoreException {
         super(subset);
         this.source         = source;
         this.numTiles       = toIntExact(source.getNumTiles());
@@ -188,11 +187,13 @@ class DataSubset extends TiledGridCoverage implements Localized {
     }
 
     /**
-     * Returns the locale for warning or error messages, or {@code null} if unspecified.
+     * Returns the path to the content of the specified data, or {@code null} if none or unknown.
+     *
+     * @param  tileIndices  indices of the tile, or {@code null} for the whole coverage.
      */
     @Override
-    public final Locale getLocale() {
-        return source.listeners().getLocale();
+    protected final Path getContentPath(final long... tileIndices) {
+        return (tileIndices == null) ? source.reader.store.path : super.getContentPath(tileIndices);
     }
 
     /**
@@ -403,6 +404,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
                     for (int i=0; i<numMissings; i++) {
                         final Tile tile = missings[i];
                         if (tile.getRegionInsideTile(lower, upper, subsampling, false)) {
+                            tile.fireTileReadStarted();
                             origin.x = tile.originX;
                             origin.y = tile.originY;
                             tile.copyTileInfo(tileOffsets,    offsets,    includedBanks, numTiles);
@@ -485,7 +487,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * The default implementation in this base class assumes uncompressed data without band subset.
      * Subsampling on the <var>X</var> axis is not supported if the image has interleaved pixels.
      * Packed pixels (é.g. bilevel images with 8 pixels per byte) are not supported.
-     * Those restrictions are verified by {@link DataCube#canReadDirect(TiledGridResource.Subset)}.
+     * Those restrictions are verified by {@link DataCube#canReadDirect(TiledGridCoverageResource.Subset)}.
      * Subclasses must override for handling decompression or for resolving above-cited limitations.
      *
      * @todo It is possible to relax a little bit some restrictions. If the tile width is a divisor
@@ -505,15 +507,15 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * @throws RuntimeException if the Java2D image cannot be created for another reason
      *         (too many exception types to list them all).
      *
-     * @see DataCube#canReadDirect(TiledGridResource.Subset)
+     * @see DataCube#canReadDirect(TiledGridCoverageResource.Subset)
      */
     Raster readSlice(final long[] offsets, final long[] byteCounts, final long[] lower, final long[] upper,
                      final long[] subsampling, final Point location) throws IOException, DataStoreException
     {
         final DataType type = getDataType();
         final int sampleSize = type.size();     // Assumed same as `SampleModel.getSampleSize(…)` by preconditions.
-        final long width  = subtractExact(upper[X_DIMENSION], lower[X_DIMENSION]);
-        final long height = subtractExact(upper[Y_DIMENSION], lower[Y_DIMENSION]);
+        final long width  = subtractExact(upper[xDimension], lower[xDimension]);
+        final long height = subtractExact(upper[yDimension], lower[yDimension]);
         /*
          * The number of bytes to read should not be greater than `byteCount`. It may be smaller however if only
          * a subregion is read. Note that the `length` value may be different than `capacity` if the tile to read
@@ -521,15 +523,15 @@ class DataSubset extends TiledGridCoverage implements Localized {
          * This length is used only for verification purpose so it does not need to be exact.
          */
         final long length = ceilDiv(width * height * sourcePixelStride * sampleSize, Byte.SIZE);
-        final long[] size = new long[] {sourceScanlineStride, getTileSize(Y_DIMENSION)};
+        final long[] size = new long[] {sourceScanlineStride, getTileSize(yDimension)};
         /*
          * If we use an interleaved sample model, each "element" from `HyperRectangleReader` perspective is actually a
          * group of `sourcePixelStride` values. Note that in such case, we cannot handle subsampling on the first axis.
          * Such case should be handled by the `CompressedSubset` subclass instead, even if there is no compression.
          */
-        assert sourcePixelStride == 1 || subsampling[X_DIMENSION] == 1;
-        lower[X_DIMENSION] *= sourcePixelStride;
-        upper[X_DIMENSION] *= sourcePixelStride;
+        assert sourcePixelStride == 1 || subsampling[xDimension] == 1;
+        lower[xDimension] *= sourcePixelStride;
+        upper[xDimension] *= sourcePixelStride;
         /*
          * Read each plane ("banks" in Java2D terminology). Note that a single bank contains all bands
          * in the interleaved sample model case. This block assumes that each bank element contains

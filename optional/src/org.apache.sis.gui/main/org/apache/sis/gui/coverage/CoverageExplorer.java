@@ -33,9 +33,11 @@ import javafx.scene.layout.Region;
 import javafx.event.ActionEvent;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.gui.Widget;
 import org.apache.sis.gui.internal.FontGIS;
 import org.apache.sis.gui.internal.DataStoreOpener;
@@ -43,7 +45,8 @@ import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.gui.internal.ToolbarButton;
 import org.apache.sis.gui.internal.NonNullObjectProperty;
 import org.apache.sis.gui.internal.PrivateAccess;
-import org.apache.sis.portrayal.RenderException;
+import org.apache.sis.gui.internal.BackgroundThreads;
+import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.gui.dataset.WindowHandler;
 import org.apache.sis.gui.map.StatusBar;
@@ -72,7 +75,7 @@ import org.apache.sis.gui.map.StatusBar;
  * implementation may generalize to {@code org.opengis.coverage.Coverage} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see CoverageCanvas
  * @see GridView
@@ -93,12 +96,12 @@ public class CoverageExplorer extends Widget {
         /**
          * Shows the coverage visual as an image. This view uses {@link CoverageCanvas}.
          */
-        IMAGE(FontGIS.Code.WORLD_MAP_ALT, "\uD83D\uDDFA\uFE0F", Resources.Keys.TabularData),    // 🗺 — World map.
+        IMAGE(FontGIS.Code.WORLD_MAP_ALT, "\uD83D\uDDFA\uFE0F", Resources.Keys.Visualize),    // 🗺 — World map.
 
         /**
          * Shows the coverage numerical value in a table. This view uses {@link GridView}.
          */
-        TABLE(FontGIS.Code.GRID, "\uD83D\uDD22\uFE0F", Resources.Keys.Visualize);   // 🔢 — Input symbol for numbers.
+        TABLE(FontGIS.Code.GRID, "\uD83D\uDD22\uFE0F", Resources.Keys.TabularData);   // 🔢 — Input symbol for numbers.
 
         /**
          * Number of enumeration values.
@@ -208,7 +211,7 @@ public class CoverageExplorer extends Widget {
      * @see #getDataView(View)
      * @see #getControls(View)
      */
-    private final EnumMap<View,ViewAndControls> views;
+    private final EnumMap<View, ViewAndControls> views;
 
     /**
      * The control that put everything together, created when first requested.
@@ -344,13 +347,13 @@ public class CoverageExplorer extends Widget {
      * {@code CoverageExplorer}. The {@link Region} subclass returned by this method is implementation dependent
      * and may change in any future version.
      *
-     * @return the region to show.
+     * @return the JavaFX component to insert in a scene graph.
      *
      * @see #getDataView(View)
      * @see #getControls(View)
      */
     @Override
-    public final Region getView() {
+    public Region getView() {
         assert Platform.isFxApplicationThread();
         /*
          * We build when first requested because `ResourceExplorer` for example will never request this view.
@@ -608,16 +611,17 @@ public class CoverageExplorer extends Widget {
      */
     final void notifyDataChanged(final GridCoverageResource resource, final GridCoverage coverage) {
         if (coverage != null) {
-            String name;
-            try {
-                name = DataStoreOpener.findLabel(resource, getLocale(), true);
-            } catch (DataStoreException e) {
-                name = e.getLocalizedMessage();
-                if (name == null) {
-                    name = e.getClass().getSimpleName();
+            BackgroundThreads.execute(() -> {
+                String name;
+                try {
+                    name = DataStoreOpener.findLabel(resource, getLocale(), true);
+                } catch (DataStoreException | RuntimeException e) {
+                    // Declare `setResource` as the public method invoking (indirectly) this method.
+                    Logging.recoverableException(LOGGER, CoverageExplorer.class, "setResource", e);
+                    name = DataStoreOpener.fallbackLabel(resource, getLocale());
                 }
-            }
-            referenceSystems.setGridReferencing(true, Map.of(name, coverage.getGridGeometry()));
+                referenceSystems.setGridReferencing(true, Map.of(name, coverage.getGridGeometry()));
+            });
         }
         /*
          * Following calls will NOT forward the new values to the views because this `notifyDataChanged(…)`

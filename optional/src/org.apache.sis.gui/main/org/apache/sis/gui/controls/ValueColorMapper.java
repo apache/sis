@@ -16,6 +16,7 @@
  */
 package org.apache.sis.gui.controls;
 
+import java.util.Locale;
 import java.util.Objects;
 import java.math.BigDecimal;
 import javafx.beans.property.BooleanProperty;
@@ -178,14 +179,13 @@ public final class ValueColorMapper extends TabularWidget {
     /**
      * Creates a new "value-color mapper" widget.
      *
-     * @param  resources   localized resources, given because already known by the caller.
-     * @param  vocabulary  localized resources, given because already known by the caller
-     *                     (those arguments would be removed if this constructor was public API).
+     * @param  locale  the locale to use in this widget.
      */
-    public ValueColorMapper(final Resources resources, final Vocabulary vocabulary) {
+    public ValueColorMapper(final Locale locale) {
         table = newTable();
-        textConverter = FormatApplicator.createNumberFormat();
-        createIsolineTable(vocabulary);
+        textConverter = FormatApplicator.createNumberFormat(locale);
+        createIsolineTable(Vocabulary.forLocale(locale));
+        final Resources resources = Resources.forLocale(locale);
         final MenuItem rangeMenu = new MenuItem(resources.getString(Resources.Keys.RangeOfValues));
         final MenuItem clearAll  = new MenuItem(resources.getString(Resources.Keys.ClearAll));
         rangeMenu.setOnAction((e) -> insertRangeOfValues());

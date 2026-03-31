@@ -62,7 +62,7 @@ import org.apache.sis.measure.Longitude;
  * to Texas, but not suitable to the rest of North-America.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   0.7
  *
  * @todo Should also take the country of a {@link java.util.Locale}. The EPSG database contains ISO2 and ISO3
@@ -97,6 +97,15 @@ public class CoordinateOperationContext implements Localized {
      * Whether to log a warning.
      */
     private transient Filter logFilter;
+
+    /**
+     * Whether the coordinate operation created with this context depends on the context values.
+     * This flag is set to {@code true} when {@link CoordinateOperationFinder} has used a contextual information such
+     * as the area of interest, desired accuracy, constant coordinate values or operation filter for choosing a result.
+     *
+     * @see #resultWasContextSensitive()
+     */
+    boolean resultWasContextSensitive;
 
     /**
      * Creates a new context with no area of interest and the best accuracy available.
@@ -413,5 +422,25 @@ public class CoordinateOperationContext implements Localized {
             }
         }
         logger.log(record);
+    }
+
+    /**
+     * Returns whether the coordinate operation created with this context depends on the context values.
+     * This is {@code true} if the last {@link CoordinateOperationFinder} that used this context needed
+     * information such as
+     * the  {@linkplain #getAreaOfInterest() area of interest},
+     * the  {@linkplain #getDesiredAccuracy() desired accuracy},
+     * some {@linkplain #getConstantCoordinates() constant coordinate values} or
+     * the  {@linkplain #getOperationFilter() operation filter} for choosing a result.
+     * If this flag is {@code false}, then multiple calls to {@code createOperation(…)}
+     * with the same pair of <abbr>CRS</abbr> are likely to provide the same result no matter the context.
+     * This information information is useful for deciding whether to cache a result.
+     *
+     * @return whether the coordinate operation created with this context depends on the context values.
+     *
+     * @since 1.7
+     */
+    public boolean resultWasContextSensitive() {
+        return resultWasContextSensitive;
     }
 }

@@ -384,7 +384,7 @@ public class Optimization {
     }
 
     /**
-     * Converts all literal to the same class as result of non-literal parameters.
+     * Converts all literals to the same class as the result of non-literal parameters.
      * This is useful for example in {@link ComparisonFilter} for avoiding to perform
      * the same conversion of literal value each time that the filter is executed.
      *

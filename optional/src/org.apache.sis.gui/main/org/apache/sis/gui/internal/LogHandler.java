@@ -88,7 +88,7 @@ public final class LogHandler extends Handler implements StoreListener<WarningEv
          * Names of all logger in the {@link #queue} list, associated to a count of occurrences.
          * The occurrence count is used for detecting when to remove an entry from the map.
          */
-        private TreeMap<String,Integer> nameCount;
+        private TreeMap<String, Integer> nameCount;
 
         /**
          * Root of a tree of logger names. Created when first needed.

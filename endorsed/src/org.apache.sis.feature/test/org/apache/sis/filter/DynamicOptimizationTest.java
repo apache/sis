@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.filter.base.Node;
 
 // Test dependencies
@@ -168,5 +169,23 @@ public final class DynamicOptimizationTest extends TestCaseWithLogs {
         void assertAllPropertiesHaveBeenRead() {
             assertTrue(expectedQueries.isEmpty(), expectedQueries.toString());
         }
+
+        /** Overridden for avoiding interference with the debugger. */
+        @Override public String toString() {
+            return Strings.toString(getClass(), "type", getType().getName());
+        }
+    }
+
+    /**
+     * Tests "Equal" between Boolean values.
+     */
+    @Test
+    public void testBooleans() {
+        final var filter = factory.equal(factory.function("isNaN", factory.property("population")), factory.literal(Boolean.FALSE));
+        final var negate = factory.not(filter);
+        assertTrue (filter.test(city));
+        assertFalse(negate.test(city));
+        assertTrue (new Optimization().apply(filter).test(city));
+        assertFalse(new Optimization().apply(negate).test(city));
     }
 }

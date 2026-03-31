@@ -105,7 +105,7 @@ final class IdentificationInfo extends Section<Identification> {
     private static final double MIN_RECT_SIZE = 6;
 
     /**
-     * The resource title, or if non the identifier as a fallback.
+     * The resource title, or if none the identifier as a fallback.
      */
     private final Label title;
 

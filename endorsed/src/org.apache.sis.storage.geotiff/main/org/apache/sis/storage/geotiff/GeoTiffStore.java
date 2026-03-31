@@ -82,7 +82,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Alexis Manin (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   0.8
  */
 public class GeoTiffStore extends DataStore implements Aggregate {

@@ -247,7 +247,7 @@ public class ScriptRunner implements AutoCloseable {
             case POSTGRESQL: {
                 final int version = metadata.getDatabaseMajorVersion();
                 isEnumTypeSupported  = (version >=  9);
-                isCollationSupported = (version >= 15);     // Version when ICU collation provider is available.
+                isCollationSupported = (version >= 18);     // ICU collation provider available since version 15, except LIKE support which is since 18.
                 break;
             }
             case HSQL: {

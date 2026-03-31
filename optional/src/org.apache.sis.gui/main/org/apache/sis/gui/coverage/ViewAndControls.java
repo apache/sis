@@ -17,6 +17,7 @@
 package org.apache.sis.gui.coverage;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
@@ -31,8 +32,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.collections.ObservableList;
-import org.apache.sis.gui.internal.Styles;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -43,10 +42,13 @@ import org.apache.sis.gui.map.StatusBar;
 
 /**
  * A {@link GridView} or {@link CoverageCanvas} together with the controls to show in a {@link CoverageExplorer}.
- * When the image or coverage is updated in a view, the {@link #coverageChanged(Resource, GridCoverage)} method
- * is invoked, which will in turn update the {@link CoverageExplorer} properties. Coverage changes are applied
- * on the view then propagated to {@code CoverageExplorer} rather than the opposite direction because loading
- * mechanisms are implemented in the view (different views may load a different amount of data).
+ * When the image or coverage is updated in a view, the {@link #load(ImageRequest)} method is invoked,
+ * which will in turn update the {@link CoverageExplorer} properties.
+ *
+ * <h2>Design note about events</h2>
+ * Coverage changes are applied on the view, which will then propagated the event to the {@code CoverageExplorer},
+ * rather than the opposite direction because loading mechanisms are implemented in the view: different views may
+ * load a different amount of data.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -60,12 +62,6 @@ abstract class ViewAndControls {
      * Margin to keep around captions after the first one.
      */
     private static final Insets NEXT_CAPTION_MARGIN = new Insets(30, 0, 6, 0);
-
-    /**
-     * Same indentation as {@link Styles#FORM_INSETS}, but without the space on other sides.
-     * This is used when the node is outside a group created by {@link Styles#createControlGrid(int, Label...)}.
-     */
-    static final Insets CONTENT_MARGIN = new Insets(0, 0, 0, Styles.FORM_INSETS.getLeft());
 
     /**
      * Index of {@link #sliceSelector} in the list of children of {@link #viewAndNavigation}.
@@ -254,6 +250,8 @@ abstract class ViewAndControls {
     static Label labelOfGroup(final IndexedResourceBundle vocabulary, final short key, final Region group, final boolean isFirst) {
         final Label label = new Label(vocabulary.getString(key));
         label.setPadding(isFirst ? CAPTION_MARGIN : NEXT_CAPTION_MARGIN);
+        label.setMaxWidth(Double.MAX_VALUE);
+        label.setAlignment(Pos.CENTER);
         label.setLabelFor(group);
         label.setFont(fontOfGroup());
         return label;

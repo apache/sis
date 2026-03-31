@@ -34,7 +34,7 @@ import org.apache.sis.util.collection.BackingStoreException;
 /**
  * A world file store which is expected to contain exactly one image.
  * This class is used for image formats that are restricted to one image per file.
- * Examples: PNG and BMP image formats.
+ * Examples: <abbr>PNG</abbr> and <abbr>BMP</abbr> image formats.
  *
  * <p>See {@link WritableSingleImageStore} for the writable variant of this class.</p>
  *
@@ -107,8 +107,8 @@ final class SingleImageStore extends WorldFileStore implements GridCoverageResou
      * Returns the preferred resolutions (in units of CRS axes) for read operations in this data store.
      */
     @Override
-    public final List<double[]> getResolutions() throws DataStoreException {
-        return delegate().getResolutions();
+    public final List<double[]> getAvailableResolutions() throws DataStoreException {
+        return delegate().getAvailableResolutions();
     }
 
     /**

@@ -319,7 +319,7 @@ public abstract class CoverageReadConsistency<S extends DataStore> extends TestC
                 subsampling[d] += random.nextInt(StrictMath.max(rs / 16, 1));
             }
         }
-        return gg.derive().subgrid(new GridExtent(null, low, high, true), subsampling).build();
+        return gg.derive().subgrid(fullExtent.reshape(low, high, true), subsampling).build();
     }
 
     /**

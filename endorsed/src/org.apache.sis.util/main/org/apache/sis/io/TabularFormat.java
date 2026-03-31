@@ -37,7 +37,7 @@ import org.apache.sis.util.resources.Errors;
  *   <li>{@link #setColumnSeparatorPattern(String)}</li>
  * </ul>
  *
- * <h2>Note for subclass implementions</h2>
+ * <h2>Note for subclass implementations</h2>
  * This base class takes care of splitting a column separator pattern into its components
  * ({@link #beforeFill}, {@link #fillCharacter} and {@link #columnSeparator})
  * for easier usage in {@code format(…)} method implementations.
@@ -133,7 +133,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
      *                   or {@code null} for the {@linkplain Locale#ROOT root locale}.
      * @param  timezone  the timezone, or {@code null} for UTC.
      */
-    public TabularFormat(final Locale locale, final TimeZone timezone) {
+    protected TabularFormat(final Locale locale, final TimeZone timezone) {
         super(locale, timezone);
         beforeFill      = "";
         fillCharacter   = ' ';

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.base;
+package org.apache.sis.storage.tiling;
 
 import java.util.Map;
 import java.awt.Rectangle;
@@ -53,15 +53,18 @@ final class TiledDeferredImage extends BatchComputedImage {
      * @param imageSize   full image size, after subsampling.
      * @param tileLower   indices of first tile to read, inclusive.
      * @param properties  image properties, or {@code null} if none.
+     * @param iterator    iterator over the coordinates of the tiles.
      */
-    TiledDeferredImage(final int[] imageSize, final int[] tileLower,
-                       final Map<String,Object> properties, final TiledGridCoverage.TileIterator iterator)
+    TiledDeferredImage(final int[] imageSize,
+                       final int[] tileLower,
+                       final Map<String,Object> properties,
+                       final TiledGridCoverage.TileIterator iterator)
     {
         super(iterator.getCoverage().model, properties);
-        this.width    = imageSize[TiledGridCoverage.X_DIMENSION];
-        this.height   = imageSize[TiledGridCoverage.Y_DIMENSION];
-        this.minTileX = tileLower[TiledGridCoverage.X_DIMENSION];
-        this.minTileY = tileLower[TiledGridCoverage.Y_DIMENSION];
+        this.width    = imageSize[iterator.xDimension];
+        this.height   = imageSize[iterator.yDimension];
+        this.minTileX = tileLower[iterator.xDimension];
+        this.minTileY = tileLower[iterator.yDimension];
         this.iterator = iterator;
     }
 
@@ -72,12 +75,12 @@ final class TiledDeferredImage extends BatchComputedImage {
 
     /** Returns the minimum <var>x</var> coordinate (inclusive) of this image. */
     @Override public final int getMinX() {
-        return iterator.getTileOrigin(TiledGridCoverage.X_DIMENSION);
+        return iterator.getTileOrigin(iterator.xDimension);
     }
 
     /** Returns the minimum <var>y</var> coordinate (inclusive) of this image. */
     @Override public final int getMinY() {
-        return iterator.getTileOrigin(TiledGridCoverage.Y_DIMENSION);
+        return iterator.getTileOrigin(iterator.yDimension);
     }
 
     /** Returns the number of pixels along X axis in the whole rendered image. */

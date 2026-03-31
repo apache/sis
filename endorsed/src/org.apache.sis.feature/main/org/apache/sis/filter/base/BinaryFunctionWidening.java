@@ -162,7 +162,6 @@ public abstract class BinaryFunctionWidening<R, A1, A2> extends BinaryFunction<R
      */
     protected static NumberType effective(final NumberType type) {
         switch (type) {
-            case NULL:      // Case of expressions without `FeatureExpression.getResultType()`.
             case NUMBER:    // Case of expressions that declare only the generic `Number` class.
             case FRACTION:
             case BIG_INTEGER:
@@ -171,7 +170,7 @@ public abstract class BinaryFunctionWidening<R, A1, A2> extends BinaryFunction<R
             case SHORT:
             case INTEGER:
             case LONG: return NumberType.LONG;
-            default: return NumberType.DOUBLE;  // The fallback used for unrecognized types.
+            default: return type.isReal() ? NumberType.DOUBLE : type;   // The fallback used for unrecognized types.
         }
     }
 

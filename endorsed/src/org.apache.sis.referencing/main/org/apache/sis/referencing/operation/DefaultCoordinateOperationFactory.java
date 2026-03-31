@@ -84,7 +84,7 @@ import org.opengis.referencing.crs.ProjectedCRS;
  * This class is safe for multi-thread usage if all referenced factories are thread-safe.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   0.6
  */
 public class DefaultCoordinateOperationFactory extends AbstractFactory implements CoordinateOperationFactory {
@@ -128,12 +128,12 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
 
     /**
      * The cache of coordinate operations found for a given pair of source and target CRS.
-     * If current implementation, we cache only operations found without context (otherwise
-     * we would need to take in account the area of interest and desired accuracy in the key).
+     * We cache only operations found when {@link CoordinateOperationContext} values were
+     * not used (otherwise we would need to store some context values in the key).
      *
      * @see #createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
      */
-    final Cache<CRSPair,CoordinateOperation> cache;
+    private final Cache<CRSPair, CoordinateOperation> cache;
 
     /**
      * The default factory instance.
@@ -726,33 +726,35 @@ next:   for (SingleCRS component : CRS.getSingleComponents(targetCRS)) {
                                                final CoordinateOperationContext context)
             throws OperationNotFoundException, FactoryException
     {
-        final Cache.Handler<CoordinateOperation> handler;
-        CoordinateOperation op;
-        if (context == null) {
-            final CRSPair key = new CRSPair(sourceCRS, targetCRS);
-            op = cache.peek(key);
-            if (op != null) {
-                return op;
-            }
-            handler = cache.lock(key);
-        } else {
-            // We currently do not cache the operation when the result may depend on the context (see `this.cache` javadoc).
-            handler = null;
-            op = null;
-        }
-        boolean canStoreInCache = true;
-        try {
-            if (handler == null || (op = handler.peek()) == null) {
-                final CoordinateOperationFinder finder = createOperationFinder(getFactorySIS(), context);
-                op = finder.createOperation(sourceCRS, targetCRS);
-                canStoreInCache = finder.canStoreInCache();
-            }
-        } finally {
-            if (handler != null) {
-                handler.putAndUnlock(canStoreInCache ? op : null);
+        final var key = new CRSPair(sourceCRS, targetCRS);
+        CoordinateOperation op = getCachedOperation(key);
+        if (op == null) {
+            boolean resultWasContextSensitive = false;
+            final Cache.Handler<CoordinateOperation> handler = cache.lock(key);
+            try {
+                op = handler.peek();
+                if (op == null) {
+                    final CoordinateOperationFinder finder = createOperationFinder(getFactorySIS(), context);
+                    op = finder.createOperation(sourceCRS, targetCRS);
+                    if (context != null) {
+                        resultWasContextSensitive = context.resultWasContextSensitive();
+                    }
+                }
+            } finally {
+                handler.putAndUnlock(resultWasContextSensitive ? null : op);
             }
         }
         return op;
+    }
+
+    /**
+     * Returns an operation for the given pair of <abbr>CRS</abbr> if that operation is already in the cache.
+     *
+     * @param  key  pair of <abbr>CRS</abbr> for which to get an operation.
+     * @return the cached operation for the given pair of <abbr>CRS</abbr>, or {@code null} if none.
+     */
+    final CoordinateOperation getCachedOperation(final CRSPair key) {
+        return cache.peek(key);
     }
 
     /**

@@ -218,7 +218,7 @@ public final class Shapes2D {
         double ymin = Double.POSITIVE_INFINITY;
         double xmax = Double.NEGATIVE_INFINITY;
         double ymax = Double.NEGATIVE_INFINITY;
-        final WraparoundInEnvelope.Controller wc = new WraparoundInEnvelope.Controller(transform);
+        final var wc = new WraparoundInEnvelope.Controller(transform);
         do {
             /*
              * Notation (as if we were applying a map projection, but this is not necessarily the case):

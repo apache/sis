@@ -53,6 +53,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.temporal.LenientDateFormat;
 import org.apache.sis.storage.DataOptionKey;
 import org.apache.sis.storage.DataStoreException;
@@ -229,7 +230,7 @@ final class Store extends URIDataStore implements FeatureSet {
         @SuppressWarnings("LocalVariableHidesMemberVariable") DefaultFeatureType featureType = null;
         @SuppressWarnings("LocalVariableHidesMemberVariable") Foliation       foliation   = null;
         try {
-            final List<String> elements = new ArrayList<>();
+            final var elements = new ArrayList<String>();
             source.mark(StorageConnector.READ_AHEAD_LIMIT);
             String line;
             while ((line = source.readLine()) != null) {
@@ -500,7 +501,7 @@ final class Store extends URIDataStore implements FeatureSet {
     private DefaultFeatureType parseFeatureType(final List<String> elements) throws DataStoreException {
         DefaultAttributeType[] characteristics = null;
         final int size = elements.size();
-        final List<AbstractIdentifiedType> properties = new ArrayList<>();
+        final var properties = new ArrayList<AbstractIdentifiedType>();
         for (int i=1; i<size; i++) {
             final String name = elements.get(i);
             Class<?> type = null;
@@ -566,8 +567,10 @@ final class Store extends URIDataStore implements FeatureSet {
             }
             properties.add(createProperty(name, type, minOccurrence, maxOccurrence, characteristics));
         }
-        // Do not use Map.of(…) because `name` may be null. Let constructor throw the exception.
-        final String name = IOUtilities.filenameWithoutExtension(super.getDisplayName());
+        String name = IOUtilities.filenameWithoutExtension(super.getDisplayName());
+        if (name == null) {
+            name = Vocabulary.forLocale(getLocale()).getString(Vocabulary.Keys.Unnamed);
+        }
         return new DefaultFeatureType(Collections.singletonMap(DefaultFeatureType.NAME_KEY, name),
                                       false, null, properties.toArray(AbstractIdentifiedType[]::new));
     }
@@ -747,7 +750,7 @@ final class Store extends URIDataStore implements FeatureSet {
      */
     private static String decode(CharSequence text, final int lower, final int upper, final boolean hasQuotes) {
         if (hasQuotes) {
-            final StringBuilder buffer = new StringBuilder(upper - lower).append(text, lower, upper);
+            final var buffer = new StringBuilder(upper - lower).append(text, lower, upper);
             for (int i=0; i<buffer.length(); i++) {
                 if (buffer.charAt(i) == QUOTE) {
                     buffer.deleteCharAt(i);
