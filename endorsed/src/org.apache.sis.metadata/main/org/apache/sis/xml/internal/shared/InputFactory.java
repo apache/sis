@@ -18,6 +18,8 @@ package org.apache.sis.xml.internal.shared;
 
 import java.io.Reader;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLEventReader;
@@ -70,7 +72,9 @@ public final class InputFactory {
              * But Jackson 2.19.1, despite being released 14 years after Java 7, still doesn't support this
              * property.
              */
-            Logging.unexpectedException(Logger.getLogger(Loggers.XML), InputFactory.class, "createXMLEventReader", e);
+            final var record = new LogRecord(Level.CONFIG, e.getLocalizedMessage());
+            record.setThrown(e);
+            Logging.completeAndLog(Logger.getLogger(Loggers.XML), InputFactory.class, "createXMLEventReader", record);
         }
     }
 
