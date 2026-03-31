@@ -82,13 +82,13 @@ final class CoverageControls extends ViewAndControls {
         final MapMenu menu = new MapMenu(view);
         menu.addReferenceSystems(owner.referenceSystems);
         menu.addCopyOptions(status);
-        final ObservableObjectValue<String> selectedReferenceSystem = menu.selectedReferenceSystem().orElse(null);
-        if (selectedReferenceSystem == null) {
+        final ObservableObjectValue<String> mapCRS = menu.selectedReferenceSystem().orElse(null);
+        if (mapCRS == null) {
             referenceSystemTooltip = null;
         } else {
             referenceSystemTooltip = new Tooltip(resources.getString(Resources.Keys.SelectCrsByContextMenu));
-            selectedReferenceSystem.addListener((p,o,n) -> notifyReferenceSystemChanged(n, status.positionReferenceSystemName().get()));
-            status.positionReferenceSystemName().addListener((p,o,n) -> notifyReferenceSystemChanged(selectedReferenceSystem.get(), n));
+            mapCRS.addListener((p,o,n) -> notifyReferenceSystemChanged(n, status.getReferenceSystemName().get(), true));
+            status.getReferenceSystemName().addListener((p,o,n) -> notifyReferenceSystemChanged(mapCRS.get(), n, false));
         }
         /*
          * "Layers" section with the following controls:
@@ -135,12 +135,21 @@ final class CoverageControls extends ViewAndControls {
 
     /**
      * Invoked in JavaFX thread after the reference system of the coverage or of the status bar changed.
+     * The {@code interim} argument is {@code true} if the change was in the <abbr>CRS</abbr> of the map,
+     * and the <abbr>CRS</abbr> shown in the status bar is expected to be updated to the same value soon.
+     * In the latter case, we avoid distracting the user with a message saying that the reference systems
+     * are not consistent.
      *
-     * @param coverage      the name of the reference system of the rendered coverage.
-     * @param coordinates   the name of the reference system of coordinates shown in the status bar.
+     * @param  coverage     the name of the reference system of the rendered coverage.
+     * @param  coordinates  the name of the reference system of coordinates shown in the status bar.
+     * @param  interim      {@code true} if this event is expected to be followed soon by another event.
      */
-    private void notifyReferenceSystemChanged(String coverage, String coordinates) {
-        if (coverage != null && !coverage.equalsIgnoreCase(coordinates)) {
+    private void notifyReferenceSystemChanged(String coverage, final String coordinates, final boolean interim) {
+        if (coverage != null && coordinates != null && !coverage.equals(coordinates)) {
+            if (interim) {
+                status.setDefaultMessage(null, referenceSystemTooltip);
+                return;
+            }
             coverage = Resources.forLocale(owner.getLocale()).getString(Resources.Keys.MismatchedRS);
         }
         status.setDefaultMessage(coverage, coverage == null ? null : referenceSystemTooltip);

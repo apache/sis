@@ -755,8 +755,8 @@ public abstract class MapCanvas extends PlanarCanvas {
         public void changed(final ObservableValue<? extends ReferenceSystem> property,
                             final ReferenceSystem oldValue, final ReferenceSystem newValue)
         {
-            if (newValue instanceof CoordinateReferenceSystem) {
-                setObjectiveCRS((CoordinateReferenceSystem) newValue, this, property);
+            if (newValue instanceof CoordinateReferenceSystem crs) {
+                setObjectiveCRS(crs, this, property);
             }
         }
 
@@ -792,9 +792,8 @@ public abstract class MapCanvas extends PlanarCanvas {
         @Override
         public void propertyChange(final PropertyChangeEvent event) {
             if (OBJECTIVE_CRS_PROPERTY.equals(event.getPropertyName())) {
-                final Object value = event.getNewValue();
-                if (value instanceof ReferenceSystem) {
-                    selectedCrsProperty.set((ReferenceSystem) value);
+                if (event.getNewValue() instanceof ReferenceSystem value) {
+                    selectedCrsProperty.set(value);
                 }
                 if (!isPositionableProjection) {
                     positionables.selectToggle(null);
@@ -1332,6 +1331,7 @@ public abstract class MapCanvas extends PlanarCanvas {
 
     /**
      * Invoked after the background thread created by {@link #repaint()} finished to update map content.
+     * This method should be invoked in all cases: after successful completion, failure or cancellation.
      * The {@link #changeInProgress} is the JavaFX transform at the time the repaint event was trigged and
      * which is now integrated in the map. That transform will be removed from {@link #floatingPane} transforms.
      * The {@link #transform} result is identity if no zoom, rotation or pan gesture has been applied since last
@@ -1522,6 +1522,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Returns a property telling whether a rendering is in progress. This property become {@code true}
      * when this {@code MapCanvas} is about to start a background thread for performing a rendering, and
      * is reset to {@code false} after this {@code MapCanvas} has been updated with new rendering result.
+     * The reset to {@code false} happens in all cases: after successful completion, failure or cancellation.
      *
      * @return a property telling whether a rendering is in progress.
      *

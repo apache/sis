@@ -184,11 +184,8 @@ public class RecentReferenceSystems {
 
         /** Returns the verified (if possible) reference system. */
         ReferenceSystem find(final IdentifiedObjectFinder finder) throws FactoryException {
-            if (finder != null) {
-                final IdentifiedObject replacement = finder.findSingleton(system);
-                if (replacement instanceof ReferenceSystem) {
-                    return (ReferenceSystem) replacement;
-                }
+            if (finder != null && finder.findSingleton(system) instanceof ReferenceSystem replacement) {
+                return replacement;
             }
             return system;
         }
@@ -553,7 +550,7 @@ public class RecentReferenceSystems {
      */
     private List<ReferenceSystem> filterReferenceSystems(final ImmutableEnvelope domain, final ComparisonMode mode) {
         final List<ReferenceSystem> systems;
-        final GazetteerFactory gf = new GazetteerFactory();     // Cheap to construct.
+        final var gf = new GazetteerFactory();                  // Cheap to construct.
         synchronized (systemsOrCodes) {
             @SuppressWarnings("LocalVariableHidesMemberVariable")
             CRSAuthorityFactory factory = this.factory;         // Hide volatile field by local field.
@@ -651,7 +648,7 @@ public class RecentReferenceSystems {
             final int n = systemsOrCodes.size();
             systems = new ArrayList<>(Math.min(NUM_SHOWN_ITEMS, n) + NUM_OTHER_ITEMS);
             for (int i=0; i<n; i++) {
-                final ReferenceSystem system = (ReferenceSystem) systemsOrCodes.get(i);
+                final var system = (ReferenceSystem) systemsOrCodes.get(i);
                 if (i >= NUM_CORE_ITEMS && !Utils.intersects(domain, system)) {
                     continue;
                 }
@@ -836,7 +833,7 @@ public class RecentReferenceSystems {
             }
             final ComparisonMode mode = duplicationCriterion.get();
             if (newValue == OTHER) {
-                final CRSChooser chooser = new CRSChooser(factory, geographicAOI, locale);
+                final var chooser = new CRSChooser(factory, geographicAOI, locale);
                 newValue = chooser.showDialog(GUIUtilities.getWindow(property)).orElse(null);
                 if (newValue == null) {
                     newValue = oldValue;
@@ -970,7 +967,7 @@ public class RecentReferenceSystems {
          * (usually no more than 3 elements) that it is not worth to use HashSet.
          */
         int count = 0;
-        final ReferenceSystem[] selected = new ReferenceSystem[controlValues.size()];
+        final var selected = new ReferenceSystem[controlValues.size()];
         for (final WritableValue<ReferenceSystem> value : controlValues) {
             final ReferenceSystem system = value.getValue();
             if (system != null) selected[count++] = system;
@@ -1001,7 +998,7 @@ public class RecentReferenceSystems {
              */
 next:       for (int i=0; i<count; i++) {
                 final ReferenceSystem system = selected[i];
-                for (int j=ordered.size(); --j >= 0;) {
+                for (int j = ordered.size(); --j >= 0;) {
                     if (ordered.get(j) == system) {
                         continue next;                  // Skip duplicated value.
                     }
@@ -1035,7 +1032,7 @@ next:       for (int i=0; i<count; i++) {
      */
     public ChoiceBox<ReferenceSystem> createChoiceBox(final boolean filtered, final ChangeListener<ReferenceSystem> action) {
         ArgumentChecks.ensureNonNull("action", action);
-        final ChoiceBox<ReferenceSystem> choices = new ChoiceBox<>(getReferenceSystems(filtered));
+        final var choices = new ChoiceBox<ReferenceSystem>(getReferenceSystems(filtered));
         choices.setConverter(new ObjectStringConverter<>(choices.getItems(), locale));
         choices.valueProperty().addListener(new SelectionListener(action));
         controlValues.add(choices.valueProperty());
@@ -1066,8 +1063,8 @@ next:       for (int i=0; i<count; i++) {
         ArgumentChecks.ensureNonNull("action", action);
         final List<ReferenceSystem> main = getReferenceSystems(filtered);
         final List<DerivedCRS> derived = (filtered) ? null : cellIndiceSystems;
-        final Menu menu = new Menu(Vocabulary.forLocale(locale).getString(Vocabulary.Keys.ReferenceSystem));
-        final MenuSync property = new MenuSync(main, !filtered, derived, menu, new SelectionListener(action));
+        final var menu = new Menu(Vocabulary.forLocale(locale).getString(Vocabulary.Keys.ReferenceSystem));
+        final var property = new MenuSync(main, !filtered, derived, menu, new SelectionListener(action));
         menu.getProperties().put(SELECTED_ITEM_KEY, property);
         controlValues.add(property);
         return menu;
@@ -1081,9 +1078,8 @@ next:       for (int i=0; i<count; i++) {
      */
     public static ObjectProperty<ReferenceSystem> getSelectedProperty(final Menu menu) {
         if (menu != null) {
-            final Object property = menu.getProperties().get(SELECTED_ITEM_KEY);
-            if (property instanceof MenuSync) {
-                return (MenuSync) property;
+            if (menu.getProperties().get(SELECTED_ITEM_KEY) instanceof MenuSync property) {
+                return property;
             }
         }
         return null;

@@ -49,8 +49,8 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ObjectPropertyBase;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyObjectPropertyBase;
-import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableStringValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -286,7 +286,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * directly instead. We omit the "Property" suffix for making this operation more natural.
      *
      * @see #position
-     * @see #positionReferenceSystemName()
+     * @see #getReferenceSystemName()
      */
     public final ReadOnlyObjectProperty<ReferenceSystem> positionReferenceSystem;
 
@@ -430,7 +430,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * The text property of this tool tip may be used outside this class.
      *
      * @see #positionReferenceSystem
-     * @see #positionReferenceSystemName()
+     * @see #getReferenceSystemName()
      */
     private final Tooltip positionReferenceSystemName;
 
@@ -549,19 +549,18 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         /*
          * Create a contextual menu offering to user a choice of CRS in which to display the coordinates.
          * The CRS choices are controlled by `RecentReferenceSystems`. Selection of a new CRS causes the
-         * `setPositionCRS(…)` method to be invoked.
+         * `setPositionCRS(…)` or `setPositionRID(…)` method to be invoked, which may do their work in a
+         * background thread. Therefore, change of selected menu item may not take effect immediately.
          */
         this.systemChooser = systemChooser;
         if (systemChooser == null) {
             selectedSystem = null;
         } else {
             final Menu choices = systemChooser.createMenuItems(false, (property, oldValue, newValue) -> {
-                if (newValue instanceof CoordinateReferenceSystem) {
-                    setPositionCRS((CoordinateReferenceSystem) newValue);
-                } else if (newValue instanceof ReferencingByIdentifiers) {
-                    setPositionRID((ReferencingByIdentifiers) newValue);
-                } else {
-                    setPositionCRS(null);       // Default to `objectiveCRS`.
+                switch (newValue) {
+                    case CoordinateReferenceSystem rs  -> setPositionCRS(rs);
+                    case ReferencingByIdentifiers  rs  -> setPositionRID(rs);
+                    default /* Canvas objective CRS */ -> setPositionCRS(null);
                 }
             });
             selectedSystem = RecentReferenceSystems.getSelectedProperty(choices);
@@ -622,14 +621,16 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
                         Errors.Keys.TooManyCollectionElements_3, "canvas", 1, 2));
         }
         /*
-         * If a canvas is specified, register listeners for mouse position, rendering events, errors, etc.
+         * Register listeners on the specified canvas for mouse position, rendering events, errors, etc.
          * We do not allow the canvas to be changed after construction because of the added complexity
          * (e.g. we would have to remember all registered listeners so we can unregister them).
          */
         this.canvas = Objects.requireNonNull(canvas);
         sampleValuesProvider.set(ValuesUnderCursor.create(canvas));
         canvas.errorProperty().addListener((p,o,n) -> setRenderingError(n));
-        canvas.renderingProperty().addListener((p,o,n) -> {if (!n) applyCanvasGeometry();});
+        canvas.renderingProperty().addListener((p,o,n) -> {
+            if (!n) applyCanvasGeometry();      // Apply only after completion of the background rendering task.
+        });
         applyCanvasGeometry();
         if (canvas.getObjectiveCRS() != null) {
             registerMouseListeners();
@@ -909,8 +910,8 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
 
     /**
      * Sets the coordinate reference system of the position shown in this status bar.
-     * The change may not appear immediately after method return; this method may use a
-     * background thread for computing the coordinate operation.  That task may be long
+     * The change may not appear immediately after method return, as this method may use
+     * a background thread for computing the coordinate operation. That task may be long
      * the first time that it is executed, but should be fast on subsequent invocations.
      *
      * @param  crs  the new CRS, or {@code null} for {@link #objectiveCRS}.
@@ -1612,7 +1613,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @see #positionReferenceSystem
      * @since 1.7
      */
-    public ReadOnlyStringProperty positionReferenceSystemName() {
+    public ObservableStringValue getReferenceSystemName() {
         return positionReferenceSystemName.textProperty();
     }
 
