@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.math;
 
+
 /**
  * A similarity is the equivalent of a affine transform but preserving angles by avoiding
  * shearing value not rotations.

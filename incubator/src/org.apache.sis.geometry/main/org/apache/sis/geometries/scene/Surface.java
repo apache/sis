@@ -22,6 +22,7 @@ import java.util.Objects;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.util.ArgumentChecks;
 
+
 /**
  * GLTF name this a Primitive.
  * ANARI name this a Surface.

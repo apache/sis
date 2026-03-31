@@ -18,6 +18,7 @@ package org.apache.sis.geometries.scene;
 
 import java.util.Objects;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

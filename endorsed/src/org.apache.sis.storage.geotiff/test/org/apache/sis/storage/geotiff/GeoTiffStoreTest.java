@@ -16,11 +16,11 @@
  */
 package org.apache.sis.storage.geotiff;
 
-import java.nio.file.Path;
-import java.nio.file.Files;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
+import java.nio.file.Path;
+import java.nio.file.Files;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;

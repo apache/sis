@@ -18,6 +18,7 @@ package org.apache.sis.geometries.math;
 
 import static org.apache.sis.geometries.math.Matrix.ROW_ORDER;
 
+
 /**
  * Quaternion object.
  *

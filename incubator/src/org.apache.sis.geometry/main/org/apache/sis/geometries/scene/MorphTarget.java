@@ -24,6 +24,7 @@ import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.SampleSystem;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

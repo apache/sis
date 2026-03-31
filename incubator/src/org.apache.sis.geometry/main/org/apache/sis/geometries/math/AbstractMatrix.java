@@ -18,6 +18,7 @@ package org.apache.sis.geometries.math;
 
 import java.util.Arrays;
 
+
 /**
  * Abstract writable matrix.
  *

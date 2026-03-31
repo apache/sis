@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.math;
 
+
 /**
  * An affine is a transform which preserve points, straight lines, planes
  * and parallel lines.

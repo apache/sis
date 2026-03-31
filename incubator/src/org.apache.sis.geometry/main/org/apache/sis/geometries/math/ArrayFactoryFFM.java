@@ -18,6 +18,7 @@ package org.apache.sis.geometries.math;
 
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SegmentAllocator;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import static org.apache.sis.geometries.math.DataType.BYTE;
 import static org.apache.sis.geometries.math.DataType.DOUBLE;
 import static org.apache.sis.geometries.math.DataType.FLOAT;
@@ -27,7 +28,6 @@ import static org.apache.sis.geometries.math.DataType.SHORT;
 import static org.apache.sis.geometries.math.DataType.UBYTE;
 import static org.apache.sis.geometries.math.DataType.UINT;
 import static org.apache.sis.geometries.math.DataType.USHORT;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

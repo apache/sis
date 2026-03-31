@@ -25,6 +25,7 @@ import java.util.Objects;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.image.PixelIterator;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

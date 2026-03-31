@@ -16,9 +16,10 @@
  */
 package org.apache.sis.geometries.math;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
  * Interfaces for main interfaces but without modifying methods.

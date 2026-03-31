@@ -16,6 +16,8 @@
  */
 package org.apache.sis.filter;
 
+import org.apache.sis.filter.visitor.FunctionNames;
+
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,7 +33,6 @@ import org.opengis.filter.ComparisonOperator;
 import org.opengis.filter.ComparisonOperatorName;
 import org.opengis.filter.BinaryComparisonOperator;
 import org.opengis.filter.BetweenComparisonOperator;
-import org.apache.sis.filter.visitor.FunctionNames;
 
 
 /**
