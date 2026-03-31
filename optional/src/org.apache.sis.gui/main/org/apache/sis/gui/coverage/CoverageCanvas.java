@@ -1146,8 +1146,8 @@ public class CoverageCanvas extends MapCanvasAWT {
         @Override
         protected void paint(final Graphics2D gr) {
             gr.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-            if (prefetchedImage instanceof TileErrorHandler.Executor) {
-                ((TileErrorHandler.Executor) prefetchedImage).execute(
+            if (prefetchedImage instanceof TileErrorHandler.Executor ex) {
+                ex.execute(
                         () -> gr.drawRenderedImage(RenderingWorkaround.wrap(prefetchedImage), resampledToDisplay),
                         new TileErrorHandler(data.processor.getErrorHandler(), CoverageCanvas.class, "paint"));
             } else if (!isCoverageHidden) {

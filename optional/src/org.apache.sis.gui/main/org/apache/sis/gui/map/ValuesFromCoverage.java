@@ -109,10 +109,9 @@ final class ValuesFromCoverage extends ValuesUnderCursor implements ChangeListen
      * provided directly by the {@link GridCoùverage} values.
      */
     private static GridExtent getSelectedSlice(final ObservableValue<?> property) {
-        if (property instanceof ReadOnlyProperty<?>) {
-            final Object bean = ((ReadOnlyProperty<?>) property).getBean();
-            if (bean instanceof CoverageCanvas) {
-                return ((CoverageCanvas) bean).getSliceExtent();
+        if (property instanceof ReadOnlyProperty<?> c) {
+            if (c.getBean() instanceof CoverageCanvas bean) {
+                return bean.getSliceExtent();
             }
         }
         return null;

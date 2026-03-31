@@ -61,10 +61,9 @@ public final class GUIUtilities {
      * @return the locale for the container of the given property, or {@code null}.
      */
     public static Locale getLocale(final ObservableValue<?> property) {
-        if (property instanceof ReadOnlyProperty<?>) {
-            final Object bean = ((ReadOnlyProperty<?>) property).getBean();
-            if (bean instanceof Localized) {
-                return ((Localized) bean).getLocale();
+        if (property instanceof ReadOnlyProperty<?> c) {
+            if (c.getBean() instanceof Localized bean) {
+                return bean.getLocale();
             }
         }
         return null;

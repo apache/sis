@@ -326,8 +326,7 @@ public abstract class ValuesUnderCursor {
      * @return the sample values provider, or {@code null} if none.
      */
     static ValuesUnderCursor create(final MapCanvas canvas) {
-        if (canvas instanceof CoverageCanvas) {
-            final CoverageCanvas cc = (CoverageCanvas) canvas;
+        if (canvas instanceof CoverageCanvas cc) {
             final ValuesFromCoverage listener = new ValuesFromCoverage();
             cc.coverageProperty.addListener(new WeakChangeListener<>(listener));
             cc.sliceExtentProperty.addListener((p,o,n) -> listener.setSlice(n));

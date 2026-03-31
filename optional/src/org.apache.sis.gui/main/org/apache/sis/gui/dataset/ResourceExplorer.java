@@ -408,8 +408,7 @@ public class ResourceExplorer extends Widget {
          */
         String  label    = null;
         boolean disabled = true;
-        if (resource instanceof DataStore) {
-            final DataStore store = (DataStore) resource;
+        if (resource instanceof DataStore store) {
             final DataStoreProvider provider = store.getProvider();
             if (provider != null) {
                 label = provider.getShortName();
@@ -443,9 +442,7 @@ public class ResourceExplorer extends Widget {
      * This method is invoked when the tab become visible, or when a new resource is loaded.
      */
     private void loadNativeMetadata() {
-        final Resource resource = getSelectedResource();
-        if (resource instanceof DataStore) {
-            final DataStore store = (DataStore) resource;
+        if (getSelectedResource() instanceof DataStore store) {
             BackgroundThreads.execute(new Task<TreeTable>() {
                 /** Invoked in a background thread for fetching metadata. */
                 @Override protected TreeTable call() throws DataStoreException {
@@ -454,7 +451,7 @@ public class ResourceExplorer extends Widget {
 
                 /** Shows the result in JavaFX thread. */
                 @Override protected void succeeded() {
-                    if (resource == getSelectedResource()) {
+                    if (store == getSelectedResource()) {
                         nativeMetadata.setContent(getValue());
                     }
                 }

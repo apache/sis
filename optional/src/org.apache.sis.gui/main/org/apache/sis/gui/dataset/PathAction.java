@@ -104,21 +104,28 @@ final class PathAction implements EventHandler<ActionEvent> {
         Object file = path;
         Object uri  = null;
         try {
-            if (path instanceof URI) {
-                uri  = path;                            // Must be first because next line may fail.
-                file = new File((URI) path);
-            } else if (path instanceof URL) {
-                uri  = path;                            // Must be first because next line may fail.
-                file = new File(((URL) path).toURI());
-            } else if (path instanceof File) {
-                uri  = ((File) path).toURI();
-            } else if (path instanceof Path) {
-                uri  = ((Path) path).toUri();           // Must be first because next line may fail.
-                file = ((Path) path).toFile();
-            } else if (path instanceof CharSequence) {
-                uri  = new URI(path.toString());        // Stay null if this operation fail.
-            } else {
-                file = "";
+            switch (path) {
+                case URI c -> {
+                    uri  = path;                    // Must be first because next line may fail.
+                    file = new File(c);
+                }
+                case URL c -> {
+                    uri  = path;                    // Must be first because next line may fail.
+                    file = new File(c.toURI());
+                }
+                case File c -> {
+                    uri = c.toURI();
+                }
+                case Path c -> {
+                    uri  = c.toUri();               // Must be first because next line may fail.
+                    file = c.toFile();
+                }
+                case CharSequence c -> {
+                    uri = new URI(path.toString()); // Stay null if this operation fail.
+                }
+                default -> {
+                    file = "";
+                }
             }
         } catch (URISyntaxException | IllegalArgumentException | UnsupportedOperationException e) {
             // Ignore. The `uri` or `text` field that we failed to assign keep its original value.

@@ -376,15 +376,14 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
         }
         final short key;
         final int expected;
-             if (crs instanceof GeographicCRS)  {key = Vocabulary.Keys.Geographic;  expected = 2;}
-        else if (crs instanceof GeodeticCRS)    {key = Vocabulary.Keys.Geocentric;  expected = 2;}
-        else if (crs instanceof VerticalCRS)    {key = Vocabulary.Keys.Vertical;    expected = 1;}
-        else if (crs instanceof TemporalCRS)    {key = Vocabulary.Keys.Temporal;    expected = 1;}
-        else if (crs instanceof ProjectedCRS)   {key = Vocabulary.Keys.Projected;   expected = 2;}
-        else if (crs instanceof EngineeringCRS) {key = Vocabulary.Keys.Engineering; expected = 0;}
-        else {
-            key = Vocabulary.Keys.NotKnown;
-            expected = 0;
+        switch (crs) {
+           case GeographicCRS  _ -> {key = Vocabulary.Keys.Geographic;  expected = 2;}
+           case GeodeticCRS    _ -> {key = Vocabulary.Keys.Geocentric;  expected = 2;}
+           case VerticalCRS    _ -> {key = Vocabulary.Keys.Vertical;    expected = 1;}
+           case TemporalCRS    _ -> {key = Vocabulary.Keys.Temporal;    expected = 1;}
+           case ProjectedCRS   _ -> {key = Vocabulary.Keys.Projected;   expected = 2;}
+           case EngineeringCRS _ -> {key = Vocabulary.Keys.Engineering; expected = 0;}
+           default               -> {key = Vocabulary.Keys.NotKnown;    expected = 0;}
         }
         String text = Vocabulary.forLocale(locale).getString(key);
         final int     dimension = CRS.getDimensionOrZero(crs);

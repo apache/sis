@@ -570,9 +570,8 @@ public class LogViewer extends Widget {
                 return false;
             };
         }
-        final ObservableList<LogRecord> items = table.getItems();
-        if (items instanceof FilteredList<?>) {
-            ((FilteredList<LogRecord>) items).setPredicate(filter);
+        if (table.getItems() instanceof FilteredList<LogRecord> items) {
+            items.setPredicate(filter);
         }
     }
 

@@ -600,8 +600,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
         final int n = c.getComponentCount();
         for (int i=0; i<n; i++) {
             final Component child = c.getComponent(i);
-            if (child instanceof JButton) {
-                final var button = (JButton) child;
+            if (child instanceof JButton button) {
                 if (SELECT.equals(button.getText())) {
                     return button;
                 }

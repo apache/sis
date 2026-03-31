@@ -208,9 +208,8 @@ public abstract class WindowHandler {
     public void show() {
         if (window == null) {
             if (manager.main == this) {
-                Window w = getWindow();
-                if (w instanceof Stage) {
-                    window = (Stage) w;
+                if (getWindow() instanceof Stage w) {
+                    window = w;
                 } else {
                     return;
                 }

@@ -235,9 +235,8 @@ final class ResourceItem extends TreeItem<Resource> {
         final ObservableList<TreeItem<Resource>> children = super.getChildren();
         if (!isChildrenKnown) {
             isChildrenKnown = true;                 // Set first for avoiding to repeat in case of failure.
-            final Resource resource = getValue();
-            if (resource instanceof Aggregate) {
-                BackgroundThreads.execute(new GetChildren((Aggregate) resource));
+            if (getValue() instanceof Aggregate resource) {
+                BackgroundThreads.execute(new GetChildren(resource));
                 children.add(new ResourceItem());
             }
         }

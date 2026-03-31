@@ -486,9 +486,8 @@ public class GridView extends Control {
             minY = image.getMinY();
             maxY = Math.addExact(minY, image.getHeight());
         }
-        final Skin<?> skin = getSkin();             // May be null if the view is not yet shown.
-        if (skin instanceof GridViewSkin) {         // Could be a user instance (not recommended).
-            ((GridViewSkin) skin).clear();
+        if (getSkin() instanceof GridViewSkin skin) {   // May be null if the view is not yet shown.
+            skin.clear();
         }
         requestLayout();
     }
@@ -499,9 +498,8 @@ public class GridView extends Control {
      * has not changed.
      */
     final void updateCellValues() {
-        final Skin<?> skin = getSkin();             // May be null if the view is not yet shown.
-        if (skin instanceof GridViewSkin) {         // Could be a user instance (not recommended).
-            ((GridViewSkin) skin).updateCellValues();
+        if (getSkin() instanceof GridViewSkin skin) {   // May be null if the view is not yet shown.
+            skin.updateCellValues();
         }
     }
 
