@@ -303,6 +303,7 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
                  * the generic code. But the two `if … else` branches below compute the same thing
                  * (ignoring rounding errors).
                  */
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final MathTransform objectiveTransform = this.objectiveTransform;
                 if (objectiveTransform == null || objectiveTransform instanceof AffineTransform) {
                     AffineTransform tr = source.objectiveToDisplay.createInverse();
