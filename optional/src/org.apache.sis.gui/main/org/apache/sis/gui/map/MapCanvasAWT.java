@@ -669,19 +669,13 @@ public abstract class MapCanvasAWT extends MapCanvas {
     }
 
     /**
-     * Clears the image and all intermediate buffer.
+     * Removes the image which was shown and releases intermediate buffers.
      * Invoking this method may help to release memory when the map is no longer shown.
      *
-     * <h4>Usage</h4>
-     * Overriding methods in subclasses should invoke {@code super.clear()}.
-     * Other methods should generally not invoke this method directly,
-     * and use the following code instead:
+     * <p>Subclasses should override this method for cleaning their fields.
+     * Implementations in subclasses shall invoke {@code super.clear()}.</p>
      *
-     * {@snippet lang="java" :
-     *     runAfterRendering(this::clear);
-     *     }
-     *
-     * @see #runAfterRendering(Runnable)
+     * @see #clearLater()
      */
     @Override
     protected void clear() {

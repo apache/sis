@@ -104,7 +104,7 @@ public final class ExceptionReporter extends Widget {
         final Resources localized = Resources.getInstance();
         final Menu sendTo = new Menu(localized.getString(Resources.Keys.SendTo));
         sendTo.getItems().add(localized.menu(Resources.Keys.StandardErrorStream, this::printStackTrace));
-        final ContextMenu menu = new ContextMenu(localized.menu(Resources.Keys.Copy, this::copy), sendTo);
+        final var menu = new ContextMenu(localized.menu(Resources.Keys.Copy, this::copy), sendTo);
         pane.setContextMenu(menu);
 
         final Label header = new Label(localized.getString(Resources.Keys.ErrorAt));
@@ -321,7 +321,7 @@ public final class ExceptionReporter extends Widget {
             pane.setPrefWidth(650);
             pane.setUserData(content);
         } else {
-            final ExceptionReporter content = (ExceptionReporter) alert.getDialogPane().getUserData();
+            final var content = (ExceptionReporter) alert.getDialogPane().getUserData();
             content.setException(exception);
         }
         if (title != null) alert.setTitle(title);

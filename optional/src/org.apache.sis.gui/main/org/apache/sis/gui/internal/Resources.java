@@ -581,21 +581,37 @@ public class Resources extends IndexedResourceBundle {
      * @return the menu item with the specified text and action.
      */
     public MenuItem menu(final short key, final EventHandler<ActionEvent> onAction) {
-        final MenuItem item = new MenuItem(getString(key));
+        final var item = new MenuItem(getString(key));
         item.setOnAction(onAction);
+        return item;
+    }
+
+    /**
+     * Creates a new menu item with a localized text specified by the given key.
+     *
+     * @param  id        identifier for finding the menu item in a list, or {@code null} if not needed.
+     * @param  key       the key for the text of the menu item.
+     * @param  onAction  action to execute when the menu is selected.
+     * @return the menu item with the specified text and action.
+     */
+    public MenuItem menu(final String id, final short key, final EventHandler<ActionEvent> onAction) {
+        final var item = menu(key, onAction);
+        item.setId(id);
         return item;
     }
 
     /**
      * Creates a new check menu item with a localized text specified by the given key.
      *
+     * @param  id        identifier for finding the menu item in a list, or {@code null} if not needed.
      * @param  key       the key for the text of the menu item.
      * @param  selected  initial state of the check menu item.
      * @param  onAction  action to execute when the menu is selected or unselected.
      * @return the menu item with the specified text and action.
      */
-    public CheckMenuItem menu(final short key, final boolean selected, final ChangeListener<Boolean> onAction) {
-        final CheckMenuItem item = new CheckMenuItem(getString(key));
+    public CheckMenuItem menu(final String id, final short key, final boolean selected, final ChangeListener<Boolean> onAction) {
+        final var item = new CheckMenuItem(getString(key));
+        item.setId(id);
         item.setSelected(selected);
         item.selectedProperty().addListener(onAction);
         return item;

@@ -358,7 +358,7 @@ public class CoverageCanvas extends MapCanvasAWT {
     }
 
     /**
-     * Returns the source of coverages for this viewer.
+     * Returns the source of coverages for this viewer, or {@code null} if none.
      * This method, like all other methods in this class, shall be invoked from the JavaFX thread.
      *
      * @return the source of coverages shown in this viewer, or {@code null} if none.
@@ -659,7 +659,7 @@ public class CoverageCanvas extends MapCanvasAWT {
             if (resource != null) resource.addListener  (TileReadEvent.class, tileReadListener);
         }
         if (resource == null && coverage == null) {
-            runAfterRendering(this::clear);
+            clearLater();
         } else if (controls != null && controls.isAdjustingSlice) {
             runAfterRendering(() -> {
                 clearRenderedImage();
@@ -1229,21 +1229,18 @@ public class CoverageCanvas extends MapCanvasAWT {
          * Adjust the accuracy of coordinates shown in the status bar.
          * The number of fraction digits depend on the zoom factor.
          */
-        if (controls != null) {
-            final Object value = resampledImage.getProperty(PlanarImage.POSITIONAL_ACCURACY_KEY);
-            Quantity<Length> accuracy = null;
-            if (value instanceof Quantity<?>[]) {
-                for (final Quantity<?> q : (Quantity<?>[]) value) {
-                    if (Units.isLinear(q.getUnit())) {
-                        accuracy = q.asType(Length.class);
-                        accuracy = GUIUtilities.shorter(accuracy, accuracy.getUnit().getConverterTo(Units.METRE)
-                                                                    .convert(accuracy.getValue().doubleValue()));
-                        break;
-                    }
+        Quantity<Length> accuracy = null;
+        if (resampledImage.getProperty(PlanarImage.POSITIONAL_ACCURACY_KEY) instanceof Quantity<?>[] values) {
+            for (final Quantity<?> q : values) {
+                if (Units.isLinear(q.getUnit())) {
+                    accuracy = q.asType(Length.class);
+                    double m = accuracy.getUnit().getConverterTo(Units.METRE).convert(accuracy.getValue().doubleValue());
+                    accuracy = GUIUtilities.shorter(accuracy, m);
+                    break;
                 }
             }
-            controls.status.lowestAccuracy.set(accuracy);
         }
+        setPositionalAccuracy(accuracy);
         /*
          * If error(s) occurred during calls to `RenderedImage.getTile(tx, ty)`, reports those errors.
          * The `errorReport` field is reset to `null` in preparation for the next rendering operation.
@@ -1469,18 +1466,13 @@ public class CoverageCanvas extends MapCanvasAWT {
     }
 
     /**
-     * Removes the image shown and releases memory.
+     * Removes the image which was shown and releases memory.
+     * Invoking this method may help to release memory when the map is no longer shown.
      *
-     * <h4>Usage</h4>
-     * Overriding methods in subclasses should invoke {@code super.clear()}.
-     * Other methods should generally not invoke this method directly,
-     * and use the following code instead:
+     * <p>Subclasses should override this method for cleaning their fields.
+     * Implementations in subclasses shall invoke {@code super.clear()}.</p>
      *
-     * {@snippet lang="java" :
-     *     runAfterRendering(this::clear);
-     *     }
-     *
-     * @see #runAfterRendering(Runnable)
+     * @see #clearLater()
      */
     @Override
     protected void clear() {

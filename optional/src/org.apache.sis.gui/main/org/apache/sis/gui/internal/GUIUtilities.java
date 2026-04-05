@@ -121,7 +121,7 @@ public final class GUIUtilities {
      * @param  pane  the pane on which to set the clip.
      */
     public static void setClipToBounds(final Pane pane) {
-        final Rectangle clip = new Rectangle();
+        final var clip = new Rectangle();
         clip.widthProperty() .bind(pane.widthProperty());
         clip.heightProperty().bind(pane.heightProperty());
         pane.setClip(clip);
@@ -192,7 +192,7 @@ walk:   for (final T search : path) {
     }
 
     /**
-     * Sets the selected value or {@code target} to the same item as the selected item of {@code source}.
+     * Sets the selected value of {@code target} to the same item as the selected item of {@code source}.
      *
      * @param <T>     type of items.
      * @param source  the control from which to copy the selected item.
@@ -365,7 +365,7 @@ walk:   for (final T search : path) {
          * Following loop is the "traceback" procedure: starting from last cell, follows
          * the direction where the length decrease.
          */
-        final List<E> lcs = new ArrayList<>(lengths[nx][ny] + prefix.size() + suffix.size());
+        final var lcs = new ArrayList<E>(lengths[nx][ny] + prefix.size() + suffix.size());
         while (nx > 0 && ny > 0) {
             final int lg = lengths[nx][ny];
             if (lengths[nx-1][ny] >= lg) {
@@ -383,7 +383,7 @@ walk:   for (final T search : path) {
     }
 
     /**
-     * Modify the quantity unit for showing a smaller value.
+     * Modifies the quantity unit for showing a smaller value.
      *
      * @param  quantity  the quantity to modify, or {@code null}.
      * @param  m         the quantity value in metres.
@@ -434,6 +434,6 @@ walk:   for (final T search : path) {
      * Converts a floating point value in the 0 … 1 range to an integer value in the 0 … 255 range.
      */
     private static int toByte(final double value) {
-        return (int) Math.round(value * 255);
+        return (int) Math.rint(value * 255);
     }
 }

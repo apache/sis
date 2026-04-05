@@ -66,16 +66,16 @@ final class PathAction implements EventHandler<ActionEvent> {
     }
 
     /**
-     * Whether the "Open containing folder" operation is disabled.
+     * Whether the "Open containing folder" operation is enabled.
      */
-    private static final boolean isBrowseDisabled = !(Desktop.isDesktopSupported() &&
-            Desktop.getDesktop().isSupported(Desktop.Action.BROWSE_FILE_DIR));
+    static final boolean isBrowseEnabled = Desktop.isDesktopSupported() &&
+            Desktop.getDesktop().isSupported(Desktop.Action.BROWSE_FILE_DIR);
 
     /**
      * Returns {@code true} if {@code PathAction} cannot handle the given path for browsing.
      */
-    static boolean isBrowseDisabled(final Object path) {
-        return PathAction.isBrowseDisabled || IOUtilities.toPathOrNull(path) == null;
+    static boolean isBrowseEnabled(final Object path) {
+        return isBrowseEnabled && IOUtilities.toPathOrNull(path) != null;
     }
 
     /**

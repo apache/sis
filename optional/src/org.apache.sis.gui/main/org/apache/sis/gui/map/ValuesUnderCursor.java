@@ -17,7 +17,6 @@
 package org.apache.sis.gui.map;
 
 import java.util.concurrent.atomic.AtomicReference;
-import javafx.beans.value.WeakChangeListener;
 import javafx.scene.control.Menu;
 import javafx.application.Platform;
 import org.opengis.geometry.DirectPosition;
@@ -161,7 +160,7 @@ public abstract class ValuesUnderCursor {
      */
     protected abstract static class Formatter implements Runnable {
         /**
-         * Coordinates and CRS of the position where to evaluate values.
+         * Coordinates and <abbr>CRS</abbr> of the position where to evaluate values.
          * This position shall not be modified; new coordinates shall be specified in a new instance.
          * A {@code null} value means that there is no more sample values to format.
          *
@@ -319,7 +318,7 @@ public abstract class ValuesUnderCursor {
     }
 
     /**
-     * Creates a new instance for the given canvas and registers as a listener by weak reference.
+     * Creates a new instance for the given canvas and registers as a listener.
      * Caller must retain the returned reference somewhere, e.g. in {@link StatusBar#sampleValuesProvider}.
      *
      * @param  canvas  the canvas for which to create a {@link ValuesUnderCursor}, or {@code null}.
@@ -327,8 +326,8 @@ public abstract class ValuesUnderCursor {
      */
     static ValuesUnderCursor create(final MapCanvas canvas) {
         if (canvas instanceof CoverageCanvas cc) {
-            final ValuesFromCoverage listener = new ValuesFromCoverage();
-            cc.coverageProperty.addListener(new WeakChangeListener<>(listener));
+            final var listener = new ValuesFromCoverage();
+            cc.coverageProperty.addListener(listener);
             cc.sliceExtentProperty.addListener((p,o,n) -> listener.setSlice(n));
             final GridCoverage coverage = cc.coverageProperty.get();
             if (coverage != null) {

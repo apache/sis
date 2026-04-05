@@ -51,6 +51,8 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
+import javax.measure.Quantity;
+import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.ReferenceSystem;
@@ -63,6 +65,9 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.internal.shared.AxisDirections;
+import org.apache.sis.referencing.internal.shared.AffineTransform2D;
+import org.apache.sis.measure.Quantities;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.AbstractEnvelope;
@@ -70,8 +75,6 @@ import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.PixelInCell;
-import org.apache.sis.gui.referencing.PositionableProjection;
-import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
@@ -83,8 +86,8 @@ import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.GUIUtilities;
 import org.apache.sis.gui.internal.MouseDrags;
 import org.apache.sis.gui.internal.Resources;
-import org.apache.sis.referencing.internal.shared.AxisDirections;
-import org.apache.sis.referencing.internal.shared.AffineTransform2D;
+import org.apache.sis.gui.referencing.PositionableProjection;
+import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.portrayal.PlanarCanvas;
 import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.portrayal.TransformChangeEvent;
@@ -322,6 +325,14 @@ public abstract class MapCanvas extends PlanarCanvas {
     private final ReadOnlyBooleanWrapper isRendering;
 
     /**
+     * An estimation of positional accuracy, typically in metres.
+     *
+     * @see #setPositionalAccuracy(Quantity)
+     * @see #positionalAccuracyProperty()
+     */
+    private final ReadOnlyObjectWrapper<Length> positionalAccuracy;
+
+    /**
      * The exception or error that occurred during last rendering operation.
      * This is reset to {@code null} when a rendering operation completes successfully.
      *
@@ -386,6 +397,7 @@ public abstract class MapCanvas extends PlanarCanvas {
         fixedPane = new StackPane(view);
         GUIUtilities.setClipToBounds(fixedPane);
         isRendering = new ReadOnlyBooleanWrapper(this, "isRendering");
+        positionalAccuracy = new ReadOnlyObjectWrapper<>(this, "positionalAccuracy");
         error = new ReadOnlyObjectWrapper<>(this, "error");
     }
 
@@ -653,8 +665,22 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
+     * Removes map content and clears the properties of this canvas.
+     * Invoking this method may help to release memory when the map is no longer shown.
+     * The effect of the cleanup action may not be immediate, but may happen an arbitrary
+     * time after this method call.
+     *
+     * <p>For overriding this method in subclasses, see {@link #clear()}.</p>
+     *
+     * @since 1.7
+     */
+    public final void clearLater() {
+        runAfterRendering(this::clear);
+    }
+
+    /**
      * Resets the map view to its default zoom level and default position with no rotation.
-     * Contrarily to {@link #clear()}, this method does not remove the map content.
+     * Contrarily to {@link #clearLater()}, this method does not remove the map content.
      */
     public void reset() {
         invalidObjectiveToDisplay = true;
@@ -980,6 +1006,25 @@ public abstract class MapCanvas extends PlanarCanvas {
             }
             requestRepaint();
         }
+    }
+
+    /**
+     * Sets an estimation of the positional accuracy of the pixels or features that are rendered on the map.
+     * This method sets the value returned by the read-only
+     * {@linkplain #positionalAccuracyProperty() positional accuracy property}.
+     * The value should be non-zero when the positions are computed by a
+     * {@linkplain org.opengis.referencing.operation.Transformation coordinate transformations}.
+     *
+     * <p>This method may be invoked in the {@code commit()} method
+     * of the renderer returned by {@link #createRenderer()}.</p>
+     *
+     * @param  accuracy  an estimation of positional accuracy, or {@code null} if none.
+     *
+     * @see #positionalAccuracyProperty()
+     * @since 1.7
+     */
+    protected void setPositionalAccuracy(final Quantity<Length> accuracy) {
+        positionalAccuracy.set(Quantities.castOrCopy(accuracy));
     }
 
     /**
@@ -1459,13 +1504,16 @@ public abstract class MapCanvas extends PlanarCanvas {
 
     /**
      * Invoked after {@link #REPAINT_DELAY} has been elapsed for performing the real repaint request.
+     * This method must be invoked in the JavaFX event thread.
      *
      * @see #requestRepaint()
      */
     private void paintAfterDelay() {
         if (renderingInProgress instanceof Delayed) {
             renderingInProgress = null;
-            repaint();
+            if (!BackgroundThreads.EXECUTOR.isShutdown()) {
+                repaint();
+            }
         }
     }
 
@@ -1530,6 +1578,28 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     public final ReadOnlyBooleanProperty renderingProperty() {
         return isRendering.getReadOnlyProperty();
+    }
+
+    /**
+     * Returns a property which gives an estimation of positional accuracy, typically in metres.
+     * The positions of pixels or features rendered on the map may have limited accuracy when the
+     * positions are computed by a
+     * {@linkplain org.opengis.referencing.operation.Transformation coordinate transformations}.
+     * The position may also be inaccurate because of approximation applied for faster rendering.
+     * The property value may be {@code null} if the accuracy is not specified.
+     *
+     * <p><b>Usage example</b></p>
+     * The {@link StatusBar#lowestAccuracy} property can bind to this property for reporting
+     * the positional accuracy on the status bar. This is done automatically by the
+     * {@link StatusBar#track(MapCanvas)} method.
+     *
+     * @return a property giving an estimation of positional accuracy.
+     *
+     * @see StatusBar#lowestAccuracy
+     * @since 1.7
+     */
+    public final ReadOnlyObjectProperty<Length> positionalAccuracyProperty() {
+        return positionalAccuracy.getReadOnlyProperty();
     }
 
     /**
@@ -1626,19 +1696,14 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
-     * Removes map content and clears all properties of this canvas.
+     * Removes map content and clears the properties of this canvas.
+     * This method should not be invoked directly by users.
+     * The public <abbr>API</abbr> is {@link #clearLater()}.
      *
-     * <h4>Usage</h4>
-     * Overriding methods in subclasses should invoke {@code super.clear()}.
-     * Other methods should generally not invoke this method directly,
-     * and use the following code instead:
+     * <p>Subclasses should override this method for cleaning their fields.
+     * Implementations in subclasses shall invoke {@code super.clear()}.</p>
      *
-     * {@snippet lang="java" :
-     *     runAfterRendering(this::clear);
-     *     }
-     *
-     * @see #reset()
-     * @see #runAfterRendering(Runnable)
+     * @see #clearLater()
      */
     protected void clear() {
         assert Platform.isFxApplicationThread();
@@ -1649,6 +1714,7 @@ public abstract class MapCanvas extends PlanarCanvas {
         clearError();
         isDragging = false;
         isNavigationDisabled = false;
+        positionalAccuracy.set(null);
         isRendering.set(false);
         requestRepaint();
     }
