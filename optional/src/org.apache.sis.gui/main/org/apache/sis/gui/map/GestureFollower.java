@@ -41,18 +41,20 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.portrayal.TransformChangeEvent;
 import org.apache.sis.portrayal.CanvasFollower;
 import org.apache.sis.util.logging.Logging;
-import static org.apache.sis.gui.internal.LogHandler.LOGGER;
+import org.apache.sis.gui.internal.LogHandler;
 
 
 /**
  * A listener of mouse or keyboard events in a source canvas which can be reproduced in a target canvas.
  * This listener can reproduce the "real world" displacements documented in {@linkplain CanvasFollower parent class}.
  * In addition, this class can also follow mouse movements in source canvas and move a cursor in the target canvas
- * at the same "real world" position.
+ * at the same "real world" position. These two features are disabled by default and can be enabled by setting the
+ * {@link #transformEnabled} and/or {@link #cursorEnabled} flags to {@code true}.
  *
  * <h2>Listeners</h2>
  * {@code GestureFollower} listeners need to be registered explicitly by a call to the {@link #initialize()} method.
- * The {@link #dispose()} convenience method is provided for unregistering all those listeners.
+ * Conversely, the {@link #dispose()} method unregisters all those listeners. The listeners are unidirectional:
+ * changes in the source canvas are applied on the target canvas, but not the converse.
  *
  * <h2>Multi-threading</h2>
  * This class is <strong>not</strong> thread-safe.
@@ -89,13 +91,16 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
 
     /**
      * Whether changes in the "objective to display" transforms should be propagated from source to target canvas.
-     * The default value is {@code false}; this property needs to be enabled explicitly by caller if desired.
+     * The default value is {@code false}. This property needs to be enabled explicitly by caller if desired.
+     *
+     * @see #isDisabled()
+     * @see #setDisabled(boolean)
      */
     public final BooleanProperty transformEnabled;
 
     /**
      * Whether mouse position in source canvas should be shown by a cursor in the target canvas.
-     * The default value is {@code false}; this property needs to be enabled explicitly by caller if desired.
+     * The default value is {@code false}. This property needs to be enabled explicitly by caller if desired.
      */
     public final BooleanProperty cursorEnabled;
 
@@ -124,10 +129,11 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
      *
      * <p>Caller needs to register listeners by a call to the {@link #initialize()} method.
      * This is not done automatically by this constructor for allowing users to control
-     * when to start listening to changes.</p>
+     * when to start listening to {@code source} change events.</p>
      *
      * @param  source  the canvas which is the source of zoom, pan or rotation events.
      * @param  target  the canvas on which to apply the changes of zoom, pan or rotation.
+     * @throws IllegalArgumentException if {@code source} and {@code target} are the same map canvas.
      */
     @SuppressWarnings("this-escape")    // The invoked method does not store `this` and is not overrideable.
     public GestureFollower(final MapCanvas source, final MapCanvas target) {
@@ -231,28 +237,32 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
 
     /**
      * Sets the cursor location in the target canvas to a position computed from current value
-     * of {@link #cursorSourcePosition}.
+     * of {@link #cursorSourcePosition}. If the position cannot be computed, the cursor is hidden
+     * for avoiding to mislead the user with a wrong position.
      */
     private void updateCursorPosition() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final Path cursor = this.cursor;
         final MathTransform2D tr = getDisplayTransform().orElse(null);
         if (tr != null) try {
-            final Point2D  p = tr.transform(cursorSourcePosition, cursorTargetPosition);
+            final Point2D p = tr.transform(cursorSourcePosition, cursorTargetPosition);
             cursor.setTranslateX(p.getX());
             cursor.setTranslateY(p.getY());
+            return;
         } catch (TransformException e) {
-            cursorSourceValid = false;
-            cursor.setVisible(false);
-            Logging.recoverableException(LOGGER, GestureFollower.class, "handle", e);
+            canNotCompute("handle", e);
         }
+        cursorSourceValid = false;
+        cursor.setVisible(false);
     }
 
     /**
      * Returns {@code true} if this listener should replicate the following changes on the target canvas.
      * This implementation returns {@code true} if the transform reason is {@link TransformChangeEvent.Reason#INTERIM}.
-     * It allows immediate feedback to users without waiting for the background thread to complete rendering.
+     * It allows immediate feedback to users without waiting for the background thread to complete the rendering.
      *
      * @param  event  a transform change event that occurred on the source canvas.
-     * @return  whether to replicate that change on the target canvas.
+     * @return whether to replicate that change on the target canvas.
      */
     @Override
     protected boolean filter(final TransformChangeEvent event) {
@@ -285,10 +295,21 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
                 change.inverseTransform(cursorSourcePosition, cursorSourcePosition);
                 updateCursorPosition();
             } catch (NoninvertibleTransformException e) {
+                canNotCompute("transformedSource", e);
                 cursorSourceValid = false;
                 cursor.setVisible(false);
             }
         }
+    }
+
+    /**
+     * Invoked when a transform cannot be computed.
+     *
+     * @param  caller  the public method which is invoked this private method. Used only for logging purposes.
+     * @param  e  the exception that occurred.
+     */
+    private static void canNotCompute(final String caller, final Exception e) {
+        Logging.recoverableException(LogHandler.LOGGER, GestureFollower.class, caller, e);
     }
 
     /**

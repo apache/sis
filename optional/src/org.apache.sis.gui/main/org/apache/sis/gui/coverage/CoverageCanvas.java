@@ -39,6 +39,7 @@ import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Shape;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
@@ -937,7 +938,7 @@ public class CoverageCanvas extends MapCanvasAWT {
 
         /**
          * Value of {@link CoverageCanvas#getObjectiveToDisplay()} at the time this worker has been initialized.
-         * This is the conversion from {@link #objectiveCRS} to the canvas display CRS.
+         * This is the conversion from {@link #objectiveCRS} to the canvas display <abbr>CRS</abbr>.
          * Can be thought as a conversion from "real world" units to pixel units
          * and depends on the zoom and translation events that happened before rendering.
          */
@@ -1426,7 +1427,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                 }
             }
             Platform.runLater(() -> {
-                final ObservableList<Node> children = floatingPane.getChildren();
+                final ObservableList<Node> children = getEvanescentPane().getChildren();
                 FadeTransition transition;
                 while ((transition = tileShapes.poll()) != null) {
                     children.add(transition.getNode());
@@ -1445,7 +1446,9 @@ public class CoverageCanvas extends MapCanvasAWT {
         @Override
         public void handle(final ActionEvent event) {
             final var transition = (FadeTransition) event.getSource();
-            if (floatingPane.getChildren().remove(transition.getNode()) && TRACE) {
+            final Node node = transition.getNode();
+            final Pane parent = (Pane) node.getParent();
+            if (parent != null && parent.getChildren().remove(node) && TRACE) {
                 trace("TileReadListener.removeChild");
             }
         }

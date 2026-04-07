@@ -16,13 +16,16 @@
  */
 package org.apache.sis.gui.map;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Set;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -48,6 +51,7 @@ import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.DataStoreOpener;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
+import org.apache.sis.io.TableAppender;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
@@ -133,6 +137,11 @@ final class MultiCanvas extends Widget implements Observable {
         final StatusBar status;
 
         /**
+         * Listeners of mouse displacements and navigation actions such as zooms and pans.
+         */
+        final List<GestureFollower> followers;
+
+        /**
          * Creates new controls for a new map canvas, then registers the listeners.
          * Note that these listeners create cyclic references: most references are from {@code canvas} to {@code owner}
          * (therefore could be garbage-collected), but there are also some references from {@link #referenceSystems} to
@@ -142,6 +151,7 @@ final class MultiCanvas extends Widget implements Observable {
          * @param  canvas  the new canvas.
          */
         Controls(final MultiCanvas owner, final MapCanvas canvas) {
+            followers = new ArrayList<>();
             title  = new Label();
             status = new StatusBar(owner.referenceSystems);
             status.track(canvas);
@@ -149,6 +159,45 @@ final class MultiCanvas extends Widget implements Observable {
             menu.addReferenceSystems(owner.referenceSystems);
             menu.addCopyOptions(status);
             getView(canvas).addEventHandler(MouseEvent.MOUSE_ENTERED, (event) -> owner.showStatusBar(canvas));
+        }
+
+        /**
+         * Creates listeners of navigation events in the source canvas, for replicating them in the target canvas.
+         * The {@code source} argument <em>shall</em> be the {@code canvas} argument given to the constructor.
+         *
+         * @param  source  the {@code canvas} argument given to the constructor.
+         * @param  target  the canvas where to replicate the navigation events applied on {@code source}.
+         */
+        final void addGestureFollower(final MapCanvas source, final MapCanvas target) {
+            final var follower = new GestureFollower(source, target);
+            follower.initialize();
+            follower.cursorEnabled.set(true);
+            followers.add(follower);
+        }
+
+        /**
+         * Removes the listeners which were replicating navigation events to the specified target.
+         *
+         * @param  target  the canvas where the navigation events of {@code source} were replicated.
+         */
+        final void removeGestureFollower(final MapCanvas target) {
+            for (int i = followers.size(); --i >= 0;) {
+                if (followers.get(i).target == target) {
+                    followers.remove(i).dispose();
+                }
+            }
+        }
+
+        /**
+         * Unregisters the listeners which were following the mouse displacements and navigation events.
+         * Also clears the title for preventing it to contribute to {@link #getCanvasTitles()}.
+         * Does not unregister the listener for showing the status bar, as this listener does not depend
+         * on which data are shown in the canvas. This {@code Controls} may be reused for new data.
+         */
+        final void clear() {
+            title.setText(null);
+            followers.forEach(GestureFollower::dispose);
+            followers.clear();
         }
     }
 
@@ -226,8 +275,23 @@ final class MultiCanvas extends Widget implements Observable {
     }
 
     /**
+     * Returns the views of all map canvases that are currently shown in this {@code MultiCanvas}.
+     * The returned set is modifiable (callers may remove elements) and elements are in no particular order.
+     *
+     * @param  children  value of {@code canvasGrid.getChildren()}.
+     * @return all currently visible map canvases views.
+     */
+    private static Set<Region> getCanvasViews(final List<Node> children) {
+        final Set<Region> views = HashSet.newHashSet(children.size());
+        for (final Node child : children) {
+            views.add(getCanvasView(child));
+        }
+        return views;
+    }
+
+    /**
      * Returns the controls of a canvas when only its view is known.
-     * This method is inefficient, but is invoked in contextes where the map has only one element.
+     * This method is inefficient, but is invoked in contexts where the map has only one element.
      *
      * @param  canvasView  the result of a call to {@link #getCanvasView(Node)}.
      * @return the controls for the canvas having the given view.
@@ -258,6 +322,12 @@ final class MultiCanvas extends Widget implements Observable {
     @SuppressWarnings("fallthrough")
     private Label addCanvasView(final MapCanvas canvas) {
         final Controls controls = canvasPool.computeIfAbsent(canvas, (key) -> new Controls(this, key));
+        /*
+         * If the canvas will be alone in the window, show the view directly without title and border.
+         * If more than one canvas will exist, wrap the canvas view in a pane with a title and a border
+         * for separating this view from other views. It may require adding the title bar and border to
+         * a previously existing canvas view if the latter was alone before this method call.
+         */
         Region canvasView = getView(canvas);
         final List<Node> children = canvasGrid.getChildren();
         switch (children.size()) {
@@ -267,6 +337,18 @@ final class MultiCanvas extends Widget implements Observable {
                      children.add(previous);
                      // Fall through
             default: canvasView = addTitleBar(canvasView, controls.title);
+        }
+        /*
+         * Add listeners for replicating navigation events of `canvas` into all other visible canvases,
+         * and conversely. Shall be done before the canvas view is added to the children list.
+         */
+        final Set<Region> visibles = getCanvasViews(children);
+        for (final Map.Entry<MapCanvas, Controls> entry : canvasPool.entrySet()) {
+            final MapCanvas other = entry.getKey();
+            if (visibles.contains(getView(other))) {
+                controls.addGestureFollower(canvas, other);
+                entry.getValue().addGestureFollower(other, canvas);
+            }
         }
         children.add(canvasView);
         return controls.title;
@@ -278,10 +360,12 @@ final class MultiCanvas extends Widget implements Observable {
      * instead of trying to remove entries from the {@link #canvasPool} map, current implementation rather just
      * hides unused canvases and may reuse them later.
      *
-     * @param  canvas  the canvas for which to remove the view.
+     * @param  canvas    the canvas for which to remove the view.
+     * @param  controls  value of {@code canvasPool.get(canvas)} (not necessarily obtained by that call).
      * @return whether the view has been found and removed.
      */
-    private boolean removeCanvasView(final MapCanvas canvas) {
+    private boolean removeCanvasView(final MapCanvas canvas, final Controls controls) {
+        canvasPool.values().forEach((other) -> other.removeGestureFollower(canvas));
         boolean changed = false;
         final Region canvasView = getView(canvas);
         final List<Node> children = canvasGrid.getChildren();
@@ -296,7 +380,7 @@ final class MultiCanvas extends Widget implements Observable {
             previous = getCanvasView(previous);
             children.add(previous);                 // Hide the title bar and the border.
         }
-        clear(canvas);
+        clear(canvas, controls);
         return changed;
     }
 
@@ -307,12 +391,12 @@ final class MultiCanvas extends Widget implements Observable {
      *
      * @param  canvasView  view of the canvas to close.
      */
-    private void removeCanvasView(final Region canvasView) {
+    private void closeCanvasView(final Region canvasView) {
         boolean changed = false;
-        for (final MapCanvas canvas : canvasPool.keySet()) {
+        for (final Map.Entry<MapCanvas, Controls> entry : canvasPool.entrySet()) {
+            final MapCanvas canvas = entry.getKey();
             if (getView(canvas) == canvasView) {
-                changed |= removeCanvasView(canvas);
-                clear(canvas);
+                changed |= removeCanvasView(canvas, entry.getValue());
                 // Should have only one instance, but continue the loop by paranoia.
             }
         }
@@ -330,7 +414,7 @@ final class MultiCanvas extends Widget implements Observable {
      */
     private BorderPane addTitleBar(final Region canvasView, final Label title) {
         final var close = new Button("❌");
-        close.setOnAction((event) -> removeCanvasView(canvasView));
+        close.setOnAction((event) -> closeCanvasView(canvasView));
         HBox.setHgrow(title, Priority.ALWAYS);
         HBox.setHgrow(close, Priority.NEVER);
         final var bar = new HBox(title, close);
@@ -415,7 +499,7 @@ final class MultiCanvas extends Widget implements Observable {
          * Get the collection of `MapCanvas` instances which are not currently used.
          * These instances may be recycled for the given resource.
          */
-        final var available = LinkedHashMap.<Node, MapCanvas>newLinkedHashMap(canvasPool.size());
+        final Map<Node, MapCanvas> available = LinkedHashMap.newLinkedHashMap(canvasPool.size());
         canvasPool.keySet().forEach((canvas) -> available.put(getView(canvas), canvas));
         canvasGrid.getChildren().forEach((child) -> available.remove(getCanvasView(child)));
         final MapCanvas canvas = createOrReuseCanvas(resource, available.values());
@@ -458,9 +542,10 @@ final class MultiCanvas extends Widget implements Observable {
         boolean changed = false;
         if (resource != null) {
             resource.removeListener(CloseEvent.class, closer);
-            for (final MapCanvas canvas : canvasPool.keySet()) {
+            for (final Map.Entry<MapCanvas, Controls> entry : canvasPool.entrySet()) {
+                final MapCanvas canvas = entry.getKey();
                 if (getResource(canvas) == resource) {
-                    changed |= removeCanvasView(canvas);
+                    changed |= removeCanvasView(canvas, entry.getValue());
                 }
             }
             if (changed) {
@@ -598,16 +683,16 @@ final class MultiCanvas extends Widget implements Observable {
      * Clears the content of the given map canvas.
      * It is better to remove the canvas from {@link #canvasGrid} before to invoke this method.
      *
-     * @param  canvas  the map canvas to clear.
+     * @param  canvas    the map canvas to clear.
+     * @param  controls  value of {@code canvasPool.get(canvas)} (not necessarily obtained by that call).
      */
-    private void clear(final MapCanvas canvas) {
+    private void clear(final MapCanvas canvas, Controls controls) {
         final Resource resource = getResource(canvas);
         if (resource != null) {
             resource.removeListener(CloseEvent.class, closer);
         }
         canvas.clearLater();
-        final Controls controls = canvasPool.get(canvas);       // Should never be null, but let be safe.
-        if (controls != null) controls.title.setText(null);
+        controls.clear();
     }
 
     /**
@@ -616,7 +701,7 @@ final class MultiCanvas extends Widget implements Observable {
      */
     final void dispose() {
         canvasGrid.getChildren().clear();
-        canvasPool.keySet().forEach(this::clear);
+        canvasPool.forEach(this::clear);
         canvasPool.clear();
     }
 
@@ -640,5 +725,48 @@ final class MultiCanvas extends Widget implements Observable {
                 return null;
             });
         }
+    }
+
+    /**
+     * Returns a string representation of the state of this {@code MultiCanvas} for debugging purposes.
+     * The returned string representation contains a consistency check in the last column.
+     *
+     * @return a string representation of the state of this {@code MultiCanvas}.
+     */
+    @Override
+    public String toString() {
+        final Set<Region> views = getCanvasViews(canvasGrid.getChildren());
+        final var table = new TableAppender(" │ ");
+        table.appendHorizontalSeparator();
+        table.append("Title").nextColumn();
+        table.append("Shown").nextColumn();
+        table.append("Error").appendHorizontalSeparator();
+        for (final Map.Entry<MapCanvas, Controls> entry : canvasPool.entrySet()) {
+            final MapCanvas canvas = entry.getKey();
+            final Controls controls = entry.getValue();
+            table.append(controls.title.getText()).nextColumn();
+            table.append(Boolean.toString(views.remove(getView(canvas)))).nextColumn();
+            String error = "";
+            for (final GestureFollower follower : controls.followers) {
+                if (follower.source != canvas) {
+                    error = "follower.source";
+                    break;
+                }
+                @SuppressWarnings("element-type-mismatch")
+                final Controls target = canvasPool.get(follower.target);
+                if (target == null) {
+                    error = "follower.target";
+                    break;
+                }
+            }
+            table.append(error).nextLine();
+        }
+        for (final Region orphan : views) {
+            table.append(String.valueOf(orphan)).nextColumn();
+            table.append("true").nextColumn();
+            table.append("orphan").nextLine();
+        }
+        table.appendHorizontalSeparator();
+        return table.toString();
     }
 }

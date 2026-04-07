@@ -48,28 +48,28 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  *
  * <h2>Listeners</h2>
  * {@code CanvasFollower} listeners need to be registered explicitly by a call to the {@link #initialize()} method.
- * The {@link #dispose()} convenience method is provided for unregistering all those listeners.
+ * Conversely, the {@link #dispose()} method unregisters all those listeners.
  * The listeners registered by this class implement an unidirectional binding:
- * changes in source are applied on target, but not the converse.
+ * changes in {@linkplain #source} are applied on {@linkplain #target}, but not the converse.
  *
  * <h2>Multi-threading</h2>
  * This class is <strong>not</strong> thread-safe.
  * All events should be processed in the same thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.7
  * @since   1.3
  */
 public class CanvasFollower implements PropertyChangeListener, Disposable {
     /**
      * The canvas which is the source of zoom, translation or rotation events.
      */
-    protected final PlanarCanvas source;
+    public final PlanarCanvas source;
 
     /**
      * The canvas on which to apply the change of zoom, translation or rotation.
      */
-    protected final PlanarCanvas target;
+    public final PlanarCanvas target;
 
     /**
      * Whether listeners have been registered.
@@ -109,23 +109,21 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
     /**
      * Whether an attempt to compute {@link #displayTransform} has already been done.
      * The {@code displayTransform} field may still be null if the attempt failed.
-     * Value can be {@link #VALID}, {@link #OUTDATED}, {@link #UNKNOWN} or {@link #ERROR}.
      */
-    private byte displayTransformStatus;
+    private Status displayTransformStatus;
 
     /**
      * Whether an attempt to compute {@link #objectiveTransform} has already been done.
      * Note that the {@link #objectiveTransform} field can be up-to-date and {@code null}.
-     * Value can be {@link #VALID}, {@link #OUTDATED}, {@link #UNKNOWN} or {@link #ERROR}.
      *
      * @see #findObjectiveTransform(String)
      */
-    private byte objectiveTransformStatus;
+    private Status objectiveTransformStatus;
 
     /**
      * Enumeration values for {@link #displayTransformStatus} and {@link #objectiveTransformStatus}.
      */
-    private static final byte VALID = 0, OUTDATED = 1, UNKNOWN = 2, ERROR = 3;
+    private enum Status {VALID, OUTDATED, UNKNOWN, ERROR}
 
     /**
      * Whether a change is in progress. This is for avoiding never-ending loop
@@ -140,17 +138,21 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
      *
      * <p>Caller needs to register listeners by a call to the {@link #initialize()} method.
      * This is not done automatically by this constructor for allowing users to control
-     * when to start listening to changes.</p>
+     * when to start listening to {@code source} change events.</p>
      *
      * @param  source  the canvas which is the source of zoom, pan or rotation events.
      * @param  target  the canvas on which to apply the changes of zoom, pan or rotation.
+     * @throws IllegalArgumentException if {@code source} and {@code target} are the same map canvas.
      */
     public CanvasFollower(final PlanarCanvas source, final PlanarCanvas target) {
         this.source = Objects.requireNonNull(source);
         this.target = Objects.requireNonNull(target);
+        if (source == target) {
+            throw new IllegalArgumentException();
+        }
         followRealWorld = true;
-        displayTransformStatus   = OUTDATED;
-        objectiveTransformStatus = OUTDATED;
+        displayTransformStatus   = Status.OUTDATED;
+        objectiveTransformStatus = Status.OUTDATED;
     }
 
     /**
@@ -229,18 +231,18 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
             followRealWorld          = real;
             displayTransform         = null;
             objectiveTransform       = null;
-            displayTransformStatus   = OUTDATED;
-            objectiveTransformStatus = OUTDATED;
+            displayTransformStatus   = Status.OUTDATED;
+            objectiveTransformStatus = Status.OUTDATED;
         }
     }
 
     /**
-     * Returns the objective coordinates of the Point Of Interest (POI) in source canvas.
-     * This information is used when the source and target canvases do not use the same CRS.
-     * Changes in "real world" coordinates on the {@linkplain #target} canvas are guaranteed
-     * to reflect the changes in "real world" coordinates of the {@linkplain #source} canvas
-     * at that location only. At all other locations, the "real world" coordinate changes
-     * may differ because of map projection deformations.
+     * Returns the objective coordinates of the Point Of Interest (<abbr>POI</abbr>) in source canvas.
+     * This information is used when the source and target canvases do not use the same <abbr>CRS</abbr>.
+     * This is the only location where changes in "real world" coordinates on the {@linkplain #target} canvas
+     * are guaranteed to reflect the changes in "real world" coordinates of the {@linkplain #source} canvas.
+     * At all other locations, the changes in "real world" coordinates may differ because of map projection
+     * deformations.
      *
      * <p>The default implementation computes the value from {@link #getSourceDisplayPOI()}
      * if present, or fallback on {@code source.getPointOfInterest(true)} otherwise.
@@ -283,20 +285,21 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
 
     /**
      * Returns the transform from source display coordinates to target display coordinates.
-     * This transform may change every time that a zoom; translation or rotation is applied
-     * on at least one canvas. The transform may be absent if an error prevent to compute it,
+     * This transform may change every time that a zoom, translation or rotation is applied
+     * on at least one canvas. The transform may be absent if an error prevents to compute it,
      * for example is no coordinate operation has been found between the objective CRS of the
      * source and target canvases.
      *
      * @return transform from source display coordinates to target display coordinates.
      */
     public Optional<MathTransform2D> getDisplayTransform() {
-        if (displayTransformStatus != VALID) {
-            if (displayTransformStatus != OUTDATED) {
+        if (displayTransformStatus != Status.VALID) {
+            if (displayTransformStatus != Status.OUTDATED) {
                 return Optional.empty();
             }
-            displayTransformStatus = ERROR;             // Set now in case an exception is thrown below.
-            if (objectiveTransformStatus == VALID || findObjectiveTransform("getDisplayTransform")) try {
+            displayTransform = null;
+            displayTransformStatus = Status.ERROR;      // Set now in case an exception is thrown below.
+            if (findObjectiveTransform("getDisplayTransform")) try {
                 /*
                  * Compute (source display to objective) → (map projection) → (target objective to display).
                  * If we can work directly on `AffineTransform` instances, it should be more efficient than
@@ -317,7 +320,7 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
                             source.getObjectiveToDisplay().inverse(), objectiveTransform,
                             target.getObjectiveToDisplay()));
                 }
-                displayTransformStatus = VALID;
+                displayTransformStatus = Status.VALID;
             } catch (NoninvertibleTransformException | org.opengis.referencing.operation.NoninvertibleTransformException e) {
                 canNotCompute("getDisplayTransform", e);
             }
@@ -327,8 +330,8 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
 
     /**
      * Invoked when the objective CRS, zoom, translation or rotation changed on a map that we are tracking.
-     * If the event is an instance of {@link TransformChangeEvent}, then this method applies the same change
-     * on the {@linkplain #target} canvas.
+     * If the event is an instance of {@link TransformChangeEvent} emitted by the {@linkplain #source} canvas,
+     * then this method applies the same change in "real world" units on the {@linkplain #target} canvas.
      *
      * <p>This method delegates part of its work to the following methods,
      * which can be overridden for altering the changes:</p>
@@ -347,13 +350,13 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
     @Override
     public void propertyChange(final PropertyChangeEvent event) {
         if (!changing && event instanceof TransformChangeEvent) try {
-            final TransformChangeEvent te = (TransformChangeEvent) event;
-            displayTransformStatus = OUTDATED;
+            final var te = (TransformChangeEvent) event;
+            displayTransformStatus = Status.OUTDATED;
             changing = true;
             if (te.isSameSource(source)) {
                 transformedSource(te);
                 if (!disabled && filter(te)) {
-                    if (followRealWorld && (objectiveTransformStatus == VALID || findObjectiveTransform("propertyChange"))) {
+                    if (followRealWorld && findObjectiveTransform("propertyChange")) {
                         AffineTransform before = te.getObjectiveChange2D().orElse(null);
                         if (before != null) try {
                             /*
@@ -385,8 +388,8 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
         } else if (PlanarCanvas.OBJECTIVE_CRS_PROPERTY.equals(event.getPropertyName())) {
             displayTransform         = null;
             objectiveTransform       = null;
-            displayTransformStatus   = OUTDATED;
-            objectiveTransformStatus = OUTDATED;
+            displayTransformStatus   = Status.OUTDATED;
+            objectiveTransformStatus = Status.OUTDATED;
         }
     }
 
@@ -461,18 +464,20 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
 
     /**
      * Finds the transform to use for converting changes from {@linkplain #source} canvas to {@linkplain #target} canvas.
-     * This method should be invoked only if {@link #objectiveTransformStatus} is not {@link #VALID}. After this method
-     * returned, {@link #objectiveTransform} contains the transform to use, which may be {@code null} if none.
+     * After this method returned, {@link #objectiveTransform} is the transform to use, which may be {@code null} if none.
      *
      * @param  caller  the public method which is invoked this private method. Used only for logging purposes.
      * @return whether a transform has been computed.
      */
     private boolean findObjectiveTransform(final String caller) {
-        if (objectiveTransformStatus == OUTDATED) {
+        if (objectiveTransformStatus == Status.VALID) {
+            return true;
+        }
+        if (objectiveTransformStatus == Status.OUTDATED) {
             displayTransform         = null;
             objectiveTransform       = null;
-            displayTransformStatus   = OUTDATED;
-            objectiveTransformStatus = ERROR;      // If an exception occurs, use above setting.
+            displayTransformStatus   = Status.OUTDATED;
+            objectiveTransformStatus = Status.ERROR;      // If an exception occurs, use above setting.
             final CoordinateReferenceSystem sourceCRS = source.getObjectiveCRS();
             final CoordinateReferenceSystem targetCRS = target.getObjectiveCRS();
             if (sourceCRS != null && targetCRS != null) try {
@@ -487,13 +492,13 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
                 if (objectiveTransform.isIdentity()) {
                     objectiveTransform = null;
                 }
-                objectiveTransformStatus = VALID;
+                objectiveTransformStatus = Status.VALID;
                 return true;
             } catch (FactoryException e) {
                 canNotCompute(caller, e);
                 // Stay with "changes in display units" mode.
             } else {
-                objectiveTransformStatus = UNKNOWN;
+                objectiveTransformStatus = Status.UNKNOWN;
             }
         }
         return false;
@@ -502,8 +507,6 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
     /**
      * Invoked when the {@link #objectiveTransform} transform cannot be computed,
      * or when an optional information required for that transform is missing.
-     * This method assumes that the public caller (possibly indirectly) is
-     * {@link #propertyChange(PropertyChangeEvent)}.
      *
      * @param  caller  the public method which is invoked this private method. Used only for logging purposes.
      * @param  e  the exception that occurred.

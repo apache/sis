@@ -176,10 +176,10 @@ public class MapWindows implements AutoCloseable {
      */
     @Override
     public void close() {
-        for (final Map.Entry<MultiCanvas, Stage> entry : windows.entrySet()) {
-            entry.getKey().dispose();
-            entry.getValue().close();
-        }
+        windows.forEach((canvas, stage) -> {
+            canvas.dispose();
+            stage.close();
+        });
         windows.clear();
     }
 }
