@@ -663,11 +663,12 @@ public abstract class MapCanvasAWT extends MapCanvas {
      * <p>Subclasses should override this method for cleaning their fields.
      * Implementations in subclasses shall invoke {@code super.clear()}.</p>
      *
-     * @see #clearLater()
+     * @hidden
      */
     @Override
     protected void clear() {
         image.setImage(null);
+        clearWarning();
         clearBuffer();
         super.clear();
     }

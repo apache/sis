@@ -686,9 +686,9 @@ public abstract class MapCanvas extends PlanarCanvas {
 
     /**
      * Resets the map view to its default zoom level and default position with no rotation.
-     * Contrarily to {@link #clearLater()}, this method does not remove the map content.
+     * Contrarily to {@link #clear()}, this method does not remove the map content.
      *
-     * @see #clearLater()
+     * @see #clear()
      */
     public void reset() {
         invalidObjectiveToDisplay = true;
@@ -1693,42 +1693,42 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
-     * Removes map content and clears the properties of this canvas.
-     * This method should not be invoked directly by users.
-     * The public <abbr>API</abbr> is {@link #clearLater()}.
+     * Removes the content shown by this canvas while keeping the listeners.
+     * This method is invoked for discarding the content currently shown by the canvas,
+     * while keeping this {@code MapCanvas} instance for showing new content later.
+     * Invoking this method may help to release memory when the map is no longer shown.
      *
      * <p>Subclasses should override this method for cleaning their fields.
      * Implementations in subclasses shall invoke {@code super.clear()}.</p>
      *
-     * @see #clearLater()
+     * <p>This method should usually not be invoked directly.
+     * Instead, a recommended usage pattern is as below.
+     * The call to {@link #requestRepaint()} can be omitted if this {@code MapCanvas}
+     * is removed from the tree of nodes shown by JavaFX.</p>
+     *
+     * {@snippet lang="java" :
+     *     runAfterRendering(() -> {
+     *         clear();
+     *         requestRepaint();
+     *     });
+     *     }
+     *
      * @see #reset()
+     * @see #runAfterRendering(Runnable)
      */
+    @Override
     protected void clear() {
         assert Platform.isFxApplicationThread();
         transform.setToIdentity();
         invalidObjectiveToDisplay = true;
+        objectiveBounds = null;
         initialState = null;
         clearError();
         isDragging = false;
         isNavigationDisabled = false;
         positionalAccuracy.set(null);
         isRendering.set(false);
-        requestRepaint();
-    }
-
-    /**
-     * Removes map content and clears the properties of this canvas.
-     * Invoking this method may help to release memory when the map is no longer shown.
-     * The effect of the cleanup action may not be immediate, but may happen an arbitrary
-     * time after this method call.
-     *
-     * <p>For overriding this method in subclasses, see {@link #clear()}.</p>
-     *
-     * @see #reset()
-     * @since 1.7
-     */
-    public final void clearLater() {
-        runAfterRendering(this::clear);
+        super.clear();
     }
 
     /**

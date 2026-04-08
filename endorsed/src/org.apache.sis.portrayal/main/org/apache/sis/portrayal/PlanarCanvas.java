@@ -41,7 +41,7 @@ import org.apache.sis.referencing.internal.shared.AffineTransform2D;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.7
  * @since   1.1
  */
 public abstract class PlanarCanvas extends Canvas {
@@ -70,6 +70,20 @@ public abstract class PlanarCanvas extends Canvas {
     protected PlanarCanvas(final Locale locale) {
         super(CommonCRS.Engineering.DISPLAY.crs(), locale);
         objectiveToDisplay = new AffineTransform();
+    }
+
+    /**
+     * Resets this canvas to the same state as after construction, except listeners which are kept.
+     * This method can be invoked for discarding the content currently shown by the canvas,
+     * while keeping this {@code PlanarCanvas} instance for showing new content later.
+     *
+     * @hidden because nothing new to said.
+     * @since 1.7
+     */
+    @Override
+    protected void clear() {
+        objectiveToDisplay.setToIdentity();
+        super.clear();
     }
 
     /**
@@ -106,8 +120,8 @@ public abstract class PlanarCanvas extends Canvas {
      * Returns the size and location of the display device. The unit of measurement is
      * {@link Units#PIXEL} and coordinate values are usually (but not necessarily) integers.
      *
-     * <p>This value may be {@code null} on newly created {@code Canvas}, before data are added and canvas
-     * is configured. It should not be {@code null} anymore once a {@code Canvas} is ready for displaying.</p>
+     * <p>This value may be {@code null} on newly created {@code PlanarCanvas}, before data are added and canvas
+     * is configured. It should not be {@code null} anymore once a {@code PlanarCanvas} is ready for displaying.</p>
      *
      * <p>The returned envelope is a copy:
      * display changes happening after this method invocation will not be reflected in the returned envelope.</p>

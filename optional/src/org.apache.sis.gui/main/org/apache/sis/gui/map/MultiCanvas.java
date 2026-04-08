@@ -691,7 +691,7 @@ final class MultiCanvas extends Widget implements Observable {
         if (resource != null) {
             resource.removeListener(CloseEvent.class, closer);
         }
-        canvas.clearLater();
+        canvas.runAfterRendering(canvas::clear);
         controls.clear();
     }
 

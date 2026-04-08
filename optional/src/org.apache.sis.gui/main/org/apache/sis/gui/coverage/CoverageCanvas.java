@@ -660,7 +660,10 @@ public class CoverageCanvas extends MapCanvasAWT {
             if (resource != null) resource.addListener  (TileReadEvent.class, tileReadListener);
         }
         if (resource == null && coverage == null) {
-            clearLater();
+            runAfterRendering(() -> {
+                clear();
+                requestRepaint();
+            });
         } else if (controls != null && controls.isAdjustingSlice) {
             runAfterRendering(() -> {
                 clearRenderedImage();
@@ -751,6 +754,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                             requestRepaint();                   // Cause `Worker` class to be executed.
                         } catch (RuntimeException ex) {         // Mostly for `BackingStoreException`.
                             clear();
+                            requestRepaint();
                             ExceptionReporter.canNotUseResource(fixedPane, Exceptions.unwrap(ex));
                         }
                     });
@@ -1475,12 +1479,22 @@ public class CoverageCanvas extends MapCanvasAWT {
      * <p>Subclasses should override this method for cleaning their fields.
      * Implementations in subclasses shall invoke {@code super.clear()}.</p>
      *
-     * @see #clearLater()
+     * @hidden because nothing new to said.
      */
     @Override
     protected void clear() {
         if (TRACE) {
             trace("clear()");
+        }
+        showTileReads(false);
+        isCoverageHidden = false;
+        isCoverageAdjusting = true;
+        try {
+            resourceProperty.set(null);
+            coverageProperty.set(null);
+            sliceExtentProperty.set(null);
+        } finally {
+            isCoverageAdjusting = false;
         }
         setNewSource(null, null, null);
         super.clear();
