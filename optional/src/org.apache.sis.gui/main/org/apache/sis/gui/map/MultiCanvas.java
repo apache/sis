@@ -34,6 +34,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBase;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
@@ -53,6 +55,7 @@ import org.apache.sis.gui.coverage.CoverageCanvas;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.DataStoreOpener;
 import org.apache.sis.gui.internal.FontGIS;
+import org.apache.sis.gui.internal.Resources;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.io.TableAppender;
@@ -434,14 +437,16 @@ final class MultiCanvas extends Widget implements Observable {
     private BorderPane addTitleBar(final Region canvasView, final Controls controls) {
         final Label title = controls.title;
         final var close = new Button("❌");
+        setTooltip(close, Resources.Keys.RemoveCanvasFromMosaic);
         close.setOnAction((event) -> closeCanvasView(canvasView));
-        final var pin = new ToggleButton();
-        pin.selectedProperty().addListener(controls);
-        FontGIS.setGlyph(pin, FontGIS.Code.MOVE, "⮀", -1, -1);
-        HBox.setHgrow(pin,   Priority.NEVER);
-        HBox.setHgrow(title, Priority.ALWAYS);
-        HBox.setHgrow(close, Priority.NEVER);
-        final var bar = new HBox(pin, title, close);
+        final var follow = new ToggleButton();
+        follow.selectedProperty().addListener(controls);
+        FontGIS.setGlyph(follow, FontGIS.Code.MOVE, "⮀", -1, -1);
+        setTooltip(follow, Resources.Keys.ForwardMoveToOthers);
+        HBox.setHgrow(follow, Priority.NEVER);
+        HBox.setHgrow(title,  Priority.ALWAYS);
+        HBox.setHgrow(close,  Priority.NEVER);
+        final var bar = new HBox(follow, title, close);
         bar.setAlignment(Pos.CENTER);
         title.setAlignment(Pos.CENTER);
         title.setMaxWidth(Double.MAX_VALUE);
@@ -449,6 +454,16 @@ final class MultiCanvas extends Widget implements Observable {
         pane.setBorder(CANVAS_BORDER);
         pane.setTop(bar);
         return pane;
+    }
+
+    /**
+     * Sets the tool tip of the specified button.
+     *
+     * @param button  the button on which to set the tool tip.
+     * @param key     key of the {@link Resources} to use as the text.
+     */
+    private static void setTooltip(final ButtonBase button, final short key) {
+        button.setTooltip(new Tooltip(Resources.format(key)));
     }
 
     /**

@@ -246,6 +246,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short FileAccesses = 63;
 
         /**
+         * Follow on other maps the displacements of this map.
+         */
+        public static final short ForwardMoveToOthers = 81;
+
+        /**
          * Full screen
          */
         public static final short FullScreen = 22;
@@ -380,6 +385,11 @@ public class Resources extends IndexedResourceBundle {
          * Reference system by identifiers
          */
         public static final short ReferenceByIdentifiers = 73;
+
+        /**
+         * Remove this map from the mosaic.
+         */
+        public static final short RemoveCanvasFromMosaic = 82;
 
         /**
          * Select a coordinate reference system
