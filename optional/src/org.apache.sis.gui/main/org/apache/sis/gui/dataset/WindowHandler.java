@@ -53,7 +53,10 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
  * @since   1.3
+ *
+ * @deprecated Replaced by {@link org.apache.sis.gui.map.MapWindows}.
  */
+@Deprecated(since = "1.7", forRemoval = true)
 public abstract class WindowHandler {
     /**
      * The window manager which contains this handler.

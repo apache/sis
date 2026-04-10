@@ -52,7 +52,10 @@ public abstract class ToolbarButton implements EventHandler<ActionEvent> {
      *
      * @param  content  the pane for which to get the toolbar buttons.
      * @return the toolbar buttons (never null, but may be empty).
+     *
+     * @deprecated following deprecation of {@code WindowHandler}.
      */
+    @Deprecated(since = "1.7", forRemoval = true)
     public static Control[] remove(final Node content) {
         final Control[] buttons = (Control[]) content.getProperties().remove(PROPERTY_KEY);
         return (buttons != null) ? buttons : new Control[0];
