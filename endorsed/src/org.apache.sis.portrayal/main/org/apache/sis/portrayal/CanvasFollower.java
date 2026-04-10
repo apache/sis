@@ -53,8 +53,9 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * changes in {@linkplain #source} are applied on {@linkplain #target}, but not the converse.
  *
  * <h2>Multi-threading</h2>
- * This class is <strong>not</strong> thread-safe.
- * All events should be processed in the same thread.
+ * {@code CanvasFollower} is not thread-safe. The {@linkplain #source} and {@linkplain #target} canvases,
+ * together with all other canvases that are connected in the same graph of {@link PlanarCanvas} objects
+ * through any other {@code CanvasFollower} instances, shall be accessed in the same thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
@@ -126,10 +127,18 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
     private enum Status {VALID, OUTDATED, UNKNOWN, ERROR}
 
     /**
-     * Whether a change is in progress. This is for avoiding never-ending loop
-     * if a bidirectional mapping or a cycle exists (A → B → C → A).
+     * Contextual information about an "objective to display" transform change which is progress.
+     * The contextual information is necessary in particular for avoiding never-ending recursive
+     * loops if a chain of {@link CanvasFollower} result in a cyclic graph of {@code PlanarCanvas}.
+     *
+     * <h4>Design note</h4>
+     * We cannot store this information as a field in {@link TransformChangeEvent} because in a chain
+     * such as <var>A</var> → <var>B</var> → <var>C</var>, the {@code TransformChangeEvent} instance
+     * is not the same between <var>A</var> and <var>B</var> than between <var>B</var> and <var>C</var>.
+     * The use of thread local requires that all events are managed from a unique thread.
+     * This advice is documented in the package and {@link Canvas} Javadoc.
      */
-    private boolean changing;
+    private static final ThreadLocal<FollowContext> CONTEXT = ThreadLocal.withInitial(FollowContext::new);
 
     /**
      * Creates a new listener for synchronizing "objective to display" transform changes
@@ -349,42 +358,26 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
      */
     @Override
     public void propertyChange(final PropertyChangeEvent event) {
-        if (!changing && event instanceof TransformChangeEvent) try {
+        if (event instanceof TransformChangeEvent) {
             final var te = (TransformChangeEvent) event;
             displayTransformStatus = Status.OUTDATED;
-            changing = true;
-            if (te.isSameSource(source)) {
+            if (te.isSameSource(target)) {
+                transformedTarget(te);
+            } else if (te.isSameSource(source)) {
                 transformedSource(te);
                 if (!disabled && filter(te)) {
-                    if (followRealWorld && findObjectiveTransform("propertyChange")) {
-                        AffineTransform before = te.getObjectiveChange2D().orElse(null);
-                        if (before != null) try {
-                            /*
-                             * Converts a change from units of the source CRS to units of the target CRS.
-                             * If that change cannot be computed, fallback on a change in display units.
-                             * The POI may be null, but this is okay if the transform is linear.
-                             */
-                            if (objectiveTransform != null) {
-                                DirectPosition poi = getSourceObjectivePOI();
-                                AffineTransform t = AffineTransforms2D.castOrCopy(MathTransforms.tangent(objectiveTransform, poi));
-                                AffineTransform c = t.createInverse();
-                                c.preConcatenate(before);
-                                c.preConcatenate(t);
-                                before = c;
-                            }
-                            transformObjectiveCoordinates(te, before);
-                            return;
-                        } catch (NullPointerException | TransformException | NoninvertibleTransformException e) {
-                            canNotCompute("propertyChange", e);
-                        }
+                    final FollowContext context = CONTEXT.get();
+                    if (context.isPropagating(this)) {
+                        context.propagateOrDefer(this, te);
+                    } else try {
+                        te.deferredListeners = context;
+                        context.propagateOrDefer(this, te);
+                    } finally {
+                        te.deferredListeners = null;
+                        context.clear();
                     }
-                    te.getDisplayChange2D().ifPresent((after) -> transformDisplayCoordinates(te, after));
                 }
-            } else if (te.isSameSource(target)) {
-                transformedTarget(te);
             }
-        } finally {
-            changing = false;
         } else if (PlanarCanvas.OBJECTIVE_CRS_PROPERTY.equals(event.getPropertyName())) {
             displayTransform         = null;
             objectiveTransform       = null;
@@ -394,13 +387,46 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
     }
 
     /**
+     * Applies to the {@linkplain #target} canvas the change described by the given event.
+     * This method shall be invoked only if the change has not already been applied on the
+     * target canvas.
+     *
+     * @param  event  the change to apply on the {@linkplain #target} canvas.
+     */
+    final void propagate(final TransformChangeEvent event) {
+        if (followRealWorld && findObjectiveTransform("propertyChange")) {
+            AffineTransform before = event.getObjectiveChange2D().orElse(null);
+            if (before != null) try {
+                /*
+                 * Converts a change from units of the source CRS to units of the target CRS.
+                 * If that change cannot be computed, fallback on a change in display units.
+                 * The POI may be null, but this is okay if the transform is linear.
+                 */
+                if (objectiveTransform != null) {
+                    DirectPosition poi = getSourceObjectivePOI();
+                    AffineTransform t = AffineTransforms2D.castOrCopy(MathTransforms.tangent(objectiveTransform, poi));
+                    AffineTransform c = t.createInverse();
+                    c.preConcatenate(before);
+                    c.preConcatenate(t);
+                    before = c;
+                }
+                transformObjectiveCoordinates(event, before);
+                return;
+            } catch (NullPointerException | TransformException | NoninvertibleTransformException e) {
+                canNotCompute("propertyChange", e);
+            }
+        }
+        event.getDisplayChange2D().ifPresent((after) -> transformDisplayCoordinates(event, after));
+    }
+
+    /**
      * Returns {@code true} if this listener should replicate the following changes on the target canvas.
      * The default implementation returns {@code true} if the transform reason is
      * {@link TransformChangeEvent.Reason#OBJECTIVE_NAVIGATION} or
      * {@link TransformChangeEvent.Reason#DISPLAY_NAVIGATION}.
      *
      * @param  event  a transform change event that occurred on the {@linkplain #source} canvas.
-     * @return  whether to replicate that change on the {@linkplain #target} canvas.
+     * @return whether to replicate that change on the {@linkplain #target} canvas.
      */
     protected boolean filter(final TransformChangeEvent event) {
         return event.getReason().isNavigation();

@@ -27,11 +27,14 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
+import javafx.beans.InvalidationListener;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Button;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
@@ -49,6 +52,7 @@ import org.apache.sis.gui.Widget;
 import org.apache.sis.gui.coverage.CoverageCanvas;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.DataStoreOpener;
+import org.apache.sis.gui.internal.FontGIS;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.io.TableAppender;
@@ -119,7 +123,7 @@ final class MultiCanvas extends Widget implements Observable {
     /**
      * Controls associated to each map canvas.
      */
-    private static final class Controls {
+    private static final class Controls implements ChangeListener<Boolean> {
         /**
          * The title of the associated map canvas. This label is not necessarily shown.
          * If the enclosing {@link MultiCanvas} contains only one {@link MapCanvas},
@@ -138,6 +142,8 @@ final class MultiCanvas extends Widget implements Observable {
 
         /**
          * Listeners of mouse displacements and navigation actions such as zooms and pans.
+         * The {@link GestureFollower#source} canvas of all elements shall be the {@code canvas} argument
+         * given to the constructor.
          */
         final List<GestureFollower> followers;
 
@@ -198,6 +204,18 @@ final class MultiCanvas extends Widget implements Observable {
             title.setText(null);
             followers.forEach(GestureFollower::dispose);
             followers.clear();
+        }
+
+        /**
+         * Invoked when the user pressed the button for enabling or disabling the propagation of
+         * navigation events from the canvas associated to this {@code Controls} to other canvases.
+         */
+        @Override
+        public void changed(ObservableValue<? extends Boolean> property, Boolean oldValue, Boolean newValue) {
+            final boolean enabled = newValue;   // Unboxing.
+            for (final GestureFollower follower : followers) {
+                follower.transformEnabled.set(enabled);
+            }
         }
     }
 
@@ -333,10 +351,10 @@ final class MultiCanvas extends Widget implements Observable {
         switch (children.size()) {
             case 0:  break;
             case 1:  var previous = (Region) children.removeLast();
-                     previous = addTitleBar(previous, getControls(previous).title);
+                     previous = addTitleBar(previous, getControls(previous));
                      children.add(previous);
                      // Fall through
-            default: canvasView = addTitleBar(canvasView, controls.title);
+            default: canvasView = addTitleBar(canvasView, controls);
         }
         /*
          * Add listeners for replicating navigation events of `canvas` into all other visible canvases,
@@ -410,14 +428,20 @@ final class MultiCanvas extends Widget implements Observable {
      * Wraps the given {@code MapCanvas} view into a pane with a title.
      *
      * @param  canvasView  the {@link MapCanvas} view for which to add a title bar.
+     * @param  controls    value of {@code canvasPool.get(canvas)} (not necessarily obtained by that call).
      * @return a wrapper of {@code canvasView} with the addition of a title bar.
      */
-    private BorderPane addTitleBar(final Region canvasView, final Label title) {
+    private BorderPane addTitleBar(final Region canvasView, final Controls controls) {
+        final Label title = controls.title;
         final var close = new Button("❌");
         close.setOnAction((event) -> closeCanvasView(canvasView));
+        final var pin = new ToggleButton();
+        pin.selectedProperty().addListener(controls);
+        FontGIS.setGlyph(pin, FontGIS.Code.MOVE, "⮀", -1, -1);
+        HBox.setHgrow(pin,   Priority.NEVER);
         HBox.setHgrow(title, Priority.ALWAYS);
         HBox.setHgrow(close, Priority.NEVER);
-        final var bar = new HBox(title, close);
+        final var bar = new HBox(pin, title, close);
         bar.setAlignment(Pos.CENTER);
         title.setAlignment(Pos.CENTER);
         title.setMaxWidth(Double.MAX_VALUE);

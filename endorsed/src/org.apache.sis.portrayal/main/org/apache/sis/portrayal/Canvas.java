@@ -139,10 +139,12 @@ import org.opengis.coordinate.MismatchedCoordinateMetadataException;
  * The zoom level is given indirectly by the {@link #getObjectiveToDisplay()} transform.
  * The display device may have a wraparound axis, for example in the spherical coordinate system of a planetarium.
  *
- * <h2>Multi-threading</h2>
- * {@code Canvas} is not thread-safe. Synchronization, if desired, must be done by the caller.
- * Another common strategy is to interact with {@code Canvas} from a single thread,
- * for example the Swing or JavaFX event queue.
+ * <h2>Thread safety</h2>
+ * {@code Canvas} is not thread-safe.
+ * A single thread should be used for interactions with all instances of {@code Canvas}
+ * that may be referencing each other through {@linkplain #addPropertyChangeListener listeners}.
+ * External synchronization is generally not sufficient because listeners may create a graph of canvases,
+ * and it is difficult to ensure that a lock is kept during all the graph traversal.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

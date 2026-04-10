@@ -37,12 +37,15 @@ import org.apache.sis.util.logging.Logging;
  * are instances of this class.
  * This specialization provides methods for computing the difference between the old and new state.
  *
+ * <p>Instances of {@code TransformChangeEvent} should be short-lived. They exist the time needed
+ * for processing an event, but should not be retained for a long time and should not be reused.</p>
+ *
  * <h2>Multi-threading</h2>
- * This class is <strong>not</strong> thread-safe.
- * All listeners should process this event in the same thread.
+ * {@code TransformChangeEvent} is not thread-safe. All listeners shall process this event in the
+ * thread that {@linkplain Observable#firePropertyChange(PropertyChangeEvent) fired} this event.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.7
  *
  * @see Canvas#OBJECTIVE_TO_DISPLAY_PROPERTY
  *
@@ -143,6 +146,18 @@ public class TransformChangeEvent extends PropertyChangeEvent {
      * This is used for avoiding to report many times the same error.
      */
     private transient Exception error;
+
+    /**
+     * Listeners that have not been fully notified of this event.
+     * Part of the execution of these listeners were deferred.
+     * This is for internal usage by {@link CanvasFollower}.
+     *
+     * <h4>Design note</h4>
+     * For separation of concerns, it would be better to manage deferred propagation in {@link CanvasFollower}.
+     * But we want to apply deferred changes after {@link Observable#firePropertyChange(PropertyChangeEvent)}
+     * finished to loop over all listeners, while a {@link CanvasFollower} instance is only one of those listeners.
+     */
+    transient FollowContext deferredListeners;
 
     /**
      * Creates a new event for a change of the "objective to display" property.

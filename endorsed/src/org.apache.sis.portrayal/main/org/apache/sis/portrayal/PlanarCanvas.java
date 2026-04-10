@@ -34,10 +34,12 @@ import org.apache.sis.referencing.internal.shared.AffineTransform2D;
  * A canvas for two-dimensional display device using a Cartesian coordinate system.
  * Data are reduced to a two-dimensional slice before to be displayed.
  *
- * <h2>Multi-threading</h2>
- * {@code PlanarCanvas} is not thread-safe. Synchronization, if desired, must be done by the caller.
- * Another common strategy is to interact with {@code PlanarCanvas} from a single thread,
- * for example the Swing or JavaFX event queue.
+ * <h2>Thread safety</h2>
+ * {@code PlanarCanvas} is not thread-safe.
+ * A single thread should be used for interactions with all instances of {@code PlanarCanvas} that are
+ * linked together by {@link CanvasFollower} or other {@linkplain #addPropertyChangeListener listeners}.
+ * External synchronization is generally not sufficient because listeners may create a graph of canvases,
+ * and it is difficult to ensure that a lock is kept during all the graph traversal.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
