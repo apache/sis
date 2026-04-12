@@ -75,7 +75,7 @@ final class ConcatenatedConverter extends AbstractConverter implements LenientCo
      * Returns {@code true} if the two unit converters are linear converters.
      * Should always be {@code false}, otherwise we would not have created a {@code ConcatenatedConverter}.
      *
-     * @deprecated This method is badly named, but we can't change since it is defined by JSR-385.
+     * @deprecated This method is badly named, but we cannot change since it is defined by JSR-385.
      */
     @Override
     @Deprecated

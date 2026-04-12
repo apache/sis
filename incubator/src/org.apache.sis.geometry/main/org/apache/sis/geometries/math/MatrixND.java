@@ -365,7 +365,7 @@ public class MatrixND extends AbstractMatrix<MatrixND>{
     public MatrixND invert(){
         final double[][] inverse = Matrices.localInvert(values);
         if (inverse == null){
-            throw new IllegalArgumentException("Can not inverse");
+            throw new IllegalArgumentException("Cannot inverse");
         }
         return this;
     }

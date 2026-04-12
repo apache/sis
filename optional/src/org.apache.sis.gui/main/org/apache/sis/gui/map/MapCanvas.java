@@ -444,7 +444,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * but at the expanse of quality. Evanescent panes are easier to use because the callers do not need to care
      * about changes of the {@linkplain #getObjectiveToDisplay() objective to display} transform.
      * Instead, callers can add shapes with coordinate values computed using the current transform
-     * at the time that this method is invoked, and ignore the changes that may happen afterward.
+     * at the time when this method is invoked, and ignore the changes that may happen afterward.
      * If the user continues to navigate on the map, the {@linkplain Pane#getTransforms() list of transforms}
      * of the returned pane will be updated.
      *
@@ -1386,7 +1386,7 @@ public abstract class MapCanvas extends PlanarCanvas {
     /**
      * Invoked after the background thread created by {@link #repaint()} finished to update map content.
      * This method should be invoked in all cases: after successful completion, failure or cancellation.
-     * The {@link RenderingTask#changeInProgress} transform is the JavaFX transform at the time that the
+     * The {@link RenderingTask#changeInProgress} transform is the JavaFX transform at the time when the
      * repaint event started and which is now integrated in the map.
      * That transform will be removed from {@link #floatingPane} transforms.
      * The {@link #transform} result is identity if no zoom, rotation or pan gesture has been applied
@@ -1438,7 +1438,7 @@ public abstract class MapCanvas extends PlanarCanvas {
             /*
              * Note: intuitively one may expect `prepend(…)` instead of `append(…)` above.
              * The use of `prepend(…)` would give a `transform` result which would be as if
-             * the transform was the identity transform at the time that rendering started,
+             * the transform was the identity transform at the time when rendering started,
              * and all operations on it are gesture events that occurred while the renderer
              * was working in background. But actually this is not quite correct.
              * See the zoom-in discussion in "example" section of method javadoc.

@@ -136,7 +136,7 @@ public interface PreparedTIN extends TIN {
 
         @Override
         public void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
-            throw new IllegalArgumentException("CoordinateReferenceSystem can not be changed on PreparedTIN");
+            throw new IllegalArgumentException("CoordinateReferenceSystem cannot be changed on PreparedTIN");
         }
 
         @Override
@@ -240,7 +240,7 @@ public interface PreparedTIN extends TIN {
 
         @Override
         public void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
-            throw new IllegalArgumentException("CoordinateReferenceSystem can not be changed on PreparedTIN");
+            throw new IllegalArgumentException("CoordinateReferenceSystem cannot be changed on PreparedTIN");
         }
 
         @Override

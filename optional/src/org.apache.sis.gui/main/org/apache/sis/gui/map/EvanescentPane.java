@@ -50,12 +50,12 @@ final class EvanescentPane extends Pane implements ListChangeListener<Node> {
      * If there is no pane with an identity transform, a new pane is created and
      * added to the list of children.
      *
-     * <p>Note that the returned pane has an identity transform at the time that
+     * <p>Note that the returned pane has an identity transform at the time when
      * this method is invoked, but that transform may become non-identity later
      * if the user navigates on the map (e.g. zoom or pan events).</p>
      *
      * @param  children  the children of {@link MapCanvas#floatingPane}.
-     * @return a pane with an identity transform at the time that this method is invoked.
+     * @return a pane with an identity transform at the time when this method is invoked.
      */
     static EvanescentPane getOrCreate(final List<Node> children) {
         for (int i = children.size(); --i >= 0;) {

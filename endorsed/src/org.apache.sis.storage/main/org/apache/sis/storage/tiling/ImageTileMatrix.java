@@ -342,7 +342,7 @@ final class ImageTileMatrix implements TileMatrix {
      * @param  indiceRanges  ranges of tile indices in all dimensions, or {@code null} for all tiles.
      * @param  parallel  {@code true} for a parallel stream (if supported), or {@code false} for a sequential stream.
      * @return stream of tiles, excluding missing tiles.
-     * @throws DataStoreException if the tiles can not be fetched in the given ranges of tile indexes.
+     * @throws DataStoreException if the tiles cannot be fetched in the given ranges of tile indexes.
      */
     @Override
     public Stream<Tile> getTiles(GridExtent indiceRanges, final boolean parallel) throws DataStoreException {
@@ -362,7 +362,7 @@ final class ImageTileMatrix implements TileMatrix {
      *
      * @param  indiceRanges  ranges of tile indices in all dimensions, or {@code null} for all tiles.
      * @return a request which can be used for getting a tile or a stream of tiles in the given region.
-     * @throws DataStoreException if the tiles can not be fetched in the given ranges of tile indexes.
+     * @throws DataStoreException if the tiles cannot be fetched in the given ranges of tile indexes.
      * @throws ArithmeticException if coordinate computation exceeds the capacity of 64-bits integers.
      */
     private synchronized IterationDomain<Tile> iterator(final GridExtent indiceRanges) throws DataStoreException {

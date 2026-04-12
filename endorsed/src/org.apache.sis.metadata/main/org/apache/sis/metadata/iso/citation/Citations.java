@@ -339,7 +339,7 @@ public final class Citations {
     public static final IdentifierSpace<String> NETCDF = new CitationConstant.Authority<>(Constants.NETCDF);
 
     /**
-     * The authority for identifiers of objects defined by the the GeoTIFF specification.
+     * The authority for identifiers of objects defined by the GeoTIFF specification.
      * This specification identifies some map projections by their own numerical codes.
      *
      * <h4>Main usage</h4>

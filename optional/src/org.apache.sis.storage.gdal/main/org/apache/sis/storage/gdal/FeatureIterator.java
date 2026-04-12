@@ -139,7 +139,7 @@ final class FeatureIterator implements Spliterator<Feature>, Runnable {
      * <p>This method must be invoked in a block synchronized on {@code layer.store}.</p>
      *
      * @throws ConcurrentReadException if another iteration is already in progress.
-     * @throws Throwable if an error occurred while reseting the stream.
+     * @throws Throwable if an error occurred while resetting the stream.
      */
     private void initialize(final OGR ogr) throws Throwable {
         assert Thread.holdsLock(layer.store);

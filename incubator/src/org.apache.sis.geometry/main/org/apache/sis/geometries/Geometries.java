@@ -125,7 +125,7 @@ public final class Geometries {
     public static final CoordinateReferenceSystem PSEUDOGEO_3D = createCartesianCRS3D(X_RIGHT, Y_FORWARD, Z_UP);
 
     /**
-     * Get an undefined CRS whic can not be converted to any other CRS.
+     * Get an undefined CRS whic cannot be converted to any other CRS.
      * @param nbDim CRS dimension
      * @return created CRS.
      */
@@ -172,7 +172,7 @@ public final class Geometries {
 
     /**
      * Constructs an axis with a name and an abbreviation as a resource bundle key.
-     * To be used for construction of pre-defined constants only.
+     * To be used for construction of predefined constants only.
      *
      * @param name         The name.
      * @param abbreviation The {@linkplain #getAbbreviation abbreviation} used for this
@@ -380,7 +380,7 @@ public final class Geometries {
      * Regroup all primitives as one.
      * Preserves all attributes.
      *
-     * Types which can not be concatenated :
+     * Types which cannot be concatenated :
      * - LINE_LOOP
      * - LINE_STRIP
      * - TRIANGLE_FAN
@@ -442,9 +442,9 @@ public final class Geometries {
             switch (type) {
                 case LINE_LOOP :
                 case LINE_STRIP :
-                    throw new IllegalArgumentException("Line Strip and Loop can not be concatenate, unlike triangles which can have a degenerated triangle to link them");
+                    throw new IllegalArgumentException("Line Strip and Loop cannot be concatenate, unlike triangles which can have a degenerated triangle to link them");
                 case TRIANGLE_FAN :
-                    throw new IllegalArgumentException("Triangle fan can not be concatenate, unlike triangles which can have a degenerated triangle to link them");
+                    throw new IllegalArgumentException("Triangle fan cannot be concatenate, unlike triangles which can have a degenerated triangle to link them");
                 case TRIANGLE_STRIP : {
                     //we must have even size trips otherwise next concatenated strip will have reversed winding
                     if (idOffset % 2 != 0) {
@@ -553,7 +553,7 @@ public final class Geometries {
      *
      * @param primitive Primitive to cut
      * @param maxSize maximum number of elements by primitive.
-     * @return splitted primitive.
+     * @return split primitive.
      */
     public static List<MeshPrimitive> split(MeshPrimitive primitive, int maxSize) {
         if ( primitive.getPositions().getLength() <= maxSize

@@ -49,7 +49,7 @@ final class URLDataSource implements DataSource {
 
     /**
      * The URL to use for connecting to the database.
-     * This field can not be {@code null}.
+     * This field cannot be {@code null}.
      */
     private final String url;
 
@@ -90,7 +90,7 @@ final class URLDataSource implements DataSource {
     /**
      * Delegates to {@link DriverManager}.
      *
-     * @throws SQLException If the connection can not be established.
+     * @throws SQLException If the connection cannot be established.
      */
     @Override
     public Connection getConnection() throws SQLException {
@@ -100,7 +100,7 @@ final class URLDataSource implements DataSource {
     /**
      * Delegates to {@link DriverManager}.
      *
-     * @throws SQLException If the connection can not be established.
+     * @throws SQLException If the connection cannot be established.
      */
     @Override
     public Connection getConnection(String username, String password) throws SQLException {

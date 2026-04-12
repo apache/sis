@@ -160,7 +160,7 @@ public class MultiRegisterOperations extends AbstractFactory implements Register
     }
 
     /**
-     * Creates an instance with the same register than the given instance, but a different <abbr>AOI</abbr>.
+     * Creates an instance with the same register as the given instance, but a different <abbr>AOI</abbr>.
      *
      * @param source          the register from which to copy the authority and version.
      * @param areaOfInterest  the new area of interest (<abbr>AOI</abbr>), or {@code null} if none.

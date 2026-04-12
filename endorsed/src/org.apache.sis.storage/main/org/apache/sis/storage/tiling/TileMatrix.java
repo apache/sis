@@ -227,7 +227,7 @@ public interface TileMatrix {
      * @param  parallel  {@code true} for a parallel stream (if supported), or {@code false} for a sequential stream.
      * @return stream of tiles, excluding {@linkplain TileStatus#MISSING missing} tiles.
      *         Iteration order of the stream may vary from one implementation to another and from one call to another.
-     * @throws DataStoreException if the tiles can not be fetched in the given ranges of tile indexes.
+     * @throws DataStoreException if the tiles cannot be fetched in the given ranges of tile indexes.
      */
     Stream<Tile> getTiles(GridExtent indiceRanges, boolean parallel) throws DataStoreException;
 }

@@ -714,7 +714,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * Returns the exception message for a property not found. The message will differ depending
      * on whether the property is not found because ambiguous or because it does not exist.
      *
-     * @param  feature   the the feature where a property where searched.
+     * @param  feature   the feature where a property where searched.
      * @param  property  the name of the property which has not been found.
      */
     static String propertyNotFound(final FeatureType feature, final String property) {

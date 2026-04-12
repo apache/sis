@@ -618,7 +618,7 @@ public final class GeometryOperations {
                     continue reduce;
                 }
             }
-            //no more simplification possible, or we encounter a case were we can not identify the most efficient one
+            //no more simplification possible, or we encounter a case were we cannot identify the most efficient one
             break;
         }
 
@@ -660,7 +660,7 @@ public final class GeometryOperations {
                     continue reduce;
                 }
             }
-            //no more simplification possible, or we encounter a case were we can not identify the most efficient one
+            //no more simplification possible, or we encounter a case were we cannot identify the most efficient one
             break;
         }
 

@@ -755,7 +755,7 @@ public final class Maths {
     }
 
     /**
-     * JavaScript can not read binary data such as float if they are not byte aligned.
+     * JavaScript cannot read binary data such as float if they are not byte aligned.
      * Float require 4 bytes alignment and Double 8.
      * In the B3DM specification the gltf must be 8 bytes aligned.
      *

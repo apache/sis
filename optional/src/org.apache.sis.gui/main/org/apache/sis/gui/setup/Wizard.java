@@ -174,8 +174,8 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
     private final JButton cancelButton;
 
     /**
-     * The button for selecting a directory or a ZIP file. This button may be
-     * non-null only during the time that a {@link JFileChooser} is visible.
+     * The button for selecting a directory or a <abbr>ZIP</abbr> file.
+     * This button may be non-null only during the time when a {@link JFileChooser} is visible.
      *
      * @see #findSelectButton(Container)
      */

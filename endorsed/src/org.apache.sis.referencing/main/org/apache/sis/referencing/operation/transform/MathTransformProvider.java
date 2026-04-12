@@ -274,7 +274,7 @@ public interface MathTransformProvider {
          * by the user to the same value as what would have been inferred from the context.
          * OTherwise (i.e., if there is a mismatch between inferred and user-defined value),
          * the Boolean is {@code FALSE}, a warning should be logged by the implementation,
-         * and the user-supplied value should have precedence in the parameters returned by
+         * and the user supplied value should have precedence in the parameters returned by
          * {@link #getCompletedParameters()}.
          *
          * @return names of parameters inferred from context.

@@ -55,13 +55,13 @@ final class Initializer {
     static final String WAL_SUFFIX = "-wal", SHM_SUFFIX = "-shm";
 
     /**
-     * The user-supplied file, or {@code null} if none.
+     * The user supplied file, or {@code null} if none.
      */
     Path path;
 
     /**
      * The storage connector with {@link #source} as the storage object.
-     * If the user-supplied storage connector is already wrapping a {@link DataSource}, then it is used.
+     * If the user supplied storage connector is already wrapping a {@link DataSource}, then it is used.
      * Otherwise, a new storage connector is created with a new SQLite {@code DataSource} as the storage.
      */
     StorageConnector connector;

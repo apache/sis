@@ -50,7 +50,7 @@ public interface Transform {
     /**
      * Transform a single tuple.
      *
-     * @param source tuple array, can not be null.
+     * @param source tuple array, cannot be null.
      * @param dest array, can be null.
      * @return destination tuple.
      */
@@ -65,9 +65,9 @@ public interface Transform {
     /**
      * Transform N tuples.
      *
-     * @param source tuple array, can not be null.
+     * @param source tuple array, cannot be null.
      * @param sourceOffset index where to start.
-     * @param dest array, can not be null.
+     * @param dest array, cannot be null.
      * @param destOffset index where start inserting converted values.
      * @param nbTuple number of tuples to transform.
      */
@@ -76,7 +76,7 @@ public interface Transform {
     /**
      * Transform a single tuple.
      *
-     * @param source tuple array, can not be null.
+     * @param source tuple array, cannot be null.
      * @param dest array, can be null.
      * @return destination tuple.
      */
@@ -91,9 +91,9 @@ public interface Transform {
     /**
      * Transform N tuples.
      *
-     * @param source tuple array, can not be null.
+     * @param source tuple array, cannot be null.
      * @param sourceOffset index where to start.
-     * @param dest array, can not be null.
+     * @param dest array, cannot be null.
      * @param destOffset index where start inserting converted values.
      * @param nbTuple number of tuples to transform.
      */
@@ -102,7 +102,7 @@ public interface Transform {
     /**
      * Transform a single tuple.
      *
-     * @param source tuple, can not be null.
+     * @param source tuple, cannot be null.
      * @param dest tuple, can be null.
      * @return destination tuple.
      */

@@ -306,7 +306,7 @@ public final class GeoEncoder {
         }
         /*
          * Write the horizontal component of the CRS. We need to take the CRS
-         * at the same dimensions than the ones selected for the `gridToCRS`.
+         * at the same dimensions as the ones selected for the `gridToCRS`.
          */
         if (!grid.isDefined(GridGeometry.CRS)) {
             writeModelType(GeoCodes.undefined);
