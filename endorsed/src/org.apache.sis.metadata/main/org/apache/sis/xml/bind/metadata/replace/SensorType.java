@@ -16,6 +16,7 @@
  */
 package org.apache.sis.xml.bind.metadata.replace;
 
+import java.util.List;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
 import org.opengis.util.CodeList;
@@ -43,7 +44,14 @@ public final class SensorType extends CodeList<SensorType> {
     /**
      * The sensor is a radiometer.
      */
-    public static final SensorType RADIOMETER = valueOf("RADIOMETER");
+    public static final SensorType RADIOMETER;
+
+    /**
+     * All code list values created in the currently running <abbr>JVM</abbr>.
+     */
+    private static final List<SensorType> VALUES = initialValues(
+        // Inline assignments for getting compiler error if a field is missing or duplicated.
+        RADIOMETER = new SensorType("RADIOMETER"));
 
     /**
      * Constructs an element of the given name.
@@ -56,13 +64,24 @@ public final class SensorType extends CodeList<SensorType> {
     }
 
     /**
-     * Returns the list of codes of the same kind as this code list element.
+     * Returns the list of {@code SensorType}s.
      *
      * @return all code {@linkplain #values() values} for this code list.
      */
     @Override
     public SensorType[] family() {
-        return values(SensorType.class);
+        return values();
+    }
+
+    /**
+     * Returns the list of {@code SensorType}s.
+     * This method must be declared even if not invoked explicitly because it may be invoked
+     * by reflection by {@link org.apache.sis.util.internal.shared.CodeLists#values(Class)}.
+     *
+     * @return the list of codes declared in the current <abbr>JVM</abbr>.
+     */
+    public static SensorType[] values() {
+        return VALUES.toArray(SensorType[]::new);
     }
 
     /**
@@ -72,6 +91,6 @@ public final class SensorType extends CodeList<SensorType> {
      * @return a code matching the given name.
      */
     public static SensorType valueOf(String code) {
-        return valueOf(SensorType.class, code, SensorType::new).get();
+        return valueOf(VALUES, code, SensorType::new);
     }
 }

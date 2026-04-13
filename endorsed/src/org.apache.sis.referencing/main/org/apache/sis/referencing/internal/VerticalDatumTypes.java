@@ -204,7 +204,7 @@ public final class VerticalDatumTypes {
         if (method == null && name != null && !name.isBlank()) {
             final int s = name.lastIndexOf('-');
             if (s >= 0 && name.substring(s+1).strip().equalsIgnoreCase("based")) {
-                method = CodeLists.forCodeName(RealizationMethod.class, name.substring(0, s));
+                method = CodeLists.forName(RealizationMethod.values(), name.substring(0, s));
             }
             if (method == null) {
                 method = RealizationMethod.valueOf(name);

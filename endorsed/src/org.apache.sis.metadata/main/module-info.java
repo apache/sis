@@ -150,7 +150,11 @@ module org.apache.sis.metadata {
             org.glassfish.jaxb.core,            // TODO: need to export to Jakarta only.
             jakarta.xml.bind;                   // Seems ignored.
 
+    exports org.apache.sis.metadata.iso.legacy to
+            org.apache.sis.util;                // For calls to `MediumName.values()` by reflection.
+
     exports org.apache.sis.xml.bind.metadata.replace to
+            org.apache.sis.util,                // For calls to `SensorType.values()` by reflection.
             org.apache.sis.referencing,
             org.apache.sis.profile.france,
             org.glassfish.jaxb.runtime,         // For access to beforeUnmarshal(…).

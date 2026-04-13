@@ -37,6 +37,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class CodeListSetTest extends TestCase {
     /**
      * Creates a new test case.
@@ -52,7 +53,7 @@ public final class CodeListSetTest extends TestCase {
      */
     @SuppressWarnings("fallthrough")
     private CodeListSet<AxisDirection> create(final int n) {
-        final CodeListSet<AxisDirection> c = new CodeListSet<>(AxisDirection.class);
+        final var c = new CodeListSet<AxisDirection>(AxisDirection.class);
         assertTrue(c.isEmpty());
         switch (n) {
             default: throw new AssertionError(n);
@@ -74,7 +75,7 @@ public final class CodeListSetTest extends TestCase {
     private CodeListSet<OnLineFunction> createOtherKind() {
         // For the validity of the tests, ordinal value must be the same.
         assertEquals(NORTH_NORTH_EAST.ordinal(), OnLineFunction.INFORMATION.ordinal());
-        final CodeListSet<OnLineFunction> c = new CodeListSet<>(OnLineFunction.class);
+        final var c = new CodeListSet<OnLineFunction>(OnLineFunction.class);
         assertTrue(c.add(OnLineFunction.INFORMATION));
         return c;
     }
@@ -104,6 +105,7 @@ public final class CodeListSetTest extends TestCase {
      * Tests the {@link CodeListSet#contains(Object)} method.
      */
     @Test
+    @SuppressWarnings("element-type-mismatch")
     public void testContains() {
         final CodeListSet<AxisDirection> c = create(4);
         assertTrue (c.contains(NORTH_NORTH_EAST));
@@ -123,6 +125,7 @@ public final class CodeListSetTest extends TestCase {
      * Tests the {@link CodeListSet#remove(Object)} method.
      */
     @Test
+    @SuppressWarnings("element-type-mismatch")
     public void testRemove() {
         final CodeListSet<AxisDirection> c = create(4);
         assertFalse(c.remove(null), "Should be null-safe.");
@@ -211,7 +214,7 @@ public final class CodeListSetTest extends TestCase {
      */
     @Test
     public void testFill() {
-        final CodeListSet<AxisDirection> c = new CodeListSet<>(AxisDirection.class, true);
+        final var c = new CodeListSet<AxisDirection>(AxisDirection.class, true);
         assertTrue(c.size() >= 32, "Expect at least 32 elements as of GeoAPI 3.0.");
         assertTrue(c.toString().startsWith("[AxisDirection.NORTH, AxisDirection.NORTH_NORTH_EAST, "));
         /*
@@ -227,7 +230,7 @@ public final class CodeListSetTest extends TestCase {
      */
     @Test
     public void testLargeCodeList() {
-        final Set<LargeCodeList> main = new HashSet<>(Arrays.asList(LargeCodeList.values()));
+        final var main = new HashSet<LargeCodeList>(Arrays.asList(LargeCodeList.values()));
         assertTrue(main.size() > Long.SIZE, "This test requires more than 64 elements.");
         final CodeListSet<LargeCodeList> c = new CodeListSet<>(LargeCodeList.class);
         /*

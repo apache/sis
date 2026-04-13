@@ -16,10 +16,10 @@
  */
 package org.apache.sis.util.internal.shared;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.InaccessibleObjectException;
 import java.lang.reflect.UndeclaredThrowableException;
-import java.util.function.Predicate;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters.Filter;
@@ -31,38 +31,14 @@ import org.opengis.util.ControlledVocabulary;
 
 /**
  * Implementation of some {@link org.apache.sis.util.iso.Types} methods needed by {@code org.apache.sis.util} module.
- * This class opportunistically implements {@link Predicate} interface, but this is an implementation details.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class CodeLists implements Predicate<CodeList<?>> {
+public final class CodeLists {
     /**
-     * The name to compare during filtering operation.
+     * Do not allow instantiation of this class.
      */
-    private final String codename;
-
-    /**
-     * Creates a new filter for the specified code name.
-     *
-     * @param codename the name to compare during filtering operation.
-     */
-    private CodeLists(final String codename) {
-        this.codename  = codename;
-    }
-
-    /**
-     * Returns {@code true} if the given code matches the name we are looking for.
-     *
-     * @param  code  the code list candidate.
-     */
-    @Override
-    public boolean test(final CodeList<?> code) {
-        for (final String candidate : code.names()) {
-            if (accept(candidate, codename)) {
-                return true;
-            }
-        }
-        return false;
+    private CodeLists() {
     }
 
     /**
@@ -70,6 +46,28 @@ public final class CodeLists implements Predicate<CodeList<?>> {
      */
     private static boolean accept(final String candidate, final String codename) {
         return CharSequences.equalsFiltered(candidate, codename, Filter.LETTERS_AND_DIGITS, true);
+    }
+
+    /**
+     * Returns the code from the given array that matches the given name.
+     *
+     * @param  <E>     the type of code.
+     * @param  values  the values to test.
+     * @param  name    the name of the code to obtain, or {@code null}.
+     * @return a code matching the given name, or {@code null} if none.
+     */
+    public static <E extends ControlledVocabulary> E forName(final E[] values, String name) {
+        name = Strings.trimOrNull(name);
+        if (name != null) {
+            for (final E code : values) {
+                for (String candidate : code.names()) {
+                    if (accept(candidate, name)) {
+                        return code;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -119,21 +117,13 @@ public final class CodeLists implements Predicate<CodeList<?>> {
      */
     public static <E extends CodeList<E>> E forCodeName(final Class<E> codeType, String name) {
         name = Strings.trimOrNull(name);
-        return (name != null) ? find(codeType, new CodeLists(name)) : null;
-    }
-
-    /**
-     * Returns the code of the given type that matches the filter.
-     *
-     * @param  <E>       the compile-time type given as the {@code codeType} parameter.
-     * @param  codeType  the type of code list.
-     * @param  filter    the criterion for selecting a code list.
-     * @return a code matching the given name, or {@code null} if none.
-     */
-    public static <E extends CodeList<E>> E find(final Class<E> codeType, final Predicate<? super CodeList<?>> filter) {
-        for (final E code : CodeList.values(codeType)) {
-            if (filter.test(code)) {
-                return code;
+        if (name != null) {
+            for (final E code : values(codeType)) {
+                for (String candidate : code.names()) {
+                    if (accept(candidate, name)) {
+                        return code;
+                    }
+                }
             }
         }
         return null;
@@ -159,20 +149,49 @@ public final class CodeLists implements Predicate<CodeList<?>> {
         if (code == null) try {
             code = codeType.cast(codeType.getMethod("valueOf", String.class).invoke(null, name));
         } catch (InvocationTargetException e) {
-            final Throwable cause = e.getCause();
-            if (cause instanceof RuntimeException) {
-                throw (RuntimeException) cause;
-            }
-            if (cause instanceof Error) {
-                throw (Error) cause;
-            }
-            // `CodeList.valueOf(String)` methods are not expected to throw checked exceptions.
-            throw new UndeclaredThrowableException(cause);
+            throw rethrowOrWrap(e.getCause());
         } catch (IllegalAccessException e) {
             throw (InaccessibleObjectException) new InaccessibleObjectException(e.getMessage()).initCause(e);
         } catch (NoSuchMethodException | NullPointerException e) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementNotFound_1, name), e);
         }
         return code;
+    }
+
+    /**
+     * Returns all known values for the given type of code list or enumeration.
+     * This method delegates to the public static {@code values()} method.
+     * If that method is not found, an empty list is returned.
+     *
+     * @param  <T>       the compile-time type given as the {@code codeType} parameter.
+     * @param  codeType  the type of code list or enumeration.
+     * @return the list of values for the given code list or enumeration, or an empty array if none.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends CodeList<?>> T[] values(final Class<T> codeType) {
+        Object values;
+        try {
+            values = codeType.getMethod("values", (Class<?>[]) null).invoke(null, (Object[]) null);
+        } catch (InvocationTargetException e) {
+            throw rethrowOrWrap(e.getCause());
+        } catch (NoSuchMethodException | IllegalAccessException e) {
+            values = Array.newInstance(codeType, 0);
+        }
+        return (T[]) values;
+    }
+
+    /**
+     * Re-throws the given exception if it is unchecked, or wraps it otherwise.
+     * In the latter case, the wrapper is {@link UndeclaredThrowableException}
+     * because this method is invoked in contexts where no checked exception was allowed.
+     */
+    private static UndeclaredThrowableException rethrowOrWrap(final Throwable cause) {
+        if (cause instanceof RuntimeException) {
+            throw (RuntimeException) cause;
+        } else if (cause instanceof Error) {
+            throw (Error) cause;
+        }
+        // `CodeList.valueOf(String)` methods are not expected to throw checked exceptions.
+        throw new UndeclaredThrowableException(cause);
     }
 }
