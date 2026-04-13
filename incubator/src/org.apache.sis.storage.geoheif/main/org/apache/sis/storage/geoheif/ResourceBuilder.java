@@ -255,7 +255,7 @@ final class ResourceBuilder {
      *
      * @param  itemID  identifier of the item to read.
      * @return the item for locating the identified data, or {@code null} if none.
-     * @throws DataStoreContentException if there is two ore more items for the same identifier.
+     * @throws DataStoreContentException if there are two ore more items for the same identifier.
      */
     private ByteRanges.Reader getLocationByIdentifier(final int itemID) throws DataStoreContentException {
         final Object item = itemLocations.get(itemID);

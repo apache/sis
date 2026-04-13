@@ -132,8 +132,8 @@ final class CellFormat extends SimpleStringProperty {
      * after the {@link #cellFormat} has been configured.
      */
     private void updatePropertyValue() {
-        if (cellFormat instanceof DecimalFormat) {
-            super.setValue(((DecimalFormat) cellFormat).toLocalizedPattern());
+        if (cellFormat instanceof DecimalFormat df) {
+            super.setValue(df.toLocalizedPattern());
         }
     }
 
@@ -148,8 +148,8 @@ final class CellFormat extends SimpleStringProperty {
     @Override
     public void setValue(final String pattern) {
         shortenedPattern = false;
-        if (cellFormat instanceof DecimalFormat) {
-            ((DecimalFormat) cellFormat).applyLocalizedPattern(pattern);
+        if (cellFormat instanceof DecimalFormat df) {
+            df.applyLocalizedPattern(pattern);
             updatePropertyValue();
             ((GridView) getBean()).updateCellValues();
         }
@@ -189,8 +189,8 @@ final class CellFormat extends SimpleStringProperty {
     final void restorePattern() {
         if (shortenedPattern) {
             shortenedPattern = false;
-            if (cellFormat instanceof DecimalFormat) {
-                ((DecimalFormat) cellFormat).applyLocalizedPattern(getValue());
+            if (cellFormat instanceof DecimalFormat df) {
+                df.applyLocalizedPattern(getValue());
             }
         }
     }
@@ -279,9 +279,8 @@ final class CellFormat extends SimpleStringProperty {
         } else {
             int n = getFractionDigits(image, band).orElse(1);
             if (n > 6 || n < -9) {      // Arbitrary threshold for switching to scientific notation.
-                if (cellFormat instanceof DecimalFormat) {
+                if (cellFormat instanceof DecimalFormat df) {
                     if (classicFormatPattern == null) {
-                        final DecimalFormat df = (DecimalFormat) cellFormat;
                         classicFormatPattern = df.toPattern();
                         df.applyPattern("0.000E00");
                     }

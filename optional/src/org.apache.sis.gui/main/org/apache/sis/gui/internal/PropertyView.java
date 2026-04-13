@@ -184,19 +184,14 @@ public final class PropertyView implements Localized, ChangeListener<Number> {
                     pendingTask = null;
                     task.cancel(BackgroundThreads.NO_INTERRUPT_DURING_IO);
                 }
-                if (newValue == null) {
-                    content = null;
-                } else if (newValue instanceof Throwable) {
-                    content = setText((Throwable) newValue);
-                } else if (newValue instanceof IdentifiedObject) {
-                    content = setCRS((IdentifiedObject) newValue);
-                } else if (newValue instanceof Collection<?>) {
-                    content = setList(((Collection<?>) newValue).toArray());
-                } else if (newValue.getClass().isArray()) {
-                    content = setList(newValue);
-                } else {
-                    content = setText(formats.formatValue(newValue, true));
-                }
+                content = switch (newValue) {
+                    case null               -> null;
+                    case Throwable        c -> setText(c);
+                    case IdentifiedObject c -> setCRS(c);
+                    case Collection<?>    c -> setList(c.toArray());
+                    default -> newValue.getClass().isArray() ? setList(newValue)
+                                : setText(formats.formatValue(newValue, true));
+                };
             }
             view.set(content);
             value = newValue;           // Assign only on success.

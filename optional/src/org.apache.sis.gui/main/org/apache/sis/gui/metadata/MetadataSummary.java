@@ -231,8 +231,8 @@ public class MetadataSummary extends Widget {
         @Override protected void succeeded() {
             if (getter == this) try {
                 setMetadata(getValue());
-                if (resource instanceof Aggregate) {
-                    getIdentificationInfo().completeMissingGeographicBounds((Aggregate) resource);
+                if (resource instanceof Aggregate c) {
+                    getIdentificationInfo().completeMissingGeographicBounds(c);
                 }
             } finally {
                 getter = null;

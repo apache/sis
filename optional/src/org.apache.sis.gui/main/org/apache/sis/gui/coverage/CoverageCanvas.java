@@ -39,6 +39,7 @@ import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Shape;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
@@ -358,7 +359,7 @@ public class CoverageCanvas extends MapCanvasAWT {
     }
 
     /**
-     * Returns the source of coverages for this viewer.
+     * Returns the source of coverages for this viewer, or {@code null} if none.
      * This method, like all other methods in this class, shall be invoked from the JavaFX thread.
      *
      * @return the source of coverages shown in this viewer, or {@code null} if none.
@@ -659,7 +660,10 @@ public class CoverageCanvas extends MapCanvasAWT {
             if (resource != null) resource.addListener  (TileReadEvent.class, tileReadListener);
         }
         if (resource == null && coverage == null) {
-            runAfterRendering(this::clear);
+            runAfterRendering(() -> {
+                clear();
+                requestRepaint();
+            });
         } else if (controls != null && controls.isAdjustingSlice) {
             runAfterRendering(() -> {
                 clearRenderedImage();
@@ -750,6 +754,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                             requestRepaint();                   // Cause `Worker` class to be executed.
                         } catch (RuntimeException ex) {         // Mostly for `BackingStoreException`.
                             clear();
+                            requestRepaint();
                             ExceptionReporter.canNotUseResource(fixedPane, Exceptions.unwrap(ex));
                         }
                     });
@@ -937,7 +942,7 @@ public class CoverageCanvas extends MapCanvasAWT {
 
         /**
          * Value of {@link CoverageCanvas#getObjectiveToDisplay()} at the time this worker has been initialized.
-         * This is the conversion from {@link #objectiveCRS} to the canvas display CRS.
+         * This is the conversion from {@link #objectiveCRS} to the canvas display <abbr>CRS</abbr>.
          * Can be thought as a conversion from "real world" units to pixel units
          * and depends on the zoom and translation events that happened before rendering.
          */
@@ -1146,8 +1151,8 @@ public class CoverageCanvas extends MapCanvasAWT {
         @Override
         protected void paint(final Graphics2D gr) {
             gr.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-            if (prefetchedImage instanceof TileErrorHandler.Executor) {
-                ((TileErrorHandler.Executor) prefetchedImage).execute(
+            if (prefetchedImage instanceof TileErrorHandler.Executor ex) {
+                ex.execute(
                         () -> gr.drawRenderedImage(RenderingWorkaround.wrap(prefetchedImage), resampledToDisplay),
                         new TileErrorHandler(data.processor.getErrorHandler(), CoverageCanvas.class, "paint"));
             } else if (!isCoverageHidden) {
@@ -1229,21 +1234,18 @@ public class CoverageCanvas extends MapCanvasAWT {
          * Adjust the accuracy of coordinates shown in the status bar.
          * The number of fraction digits depend on the zoom factor.
          */
-        if (controls != null) {
-            final Object value = resampledImage.getProperty(PlanarImage.POSITIONAL_ACCURACY_KEY);
-            Quantity<Length> accuracy = null;
-            if (value instanceof Quantity<?>[]) {
-                for (final Quantity<?> q : (Quantity<?>[]) value) {
-                    if (Units.isLinear(q.getUnit())) {
-                        accuracy = q.asType(Length.class);
-                        accuracy = GUIUtilities.shorter(accuracy, accuracy.getUnit().getConverterTo(Units.METRE)
-                                                                    .convert(accuracy.getValue().doubleValue()));
-                        break;
-                    }
+        Quantity<Length> accuracy = null;
+        if (resampledImage.getProperty(PlanarImage.POSITIONAL_ACCURACY_KEY) instanceof Quantity<?>[] values) {
+            for (final Quantity<?> q : values) {
+                if (Units.isLinear(q.getUnit())) {
+                    accuracy = q.asType(Length.class);
+                    double m = accuracy.getUnit().getConverterTo(Units.METRE).convert(accuracy.getValue().doubleValue());
+                    accuracy = GUIUtilities.shorter(accuracy, m);
+                    break;
                 }
             }
-            controls.status.lowestAccuracy.set(accuracy);
         }
+        setPositionalAccuracy(accuracy);
         /*
          * If error(s) occurred during calls to `RenderedImage.getTile(tx, ty)`, reports those errors.
          * The `errorReport` field is reset to `null` in preparation for the next rendering operation.
@@ -1429,7 +1431,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                 }
             }
             Platform.runLater(() -> {
-                final ObservableList<Node> children = floatingPane.getChildren();
+                final ObservableList<Node> children = getEvanescentPane().getChildren();
                 FadeTransition transition;
                 while ((transition = tileShapes.poll()) != null) {
                     children.add(transition.getNode());
@@ -1448,7 +1450,9 @@ public class CoverageCanvas extends MapCanvasAWT {
         @Override
         public void handle(final ActionEvent event) {
             final var transition = (FadeTransition) event.getSource();
-            if (floatingPane.getChildren().remove(transition.getNode()) && TRACE) {
+            final Node node = transition.getNode();
+            final Pane parent = (Pane) node.getParent();
+            if (parent != null && parent.getChildren().remove(node) && TRACE) {
                 trace("TileReadListener.removeChild");
             }
         }
@@ -1469,23 +1473,28 @@ public class CoverageCanvas extends MapCanvasAWT {
     }
 
     /**
-     * Removes the image shown and releases memory.
+     * Removes the image which was shown and releases memory.
+     * Invoking this method may help to release memory when the map is no longer shown.
      *
-     * <h4>Usage</h4>
-     * Overriding methods in subclasses should invoke {@code super.clear()}.
-     * Other methods should generally not invoke this method directly,
-     * and use the following code instead:
+     * <p>Subclasses should override this method for cleaning their fields.
+     * Implementations in subclasses shall invoke {@code super.clear()}.</p>
      *
-     * {@snippet lang="java" :
-     *     runAfterRendering(this::clear);
-     *     }
-     *
-     * @see #runAfterRendering(Runnable)
+     * @hidden because nothing new to said.
      */
     @Override
     protected void clear() {
         if (TRACE) {
             trace("clear()");
+        }
+        showTileReads(false);
+        isCoverageHidden = false;
+        isCoverageAdjusting = true;
+        try {
+            resourceProperty.set(null);
+            coverageProperty.set(null);
+            sliceExtentProperty.set(null);
+        } finally {
+            isCoverageAdjusting = false;
         }
         setNewSource(null, null, null);
         super.clear();

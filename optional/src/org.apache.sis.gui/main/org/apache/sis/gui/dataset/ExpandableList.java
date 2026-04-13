@@ -216,9 +216,8 @@ final class ExpandableList extends TransformationList<Feature,Feature>
     private boolean isExpandable(final Feature feature) {
         if (feature != null) {
             for (final String name : nameToIndex.keySet()) {
-                final Object value = feature.getPropertyValue(name);
-                if (value instanceof Collection<?>) {
-                    final int size = ((Collection<?>) value).size();
+                if (feature.getPropertyValue(name) instanceof Collection<?> value) {
+                    final int size = value.size();
                     if (size >= 2) {
                         return true;
                     }

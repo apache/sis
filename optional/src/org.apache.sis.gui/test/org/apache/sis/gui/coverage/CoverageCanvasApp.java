@@ -21,8 +21,8 @@ import java.awt.Point;
 import java.awt.image.DataBuffer;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import javafx.scene.layout.BorderPane;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.coverage.grid.GridCoverage2D;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -38,7 +38,7 @@ import org.apache.sis.image.TiledImageMock;
 
 /**
  * Shows {@link CoverageCanvas} with random data. The image will have small tiles of size
- * {@value #TILE_WIDTH}×{@value #TILE_HEIGHT}. The image will artificially fails to provide
+ * {@value #TILE_WIDTH}×{@value #TILE_HEIGHT}. The image will artificially fail to provide
  * some tiles in order to test error controls.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -73,11 +73,11 @@ public class CoverageCanvasApp extends Application {
      */
     @Override
     public void start(final Stage window) {
-        final CoverageCanvas canvas = new CoverageCanvas();
-        final StatusBar statusBar = new StatusBar(null);
+        final var canvas = new CoverageCanvas();
+        final var statusBar = new StatusBar(null);
         statusBar.track(canvas);
-        canvas.setCoverage(createImage());
-        final BorderPane pane = new BorderPane(canvas.getView());
+        canvas.setCoverage(createImage(true));
+        final var pane = new BorderPane(canvas.getView());
         pane.setBottom(statusBar.getView());
         window.setTitle("CoverageCanvas Test");
         window.setScene(new Scene(pane));
@@ -98,14 +98,17 @@ public class CoverageCanvasApp extends Application {
     }
 
     /**
-     * Creates a dummy image for testing purpose. Some tiles will
+     * Creates a dummy image for testing purpose. Some tiles may
      * have artificial errors in order to see the error controls.
+     *
+     * @param  withErrors  whether to cause artificial errors in some tiles.
+     * @return an image to show in the map canvas.
      */
-    private static GridCoverage2D createImage() {
+    public static GridCoverage2D createImage(final boolean withErrors) {
         final Random random = new Random();
         final int width  = TILE_WIDTH  * 4;
         final int height = TILE_HEIGHT * 2;
-        final TiledImageMock image = new TiledImageMock(
+        final var image = new TiledImageMock(
                 DataBuffer.TYPE_BYTE, 1,
                 random.nextInt(50) - 25,            // minX
                 random.nextInt(50) - 25,            // minY
@@ -116,7 +119,7 @@ public class CoverageCanvasApp extends Application {
                 false);
         image.validate();
         final double sc = 500d / Math.max(width, height);
-        final WritablePixelIterator it = WritablePixelIterator.create(image);
+        final var it = WritablePixelIterator.create(image);
         while (it.next()) {
             final Point p = it.getPosition();
             final double d = Math.hypot(p.x - width/2, p.y - height/2);
@@ -126,7 +129,9 @@ public class CoverageCanvasApp extends Application {
             }
             it.setSample(0, value);
         }
-        image.failRandomly(random, false);
+        if (withErrors) {
+            image.failRandomly(random, false);
+        }
         return new GridCoverage2D(new GridGeometry(null, PixelInCell.CELL_CORNER,
                 MathTransforms.identity(2), CommonCRS.Engineering.DISPLAY.crs()), null, image);
     }

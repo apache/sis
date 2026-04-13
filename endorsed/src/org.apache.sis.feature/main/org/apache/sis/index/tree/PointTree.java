@@ -246,7 +246,7 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E> 
      * Returns the coordinate reference system (CRS) of all points in this tree.
      * The CRS is taken from the envelope given in argument to the constructor.
      *
-     * @return the CRS of all points in this tree, if presents.
+     * @return the CRS of all points in this tree, if present.
      *
      * @see #getDimension()
      */

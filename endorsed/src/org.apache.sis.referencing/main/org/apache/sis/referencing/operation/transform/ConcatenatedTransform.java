@@ -227,7 +227,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                 }
             }
             /*
-             * Thank to above expansion, we can now see when there is two consecutive linear transforms or when a
+             * Thank to above expansion, we can now see when there are two consecutive linear transforms or when a
              * transform is immediately followed by its inverse. The non-expanded `ConcatenatedTransform` instances
              * were already analyzed in a previous call of this method and do not need to be analyzed again.
              */

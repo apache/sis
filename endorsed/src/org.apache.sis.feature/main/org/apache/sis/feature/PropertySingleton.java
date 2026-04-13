@@ -148,7 +148,7 @@ final class PropertySingleton<V> extends AbstractList<V> {
     }
 
     /**
-     * Removes the singleton value, if presents.
+     * Removes the singleton value, if present.
      * This method is for {@link Iter#remove()} implementation only.
      *
      * @param  c  the expected {@link #modCount} value, for check against concurrent modification.

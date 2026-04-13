@@ -560,7 +560,7 @@ public final class ReadOnly {
         /**
          * Inverse transform a single tuple.
          *
-         * @param source tuple, can not be null.
+         * @param source tuple, cannot be null.
          * @param dest tuple, can be null.
          * @return destination tuple.
          */

@@ -365,7 +365,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
             }
             /*
              * This task may be created and ready but not yet started. It happens if `scheduleNewLoader()`
-             * found no code to process in the `toDescribe` list at the time that method has been invoked.
+             * found no code to process in the `toDescribe` list at the time when the method has been invoked.
              */
             if (!isRunning) {
                 start();

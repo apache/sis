@@ -26,7 +26,6 @@ import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.gui.dataset.WindowHandler;
 import org.apache.sis.gui.map.MapMenu;
 import org.apache.sis.gui.map.style.MapLayer;
 import org.apache.sis.gui.map.style.MapContextView;
@@ -34,7 +33,6 @@ import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.gui.internal.DataStoreOpener;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
-import org.apache.sis.gui.controls.SyncWindowList;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.Logging;
 
@@ -48,7 +46,7 @@ import org.apache.sis.util.logging.Logging;
  */
 final class CoverageControls extends ViewAndControls {
     /**
-     * The component for showing sample values.
+     * The component for visualizing the grid coverage.
      *
      * @see CoverageExplorer#getCanvas()
      */
@@ -68,10 +66,9 @@ final class CoverageControls extends ViewAndControls {
     /**
      * Creates a new set of coverage controls.
      *
-     * @param  owner   the widget which creates this view. Cannot be null.
-     * @param  window  the handler of the window which will show the coverage explorer.
+     * @param  owner  the widget which creates this view. Cannot be null.
      */
-    CoverageControls(final CoverageExplorer owner, final WindowHandler window) {
+    CoverageControls(final CoverageExplorer owner) {
         super(owner);
         final Locale     locale     = owner.getLocale();
         final Resources  resources  = Resources.forLocale(locale);
@@ -93,25 +90,16 @@ final class CoverageControls extends ViewAndControls {
         /*
          * "Layers" section with the following controls:
          *    - Tree of layers associated to the coverage (styling, isolines, visual indication of loaded tiles).
+         *    - Configuration panel for the selected layer.
          */
         final var layers = new MapContextView(resources);
         style = new StyleController(view);
         layers.setRootItem(style);
-        /*
-         * "Isolines" section with the following controls:
-         *    - Colors for each isoline levels
-         */
         if (view.isolines == null) {
             final var isolines = new IsolineController(view, vocabulary.getString(Vocabulary.Keys.Isolines));
             style.getChildren().add(isolines);
             view.isolines = isolines;
         }
-        /*
-         * Synchronized windows. A synchronized windows is a window which can reproduce the same gestures
-         * (zoom, pan, rotation) than the window containing this view. The maps displayed in different
-         * windows do not need to use the same map projection; translations will be adjusted as needed.
-         */
-        final SyncWindowList windows = new SyncWindowList(window, resources, vocabulary);
         /*
          * Put all sections together and have the first one expanded by default.
          * The "Properties" section will be built by `PropertyPaneCreator` only if requested.
@@ -119,13 +107,12 @@ final class CoverageControls extends ViewAndControls {
         final TitledPane deferred;                  // Control to be built only if requested.
         controlPanes = new TitledPane[] {
             new TitledPane(vocabulary.getString(Vocabulary.Keys.Layers), layers.getView()),
-            new TitledPane(resources.getString(Resources.Keys.Windows), windows.getView()),
             deferred = new TitledPane(vocabulary.getString(Vocabulary.Keys.Properties), null)
         };
         /*
          * Set listeners: changes on `CoverageCanvas` properties are propagated to the corresponding
          * `CoverageExplorer` properties. This constructor does not install listeners in the opposite
-         * direction; instead `CoverageExplorer` will invoke `load(ImageRequest)`.
+         * direction. Instead, `CoverageExplorer` will invoke `load(ImageRequest)`.
          */
         view.resourceProperty.addListener((p,o,n) -> notifyDataChanged(n, null));
         view.coverageProperty.addListener((p,o,n) -> notifyDataChanged(view.getResourceIfAdjusting(), n));

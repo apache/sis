@@ -139,14 +139,16 @@ import org.opengis.coverage.CannotEvaluateException;
  * The zoom level is given indirectly by the {@link #getObjectiveToDisplay()} transform.
  * The display device may have a wraparound axis, for example in the spherical coordinate system of a planetarium.
  *
- * <h2>Multi-threading</h2>
- * {@code Canvas} is not thread-safe. Synchronization, if desired, must be done by the caller.
- * Another common strategy is to interact with {@code Canvas} from a single thread,
- * for example the Swing or JavaFX event queue.
+ * <h2>Thread safety</h2>
+ * {@code Canvas} is not thread-safe.
+ * A single thread should be used for interactions with all instances of {@code Canvas}
+ * that may be referencing each other through {@linkplain #addPropertyChangeListener listeners}.
+ * External synchronization is generally not sufficient because listeners may create a graph of canvases,
+ * and it is difficult to ensure that a lock is kept during all the graph traversal.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   1.1
  */
 public class Canvas extends Observable implements Localized {
@@ -409,6 +411,26 @@ public class Canvas extends Observable implements Localized {
         displayBounds.setToNaN();
         coordinateOperationFactory = DefaultCoordinateOperationFactory.provider();
         operationContext = new CanvasContext(locale);
+    }
+
+    /**
+     * Resets this canvas to the same state as after construction, except listeners which are kept.
+     * This method can be invoked for discarding the content currently shown by the canvas,
+     * while keeping this {@code Canvas} instance for showing new content later.
+     *
+     * @since 1.7
+     */
+    protected void clear() {
+        objectiveCRS           = null;
+        objectiveToDisplay     = null;
+        pointOfInterest        = null;
+        objectivePOI           = null;
+        multidimToObjective    = null;
+        augmentedObjectiveCRS  = null;
+        supplementalDimensions = 0;
+        axisTypes              = null;
+        gridGeometry           = null;
+        operationContext.setObjectiveToGeographic(null);
     }
 
     /**

@@ -435,7 +435,7 @@ public final class TINBuilder {
      */
     private void testDelaunay(Edge e0) throws OperationException {
         if (e0.isConstraint()) {
-            //edge is a constraint, it can not be removed
+            //edge is a constraint, it cannot be removed
             return;
         }
         WTriangle t0 = e0.t0;

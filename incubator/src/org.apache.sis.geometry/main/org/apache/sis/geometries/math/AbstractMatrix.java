@@ -486,7 +486,7 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
     public T invert(){
         final double[][] inverse = Matrices.localInvert(toArray2Double(ROW_ORDER));
         if (inverse == null){
-            throw new IllegalArgumentException("Can not inverse");
+            throw new IllegalArgumentException("Cannot inverse");
         }
         set(inverse, ROW_ORDER);
         return (T) this;

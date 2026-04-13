@@ -165,8 +165,8 @@ public abstract class AbstractGridCoverageResource extends AbstractResource impl
             CoordinateOperation op = lastOperation;
             if (op == null || !domain.getCoordinateReferenceSystem().equals(op.getSourceCRS())) {
                 /*
-                 * The resolution in the user-supplied domain is associated to a CRS different than the CRS
-                 * of the last resolution that we computed. We must update the operation from user-supplied
+                 * The resolution in the user supplied domain is associated to a CRS different than the CRS
+                 * of the last resolution that we computed. We must update the operation from user supplied
                  * resolution to the units of this grid coverage.
                  */
                 final GridGeometry targetGrid = getGridGeometry();

@@ -41,6 +41,7 @@ import org.apache.sis.gui.internal.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@Deprecated(since = "1.7", forRemoval = true)
 public final class SyncWindowList extends TabularWidget implements ListChangeListener<WindowHandler> {
     /**
      * Window containing a {@link MapCanvas} on which to replicate gesture events.

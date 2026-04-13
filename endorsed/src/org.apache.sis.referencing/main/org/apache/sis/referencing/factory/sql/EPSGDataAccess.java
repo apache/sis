@@ -924,7 +924,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * <p>This method is invoked for queries that <em>may</em> cause the same table to be queried again.
      * For example, creating a projected <abbr>CRS</abbr> from the "Coordinate Reference System" table
      * may imply creating a base geographic <abbr>CRS</abbr> from the same table, reusing the statement.
-     * If there is two enclosed queries on the same table, the older {@link ResultSet} will be closed.
+     * If there are two enclosed queries on the same table, the older {@link ResultSet} will be closed.
      * Therefore:</p>
      *
      * <ul>
@@ -3205,7 +3205,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         }
 
         /**
-         * Returns an operation method with the same metadata than the given method,
+         * Returns an operation method with the same metadata as the given method,
          * but with the descriptors of the parameters in the given list.
          * Those parameter descriptors should be the same as the parameters of the given method.
          * But sometime, the parameters differ in units of measurement or in sign reversal flag.
@@ -3285,7 +3285,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
 
     /**
      * Creates the parameters descriptors and their values for all parameters of the given operation.
-     * The descriptors are created in same time than their values because some descriptor metadata,
+     * The descriptors are created in same time as their values because some descriptor metadata,
      * such as units of measurement and aliases, may differ for different operations.
      *
      * @param  operation  the EPSG code for the operation (conversion or transformation).

@@ -198,8 +198,8 @@ public final class DataStoreOpener extends Task<DataStore> {
      * @return the input file name for message purpose.
      */
     final String getFileName() {
-        if (source instanceof StorageConnector) {
-            return ((StorageConnector) source).getStorageName();
+        if (source instanceof StorageConnector c) {
+            return c.getStorageName();
         }
         String name = Strings.trimOrNull(IOUtilities.filename(source));
         if (name == null) {

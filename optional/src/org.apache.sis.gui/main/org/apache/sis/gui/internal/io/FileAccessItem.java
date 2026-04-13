@@ -442,8 +442,8 @@ final class FileAccessItem implements Runnable, EventHandler<ActionEvent> {
          */
         @Override
         public void rangeOfInterest(final long lower, final long upper) {
-            if (channel instanceof ByteRangeChannel) {
-                ((ByteRangeChannel) channel).rangeOfInterest(lower, upper);
+            if (channel instanceof ByteRangeChannel c) {
+                c.rangeOfInterest(lower, upper);
             }
         }
 

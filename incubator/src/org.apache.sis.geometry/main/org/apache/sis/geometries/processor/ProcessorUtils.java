@@ -97,7 +97,7 @@ public final class ProcessorUtils {
         // Dimension exactly matches, no need to decompse the CRS
         if (lower == 0 && dimension == upper) return crs;
 
-        // CRS can not be decomposed
+        // CRS cannot be decomposed
         if (!(crs instanceof CompoundCRS)) return null;
 
         final List<CoordinateReferenceSystem> parts = new ArrayList<>(1);
@@ -139,7 +139,7 @@ public final class ProcessorUtils {
             return dimension;
         }
 
-        // CRS can not be decomposed
+        // CRS cannot be decomposed
         if (!(crs instanceof CompoundCRS)) return -1;
 
         int nbDimRead = 0;

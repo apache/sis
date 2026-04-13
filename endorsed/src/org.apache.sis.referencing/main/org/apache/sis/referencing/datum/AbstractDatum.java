@@ -418,7 +418,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * with the following additional flexibility:
      *
      * <ul>
-     *   <li>The {@code "D_"} prefix (used in ESRI datum names), if presents in the given name or in this datum name,
+     *   <li>The {@code "D_"} prefix (used in ESRI datum names), if present in the given name or in this datum name,
      *       is ignored.</li>
      *   <li>If this datum is an instance of {@link DefaultGeodeticDatum}, then the prime meridian name may also
      *       be ignored.</li>

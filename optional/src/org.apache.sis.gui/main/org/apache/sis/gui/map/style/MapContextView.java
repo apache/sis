@@ -53,7 +53,7 @@ public class MapContextView extends Widget {
 
         /** Creates the unique instance. */
         private CellFactory() {
-            selectedProperty = (item) -> item instanceof CheckBoxTreeItem<?> ? ((CheckBoxTreeItem<?>)item).selectedProperty() : null;
+            selectedProperty = (item) -> item instanceof CheckBoxTreeItem<?> c ? c.selectedProperty() : null;
         }
 
         /** Creates an initially empty tree cell for the given tree view. */
@@ -135,8 +135,8 @@ public class MapContextView extends Widget {
      */
     private void onSelected(final TreeItem<MapItem> item) {
         Region config = noSelection;
-        if (item instanceof ItemController) {
-            config = ((ItemController) item).getConfigurationPanel();
+        if (item instanceof ItemController c) {
+            config = c.getConfigurationPanel();
         }
         itemsAndConfiguration.getItems().set(1, config);
     }

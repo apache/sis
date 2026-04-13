@@ -47,7 +47,7 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
      * changed its data. Those values are stored in {@link #cachedTiles} map.
      *
      * <ul>
-     *   <li>{@code VALID} means that the tile, if presents, is ready for use. A tile may be non-existent in the cache
+     *   <li>{@code VALID} means that the tile, if present, is ready for use. A tile may be non-existent in the cache
      *       despite being marked {@code VALID} if the tile has been garbage-collected after it has been marked.</li>
      *   <li>{@code DIRTY} means that the tile needs to be recomputed. If the tile is present, its data should be
      *       discarded but its storage space will be reused.</li>

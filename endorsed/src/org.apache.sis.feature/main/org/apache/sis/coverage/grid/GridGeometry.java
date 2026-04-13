@@ -642,7 +642,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *                      Ignored (can be null) if {@code envelope} is null.
      * @throws NullPointerException if {@code extent} and {@code envelope} arguments are both null,
      *         or if {@code envelope} is non-null but {@code orientation} is null.
-     * @throws MismatchedDimensionException if the envelope does not have the same number of dimensions than the grid extent.
+     * @throws MismatchedDimensionException if the envelope does not have the same number of dimensions as the grid extent.
      *
      * @see <a href="https://en.wikipedia.org/wiki/Axis-aligned_object">Axis-aligned object on Wikipedia</a>
      *

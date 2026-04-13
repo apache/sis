@@ -58,7 +58,7 @@ import org.opengis.feature.Feature;
  * with the following restrictions:
  *
  * <ul>
- *   <li>{@link #tryAdvance(Consumer)} shall returns the features in the order they are declared in the XML file.</li>
+ *   <li>{@link #tryAdvance(Consumer)} shall return the features in the order they are declared in the XML file.</li>
  *   <li>{@code tryAdvance(Consumer)} shall not return {@code null} value.</li>
  *   <li>Modifications of the XML file are not allowed while an iteration is in progress.</li>
  *   <li>A {@code StaxStreamReader} instance can iterate over the features only once;

@@ -176,7 +176,7 @@ public enum X364 {
     /**
      * Removes all escape codes from the given string.
      *
-     * @param  text       the string which may contains escape codes.
+     * @param  text       the string which may contain escape codes.
      * @param  fromIndex  the index from which to start the process.
      * @param  toIndex    the index after the last character to process.
      * @return text without the escape codes, or the given {@code text} reference if
@@ -218,7 +218,7 @@ search:     do {
      * CharSequences.codePointCount}({@linkplain #plain plain}(text))</code> without the
      * cost of creating a temporary string.
      *
-     * @param  text       the string which may contains escape codes.
+     * @param  text       the string which may contain escape codes.
      * @param  fromIndex  the index from which to start the computation.
      * @param  toIndex    the index after the last character to take in account.
      * @return the length of the given string without escape codes.

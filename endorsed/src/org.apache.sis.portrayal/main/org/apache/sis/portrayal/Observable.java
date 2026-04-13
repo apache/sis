@@ -30,7 +30,7 @@ import org.apache.sis.util.ArraysExt;
  * Parent class of all objects for which it is possible to register listeners.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   1.5
  */
 public abstract class Observable {
@@ -45,7 +45,7 @@ public abstract class Observable {
      * @see #addPropertyChangeListener(String, PropertyChangeListener)
      * @see #removePropertyChangeListener(String, PropertyChangeListener)
      */
-    private Map<String,PropertyChangeListener[]> listeners;
+    private Map<String, PropertyChangeListener[]> listeners;
 
     /**
      * Creates a new instance.
@@ -88,7 +88,7 @@ public abstract class Observable {
         ArgumentChecks.ensureNonNull("listener", listener);
         if (listeners != null) {
             listeners.computeIfPresent(propertyName, (key, oldList) -> {
-                for (int i=oldList.length; --i >= 0;) {
+                for (int i = oldList.length; --i >= 0;) {
                     if (oldList[i] == listener) {
                         if (oldList.length != 1) {
                             return ArraysExt.remove(oldList, i, 1);
@@ -129,7 +129,7 @@ public abstract class Observable {
         if (listeners != null) {
             final PropertyChangeListener[] list = listeners.get(propertyName);
             if (list != null) {
-                final PropertyChangeEvent event = new PropertyChangeEvent(this, propertyName, oldValue, newValue);
+                final var event = new PropertyChangeEvent(this, propertyName, oldValue, newValue);
                 for (final PropertyChangeListener listener : list) {
                     listener.propertyChange(event);
                 }
@@ -153,6 +153,17 @@ public abstract class Observable {
             if (list != null) {
                 for (final PropertyChangeListener listener : list) {
                     listener.propertyChange(event);
+                }
+                /*
+                 * For separation of concerns, following should be managed in `CanvasFollower`.
+                 * But it is difficult to ensure there that it is executed after all listeners.
+                 */
+                if (event instanceof TransformChangeEvent) {
+                    final var te = (TransformChangeEvent) event;
+                    final FollowContext deferredListeners = te.deferredListeners;
+                    if (deferredListeners != null) {
+                        deferredListeners.executeDeferred(te);
+                    }
                 }
             }
         }

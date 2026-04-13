@@ -123,7 +123,7 @@ public final class ISOLine {
         final double startZ = start[Z];
         double ratio = end[Z] - startZ;
         if (ratio == 0) {
-            if (z != startZ) throw new IllegalStateException("Start and end coordinates have the same value of "+Z+" interpolation to target value ("+startZ+") can't be performed.");
+            if (z != startZ) throw new IllegalStateException("Start and end coordinates have the same value of "+Z+" interpolation to target value ("+startZ+") cannot be performed.");
             return new double[]{start[0], start[1], z}; //flat line
         }
         ratio = (z - start[Z]) / ratio;
@@ -136,7 +136,7 @@ public final class ISOLine {
         final double startZ = start[Z];
         double ratio = end[Z] - startZ;
         if (ratio == 0) {
-            if (z != startZ) throw new IllegalStateException("Start and end coordinates have the same value of "+Z+" interpolation to target value ("+startZ+") can't be performed.");
+            if (z != startZ) throw new IllegalStateException("Start and end coordinates have the same value of "+Z+" interpolation to target value ("+startZ+") cannot be performed.");
             return new Coordinate(start[0], start[1], z); //flat line
         }
         ratio = (z - start[Z]) / ratio;

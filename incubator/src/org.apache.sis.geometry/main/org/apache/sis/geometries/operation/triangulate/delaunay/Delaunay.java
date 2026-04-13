@@ -813,7 +813,7 @@ public final class Delaunay {
      */
     private void testDelaunay(OrientedEdge B_D) throws OperationException {
         if (B_D.isConstraint()) {
-            //edge is a constraint, it can not be removed
+            //edge is a constraint, it cannot be removed
             return;
         }
         final OrientedEdge D_B = B_D.reverse();
@@ -888,7 +888,7 @@ public final class Delaunay {
             if (constraintAddMode) {
                 constraintStackEdges.addFirst(B_D);
             } else {
-                throw new OperationException("Can not swap a constraint edge.");
+                throw new OperationException("Cannot swap a constraint edge.");
             }
         }
 

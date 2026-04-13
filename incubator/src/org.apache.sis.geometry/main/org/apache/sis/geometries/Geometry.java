@@ -276,7 +276,7 @@ public interface Geometry extends TransfiniteSet {
      * Map of properties for user needs.
      * Those informations may be lost in geometry processes.
      *
-     * @return Map, can be null if the geometry can not store additional informations.
+     * @return Map, can be null if the geometry cannot store additional informations.
      */
     default Map<String,Object> userProperties() {
         return null;

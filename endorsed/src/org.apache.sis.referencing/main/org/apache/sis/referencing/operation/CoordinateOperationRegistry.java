@@ -167,7 +167,7 @@ class CoordinateOperationRegistry {
     }
 
     /**
-     * Returns whether the given identifier is one of the pre-defined values used for datum changes.
+     * Returns whether the given identifier is one of the predefined values used for datum changes.
      *
      * @see CoordinateOperationFinder#canHide(Identifier)
      */

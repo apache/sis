@@ -109,7 +109,7 @@ public final class ArraySequence implements PointSequence, AttributesType {
     public void setAttribute(String name, Array array) {
         if (array == null) {
             if (AttributesType.ATT_POSITION.equals(name)) {
-                throw new IllegalArgumentException("Positions attribute can not be removed");
+                throw new IllegalArgumentException("Positions attribute cannot be removed");
             }
             attributes.remove(name);
         } else if (array.getLength() != size()) {

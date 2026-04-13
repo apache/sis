@@ -77,8 +77,7 @@ final class GridTile {
      */
     @Override
     public boolean equals(final Object other) {
-        if (other instanceof GridTile) {
-            final var that = (GridTile) other;
+        if (other instanceof GridTile that) {
             return tileX == that.tileX && tileY == that.tileY;
             // Intentionally no other comparisons.
         }

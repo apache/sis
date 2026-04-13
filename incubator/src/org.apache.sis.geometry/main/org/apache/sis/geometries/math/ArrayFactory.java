@@ -94,8 +94,8 @@ public interface ArrayFactory {
 
         /**
          * Create the ND array.
-         * If datatype is not set the type will be infered from the values if they are defined.
-         * If shape is not set the type will be infered from the values if they are defined.
+         * If datatype is not set the type will be inferred from the values if they are defined.
+         * If shape is not set the type will be inferred from the values if they are defined.
          * If samplesystem is not set, an undefined one will be used.
          *
          * @return NDArray

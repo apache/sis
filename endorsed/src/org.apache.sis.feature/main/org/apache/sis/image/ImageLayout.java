@@ -227,7 +227,7 @@ public class ImageLayout {
     }
 
     /**
-     * Returns a new layout with the same properties than this layout except for the sample model.
+     * Returns a new layout with the same properties as this layout except for the sample model.
      * If the given argument value results in no change, returns {@code this}.
      *
      * @param  model    the new sample model, or {@code null} if none.
@@ -253,7 +253,7 @@ public class ImageLayout {
     }
 
     /**
-     * Returns a new layout with the same properties than this layout except whether it allows changes of tile size.
+     * Returns a new layout with the same properties as this layout except whether it allows changes of tile size.
      * If the given argument value results in no change, returns {@code this}.
      *
      * @param  allowed whether to allow changes of tile size when needed.
@@ -274,7 +274,7 @@ public class ImageLayout {
     }
 
     /**
-     * Returns a new layout with the same properties than this layout except whether it allows changes of image size.
+     * Returns a new layout with the same properties as this layout except whether it allows changes of image size.
      * If the given argument value results in no change, returns {@code this}.
      *
      * @param  allowed whether to allow changes of image size when needed.
@@ -295,7 +295,7 @@ public class ImageLayout {
     }
 
     /**
-     * Returns a new layout with the same properties than this layout except whether it allows partially filled tiles.
+     * Returns a new layout with the same properties as this layout except whether it allows partially filled tiles.
      * If the given argument value results in no change, returns {@code this}.
      *
      * @param  allowed whether to allow tiles that are only partially filled in the last row and last column of the tile matrix.

@@ -284,7 +284,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      *
      * The {@linkplain List#size() list size} should be 2 or 4.
      * The list should contain at least two corner points along one diagonal.
-     * or may contains the 4 corner points of the georectified grid.
+     * or may contain the 4 corner points of the georectified grid.
      *
      * <p>The first corner point shall correspond to the origin of the grid.</p>
      *

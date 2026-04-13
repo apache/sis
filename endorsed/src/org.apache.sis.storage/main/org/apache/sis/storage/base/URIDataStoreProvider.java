@@ -151,6 +151,9 @@ public abstract class URIDataStoreProvider extends DataStoreProvider {
      * @throws DataStoreException if an error on the file system prevent the creation of the path.
      */
     public static Object location(final Resource resource) throws DataStoreException {
+        if (resource == null) {
+            return null;
+        }
         if (resource instanceof DataStore) {
             final Optional<ParameterValueGroup> p = ((DataStore) resource).getOpenParameters();
             if (p.isPresent()) try {

@@ -45,7 +45,8 @@ import org.apache.sis.coverage.grid.PixelInCell;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  *
- * @since 1.6
+ * @version 1.7
+ * @since   1.6
  */
 public class MemoryGridCoverageResource extends AbstractGridCoverageResource {
     /**
@@ -79,12 +80,25 @@ public class MemoryGridCoverageResource extends AbstractGridCoverageResource {
     private boolean deferredRendering;
 
     /**
-     * Creates a new coverage stored in memory.
+     * Creates a new resource with no parent and no identifier.
+     *
+     * @param  coverage  the coverage to wrap in a in-memory resource.
+     * @throws NullPointerException if {@code coverage} is null.
+     *
+     * @since 1.7
+     */
+    public MemoryGridCoverageResource(final GridCoverage coverage) {
+        this(null, null, coverage, null);
+    }
+
+    /**
+     * Creates a new resource stored in memory.
      *
      * @param parent      the parent resource, or {@code null} if none.
      * @param identifier  resource identifier, or {@code null} if none.
-     * @param coverage    stored coverage retained as-is (not copied). Cannot be null.
+     * @param coverage    the coverage to wrap in a in-memory resource.
      * @param processor   the grid coverage processor for selecting bands, or {@code null} for default.
+     * @throws NullPointerException if {@code coverage} is null.
      */
     public MemoryGridCoverageResource(final Resource parent, final GenericName identifier,
                                       final GridCoverage coverage, final GridCoverageProcessor processor)

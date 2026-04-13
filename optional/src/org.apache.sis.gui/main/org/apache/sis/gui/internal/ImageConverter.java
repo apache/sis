@@ -203,10 +203,9 @@ final class ImageConverter extends Task<Statistics[]> {
      * Current implementation returns the mask as a transparent yellow image.
      */
     private RenderedImage getMask(final ImageProcessor processor) {
-        final Object mask = source.getProperty(PlanarImage.MASK_KEY);
-        if (mask instanceof RenderedImage) try {
+        if (source.getProperty(PlanarImage.MASK_KEY) instanceof RenderedImage mask) try {
             processor.setColorizer(MASK_TRANSPARENCY);
-            return processor.visualize((RenderedImage) mask);
+            return processor.visualize(mask);
         } catch (IllegalArgumentException e) {
             /*
              * Ignore, we will not apply any mask over the thumbnail image.

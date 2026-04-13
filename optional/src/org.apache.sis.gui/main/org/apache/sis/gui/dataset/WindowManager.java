@@ -45,9 +45,12 @@ import org.apache.sis.gui.internal.ToolbarButton;
  * or synchronized between windows, at user's choice.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   1.3
+ *
+ * @deprecated Replaced by {@link org.apache.sis.gui.map.MapWindows}.
  */
+@Deprecated(since = "1.7", forRemoval = true)
 public final class WindowManager {          // Not designed for subclassing.
     /**
      * The handler of the main window. This handler shall never be disposed.
@@ -93,6 +96,7 @@ public final class WindowManager {          // Not designed for subclassing.
      * @param  content  control that contains the data to show in a new window.
      * @return window for showing the resource. Untitled and not yet visible.
      */
+    @Deprecated(since = "1.7", forRemoval = true)
     final Stage newWindow(final Region content) {
         final Stage     stage      = new Stage();
         final Button    mainWindow = FontGIS.button((char) 0,                 "\uD83D\uDDD4");   // 🗔 — Desktop Window

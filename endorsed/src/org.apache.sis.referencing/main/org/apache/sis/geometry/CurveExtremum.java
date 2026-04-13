@@ -34,7 +34,7 @@ import static java.lang.Math.*;
  * The distance separating the two extremum is sometimes a useful information for determining if
  * a quadratic equation would be a sufficient approximation.
  *
- * <p>The points stored in this object may contains {@linkplain Double#NaN NaN} values if the
+ * <p>The points stored in this object may contain {@linkplain Double#NaN NaN} values if the
  * given geometry is actually a line segment ({@code dy1} = {@code dy2} = slope from P1 to P2).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)

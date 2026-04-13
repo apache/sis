@@ -25,6 +25,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import javafx.application.Platform;
 import org.apache.sis.gui.DataViewer;
@@ -97,6 +98,7 @@ public final class BackgroundThreads extends AtomicInteger implements ThreadFact
      * given task in that thread.
      *
      * @param  task  the task to execute.
+     * @throws RejectedExecutionException if the application is shutting down.
      */
     public static void execute(final Runnable task) {
         if (Platform.isFxApplicationThread()) {

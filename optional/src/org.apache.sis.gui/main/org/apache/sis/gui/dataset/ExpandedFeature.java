@@ -196,8 +196,7 @@ final class ExpandedFeature implements Feature {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof ExpandedFeature) {
-            final ExpandedFeature other = (ExpandedFeature) obj;
+        if (obj instanceof ExpandedFeature other) {
             return index == other.index && source.equals(other.source);
         }
         return false;

@@ -498,7 +498,7 @@ public class GridCoverageProcessor implements Cloneable {
 
     /**
      * Returns the intersection of the given coverage with the given extent.
-     * The extent shall have the same number of dimensions than the coverage.
+     * The extent shall have the same number of dimensions as the coverage.
      * The "grid to <abbr>CRS</abbr>" transform is unchanged.
      *
      * <p>This method is useful for taking a slice of a multi-dimensional grid.

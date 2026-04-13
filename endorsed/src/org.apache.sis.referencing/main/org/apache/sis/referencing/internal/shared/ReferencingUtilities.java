@@ -459,7 +459,7 @@ public final class ReferencingUtilities {
      * {@linkplain Identifier#getCode() code} replaced by the given value.
      *
      * <p><b>Examples:</b> this method can be used for creating the parameters of an inverse operation
-     * in the common case where the inverse has the same parameters than the forward operation.</p>
+     * in the common case where the inverse has the same parameters as the forward operation.</p>
      *
      * @param  parameters  the parameter group to rename, or {@code null}.
      * @param  code        the new name of the group, in the same code space as the given parameters.

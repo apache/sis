@@ -181,7 +181,7 @@ final class ImagePyramid extends AbstractMap<GenericName, ImageTileMatrix>
      * The returned value is an index in the {@link #matrices} list.
      *
      * @param  name      identifier of the desired level.
-     * @param  required  whether to thrown an exception if the identifier is not recognized.
+     * @param  required  whether to throw an exception if the identifier is not recognized.
      * @return index of the desired level, or -1 if none and {@code required} is {@code false}.
      * @throws IllegalArgumentException if the given name is not recognized and {@code required} is {@code true}.
      */

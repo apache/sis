@@ -97,7 +97,7 @@ public final class DatumOrEnsemble {
     }
 
     /**
-     * Returns the datum of the given <abbr>CRS</abbr> if presents, or the datum ensemble otherwise.
+     * Returns the datum of the given <abbr>CRS</abbr> if present, or the datum ensemble otherwise.
      * This is an alternative to the {@code asDatum(…)} methods when the caller does not need to view
      * the returned object as a datum.
      *

@@ -112,7 +112,7 @@ abstract class ValuesAtPointIterator implements Spliterator<double[]> {
 
     /**
      * Creates a new iterator with the given grid coordinates. The {@code gridCoords} array is the result
-     * of applying the inverse of the "grid to CRS" transform on user-supplied "real world" coordinates,
+     * of applying the inverse of the "grid to CRS" transform on user supplied "real world" coordinates,
      * then resolving wraparounds. This constructor rounds these grid coordinates to nearest integers.
      *
      * @param  coverage    the coverage which will be evaluated.
@@ -389,7 +389,7 @@ abstract class ValuesAtPointIterator implements Spliterator<double[]> {
 
         /**
          * Creates a new iterator with the given grid coordinates. The {@code gridCoords} array is the result
-         * of applying the inverse of the "grid to CRS" transform on user-supplied "real world" coordinates,
+         * of applying the inverse of the "grid to CRS" transform on user supplied "real world" coordinates,
          * then resolving wraparounds. This constructor rounds these grid coordinates to nearest integers.
          *
          * @todo Retrofit in above constructor after RFE #4093999.

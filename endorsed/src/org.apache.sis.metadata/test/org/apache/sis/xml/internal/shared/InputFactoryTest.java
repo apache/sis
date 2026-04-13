@@ -66,7 +66,7 @@ public final class InputFactoryTest extends TestCase {
      * @throws XMLStreamException if an error occurred while parsing the <abbr>XML</abbr>.
      */
     @Test
-    @Disabled("JAXP09020006")   // NullPointerException: argument 'catalog' can not be NULL. TODO: test with Maven4.
+    @Disabled("JAXP09020006")   // NullPointerException: argument 'catalog' cannot be NULL. TODO: test with Maven4.
     public void verifyExternalEntityAccess() throws IOException, XMLStreamException {
         final XMLInputFactory factory = XMLInputFactory.newInstance();
         assumeTrue("all".equals(factory.getProperty(XMLConstants.ACCESS_EXTERNAL_DTD)));
@@ -110,7 +110,7 @@ public final class InputFactoryTest extends TestCase {
      * @throws IOException if an error occurred while writing the test file.
      */
     @Test
-    @Disabled("JAXP09020006")   // NullPointerException: argument 'catalog' can not be NULL. TODO: test with Maven4.
+    @Disabled("JAXP09020006")   // NullPointerException: argument 'catalog' cannot be NULL. TODO: test with Maven4.
     public void testDisableAccessExternalDTD() throws IOException {
         final XMLInputFactory factory = XMLInputFactory.newInstance();
         factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "http,https");
