@@ -100,7 +100,6 @@ final class Utils {
      * Returns {@code true} if the given reference system should be ignored.
      */
     static boolean isIgnoreable(final ReferenceSystem system) {
-        return (system instanceof CoordinateReferenceSystem) &&
-                CommonCRS.Engineering.DISPLAY.datumUsedBy((CoordinateReferenceSystem) system);
+        return (system instanceof CoordinateReferenceSystem c) && CommonCRS.Engineering.DISPLAY.datumUsedBy(c);
     }
 }

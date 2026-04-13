@@ -114,7 +114,7 @@ final class ClippedGridCoverage extends DerivedGridCoverage {
         /*
          * After `render(…)` execution, the (minX, minY) image coordinates are the differences
          * between the extent that we requested and what we got. If the clipped extent that we
-         * specified in above method call has an origin different than the user-supplied extent,
+         * specified in above method call has an origin different than the user supplied extent,
          * we need to adjust.
          */
         if (clipped != sliceExtent) {       // Slight optimization for a common case.

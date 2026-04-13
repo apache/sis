@@ -127,8 +127,7 @@ public final class ValueColorMapper extends TabularWidget {
          */
         @Override
         public boolean equals(final Object other) {
-            if (other instanceof Step) {
-                final Step that = (Step) other;
+            if (other instanceof Step that) {
                 return Numerics.equals(value.get(), that.value.get()) &&
                         Objects.equals(color.get(), that.color.get()) &&
                         visible.get() == that.visible.get();

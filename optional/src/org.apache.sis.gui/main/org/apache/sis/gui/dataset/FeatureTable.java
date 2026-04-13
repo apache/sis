@@ -442,8 +442,7 @@ public class FeatureTable extends TableView<AbstractFeature> {
          */
         @Override
         protected void updateItem(Object value, final boolean empty) {
-            if (value instanceof List<?>) {
-                final List<?> c = (List<?>) value;
+            if (value instanceof List<?> c) {
                 value = c.isEmpty() ? null : c.get(0);
             } else if (value instanceof Iterable<?>) {
                 final Iterator<?> c = ((Iterable<?>) value).iterator();

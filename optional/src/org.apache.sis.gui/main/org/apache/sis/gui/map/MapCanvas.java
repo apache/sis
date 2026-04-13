@@ -50,7 +50,10 @@ import javafx.concurrent.Worker;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.transform.Affine;
+import javafx.scene.transform.Transform;
 import javafx.scene.transform.NonInvertibleTransformException;
+import javax.measure.Quantity;
+import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.ReferenceSystem;
@@ -63,6 +66,9 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.internal.shared.AxisDirections;
+import org.apache.sis.referencing.internal.shared.AffineTransform2D;
+import org.apache.sis.measure.Quantities;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.AbstractEnvelope;
@@ -70,8 +76,6 @@ import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.PixelInCell;
-import org.apache.sis.gui.referencing.PositionableProjection;
-import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
@@ -83,8 +87,8 @@ import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.GUIUtilities;
 import org.apache.sis.gui.internal.MouseDrags;
 import org.apache.sis.gui.internal.Resources;
-import org.apache.sis.referencing.internal.shared.AxisDirections;
-import org.apache.sis.referencing.internal.shared.AffineTransform2D;
+import org.apache.sis.gui.referencing.PositionableProjection;
+import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.portrayal.PlanarCanvas;
 import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.portrayal.TransformChangeEvent;
@@ -187,6 +191,8 @@ public abstract class MapCanvas extends PlanarCanvas {
      * are temporary; they are applied for producing immediate visual feedback while the map is recomputed
      * in a background thread. Once calculation is completed and the content of this pane has been updated,
      * the {@code floatingPane} {@link Affine} transform is reset to identity.</p>
+     *
+     * @see #getEvanescentPane()
      */
     protected final Pane floatingPane;
 
@@ -280,12 +286,6 @@ public abstract class MapCanvas extends PlanarCanvas {
     private final Affine transform;
 
     /**
-     * The {@link #transform} values at the time the {@link #repaint()} method has been invoked.
-     * This is a change applied on {@link #objectiveToDisplay} but not yet visible in the map.
-     */
-    private final Affine changeInProgress;
-
-    /**
      * Cursor position at the time pan event started.
      * This is used for computing the {@linkplain #floatingPane} translation to apply during drag events.
      *
@@ -320,6 +320,14 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @see #renderingProperty()
      */
     private final ReadOnlyBooleanWrapper isRendering;
+
+    /**
+     * An estimation of positional accuracy, typically in metres.
+     *
+     * @see #setPositionalAccuracy(Quantity)
+     * @see #positionalAccuracyProperty()
+     */
+    private final ReadOnlyObjectWrapper<Length> positionalAccuracy;
 
     /**
      * The exception or error that occurred during last rendering operation.
@@ -357,8 +365,7 @@ public abstract class MapCanvas extends PlanarCanvas {
     @SuppressWarnings("this-escape")
     public MapCanvas(final Locale locale) {
         super(locale);
-        transform        = new Affine();
-        changeInProgress = new Affine();
+        transform = new Affine();
         final Pane view = new Pane() {
             @Override protected void layoutChildren() {
                 super.layoutChildren();
@@ -386,6 +393,7 @@ public abstract class MapCanvas extends PlanarCanvas {
         fixedPane = new StackPane(view);
         GUIUtilities.setClipToBounds(fixedPane);
         isRendering = new ReadOnlyBooleanWrapper(this, "isRendering");
+        positionalAccuracy = new ReadOnlyObjectWrapper<>(this, "positionalAccuracy");
         error = new ReadOnlyObjectWrapper<>(this, "error");
     }
 
@@ -427,6 +435,30 @@ public abstract class MapCanvas extends PlanarCanvas {
         objectiveBounds = bounds;
         initialState = visibleArea;
         invalidObjectiveToDisplay = true;
+    }
+
+    /**
+     * Returns a pane for evanescent shapes shown in this canvas. The shapes added in the returned pane should
+     * use an animation effect such as {@link javafx.animation.FadeTransition} and be removed after a few seconds.
+     * This method allows to show shapes more easily than adding them directly as {@link #floatingPane} children,
+     * but at the expanse of quality. Evanescent panes are easier to use because the callers do not need to care
+     * about changes of the {@linkplain #getObjectiveToDisplay() objective to display} transform.
+     * Instead, callers can add shapes with coordinate values computed using the current transform
+     * at the time when this method is invoked, and ignore the changes that may happen afterward.
+     * If the user continues to navigate on the map, the {@linkplain Pane#getTransforms() list of transforms}
+     * of the returned pane will be updated.
+     *
+     * <p>While this method allows a much easier strategy than adding shapes into {@link #floatingPane}
+     * and tracking <i>objective to display</i> changes, the result is rougher (especially after zooms).
+     * For this reason, this method should be used for short-lived shapes such as animation effects,
+     * when the high-quality strategy is not worth the effort. Since the returned pane is aimed to be short-lived,
+     * it is automatically removed from this {@code MapPane} when its list of children become empty.</p>
+     *
+     * @return a pane where to add shapes without the need to track navigation events after this method call.
+     * @since 1.7
+     */
+    public Pane getEvanescentPane() {
+        return EvanescentPane.getOrCreate(floatingPane.getChildren());
     }
 
     /**
@@ -655,6 +687,8 @@ public abstract class MapCanvas extends PlanarCanvas {
     /**
      * Resets the map view to its default zoom level and default position with no rotation.
      * Contrarily to {@link #clear()}, this method does not remove the map content.
+     *
+     * @see #clear()
      */
     public void reset() {
         invalidObjectiveToDisplay = true;
@@ -983,6 +1017,25 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
+     * Sets an estimation of the positional accuracy of the pixels or features that are rendered on the map.
+     * This method sets the value returned by the read-only
+     * {@linkplain #positionalAccuracyProperty() positional accuracy property}.
+     * The value should be non-zero when the positions are computed by a
+     * {@linkplain org.opengis.referencing.operation.Transformation coordinate transformations}.
+     *
+     * <p>This method may be invoked in the {@code commit()} method
+     * of the renderer returned by {@link #createRenderer()}.</p>
+     *
+     * @param  accuracy  an estimation of positional accuracy, or {@code null} if none.
+     *
+     * @see #positionalAccuracyProperty()
+     * @since 1.7
+     */
+    protected void setPositionalAccuracy(final Quantity<Length> accuracy) {
+        positionalAccuracy.set(Quantities.castOrCopy(accuracy));
+    }
+
+    /**
      * Fires a {@link TransformChangeEvent} for a change in the {@link #transform}.
      * This method needs a modifiable {@code before} instance; it will be modified.
      *
@@ -1262,12 +1315,12 @@ public abstract class MapCanvas extends PlanarCanvas {
         }
         /*
          * If a temporary zoom, rotation or translation has been applied using JavaFX transform API,
-         * replace that temporary transform by a "permanent" adjustment of the `objectiveToDisplay`
-         * transform. It allows SIS to get new data for the new visible area and resolution.
-         * Do not reset `transform` to identity now; we need to continue accumulating gestures
-         * that may happen while the rendering is done in a background thread.
+         * replace that temporary transform by an adjustment of the `objectiveToDisplay` transform.
+         * It allows SIS to get new data for the new visible area and resolution.
+         *
+         * Note: do not reset `transform` to identity now because we need to continue accumulating
+         * gestures that may happen while the rendering is done in a background thread.
          */
-        changeInProgress.setToTransform(transform);
         if (!transform.isIdentity()) {
             super.transformDisplayCoordinates(getInterimTransform(false));
         }
@@ -1282,6 +1335,7 @@ public abstract class MapCanvas extends PlanarCanvas {
         if (context != null && context.initialize(floatingPane)) {
             final RenderingTask<?> worker = createWorker(context);
             assert renderingInProgress == null : renderingInProgress;
+            worker.setChangeInProgress(transform);
             BackgroundThreads.execute(worker);
             renderingInProgress = worker;       // Set after we know that the task has been scheduled.
             if (!isCursorChangeScheduled) {
@@ -1332,12 +1386,13 @@ public abstract class MapCanvas extends PlanarCanvas {
     /**
      * Invoked after the background thread created by {@link #repaint()} finished to update map content.
      * This method should be invoked in all cases: after successful completion, failure or cancellation.
-     * The {@link #changeInProgress} is the JavaFX transform at the time the repaint event was trigged and
-     * which is now integrated in the map. That transform will be removed from {@link #floatingPane} transforms.
-     * The {@link #transform} result is identity if no zoom, rotation or pan gesture has been applied since last
-     * rendering.
+     * The {@link RenderingTask#changeInProgress} transform is the JavaFX transform at the time when the
+     * repaint event started and which is now integrated in the map.
+     * That transform will be removed from {@link #floatingPane} transforms.
+     * The {@link #transform} result is identity if no zoom, rotation or pan gesture has been applied
+     * since last rendering.
      *
-     * <h4>Use case</h4>
+     * <h4>Example</h4>
      * <p>Suppose that the {@link RenderingTask} has been started in response to some user gestures.
      * For example, the user has zoomed on the map. The renderer has been initialized with a snapshot
      * of this {@code MapCanvas} state at the time when the {@link Renderer} has been constructed.
@@ -1369,28 +1424,24 @@ public abstract class MapCanvas extends PlanarCanvas {
          * Display coordinates stored in this `MapCanvas` need to be converted to the
          * new display coordinates, as expected by the new "objective to display" CRS.
          */
+        final Transform changeInProgress = task.getChangeInProgress();
         final Point2D p = changeInProgress.transform(xPanStart, yPanStart);
         xPanStart = p.getX();
         yPanStart = p.getY();
-        Affine copyOfChanges = null;
         for (final Node child : floatingPane.getChildren()) {
-            if (needsPositionUpdateAfterRepaint(child)) {
-                if (copyOfChanges == null) {
-                    copyOfChanges = new Affine(changeInProgress);
-                }
-                child.getTransforms().add(0, copyOfChanges);
+            if (child instanceof EvanescentPane) {
+                child.getTransforms().addFirst(changeInProgress);
             }
         }
         try {
-            changeInProgress.invert();
-            transform.append(changeInProgress);
+            transform.append(changeInProgress.createInverse());
             /*
              * Note: intuitively one may expect `prepend(…)` instead of `append(…)` above.
              * The use of `prepend(…)` would give a `transform` result which would be as if
-             * the transform was the identity transform at the time that rendering started,
+             * the transform was the identity transform at the time when rendering started,
              * and all operations on it are gesture events that occurred while the renderer
              * was working in background. But actually this is not quite correct.
-             * See the zoom-in discussion in "use case" section in method javadoc.
+             * See the zoom-in discussion in "example" section of method javadoc.
              */
         } catch (NonInvertibleTransformException e) {
             unexpectedException("repaint", e);
@@ -1417,15 +1468,6 @@ public abstract class MapCanvas extends PlanarCanvas {
             // `runAfterRendering(…)` is the documented method providing this feature.
             unexpectedException("runAfterRendering", e);
         }
-    }
-
-    /**
-     * Returns whether the given element of the {@link #floatingPane} children list needs to have its position
-     * updated after a repaint event. If {@code true}, the position is updated with the addition of an affine
-     * transform which contains the zoom changes applied by the repaint event.
-     */
-    boolean needsPositionUpdateAfterRepaint(final Node child) {
-        return true;
     }
 
     /**
@@ -1459,13 +1501,16 @@ public abstract class MapCanvas extends PlanarCanvas {
 
     /**
      * Invoked after {@link #REPAINT_DELAY} has been elapsed for performing the real repaint request.
+     * This method must be invoked in the JavaFX event thread.
      *
      * @see #requestRepaint()
      */
     private void paintAfterDelay() {
         if (renderingInProgress instanceof Delayed) {
             renderingInProgress = null;
-            repaint();
+            if (!BackgroundThreads.EXECUTOR.isShutdown()) {
+                repaint();
+            }
         }
     }
 
@@ -1530,6 +1575,28 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     public final ReadOnlyBooleanProperty renderingProperty() {
         return isRendering.getReadOnlyProperty();
+    }
+
+    /**
+     * Returns a property which gives an estimation of positional accuracy, typically in metres.
+     * The positions of pixels or features rendered on the map may have limited accuracy when the
+     * positions are computed by a
+     * {@linkplain org.opengis.referencing.operation.Transformation coordinate transformations}.
+     * The position may also be inaccurate because of approximation applied for faster rendering.
+     * The property value may be {@code null} if the accuracy is not specified.
+     *
+     * <p><b>Usage example</b></p>
+     * The {@link StatusBar#lowestAccuracy} property can bind to this property for reporting
+     * the positional accuracy on the status bar. This is done automatically by the
+     * {@link StatusBar#track(MapCanvas)} method.
+     *
+     * @return a property giving an estimation of positional accuracy.
+     *
+     * @see StatusBar#lowestAccuracy
+     * @since 1.7
+     */
+    public final ReadOnlyObjectProperty<Length> positionalAccuracyProperty() {
+        return positionalAccuracy.getReadOnlyProperty();
     }
 
     /**
@@ -1626,31 +1693,42 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
-     * Removes map content and clears all properties of this canvas.
+     * Removes the content shown by this canvas while keeping the listeners.
+     * This method is invoked for discarding the content currently shown by the canvas,
+     * while keeping this {@code MapCanvas} instance for showing new content later.
+     * Invoking this method may help to release memory when the map is no longer shown.
      *
-     * <h4>Usage</h4>
-     * Overriding methods in subclasses should invoke {@code super.clear()}.
-     * Other methods should generally not invoke this method directly,
-     * and use the following code instead:
+     * <p>Subclasses should override this method for cleaning their fields.
+     * Implementations in subclasses shall invoke {@code super.clear()}.</p>
+     *
+     * <p>This method should usually not be invoked directly.
+     * Instead, a recommended usage pattern is as below.
+     * The call to {@link #requestRepaint()} can be omitted if this {@code MapCanvas}
+     * is removed from the tree of nodes shown by JavaFX.</p>
      *
      * {@snippet lang="java" :
-     *     runAfterRendering(this::clear);
+     *     runAfterRendering(() -> {
+     *         clear();
+     *         requestRepaint();
+     *     });
      *     }
      *
      * @see #reset()
      * @see #runAfterRendering(Runnable)
      */
+    @Override
     protected void clear() {
         assert Platform.isFxApplicationThread();
         transform.setToIdentity();
-        changeInProgress.setToIdentity();
         invalidObjectiveToDisplay = true;
+        objectiveBounds = null;
         initialState = null;
         clearError();
         isDragging = false;
         isNavigationDisabled = false;
+        positionalAccuracy.set(null);
         isRendering.set(false);
-        requestRepaint();
+        super.clear();
     }
 
     /**

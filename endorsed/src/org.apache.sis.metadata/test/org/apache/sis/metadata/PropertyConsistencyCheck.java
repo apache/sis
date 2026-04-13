@@ -41,7 +41,7 @@ import static org.apache.sis.test.Assertions.assertSingleton;
  *
  * <ul>
  *   <li>All {@link AbstractMetadata} instance shall be initially {@linkplain AbstractMetadata#isEmpty() empty}.</li>
- *   <li>All getter methods shall returns a null singleton or an empty collection, never a null collection.</li>
+ *   <li>All getter methods shall return a null singleton or an empty collection, never a null collection.</li>
  *   <li>After a call to a setter method, the getter method shall return a value equals to the given value.</li>
  * </ul>
  *

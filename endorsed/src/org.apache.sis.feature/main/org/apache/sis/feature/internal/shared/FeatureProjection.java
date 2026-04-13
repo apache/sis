@@ -442,7 +442,7 @@ public final class FeatureProjection extends Record implements UnaryOperator<Abs
     private static final class Row {
         /**
          * Returns a string representation of the {@link FeatureProjection} having the given values.
-         * Having this method in a separated class reduces the amount of classes loading, since this
+         * Having this method in a separated class reduces the number of classes loading, since this
          * {@code Row} class is rarely needed in production environment.
          *
          * @param  projection        the projection for which to format a string representation.

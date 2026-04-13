@@ -49,7 +49,7 @@ public interface GridCoverageResource extends DataSet {
     /**
      * Returns the spatiotemporal extent of this resource in its most natural coordinate reference system.
      * The default implementation fetches this information from the {@linkplain #getGridGeometry() grid geometry},
-     * if presents.
+     * if present.
      *
      * @return the spatiotemporal resource extent. May be absent if none or too costly to compute.
      * @throws DataStoreException if an error occurred while reading or computing the envelope.

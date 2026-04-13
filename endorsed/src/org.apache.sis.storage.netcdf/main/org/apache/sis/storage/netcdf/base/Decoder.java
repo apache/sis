@@ -349,8 +349,8 @@ public abstract class Decoder extends ReferencingFactoryContainer {
      * The unit symbol is typically a string like <q>days since 1970-01-01T00:00:00Z</q>.
      *
      * @param  symbol  the temporal unit name or symbol, followed by the epoch.
-     * @param  values  the values to convert. May contains {@code null} elements.
-     * @return the converted values. May contains {@code null} elements.
+     * @param  values  the values to convert. May contain {@code null} elements.
+     * @return the converted values. May contain {@code null} elements.
      */
     public abstract Temporal[] numberToDate(String symbol, Number... values);
 

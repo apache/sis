@@ -587,7 +587,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * reserved to JAXB, which will assign values to the fields using reflection.
      *
      * <p>This constructor fetches the value class and the unit of measurement from the enclosing
-     * {@link DefaultParameterValue}, if presents, because those information are not presents in GML.
+     * {@link DefaultParameterValue}, if present, because those information are not presents in GML.
      * They are GeoAPI additions.</p>
      */
     @SuppressWarnings("unchecked")

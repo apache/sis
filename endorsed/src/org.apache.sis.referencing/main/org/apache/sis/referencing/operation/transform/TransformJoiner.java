@@ -423,7 +423,7 @@ valid:  if (i >= 0 && i < steps.size()) {
      * Tries to replace a <var>forward</var> → <var>middle</var> → <var>inverse</var> chain by a new transform.
      * The transform that determines whether a replacement is possible is the <var>middle</var> transform,
      * and its relative index is given by the {@code middle} argument in this method.
-     * There is two main scenarios:
+     * There are two main scenarios:
      *
      * <ul>
      *   <li>If {@code middle} is +1, then <var>forward</var> is the transform at relative index 0

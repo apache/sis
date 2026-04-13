@@ -78,7 +78,7 @@ import org.apache.sis.measure.Units;
  *
  * <h2>Note on enumeration order</h2>
  * The enumeration values are sorted from most conservative to most aggressive.
- * The fist enumeration values make no change or change only the range of values.
+ * The first enumeration values make no change or change only the range of values.
  * Next enumeration values may change axis order but not the units of measurement.
  * The last enumeration values may change both axis order an units of measurement.
  *

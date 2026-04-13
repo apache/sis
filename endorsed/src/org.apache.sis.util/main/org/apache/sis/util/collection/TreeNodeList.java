@@ -301,7 +301,7 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
     }
 
     /**
-     * Removes the first occurrence of the given node from this list, if presents.
+     * Removes the first occurrence of the given node from this list, if present.
      * The default implementation searches the node using the {@link #indexOf(Object)},
      * then removes it (if the node has been found) using the {@link #remove(int)} method.
      *

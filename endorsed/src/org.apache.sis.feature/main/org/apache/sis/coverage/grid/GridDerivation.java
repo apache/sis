@@ -576,7 +576,7 @@ public class GridDerivation {
             } else {
                 /*
                  * Get the transform from the grid of `areaOfInterest` to the base grid.
-                 * There is two variants, depending on whether the user wants tight box:
+                 * There are two variants, depending on whether the user wants tight box:
                  *
                  * - Default:   map pixel corners with exclusive upper grid coordinate value.
                  * - Tight box: map pixel centers with inclusive upper grid coordinate value.
@@ -952,7 +952,7 @@ public class GridDerivation {
 
     /**
      * Requests a grid geometry over a sub-region of the base grid geometry and optionally with subsampling.
-     * The given grid geometry must have the same number of dimensions than the base grid geometry.
+     * The given grid geometry must have the same number of dimensions as the base grid geometry.
      * If the length of {@code subsampling} array is less than the number of dimensions,
      * then no subsampling will be applied on the missing dimensions.
      *

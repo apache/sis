@@ -620,7 +620,7 @@ public final class Numerics {
                 break;
             }
         }
-        // Arbitrarily add 6 digits the the difference between values.
+        // Arbitrarily add 6 digits the difference between values.
         return min(fractionDigitsForDelta(ulp), fractionDigitsForDelta(delta) + 6);
     }
 

@@ -49,6 +49,7 @@ import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.LogHandler;
 import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.gui.internal.RecentChoices;
+import org.apache.sis.gui.map.MapWindows;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStore;
@@ -65,7 +66,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.7
  * @since   1.1
  */
 public class DataViewer extends Application {
@@ -143,7 +144,7 @@ public class DataViewer extends Application {
     @Override
     public void start(final Stage window) {
         this.window = window;
-        content = new ResourceExplorer();
+        content = new ResourceExplorer(new MapWindows(null));
         final Resources  localized  = Resources.getInstance();
         final Vocabulary vocabulary = Vocabulary.forLocale(localized.getLocale());
         /*
@@ -186,7 +187,7 @@ public class DataViewer extends Application {
         /*
          * Set the main content and show.
          */
-        final BorderPane pane = new BorderPane();
+        final var pane = new BorderPane();
         pane.setTop(menus);
         pane.setCenter(content.getView());
         final Scene scene = new Scene(pane);
@@ -221,10 +222,10 @@ public class DataViewer extends Application {
      */
     private void createFileFilters() {
         final Resources res = Resources.getInstance();
-        final Set<String>    suffixes = new LinkedHashSet<>();
-        final Set<String> allSuffixes = new LinkedHashSet<>();
-        final List<FileChooser.ExtensionFilter> open = new ArrayList<>();
-        final List<FileChooser.ExtensionFilter> save = new ArrayList<>();
+        final var    suffixes = new LinkedHashSet<String>();
+        final var allSuffixes = new LinkedHashSet<String>();
+        final var open = new ArrayList<FileChooser.ExtensionFilter>();
+        final var save = new ArrayList<FileChooser.ExtensionFilter>();
         /*
          * Add an "All files (*.*)" filter only for the Open action.
          * The Save action will need to specify a specific filter.
@@ -291,7 +292,7 @@ public class DataViewer extends Application {
             createFileFilters();
             lastFilter = openFilters[1];
         }
-        final FileChooser chooser = new FileChooser();
+        final var chooser = new FileChooser();
         chooser.setTitle(Resources.format(Resources.Keys.OpenDataFile));
         chooser.getExtensionFilters().addAll(openFilters);
         chooser.setSelectedExtensionFilter(lastFilter);
@@ -308,8 +309,8 @@ public class DataViewer extends Application {
      * Invoked when the user selects "File" ▶ "Open URL" menu.
      */
     private void showOpenURLDialog() {
-        final TextInputDialog  chooser = new TextInputDialog();
-        final ListView<String> recents = new ListView<>();
+        final var chooser = new TextInputDialog();
+        final var recents = new ListView<String>();
         RecentChoices.getURLs(recents.getItems());
         recents.setPrefWidth (500);
         recents.setPrefHeight(200);
@@ -323,7 +324,7 @@ public class DataViewer extends Application {
         chooser.showAndWait().ifPresent((choice) -> {
             try {
                 final URI url = new URI(choice);
-                final Set<String> save = new LinkedHashSet<>(16);
+                final var save = new LinkedHashSet<String>(16);
                 save.add(url.toString());
                 for (final String old : recents.getItems()) {
                     save.add(old);

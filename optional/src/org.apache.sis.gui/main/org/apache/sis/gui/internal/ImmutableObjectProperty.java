@@ -23,6 +23,8 @@ import javafx.beans.property.ReadOnlyObjectProperty;
 
 /**
  * A property for a value that never change.
+ * The {@code addListener(…)} methods in this class ignore listeners
+ * because these listeners will never be notified of any change.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *

@@ -101,7 +101,7 @@ public final class FontGIS {
     }
 
     /**
-     * Creates a taggle button with a Font-GIS glyph for the given code.
+     * Creates a toggle button with a Font-<abbr>GIS</abbr> glyph for the given code.
      * The code should be one of the {@link Code} constants.
      * The font size and the padding are set to empirical values.
      *

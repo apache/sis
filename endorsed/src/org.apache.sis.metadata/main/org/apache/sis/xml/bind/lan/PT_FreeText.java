@@ -79,7 +79,7 @@ public final class PT_FreeText extends GO_CharacterString {
      * which is the "unlocalized" string (not the same thing as the string in the default locale).
      * Note that the {@link TextGroup} constructor works better if the {@code <gco:CharacterString>}
      * have been set for the {@code ROOT} locale (the default behavior). If a different locale were
-     * set, the list of localized strings in {@code TextGroup} may contains an element which
+     * set, the list of localized strings in {@code TextGroup} may contain an element which
      * duplicate the {@code <gco:CharacterString>} element, or the unlocalized string normally
      * written in {@code <gco:CharacterString>} may be missing.</p>
      *

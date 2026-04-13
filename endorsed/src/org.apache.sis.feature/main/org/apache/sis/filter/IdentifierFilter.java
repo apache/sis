@@ -69,7 +69,7 @@ final class IdentifierFilter extends Node
     }
 
     /**
-     * Creates a new filter searching for the same identifier than the original filter,
+     * Creates a new filter searching for the same identifier as the original filter,
      * but looking in a different property.
      */
     private IdentifierFilter(final IdentifierFilter original, final String property) {

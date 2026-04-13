@@ -89,8 +89,8 @@ final class FormatApplicator<T> extends StringConverter<T>
      */
     public static FormatApplicator<Number> createNumberFormat(final Locale locale) {
         final var f = new FormatApplicator<Number>(Number.class, NumberFormat.getInstance(locale));
-        if (f.format instanceof DecimalFormat) {
-            ((DecimalFormat) f.format).setParseBigDecimal(true);
+        if (f.format instanceof DecimalFormat df) {
+            df.setParseBigDecimal(true);
         }
         return f;
     }

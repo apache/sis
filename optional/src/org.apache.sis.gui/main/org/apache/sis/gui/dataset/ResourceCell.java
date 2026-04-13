@@ -16,7 +16,7 @@
  */
 package org.apache.sis.gui.dataset;
 
-import javafx.collections.ObservableList;
+import java.util.ArrayList;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -49,10 +49,21 @@ import org.apache.sis.util.resources.Vocabulary;
  */
 final class ResourceCell extends TreeCell<Resource> {
     /**
-     * Position of menu items in the contextual menu built by {@link #updateItem(Resource, boolean)}.
-     * Above method assumes that {@link #CLOSE} is the last menu item.
+     * Identifier of menu items in the contextual menu built by {@link #updateItem(Resource, boolean)}.
      */
-    private static final int COPY_PATH = 0, OPEN_FOLDER = 1, AGGREGATED = 2, CLOSE = 3;
+    private static final String
+            VIEW_IN_MOSAIC = "VIEW_IN_MOSAIC",
+            OPEN_FOLDER    = "OPEN_FOLDER",
+            COPY_PATH      = "COPY_PATH",
+            AGGREGATED     = "AGGREGATED",
+            CLOSE          = "CLOSE";
+
+    /**
+     * Whether this cell is used for showing the node of a data store.
+     * Those nodes are direct children of the tree root node.
+     * This information is kept because the contextual menus are different.
+     */
+    private boolean forRootResource;
 
     /**
      * Creates a new cell with initially no data.
@@ -62,6 +73,13 @@ final class ResourceCell extends TreeCell<Resource> {
      */
     @SuppressWarnings("unused")
     ResourceCell(final TreeView<Resource> tree) {
+    }
+
+    /**
+     * Returns the tree where this cell is shown.
+     */
+    private ResourceTree getResourceTree() {
+        return (ResourceTree) getTreeView();
     }
 
     /**
@@ -80,7 +98,7 @@ final class ResourceCell extends TreeCell<Resource> {
         Button      more  = null;
         ContextMenu menu  = null;
         if (!empty && getTreeItem() instanceof ResourceItem item) {
-            final var tree = (ResourceTree) getTreeView();
+            final ResourceTree tree = getResourceTree();
             textProperty().bind(item.label);
             if (item.isLoading()) {
                 /*
@@ -109,47 +127,61 @@ final class ResourceCell extends TreeCell<Resource> {
                 }
             }
             /*
-             * Following block is for the contextual menu. In current version,
-             * we provide menu only for "root" resources (usually data stores).
+             * Contextual menu. The menu items depend on whether the resource
+             * is a data store in the root, or a child resource of a data store.
              */
-            if (tree.findOrRemove(resource, false) != null) {
-                /*
-                 * "Copy file path" menu item should be enabled only if we can
-                 * get some kind of file path or URI from the specified resource.
-                 * "Aggregated view" should be enabled only on supported resources.
-                 */
-                Object path;
-                try {
-                    path = URIDataStoreProvider.location(resource);
-                } catch (DataStoreException e) {
-                    path = null;
-                    ResourceTree.unexpectedException("updateItem", e);
+            final boolean isRootResource = tree.findOrRemove(resource, false) != null;
+            final boolean aggregatable = isRootResource && item.isViewSelectable(resource, TreeViewType.AGGREGATION);
+            Object path;
+            try {
+                path = URIDataStoreProvider.location(resource);
+            } catch (DataStoreException e) {
+                path = null;
+                ResourceTree.unexpectedException("updateItem", e);
+            }
+            /*
+             * Create (if not already done) and configure contextual menu using above information.
+             */
+            menu = getContextMenu();
+            if (menu == null || isRootResource != forRootResource) {
+                menu = new ContextMenu();
+                final Resources localized = tree.localized();
+                final var items = new ArrayList<MenuItem>();
+                if (tree.windows != null) {
+                    items.add(localized.menu(VIEW_IN_MOSAIC, Resources.Keys.View, (e) -> {
+                        getResourceTree().windows.addResource(getItem());
+                    }));
                 }
-                final boolean aggregatable = item.isViewSelectable(resource, TreeViewType.AGGREGATION);
-                /*
-                 * Create (if not already done) and configure contextual menu using above information.
-                 */
-                menu = getContextMenu();
-                if (menu == null) {
-                    menu = new ContextMenu();
-                    final Resources localized = tree.localized();
-                    final MenuItem[] items = new MenuItem[CLOSE + 1];
-                    items[COPY_PATH]   = localized.menu(Resources.Keys.CopyFilePath, new PathAction(this, false));
-                    items[OPEN_FOLDER] = localized.menu(Resources.Keys.OpenContainingFolder, new PathAction(this, true));
-                    items[AGGREGATED]  = localized.menu(Resources.Keys.AggregatedView, false, (p,o,n) -> {
+                if (PathAction.isBrowseEnabled) {
+                    items.add(localized.menu(OPEN_FOLDER, Resources.Keys.OpenContainingFolder, new PathAction(this, true)));
+                }
+                items.add(localized.menu(COPY_PATH, Resources.Keys.CopyFilePath, new PathAction(this, false)));
+                if (isRootResource) {
+                    items.add(localized.menu(AGGREGATED,  Resources.Keys.AggregatedView, false, (p,o,n) -> {
                         setView(n ? TreeViewType.AGGREGATION : TreeViewType.SOURCE);
-                    });
-                    items[CLOSE] = localized.menu(Resources.Keys.Close, (e) -> {
-                        ((ResourceTree) getTreeView()).removeAndClose(getItem());
-                    });
-                    menu.getItems().setAll(items);
+                    }));
+                    items.add(localized.menu(CLOSE, Resources.Keys.Close, (e) -> {
+                        getResourceTree().removeAndClose(getItem());
+                    }));
                 }
-                final ObservableList<MenuItem> items = menu.getItems();
-                items.get(COPY_PATH).setDisable(!IOUtilities.isKindOfPath(path));
-                items.get(OPEN_FOLDER).setDisable(PathAction.isBrowseDisabled(path));
-                final CheckMenuItem aggregated = (CheckMenuItem) items.get(AGGREGATED);
-                aggregated.setDisable(!aggregatable);
-                aggregated.setSelected(aggregatable && item.isView(TreeViewType.AGGREGATION));
+                menu.getItems().setAll(items);
+                forRootResource = isRootResource;
+            }
+            for (final MenuItem m : menu.getItems()) {
+                final boolean enabled;
+                switch (m.getId()) {
+                    default: continue;
+                    case VIEW_IN_MOSAIC: enabled = getResourceTree().windows.isSupported(getItem()); break;
+                    case COPY_PATH:      enabled = IOUtilities.isKindOfPath(path); break;
+                    case OPEN_FOLDER:    enabled = PathAction.isBrowseEnabled(path); break;
+                    case AGGREGATED:  {
+                        final var aggregated = (CheckMenuItem) m;
+                        enabled = aggregatable;
+                        aggregated.setSelected(aggregatable && item.isView(TreeViewType.AGGREGATION));
+                        break;
+                    }
+                }
+                m.setDisable(!enabled);
             }
         } else {
             textProperty().unbind();
@@ -173,7 +205,7 @@ final class ResourceCell extends TreeCell<Resource> {
             Color color = Styles.NORMAL_TEXT;
             if (error != null) {
                 color = Styles.ERROR_TEXT;
-                setGraphic(createErrorDetails((ResourceTree) getTreeView(), item, error));
+                setGraphic(createErrorDetails(getResourceTree(), item, error));
             }
             setTextFill(isSelected() ? Styles.SELECTED_TEXT : color);
         }
@@ -183,7 +215,7 @@ final class ResourceCell extends TreeCell<Resource> {
      * Creates a button for providing details about an exception that occurred while loading the data.
      * This method also updates the label of the given item with a text that summarizes the error.
      *
-     * @param  tree   value of {@link #getTreeView()}.
+     * @param  tree   value of {@link #getResourceTree()}.
      * @param  item   the item in which the error occurred.
      * @param  error  the error that occurred.
      */
@@ -219,6 +251,6 @@ final class ResourceCell extends TreeCell<Resource> {
      * we can create an aggregated view of all components.
      */
     private void setView(final TreeViewType type) {
-        ((ResourceItem) getTreeItem()).setView(this, type, ((ResourceTree) getTreeView()).locale);
+        ((ResourceItem) getTreeItem()).setView(this, type, getResourceTree().locale);
     }
 }

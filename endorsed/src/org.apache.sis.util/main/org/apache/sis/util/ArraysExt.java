@@ -2275,7 +2275,7 @@ public final class ArraysExt {
      * only once, because it performs a linear search. If more than one search need to be done
      * on the same array, consider using {@link java.util.IdentityHashMap} instead.</p>
      *
-     * @param  array  the array to search in. May be {@code null} and may contains null elements.
+     * @param  array  the array to search in. May be {@code null} and may contain null elements.
      * @param  value  the value to search. May be {@code null}.
      * @return {@code true} if the array is non-null and contains the value (which may be null),
      *         or {@code false} otherwise.
@@ -2299,7 +2299,7 @@ public final class ArraysExt {
      * only once, because it performs a linear search. If more than one search need to be done
      * on the same array, consider using {@link java.util.HashSet} instead.</p>
      *
-     * @param  array  the array to search in. May be {@code null} and may contains null elements.
+     * @param  array  the array to search in. May be {@code null} and may contain null elements.
      * @param  value  the value to search. May be {@code null}.
      * @return {@code true} if the array is non-null and contains the value (which may be null),
      *         or {@code false} otherwise.

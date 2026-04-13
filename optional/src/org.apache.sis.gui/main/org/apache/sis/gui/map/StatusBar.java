@@ -234,7 +234,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * The transform from <i>objective CRS</i> to the CRS of coordinates shown in this status bar.
      * The {@linkplain CoordinateOperation#getSourceCRS() source CRS} is {@link #objectiveCRS} and
      * the {@linkplain CoordinateOperation#getTargetCRS() target CRS} is {@link CoordinateFormat#getDefaultCRS()}.
-     * This transform may be null if there is no CRS change to apply
+     * This transform may be null if there is no <abbr>CRS</abbr> change to apply
      * (in which case {@link #localToPositionCRS} is the same instance as {@link #localToObjectiveCRS})
      * or if the target is not a CRS (for example it may be a Military Grid Reference System (MGRS) code).
      *
@@ -393,6 +393,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * Note that the "± <var>accuracy</var>" text may be shown or hidden depending on the zoom level.
      * If pixels on screen are larger than the accuracy, then the accuracy text is hidden.</p>
      *
+     * @see MapCanvas#positionalAccuracyProperty()
      * @see CoordinateFormat#setGroundAccuracy(Quantity)
      *
      * @since 1.3
@@ -497,11 +498,11 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * Note that in such case, the {@link #localToObjectiveCRS} property value will be overwritten
      * at any time (for example every time that a gesture event such as pan, zoom or rotation happens).
      *
-     * <p>If the {@code systemChooser} argument is non-null, user will be able to select different CRS
-     * using the contextual menu on the status bar.</p>
+     * <p>If the {@code systemChooser} argument is non-null, user will be able to select different
+     * reference systems using the contextual menu on the status bar.</p>
      *
      * <h4>Limitations</h4>
-     * This constructor registers numerous listeners on {@code canvas} and {@code systemChooser}.
+     * This constructor registers numerous listeners on {@code systemChooser}.
      * There is currently no unregistration mechanism. The {@code StatusBar} instance is expected
      * to exist as long as the {@code MapCanvas} and {@code RecentReferenceSystems} instances
      * given to this constructor.
@@ -534,10 +535,10 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         view.setPadding(PADDING);
         view.setAlignment(Pos.CENTER_RIGHT);
         /*
-         * Contextual menu can be invoked anywhere on the HBox; we do not register this menu
+         * Contextual menu can be invoked anywhere on the HBox. We do not register this menu
          * on `position` or `sampleValues` labels because those regions are relatively small.
          */
-        final ContextMenu menu = new ContextMenu();
+        final var menu = new ContextMenu();
         view.setOnMousePressed((event) -> {
             if (event.isSecondaryButtonDown() && !menu.getItems().isEmpty()) {
                 menu.show((HBox) event.getSource(), event.getScreenX(), event.getScreenY());
@@ -591,11 +592,12 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
          * a contextual menu item to be added or removed.
          */
         final ObservableList<MenuItem> items = menu.getItems();
+        final int i = items.size();     // Index where to insert `valueChoices`.
         sampleValuesProvider = new SimpleObjectProperty<>(this, "valueProvider");
         sampleValuesProvider.addListener((p,o,n) -> {
             ValuesUnderCursor.update(this, o, n);
             if (o != null) items.remove(o.valueChoices);
-            if (n != null) items.add(1, n.valueChoices);
+            if (n != null) items.add(i, n.valueChoices);
             setSampleValuesVisible(n != null);
         });
     }
@@ -607,17 +609,18 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * value may be overwritten at any time, for example after each gesture event such as pan, zoom or rotation.
      *
      * <h4>Limitations</h4>
-     * Current implementation accepts only zero or one {@code MapCanvas}. A future implementation
-     * may accept a larger number of canvas for tracking many views with a single status bar
-     * (for example images over the same area but at different times).
+     * This constructor registers numerous listeners on {@code canvas}.
+     * There is currently no unregistration mechanism.
+     * This method can be invoked only once.
      *
      * @param  canvas  the canvas that this status bar is tracking.
+     * @throws IllegalStateException if this method has already been invoked with another canvas.
      *
      * @since 1.3
      */
     public void track(final MapCanvas canvas) {
         if (this.canvas != null) {
-            throw new IllegalArgumentException(Errors.format(
+            throw new IllegalStateException(Errors.format(
                         Errors.Keys.TooManyCollectionElements_3, "canvas", 1, 2));
         }
         /*
@@ -625,7 +628,8 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
          * We do not allow the canvas to be changed after construction because of the added complexity
          * (e.g. we would have to remember all registered listeners so we can unregister them).
          */
-        this.canvas = Objects.requireNonNull(canvas);
+        this.canvas = canvas;
+        lowestAccuracy.bind(canvas.positionalAccuracyProperty());
         sampleValuesProvider.set(ValuesUnderCursor.create(canvas));
         canvas.errorProperty().addListener((p,o,n) -> setRenderingError(n));
         canvas.renderingProperty().addListener((p,o,n) -> {
@@ -760,7 +764,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
 
     /**
      * Implementation of {@link #applyCanvasGeometry(GridGeometry)} without changing {@link #position} visibility state.
-     * Invoking this method usually invalidate the coordinates shown in this status bar. The new coordinates cannot be
+     * Invoking this method usually invalidates the coordinates shown in this status bar. The new coordinates cannot be
      * easily recomputed because the {@link #lastX} and {@link #lastY} values may not be valid anymore, as a result of
      * possible changes in JavaFX local coordinate system. Consequently, the coordinates should be temporarily hidden
      * until a new {@link MouseEvent} gives us the new local coordinates, unless this method is invoked in a context
@@ -1446,7 +1450,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     }
 
     /**
-     * Converts and formats the given local coordinates, but without modifying text shown in this status bar.
+     * Converts and formats the given local coordinates, but without modifying the text shown in this status bar.
      * This is used for copying the coordinates somewhere else, for example on the clipboard.
      *
      * @param  x  the <var>x</var> coordinate local to the view.

@@ -735,7 +735,7 @@ final class Element {
     }
 
     /**
-     * Removes the next object of the given type from the children and returns it, if presents.
+     * Removes the next object of the given type from the children and returns it, if present.
      *
      * @param  type  the object type.
      * @return the next object among the children, or {@code null} if none.

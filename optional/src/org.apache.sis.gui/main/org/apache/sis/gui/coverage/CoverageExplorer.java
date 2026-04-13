@@ -228,6 +228,7 @@ public class CoverageExplorer extends Widget {
      *
      * @see #getWindowHandler()
      */
+    @Deprecated(since = "1.7", forRemoval = true)
     private WindowHandler window;
 
     /**
@@ -281,7 +282,10 @@ public class CoverageExplorer extends Widget {
      * @return the handler of the window showing this coverage view.
      *
      * @since 1.3
+     *
+     * @deprecated Replaced by {@link org.apache.sis.gui.map.MapWindows}.
      */
+    @Deprecated(since = "1.7", forRemoval = true)
     public final WindowHandler getWindowHandler() {
         assert Platform.isFxApplicationThread();
         /*
@@ -325,7 +329,7 @@ public class CoverageExplorer extends Widget {
         if (c == null) {
             switch (type) {
                 case TABLE: c = new GridControls(this); break;
-                case IMAGE: c = new CoverageControls(this, getWindowHandler()); break;
+                case IMAGE: c = new CoverageControls(this); break;
                 default: throw new AssertionError(type);
             }
             views.put(type, c);

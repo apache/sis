@@ -33,7 +33,6 @@ import javafx.application.Platform;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelBuffer;
@@ -161,17 +160,6 @@ public abstract class MapCanvasAWT extends MapCanvas {
         image = new ImageView();
         image.setPreserveRatio(true);
         floatingPane.getChildren().add(image);
-    }
-
-    /**
-     * Returns whether the given element of the {@link #floatingPane} children list needs to have its position
-     * updated after a repaint event. If {@code true}, the position is updated with the addition of an affine
-     * transform which contains the zoom changes applied by the repaint event.
-     */
-    @Override
-    final boolean needsPositionUpdateAfterRepaint(final Node child) {
-        // Exclude the image because it already contains the zoom changes applied by the repaint event.
-        return child != image;
     }
 
     /**
@@ -669,23 +657,18 @@ public abstract class MapCanvasAWT extends MapCanvas {
     }
 
     /**
-     * Clears the image and all intermediate buffer.
+     * Removes the image which was shown and releases intermediate buffers.
      * Invoking this method may help to release memory when the map is no longer shown.
      *
-     * <h4>Usage</h4>
-     * Overriding methods in subclasses should invoke {@code super.clear()}.
-     * Other methods should generally not invoke this method directly,
-     * and use the following code instead:
+     * <p>Subclasses should override this method for cleaning their fields.
+     * Implementations in subclasses shall invoke {@code super.clear()}.</p>
      *
-     * {@snippet lang="java" :
-     *     runAfterRendering(this::clear);
-     *     }
-     *
-     * @see #runAfterRendering(Runnable)
+     * @hidden
      */
     @Override
     protected void clear() {
         image.setImage(null);
+        clearWarning();
         clearBuffer();
         super.clear();
     }

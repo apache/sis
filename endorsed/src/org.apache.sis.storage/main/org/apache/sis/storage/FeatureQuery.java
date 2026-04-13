@@ -162,7 +162,7 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
     }
 
     /**
-     * Creates a new query initialized to the same values than the given query.
+     * Creates a new query initialized to the same values as the given query.
      * This is an alternative to the {@link #clone()} method when the caller
      * wants to change the implementation class.
      *

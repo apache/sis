@@ -829,7 +829,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
                             (p -          eccentricitySquared * (sqrt(cos2q) * cos2q)));
             /*
              * The above is an approximation of φ. Usually, we are done with a good approximation for a planet
-             * of the same as eccentricity than Earth. Code below will be executed in a minority of cases when
+             * of the same as eccentricity as Earth. Code below will be executed in a minority of cases when
              * the value of φ needs to be improved. It will also be executed if the value of h is requested,
              * because in such case we also need the value of ν.
              */

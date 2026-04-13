@@ -45,6 +45,8 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.tiling.TiledResource;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.gui.Widget;
 import org.apache.sis.gui.metadata.MetadataSummary;
 import org.apache.sis.gui.metadata.MetadataTree;
@@ -52,11 +54,10 @@ import org.apache.sis.gui.metadata.StandardMetadataTree;
 import org.apache.sis.gui.coverage.ImageRequest;
 import org.apache.sis.gui.coverage.CoverageExplorer;
 import org.apache.sis.gui.coverage.TileMatrixSetPane;
-import org.apache.sis.util.collection.TreeTable;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.LogHandler;
+import org.apache.sis.gui.map.MapWindows;
 
 
 /**
@@ -182,11 +183,23 @@ public class ResourceExplorer extends Widget {
      */
     @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph.
     public ResourceExplorer() {
+        this(null);
+    }
+
+    /**
+     * Creates a new panel for exploring resources and viewing them in new windows.
+     * If {@code windows} is non-null, the contextual menu will contain a "Show in mosaic" menu item.
+     *
+     * @param windows  manager of windows for map canvases, or {@code null} if none.
+     * @since 1.7
+     */
+    @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph.
+    public ResourceExplorer(final MapWindows windows) {
         /*
          * Build the controls on the left side, which will initially contain only the resource explorer.
          * The various tabs will be next (on the right side).
          */
-        resources  = new ResourceTree();
+        resources  = new ResourceTree(windows);
         resources.getSelectionModel().getSelectedItems().addListener(this::onResourceSelected);
         resources.setPrefWidth(400);
         final Vocabulary vocabulary = Vocabulary.forLocale(resources.locale);
@@ -408,8 +421,7 @@ public class ResourceExplorer extends Widget {
          */
         String  label    = null;
         boolean disabled = true;
-        if (resource instanceof DataStore) {
-            final DataStore store = (DataStore) resource;
+        if (resource instanceof DataStore store) {
             final DataStoreProvider provider = store.getProvider();
             if (provider != null) {
                 label = provider.getShortName();
@@ -443,9 +455,7 @@ public class ResourceExplorer extends Widget {
      * This method is invoked when the tab become visible, or when a new resource is loaded.
      */
     private void loadNativeMetadata() {
-        final Resource resource = getSelectedResource();
-        if (resource instanceof DataStore) {
-            final DataStore store = (DataStore) resource;
+        if (getSelectedResource() instanceof DataStore store) {
             BackgroundThreads.execute(new Task<TreeTable>() {
                 /** Invoked in a background thread for fetching metadata. */
                 @Override protected TreeTable call() throws DataStoreException {
@@ -454,7 +464,7 @@ public class ResourceExplorer extends Widget {
 
                 /** Shows the result in JavaFX thread. */
                 @Override protected void succeeded() {
-                    if (resource == getSelectedResource()) {
+                    if (store == getSelectedResource()) {
                         nativeMetadata.setContent(getValue());
                     }
                 }

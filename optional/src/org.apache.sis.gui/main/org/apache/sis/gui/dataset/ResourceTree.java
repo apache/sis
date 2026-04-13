@@ -49,6 +49,7 @@ import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.util.logging.Logging;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
+import org.apache.sis.gui.map.MapWindows;
 
 
 /**
@@ -119,14 +120,33 @@ public class ResourceTree extends TreeView<Resource> {
     private final Queue<ResourceItem.Completer> pendingItems;
 
     /**
+     * The manager of windows where to show the resources, or {@code null} if none.
+     * If non-null, the contextual menu will contain a "Show in mosaic" item.
+     *
+     * @since 1.7
+     */
+    protected final MapWindows windows;
+
+    /**
      * Creates a new tree of resources with initially no resource to show.
      * For showing a resource, invoke
      * {@link #setResource(Resource)},
      * {@link #addResource(Resource)} or
      * {@link #loadResource(Object)} after construction.
      */
-    @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph.
     public ResourceTree() {
+        this(null);
+    }
+
+    /**
+     * Creates a new tree of resources which can show the resources using the given manager of windows.
+     * If {@code windows} is non-null, the contextual menu will contain a "Show in mosaic" menu item.
+     *
+     * @param windows  manager of windows for map canvases, or {@code null} if none.
+     * @since 1.7
+     */
+    @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph.
+    public ResourceTree(final MapWindows windows) {
         locale = Locale.getDefault();
         pendingItems = new LinkedList<>();
         setCellFactory(ResourceCell::new);
@@ -134,6 +154,7 @@ public class ResourceTree extends TreeView<Resource> {
         setOnDragDropped(this::onDragDropped);
         onResourceLoaded = new SimpleObjectProperty<>(this, "onResourceLoaded");
         onResourceClosed = new SimpleObjectProperty<>(this, "onResourceClosed");
+        this.windows = windows;
     }
 
     /**

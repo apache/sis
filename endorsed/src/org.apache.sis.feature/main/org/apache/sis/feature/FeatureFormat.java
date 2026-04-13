@@ -466,7 +466,7 @@ public class FeatureFormat extends TabularFormat<Object> {
                 isFirstColumn = false;
                 switch (column) {
                     /*
-                     * Human-readable name of the property. May contains any characters (spaces, ideographs, etc).
+                     * Human-readable name of the property. May contain any characters (spaces, ideographs, etc).
                      * In many cases, this information is not provided and the whole column is skipped.
                      */
                     case DESIGNATION: {

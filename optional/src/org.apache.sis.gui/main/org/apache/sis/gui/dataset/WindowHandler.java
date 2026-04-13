@@ -53,7 +53,10 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7
  * @since   1.3
+ *
+ * @deprecated Replaced by {@link org.apache.sis.gui.map.MapWindows}.
  */
+@Deprecated(since = "1.7", forRemoval = true)
 public abstract class WindowHandler {
     /**
      * The window manager which contains this handler.
@@ -80,7 +83,7 @@ public abstract class WindowHandler {
      * to retain a direct reference to {@link #window} in listeners, which would increase the risk of memory leak.
      */
     private static final ChangeListener<String> TITLE_CHANGED = (p,o,n) -> {
-        final WindowHandler handler = (WindowHandler) ((StringProperty) p).getBean();
+        final var handler = (WindowHandler) ((StringProperty) p).getBean();
         handler.window.setTitle(n + " — Apache SIS");
     };
 
@@ -208,9 +211,8 @@ public abstract class WindowHandler {
     public void show() {
         if (window == null) {
             if (manager.main == this) {
-                Window w = getWindow();
-                if (w instanceof Stage) {
-                    window = (Stage) w;
+                if (getWindow() instanceof Stage w) {
+                    window = w;
                 } else {
                     return;
                 }
@@ -264,9 +266,9 @@ public abstract class WindowHandler {
         @Override public void eventOccured(final CloseEvent event) {
             final Resource resource = event.getSource();
             if (Platform.isFxApplicationThread()) {
-                close(resource, WindowHandler.this);
+                close(resource);
             } else BackgroundThreads.runAndWaitDialog(() -> {
-                close(resource, WindowHandler.this);
+                close(resource);
                 return null;
             });
             // No need to invoke `resource.removeListener(…)`, that work is done by `StoreListeners.close()`.
@@ -276,16 +278,16 @@ public abstract class WindowHandler {
     /**
      * Closes all windows (except the main window) which are showing the given resource.
      * This is invoked when the resource has been closed in the {@link ResourceTree}.
+     * The handler managed by {@code this} is closed unconditionally regardless its resource.
      *
      * @param  resource  the resource which has been closed.
-     * @param  force     the handler to close unconditionally regardless its resource.
      */
-    private static void close(final Resource resource, final WindowHandler force) {
-        final WindowHandler ignore = force.manager.main;
-        final ObservableList<WindowHandler> windows = force.manager.modifiableWindowList;
+    private void close(final Resource resource) {
+        final WindowHandler ignore = manager.main;
+        final ObservableList<WindowHandler> windows = manager.modifiableWindowList;
         for (int i = windows.size(); --i >= 0;) {
             final WindowHandler handler = windows.get(i);
-            if (handler != ignore && (handler == force || handler.getResource() == resource)) {
+            if (handler != ignore && (handler == this || handler.getResource() == resource)) {
                 windows.remove(i);
                 if (handler.window != null) {
                     handler.window.setOnHidden(null);       // Because we will invoke `dispose()` ourselves.

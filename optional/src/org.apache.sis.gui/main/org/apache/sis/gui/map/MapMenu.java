@@ -45,8 +45,11 @@ import org.apache.sis.referencing.IdentifiedObjects;
  *
  * <ul>
  *   <li>{@link #addReferenceSystems(RecentReferenceSystems)}:<ul>
- *     <li><i>Reference system</i> with some items from EPSG database.</li>
+ *     <li><i>Reference system</i> with some items from the <abbr>EPSG</abbr> registry if available.</li>
  *     <li><i>Centered projection</i> with the list of {@link PositionableProjection} items.</li>
+ *   </ul></li>
+ *   <li>{@link #addCopyOptions(StatusBar)}:<ul>
+ *     <li>Coordinates at the mouse position where right click occurred.</li>
  *   </ul></li>
  * </ul>
  *

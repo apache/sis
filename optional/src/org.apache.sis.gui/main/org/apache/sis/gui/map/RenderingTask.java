@@ -17,11 +17,12 @@
 package org.apache.sis.gui.map;
 
 import javafx.concurrent.Task;
+import javafx.scene.transform.Affine;
+import javafx.scene.transform.Transform;
 
 
 /**
  * Base class of tasks executed in background thread for doing rendering.
- * This is currently used only for type safety.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
@@ -32,8 +33,32 @@ import javafx.concurrent.Task;
  */
 abstract class RenderingTask<V> extends Task<V> {
     /**
+     * The {@link MapCanvas#transform} values at the time the {@link MapCanvas#repaint()} method has been invoked.
+     * This is a change applied on {@link MapCanvas#objectiveToDisplay} but not yet visible in the map.
+     */
+    private Transform changeInProgress;
+
+    /**
      * Creates a new rendering task.
      */
     RenderingTask() {
+    }
+
+    /**
+     * Takes a copy of the given transform.
+     *
+     * @param  transform  value of {@link MapCanvas#transform}.
+     */
+    final void setChangeInProgress(final Affine transform) {
+        // TODO: select a simpler transform implementation when possible.
+        changeInProgress = new Affine(transform);
+    }
+
+    /**
+     * Returns the transform specified by the call to {@link #setChangeInProgress(Affine)}.
+     * The returned value is not copied, caller should not modify it.
+     */
+    final Transform getChangeInProgress() {
+        return changeInProgress;
     }
 }

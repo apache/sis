@@ -1608,7 +1608,7 @@ public class GridExtent implements Serializable, LenientComparable {
     }
 
     /**
-     * Returns an extent with the same number of dimensions and the same axes than this extent,
+     * Returns an extent with the same number of dimensions and the same axes as this extent,
      * but different coordinate values.
      *
      * @param  low             the valid minimum grid coordinates (always inclusive), or {@code null} for all zeros.

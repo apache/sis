@@ -479,7 +479,7 @@ otherRow:           for (int j = last.getNumRow() - 1; --j >= 0;) {     // Ignor
     }
 
     /**
-     * Whether the operation result depends on the values of the user-supplied {@link CoordinateOperationContext}.
+     * Whether the operation result depends on the values of the user supplied {@link CoordinateOperationContext}.
      * This flag shall be {@code true} if the operation depends on parameters that may vary between two executions.
      */
     final boolean resultWasContextSensitive() {

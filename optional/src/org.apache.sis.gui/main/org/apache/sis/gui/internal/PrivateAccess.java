@@ -30,6 +30,7 @@ import org.apache.sis.gui.dataset.WindowHandler;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@Deprecated(since = "1.7", forRemoval = true)
 public final class PrivateAccess {
     /**
      * Do not allow instantiation of this class.

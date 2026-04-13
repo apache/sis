@@ -235,7 +235,7 @@ cmp:    if (canTestBefore | canTestAfter | canTestEqual) {
             /*
              * First, resolve the case when the indeterminate value is "now". Do not invoke `getPosition()`
              * because the results could differ by a few nanoseconds when two "now" instants are compared,
-             * and also for getting a temporal object of the same type than the other instant.
+             * and also for getting a temporal object of the same type as the other instant.
              */
             if (oip == IndeterminateValue.NOW) {
                 t1 = position;

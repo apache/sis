@@ -174,8 +174,8 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
     private final JButton cancelButton;
 
     /**
-     * The button for selecting a directory or a ZIP file. This button may be
-     * non-null only during the time that a {@link JFileChooser} is visible.
+     * The button for selecting a directory or a <abbr>ZIP</abbr> file.
+     * This button may be non-null only during the time when a {@link JFileChooser} is visible.
      *
      * @see #findSelectButton(Container)
      */
@@ -600,8 +600,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
         final int n = c.getComponentCount();
         for (int i=0; i<n; i++) {
             final Component child = c.getComponent(i);
-            if (child instanceof JButton) {
-                final var button = (JButton) child;
+            if (child instanceof JButton button) {
                 if (SELECT.equals(button.getText())) {
                     return button;
                 }

@@ -150,7 +150,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation, String> implemen
     }
 
     /**
-     * Extracts the {@code xlink:href} value from the {@link XLink} if presents.
+     * Extracts the {@code xlink:href} value from the {@link XLink} if present.
      * This method does not test if an explicit {@code xlink:href} identifier exists;
      * this check must be done by the caller <strong>before</strong> to invoke this method.
      *

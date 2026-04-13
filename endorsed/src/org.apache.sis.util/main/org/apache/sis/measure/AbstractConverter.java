@@ -71,7 +71,7 @@ public abstract class AbstractConverter implements UnitConverter, Serializable {
      *
      * @return whether this converter contains an offset.
      *
-     * @deprecated This method is badly named, but we can't change since it is defined by JSR-385.
+     * @deprecated This method is badly named, but we cannot change since it is defined by JSR-385.
      */
     @Override
     @Deprecated
