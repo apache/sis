@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.internal.shared.CodeLists;
 
 
 /**
@@ -84,15 +85,14 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     private long values;
 
     /**
-     * The bit set for supplementary values beyond the {@code values} mask, or {@code null}
-     * if none. This is very rarely needed, but we need this field in case a code list has
-     * more than 64 elements.
+     * The bit set for supplementary values beyond the {@code values} mask, or {@code null} if none.
+     * This is very rarely needed, but we need this field in case a code list has more than 64 elements.
      *
      * <h4>Implementation note</h4>
      * The standard {@link java.util.EnumSet} class uses different implementations depending on whether
      * the enumeration contains more or less than 64 elements. We cannot apply the same strategy for
-     * {@code CodeListSet}, because new code list elements can be created at runtime. Consequently, this
-     * implementation needs to be able to growth its capacity.
+     * {@code CodeListSet}, because new code list elements can be created at runtime.
+     * Consequently, this implementation needs to be able to growth its capacity.
      */
     private BitSet supplementary;
 
@@ -134,7 +134,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     public CodeListSet(final Class<E> elementType, final boolean fill) throws IllegalArgumentException {
         this(elementType);
         if (fill) {
-            codes = POOL.unique(CodeList.values(elementType));
+            codes = POOL.unique(CodeLists.values(elementType));
             int n = codes.length;
             if (n < Long.SIZE) {
                 values = (1L << n) - 1;
@@ -173,11 +173,26 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      * Returns the code list for the given ordinal value. This methods depends
      * only on the code list type; it does not depend on the content of this set.
      */
-    final E valueOf(final int ordinal) {
+    private E valueOf(final int ordinal) {
         E[] array = codes;
-        if (array == null || ordinal >= array.length) {
-            codes = array = POOL.unique(CodeList.values(elementType));
+        if (array != null) {
+            if (ordinal < array.length) {
+                return array[ordinal];
+            }
+            // Prefer `CodeList.family()` rather than `CodeLists.values(Class)`.
+            for (int i = array.length; --i >= 0;) {
+                final E code = array[i];
+                if (code.getClass() == elementType) {
+                    array = code.family();
+                    break;
+                }
+            }
         }
+        if (array == null) {
+            // Fragile fallback: it uses reflection and relies on a convention.
+            array = CodeLists.values(elementType);
+        }
+        codes = array = POOL.unique(array);
         return array[ordinal];
     }
 
@@ -331,7 +346,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
                      * Code below this point checks for the rare cases
                      * where there is more than 64 code list elements.
                      */
-                    final BitSet s = supplementary;
+                    final BitSet s  =   supplementary;
                     final BitSet os = o.supplementary;
                     if (( s == null ||  s.isEmpty()) &&
                         (os == null || os.isEmpty()))
@@ -359,7 +374,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     @Override
     public boolean addAll(final Collection<? extends E> c) throws IllegalArgumentException {
         if (c instanceof CodeListSet) {
-            final CodeListSet<?> o = (CodeListSet<?>) c;
+            final var o = (CodeListSet<?>) c;
             /*
              * Following assertion should be ensured by parameterized types.
              */
@@ -367,23 +382,18 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
             boolean changed = (values != (values |= o.values));
             /*
              * Code below this point is for the rare cases
-             * where there is more than 64 code list elements.
+             * when there are more than 64 code list elements.
              */
             final BitSet os = o.supplementary;
             if (os != null) {
                 final BitSet s = supplementary;
-                if (s == null) {
-                    if (!os.isEmpty()) {
-                        supplementary = (BitSet) os.clone();
-                        changed = true;
-                    }
-                } else if (changed) {
-                    // Avoid the cost of computing cardinality.
-                    s.or(os);
-                } else {
+                if (s != null) {
                     final int cardinality = s.cardinality();
                     s.or(os);
-                    changed = (cardinality != s.cardinality());
+                    changed |= (cardinality != s.cardinality());
+                } else if (!os.isEmpty()) {
+                    supplementary = (BitSet) os.clone();
+                    changed = true;
                 }
             }
             return changed;

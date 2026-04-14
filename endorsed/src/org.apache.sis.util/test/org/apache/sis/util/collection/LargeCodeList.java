@@ -16,33 +16,33 @@
  */
 package org.apache.sis.util.collection;
 
+import java.util.Arrays;
+import java.util.List;
 import org.opengis.util.CodeList;
-
-// Test dependencies
-import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
- * A code list containing more than 64 elements. This implementation can be used by tests
- * that requires a large number of code list elements.
+ * A code list containing more than 64 elements.
+ * This implementation can be used by tests that requires a large number of code list elements.
+ * The implementation class must be public because the {@link #values()} method will be invoked
+ * by reflection from another package.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
 @SuppressWarnings("serial")
 public final class LargeCodeList extends CodeList<LargeCodeList> {
     /**
-     * Creates 100 code list elements.
-     * We need to construct values with {@code valueOf(String)} instead of the constructor
-     * because this package is not exported to GeoAPI. See {@link CodeList} class javadoc.
+     * All code list values created in the currently running <abbr>JVM</abbr>.
      */
+    private static final List<LargeCodeList> VALUES;
     static {
-        for (int i=0; i<80; i++) {
-            assertEquals(i, valueOf("LC#" + i).ordinal());
-        }
+        final var codes = new LargeCodeList[80];
+        Arrays.setAll(codes, (i) -> new LargeCodeList("LC#" + i));
+        VALUES = initialValues(codes);
     }
 
     /**
-     * Constructs an element.
+     * Constructs an element with the given name.
      */
     private LargeCodeList(String name) {
         super(name);
@@ -50,11 +50,13 @@ public final class LargeCodeList extends CodeList<LargeCodeList> {
 
     /**
      * Returns the list of {@code LargeCodeList}s.
+     * This method must be declared even if not invoked explicitly because it may be invoked
+     * by reflection by {@link org.apache.sis.util.internal.shared.CodeLists#values(Class)}.
      *
      * @return the list of codes declared in the current JVM.
      */
     public static LargeCodeList[] values() {
-        return values(LargeCodeList.class);
+        return VALUES.toArray(LargeCodeList[]::new);
     }
 
     /**
@@ -74,6 +76,6 @@ public final class LargeCodeList extends CodeList<LargeCodeList> {
      * @return a code list element matching the given name.
      */
     public static LargeCodeList valueOf(final String code) {
-        return valueOf(LargeCodeList.class, code, LargeCodeList::new).get();
+        return valueOf(VALUES, code, LargeCodeList::new);
     }
 }

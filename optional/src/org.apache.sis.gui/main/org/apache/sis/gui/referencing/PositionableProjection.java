@@ -16,6 +16,7 @@
  */
 package org.apache.sis.gui.referencing;
 
+import java.util.List;
 import org.opengis.util.CodeList;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
@@ -120,6 +121,12 @@ public abstract class PositionableProjection extends CodeList<PositionableProjec
     };
 
     /**
+     * All code list values created in the currently running <abbr>JVM</abbr>.
+     */
+    private static final List<PositionableProjection> VALUES = initialValues(
+            ORTHOGRAPHIC, AZIMUTHAL_EQUIDISTANT, UTM, MERCATOR);
+
+    /**
      * The projection name as a {@link Resources} keys.
      */
     private final short nameKey;
@@ -146,7 +153,7 @@ public abstract class PositionableProjection extends CodeList<PositionableProjec
      * @return the list of codes declared in the current JVM.
      */
     public static PositionableProjection[] values() {
-        return values(PositionableProjection.class);
+        return VALUES.toArray(PositionableProjection[]::new);
     }
 
     /**

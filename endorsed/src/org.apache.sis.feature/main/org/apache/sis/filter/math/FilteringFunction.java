@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter.math;
 
+import java.util.List;
 import org.opengis.util.CodeList;
 
 
@@ -30,6 +31,11 @@ final class FilteringFunction extends CodeList<FilteringFunction> {
      * Serial number for compatibility with different versions.
      */
     private static final long serialVersionUID = -3980988422378881835L;
+
+    /**
+     * All code list values created in the currently running <abbr>JVM</abbr>.
+     */
+    private static final List<FilteringFunction> VALUES = initialValues();
 
     /**
      * Creates a new filtering function.
@@ -47,7 +53,7 @@ final class FilteringFunction extends CodeList<FilteringFunction> {
      */
     @Override
     public FilteringFunction[] family() {
-        return values(FilteringFunction.class);
+        return VALUES.toArray(FilteringFunction[]::new);
     }
 
     /**
@@ -57,6 +63,6 @@ final class FilteringFunction extends CodeList<FilteringFunction> {
      * @return a code matching the given name, or {@code null}.
      */
     public static FilteringFunction valueOf(final String code) {
-        return valueOf(FilteringFunction.class, code, FilteringFunction::new).get();
+        return valueOf(VALUES, code, FilteringFunction::new);
     }
 }
