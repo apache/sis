@@ -163,6 +163,10 @@ public final class CodeLists {
      * This method delegates to the public static {@code values()} method.
      * If that method is not found, an empty list is returned.
      *
+     * <p>Note that this method is fragile: is uses reflection and relies on a convention
+     * (expected contract of {@code values()}) which is not enforced by the Java language.
+     * Callers should prefer {@link CodeList#family()} as much as possible.</p>
+     *
      * @param  <T>       the compile-time type given as the {@code codeType} parameter.
      * @param  codeType  the type of code list or enumeration.
      * @return the list of values for the given code list or enumeration, or an empty array if none.

@@ -175,9 +175,24 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      */
     private E valueOf(final int ordinal) {
         E[] array = codes;
-        if (array == null || ordinal >= array.length) {
-            codes = array = POOL.unique(CodeLists.values(elementType));
+        if (array != null) {
+            if (ordinal < array.length) {
+                return array[ordinal];
+            }
+            // Prefer `CodeList.family()` rather than `CodeLists.values(Class)`.
+            for (int i = array.length; --i >= 0;) {
+                final E code = array[i];
+                if (code.getClass() == elementType) {
+                    array = code.family();
+                    break;
+                }
+            }
         }
+        if (array == null) {
+            // Fragile fallback: it uses reflection and relies on a convention.
+            array = CodeLists.values(elementType);
+        }
+        codes = array = POOL.unique(array);
         return array[ordinal];
     }
 
