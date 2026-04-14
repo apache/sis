@@ -16,12 +16,12 @@
  */
 package org.apache.sis.xml.bind.metadata.replace;
 
+import java.util.List;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
 import org.opengis.util.CodeList;
 
 // Specific to the main branch:
-import java.util.List;
 import java.util.ArrayList;
 
 
@@ -83,9 +83,7 @@ public final class SensorType extends CodeList<SensorType> {
     }
 
     /**
-     * Returns the list of codes of the same kind as this code list element.
-     * Invoking this method is equivalent to invoking {@link #values()}, except that
-     * this method can be invoked on an instance of the parent {@code CodeList} class.
+     * Returns the list of {@code SensorType}s.
      *
      * @return all code {@linkplain #values() values} for this code list.
      */

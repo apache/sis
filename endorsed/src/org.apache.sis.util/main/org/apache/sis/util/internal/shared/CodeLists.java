@@ -17,16 +17,14 @@
 package org.apache.sis.util.internal.shared;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.InaccessibleObjectException;
 import java.lang.reflect.UndeclaredThrowableException;
-import java.util.function.Predicate;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters.Filter;
-import org.apache.sis.util.resources.Errors;
 
 // Specific to the main branch:
 import java.lang.reflect.Array;
+import java.util.function.Predicate;
 
 
 /**
@@ -172,6 +170,12 @@ public final class CodeLists implements CodeList.Filter {
 
     /**
      * Returns all known values for the given type of code list or enumeration.
+     * This method delegates to the public static {@code values()} method.
+     * If that method is not found, an empty list is returned.
+     *
+     * <p>Note that this method is fragile: is uses reflection and relies on a convention
+     * (expected contract of {@code values()}) which is not enforced by the Java language.
+     * Callers should prefer {@link CodeList#family()} as much as possible.</p>
      *
      * @param  <T>       the compile-time type given as the {@code codeType} parameter.
      * @param  codeType  the type of code list or enumeration.
@@ -183,17 +187,25 @@ public final class CodeLists implements CodeList.Filter {
         try {
             values = codeType.getMethod("values", (Class<?>[]) null).invoke(null, (Object[]) null);
         } catch (InvocationTargetException e) {
-            final Throwable cause = e.getCause();
-            if (cause instanceof RuntimeException) {
-                throw (RuntimeException) cause;
-            }
-            if (cause instanceof Error) {
-                throw (Error) cause;
-            }
-            throw new UndeclaredThrowableException(cause);
+            throw rethrowOrWrap(e.getCause());
         } catch (NoSuchMethodException | IllegalAccessException e) {
             values = Array.newInstance(codeType, 0);
         }
         return (T[]) values;
+    }
+
+    /**
+     * Re-throws the given exception if it is unchecked, or wraps it otherwise.
+     * In the latter case, the wrapper is {@link UndeclaredThrowableException}
+     * because this method is invoked in contexts where no checked exception was allowed.
+     */
+    private static UndeclaredThrowableException rethrowOrWrap(final Throwable cause) {
+        if (cause instanceof RuntimeException) {
+            throw (RuntimeException) cause;
+        } else if (cause instanceof Error) {
+            throw (Error) cause;
+        }
+        // `CodeList.valueOf(String)` methods are not expected to throw checked exceptions.
+        throw new UndeclaredThrowableException(cause);
     }
 }

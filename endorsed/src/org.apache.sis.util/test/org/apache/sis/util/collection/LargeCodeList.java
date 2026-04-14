@@ -16,19 +16,21 @@
  */
 package org.apache.sis.util.collection;
 
+import java.util.List;
 import org.opengis.util.CodeList;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the main branch:
-import java.util.List;
 import java.util.ArrayList;
 
 
 /**
- * A code list containing more than 64 elements. This implementation can be used by tests
- * that requires a large number of code list elements.
+ * A code list containing more than 64 elements.
+ * This implementation can be used by tests that requires a large number of code list elements.
+ * The implementation class must be public because the {@link #values()} method will be invoked
+ * by reflection from another package.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -40,7 +42,7 @@ public final class LargeCodeList  extends CodeList<LargeCodeList> {
     private static final List<LargeCodeList> VALUES = new ArrayList<>(100);
 
     /**
-     * Creates 100 code list elements.
+     * All code list values created in the currently running <abbr>JVM</abbr>.
      */
     static {
         for (int i=0; i<100; i++) {
@@ -58,6 +60,8 @@ public final class LargeCodeList  extends CodeList<LargeCodeList> {
 
     /**
      * Returns the list of {@code LargeCodeList}s.
+     * This method must be declared even if not invoked explicitly because it may be invoked
+     * by reflection by {@link org.apache.sis.util.internal.shared.CodeLists#values(Class)}.
      *
      * @return the list of codes declared in the current JVM.
      */
