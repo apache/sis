@@ -492,6 +492,7 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
      * Current implementation can set raster covering only one tile.
      */
     @Override
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     public synchronized void setData(final Raster r) {
         final int minX = r.getMinX();
         final int minY = r.getMinY();
@@ -508,6 +509,7 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
      *
      * @return this image as a more complete implementation.
      */
+    @SuppressWarnings("exports")
     public synchronized WritableTiledImage toWritableTiledImage() {
         return new WritableTiledImage(null, null, width, height, minTileX, minTileY, tiles);
     }

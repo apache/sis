@@ -21,7 +21,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.coverage.SampleDimension;
@@ -55,8 +54,8 @@ public final class GridCoverageBuilderTest extends TestCase {
      */
     @Test
     public void testBuildFromImage() {
-        final RenderedImage image = new BufferedImage(5, 8, BufferedImage.TYPE_INT_ARGB);
-        final GridCoverageBuilder builder = new GridCoverageBuilder();
+        final var image = new BufferedImage(5, 8, BufferedImage.TYPE_INT_ARGB);
+        final var builder = new GridCoverageBuilder();
         assertSame(builder, builder.setValues(image));
         final GridCoverage coverage = testBuilder(builder, 4);
         assertSame(image, coverage.render(null));
@@ -67,8 +66,8 @@ public final class GridCoverageBuilderTest extends TestCase {
      */
     @Test
     public void testBuildFromRaster() {
-        final WritableRaster raster = new BufferedImage(5, 8, BufferedImage.TYPE_3BYTE_BGR).getRaster();
-        final GridCoverageBuilder builder = new GridCoverageBuilder();
+        final var raster = new BufferedImage(5, 8, BufferedImage.TYPE_3BYTE_BGR).getRaster();
+        final var builder = new GridCoverageBuilder();
         assertSame(builder, builder.setValues(raster));
         final GridCoverage coverage = testBuilder(builder, 3);
         assertSame(raster, coverage.render(null).getTile(0,0));
@@ -139,7 +138,7 @@ public final class GridCoverageBuilderTest extends TestCase {
      * @return the grid coverage created by the given builder.
      */
     private static GridCoverage testSetDomain(final GridCoverageBuilder builder, final int width, final int height) {
-        final GeneralEnvelope env = new GeneralEnvelope(HardCodedCRS.WGS84);
+        final var env = new GeneralEnvelope(HardCodedCRS.WGS84);
         env.setRange(0, 0, 10);     // Scale factor of 2 for grid size of 10.
         env.setRange(1, 0,  4);     // Scale factor of ½ for grid size of 8.
         GridGeometry grid = new GridGeometry(new GridExtent(8, 5), env, GridOrientation.HOMOTHETY);
@@ -160,12 +159,12 @@ public final class GridCoverageBuilderTest extends TestCase {
      */
     @Test
     public void testCreateFromBuffer() {
-        final DataBuffer buffer = new DataBufferByte(new byte[] {1,2,3,4,5,6}, 6);
-        final GridCoverageBuilder builder = new GridCoverageBuilder();
+        final var buffer = new DataBufferByte(new byte[] {1,2,3,4,5,6}, 6);
+        final var builder = new GridCoverageBuilder();
         assertSame(builder, builder.setValues(buffer, null));
         var e = assertThrows(IncompleteGridGeometryException.class, () -> builder.build(),
                              "Extent is undefined, build() should fail.");
-        assertMessageContains(e, "size");
+        assertMessageContains(e, "imageSize");
         final GridCoverage coverage = testSetDomain(builder, 3, 2);
         assertSame(buffer, coverage.render(null).getTile(0,0).getDataBuffer());
     }
@@ -175,12 +174,12 @@ public final class GridCoverageBuilderTest extends TestCase {
      */
     @Test
     public void testFlipGridAxis() {
-        final RenderedImage image = new BufferedImage(36, 18, BufferedImage.TYPE_INT_ARGB);
-        final GeneralEnvelope domain = new GeneralEnvelope(HardCodedCRS.WGS84);
+        final var image = new BufferedImage(36, 18, BufferedImage.TYPE_INT_ARGB);
+        final var domain = new GeneralEnvelope(HardCodedCRS.WGS84);
         domain.setRange(0, -180, +180);
         domain.setRange(1,  -90,  +90);
 
-        final GridCoverageBuilder builder = new GridCoverageBuilder();
+        final var builder = new GridCoverageBuilder();
         assertSame(builder, builder.setValues(image));
         assertSame(builder, builder.setDomain(domain));
         /*
@@ -214,7 +213,7 @@ public final class GridCoverageBuilderTest extends TestCase {
      */
     @Test
     public void testUndefinedDomain() {
-        final GridCoverageBuilder builder = new GridCoverageBuilder();
+        final var builder = new GridCoverageBuilder();
         assertSame(builder, builder.setDomain(GridGeometry.UNDEFINED));
         assertSame(builder, builder.setValues(new BufferedImage(3, 4, BufferedImage.TYPE_BYTE_GRAY)));
         final GridCoverage coverage = builder.build();

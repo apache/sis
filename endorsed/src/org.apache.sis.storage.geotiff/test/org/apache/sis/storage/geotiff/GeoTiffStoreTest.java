@@ -56,7 +56,7 @@ import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
 
 
 /**
- * integration tests for {@link GeoTiffStore}.
+ * Integration tests for {@link GeoTiffStore}.
  * This class tests indirectly (via {@link GeoTiffStore}) the {@link Reader} and {@link Writer} classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -67,6 +67,11 @@ public final class GeoTiffStoreTest extends TestCase {
      * Name of a test file for an untiled image with a single band in gray-scale.
      */
     static final String UNTILED = "untiled.tiff";
+
+    /**
+     * Name of a test file for an image similar to {@link #UNTILED} but tiled.
+     */
+    static final String TILED = "tiled.tiff";
 
     /**
      * Creates a new test case.
@@ -127,8 +132,6 @@ public final class GeoTiffStoreTest extends TestCase {
 
     /**
      * Writes an image and compare with the {@code "untiled.tiff"} file.
-     * This is an anti-regression test, as this test does not inspect the
-     * content of the file.
      *
      * @throws TransformException if an error occurred while computing the domain of the image.
      * @throws DataStoreException if an error occurred while writing the GeoTIFF file.
@@ -136,25 +139,54 @@ public final class GeoTiffStoreTest extends TestCase {
      */
     @Test
     public void testWriteUntiled() throws TransformException, DataStoreException, IOException {
+        testWrite(UNTILED, new Dimension(32, 16), null, 2284);
+    }
+
+    /**
+     * Writes an image and compare with the {@code "tiled.tiff"} file.
+     *
+     * @throws TransformException if an error occurred while computing the domain of the image.
+     * @throws DataStoreException if an error occurred while writing the GeoTIFF file.
+     * @throws IOException if an error occurred while reading the file of expected content.
+     */
+    @Test
+    public void testWriteTiled() throws TransformException, DataStoreException, IOException {
+        final var tileSize = new Dimension(16, 16);     // TIFF tile size must be multiple of 16.
+        testWrite(TILED, new Dimension(tileSize.width * 3, tileSize.height * 2), tileSize, 3564);
+    }
+
+    /**
+     * Implementation of {@link #testWriteUntiled()} and {@link #testWriteTiled()}.
+     *
+     * @param  filename   name of the file which contain the expected image.
+     * @param  imageSize  size of the image to create.
+     * @param  tileSize   size of the tiles, or {@code null} for the image size.
+     * @param  length     expected length in bytes.
+     */
+    private static void testWrite(final String filename, final Dimension imageSize, final Dimension tileSize, final int length)
+            throws TransformException, DataStoreException, IOException
+    {
         var geographicArea = new GeneralEnvelope(HardCodedCRS.WGS84);
         geographicArea.setRange(0, 132, 145);   // Range of longitude values.
         geographicArea.setRange(1,  30,  42);   // Range of latitude values.
         final GridCoverage coverage = new GridCoverageBuilder()
                 .setDomain(Envelopes.transform(geographicArea, HardCodedConversions.mercator()))
-                .setValues(DataType.BYTE, new Dimension(32, 16), (x, y) -> 100 * y + x)
+                .setValues(DataType.BYTE, imageSize, (x, y) -> 100 * y + x)
+                .setPreferredTileSize(tileSize)
                 .flipGridAxis(1)
                 .build();
 
-        final var buffer = new ByteArrayOutputStream(2284);
+        final var buffer = new ByteArrayOutputStream(length);
         try (DataStore ds = DataStores.openWritable(buffer, "geotiff")) {
             assertInstanceOf(GeoTiffStore.class, ds).append(coverage, null);
         }
         final byte[] actual = buffer.toByteArray();
         final byte[] expected;
-        try (InputStream in = GeoTiffStoreTest.class.getResourceAsStream(UNTILED)) {
-            assertNotNull(in, UNTILED);
+        try (InputStream in = GeoTiffStoreTest.class.getResourceAsStream(filename)) {
+            assertNotNull(in, filename);
             expected = in.readAllBytes();
         }
         assertArrayEquals(expected, actual);
+        assertEquals(length, actual.length);
     }
 }

@@ -193,6 +193,23 @@ public abstract class TiledGridCoverageResource extends AbstractGridCoverageReso
     }
 
     /**
+     * Returns whether a resource with the given extent contains more than one tile.
+     *
+     * @param  extent  value of {@code getGridGeometry().getExtent()}.
+     * @return whether a resource with the given extent contains more than one tile.
+     * @throws DataStoreException if an error occurred while fetching the tile size.
+     */
+    private boolean isTiled(final GridExtent extent) throws DataStoreException {
+        final int[] tileSize = getTileSize();
+        for (int i = Math.min(tileSize.length, extent.getDimension()); --i >= 0;) {
+            if (extent.getSize(i) > tileSize[i]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns the size of tiles in this resource.
      * The length of the returned array is the number of dimensions,
      * which must be {@value #BIDIMENSIONAL} or more.
@@ -494,16 +511,19 @@ check:  if (dataType.isInteger()) {
         synchronized (getSynchronizationLock()) {
             if (tileMatrixSets == null) {
                 final List<Pyramid> pyramids = getPyramids();
-                final var sets = new TileMatrixSet[pyramids.size()];
-                if (sets.length != 0) {     // For avoiding an index out of bounds in call to `get(0)`.
+                final int n = pyramids.size();
+                if (n != 0) {   // For avoiding an index out of bounds in call to `get(0)`.
+                    final var sets = new TileMatrixSet[n];
                     final GenericName scope = getIdentifier().orElseGet(
                                 () -> pyramids.get(0).nameFactory().createLocalName(null, listeners.getSourceName()));
                     final var processor = new GridCoverageProcessor();
-                    for (int i=0; i<sets.length; i++) {
+                    for (int i=0; i<n; i++) {
                         sets[i] = new ImagePyramid(scope, pyramids.get(i), processor, listeners.getLocale());
                     }
+                    tileMatrixSets = List.of(sets);
+                } else {
+                    tileMatrixSets = List.of();
                 }
-                tileMatrixSets = List.of(sets);
             }
             return tileMatrixSets;
         }
@@ -1117,12 +1137,13 @@ check:  if (dataType.isInteger()) {
 
     /**
      * Returns information about the {@code TileMatrixSet} instances to create.
-     * The first element in the returned list <em>shall</em> be the default pyramid
+     * If the returned list is non-empty, then the first element <em>shall</em> be the default pyramid
      * using the same Coordinate Reference System (<abbr>CRS</abbr>) as this Grid Coverage Resource.
      * Other elements, if any, can use any <abbr>CRS</abbr>.
      *
      * <p>This method is invoked by the default implementation of {@link #getTileMatrixSets()} when first needed.
-     * By default, this method returns a list of only one element, which itself describes a pyramid of only one level.
+     * By default, this method returns an empty list if this resource is untiled, or otherwise a list of exactly
+     * one element describing a pyramid of only one level.
      * This single level describes a {@link TileMatrix} at the resolution of this {@code TiledGridCoverageResource}.</p>
      *
      * @return information about the tile matrix sets to create.
@@ -1132,15 +1153,18 @@ check:  if (dataType.isInteger()) {
      * @see #getTileMatrixSets()
      */
     protected List<Pyramid> getPyramids() throws DataStoreException {
-        if (!getGridGeometry().isDefined(GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS | GridGeometry.RESOLUTION)) {
-            return List.of();
-        }
-        return List.of(new Pyramid() {
-            @Override public OptionalInt numberOfLevels() {return OptionalInt.of(1);}
-            @Override public TiledGridCoverageResource forPyramidLevel(int level) {
-                return (level == 0) ? TiledGridCoverageResource.this : null;
+        final GridGeometry gridGeometry = getGridGeometry();
+        if (gridGeometry.isDefined(GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS | GridGeometry.RESOLUTION)) {
+            if (isTiled(gridGeometry.getExtent())) {
+                return List.of(new Pyramid() {
+                    @Override public OptionalInt numberOfLevels() {return OptionalInt.of(1);}
+                    @Override public TiledGridCoverageResource forPyramidLevel(int level) {
+                        return (level == 0) ? TiledGridCoverageResource.this : null;
+                    }
+                });
             }
-        });
+        }
+        return List.of();
     }
 
     /**

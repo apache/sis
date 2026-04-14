@@ -54,6 +54,7 @@ import org.opengis.coverage.grid.SequenceType;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public class PixelIteratorTest extends TestCase {
     /**
      * The pixel iterator being tested.
@@ -228,8 +229,8 @@ public class PixelIteratorTest extends TestCase {
             subMaxY = StrictMath.min(ymax, subArea.y + subArea.height);
         }
         expected = new float[StrictMath.max(subMaxX - subMinX, 0) * StrictMath.max(subMaxY - subMinY, 0) * numBands];
-        final TiledImageMock image = new TiledImageMock(dataType, numBands, xmin, ymin, width, height,
-                                        tileWidth, tileHeight, minTileX, minTileY, useBandedSampleModel);
+        final var image = new TiledImageMock(dataType, numBands, xmin, ymin, width, height,
+                    tileWidth, tileHeight, minTileX, minTileY, useBandedSampleModel);
         image.validate();
         /*
          * At this point, all data structures have been created an initialized to zero sample values.

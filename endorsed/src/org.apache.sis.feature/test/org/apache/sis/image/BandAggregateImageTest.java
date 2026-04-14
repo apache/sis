@@ -46,6 +46,7 @@ import org.apache.sis.test.TestCase;
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class BandAggregateImageTest extends TestCase {
     /**
      * Whether to test write operations.

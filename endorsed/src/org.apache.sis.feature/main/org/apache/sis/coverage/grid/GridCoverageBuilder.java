@@ -26,6 +26,7 @@ import java.util.function.IntBinaryOperator;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.image.BandedSampleModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
@@ -33,6 +34,7 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.awt.image.WritableRenderedImage;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.DataType;
@@ -49,6 +51,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.pending.jdk.JDK18;
 
 
 /**
@@ -132,7 +135,7 @@ public class GridCoverageBuilder {
 
     /**
      * The raster containing the coverage values.
-     * Exactly one of {@code image}, {@link #raster} and {@link #buffer} shall be non-null.
+     * Exactly one of {@code image}, {@link #raster}, {@link #buffer} and {@code calc*} fields shall be non-null.
      *
      * @see #setValues(RenderedImage)
      */
@@ -141,7 +144,7 @@ public class GridCoverageBuilder {
     /**
      * The raster containing the coverage values.
      * May be a {@link WritableRaster}, in which case a {@link BufferedImage} may be created.
-     * Exactly one of {@link #image}, {@code raster} and {@link #buffer} shall be non-null.
+     * Exactly one of {@code image}, {@link #raster}, {@link #buffer} and {@code calc*} fields shall be non-null.
      *
      * @see #setValues(Raster)
      */
@@ -149,19 +152,44 @@ public class GridCoverageBuilder {
 
     /**
      * The data buffer containing the coverage values.
-     * Exactly one of {@link #image}, {@link #raster} and {@code buffer} shall be non-null.
+     * Exactly one of {@code image}, {@link #raster}, {@link #buffer} and {@code calc*} fields shall be non-null.
      *
      * @see #setValues(DataBuffer, Dimension)
      */
     private DataBuffer buffer;
 
     /**
-     * The image size, or {@code null} if unspecified. It needs to be specified only
-     * if values were specified as a buffer without information about the grid size.
+     * Providers of sample values as integers, one provider per band.
+     * Exactly one of {@code image}, {@link #raster}, {@link #buffer} and {@code calc*} fields shall be non-null.
+     *
+     * @see #setValues(DataType, Dimension, IntBinaryOperator...)
+     */
+    private IntBinaryOperator[] calcAsIntegers;
+
+    /**
+     * The desired data type, or {@code null} if unspecified.
+     * This type is used only if it can be used without copying the data.
+     * For example if the user specified a raster, it will not be reformatted.
+     */
+    private DataType dataType;
+
+    /**
+     * The preferred tile size, or {@code null} if unspecified.
+     * This dimension is used only if it can be used without copying the data.
+     * For example if the user specified a fully constructed image, it will not be re-tiled.
+     *
+     * @see #setPreferredTileSize(Dimension)
+     */
+    private Dimension tileSize;
+
+    /**
+     * The image size, or {@code null} if unspecified. This size needs to be specified only if sample
+     * values were specified as a buffer or as a function without information about the grid extent.
      *
      * @see #setValues(DataBuffer, Dimension)
+     * @see #setValues(DataType, Dimension, IntBinaryOperator...)
      */
-    private Dimension size;
+    private Dimension imageSize;
 
     /**
      * Set of grid axes to reverse, as a bit mask. For any dimension <var>i</var>, the bit
@@ -177,7 +205,7 @@ public class GridCoverageBuilder {
      * @see #addImageProperty(String, Object)
      */
     @SuppressWarnings("UseOfObsoleteCollectionType")
-    private final Hashtable<String,Object> properties;
+    private final Hashtable<String, Object> properties;
 
     /**
      * Creates an initially empty builder.
@@ -313,6 +341,39 @@ public class GridCoverageBuilder {
     }
 
     /**
+     * Sets the preferred tile size, or {@code null} if no preference.
+     * This values is used only if it can be used without copying the data.
+     * For example if the user specified a fully constructed image, that image will not be re-tiled.
+     *
+     * @param  tileSize  the desired tile size, or {@code null} if no preference.
+     * @return {@code this} for method invocation chaining.
+     *
+     * @see #setValues(DataType, Dimension, IntBinaryOperator...)
+     *
+     * @since  1.7
+     */
+    public GridCoverageBuilder setPreferredTileSize(Dimension tileSize) {
+        if (tileSize != null) {
+            tileSize = new Dimension(tileSize);
+        }
+        this.tileSize = tileSize;
+        return this;
+    }
+
+    /**
+     * Clears all the ways to specify sample values, together with dependencies such as image size.
+     */
+    private void clearValues() {
+        image     = null;
+        raster    = null;
+        buffer    = null;
+        dataType  = null;
+        tileSize  = null;
+        imageSize = null;
+        calcAsIntegers = null;
+    }
+
+    /**
      * Sets a two-dimensional slice of sample values as a rendered image.
      * If {@linkplain #setRanges(SampleDimension...) sample dimensions are specified},
      * then the {@linkplain java.awt.image.SampleModel#getNumBands() number of bands}
@@ -328,10 +389,8 @@ public class GridCoverageBuilder {
      * @see BufferedImage
      */
     public GridCoverageBuilder setValues(final RenderedImage data) {
-        image  = Objects.requireNonNull(data);
-        raster = null;
-        buffer = null;
-        size   = null;
+        clearValues();
+        image = Objects.requireNonNull(data);
         return this;
     }
 
@@ -351,10 +410,8 @@ public class GridCoverageBuilder {
      * @see Raster#createBandedRaster(int, int, int, int, Point)
      */
     public GridCoverageBuilder setValues(final Raster data) {
+        clearValues();
         raster = Objects.requireNonNull(data);
-        image  = null;
-        buffer = null;
-        size   = null;
         return this;
     }
 
@@ -372,6 +429,7 @@ public class GridCoverageBuilder {
      */
     public GridCoverageBuilder setValues(final DataBuffer data, Dimension size) {
         ArgumentChecks.ensureNonNull("data", data);
+        clearValues();
         if (size != null) {
             size = new Dimension(size);
             ArgumentChecks.ensureStrictlyPositive("width",  size.width);
@@ -382,10 +440,8 @@ public class GridCoverageBuilder {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, length, capacity));
             }
         }
-        this.size = size;
-        buffer = data;
-        image  = null;
-        raster = null;
+        imageSize = size;
+        buffer    = data;
         return this;
     }
 
@@ -401,21 +457,28 @@ public class GridCoverageBuilder {
      * The functions may be invoked with pixel coordinates in any order.</p>
      *
      * @param  type   the type of values to store in the image.
-     * @param  size   the image size in pixels.
+     * @param  size   the image size in pixels, or {@code null} if unspecified. If null, then the image
+     *                size will be taken from the {@linkplain GridGeometry#getExtent() grid extent}.
      * @param  bands  functions providing sample values in each band, in order.
      * @return {@code this} for method invocation chaining.
      * @throws IllegalArgumentException if {@code width} or {@code height} is negative or equals to zero.
      *
+     * @see #setPreferredTileSize(Dimension)
      * @see WritablePixelIterator#setRemainingPixels(IntBinaryOperator...)
      *
      * @since 1.7
      */
-    public GridCoverageBuilder setValues(final DataType type, final Dimension size, final IntBinaryOperator... bands) {
-        // Number of bands, width and height are verified by `Raster.createBandedRaster(…)`
-        final WritableRaster data = Raster.createBandedRaster(type.toDataBufferType(), size.width, size.height, bands.length, null);
-        final WritablePixelIterator i = new WritablePixelIterator.Builder().createWritable(data);
-        i.setRemainingPixels(bands);
-        return setValues(data);
+    public GridCoverageBuilder setValues(final DataType type, Dimension size, IntBinaryOperator... bands) {
+        ArgumentChecks.ensureNonNull ("type",  type);
+        ArgumentChecks.ensureNonEmpty("bands", bands);
+        clearValues();
+        if (size != null) {
+            size = new Dimension(size);
+        }
+        dataType  = type;
+        imageSize = size;
+        calcAsIntegers = bands.clone();
+        return this;
     }
 
     /**
@@ -465,6 +528,95 @@ public class GridCoverageBuilder {
     }
 
     /**
+     * Creates a color model for the given sample model.
+     *
+     * @param  sm     the sample model.
+     * @param  bands  {@link #ranges} if non-null, or a default non-null value otherwise.
+     * @return the color model.
+     */
+    private ColorModel createColorModel(final SampleModel sm, final List<? extends SampleDimension> bands) {
+        final var colorizer = new ColorScaleBuilder(ColorScaleBuilder.GRAYSCALE, null, false);
+        if (colorizer.initialize(sm, bands.get(visibleBand)) || colorizer.initialize(sm, visibleBand)) {
+            return colorizer.createColorModel(sm, bands.size(), visibleBand);
+        } else {
+            return ColorScaleBuilder.NULL_COLOR_MODEL;
+        }
+    }
+
+    /**
+     * Creates an image from the given rasters.
+     * The first tile in the given array must be the one located at the minimal tile indices.
+     * All tiles must have the same size and the same sample model and must be sorted in row-major fashion.
+     *
+     * <p>This method tries to create the most standard objects when possible: preferably a
+     * {@link BufferedImage} from Java2D, otherwise a {@link TiledImage} from <abbr>SIS</abbr>.</p>
+     *
+     * @param  colors  the color model, or {@code null}.
+     * @param  width   the image width in pixels.
+     * @param  height  the image height in pixels.
+     * @param  tiles   the image tiles.
+     * @return an image for the given rasters.
+     */
+    private RenderedImage createImage(final ColorModel colors, final int width, final int height, final Raster... tiles) {
+        if (colors != null && tiles.length == 1) {
+            final Raster tile = tiles[0];
+            if (tile instanceof WritableRaster && (tile.getMinX() | tile.getMinY()) == 0) {
+                return new ObservableImage(colors, (WritableRaster) tile, false, properties);
+            }
+        }
+        if (tiles instanceof WritableRaster[]) {
+            return new WritableTiledImage(properties, colors, width, height, 0, 0, (WritableRaster[]) tiles);
+        } else {
+            return new TiledImage(properties, colors, width, height, 0, 0, tiles);
+        }
+    }
+
+    /**
+     * Creates an image with values computed by the {@link #calcAsIntegers} function.
+     *
+     * @param  grid   {@link #domain} if non-null, or a default non-null value otherwise.
+     * @param  bands  {@link #ranges} if non-null, or a default non-null value otherwise.
+     * @return an image computed from the {@link #calcAsIntegers} function.
+     */
+    private RenderedImage computeImage(final GridGeometry grid, final List<? extends SampleDimension> bands) {
+        final int width, height;
+        if (imageSize != null) {
+            width  = imageSize.width;
+            height = imageSize.height;
+        } else {
+            final GridExtent extent = grid.getExtent();
+            final int[] imageAxes = extent.getSubspaceDimensions(GridCoverage.BIDIMENSIONAL);
+            width  = Math.toIntExact(extent.getSize(imageAxes[0]));
+            height = Math.toIntExact(extent.getSize(imageAxes[1]));
+        }
+        final int tileWidth, tileHeight;
+        if (tileSize != null) {
+            tileWidth  = tileSize.width;
+            tileHeight = tileSize.height;
+        } else {
+            tileWidth  = width;
+            tileHeight = height;
+        }
+        final int numXTiles = JDK18.ceilDiv(width,  tileWidth);
+        final int numYTiles = JDK18.ceilDiv(height, tileHeight);
+        final var sm = new BandedSampleModel(
+                (dataType != null) ? dataType.toDataBufferType() : DataBuffer.TYPE_INT,
+                tileWidth, tileHeight, calcAsIntegers.length);
+
+        final var location = new Point();
+        final var tiles = new WritableRaster[Math.multiplyExact(numXTiles, numYTiles)];
+        for (int i=0; i<tiles.length; i++) {
+            location.x = (i % numXTiles) * tileWidth;
+            location.y = (i / numXTiles) * tileHeight;
+            tiles[i] = WritableRaster.createWritableRaster(sm, location);
+        }
+        final var data = (WritableRenderedImage) createImage(createColorModel(sm, bands), width, height, tiles);
+        final WritablePixelIterator i = new WritablePixelIterator.Builder().createWritable(data);
+        i.setRemainingPixels(calcAsIntegers);
+        return data;
+    }
+
+    /**
      * Creates the grid coverage from the domain, ranges and values given to setter methods.
      * The returned coverage is often a {@link GridCoverage2D} instance, but not necessarily.
      *
@@ -476,78 +628,62 @@ public class GridCoverageBuilder {
      *         {@link IllegalArgumentException} or {@link NullPointerException}.
      */
     public GridCoverage build() throws IllegalStateException {
-        GridGeometry grid = domain;                                 // May be replaced by an instance with extent.
-        List<? extends SampleDimension> bands = ranges;             // May be replaced by a non-null value.
-        /*
-         * If not already done, create the image from the raster. We try to create the most standard objects
-         * when possible: a BufferedImage (from Java2D), then later a GridCoverage2D (from SIS public API).
-         * An exception to this rule is the DataBuffer case: we use a dedicated BufferedGridCoverage class
-         * instead.
-         */
+        List<? extends SampleDimension> bands = ranges;   // May be replaced by a non-null value.
+        GridGeometry grid = domain;                       // May be replaced by an instance with extent.
+        RenderedImage data = image;                       // If null, will be replaced by a non-null value.
         try {
-            if (image == null) {
-                if (raster == null) {
-                    if (buffer == null) {
+            if (data == null) {
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
+                final Raster raster = this.raster;        // Prevent accidental change.
+                if (raster != null) {
+                    /*
+                     * Create the image from the raster. If the band list is null, create a default list
+                     * because we need bands for creating a default color model. Note that we should not
+                     * do that when a `RenderedImage` has been specified because the `GridCoverage2D`
+                     * constructor will infer better sample dimension names.
+                     */
+                    grid  = GridCoverage2D.addExtentIfAbsent(grid, raster.getBounds());
+                    bands = GridCoverage2D.defaultIfAbsent(bands, null, raster.getNumBands());
+                    final SampleModel sm = raster.getSampleModel();
+                    /*
+                     * Create an image from the raster. We favor BufferedImage instance when possible,
+                     * and fallback on TiledImage only if the BufferedImage cannot be created.
+                     */
+                    properties.put(PlanarImage.SAMPLE_DIMENSIONS_KEY, bands.toArray(SampleDimension[]::new));
+                    data = createImage(createColorModel(sm, bands), raster.getWidth(), raster.getHeight(), raster);
+                    properties.remove(PlanarImage.SAMPLE_DIMENSIONS_KEY);
+                } else {
+                    /*
+                     * Case of data specified as an array (wrapped in a buffer) or as functions.
+                     */
+                    if (buffer == null && calcAsIntegers == null) {
                         throw new IllegalStateException(missingProperty("values"));
                     }
-                    if (size != null) {
-                        grid = GridCoverage2D.addExtentIfAbsent(grid, new Rectangle(size));
-                        verifyGridExtent(grid.getExtent(), size.width, size.height);
+                    if (imageSize != null) {
+                        grid = GridCoverage2D.addExtentIfAbsent(grid, new Rectangle(imageSize));
+                        verifyGridExtent(grid.getExtent(), imageSize.width, imageSize.height);
                     } else if (grid == null) {
-                        throw new IncompleteGridGeometryException(missingProperty("size"));
+                        throw new IncompleteGridGeometryException(missingProperty("imageSize"));
                     }
-                    bands = GridCoverage2D.defaultIfAbsent(bands, null, buffer.getNumBanks());
-                    return new BufferedGridCoverage(domainWithAxisFlips(grid), bands, buffer);
-                }
-                /*
-                 * If the band list is null, create a default list of bands because we need
-                 * them for creating the color model. Note that we shall not do that when a
-                 * RenderedImage has been specified because GridCoverage2D constructor will
-                 * will infer better names.
-                 */
-                bands = GridCoverage2D.defaultIfAbsent(bands, null, raster.getNumBands());
-                final SampleModel sm = raster.getSampleModel();
-                final var colorizer = new ColorScaleBuilder(ColorScaleBuilder.GRAYSCALE, null, false);
-                final ColorModel colors;
-                if (colorizer.initialize(sm, bands.get(visibleBand)) || colorizer.initialize(sm, visibleBand)) {
-                    colors = colorizer.createColorModel(sm, bands.size(), visibleBand);
-                } else {
-                    colors = ColorScaleBuilder.NULL_COLOR_MODEL;
-                }
-                /*
-                 * Create an image from the raster. We favor BufferedImage instance when possible,
-                 * and fallback on TiledImage only if the BufferedImage cannot be created.
-                 */
-                if (bands != null) {
-                    properties.put(PlanarImage.SAMPLE_DIMENSIONS_KEY, bands.toArray(SampleDimension[]::new));
-                } else {
-                    properties.remove(PlanarImage.SAMPLE_DIMENSIONS_KEY);
-                }
-                if (raster instanceof WritableRaster) {
-                    final WritableRaster wr = (WritableRaster) raster;
-                    if (colors != null && (wr.getMinX() | wr.getMinY()) == 0) {
-                        image = new ObservableImage(colors, wr, false, properties);
+                    if (buffer != null) {
+                        bands = GridCoverage2D.defaultIfAbsent(bands, null, buffer.getNumBanks());
+                        return new BufferedGridCoverage(domainWithAxisFlips(grid), bands, buffer);
                     } else {
-                        image = new WritableTiledImage(properties, colors, wr.getWidth(), wr.getHeight(), 0, 0, wr);
+                        bands = GridCoverage2D.defaultIfAbsent(bands, null, calcAsIntegers.length);
+                        data = computeImage(grid, bands);
                     }
-                } else {
-                    image = new TiledImage(properties, colors, raster.getWidth(), raster.getHeight(), 0, 0, raster);
                 }
-                properties.remove(PlanarImage.SAMPLE_DIMENSIONS_KEY);
             }
-            /*
-             * At this point `image` shall be non-null but `bands` may still be null (it is okay).
-             */
-            return new GridCoverage2D(domainWithAxisFlips(grid), bands, image);
+            return new GridCoverage2D(domainWithAxisFlips(grid), bands, data);
         } catch (TransformException | NullPointerException | IllegalArgumentException | ArithmeticException e) {
             throw new IllegalStateException(Resources.format(Resources.Keys.CanNotBuildGridCoverage), e);
         }
     }
 
     /**
-     * Returns the {@linkplain #domain} with axis flips applied. If there is no axis to flip,
-     * {@link #domain} is returned unchanged (without completion for missing extent; we leave
-     * that to {@link GridCoverage2D} constructor).
+     * Returns the {@linkplain #domain} with <abbr>CRS</abbr> axis flips applied.
+     * If there is no axis to flip, {@link #domain} is returned unchanged
+     * (without completion for missing extent, we leave that to {@link GridCoverage2D} constructor).
      *
      * @see GridCoverage2D#addExtentIfAbsent(GridGeometry, Rectangle)
      */
@@ -574,7 +710,7 @@ public class GridCoverageBuilder {
     /**
      * Verifies that the grid extent has the expected size. This method does not verify grid location
      * (low coordinates) because it is okay to have it anywhere. The {@code expectedSize} array can be
-     * shorter than the number of dimensions (i.e. it may be a slice in a data cube); this method uses
+     * shorter than the number of dimensions (i.e. it may be a slice in a data cube). This method uses
      * {@link GridExtent#getSubspaceDimensions(int)} for determining which dimensions to check.
      *
      * <p>This verification can be useful because {@link DataBuffer} does not contain any information
