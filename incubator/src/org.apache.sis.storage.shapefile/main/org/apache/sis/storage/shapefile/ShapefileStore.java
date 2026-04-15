@@ -129,6 +129,7 @@ import org.opengis.filter.LogicalOperatorName;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.ValueReference;
 import org.apache.sis.geometry.wrapper.*;
+import org.apache.sis.storage.DataStoreProvider;
 
 
 /**
@@ -205,6 +206,11 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
     @Override
     public Optional<GenericName> getIdentifier() throws DataStoreException {
         return featureSetView.getIdentifier();
+    }
+
+    @Override
+    public DataStoreProvider getProvider() {
+        return ShapefileProvider.provider();
     }
 
     /**
