@@ -19,8 +19,6 @@ package org.apache.sis.coverage.grid;
 import java.util.Map;
 import java.util.Locale;
 import java.io.IOException;
-import java.util.List;
-import java.util.function.Function;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.spatial.DimensionNameType;
@@ -420,26 +418,43 @@ public final class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#interiorStream() }.
+     * Tests {@link GridExtent#latticePointStream(boolean)} in the sequential case.
      */
     @Test
-    public void testInteriorCoordinateStream() {
-        final record Pt(long x, long y, long z){};
-        var extent = new GridExtent(null, new long[]{1,20,33}, new long[]{3,23,35}, false);
-        var lst = extent.interiorCoordinateStream().map((long[] t) -> new Pt(t[0], t[1], t[2])).toList();
-        assertEquals(2*3*2, lst.size());
-        assertTrue(lst.contains(new Pt(1,20,33)));
-        assertTrue(lst.contains(new Pt(1,20,34)));
-        assertTrue(lst.contains(new Pt(1,21,33)));
-        assertTrue(lst.contains(new Pt(1,21,34)));
-        assertTrue(lst.contains(new Pt(1,22,33)));
-        assertTrue(lst.contains(new Pt(1,22,34)));
-        assertTrue(lst.contains(new Pt(2,20,33)));
-        assertTrue(lst.contains(new Pt(2,20,34)));
-        assertTrue(lst.contains(new Pt(2,21,33)));
-        assertTrue(lst.contains(new Pt(2,21,34)));
-        assertTrue(lst.contains(new Pt(2,22,33)));
-        assertTrue(lst.contains(new Pt(2,22,34)));
+    public void testSequentialStream() {
+        testLatticePointStream(false);
+    }
+
+    /**
+     * Tests {@link GridExtent#latticePointStream(boolean)} in the parallel case.
+     */
+    @Test
+    public void testParallelStream() {
+        testLatticePointStream(true);
+    }
+
+    /**
+     * Implementation of {@link #testSequentialStream()} and {@link #testParallelStream()}.
+     */
+    private void testLatticePointStream(final boolean parallel) {
+        final var extent = new GridExtent(null, new long[] {1, 20, 33}, new long[] {2, 22, 34}, true);
+        assertEquals(2 * 3 * 2, extent.latticePointStream(parallel).count());
+        final long[][] lattice = extent.latticePointStream(parallel).toArray(long[][]::new);
+        assertArrayEquals(
+                new long[][] {
+                    new long[] {1, 20, 33},
+                    new long[] {2, 20, 33},
+                    new long[] {1, 21, 33},
+                    new long[] {2, 21, 33},
+                    new long[] {1, 22, 33},
+                    new long[] {2, 22, 33},
+                    new long[] {1, 20, 34},
+                    new long[] {2, 20, 34},
+                    new long[] {1, 21, 34},
+                    new long[] {2, 21, 34},
+                    new long[] {1, 22, 34},
+                    new long[] {2, 22, 34}},
+                lattice);
     }
 
     /**
