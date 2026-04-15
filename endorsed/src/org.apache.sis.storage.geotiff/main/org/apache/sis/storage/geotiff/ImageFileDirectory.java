@@ -113,8 +113,8 @@ final class ImageFileDirectory extends DataCube {
     /**
      * Index of the (potentially pyramided) image containing this Image File Directory (IFD).
      * All reduced-resolution (overviews) images are ignored when computing this index value.
-     * If the TIFF file does not contain reduced-resolution (overview) images, then
-     * {@code index} value is the same as the index of this IFD in the TIFF file.
+     * If the <abbr>TIFF</abbr> file does not contain reduced-resolution (overview) images,
+     * then {@code index} value is the same as the index of this IFD in the TIFF file.
      *
      * <p>If this IFD is a reduced-resolution (overview) image, then this index is off by one.
      * It has the value of the next pyramid. This is an artifact of the way index is computed
@@ -2017,9 +2017,12 @@ final class ImageFileDirectory extends DataCube {
 
     /**
      * Returns information about the overviews which form the pyramid.
+     * If the image does not use the {@code Tile*} family of <abbr>TIFF</abbr> tags,
+     * then this method return an empty list.
      */
     @Override
     protected List<Pyramid> getPyramids() throws DataStoreException {
+        if (tileTagFamily != TILE) return List.of();
         return (overviews != null) ? List.of(overviews) : super.getPyramids();
     }
 
