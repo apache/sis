@@ -19,6 +19,8 @@ package org.apache.sis.coverage.grid;
 import java.util.Map;
 import java.util.Locale;
 import java.io.IOException;
+import java.util.List;
+import java.util.function.Function;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.spatial.DimensionNameType;
@@ -415,6 +417,29 @@ public final class GridExtentTest extends TestCase {
 
         var exception = assertThrows(SubspaceNotSpecifiedException.class, () -> extent.getSubspaceDimensions(1));
         assertMessageContains(exception);
+    }
+
+    /**
+     * Tests {@link GridExtent#interiorStream() }.
+     */
+    @Test
+    public void testInteriorCoordinateStream() {
+        final record Pt(long x, long y, long z){};
+        var extent = new GridExtent(null, new long[]{1,20,33}, new long[]{3,23,35}, false);
+        var lst = extent.interiorCoordinateStream().map((long[] t) -> new Pt(t[0], t[1], t[2])).toList();
+        assertEquals(2*3*2, lst.size());
+        assertTrue(lst.contains(new Pt(1,20,33)));
+        assertTrue(lst.contains(new Pt(1,20,34)));
+        assertTrue(lst.contains(new Pt(1,21,33)));
+        assertTrue(lst.contains(new Pt(1,21,34)));
+        assertTrue(lst.contains(new Pt(1,22,33)));
+        assertTrue(lst.contains(new Pt(1,22,34)));
+        assertTrue(lst.contains(new Pt(2,20,33)));
+        assertTrue(lst.contains(new Pt(2,20,34)));
+        assertTrue(lst.contains(new Pt(2,21,33)));
+        assertTrue(lst.contains(new Pt(2,21,34)));
+        assertTrue(lst.contains(new Pt(2,22,33)));
+        assertTrue(lst.contains(new Pt(2,22,34)));
     }
 
     /**

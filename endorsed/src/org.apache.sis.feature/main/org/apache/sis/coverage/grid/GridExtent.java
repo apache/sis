@@ -27,6 +27,8 @@ import java.io.Serializable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.awt.Rectangle;
+import java.util.stream.LongStream;
+import java.util.stream.Stream;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.geometry.Envelope;
@@ -2138,6 +2140,38 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             }
         }
         return true;
+    }
+
+    /**
+     * Create a stream of coordinates contained in the GridExtent.
+     * Iteration goes from {@linkplain GridExtent#getLow() } to {@linkplain GridExtent#getHigh() } coordinates inclusive.
+     * <p>
+     * No assumption of the iteration order should be made.
+     *
+     * @return stream of coordinates inside the GridExtent.
+     * @since 1.7
+     */
+    public Stream<long[]> interiorCoordinateStream() {
+        final int dimension = getDimension();
+        final long[] low = getLow().getCoordinateValues();
+        final long[] high = getHigh().getCoordinateValues();
+
+        Stream<long[]> stream = LongStream.range(low[0], high[0]+1)
+                .mapToObj((long value) -> {
+                    final long[] array = new long[dimension];
+                    array[0] = value;
+                    return array;
+        });
+        for (int i = 1; i <dimension; i++) {
+            final int idx = i;
+            stream = stream.flatMap((long[] t) -> LongStream.range(low[idx], high[idx]+1)
+                    .mapToObj((long value) -> {
+                        final long[] array = t.clone();
+                        array[idx] = value;
+                        return array;
+                    }));
+        }
+        return stream;
     }
 
     /**
