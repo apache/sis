@@ -77,6 +77,7 @@ import org.apache.sis.io.stream.ChannelImageOutputStream;
 import org.apache.sis.io.stream.InternalOptionKey;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -110,6 +111,7 @@ import org.apache.sis.setup.OptionKey;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.7
  * @since   0.3
  */
@@ -1096,6 +1098,70 @@ public class StorageConnector implements Serializable {
      */
     public boolean wasProbingAbsentFile() {
         return probing != null && probing.probe != null;
+    }
+
+    /**
+     * Tests if the content of the storage from this connector starts with the given signature.
+     * <p>
+     * If the storage cannot be read as a sequence of bytes, for example if the storage is a connection to a database,
+     * then this method returns {@code UNSUPPORTED_STORAGE}.
+     *
+     * @param signature to test, not null
+     * @return {@code SUPPORTED} if content matches,
+     *         {@code INSUFFICIENT_BYTES} if the buffer is too small,
+     *         {@code UNSUPPORTED_STORAGE} otherwise.
+     * @throws DataStoreException if an error occurred while opening or reading.
+     * @since 1.7
+     */
+    public ProbeResult contentStartsWith(byte[] signature) throws DataStoreException {
+        ArgumentChecks.ensureNonNull("signature", signature);
+
+        final ByteBuffer buffer = getStorageAs(ByteBuffer.class);
+        if (buffer == null) return ProbeResult.UNSUPPORTED_STORAGE;
+        try {
+            buffer.mark();
+            final int remaining = buffer.remaining();
+
+            // compare signatures
+            for (int i = 0; i < signature.length; i++) {
+                if (i >= remaining) {
+                    return ProbeResult.INSUFFICIENT_BYTES;
+                }
+                if (buffer.get() != signature[i]) {
+                    return ProbeResult.UNSUPPORTED_STORAGE;
+                }
+            }
+            return ProbeResult.SUPPORTED;
+        } finally {
+            buffer.reset();
+        }
+    }
+
+    /**
+     * Tests if the data path from this connector ends with the given suffix.
+     * We test the suffix here and not the extension because several formats
+     * used combined extensions, like .meta.xml or .bin.gz.
+     * Restricting ourselves to file extension is ambigious in such cases, this is why suffix is used instead.
+     * <p>
+     * This method fallback on {@linkplain  String#regionMatches(boolean, int, java.lang.String, int, int) }
+     * for the suffix test.
+     *
+     * @param suffix to test, not null
+     * @param ignoreCase  if true, ignore case when comparing characters.
+     * @return {@code SUPPORTED} if suffix matches,
+     *         {@code UNSUPPORTED_STORAGE} otherwise.
+     * @throws DataStoreException if an error occurred while opening or reading.
+     * @since 1.7
+     */
+    public ProbeResult pathEndsWith(String suffix, boolean ignoreCase) throws DataStoreException {
+        ArgumentChecks.ensureNonEmpty("suffix", suffix);
+        final URI uri = getStorageAs(URI.class);
+        if (uri == null) return ProbeResult.UNSUPPORTED_STORAGE;
+
+        name = uri.isOpaque() ? uri.getSchemeSpecificPart() : uri.getPath();
+        final int suffixLength = suffix.length();
+        return name.regionMatches(ignoreCase, name.length()-suffixLength, suffix, 0, suffixLength) ?
+               ProbeResult.SUPPORTED : ProbeResult.UNSUPPORTED_STORAGE;
     }
 
     /**
