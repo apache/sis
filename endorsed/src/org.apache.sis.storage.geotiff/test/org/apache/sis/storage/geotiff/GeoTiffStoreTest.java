@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import org.opengis.referencing.cs.AxisDirection;
@@ -139,7 +140,7 @@ public final class GeoTiffStoreTest extends TestCase {
      */
     @Test
     public void testWriteUntiled() throws TransformException, DataStoreException, IOException {
-        testWrite(UNTILED, new Dimension(32, 16), null, 2284);
+        testWrite(UNTILED, new Rectangle(32, 16), null, 2284);
     }
 
     /**
@@ -152,18 +153,18 @@ public final class GeoTiffStoreTest extends TestCase {
     @Test
     public void testWriteTiled() throws TransformException, DataStoreException, IOException {
         final var tileSize = new Dimension(16, 16);     // TIFF tile size must be multiple of 16.
-        testWrite(TILED, new Dimension(tileSize.width * 3, tileSize.height * 2), tileSize, 3564);
+        testWrite(TILED, new Rectangle(tileSize.width * 3, tileSize.height * 2), tileSize, 3564);
     }
 
     /**
      * Implementation of {@link #testWriteUntiled()} and {@link #testWriteTiled()}.
      *
-     * @param  filename   name of the file which contain the expected image.
-     * @param  imageSize  size of the image to create.
-     * @param  tileSize   size of the tiles, or {@code null} for the image size.
-     * @param  length     expected length in bytes.
+     * @param  filename  name of the file which contain the expected image.
+     * @param  bounds    bounds of the image to create.
+     * @param  tileSize  size of the tiles, or {@code null} for the image size.
+     * @param  length    expected length in bytes.
      */
-    private static void testWrite(final String filename, final Dimension imageSize, final Dimension tileSize, final int length)
+    private static void testWrite(final String filename, final Rectangle bounds, final Dimension tileSize, final int length)
             throws TransformException, DataStoreException, IOException
     {
         var geographicArea = new GeneralEnvelope(HardCodedCRS.WGS84);
@@ -171,8 +172,7 @@ public final class GeoTiffStoreTest extends TestCase {
         geographicArea.setRange(1,  30,  42);   // Range of latitude values.
         final GridCoverage coverage = new GridCoverageBuilder()
                 .setDomain(Envelopes.transform(geographicArea, HardCodedConversions.mercator()))
-                .setValues(DataType.BYTE, imageSize, (x, y) -> 100 * y + x)
-                .setPreferredTileSize(tileSize)
+                .setIntegerValues(DataType.BYTE, bounds, tileSize, (x, y) -> 100 * y + x)
                 .flipGridAxis(1)
                 .build();
 

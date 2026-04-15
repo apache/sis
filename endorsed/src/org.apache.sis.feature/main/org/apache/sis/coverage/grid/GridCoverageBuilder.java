@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Hashtable;
 import java.util.Objects;
 import java.util.function.IntBinaryOperator;
+import java.util.function.DoubleBinaryOperator;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -38,6 +39,7 @@ import java.awt.image.WritableRenderedImage;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.DataType;
+import org.apache.sis.image.ImageLayout;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.WritablePixelIterator;
 import org.apache.sis.image.internal.shared.ColorScaleBuilder;
@@ -159,10 +161,18 @@ public class GridCoverageBuilder {
     private DataBuffer buffer;
 
     /**
+     * Providers of sample values as floating-point values, one provider per band.
+     * Exactly one of {@code image}, {@link #raster}, {@link #buffer} and {@code calc*} fields shall be non-null.
+     *
+     * @see #setValues(DataType, Rectangle, Dimension, DoubleBinaryOperator...)
+     */
+    private DoubleBinaryOperator[] calcAsDoubles;
+
+    /**
      * Providers of sample values as integers, one provider per band.
      * Exactly one of {@code image}, {@link #raster}, {@link #buffer} and {@code calc*} fields shall be non-null.
      *
-     * @see #setValues(DataType, Dimension, IntBinaryOperator...)
+     * @see #setIntegerValues(DataType, Rectangle, Dimension, IntBinaryOperator...)
      */
     private IntBinaryOperator[] calcAsIntegers;
 
@@ -174,22 +184,24 @@ public class GridCoverageBuilder {
     private DataType dataType;
 
     /**
-     * The preferred tile size, or {@code null} if unspecified.
-     * This dimension is used only if it can be used without copying the data.
-     * For example if the user specified a fully constructed image, it will not be re-tiled.
-     *
-     * @see #setPreferredTileSize(Dimension)
+     * The preferred tile size, or {@code null} for automatic.
+     * If non-null, the {@linkplain GridGeometry#getExtent() domain extent} will be divided
+     * in tiles of the specified size if this division can be done without copying the data.
+     * Otherwise (for example, if the user specified a {@linkplain #setValues(RenderedImage)
+     * fully constructed image}, which is already tiled), this parameter is ignored.
      */
     private Dimension tileSize;
 
     /**
-     * The image size, or {@code null} if unspecified. This size needs to be specified only if sample
-     * values were specified as a buffer or as a function without information about the grid extent.
+     * The image size and the pixel coordinate of the upper-left corner, or {@code null} if unspecified.
+     * This size needs to be specified only if sample values were specified as a buffer or as a function
+     * without information about the grid extent.
      *
      * @see #setValues(DataBuffer, Dimension)
-     * @see #setValues(DataType, Dimension, IntBinaryOperator...)
+     * @see #setValues(DataType, Rectangle, Dimension, DoubleBinaryOperator...)
+     * @see #setIntegerValues(DataType, Rectangle, Dimension, IntBinaryOperator...)
      */
-    private Dimension imageSize;
+    private Rectangle imageBounds;
 
     /**
      * Set of grid axes to reverse, as a bit mask. For any dimension <var>i</var>, the bit
@@ -233,7 +245,7 @@ public class GridCoverageBuilder {
      * The given envelope should contain all pixel area. For example, the
      * {@linkplain Envelope#getLowerCorner() envelope lower corner} should locate the lower-left
      * (or upper-left, depending on <var>y</var> axis orientation) pixel corner, not pixel center.
-     * If the given envelope contains a CRS, then that CRS will be the coverage CRS.
+     * If the given envelope contains a <abbr>CRS</abbr>, then that CRS will be the coverage CRS.
      * A transform from grid indices to domain coordinates will be created automatically.
      * That transform will map grid dimensions to envelope dimensions in the same order
      * (i.e. the matrix representation of the affine transform will be diagonal,
@@ -341,35 +353,17 @@ public class GridCoverageBuilder {
     }
 
     /**
-     * Sets the preferred tile size, or {@code null} if no preference.
-     * This values is used only if it can be used without copying the data.
-     * For example if the user specified a fully constructed image, that image will not be re-tiled.
-     *
-     * @param  tileSize  the desired tile size, or {@code null} if no preference.
-     * @return {@code this} for method invocation chaining.
-     *
-     * @see #setValues(DataType, Dimension, IntBinaryOperator...)
-     *
-     * @since  1.7
-     */
-    public GridCoverageBuilder setPreferredTileSize(Dimension tileSize) {
-        if (tileSize != null) {
-            tileSize = new Dimension(tileSize);
-        }
-        this.tileSize = tileSize;
-        return this;
-    }
-
-    /**
-     * Clears all the ways to specify sample values, together with dependencies such as image size.
+     * Clears all the ways to specify sample values,
+     * together with dependencies such as image bounds and tile size.
      */
     private void clearValues() {
-        image     = null;
-        raster    = null;
-        buffer    = null;
-        dataType  = null;
-        tileSize  = null;
-        imageSize = null;
+        image          = null;
+        raster         = null;
+        buffer         = null;
+        dataType       = null;
+        tileSize       = null;
+        imageBounds    = null;
+        calcAsDoubles  = null;
         calcAsIntegers = null;
     }
 
@@ -423,62 +417,108 @@ public class GridCoverageBuilder {
      *
      * @param  data  the data buffer to be wrapped in a {@code GridCoverage}. Cannot be {@code null}.
      * @param  size  the image size in pixels, or {@code null} if unspecified. If null, then the image
-     *               size will be taken from the {@linkplain GridGeometry#getExtent() grid extent}.
+     *               bounds will be taken from the {@linkplain GridGeometry#getExtent() grid extent}.
      * @return {@code this} for method invocation chaining.
-     * @throws IllegalArgumentException if {@code width} or {@code height} is negative or equals to zero.
+     * @throws IllegalArgumentException if {@code size} is empty.
      */
-    public GridCoverageBuilder setValues(final DataBuffer data, Dimension size) {
+    public GridCoverageBuilder setValues(final DataBuffer data, final Dimension size) {
         ArgumentChecks.ensureNonNull("data", data);
         clearValues();
         if (size != null) {
-            size = new Dimension(size);
-            ArgumentChecks.ensureStrictlyPositive("width",  size.width);
-            ArgumentChecks.ensureStrictlyPositive("height", size.height);
-            final int length = Math.multiplyExact(size.width, size.height);
+            final var bounds = new Rectangle(size);
+            ArgumentChecks.ensureStrictlyPositive("width",  bounds.width);
+            ArgumentChecks.ensureStrictlyPositive("height", bounds.height);
+            final int length = Math.multiplyExact(bounds.width, bounds.height);
             final int capacity = data.getSize();
             if (length > capacity) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, length, capacity));
             }
+            imageBounds = bounds;
         }
-        imageSize = size;
-        buffer    = data;
+        buffer = data;
         return this;
     }
 
     /**
-     * Sets a two-dimensional slice to the values computed by the given functions.
-     * The number of bands is the number of functions and the color model defaults to gray scale.
-     * The tiling is unspecified and may change in future versions of Apache <abbr>SIS</abbr>.
-     *
-     * <p>Each function will receive pixel coordinates (<var>x</var>, <var>y</var>)
+     * Sets a two-dimensional slice to the floating-point values computed by the given functions.
+     * The number of bands is the number of functions given to this method.
+     * Each function will receive (<var>x</var>, <var>y</var>) pixel coordinates
      * and shall return the sample value to store in one band of the image at that pixel position.
-     * The <var>x</var> values will be between 0 inclusive and {@link Dimension#width} exclusive.
-     * The <var>y</var> values will be between 0 inclusive and {@link Dimension#height} exclusive.
-     * The functions may be invoked with pixel coordinates in any order.</p>
+     * The functions will be invoked for all pixel coordinates inside the given {@code bounds} rectangle,
+     * but not necessarily in any particular order.
+     * The color model defaults to gray scale.
      *
-     * @param  type   the type of values to store in the image.
-     * @param  size   the image size in pixels, or {@code null} if unspecified. If null, then the image
-     *                size will be taken from the {@linkplain GridGeometry#getExtent() grid extent}.
-     * @param  bands  functions providing sample values in each band, in order.
+     * @param  type    the type of values to store in the image (example: {@link DataType#FLOAT}).
+     * @param  bounds  the image size in pixels and the pixel coordinates of the upper-left corner,
+     *                 or {@code null} if unspecified. If null, then the image bounds will be taken
+     *                 from the {@linkplain GridGeometry#getExtent() grid extent}.
+     * @param  tiling  the preferred tile size, or {@code null} for automatic.
+     * @param  bands   functions providing sample values in each band, in order.
      * @return {@code this} for method invocation chaining.
-     * @throws IllegalArgumentException if {@code width} or {@code height} is negative or equals to zero.
+     * @throws IllegalArgumentException if {@code bands} or {@code bounds} are empty.
      *
-     * @see #setPreferredTileSize(Dimension)
-     * @see WritablePixelIterator#setRemainingPixels(IntBinaryOperator...)
+     * @see WritablePixelIterator#setRemainingPixels(DoubleBinaryOperator[])
      *
      * @since 1.7
      */
-    public GridCoverageBuilder setValues(final DataType type, Dimension size, IntBinaryOperator... bands) {
+    public GridCoverageBuilder setValues(DataType type, Rectangle bounds, Dimension tiling, DoubleBinaryOperator... bands) {
+        calcAsDoubles = functions(type, bounds, tiling, bands);
+        return this;
+    }
+
+    /**
+     * Sets a two-dimensional slice to the integer values computed by the given functions.
+     * The number of bands is the number of functions given to this method.
+     * Each function will receive (<var>x</var>, <var>y</var>) pixel coordinates
+     * and shall return the sample value to store in one band of the image at that pixel position.
+     * The functions will be invoked for all pixel coordinates inside the given {@code bounds} rectangle,
+     * but not necessarily in any particular order.
+     * The color model defaults to gray scale.
+     *
+     * @param  type    the type of values to store in the image (example: {@link DataType#USHORT}).
+     * @param  bounds  the image size in pixels and the pixel coordinates of the upper-left corner,
+     *                 or {@code null} if unspecified. If null, then the image bounds will be taken
+     *                 from the {@linkplain GridGeometry#getExtent() grid extent}.
+     * @param  tiling  the preferred tile size, or {@code null} for automatic.
+     * @param  bands   functions providing sample values in each band, in order.
+     * @return {@code this} for method invocation chaining.
+     * @throws IllegalArgumentException if {@code bands} or {@code bounds} are empty.
+     *
+     * @see WritablePixelIterator#setRemainingPixels(IntBinaryOperator[])
+     *
+     * @since 1.7
+     */
+    public GridCoverageBuilder setIntegerValues(DataType type, Rectangle bounds, Dimension tiling, IntBinaryOperator... bands) {
+        calcAsIntegers = functions(type, bounds, tiling, bands);
+        return this;
+    }
+
+    /**
+     * Implementation of the public methods that specify data by functions.
+     *
+     * @param  <E>     the type of the functions computing sample values.
+     * @param  type    the type of values to store in the image.
+     * @param  bounds  the image bounds, or {@code null} for using the extent.
+     * @param  tiling  the preferred tile size, or {@code null} for automatic.
+     * @param  bands   functions providing sample values in each band, in order.
+     * @return a clone of the {@code data} array.
+     * @throws IllegalArgumentException if {@code bands} or {@code bounds} are empty.
+     */
+    private <E> E[] functions(final DataType type, Rectangle bounds, final Dimension tiling, final E[] bands) {
         ArgumentChecks.ensureNonNull ("type",  type);
         ArgumentChecks.ensureNonEmpty("bands", bands);
         clearValues();
-        if (size != null) {
-            size = new Dimension(size);
+        if (bounds != null) {
+            bounds = new Rectangle(bounds);
+            ArgumentChecks.ensureStrictlyPositive("width",  bounds.width);
+            ArgumentChecks.ensureStrictlyPositive("height", bounds.height);
+            imageBounds = bounds;
         }
-        dataType  = type;
-        imageSize = size;
-        calcAsIntegers = bands.clone();
-        return this;
+        if (tiling != null) {
+            tileSize = new Dimension(tiling);
+        }
+        dataType = type;
+        return bands.clone();
     }
 
     /**
@@ -572,47 +612,50 @@ public class GridCoverageBuilder {
     }
 
     /**
-     * Creates an image with values computed by the {@link #calcAsIntegers} function.
+     * Creates an image with values computed by a function.
+     * One of {@link #calcAsDoubles} or {@link #calcAsIntegers} shall be non-null.
      *
-     * @param  grid   {@link #domain} if non-null, or a default non-null value otherwise.
-     * @param  bands  {@link #ranges} if non-null, or a default non-null value otherwise.
-     * @return an image computed from the {@link #calcAsIntegers} function.
+     * @param  grid      {@link #domain} if non-null, or a default non-null value otherwise.
+     * @param  bands     {@link #ranges} if non-null, or a default non-null value otherwise.
+     * @param  numBands  length of the {@link #calcAsDoubles} or {@link #calcAsIntegers} array.
+     * @return an image computed from the {@link #calcAsDoubles} or {@link #calcAsIntegers} function.
      */
-    private RenderedImage computeImage(final GridGeometry grid, final List<? extends SampleDimension> bands) {
-        final int width, height;
-        if (imageSize != null) {
-            width  = imageSize.width;
-            height = imageSize.height;
+    private RenderedImage computeImage(final GridGeometry grid, final List<? extends SampleDimension> bands, final int numBands) {
+        final int xmin, ymin, width, height, tileWidth, tileHeight;
+        if (imageBounds != null) {
+            xmin   = imageBounds.x;
+            ymin   = imageBounds.y;
+            width  = imageBounds.width;
+            height = imageBounds.height;
         } else {
             final GridExtent extent = grid.getExtent();
             final int[] imageAxes = extent.getSubspaceDimensions(GridCoverage.BIDIMENSIONAL);
+            xmin   = Math.toIntExact(extent.getLow (imageAxes[0]));
+            ymin   = Math.toIntExact(extent.getLow (imageAxes[1]));
             width  = Math.toIntExact(extent.getSize(imageAxes[0]));
             height = Math.toIntExact(extent.getSize(imageAxes[1]));
         }
-        final int tileWidth, tileHeight;
-        if (tileSize != null) {
-            tileWidth  = tileSize.width;
-            tileHeight = tileSize.height;
-        } else {
-            tileWidth  = width;
-            tileHeight = height;
+        Dimension tiling = tileSize;
+        if (tiling == null) {
+            tiling = ImageLayout.DEFAULT.allowPartialTiles(false).suggestTileSize(width, height);
         }
-        final int numXTiles = JDK18.ceilDiv(width,  tileWidth);
-        final int numYTiles = JDK18.ceilDiv(height, tileHeight);
-        final var sm = new BandedSampleModel(
-                (dataType != null) ? dataType.toDataBufferType() : DataBuffer.TYPE_INT,
-                tileWidth, tileHeight, calcAsIntegers.length);
-
-        final var location = new Point();
-        final var tiles = new WritableRaster[Math.multiplyExact(numXTiles, numYTiles)];
+        final int numXTiles = JDK18.ceilDiv(width,  tileWidth  = tiling.width);
+        final int numYTiles = JDK18.ceilDiv(height, tileHeight = tiling.height);
+        final var sm        = new BandedSampleModel(dataType.toDataBufferType(), tileWidth, tileHeight, numBands);
+        final var location  = new Point();
+        final var tiles     = new WritableRaster[Math.multiplyExact(numXTiles, numYTiles)];
         for (int i=0; i<tiles.length; i++) {
-            location.x = (i % numXTiles) * tileWidth;
-            location.y = (i / numXTiles) * tileHeight;
+            location.x = xmin + (i % numXTiles) * tileWidth;
+            location.y = ymin + (i / numXTiles) * tileHeight;
             tiles[i] = WritableRaster.createWritableRaster(sm, location);
         }
         final var data = (WritableRenderedImage) createImage(createColorModel(sm, bands), width, height, tiles);
         final WritablePixelIterator i = new WritablePixelIterator.Builder().createWritable(data);
-        i.setRemainingPixels(calcAsIntegers);
+        if (calcAsDoubles != null) {
+            i.setRemainingPixels(calcAsDoubles);
+        } else {
+            i.setRemainingPixels(calcAsIntegers);
+        }
         return data;
     }
 
@@ -656,21 +699,22 @@ public class GridCoverageBuilder {
                     /*
                      * Case of data specified as an array (wrapped in a buffer) or as functions.
                      */
-                    if (buffer == null && calcAsIntegers == null) {
+                    if (buffer == null && calcAsDoubles == null && calcAsIntegers == null) {
                         throw new IllegalStateException(missingProperty("values"));
                     }
-                    if (imageSize != null) {
-                        grid = GridCoverage2D.addExtentIfAbsent(grid, new Rectangle(imageSize));
-                        verifyGridExtent(grid.getExtent(), imageSize.width, imageSize.height);
+                    if (imageBounds != null) {
+                        grid = GridCoverage2D.addExtentIfAbsent(grid, imageBounds);
+                        verifyGridExtent(grid.getExtent(), imageBounds.width, imageBounds.height);
                     } else if (grid == null) {
-                        throw new IncompleteGridGeometryException(missingProperty("imageSize"));
+                        throw new IncompleteGridGeometryException(missingProperty("imageBounds"));
                     }
                     if (buffer != null) {
                         bands = GridCoverage2D.defaultIfAbsent(bands, null, buffer.getNumBanks());
                         return new BufferedGridCoverage(domainWithAxisFlips(grid), bands, buffer);
                     } else {
-                        bands = GridCoverage2D.defaultIfAbsent(bands, null, calcAsIntegers.length);
-                        data = computeImage(grid, bands);
+                        final int numBands = (calcAsDoubles != null) ? calcAsDoubles.length : calcAsIntegers.length;
+                        bands = GridCoverage2D.defaultIfAbsent(bands, null, numBands);
+                        data  = computeImage(grid, bands, numBands);
                     }
                 }
             }

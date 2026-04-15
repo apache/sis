@@ -164,7 +164,7 @@ public final class GridCoverageBuilderTest extends TestCase {
         assertSame(builder, builder.setValues(buffer, null));
         var e = assertThrows(IncompleteGridGeometryException.class, () -> builder.build(),
                              "Extent is undefined, build() should fail.");
-        assertMessageContains(e, "imageSize");
+        assertMessageContains(e, "imageBounds");
         final GridCoverage coverage = testSetDomain(builder, 3, 2);
         assertSame(buffer, coverage.render(null).getTile(0,0).getDataBuffer());
     }
