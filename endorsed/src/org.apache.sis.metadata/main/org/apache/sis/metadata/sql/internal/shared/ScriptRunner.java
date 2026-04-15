@@ -99,6 +99,22 @@ public class ScriptRunner implements AutoCloseable {
     private static final char END_OF_STATEMENT = ';';
 
     /**
+     * An escape sequence for delimiting a portion of the <abbr>SQL</abbr> script to copy verbatim.
+     * Escapes can be used, for example, for the definition of a trigger in a PostgreSQL script.
+     * The escape sequence should appear at the beginning of a line (ignoring whitespaces),
+     * because the characters before the escape sequence will not be parsed.
+     *
+     * <p><b>Restriction:</b> this string shall not begin with a whitespace or
+     * {@linkplain Character#isUnicodeIdentifierPart(int) Unicode identifier part}.</p>
+     *
+     * <p><b>Usage note:</b> this is currently not used directly by Apache <abbr>SIS</abbr>,
+     * but this is used by prototypes on external repositories which may or may not be ported
+     * to <abbr>SIS</abbr> in the future. If the experiments are not ported, this feature may
+     * be removed in any future <abbr>SIS</abbr> version.</p>
+     */
+    private static final String ESCAPE = "$BODY$";
+
+    /**
      * The presumed dialect spoken by the database.
      */
     private final Dialect dialect;
@@ -452,12 +468,33 @@ public class ScriptRunner implements AutoCloseable {
                 buffer.append('\n');
             }
             /*
+             * If we find the "$BODY$" string, copy verbatism (without any attempt to parse the lines) until
+             * the next occurrence of "$BODY$".  This simple algorithm does not allow more than one block of
+             * "$BODY$ ... $BODY$" on the same statement and presumes that the text before "$BODY$" contains
+             * nothing that need to be parsed.
+             */
+            int pos = line.indexOf(ESCAPE);
+            if (pos >= 0) {
+                pos += ESCAPE.length();
+                while ((pos = line.indexOf(ESCAPE, pos)) < 0) {
+                    buffer.append(line).append('\n');
+                    line = in.readLine();
+                    if (line == null) {
+                        throw new EOFException();
+                    }
+                    pos = 0;
+                }
+                pos += ESCAPE.length();
+                buffer.append(line, 0, pos);
+                line = line.substring(pos);
+            }
+            /*
              * Copy the current line in the buffer. Then, the loop will search for words or characters to replace
              * (for example replacements of IDENTIFIER_QUOTE character by the database-specific quote character).
              * Replacements (if any) will be performed in-place in the buffer. Concequently the buffer length may
              * vary during the loop execution.
              */
-            int pos = buffer.length();
+            pos = buffer.length();
             int length = buffer.append(line).length();
 parseLine:  while (pos < length) {
                 int c = buffer.codePointAt(pos);
