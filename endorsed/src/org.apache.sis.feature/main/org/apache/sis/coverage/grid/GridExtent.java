@@ -2148,7 +2148,8 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * Create a stream of all lattice points contained inside this grid extent.
      * For each dimension, the coordinate values range from {@linkplain #getLow(int) low}
      * to {@linkplain #getHigh(int) high} inclusive.
-     * No assumption about iteration order should be made.
+     * The stream is ordered from first dimension varying the fastest to last dimension varying the slowest.
+     * For a two-dimensional grid, this ordering corresponds to the row-major order.
      *
      * @param  parallel  whether to return a parallel stream.
      * @return stream of lattice points inside this grid extent.
@@ -2160,6 +2161,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
 
     /**
      * Iterator over all grid coordinates included inside the grid extent, low and high values included.
+     * Iteration is ordered from first dimension varying the fastest to last dimension varying the slowest.
      */
     private static final class Iter implements Spliterator<long[]> {
         /**
