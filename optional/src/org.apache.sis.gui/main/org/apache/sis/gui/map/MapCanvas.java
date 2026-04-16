@@ -45,6 +45,7 @@ import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.value.WritableValue;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
 import javafx.scene.control.ContextMenu;
@@ -192,7 +193,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * in a background thread. Once calculation is completed and the content of this pane has been updated,
      * the {@code floatingPane} {@link Affine} transform is reset to identity.</p>
      *
-     * @see #getEvanescentPane()
+     * @see #forObjectiveSnapshot()
      */
     protected final Pane floatingPane;
 
@@ -225,7 +226,8 @@ public abstract class MapCanvas extends PlanarCanvas {
     private GridGeometry initialState;
 
     /**
-     * Incremented when the map needs to be rendered again.
+     * Incremented when the map needs to be rendered again. It is okay if this value overflows,
+     * because we just need to distinguish between a few consecutive repaint events.
      *
      * @see #renderedContentStamp
      * @see #contentsChanged()
@@ -441,24 +443,128 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Returns a pane for evanescent shapes shown in this canvas. The shapes added in the returned pane should
      * use an animation effect such as {@link javafx.animation.FadeTransition} and be removed after a few seconds.
      * This method allows to show shapes more easily than adding them directly as {@link #floatingPane} children,
-     * but at the expanse of quality. Evanescent panes are easier to use because the callers do not need to care
-     * about changes of the {@linkplain #getObjectiveToDisplay() objective to display} transform.
-     * Instead, callers can add shapes with coordinate values computed using the current transform
-     * at the time when this method is invoked, and ignore the changes that may happen afterward.
-     * If the user continues to navigate on the map, the {@linkplain Pane#getTransforms() list of transforms}
-     * of the returned pane will be updated.
-     *
-     * <p>While this method allows a much easier strategy than adding shapes into {@link #floatingPane}
-     * and tracking <i>objective to display</i> changes, the result is rougher (especially after zooms).
-     * For this reason, this method should be used for short-lived shapes such as animation effects,
-     * when the high-quality strategy is not worth the effort. Since the returned pane is aimed to be short-lived,
-     * it is automatically removed from this {@code MapPane} when its list of children become empty.</p>
+     * but at the expanse of quality. See {@link ObjectiveSnapshot} for more information.
      *
      * @return a pane where to add shapes without the need to track navigation events after this method call.
      * @since 1.7
      */
-    public Pane getEvanescentPane() {
-        return EvanescentPane.getOrCreate(floatingPane.getChildren());
+    public ObjectiveSnapshot forObjectiveSnapshot() {
+        return new ObjectiveSnapshot(this).unique();
+    }
+
+    /**
+     * JavaFX nodes rendered using a snapshot of the <i>objective to display</i> transform.
+     * This object provides a way to show shapes more easily than adding them as {@link #floatingPane} children,
+     * but at the expanse of quality. This object is easier to use because it allows to ignore the dynamic nature
+     * of the {@linkplain MapCanvas#getObjectiveToDisplay() transform managed by the enclosing canvas}.
+     * Instead, users can add shapes with coordinate values computed with a {@linkplain #getObjectiveToDisplay()
+     * snapshot of the transform at the time when this instance is obtained},
+     * then ignore all changes in the enclosing canvas that may happen afterward.
+     *
+     * <p>While this object allows a much easier strategy than adding shapes into {@link #floatingPane}
+     * and tracking <i>objective to display</i> changes, the result is rougher (especially after zooms).
+     * For this reason, this object should be used for short-lived shapes such as animation effects,
+     * when the high-quality strategy is not worth the effort. The nodes added through this object
+     * may disappear at any time, for example after a change of objective <abbr>CRS</abbr>.</p>
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 1.7
+     * @since   1.7
+     */
+    public static class ObjectiveSnapshot {
+        /**
+         * The parent where to add the nodes computed from a snapshot of this <i>objective to display</i> transform.
+         *
+         * @see MapCanvas#floatingPane
+         */
+        final Pane floatingPane;
+
+        /**
+         * The <abbr>CRS</abbr> which is the source of the <i>objective to display</i> transform.
+         * This is the value of {@link #getObjectiveCRS()} at the time when this
+         * {@code ObjectiveSnapshot} instance has been obtained.
+         * May be {@code null} if the snapshot was created before {@code Canvas} was initialized with data.
+         *
+         * @see #getObjectiveCRS()
+         */
+        public final CoordinateReferenceSystem objectiveCRS;
+
+        /**
+         * Returns the (usually affine) conversion from objective <abbr>CRS</abbr> to display coordinate system.
+         * This is the value of {@link #getObjectiveToDisplay()} at the time when this {@code ObjectiveSnapshot}
+         * instance has been obtained. This is never {@code null}.
+         *
+         * @see #getObjectiveToDisplay()
+         */
+        public final LinearTransform objectiveToDisplay;
+
+        /**
+         * The pane of evanescent nodes with coordinates computed from this snapshot.
+         * This is created when first needed.
+         */
+        private EvanescentPane pane;
+
+        /**
+         * Creates a snapshot of the <i>objective to display</i> transform from the given canvas.
+         * This constructor is made available for {@code MapCanvas} subclasses wanting to override
+         * their {@link #forObjectiveSnapshot()} method. This constructor should be used in a code
+         * equivalent to the following snippet:
+         *
+         * {@snippet lang="java" :
+         *     @Override
+         *     public ObjectiveSnapshot forObjectiveSnapshot() {
+         *         return new MySnapshotSubclass(this).unique();
+         *     }
+         *     }
+         *
+         * @param  canvas  the enclosing canvas.
+         *
+         * @see #forObjectiveSnapshot()
+         */
+        protected ObjectiveSnapshot(final MapCanvas canvas) {
+            floatingPane       = canvas.floatingPane;
+            objectiveCRS       = canvas.getObjectiveCRS();
+            objectiveToDisplay = canvas.getObjectiveToDisplay();
+        }
+
+        /**
+         * Returns a unique instance of this snapshot. If the canvas specified at construction time
+         * already contains an {@code ObjectiveSnapshot} of the same class as {@code this} and with
+         * equal {@link #objectiveCRS} and {@link #objectiveToDisplay} transform, then that snapshot
+         * is returned and {@code this} should be discarded. Otherwise, this method returns {@code this}.
+         *
+         * @return a unique instance of this snapshot.
+         */
+        protected ObjectiveSnapshot unique() {
+            final ObservableList<Node> siblings = floatingPane.getChildren();
+            for (int i = siblings.size(); --i >= 0;) {
+                if (siblings.get(i) instanceof EvanescentPane pane) {
+                    final ObjectiveSnapshot other = pane.owner;
+                    if (other.getClass() == getClass()
+                            && Objects.equals(objectiveCRS, other.objectiveCRS)
+                            && objectiveToDisplay.equals(other.objectiveToDisplay))
+                    {
+                        return other;
+                    }
+                }
+            }
+            return this;
+        }
+
+        /**
+         * Returns children to show with coordinates computed from the <i>objective to display</i> snapshot.
+         * The shapes added in the children list should use an animation effect such as
+         * {@link javafx.animation.FadeTransition} and be removed from the list after a few seconds.
+         * This method shall be invoked from the JavaFX thread.
+         *
+         * @return children to show using the <i>objective to display</i> snapshot.
+         */
+        public ObservableList<Node> getChildren() {
+            if (pane == null) {
+                pane = EvanescentPane.create(this);
+            }
+            return pane.getChildren();
+        }
     }
 
     /**
@@ -957,11 +1063,16 @@ public abstract class MapCanvas extends PlanarCanvas {
      * the current image, then a more accurate image is prepared in a background thread.
      *
      * <h4>Transform events</h4>
-     * This method fires immediately an {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} event with
-     * {@link TransformChangeEvent.Reason#INTERIM}. This event does not yet reflect the state of the
-     * {@linkplain #getObjectiveToDisplay() objective to display} transform. At some arbitrary time in the future,
-     * another {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} event will occur (still in JavaFX thread)
-     * with {@link TransformChangeEvent.Reason#DISPLAY_NAVIGATION} (really display, not objective).
+     * This method sends immediately a {@link TransformChangeEvent}
+     * with the {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} property name
+     * and {@link TransformChangeEvent.Reason#INTERIM Reason.INTERIM}.
+     * The interim reason means that the change is reflected visually but not yet
+     * in the {@linkplain #getObjectiveToDisplay() objective to display} transform.
+     * A short time after this method call, the objective to display transform is effectively updated
+     * and another {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} event will be sent in the JavaFX thread,
+     * but with {@link TransformChangeEvent.Reason#DISPLAY_NAVIGATION Reason.DISPLAY_NAVIGATION}.
+     * Note that the latter event really expresses the change in display units,
+     * not in the objective units of the transform given to this method.
      * That event will consolidate all {@code INTERIM} events that happened since the last non-interim event.
      *
      * @param  before  coordinate conversion to apply before the current <i>objective to display</i> transform.
@@ -992,12 +1103,15 @@ public abstract class MapCanvas extends PlanarCanvas {
      * the current image, then a more accurate image is prepared in a background thread.
      *
      * <h4>Transform events</h4>
-     * This method fires immediately an {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} event with
-     * {@link TransformChangeEvent.Reason#INTERIM}. This event does not yet reflect the state of the
-     * {@linkplain #getObjectiveToDisplay() objective to display} transform. At some arbitrary time in the future,
-     * another {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} event will occur (still in JavaFX thread)
-     * with {@link TransformChangeEvent.Reason#DISPLAY_NAVIGATION}. That event will consolidate
-     * all {@code INTERIM} events that happened since the last non-interim event.
+     * This method sends immediately a {@link TransformChangeEvent}
+     * with the {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} property name
+     * and {@link TransformChangeEvent.Reason#INTERIM Reason.INTERIM}.
+     * The interim reason means that the change is reflected visually but not yet
+     * in the {@linkplain #getObjectiveToDisplay() objective to display} transform.
+     * A short time after this method call, the objective to display transform is effectively updated
+     * and another {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} event will be sent in the JavaFX thread,
+     * but with {@link TransformChangeEvent.Reason#DISPLAY_NAVIGATION Reason.DISPLAY_NAVIGATION}.
+     * That event will consolidate all {@code INTERIM} events that happened since the last non-interim event.
      *
      * @param  after  coordinate conversion to apply after the current <i>objective to display</i> transform.
      *
@@ -1037,7 +1151,7 @@ public abstract class MapCanvas extends PlanarCanvas {
 
     /**
      * Fires a {@link TransformChangeEvent} for a change in the {@link #transform}.
-     * This method needs a modifiable {@code before} instance; it will be modified.
+     * This method needs a modifiable {@code before} instance as it will modify it.
      *
      * @param before  value of {@link #getInterimTransform(boolean)} before the change.
      * @param change  change in pixel coordinates, or {@code null} for lazy computation.
@@ -1060,7 +1174,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      *     if (interim != null) {
      *         fireInterimTransform(interim, change);
      *     }
-     * }
+     *     }
      *
      * @return a copy of {@link #transform} as a modifiable Java2D object, or {@code null} if not needed.
      */
@@ -1193,7 +1307,7 @@ public abstract class MapCanvas extends PlanarCanvas {
     public final void requestRepaint() {
         contentChangeCount++;
         if (renderingInProgress == null && !isRendering.get()) {
-            final Delayed delay = new Delayed();
+            final var delay = new Delayed();
             BackgroundThreads.execute(delay);
             renderingInProgress = delay;    // Set last after we know that the task has been scheduled.
         }
@@ -1210,7 +1324,7 @@ public abstract class MapCanvas extends PlanarCanvas {
         assert Platform.isFxApplicationThread();
         /*
          * If a rendering is already in progress, do not send a new request now.
-         * Wait for current rendering to finish; a new one will be automatically
+         * Wait for current rendering to finish. A new one will be automatically
          * requested if content changes are detected after the rendering.
          */
         if (renderingInProgress != null) {
@@ -1223,7 +1337,7 @@ public abstract class MapCanvas extends PlanarCanvas {
             }
         }
         hasError = false;
-        isRendering.set(true);                      // Avoid that `requestRepaint(…)` trig new paints.
+        isRendering.set(true);      // Avoid that `requestRepaint(…)` trig new paints.
         renderingStartTime = System.nanoTime();
         try {
             /*
@@ -1233,16 +1347,17 @@ public abstract class MapCanvas extends PlanarCanvas {
             if (sizeChanged) {
                 sizeChanged = false;
                 final Pane view = floatingPane;
-                Envelope2D bounds = new Envelope2D(null, view.getLayoutX(), view.getLayoutY(), view.getWidth(), view.getHeight());
+                var bounds = new Envelope2D(null, view.getLayoutX(), view.getLayoutY(), view.getWidth(), view.getHeight());
                 if (bounds.isEmpty()) return;
                 setDisplayBounds(bounds);
             }
             /*
              * Compute the `objectiveToDisplay` only before the first rendering, because the display
              * bounds may not be known before (it may be zero at the time `MapCanvas` is initialized).
-             * This code is executed only once for a new map.
+             * This code is executed only once after construction, reset or change of grid geometry.
              */
             if (invalidObjectiveToDisplay) {
+                GUIUtilities.removeIf(floatingPane.getChildren(), (child) -> child instanceof EvanescentPane);
                 final Envelope2D target = getDisplayBounds();
                 if (target == null) {
                     // Bounds are still unknown. Another repaint event will happen when they will become known.
@@ -1471,13 +1586,13 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
-     * A pseudo-rendering task which wait for some delay before to perform the real repaint.
+     * A pseudo-rendering task which waits for some delay before to perform the real repaint.
      * The intent is to collect some more gesture events (pans, zooms, <i>etc.</i>) before consuming CPU time.
      * This is especially useful when the first gesture event is a tiny change because the user just started
      * panning or zooming.
      *
      * <h4>Design note</h4>
-     * using a thread for waiting seems a waste of resources, but a thread (likely this one) is going to be used
+     * Using a thread for waiting seems a waste of resources, but a thread (likely this one) is going to be used
      * for real after the waiting time is elapsed. That thread usually exists anyway in {@link BackgroundThreads}
      * as an idle thread, and it is unlikely that other parts of this JavaFX application need that thread in same
      * time (if it happens, other threads will be created).
@@ -1741,7 +1856,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      */
     @Override
     public String toString() {
-        final Formatter buffer = new Formatter();
+        final var buffer = new Formatter();
         final double tx = transform.getTx();
         final double ty = transform.getTy();
         try {
