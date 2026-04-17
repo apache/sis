@@ -1186,7 +1186,7 @@ public class CoverageCanvas extends MapCanvasAWT {
              */
             final TileReadListener tileReadListener = cc.tileReadListener;
             if (tileReadListener != null) {
-                tileReadListener.takeSnapshotOfObjectiveCRS();
+                tileReadListener.newStaticGraphics();
             }
             if (isolines != null) {
                 for (final IsolineController.Snapshot s : isolines) {
@@ -1313,7 +1313,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * typically a background thread which is reading the data. The tiles are enqueued for processing
      * in another background thread for avoiding to slow down the thread that read the data.
      */
-    private final class TileReadListener implements StoreListener<TileReadEvent>, Runnable, EventHandler<ActionEvent> {
+    private final class TileReadListener implements StoreListener<TileReadEvent>, EventHandler<ActionEvent> {
         /**
          * Colors of the tiles, using different colors for different resolutions (pyramid levels).
          */
@@ -1338,40 +1338,25 @@ public class CoverageCanvas extends MapCanvasAWT {
         private static final Duration DURATION = new Duration(4000);
 
         /**
-         * The tiles to highlight, as a thread-safe queue.
-         */
-        private final Queue<TileReadEvent> tileEvents;
-
-        /**
          * The JavaFX shapes (usually rectangles) for highlighting the tiles.
-         * Elements of this queue are derived from {@link #tileEvents}.
+         * This queue shall be thread-safe as it is read and written from different threads.
          */
         private final Queue<FadeTransition> tileShapes;
-
-        /**
-         * The objective <abbr>CRS</abbr> of the canvas.
-         * This information is updated in the JavaFX thread after each rendering.
-         *
-         * @see CoverageCanvas#getObjectiveCRS()
-         */
-        private CoordinateReferenceSystem objectiveCRS;
 
         /**
          * The transform from objective <abbr>CRS</abbr> to the display coordinate system of the canvas.
          * This information is updated in the JavaFX thread after each rendering, so that creations of
          * JavaFX shapes will use the information that reflects the image shown in the canvas.
-         *
-         * @see CoverageCanvas#objectiveToDisplay
          */
-        private LinearTransform objectiveToDisplay;
+        volatile StaticGraphics snapshot;
 
         /**
          * Creates a new listener of tile read events.
+         * This constructor must be invoked from the JavaFX thread.
          */
         TileReadListener() {
-            tileEvents = new ConcurrentLinkedQueue<>();
             tileShapes = new ConcurrentLinkedQueue<>();
-            takeSnapshotOfObjectiveCRS();
+            newStaticGraphics();
         }
 
         /**
@@ -1379,43 +1364,22 @@ public class CoverageCanvas extends MapCanvasAWT {
          * This method should be invoked after each rendering, so that creations of JavaFX shapes will use
          * the information that reflects the image shown in the canvas.
          */
-        final synchronized void takeSnapshotOfObjectiveCRS() {
-            objectiveCRS = getObjectiveCRS();
-            objectiveToDisplay = getObjectiveToDisplay();
+        final void newStaticGraphics() {
+            snapshot = usingFixedTransform();
         }
 
         /**
-         * Invoked when a tile has been read. The specified tile is added to the list of tiles to highlight.
-         * Starts a background thread for deriving the JavaFX shapes if such thread is not already running.
-         */
-        @Override
-        public void eventOccured(final TileReadEvent event) {
-            tileEvents.add(event);
-            if (TRACE) {
-                trace("TileReadListener.accept(%d)", tileEvents.size());
-            }
-            BackgroundThreads.EXECUTOR.execute(this);
-        }
-
-        /**
-         * Invoked in a background thread for converting the tile events into JavaFX shapes.
-         * Usually, the calculation done in this method is faster than the reading of tiles,
-         * therefore each invocation of this method usually has only one tile to convert.
+         * Invoked when a tile has been read. This method computes the JavaFX shape in a background thread.
+         * One thread is used for each shape (we do not collect the shapes in a queue) because that thread
+         * is likely to finish before the next tile has been read anyway.
          */
         @Override
         @SuppressWarnings({"UseSpecificCatch", "LocalVariableHidesMemberVariable"})
-        public void run() {
-            Exception error = null;
-            TileReadEvent event;
-            while ((event = tileEvents.poll()) != null) {
-                try {
-                    final CoordinateReferenceSystem objectiveCRS;
-                    final AffineTransform objectiveToDisplay;
-                    synchronized (this) {
-                        objectiveCRS = this.objectiveCRS;
-                        objectiveToDisplay = (AffineTransform) this.objectiveToDisplay;
-                    }
-                    final Shape tile = ShapeConverter.convert(event.outline(objectiveCRS), objectiveToDisplay);
+        public void eventOccured(final TileReadEvent event) {
+            BackgroundThreads.EXECUTOR.execute(() -> {
+                final StaticGraphics snapshot = TileReadListener.this.snapshot;
+                if (snapshot.objectiveToDisplay instanceof AffineTransform objectiveToDisplay) try {
+                    final Shape tile = ShapeConverter.convert(event.outline(snapshot.objectiveCRS), objectiveToDisplay);
                     final int ic = event.getPyramidLevel() % TILE_COLORS.length;
                     tile.setStroke(TILE_COLORS[ic]);
                     tile.setFill(FILL_COLORS[ic]);
@@ -1426,21 +1390,20 @@ public class CoverageCanvas extends MapCanvasAWT {
                     transition.setOnFinished(this);
                     tileShapes.add(transition);
                 } catch (Exception e) {
-                    if (error == null) error = e;
-                    else error.addSuppressed(e);
+                    Logging.recoverableException(LOGGER, TileReadListener.class, "eventOccured", e);
                 }
-            }
-            Platform.runLater(() -> {
-                final ObservableList<Node> children = getEvanescentPane().getChildren();
-                FadeTransition transition;
-                while ((transition = tileShapes.poll()) != null) {
-                    children.add(transition.getNode());
-                    transition.play();
-                }
+                Platform.runLater(() -> {
+                    FadeTransition transition = tileShapes.poll();
+                    if (transition != null) {
+                        final ObservableList<Node> children = snapshot.getChildren();
+                        do {
+                            children.add(transition.getNode());
+                            transition.play();
+                            transition = tileShapes.poll();
+                        } while (transition != null);
+                    }
+                });
             });
-            if (error != null) {
-                Logging.recoverableException(LOGGER, TileReadListener.class, "run", error);
-            }
         }
 
         /**

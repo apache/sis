@@ -61,6 +61,23 @@ public final class ShapefileProvider extends DataStoreProvider {
             new ParameterBuilder().addName(NAME).addName("EsriShapefileParameters").createGroup(
                 PATH);
 
+    private static ShapefileProvider INSTANCE;
+
+    /**
+     * Get singleton instance of shapefile provider.
+     *
+     * <p>
+     * Note : this method is named after Java 9 service loader provider method.
+     * {@link https://docs.oracle.com/javase/9/docs/api/java/util/ServiceLoader.html}
+     * </p>
+     *
+     * @return singleton instance of ShapefileProvider
+     */
+    public static synchronized ShapefileProvider provider() {
+        if (INSTANCE == null) INSTANCE = new ShapefileProvider();
+        return INSTANCE;
+    }
+
     /**
      * Default constructor.
      */

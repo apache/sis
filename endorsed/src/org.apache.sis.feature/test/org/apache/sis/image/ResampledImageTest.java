@@ -47,6 +47,7 @@ import org.apache.sis.test.TestUtilities;
  * @author  Rémi Marechal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ResampledImageTest extends TestCase {
     /**
      * The source image. This is initialized to arbitrary values in two bands.
@@ -87,7 +88,7 @@ public final class ResampledImageTest extends TestCase {
         final int tileHeight = random.nextInt(8) + 4;
         final int numXTiles  = random.nextInt(3) + 1;
         final int numYTiles  = random.nextInt(4) + 1;
-        final TiledImageMock image = new TiledImageMock(
+        final var image = new TiledImageMock(
                 dataType, 2,                    // dataType and numBands
                 random.nextInt(32) - 10,        // minX
                 random.nextInt(32) - 10,        // minY

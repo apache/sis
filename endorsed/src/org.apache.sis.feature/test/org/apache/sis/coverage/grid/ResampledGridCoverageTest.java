@@ -102,7 +102,7 @@ public final class ResampledGridCoverageTest extends TestCase {
         random = TestUtilities.createRandomNumberGenerator();
         final int width  = random.nextInt(8) + 3;
         final int height = random.nextInt(8) + 3;
-        final TiledImageMock image = new TiledImageMock(
+        final var image  = new TiledImageMock(
                 DataBuffer.TYPE_USHORT, 2,      // dataType and numBands
                 random.nextInt(32) - 10,        // minX (no effect on tests)
                 random.nextInt(32) - 10,        // minY (no effect on tests)

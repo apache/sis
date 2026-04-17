@@ -55,12 +55,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * <h2>Interpretation of buffer position and limit</h2>
  * The buffer position is the position where to write the next byte.
  * It may be either a new byte appended to the channel, or byte overwriting an existing byte.
- * Those two case are differentiated by the buffer limit, which is the number of valid bytes in the buffer.
- *
- * <h2>Relationship with {@code ImageOutputStream}</h2>
- * This class API is compatibly with the {@link javax.imageio.stream.ImageOutputStream} interface, so subclasses
- * can implement that interface if they wish. This class does not implement {@code ImageOutputStream} because it
- * is not needed for SIS purposes.
+ * Those two cases are differentiated by the buffer limit, which is the number of valid bytes in the buffer.
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -73,18 +68,27 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
     public final WritableByteChannel channel;
 
     /**
+     * Whether the channel has been opened for writing bytes at the end of the file.
+     * In case of doubt, should be {@code false}.
+     */
+    private final boolean append;
+
+    /**
      * Creates a new data output for the given channel and using the given buffer.
      *
      * @param  filename  a file identifier used only for formatting error message.
      * @param  channel   the channel where data are written.
+     * @param  append    whether the channel has been opened for append. If unsure, use {@code false}.
      * @param  buffer    the buffer where to put the data.
      * @throws IOException if an error occurred while creating the data output.
      */
-    public ChannelDataOutput(final String filename, final WritableByteChannel channel, final ByteBuffer buffer)
+    public ChannelDataOutput(final String filename, final WritableByteChannel channel,
+                             final boolean append, final ByteBuffer buffer)
             throws IOException
     {
         super(filename, channel, buffer);
         this.channel = channel;
+        this.append  = append;
         buffer.limit(0);
     }
 
@@ -117,6 +121,7 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
     public ChannelDataOutput(final ChannelDataInput input) {
         super(input, input.buffer, false);
         channel = (WritableByteChannel) input.channel;      // `ClassCastException` is part of the contract.
+        append  = false;
         // Do not invoke `input.yield(this)` because caller may want to do some more read operations first.
     }
 
@@ -131,6 +136,16 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
     @Override
     public final Channel channel() {
         return channel;
+    }
+
+    /**
+     * Returns whether the channel has been opened for writing bytes at the end of the file.
+     * This flag can be {@code true} if the {@linkplain #channel} is initially empty or positioned
+     * at the channel end, so that the buffer limit can be used for computing the content length.
+     */
+    @Override
+    final boolean isOpenedForAppend() {
+        return append;
     }
 
     /**

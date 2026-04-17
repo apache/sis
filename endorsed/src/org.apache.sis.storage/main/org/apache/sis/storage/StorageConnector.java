@@ -52,6 +52,7 @@ import javax.sql.DataSource;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.resources.Errors;
@@ -110,6 +111,7 @@ import org.apache.sis.setup.OptionKey;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.7
  * @since   0.3
  */
@@ -629,7 +631,7 @@ public class StorageConnector implements Serializable {
      * Creates a new data store connection wrapping the given input/output object.
      * The object can be of any type, but the class javadoc lists the most typical ones.
      *
-     * @param storage  the input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @param storage  the input/output object as a <abbr>URL</abbr>, file, image input stream, <i>etc.</i>.
      */
     public StorageConnector(final Object storage) {
         this.storage = Objects.requireNonNull(storage);
@@ -640,7 +642,7 @@ public class StorageConnector implements Serializable {
      * The new storage connector inherits all options that were specified in the parent connector.
      *
      * @param  parent  the storage connector from which to inherit options.
-     * @param storage  the input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @param storage  the input/output object as a <abbr>URL</abbr>, file, image input stream, <i>etc.</i>.
      *
      * @since 1.5
      */
@@ -657,7 +659,7 @@ public class StorageConnector implements Serializable {
      *
      * <ul>
      *   <li>{@link OptionKey#ENCODING}     for decoding characters in an input stream, if needed.</li>
-     *   <li>{@link OptionKey#URL_ENCODING} for converting URL to URI or filename, if needed.</li>
+     *   <li>{@link OptionKey#URL_ENCODING} for converting <abbr>URL</abbr> to <abbr>URI</abbr> or filename, if needed.</li>
      *   <li>{@link OptionKey#OPEN_OPTIONS} for specifying whether the data store shall be read only or read/write.</li>
      *   <li>{@link OptionKey#BYTE_BUFFER}  for allowing users to control the byte buffer to be created.</li>
      * </ul>
@@ -706,7 +708,7 @@ public class StorageConnector implements Serializable {
      *
      * <ul>
      *   <li>For {@link Path}, {@link File}, {@link URI} or {@link URL}
-     *       instances, this method uses dedicated API like {@link Path#getFileName()}.</li>
+     *       instances, this method uses dedicated <abbr>API</abbr> like {@link Path#getFileName()}.</li>
      *   <li>For {@link CharSequence} instances, this method gets a string representation of the storage object
      *       and returns the part after the last {@code '/'} character or platform-dependent name separator.</li>
      *   <li>For instances of unknown type, this method builds a string representation using the class name.
@@ -747,15 +749,17 @@ public class StorageConnector implements Serializable {
      * the following choices based on the type of the {@linkplain #getStorage() storage} object:
      *
      * <ul>
-     *   <li>For {@link Path}, {@link File}, {@link URI}, {@link URL} or
-     *       {@link CharSequence} instances, this method returns the string after the last {@code '.'} character
-     *       in the filename, provided that the {@code '.'} is not the first filename character. This may be an
-     *       empty string if the filename has no extension, but never {@code null}.</li>
-     *   <li>For instances of unknown type, this method returns {@code null}.</li>
+     *   <li>For {@link Path}, {@link File}, {@link URI}, {@link URL} or {@link CharSequence} instances,
+     *       returns the sub-string after the last {@code '.'} character in the filename,
+     *       provided that the {@code '.'} is not the first filename character.
+     *       If the filename has no extension, returns an empty string (not {@code null}).</li>
+     *   <li>For instances of unknown type, returns {@code null}.</li>
      * </ul>
      *
      * @return the filename extension, or an empty string if none,
      *         or {@code null} if the storage is an object of unknown type.
+     *
+     * @see #pathEndsWith(String, boolean)
      */
     public String getFileExtension() {
         if (extension == null) {
@@ -1096,6 +1100,77 @@ public class StorageConnector implements Serializable {
      */
     public boolean wasProbingAbsentFile() {
         return probing != null && probing.probe != null;
+    }
+
+    /**
+     * Tests if the content of the storage specified by this connector starts with the given signature.
+     * If the storage cannot be read as a sequence of bytes, for example if the storage is a connection to a database,
+     * then this method returns {@code UNSUPPORTED_STORAGE}.
+     *
+     * @param  signature  sequence of bytes to test as a signature.
+     * @return {@code SUPPORTED} if content matches the given signature,
+     *         {@code INSUFFICIENT_BYTES} if the buffer is too small,
+     *         {@code UNSUPPORTED_STORAGE} otherwise.
+     * @throws NullPointerException if {@code signature} is null.
+     * @throws DataStoreException if an error occurred while opening or reading.
+     *
+     * @see DataStoreProvider#probeContent(StorageConnector)
+     *
+     * @since 1.7
+     */
+    public ProbeResult contentStartsWith(final byte[] signature) throws DataStoreException {
+        ArgumentChecks.ensureNonNull("signature", signature);
+        final ByteBuffer buffer = getStorageAs(ByteBuffer.class);
+        if (buffer == null) return ProbeResult.UNSUPPORTED_STORAGE;
+        buffer.mark();
+        try {
+            // Compare signatures.
+            final int remaining = buffer.remaining();
+            for (int i = 0; i < signature.length; i++) {
+                if (i >= remaining) {
+                    return ProbeResult.INSUFFICIENT_BYTES;
+                }
+                if (buffer.get() != signature[i]) {
+                    return ProbeResult.UNSUPPORTED_STORAGE;
+                }
+            }
+            return ProbeResult.SUPPORTED;
+        } finally {
+            buffer.reset();
+        }
+    }
+
+    /**
+     * Tests if the path or <abbr>URI</abbr> of the input/output object ends with the given suffix.
+     * The suffix is compared with no special treatment for the {@code '.'} character.
+     * Therefore, this method is better suited than {@link #getFileExtension()}
+     * for combined extensions such as {@code ".meta.xml"} or {@code ".bin.gz"}.
+     *
+     * <p>The default implementation compare the suffix using
+     * {@linkplain String#regionMatches(boolean, int, java.lang.String, int, int) String.regionMatches(…)}.
+     * See that method for details about how cases are ignored if {@code ignoreCase} is true.</p>
+     *
+     * @param  suffix      the suffix to test. Shall not be empty.
+     * @param  ignoreCase  if true, ignore case when comparing characters.
+     * @return {@code SUPPORTED} if suffix matches,
+     *         {@code UNSUPPORTED_STORAGE} otherwise.
+     * @throws DataStoreException if an error occurred while opening or reading.
+     *
+     * @see #getFileExtension()
+     * @see DataStoreProvider#probeContent(StorageConnector)
+     *
+     * @since 1.7
+     */
+    public ProbeResult pathEndsWith(final String suffix, final boolean ignoreCase) throws DataStoreException {
+        ArgumentChecks.ensureNonEmpty("suffix", suffix);
+        final String filename = IOUtilities.filename(storage);
+        if (filename != null) {
+            final int suffixLength = suffix.length();
+            if (filename.regionMatches(ignoreCase, filename.length() - suffixLength, suffix, 0, suffixLength)) {
+                return ProbeResult.SUPPORTED;
+            }
+        }
+        return ProbeResult.UNSUPPORTED_STORAGE;
     }
 
     /**
@@ -1586,7 +1661,7 @@ public class StorageConnector implements Serializable {
         final WritableByteChannel channel = factory.writable(name, null);
         addView(WritableByteChannel.class, channel, null, factory.isCoupled() ? CASCADE_ON_RESET : 0);
         final ByteBuffer buffer = getChannelBuffer(factory);
-        final ChannelDataOutput asDataOutput = new ChannelDataOutput(name, channel, buffer);
+        final var asDataOutput = new ChannelDataOutput(name, channel, factory.isOpenedForAppend, buffer);
         addView(ChannelDataOutput.class, asDataOutput, WritableByteChannel.class, CASCADE_ON_RESET);
         /*
          * Following is an undocumented mechanism for allowing some Apache SIS implementations of DataStore

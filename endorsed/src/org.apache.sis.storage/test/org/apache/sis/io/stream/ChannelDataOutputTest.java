@@ -81,7 +81,7 @@ public final class ChannelDataOutputTest extends ChannelDataTestCase {
         referenceStream          = new MemoryCacheImageOutputStream(expectedData);
         testedStreamBackingArray = new byte[streamLength];
         var channel              = new ByteArrayChannel(testedStreamBackingArray, false);
-        testedStream             = new ChannelDataOutput(testName, channel, ByteBuffer.allocate(bufferLength));
+        testedStream             = new ChannelDataOutput(testName, channel, false, ByteBuffer.allocate(bufferLength));
     }
 
     /**
@@ -95,7 +95,7 @@ public final class ChannelDataOutputTest extends ChannelDataTestCase {
             @Override public int     read(ByteBuffer dst)  throws IOException {return channel.read(dst);}
             @Override public int     write(ByteBuffer src) throws IOException {return channel.write(src);}
             @Override public void    close()               throws IOException {channel.close();}
-        }, testedStream.buffer);
+        }, false, testedStream.buffer);
     }
 
     /**

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.function.Predicate;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -270,6 +271,27 @@ walk:   for (final T search : path) {
         }
         assert source.equals(target);
         return modified;
+    }
+
+    /**
+     * Alternative to {@link List#removeIf(Predicate)} where elements are removed by ranges.
+     * The intent is to have events sent for ranges of indexes instead of one event for each individual element.
+     *
+     * @param  <E>     type of elements in the list.
+     * @param  list    list where to remove elements.
+     * @param  filter  predicate which returns {@code true} for elements to be removed.
+     *
+     * @see ObservableList#removeIf(Predicate)
+     */
+    public static <E> void removeIf(final ObservableList<E> list, final Predicate<? super E> filter) {
+        for (int lower = list.size(); --lower >= 0;) {
+            if (filter.test(list.get(lower))) {
+                final int upper = lower;
+                do if (--lower < 0) break;
+                while (filter.test(list.get(lower)));
+                list.remove(lower+1, upper+1);
+            }
+        }
     }
 
     /**

@@ -36,6 +36,7 @@ import static org.apache.sis.feature.Assertions.assertValuesEqual;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ImageCombinerTest extends ImageTestCase {
     /**
      * The image to add to the {@link ImageCombiner}.
@@ -52,7 +53,7 @@ public final class ImageCombinerTest extends ImageTestCase {
      * Creates a rendered image with arbitrary tiles.
      */
     private ImageCombiner initialize() {
-        final TiledImageMock destination = new TiledImageMock(
+        final var destination = new TiledImageMock(
                 DataBuffer.TYPE_USHORT, 1,      // dataType, numBands
                  3,  4,                         // minX, minY
                 12,  8,                         // width, height
@@ -63,7 +64,7 @@ public final class ImageCombinerTest extends ImageTestCase {
          * An image intersecting the destination, with a small part outside.
          * Intentionally use a different data type and different tile layout.
          */
-        final TiledImageMock source = new TiledImageMock(
+        final var source = new TiledImageMock(
                 DataBuffer.TYPE_FLOAT, 1,       // dataType, numBands
                  5,  3,                         // minX, minY
                  9,  6,                         // width, height

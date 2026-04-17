@@ -962,6 +962,11 @@ public class Errors extends IndexedResourceBundle {
         public static final short UnknownCommand_1 = 178;
 
         /**
+         * Unknown content length.
+         */
+        public static final short UnknownContentLength = 206;
+
+        /**
          * “{1}” is not a known or supported value for the ‘{0}’ enumeration.
          */
         public static final short UnknownEnumValue_2 = 179;

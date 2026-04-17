@@ -16,7 +16,11 @@
  */
 package org.apache.sis.gui.internal;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 import javafx.scene.paint.Color;
 
@@ -114,6 +118,17 @@ public final class GUIUtilitiesTest extends TestCase {
         }
         GUIUtilities.removePathSorted(root, 5, 2, 6);
         assertTrue(root.getChildren().isEmpty());
+    }
+
+    /**
+     * Tests {@link GUIUtilities#testRemoveIf(Predicate)}.
+     */
+    @Test
+    public void testRemoveIf() {
+        final ObservableList<Integer> list = FXCollections.observableArrayList();
+        list.addAll(4, 7, 3, 2, 4, 8, 1);
+        GUIUtilities.removeIf(list, (i) -> (i & 1) == 0);     // Remove even values.
+        assertEquals(list, Arrays.asList(7, 3, 1));
     }
 
     /**

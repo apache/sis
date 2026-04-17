@@ -33,6 +33,7 @@ import static org.apache.sis.feature.Assertions.assertValuesEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class PlanarImageTest extends TestCase {
     /**
      * Size of tiles in this test. The width should be different than the height
@@ -45,7 +46,7 @@ public final class PlanarImageTest extends TestCase {
      */
     private static PlanarImage createImage() {
         final Random random = TestUtilities.createRandomNumberGenerator();
-        final TiledImageMock image = new TiledImageMock(
+        final var image = new TiledImageMock(
                 DataBuffer.TYPE_USHORT, 1,      // dataType and numBands
                 random.nextInt(20) - 10,        // minX
                 random.nextInt(20) - 10,        // minY

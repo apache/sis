@@ -93,7 +93,7 @@ public final class SubsampledRectangleWriterTest extends TestCase {
         final byte[] target = new byte[length * dataSize];
         final var buffer = ByteBuffer.allocate((random.nextInt(4) + 1) + bandOffsets.length * dataSize);
         actual = ByteBuffer.wrap(target);
-        output = new ChannelDataOutput("Test", new ByteArrayChannel(target, false), buffer);
+        output = new ChannelDataOutput("Test", new ByteArrayChannel(target, false), false, buffer);
         writer = new SubsampledRectangleWriter(new Region(upper, lower, upper, subsm), bandOffsets, bandOffsets.length);
         return source;
     }
