@@ -97,6 +97,7 @@ import org.apache.sis.storage.Query;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.UnsupportedQueryException;
 import org.apache.sis.storage.WritableFeatureSet;
+import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.shapefile.cpg.CpgFiles;
 import org.apache.sis.storage.shapefile.dbf.DBFField;
 import org.apache.sis.storage.shapefile.dbf.DBFHeader;
@@ -129,7 +130,6 @@ import org.opengis.filter.LogicalOperatorName;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.ValueReference;
 import org.apache.sis.geometry.wrapper.*;
-import org.apache.sis.storage.DataStoreProvider;
 
 
 /**

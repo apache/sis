@@ -18,15 +18,15 @@ package org.apache.sis.util.internal.shared;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.InaccessibleObjectException;
 import java.lang.reflect.UndeclaredThrowableException;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters.Filter;
-import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.lang.reflect.InaccessibleObjectException;
 import org.opengis.util.ControlledVocabulary;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

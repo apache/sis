@@ -16,9 +16,11 @@
  */
 package org.apache.sis.util.collection;
 
-import java.util.Arrays;
 import java.util.List;
 import org.opengis.util.CodeList;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Arrays;
 
 
 /**
