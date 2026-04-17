@@ -1661,7 +1661,7 @@ public class StorageConnector implements Serializable {
         final WritableByteChannel channel = factory.writable(name, null);
         addView(WritableByteChannel.class, channel, null, factory.isCoupled() ? CASCADE_ON_RESET : 0);
         final ByteBuffer buffer = getChannelBuffer(factory);
-        final ChannelDataOutput asDataOutput = new ChannelDataOutput(name, channel, buffer);
+        final var asDataOutput = new ChannelDataOutput(name, channel, factory.isOpenedForAppend, buffer);
         addView(ChannelDataOutput.class, asDataOutput, WritableByteChannel.class, CASCADE_ON_RESET);
         /*
          * Following is an undocumented mechanism for allowing some Apache SIS implementations of DataStore

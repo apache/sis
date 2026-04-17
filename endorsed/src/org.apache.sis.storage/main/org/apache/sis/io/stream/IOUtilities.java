@@ -522,14 +522,14 @@ public final class IOUtilities {
             stream = ((InputStreamAdapter) stream).input;
         }
 check:  if (stream instanceof ChannelData) {
-            final ChannelData data = (ChannelData) stream;
+            final var data = (ChannelData) stream;
             final ChannelDataOutput output;
             if (stream instanceof ChannelDataOutput) {
                 output = (ChannelDataOutput) stream;
             } else {
                 final Channel channel = data.channel();
                 if (!(channel instanceof WritableByteChannel)) break check;
-                output = new ChannelDataOutput(data.filename, (WritableByteChannel) channel, data.buffer);
+                output = new ChannelDataOutput(data.filename, (WritableByteChannel) channel, false, data.buffer);
             }
             return new OutputStreamAdapter(output);
         }

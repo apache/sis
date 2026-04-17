@@ -108,7 +108,7 @@ public final class UpdatableWriteTest extends TestCase {
         final Random random   = TestUtilities.createRandomNumberGenerator();
         final var    expected = ByteBuffer.allocate(128);
         final var    actual   = ByteBuffer.allocate(128);
-        final var    output   = new ChannelDataOutput("Test", new ByteArrayChannel(actual.array(), false), ByteBuffer.allocate(24));
+        final var    output   = new ChannelDataOutput("Test", new ByteArrayChannel(actual.array(), false), false, ByteBuffer.allocate(24));
         final var    queue    = new ArrayDeque<UpdatableWrite<V>>();
         while (expected.hasRemaining()) {
             // Put some random bytes between the `UpdatableWrite` instances to test.

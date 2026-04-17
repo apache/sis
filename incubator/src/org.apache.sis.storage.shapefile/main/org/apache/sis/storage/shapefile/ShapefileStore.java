@@ -1070,7 +1070,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
             } else {
                 wbc = Files.newByteChannel(path, StandardOpenOption.WRITE);
             }
-            return new ChannelDataOutput(path.getFileName().toString(), wbc, ByteBuffer.allocate(8192));
+            return new ChannelDataOutput(path.getFileName().toString(), wbc, false, ByteBuffer.allocate(8192));
         }
     }
 

@@ -151,7 +151,7 @@ public final class WriterTest extends TestCase {
         image.initializeAllTiles();
         output = new ByteArrayChannel(new byte[image.getWidth() * image.getHeight() * numBands * type.bytes() + 800], false);
         final var buffer = ByteBuffer.allocate(random.nextInt(128) + MIN_BUFFER_SIZE).order(order);
-        final var connector = new StorageConnector(new ChannelDataOutput("TIFF", output, buffer));
+        final var connector = new StorageConnector(new ChannelDataOutput("TIFF", output, false, buffer));
         connector.setOption(FormatModifier.OPTION_KEY, options);
         connector.setOption(Compression.OPTION_KEY, Compression.NONE);
         store = new GeoTiffStore(null, connector);
