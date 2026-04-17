@@ -19,11 +19,9 @@ package org.apache.sis.util.collection;
 import java.util.List;
 import org.opengis.util.CodeList;
 
-// Test dependencies
-import static org.junit.jupiter.api.Assertions.*;
-
 // Specific to the main branch:
 import java.util.ArrayList;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**

@@ -18,12 +18,12 @@ package org.apache.sis.util.internal.shared;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.lang.reflect.Array;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters.Filter;
 
 // Specific to the main branch:
-import java.lang.reflect.Array;
 import java.util.function.Predicate;
 
 
