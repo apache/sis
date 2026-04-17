@@ -16,7 +16,6 @@
  */
 package org.apache.sis.gui.map;
 
-import java.util.List;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import javafx.collections.ObservableList;
@@ -35,56 +34,54 @@ import javafx.collections.ListChangeListener;
  */
 final class EvanescentPane extends Pane implements ListChangeListener<Node> {
     /**
-     * Whether the pane had at least one child.
+     * The object that created this pane.
      */
-    private boolean hadChildren;
+    final MapCanvas.StaticGraphics owner;
+
+    /**
+     * Whether this pane has been added in {@link MapCanvas#floatingPane}.
+     */
+    private boolean added;
 
     /**
      * Creates an initially empty pane with no shape and no transform.
+     *
+     * @param  owner  the object that created this pane.
      */
-    private EvanescentPane() {
+    private EvanescentPane(final MapCanvas.StaticGraphics owner) {
+        this.owner = owner;
     }
 
     /**
-     * Returns a pane with an identity transform from the given list of children.
-     * If there is no pane with an identity transform, a new pane is created and
-     * added to the list of children.
+     * Creates an initially empty pane with no shape and no transform.
      *
      * <p>Note that the returned pane has an identity transform at the time when
      * this method is invoked, but that transform may become non-identity later
      * if the user navigates on the map (e.g. zoom or pan events).</p>
      *
-     * @param  children  the children of {@link MapCanvas#floatingPane}.
+     * @param  owner  the object that created this pane.
      * @return a pane with an identity transform at the time when this method is invoked.
      */
-    static EvanescentPane getOrCreate(final List<Node> children) {
-        for (int i = children.size(); --i >= 0;) {
-            if (children.get(i) instanceof EvanescentPane pane) {
-                if (pane.getTransforms().isEmpty()) {
-                    return pane;
-                }
-            }
-        }
-        final var pane = new EvanescentPane();
+    static EvanescentPane create(final MapCanvas.StaticGraphics owner) {
+        final var pane = new EvanescentPane(owner);
         pane.getChildren().addListener(pane);
-        children.add(pane);
         return pane;
     }
 
     /**
-     * Invoked when the list of children changed.
+     * Invoked after the list of evanescent children changed.
      * If the last child has been removed, removes this pane from the map canvas.
      */
     @Override
     public void onChanged(Change<? extends Node> change) {
-        final ObservableList<Node> children = getChildren();
-        if (!children.isEmpty()) {
-            hadChildren = true;
-        } else if (hadChildren) {
-            children.removeListener(this);
-            final Pane parent = (Pane) getParent();
-            if (parent != null) {
-                parent.getChildren().remove(this);
+        if (getChildren().isEmpty() == added) {
+            final ObservableList<Node> siblings = owner.floatingPane.getChildren();
+            if (added) {
+                siblings.remove(this);
+                added = false;
+            } else {
+                siblings.add(this);
+                added = true;
             }
         }
     }

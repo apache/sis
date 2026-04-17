@@ -29,6 +29,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.util.function.IntBinaryOperator;
+import java.util.function.DoubleBinaryOperator;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.grid.SequenceType;
@@ -300,10 +301,10 @@ final class BandedIterator extends WritablePixelIterator {
 
     /**
      * Sets all remaining pixels to sample values computed by the given functions.
-     * If the iterator is not in a valid position, then this method behavior is undetermined.
+     * The behavior of this method is undetermined if the iterator is not in a valid position.
      */
     @Override
-    public void setRemainingPixels(IntBinaryOperator... bands) {
+    public void setRemainingPixels(IntBinaryOperator[] bands) {
         bands = validate(bands);
         if (bands.length == 1) {    // Slight optimization for a common case.
             final IntBinaryOperator band = bands[0];
@@ -315,6 +316,28 @@ final class BandedIterator extends WritablePixelIterator {
                 final int index = x + xToBuffer;
                 for (int i=0; i<bands.length; i++) {
                     destBuffer.setElem(i, index, bands[i].applyAsInt(x, y));
+                }
+            }
+        }
+    }
+
+    /**
+     * Sets all remaining pixels to sample values computed by the given functions.
+     * The behavior of this method is undetermined if the iterator is not in a valid position.
+     */
+    @Override
+    public void setRemainingPixels(DoubleBinaryOperator[] bands) {
+        bands = validate(bands);
+        if (bands.length == 1) {    // Slight optimization for a common case.
+            final DoubleBinaryOperator band = bands[0];
+            while (next()) {
+                destBuffer.setElemDouble(x + xToBuffer, band.applyAsDouble(x, y));
+            }
+        } else {
+            while (next()) {
+                final int index = x + xToBuffer;
+                for (int i=0; i<bands.length; i++) {
+                    destBuffer.setElemDouble(i, index, bands[i].applyAsDouble(x, y));
                 }
             }
         }

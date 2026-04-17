@@ -64,7 +64,7 @@ public class ChannelImageOutputStream extends OutputStream implements ImageOutpu
             throws IOException
     {
         input  = new ChannelImageInputStream(filename, channel, buffer, true);
-        output = new ChannelDataOutput(filename, channel, buffer);
+        output = new ChannelDataOutput(filename, channel, false, buffer);
     }
 
     /**

@@ -39,6 +39,7 @@ import org.apache.sis.test.TestCaseWithLogs;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class StatisticsCalculatorTest extends TestCaseWithLogs.Isolated {
     /**
      * Size of the artificial tiles. Should be small enough so we can have many of them.
@@ -70,7 +71,7 @@ public final class StatisticsCalculatorTest extends TestCaseWithLogs.Isolated {
      * random values.
      */
     private static TiledImageMock createImage() {
-        final TiledImageMock image = new TiledImageMock(
+        final var image = new TiledImageMock(
                 DataBuffer.TYPE_USHORT, 2,
                 +51,                            // minX
                 -72,                            // minY

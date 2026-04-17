@@ -56,7 +56,7 @@ public final class BandedSampleConverterTest extends ImageTestCase {
      */
     private void createImage(final int sourceType, final DataType targetType, final double scale) {
         final Random random = TestUtilities.createRandomNumberGenerator();
-        final TiledImageMock source = new TiledImageMock(
+        final var source = new TiledImageMock(
                 sourceType, 1,
                 random.nextInt(20) - 10,        // minX
                 random.nextInt(20) - 10,        // minY

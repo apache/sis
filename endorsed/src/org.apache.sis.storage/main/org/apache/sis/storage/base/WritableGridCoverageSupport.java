@@ -112,7 +112,7 @@ public final class WritableGridCoverageSupport implements Localized {
      */
     public final ChannelDataOutput channel(final ChannelDataInput input) throws IOException, DataStoreException {
         if (input.channel instanceof WritableByteChannel && input.rewind()) {
-            return new ChannelDataOutput(input.filename, (WritableByteChannel) input.channel, input.buffer);
+            return new ChannelDataOutput(input.filename, (WritableByteChannel) input.channel, false, input.buffer);
         } else {
             throw new ReadOnlyStorageException(canNotWrite());
         }

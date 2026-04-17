@@ -418,6 +418,46 @@ public final class GridExtentTest extends TestCase {
     }
 
     /**
+     * Tests {@link GridExtent#latticePointStream(boolean)} in the sequential case.
+     */
+    @Test
+    public void testSequentialStream() {
+        testLatticePointStream(false);
+    }
+
+    /**
+     * Tests {@link GridExtent#latticePointStream(boolean)} in the parallel case.
+     */
+    @Test
+    public void testParallelStream() {
+        testLatticePointStream(true);
+    }
+
+    /**
+     * Implementation of {@link #testSequentialStream()} and {@link #testParallelStream()}.
+     */
+    private void testLatticePointStream(final boolean parallel) {
+        final var extent = new GridExtent(null, new long[] {1, 20, 33}, new long[] {2, 22, 34}, true);
+        assertEquals(2 * 3 * 2, extent.latticePointStream(parallel).count());
+        final long[][] lattice = extent.latticePointStream(parallel).toArray(long[][]::new);
+        assertArrayEquals(
+                new long[][] {
+                    new long[] {1, 20, 33},
+                    new long[] {2, 20, 33},
+                    new long[] {1, 21, 33},
+                    new long[] {2, 21, 33},
+                    new long[] {1, 22, 33},
+                    new long[] {2, 22, 33},
+                    new long[] {1, 20, 34},
+                    new long[] {2, 20, 34},
+                    new long[] {1, 21, 34},
+                    new long[] {2, 21, 34},
+                    new long[] {1, 22, 34},
+                    new long[] {2, 22, 34}},
+                lattice);
+    }
+
+    /**
      * Verifies the result of {@code getSubspaceDimensions(…)} and {@code getLargestDimensions(…)}.
      * In this test, the two methods should produce the same results.
      *

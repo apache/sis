@@ -289,7 +289,7 @@ final class Writer extends IOBase implements Flushable {
      * @param  image     the image to encode.
      * @param  grid      mapping from pixel coordinates to "real world" coordinates, or {@code null} if none.
      * @param  metadata  title, author and other information, or {@code null} if none.
-     * @return offset if {@link #output} where the Image File Directory (IFD) starts.
+     * @return offset in {@link #output} where the Image File Directory (IFD) starts.
      * @throws RasterFormatException if the raster uses an unsupported sample model.
      * @throws ArithmeticException if an integer overflow occurs.
      * @throws IOException if an error occurred while writing to the output.
@@ -307,6 +307,9 @@ final class Writer extends IOBase implements Flushable {
          * It could be useful when images have been deleted.
          */
         final long offsetIFD = output.length();
+        if (offsetIFD < 0) {
+            throw new DataStoreException(Errors.format(Errors.Keys.UnknownContentLength));
+        }
         if (currentIFD != null) {
             currentIFD.setAsLong(offsetIFD);
             writeOrQueue(currentIFD);

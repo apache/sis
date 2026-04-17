@@ -50,7 +50,7 @@ public final class FontGIS {
         Font font = null;
         final String filename = "font-gis.ttf";
         try {
-            InputStream in = Code.class.getResourceAsStream(filename);
+            InputStream in = FontGIS.class.getResourceAsStream(filename);
             if (in != null) try (in) {
                 font = Font.loadFont(in, 0);
             } else {

@@ -54,8 +54,9 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
     private final Map<Point,Integer> writables;
 
     /**
-     * Creates a new tiled image. The first tile in the given array must be the one located at the minimal tile
-     * indices. All tiles must have the same size and the same sample model and must be sorted in row-major fashion.
+     * Creates a new tiled image.
+     * The first tile in the given array must be the one located at the minimal tile indices.
+     * All tiles must have the same size and the same sample model and must be sorted in row-major fashion.
      *
      * @param properties  image properties, or {@code null} if none.
      * @param colorModel  the color model, or {@code null} if none.

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import java.util.List;
 import java.util.SortedMap;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
@@ -45,8 +46,6 @@ import org.apache.sis.test.TestCase;
  * but indirectly via {@link GeoTiffStore}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- *
- * @todo We should rewrite {@code "untiled.tiff"} as a tiled image.
  */
 @SuppressWarnings("exports")
 public class ReaderTest extends TestCase {
@@ -59,11 +58,12 @@ public class ReaderTest extends TestCase {
     /**
      * Creates a new data store for the test file.
      *
+     * @param  filename  name of the file to load.
      * @return the data store to test.
      * @throws DataStoreException if an error occurred while creating the data store.
      */
-    private static GeoTiffStore createStore() throws DataStoreException {
-        return new GeoTiffStore(null, new StorageConnector(ReaderTest.class.getResource(GeoTiffStoreTest.UNTILED)));
+    private static GeoTiffStore createStore(final String filename) throws DataStoreException {
+        return new GeoTiffStore(null, new StorageConnector(ReaderTest.class.getResource(filename)));
     }
 
     /**
@@ -77,21 +77,33 @@ public class ReaderTest extends TestCase {
     }
 
     /**
-     * Tests the tile matrix set.
+     * Tests the tile matrix set or an untiled image.
      *
-     * @todo Need to be updated if we rewrite {@code "untiled.tiff"} as a more interesting image.
+     * @throws DataStoreException if an error occurred while creating the data store.
+     */
+    @Test
+    public void testUntiled() throws DataStoreException {
+        try (GeoTiffStore ds = createStore(GeoTiffStoreTest.UNTILED)) {
+            final GridCoverageResource resource = assertInstanceOf(GridCoverageResource.class, assertSingleton(ds.components()));
+            assertInstanceOf(ProjectedCRS.class, resource.getGridGeometry().getCoordinateReferenceSystem());
+            assertTrue(assertInstanceOf(TiledResource.class, resource).getTileMatrixSets().isEmpty());
+        }
+    }
+
+    /**
+     * Tests the tile matrix set.
      *
      * @throws DataStoreException if an error occurred while creating the data store.
      */
     @Test
     public void testTileMatrixSet() throws DataStoreException {
-        try (GeoTiffStore ds = createStore()) {
+        try (GeoTiffStore ds = createStore(GeoTiffStoreTest.TILED)) {
             final GridCoverageResource resource = assertInstanceOf(GridCoverageResource.class, assertSingleton(ds.components()));
             assertInstanceOf(ProjectedCRS.class, resource.getGridGeometry().getCoordinateReferenceSystem());
 
             final TileMatrixSet pyramid = assertSingleton(assertInstanceOf(TiledResource.class, resource).getTileMatrixSets());
             assertSame(resource.getGridGeometry().getCoordinateReferenceSystem(), pyramid.getCoordinateReferenceSystem());
-            assertEquals("untiled:1:TMS", pyramid.getIdentifier().toString());
+            assertEquals("tiled:1:TMS", pyramid.getIdentifier().toString());
             assertFalse(pyramid.getEnvelope().isEmpty());
 
             final SortedMap<GenericName, ? extends TileMatrix> matrices = pyramid.getTileMatrices();
@@ -101,15 +113,16 @@ public class ReaderTest extends TestCase {
             assertTrue(matrices.subMap(matrices.firstKey(), matrices.lastKey()).isEmpty());
 
             final TileMatrix matrix = assertSingleton(matrices.values());
-            assertEquals("untiled:1:TMS:L0", matrix.getIdentifier().toFullyQualifiedName().toString());
+            assertEquals("tiled:1:TMS:L0", matrix.getIdentifier().toFullyQualifiedName().toString());
             assertEquals("TMS:L0", matrix.getIdentifier().toString());
             assertEquals(assertSingleton(matrices.keySet()), matrix.getIdentifier());
             assertArrayEquals(resource.getGridGeometry().getResolution(false), matrix.getResolution());
-            assertSame(TileStatus.OUTSIDE_EXTENT, matrix.getTileStatus(1, 0));
-            assertSame(TileStatus.OUTSIDE_EXTENT, matrix.getTileStatus(0, 1));
+            assertSame(TileStatus.OUTSIDE_EXTENT, matrix.getTileStatus(3, 0));
+            assertSame(TileStatus.OUTSIDE_EXTENT, matrix.getTileStatus(0, 2));
             assertSame(TileStatus.UNKNOWN,        matrix.getTileStatus(0, 0));  // Because the tile has not yet been loaded.
+            assertSame(TileStatus.UNKNOWN,        matrix.getTileStatus(2, 1));
 
-            assertMessageContains(assertThrows(NoSuchDataException.class, () -> matrix.getTile(1, 0)));
+            assertMessageContains(assertThrows(NoSuchDataException.class, () -> matrix.getTile(3, 0)));
             final Tile tile = matrix.getTile(0, 0).orElseThrow();
             assertArrayEquals(new long[] {0, 0}, tile.getIndices());
             assertEquals(TileStatus.EXISTS, tile.getStatus());
@@ -117,8 +130,10 @@ public class ReaderTest extends TestCase {
 
             final Raster raster = raster(tile);
             assertEquals(TileStatus.EXISTS, tile.getStatus());
-            assertArrayEquals(tile.getIndices(), assertSingleton(matrix.getTiles(null, false).toList()).getIndices());
-            assertSame(raster, raster(assertSingleton(matrix.getTiles(null, false).toList())));
+            final List<Tile> tiles = matrix.getTiles(null, false).toList();
+            assertEquals(3 * 2, tiles.size());
+            assertArrayEquals(tile.getIndices(), tiles.get(0).getIndices());
+            assertEquals(raster.getBounds(), raster(tiles.get(0)).getBounds());
         }
     }
 }

@@ -77,7 +77,7 @@ public class TiledImage extends PlanarImage {
      * @param minTileY    minimum tile index in the Y direction.
      * @param tiles       the tiles. Must contains at least one element. This array is not cloned.
      */
-    public TiledImage(final Map<String,Object> properties, final ColorModel colorModel,
+    public TiledImage(final Map<String, Object> properties, final ColorModel colorModel,
                       final int width, final int height, final int minTileX, final int minTileY,
                       final Raster... tiles)
     {

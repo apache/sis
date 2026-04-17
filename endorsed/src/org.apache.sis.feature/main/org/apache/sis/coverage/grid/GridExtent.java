@@ -22,6 +22,10 @@ import java.util.SortedMap;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Objects;
+import java.util.Spliterator;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.io.Serializable;
 import java.io.IOException;
@@ -2138,6 +2142,149 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             }
         }
         return true;
+    }
+
+    /**
+     * Create a stream of all lattice points contained inside this grid extent.
+     * For each dimension, the coordinate values range from {@linkplain #getLow(int) low}
+     * to {@linkplain #getHigh(int) high} inclusive.
+     * The stream is ordered from first dimension varying the fastest to last dimension varying the slowest.
+     * For a two-dimensional grid, this ordering corresponds to the row-major order.
+     *
+     * @param  parallel  whether to return a parallel stream.
+     * @return stream of lattice points inside this grid extent.
+     * @since 1.7
+     */
+    public Stream<long[]> latticePointStream(final boolean parallel) {
+        return StreamSupport.stream(new Iter(coordinates.clone()), parallel);
+    }
+
+    /**
+     * Iterator over all grid coordinates included inside the grid extent, low and high values included.
+     * Iteration is ordered from first dimension varying the fastest to last dimension varying the slowest.
+     */
+    private static final class Iter implements Spliterator<long[]> {
+        /**
+         * The low coordinates followed by the high coordinates, inclusive.
+         * This is either a copy of the {@link GridExtent#coordinates} array,
+         * or a subregion if the iterator has been split.
+         */
+        private final long[] extent;
+
+        /**
+         * The current position.
+         */
+        private final long[] current;
+
+        /**
+         * Whether the iteration is finished.
+         */
+        private boolean done;
+
+        /**
+         * Creates a new iterator with the given low and high coordinate values.
+         * The given array may be modified in-place if the iterator is split.
+         *
+         * @param  extent  the low coordinates followed by the high coordinates, inclusive.
+         */
+        Iter(final long[] extent) {
+            this.extent  = extent;
+            this.current = Arrays.copyOf(extent, extent.length >>> 1);
+        }
+
+        /**
+         * Returns the characteristics of this iterator: ordered, size known, without duplicated value.
+         */
+        @Override
+        public int characteristics() {
+            return ORDERED | DISTINCT | SIZED | NONNULL | IMMUTABLE | SUBSIZED;
+        }
+
+        /**
+         * Returns the exact number of points inside the extent if that number does not overflow.
+         * In case of size exceeding the capacity of 64-bits integers, returns {@link Long#MAX_VALUE}.
+         */
+        @Override
+        public long estimateSize() {
+            long count = 1;
+            final int dimension = extent.length >>> 1;
+            for (int i=0; i<dimension; i++) {
+                try {
+                    long span = Math.subtractExact(extent[dimension + i], extent[i]);
+                    count = Math.multiplyExact(count, Math.incrementExact(span));
+                } catch (ArithmeticException e) {
+                    Logging.ignorableException(LOGGER, GridExtent.class, "latticePointStream", e);
+                    return Long.MAX_VALUE;
+                }
+            }
+            return count;
+        }
+
+        /**
+         * Tries to return an iterator covering a prefix of the points covered by this iterator.
+         * If successful, then after this method call this iterator covers the remaining suffix.
+         */
+        @Override
+        public Spliterator<long[]> trySplit() {
+            final int dimension = extent.length >>> 1;
+            for (int i = dimension; --i >= 0;) {
+                long span = Math.subtractExact(extent[dimension + i], extent[i]);
+                if (span != 0) {
+                    final long[] prefix = extent.clone();
+                    final long separation = prefix[i] + (span >>> 1);
+                    prefix[i + dimension] = separation;
+                    current[i] = extent[i] = separation + 1;
+                    return new Iter(prefix);
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Moves to the next point and checks whether there are more lattice points to iterate over.
+         *
+         * @param  dimension  value of {@code extent.length >>> 1}.
+         * @return whether there is more lattice points after this method call.
+         */
+        private boolean next(final int dimension) {
+            for (int i=0; i<dimension; i++) {
+                if (current[i] < extent[i + dimension]) {
+                    current[i]++;
+                    return true;
+                }
+                current[i] = extent[i];
+            }
+            return false;
+        }
+
+        /**
+         * Preforms the given action on the next lattice point if it exists.
+         *
+         * @param  action  the action to execute.
+         * @return whether a remaining point existed.
+         */
+        @Override
+        public boolean tryAdvance(final Consumer<? super long[]> action) {
+            if (done) return false;
+            action.accept(current);
+            done = !next(extent.length >>> 1);
+            return true;
+        }
+
+        /**
+         * Preforms the given action on all remaining lattice points.
+         *
+         * @param  action  the action to execute.
+         */
+        @Override
+        public void forEachRemaining(Consumer<? super long[]> action) {
+            final int dimension = extent.length >>> 1;
+            if (!done) {
+                do action.accept(current.clone());
+                while (next(dimension));
+                done = true;
+            }
+        }
     }
 
     /**

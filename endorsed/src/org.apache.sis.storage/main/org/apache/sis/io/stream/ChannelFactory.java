@@ -86,6 +86,12 @@ public abstract class ChannelFactory {
     public final boolean suggestDirectBuffer;
 
     /**
+     * Whether the channel has been opened for writing bytes at the end of the file.
+     * In case of doubt, this is {@code false}.
+     */
+    public boolean isOpenedForAppend;
+
+    /**
      * For subclass constructors.
      *
      * @param  suggestDirectBuffer  whether this factory suggests to use direct buffers instead of heap buffers.
@@ -204,6 +210,7 @@ public abstract class ChannelFactory {
                         return new HttpByteChannel(filename, uri);
                     }
                     @Override public WritableByteChannel writable(String filename, StoreListeners listeners) throws IOException {
+                        isOpenedForAppend = true;
                         return Channels.newChannel(uri.toURL().openConnection().getOutputStream());
                     }
                 };
@@ -265,6 +272,7 @@ public abstract class ChannelFactory {
                     return Channels.newChannel(file.openStream());
                 }
                 @Override public WritableByteChannel writable(String filename, StoreListeners listeners) throws IOException {
+                    isOpenedForAppend = true;
                     return Channels.newChannel(file.openConnection().getOutputStream());
                 }
             };
@@ -286,6 +294,7 @@ public abstract class ChannelFactory {
                         return Files.newByteChannel(path, optionSet);
                     }
                     @Override public WritableByteChannel writable(String filename, StoreListeners listeners) throws IOException {
+                        isOpenedForAppend = optionSet.contains(StandardOpenOption.APPEND);
                         return Files.newByteChannel(path, optionSet);
                     }
                     @Override public boolean isCreateNew() throws IOException {
@@ -333,6 +342,7 @@ public abstract class ChannelFactory {
      *
      * @return whether opening a channel will create a new file.
      * @throws if an error occurred while checking file existence of attributes.
+     * @throws IOException if this information require an I/O operation and that operation failed.
      */
     public boolean isCreateNew() throws IOException {
         return false;
@@ -514,6 +524,7 @@ public abstract class ChannelFactory {
                 return (WritableByteChannel) out;
             } else if (out instanceof OutputStream) {
                 storage = null;
+                isOpenedForAppend = true;
                 return Channels.newChannel((OutputStream) out);
             }
             String message = Resources.format(out != null ? Resources.Keys.StreamIsNotWritable_1
@@ -619,6 +630,7 @@ public abstract class ChannelFactory {
                 throw ioe;
             }
             warning("outputStream", listeners);
+            isOpenedForAppend = true;
             return out;
         }
 
@@ -629,7 +641,7 @@ public abstract class ChannelFactory {
          */
         private void warning(final String method, final StoreListeners listeners) {
             if (cause != null) {
-                final LogRecord record = new LogRecord(Level.WARNING, cause.toString());
+                final var record = new LogRecord(Level.WARNING, cause.toString());
                 record.setLoggerName(Modules.STORAGE);
                 record.setSourceMethodName(method);
                 record.setSourceClassName(ChannelFactory.class.getName());

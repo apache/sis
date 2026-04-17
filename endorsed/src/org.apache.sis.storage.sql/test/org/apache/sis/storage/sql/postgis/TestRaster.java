@@ -128,7 +128,7 @@ enum TestRaster {
      * @param  output  the final destination where to write bytes.
      */
     final ChannelDataOutput output(final ByteArrayOutputStream dest) throws IOException {
-        return new ChannelDataOutput(filename, Channels.newChannel(dest), ByteBuffer.allocate(60));
+        return new ChannelDataOutput(filename, Channels.newChannel(dest), false, ByteBuffer.allocate(60));
     }
 
     /**

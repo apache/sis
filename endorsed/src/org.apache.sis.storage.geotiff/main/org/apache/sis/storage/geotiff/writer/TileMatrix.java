@@ -260,7 +260,7 @@ public final class TileMatrix {
                         }
                     }
                     ByteBuffer buffer = direct ? ByteBuffer.allocate(0) : compressor.createBuffer();
-                    compOutput = new ChannelDataOutput(output.filename, compressor, buffer.order(fileByteOrder));
+                    compOutput = new ChannelDataOutput(output.filename, compressor, false, buffer.order(fileByteOrder));
                 } else {
                     compOutput = output;
                     assert predictor == Predictor.NONE : predictor;     // Assumption documented in `Compression` class.

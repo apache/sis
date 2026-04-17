@@ -124,7 +124,7 @@ public final class HyperRectangleWriterTest extends TestCase {
         final byte[] target = new byte[dataSize * region.targetLength(3)];
         final var buffer = ByteBuffer.allocate(random.nextInt(10) + Double.BYTES);
         actual = ByteBuffer.wrap(target);
-        output = new ChannelDataOutput("Test", new ByteArrayChannel(target, false), buffer);
+        output = new ChannelDataOutput("Test", new ByteArrayChannel(target, false), false, buffer);
         writer = new HyperRectangleWriter(region);
         return source;
     }
@@ -241,7 +241,7 @@ public final class HyperRectangleWriterTest extends TestCase {
      */
     private byte[] writePixelValues(final Raster tile) throws IOException {
         final var container = new ByteArrayChannel(new byte[40], false);
-        output = new ChannelDataOutput("Test", container, ByteBuffer.allocate(20));
+        output = new ChannelDataOutput("Test", container, false, ByteBuffer.allocate(20));
         writer = new HyperRectangleWriter.Builder().create(tile, -1, -1);
         writer.write(output, ((DataBufferByte) tile.getDataBuffer()).getData(), 0, false);
         output.flush();

@@ -88,7 +88,7 @@ public final class FileAccessView extends Widget implements UnaryOperator<Channe
     /**
      * Invoked when a new {@link ReadableByteChannel} or {@link WritableByteChannel} is about to be created.
      * The caller will replace the given factory by the returned factory. It allows us to wrap the channel
-     * in an object which will collect information about blocks read.
+     * in an object which will collect information about which ranges of data are read.
      *
      * @param  factory  the factory for creating channels.
      * @return the factory to use instead of the factory given in argument.
@@ -184,7 +184,9 @@ public final class FileAccessView extends Widget implements UnaryOperator<Channe
             public WritableByteChannel writable(final String filename, final StoreListeners listeners)
                     throws DataStoreException, IOException
             {
-                return factory.writable(filename, listeners);
+                final WritableByteChannel channel = factory.writable(filename, listeners);
+                isOpenedForAppend = factory.isOpenedForAppend;
+                return channel;
             }
         };
     }

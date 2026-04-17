@@ -41,6 +41,8 @@ public interface TiledResource extends Resource {
     /**
      * Returns the collection of all available tile matrix sets in this resource.
      * The returned collection typically contains exactly one instance.
+     * It may be an empty collection if the implementation supports tiling,
+     * but this particular resource instance is untiled.
      *
      * @return all available {@link TileMatrixSet} instances, or an empty collection if none.
      * @throws DataStoreException if an error occurred while fetching the tile matrix sets.

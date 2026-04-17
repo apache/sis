@@ -184,6 +184,20 @@ public abstract class ChannelData implements Markable {
     public abstract Channel channel();
 
     /**
+     * Returns whether the channel has been opened for writing bytes at the end of the file.
+     * This flag can be {@code true} if the {@linkplain #channel() channel} is writable and
+     * initially empty or positioned at the channel end. If {@code true}, then each call to
+     * {@link java.nio.channels.WritableByteChannel#write(ByteBuffer)} increases the channel
+     * length by the amount of bytes that have been written.
+     * In case of doubt, this flag should be {@code false}.
+     *
+     * @return whether the channel has been opened for append, or {@code false} in case of doubt.
+     */
+    boolean isOpenedForAppend() {
+        return false;
+    }
+
+    /**
      * Returns the length of the stream (in bytes), or -1 if unknown.
      * The length is relative to the position during the last call to {@link #relocateOrigin()}.
      * If the latter method has never been invoked, then the length is relative to the channel
@@ -199,6 +213,8 @@ public abstract class ChannelData implements Markable {
             if (length >= 0) {
                 return Math.max(length, Math.addExact(bufferOffset, buffer.limit()));
             }
+        } else if (isOpenedForAppend()) {
+            return Math.addExact(bufferOffset, buffer.limit());
         }
         return -1;
     }

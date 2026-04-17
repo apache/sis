@@ -42,6 +42,7 @@ import static org.apache.sis.feature.Assertions.assertValuesEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class BandSelectImageTest extends TestCase {
     /**
      * Arbitrary size for the test image.
