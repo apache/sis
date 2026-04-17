@@ -1186,7 +1186,7 @@ public class CoverageCanvas extends MapCanvasAWT {
              */
             final TileReadListener tileReadListener = cc.tileReadListener;
             if (tileReadListener != null) {
-                tileReadListener.takeSnapshotOfObjectiveCRS();
+                tileReadListener.newStaticGraphics();
             }
             if (isolines != null) {
                 for (final IsolineController.Snapshot s : isolines) {
@@ -1348,7 +1348,7 @@ public class CoverageCanvas extends MapCanvasAWT {
          * This information is updated in the JavaFX thread after each rendering, so that creations of
          * JavaFX shapes will use the information that reflects the image shown in the canvas.
          */
-        volatile ObjectiveSnapshot snapshot;
+        volatile StaticGraphics snapshot;
 
         /**
          * Creates a new listener of tile read events.
@@ -1356,7 +1356,7 @@ public class CoverageCanvas extends MapCanvasAWT {
          */
         TileReadListener() {
             tileShapes = new ConcurrentLinkedQueue<>();
-            takeSnapshotOfObjectiveCRS();
+            newStaticGraphics();
         }
 
         /**
@@ -1364,8 +1364,8 @@ public class CoverageCanvas extends MapCanvasAWT {
          * This method should be invoked after each rendering, so that creations of JavaFX shapes will use
          * the information that reflects the image shown in the canvas.
          */
-        final void takeSnapshotOfObjectiveCRS() {
-            snapshot = forObjectiveSnapshot();
+        final void newStaticGraphics() {
+            snapshot = usingFixedTransform();
         }
 
         /**
@@ -1377,7 +1377,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         @SuppressWarnings({"UseSpecificCatch", "LocalVariableHidesMemberVariable"})
         public void eventOccured(final TileReadEvent event) {
             BackgroundThreads.EXECUTOR.execute(() -> {
-                final ObjectiveSnapshot snapshot = TileReadListener.this.snapshot;
+                final StaticGraphics snapshot = TileReadListener.this.snapshot;
                 if (snapshot.objectiveToDisplay instanceof AffineTransform objectiveToDisplay) try {
                     final Shape tile = ShapeConverter.convert(event.outline(snapshot.objectiveCRS), objectiveToDisplay);
                     final int ic = event.getPyramidLevel() % TILE_COLORS.length;

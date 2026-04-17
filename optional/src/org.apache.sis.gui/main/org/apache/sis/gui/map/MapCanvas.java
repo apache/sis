@@ -193,7 +193,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * in a background thread. Once calculation is completed and the content of this pane has been updated,
      * the {@code floatingPane} {@link Affine} transform is reset to identity.</p>
      *
-     * @see #forObjectiveSnapshot()
+     * @see #usingFixedTransform()
      */
     protected final Pane floatingPane;
 
@@ -440,16 +440,18 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
-     * Returns a pane for evanescent shapes shown in this canvas. The shapes added in the returned pane should
-     * use an animation effect such as {@link javafx.animation.FadeTransition} and be removed after a few seconds.
-     * This method allows to show shapes more easily than adding them directly as {@link #floatingPane} children,
-     * but at the expanse of quality. See {@link ObjectiveSnapshot} for more information.
+     * Returns a pane where graphics can be added as if the <i>objective to display</i> transform was static.
+     * The returned object takes a snapshot of the transform at the time when this method has been invoked.
+     * It allows to show shapes more easily than adding them directly as {@link #floatingPane} children,
+     * but at the expanse of quality. This compromise is better suited to animation effects such as
+     * {@link javafx.animation.FadeTransition} and when shapes are removed from the children list
+     * after a few seconds.
      *
      * @return a pane where to add shapes without the need to track navigation events after this method call.
      * @since 1.7
      */
-    public ObjectiveSnapshot forObjectiveSnapshot() {
-        return new ObjectiveSnapshot(this).unique();
+    public StaticGraphics usingFixedTransform() {
+        return new StaticGraphics(this).unique();
     }
 
     /**
@@ -471,7 +473,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @version 1.7
      * @since   1.7
      */
-    public static class ObjectiveSnapshot {
+    public static class StaticGraphics {
         /**
          * The parent where to add the nodes computed from a snapshot of this <i>objective to display</i> transform.
          *
@@ -482,7 +484,7 @@ public abstract class MapCanvas extends PlanarCanvas {
         /**
          * The <abbr>CRS</abbr> which is the source of the <i>objective to display</i> transform.
          * This is the value of {@link #getObjectiveCRS()} at the time when this
-         * {@code ObjectiveSnapshot} instance has been obtained.
+         * {@code StaticGraphics} instance has been obtained.
          * May be {@code null} if the snapshot was created before {@code Canvas} was initialized with data.
          *
          * @see #getObjectiveCRS()
@@ -491,7 +493,7 @@ public abstract class MapCanvas extends PlanarCanvas {
 
         /**
          * Returns the (usually affine) conversion from objective <abbr>CRS</abbr> to display coordinate system.
-         * This is the value of {@link #getObjectiveToDisplay()} at the time when this {@code ObjectiveSnapshot}
+         * This is the value of {@link #getObjectiveToDisplay()} at the time when this {@code StaticGraphics}
          * instance has been obtained. This is never {@code null}.
          *
          * @see #getObjectiveToDisplay()
@@ -507,21 +509,21 @@ public abstract class MapCanvas extends PlanarCanvas {
         /**
          * Creates a snapshot of the <i>objective to display</i> transform from the given canvas.
          * This constructor is made available for {@code MapCanvas} subclasses wanting to override
-         * their {@link #forObjectiveSnapshot()} method. This constructor should be used in a code
+         * their {@link #usingFixedTransform()} method. This constructor should be used in a code
          * equivalent to the following snippet:
          *
          * {@snippet lang="java" :
          *     @Override
-         *     public ObjectiveSnapshot forObjectiveSnapshot() {
-         *         return new MySnapshotSubclass(this).unique();
+         *     public StaticGraphics usingFixedTransform() {
+         *         return new MySubclass(this).unique();
          *     }
          *     }
          *
          * @param  canvas  the enclosing canvas.
          *
-         * @see #forObjectiveSnapshot()
+         * @see #usingFixedTransform()
          */
-        protected ObjectiveSnapshot(final MapCanvas canvas) {
+        protected StaticGraphics(final MapCanvas canvas) {
             floatingPane       = canvas.floatingPane;
             objectiveCRS       = canvas.getObjectiveCRS();
             objectiveToDisplay = canvas.getObjectiveToDisplay();
@@ -529,17 +531,17 @@ public abstract class MapCanvas extends PlanarCanvas {
 
         /**
          * Returns a unique instance of this snapshot. If the canvas specified at construction time
-         * already contains an {@code ObjectiveSnapshot} of the same class as {@code this} and with
+         * already contains an {@code StaticGraphics} of the same class as {@code this} and with
          * equal {@link #objectiveCRS} and {@link #objectiveToDisplay} transform, then that snapshot
          * is returned and {@code this} should be discarded. Otherwise, this method returns {@code this}.
          *
          * @return a unique instance of this snapshot.
          */
-        protected ObjectiveSnapshot unique() {
+        protected StaticGraphics unique() {
             final ObservableList<Node> siblings = floatingPane.getChildren();
             for (int i = siblings.size(); --i >= 0;) {
                 if (siblings.get(i) instanceof EvanescentPane pane) {
-                    final ObjectiveSnapshot other = pane.owner;
+                    final StaticGraphics other = pane.owner;
                     if (other.getClass() == getClass()
                             && Objects.equals(objectiveCRS, other.objectiveCRS)
                             && objectiveToDisplay.equals(other.objectiveToDisplay))

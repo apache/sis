@@ -36,7 +36,7 @@ final class EvanescentPane extends Pane implements ListChangeListener<Node> {
     /**
      * The object that created this pane.
      */
-    final MapCanvas.ObjectiveSnapshot owner;
+    final MapCanvas.StaticGraphics owner;
 
     /**
      * Whether this pane has been added in {@link MapCanvas#floatingPane}.
@@ -48,7 +48,7 @@ final class EvanescentPane extends Pane implements ListChangeListener<Node> {
      *
      * @param  owner  the object that created this pane.
      */
-    private EvanescentPane(final MapCanvas.ObjectiveSnapshot owner) {
+    private EvanescentPane(final MapCanvas.StaticGraphics owner) {
         this.owner = owner;
     }
 
@@ -62,7 +62,7 @@ final class EvanescentPane extends Pane implements ListChangeListener<Node> {
      * @param  owner  the object that created this pane.
      * @return a pane with an identity transform at the time when this method is invoked.
      */
-    static EvanescentPane create(final MapCanvas.ObjectiveSnapshot owner) {
+    static EvanescentPane create(final MapCanvas.StaticGraphics owner) {
         final var pane = new EvanescentPane(owner);
         pane.getChildren().addListener(pane);
         return pane;
