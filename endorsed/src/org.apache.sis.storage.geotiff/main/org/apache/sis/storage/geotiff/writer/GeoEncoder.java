@@ -72,6 +72,7 @@ import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.referencing.internal.shared.AxisDirections;
+import org.apache.sis.referencing.internal.shared.CoordinateOperations;
 import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -113,6 +114,13 @@ public final class GeoEncoder {
      * @see org.apache.sis.storage.geotiff.reader.GridGeometryBuilder#DEFAULT_SCALE_FACTOR
      */
     private static final int MATRIX_SIZE = 4;
+
+    /**
+     * Whether to write both the <abbr>EPSG</abbr> code and the <abbr>CRS</abbr> definition.
+     * Writing both forms is redundant, but may help software that have no <abbr>EPSG</abbr> data.
+     * It does not seem worth to make this option configurable by users for now.
+     */
+    private static final boolean REDUNDANT = true;
 
     /**
      * The listeners where to report warnings.
@@ -234,9 +242,9 @@ public final class GeoEncoder {
     private int citationLengthIndex;
 
     /**
-     * Whether to disable attempts to write EPSG codes. This is set to {@code true} on the first attempt to use the
-     * EPSG database if it appears to be unavailable. This is used for avoiding many retries which will continue to
-     * fail.
+     * Whether to disable attempts to write <abbr>EPSG</abbr> codes. This is set to {@code true} on the first
+     * failed attempt to use the <abbr>EPSG</abbr> database. This is used for avoiding many retries which will
+     * continue to fail.
      */
     private boolean disableEPSG;
 
@@ -460,7 +468,7 @@ public final class GeoEncoder {
             throw unsupportedType(cs);
         }
         /*
-         * Start writing GeoTIFF keys for the geodetic CRS, potentially
+         * Start writing GeoTIFF keys for the geodetic CRS.
          */
         writeModelType(isBaseCRS ? GeoCodes.ModelTypeProjected : type);
         if (writeEPSG(GeoKeys.GeodeticCRS, crs)) {
@@ -475,7 +483,7 @@ public final class GeoEncoder {
      * Writes entries for the geodetic datum, followed by prime meridian and ellipsoid in that order.
      * The order matter because GeoTIFF specification requires keys to be sorted in increasing order.
      * A difficulty is that units of measurement are between prime meridian and ellipsoid,
-     * and the angular unit is needed for projected CRS too.
+     * and the angular unit is needed for projected <abbr>CRS</abbr> too.
      * This is handled by storing units in the {@link #units} map.
      *
      * @param  datum  the datum to write.
@@ -551,17 +559,17 @@ public final class GeoEncoder {
     private boolean writeCRS(final ProjectedCRS crs)
             throws FactoryException, IncommensurableException, IncompatibleResourceException
     {
-        final boolean previous = disableEPSG;
         final Conversion projection = crs.getConversionFromBase();
-        OperationMethod method = projection.getMethod();
+        OperationMethod method = CoordinateOperations.toPredefinedMethod(projection.getMethod());
         if (method instanceof MapProjection) {
             isPseudoProjection = !method.equals(method = ((MapProjection) method).sourceOfPseudo());
-            disableEPSG = isPseudoProjection;
         }
         /*
          * Write the base CRS only after `isPseudoProjection` has been determined,
          * because it changes the way to write the datum and the ellipsoid.
          */
+        final boolean previous = disableEPSG;
+        disableEPSG = isPseudoProjection;
         writeCRS(crs.getBaseCRS(), true);
         disableEPSG = previous;
         if (writeEPSG(GeoKeys.ProjectedCRS, crs)) {
@@ -753,7 +761,7 @@ public final class GeoEncoder {
     }
 
     /**
-     * Writes the EPSG code of the given object, or {@value GeoCodes#userDefined} if none.
+     * Writes the <abbr>EPSG</abbr> code of the given object, or {@value GeoCodes#userDefined} if none.
      * Returns whether the caller should write user-defined object in replacement or in addition to EPSG code.
      *
      * @param  key     the numeric identifier of the GeoTIFF key.
@@ -783,7 +791,7 @@ public final class GeoEncoder {
             disableEPSG = true;
         }
         writeShort(key, epsg);
-        return (epsg == GeoCodes.userDefined);
+        return REDUNDANT || (epsg == GeoCodes.userDefined);
     }
 
     /**

@@ -38,8 +38,18 @@ import static org.opengis.referencing.ObjectDomain.*;
  * Collection of datum for testing purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ *
+ * @see GeodeticDatumMock
  */
 public final class HardCodedDatum {
+    /**
+     * Reference meridian, with angular measurements in decimal degrees.
+     * This is preferred to {@link #GREENWICH} for planets other than Earth.
+     */
+    public static final DefaultPrimeMeridian REFERENCE = new DefaultPrimeMeridian(
+            properties("Reference Meridian", null, null),
+            0, Units.DEGREE);
+
     /**
      * Greenwich meridian (EPSG:8901), with angular measurements in decimal degrees.
      */
@@ -116,6 +126,15 @@ public final class HardCodedDatum {
             new DefaultEllipsoid(GeodeticDatumMock.SPHERE.getEllipsoid()), GREENWICH);
 
     /**
+     * The datum of Jupiter (2015). Its ellipsoid has a high eccentricity, higher than
+     * the eccentricity for which the formulas of many map projections were designed for.
+     */
+    public static final DefaultGeodeticDatum JUPITER = new DefaultGeodeticDatum(
+            properties("Jupiter (2015)", null, null),
+            DefaultEllipsoid.createEllipsoid(properties("Jupiter (2015)", null, null),
+                    71492000, 66854000, Units.METRE), REFERENCE);
+
+    /**
      * Ellipsoid for measurements of height above the ellipsoid.
      * This is not a valid datum according ISO 19111, but is used by Apache SIS for internal calculation.
      */
@@ -174,7 +193,7 @@ public final class HardCodedDatum {
      * @param  scope  the object scope, or {@code null} if none.
      */
     private static Map<String,?> properties(final String name, final String code, final CharSequence scope) {
-        final Map<String,Object> properties = new HashMap<>(4);
+        final var properties = new HashMap<String, Object>(4);
         properties.put(NAME_KEY, name);
         if (code != null) {
             properties.put(IDENTIFIERS_KEY, new NamedIdentifier(HardCodedCitations.EPSG, code));

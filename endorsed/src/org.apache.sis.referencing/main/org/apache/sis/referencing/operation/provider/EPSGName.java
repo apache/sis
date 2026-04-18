@@ -93,7 +93,7 @@ public final class EPSGName {  // TODO: consider extending NamedIdentifier if we
      * @param  nameOGC     the OGC name, or {@code null} if none.
      * @return a map of properties for building the operation method.
      */
-    public static Map<String,Object> properties(final int identifier, final String name, final String nameOGC) {
+    public static Map<String, Object> properties(final int identifier, final String name, final String nameOGC) {
         return properties(identifier, name, (nameOGC == null) ? null :
             // Version and remarks are intentionally null here, since they are not EPSG version or remarks.
             new NamedIdentifier(Citations.OGC, Constants.OGC, nameOGC, null, null));
@@ -108,7 +108,7 @@ public final class EPSGName {  // TODO: consider extending NamedIdentifier if we
      * @param  nameOGC     the OGC name, or {@code null} if none.
      * @return a map of properties for building the operation method.
      */
-    public static Map<String,Object> properties(final int identifier, final String name, final GenericName nameOGC) {
+    public static Map<String, Object> properties(final int identifier, final String name, final GenericName nameOGC) {
         final Map<String,Object> properties = new HashMap<>(4);
         properties.put(IdentifiedObject.IDENTIFIERS_KEY, identifier(identifier));
         properties.put(IdentifiedObject.NAME_KEY, create(name));
