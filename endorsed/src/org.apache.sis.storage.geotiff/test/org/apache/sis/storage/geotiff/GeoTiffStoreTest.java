@@ -134,26 +134,22 @@ public final class GeoTiffStoreTest extends TestCase {
     /**
      * Writes an image and compare with the {@code "untiled.tiff"} file.
      *
-     * @throws TransformException if an error occurred while computing the domain of the image.
-     * @throws DataStoreException if an error occurred while writing the GeoTIFF file.
-     * @throws IOException if an error occurred while reading the file of expected content.
+     * @throws Exception if a referencing or I/O error occurred.
      */
     @Test
-    public void testWriteUntiled() throws TransformException, DataStoreException, IOException {
-        testWrite(UNTILED, new Rectangle(32, 16), null, 2284);
+    public void testWriteUntiled() throws Exception {
+        testWrite(UNTILED, new Rectangle(32, 16), null, 2602);
     }
 
     /**
      * Writes an image and compare with the {@code "tiled.tiff"} file.
      *
-     * @throws TransformException if an error occurred while computing the domain of the image.
-     * @throws DataStoreException if an error occurred while writing the GeoTIFF file.
-     * @throws IOException if an error occurred while reading the file of expected content.
+     * @throws Exception if a referencing or I/O error occurred.
      */
     @Test
-    public void testWriteTiled() throws TransformException, DataStoreException, IOException {
+    public void testWriteTiled() throws Exception {
         final var tileSize = new Dimension(16, 16);     // TIFF tile size must be multiple of 16.
-        testWrite(TILED, new Rectangle(tileSize.width * 3, tileSize.height * 2), tileSize, 3564);
+        testWrite(TILED, new Rectangle(tileSize.width * 3, tileSize.height * 2), tileSize, 3882);
     }
 
     /**
@@ -167,11 +163,16 @@ public final class GeoTiffStoreTest extends TestCase {
     private static void testWrite(final String filename, final Rectangle bounds, final Dimension tileSize, final int length)
             throws TransformException, DataStoreException, IOException
     {
-        var geographicArea = new GeneralEnvelope(HardCodedCRS.WGS84);
+        /*
+         * We need a CRS which has no EPSG code for ensuring that the test write the same GeoTIFF keys
+         * with or without the presence of an EPSG database on machine which is building this project.
+         */
+        var crs = HardCodedConversions.mercator(HardCodedCRS.JUPITER);
+        var geographicArea = new GeneralEnvelope(HardCodedCRS.JUPITER);
         geographicArea.setRange(0, 132, 145);   // Range of longitude values.
         geographicArea.setRange(1,  30,  42);   // Range of latitude values.
         final GridCoverage coverage = new GridCoverageBuilder()
-                .setDomain(Envelopes.transform(geographicArea, HardCodedConversions.mercator()))
+                .setDomain(Envelopes.transform(geographicArea, crs))
                 .setIntegerValues(DataType.BYTE, bounds, tileSize, (x, y) -> 100 * y + x)
                 .flipGridAxis(1)
                 .build();
