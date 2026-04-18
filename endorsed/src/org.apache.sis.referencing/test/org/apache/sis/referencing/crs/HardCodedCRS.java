@@ -331,10 +331,18 @@ public final class HardCodedCRS {
             getProperties(HardCodedDatum.IMAGE), HardCodedDatum.IMAGE, HardCodedCS.GRID);
 
     /**
+     * A two-dimensional geographic coordinate reference system for Jupiter.
+     * This CRS uses (<var>longitude</var>, <var>latitude</var>) coordinates.
+     * The angular units are decimal degrees and the prime meridian is "Reference Meridian".
+     */
+    public static final DefaultGeographicCRS JUPITER = new DefaultGeographicCRS(
+            getProperties(HardCodedDatum.JUPITER), HardCodedDatum.JUPITER, null, HardCodedCS.GEODETIC_2D);
+
+    /**
      * Creates a map of properties for the given name and code with world extent.
      */
     private static Map<String,?> properties(final String name, final String code) {
-        final Map<String,Object> properties = new HashMap<>(4);
+        final var properties = new HashMap<String, Object>(4);
         properties.put(NAME_KEY, name);
         properties.put(DOMAIN_OF_VALIDITY_KEY, Extents.WORLD);
         if (code != null) {

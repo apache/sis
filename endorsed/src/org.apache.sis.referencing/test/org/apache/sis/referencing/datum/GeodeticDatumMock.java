@@ -32,8 +32,10 @@ import org.apache.sis.test.mock.IdentifiedObjectMock;
  * A dummy implementation of {@link GeodeticDatum}, which is also its own ellipsoid.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ *
+ * @see HardCodedDatum
  */
-@SuppressWarnings("serial")
+@SuppressWarnings({"serial", "exports"})
 public final class GeodeticDatumMock extends IdentifiedObjectMock implements GeodeticDatum, Ellipsoid {
     /**
      * The "GRS 1980" datum. This is very similar to {@link #WGS84}.

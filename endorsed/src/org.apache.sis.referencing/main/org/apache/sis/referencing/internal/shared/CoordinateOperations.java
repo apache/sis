@@ -41,6 +41,8 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+import org.apache.sis.referencing.operation.transform.MathTransformProvider;
+import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.metadata.internal.shared.NameToIdentifier;
@@ -121,7 +123,7 @@ public final class CoordinateOperations {
      * @param  csFactory   the factory to use if the operation factory needs to create CS for intermediate steps.
      * @return the coordinate operation factory to use.
      */
-    public static CoordinateOperationFactory getCoordinateOperationFactory(Map<String,?> properties,
+    public static CoordinateOperationFactory getCoordinateOperationFactory(Map<String, ?> properties,
             final MathTransformFactory mtFactory, final CRSFactory crsFactory, final CSFactory csFactory)
     {
         if (Containers.isNullOrEmpty(properties)) {
@@ -154,6 +156,25 @@ public final class CoordinateOperations {
     }
 
     /**
+     * Converts the given operation method to one of the predefined methods known to Apache <abbr>SIS</abbr>.
+     * This function can be used for replacing an operation method created from the <abbr>EPSG</abbr> database
+     * by an hard-coded operation method implementing the {@link MathTransformProvider} interface.
+     * This is needed for example for getting authority codes of non-<abbr>EPSG</abbr> authorities.
+     *
+     * @param  method  the method to convert to a predefined method if possible.
+     * @return the predefined method, or {@code method} if there is no predefined method.
+     */
+    public static OperationMethod toPredefinedMethod(final OperationMethod method) {
+        if (!(method instanceof AbstractProvider)) try {
+            return findMethod(DefaultMathTransformFactory.provider(), method);
+        } catch (NoSuchIdentifierException e) {
+            // Source class and method name will be inferred from the stack trace.
+            Logging.recoverableException(LOGGER, null, null, e);
+        }
+        return method;
+    }
+
+    /**
      * Returns the operation method for the name of the given identified object.
      * The given object is typically a {@code ParameterDescriptorGroup}.
      *
@@ -171,7 +192,7 @@ public final class CoordinateOperations {
             methodIdentifier = methodName;
         }
         /*
-         * Get the MathTransformProvider of the same name or identifier than the given parameter group.
+         * Get the MathTransformProvider of the same name or identifier as the given parameter group.
          * We give precedence to EPSG identifier because operation method names are sometimes ambiguous
          * (e.g. "Lambert Azimuthal Equal Area (Spherical)"). If we fail to find the method by its EPSG code,
          * we will try searching by method name. As a side effect, this second attempt will produce a better
