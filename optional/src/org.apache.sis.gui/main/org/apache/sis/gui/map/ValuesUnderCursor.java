@@ -344,6 +344,7 @@ public abstract class ValuesUnderCursor {
      * Invoked when an exception occurred while computing values.
      */
     final void setError(final Throwable e) {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final StatusBar owner = this.owner;
         if (owner != null) {
             owner.setSampleValues(owner.cause(e));

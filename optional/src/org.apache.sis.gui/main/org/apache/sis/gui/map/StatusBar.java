@@ -632,10 +632,10 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         lowestAccuracy.bind(canvas.positionalAccuracyProperty());
         sampleValuesProvider.set(ValuesUnderCursor.create(canvas));
         canvas.errorProperty().addListener((p,o,n) -> setRenderingError(n));
-        canvas.renderingProperty().addListener((p,o,n) -> {
-            if (!n) applyCanvasGeometry();      // Apply only after completion of the background rendering task.
+        canvas.addPropertyChangeListener(RenderingCompletedEvent.NAME, (event) -> {
+            displaySpaceChanged((RenderingCompletedEvent) event);
         });
-        applyCanvasGeometry();
+        displaySpaceChanged(null);
         if (canvas.getObjectiveCRS() != null) {
             registerMouseListeners();
         } else {
@@ -676,22 +676,31 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     }
 
     /**
-     * Invoked when {@link MapCanvas} completed its rendering. This method sets
-     * {@link StatusBar#localToObjectiveCRS} to the inverse of {@link MapCanvas#objectiveToDisplay}.
-     * It assumes that even if the JavaFX local coordinates and {@link #localToPositionCRS} transform
-     * changed, the "real world" coordinates under the mouse cursor is still the same. This assumption
-     * should be true if this listener is notified as a result of zoom, translation or rotation events.
+     * Invoked when {@link MapCanvas} completed its rendering, either successfully or with an error.
+     * This method sets {@link #localToObjectiveCRS} to the inverse of {@link MapCanvas#objectiveToDisplay}.
+     *
+     * The geospatial coordinates under the mouse cursor are usually unchanged if this listener is notified as a
+     * result of zoom or pan. But the number of fraction digits used for formatting the same coordinates may have
+     * changed, because the pixels on the screen may have a different resolution after a zoom (or even, sometime,
+     * after a pan). Reformatting the geospatial coordinates requires the JavaFX local coordinates of the mouse,
+     * which may have changed because of the change in the {@link #localToPositionCRS} transform. We don't have
+     * an <abbr>API</abbr> for asking again the mouse coordinates, so the best we can do is to try to reuse
+     * {@link #lastX} and {@link #lastY}.
+     *
+     * @param  event  contains the change in the display space of the {@link MapCanvas}.
      */
-    private void applyCanvasGeometry() {
+    private void displaySpaceChanged(final RenderingCompletedEvent event) {
+        final Point2D point = (event != null) ? event.updateDisplayCoordinates(lastX, lastY) : null;
         try {
             apply(canvas.getGridGeometry());
-            /*
-             * Do not hide `position` since we assume that "real world" coordinates are still valid.
-             * Do not try to rewrite position neither since `lastX` and `lastY` are not valid anymore.
-             */
         } catch (RenderException e) {
             setRenderingError(e);
         }
+        if (point != null) {
+            lastX = point.getX();
+            lastY = point.getY();
+        }
+        rewritePosition(null);
     }
 
     /**
@@ -765,11 +774,10 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
 
     /**
      * Implementation of {@link #applyCanvasGeometry(GridGeometry)} without changing {@link #position} visibility state.
-     * Invoking this method usually invalidates the coordinates shown in this status bar. The new coordinates cannot be
-     * easily recomputed because the {@link #lastX} and {@link #lastY} values may not be valid anymore, as a result of
-     * possible changes in JavaFX local coordinate system. Consequently, the coordinates should be temporarily hidden
-     * until a new {@link MouseEvent} gives us the new local coordinates, unless this method is invoked in a context
-     * where we know that the "real world" coordinates should be the same even if local coordinates changed.
+     * This method sets the {@link #lastX} and {@link #lastY} fields to NaN because these coordinates become invalid as
+     * a consequence of the change in the {@link #localToPositionCRS} transform. However, the {@linkplain #position} is
+     * not hidden because this method may be invoked in a context where we know that the "real world" coordinates should
+     * be the same even if local coordinates changed.
      *
      * @param  geometry  geometry of the coverage shown in {@link MapCanvas}, or {@code null}.
      */
@@ -1023,8 +1031,8 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     }
 
     /**
-     * Invoked after a new reference system has been set. This method rewrites the coordinates
-     * on the assumption that {@link #lastX} and {@link #lastY} are still valid.
+     * Rewrites the coordinates on the assumption that {@link #lastX} and {@link #lastY} are still valid.
+     * This method is invoked after a new reference system has been set or after a navigation event.
      *
      * @param  current  the local coordinates used for current text, or {@code null} if not valid.
      */
@@ -1326,10 +1334,13 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     }
 
     /**
-     * Returns the coordinates given to the last call to {@link #setLocalCoordinates(double, double)},
-     * or an empty value if those coordinates are not visible.
+     * Returns the pixel coordinates from which the geospatial coordinates have been computed. The returned
+     * point contains the coordinates given in the last call to {@link #setLocalCoordinates(double, double)}.
+     * Note that the latter call may have been caused by a user an action such as a mouse displacement,
+     * not necessarily an explicit call from the application code.
+     * If the coordinates are not currently shown in the status bar, then this method returns an empty value.
      *
-     * @return the local coordinates currently shown in the status bar.
+     * @return the local coordinates which are the sources of the coordinates currently shown in the status bar.
      */
     public Optional<Point2D> getLocalCoordinates() {
         if (isPositionVisible() && !Double.isNaN(lastX) && !Double.isNaN(lastY)) {
