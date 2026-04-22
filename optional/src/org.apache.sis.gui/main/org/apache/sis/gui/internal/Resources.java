@@ -397,7 +397,7 @@ public class Resources extends IndexedResourceBundle {
         public static final short SelectCRS = 30;
 
         /**
-         * For changing the projection, use contextual menu on the map.
+         * For changing the projection, use contextual menu.
          */
         public static final short SelectCrsByContextMenu = 49;
 

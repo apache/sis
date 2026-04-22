@@ -79,6 +79,11 @@ final class CoverageControls extends ViewAndControls {
         final MapMenu menu = new MapMenu(view);
         menu.addReferenceSystems(owner.referenceSystems);
         menu.addCopyOptions(status);
+        /*
+         * Add listeners for showing the name of the selected CRS on the status bar.
+         * Note: this code is duplicated in the `MultiCanvas.Controls` constructor.
+         * For deduplicating, the code to remove should be this `CoverageControls`.
+         */
         final ObservableObjectValue<String> mapCRS = menu.selectedReferenceSystem().orElse(null);
         if (mapCRS == null) {
             referenceSystemTooltip = null;
