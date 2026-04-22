@@ -138,7 +138,7 @@ public final class GeoTiffStoreTest extends TestCase {
      */
     @Test
     public void testWriteUntiled() throws Exception {
-        testWrite(UNTILED, new Rectangle(32, 16), null, 2602);
+        testWrite(UNTILED, new Rectangle(32, 16), null, 1054);
     }
 
     /**
@@ -149,7 +149,7 @@ public final class GeoTiffStoreTest extends TestCase {
     @Test
     public void testWriteTiled() throws Exception {
         final var tileSize = new Dimension(16, 16);     // TIFF tile size must be multiple of 16.
-        testWrite(TILED, new Rectangle(tileSize.width * 3, tileSize.height * 2), tileSize, 3882);
+        testWrite(TILED, new Rectangle(tileSize.width * 3, tileSize.height * 2), tileSize, 2334);
     }
 
     /**

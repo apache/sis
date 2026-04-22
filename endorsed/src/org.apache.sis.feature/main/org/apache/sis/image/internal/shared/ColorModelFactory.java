@@ -358,23 +358,24 @@ public final class ColorModelFactory {
         /*
          * If there are no categories, construct a gray scale palette.
          */
-        final int categoryCount = pieceStarts.length - 1;
-        if (numBands == 1 && categoryCount <= 0) {
-            final ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
-            final int[] numBits = {
-                DataBuffer.getDataTypeSize(dataType)
-            };
-            return unique(new ComponentColorModel(cs, numBits, false, true, Transparency.OPAQUE, dataType));
-        }
-        /*
-         * Interpolates the colors in the color palette. Colors that do not fall
-         * in the range of a category will be set to a transparent color.
-         */
         final int[] colorMap;
         int transparent = -1;
-        if (categoryCount <= 0) {
-            colorMap = ArraysExt.range(0, 256);
+        if (isGrayScale()) {
+            if (numBands == 1) {
+                final ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
+                final int[] numBits = {
+                    DataBuffer.getDataTypeSize(dataType)
+                };
+                return unique(new ComponentColorModel(cs, numBits, false, true, Transparency.OPAQUE, dataType));
+            }
+            colorMap = new int[256];
+            Arrays.setAll(colorMap, (i) -> 0xFF000000 | (i << 24) | (i << 16) | (i << 8) | i);
         } else {
+            /*
+             * Interpolates the colors in the color palette. Colors that do not fall
+             * in the range of a category will be set to a transparent color.
+             */
+            final int categoryCount = pieceStarts.length - 1;
             colorMap = new int[pieceStarts[categoryCount]];
             for (int i=0; i<categoryCount; i++) {
                 final int[] colors = ARGB[i];
@@ -435,8 +436,8 @@ public final class ColorModelFactory {
             final boolean hasAlpha, final int transparent)
     {
         /*
-         * No need to scan the ARGB values in search of a transparent pixel;
-         * the IndexColorModel constructor does that for us.
+         * No need to scan the ARGB values in search of a transparent pixel
+         * since the `IndexColorModel` constructor does that for us.
          */
         final int length = ARGB.length;
         if (numBits == 0) {
@@ -565,6 +566,26 @@ public final class ColorModelFactory {
          * "exclusive" values. For example, 255.5 ± 1.5 accepts the |254.001 … 256.999] range.
          */
         return Math.abs(minimum) < 1 && Math.abs(maximum - (upper - 0.5)) < 1.5;
+    }
+
+    /**
+     * Returns whether this factory is building a gray scale color model.
+     * A gray scale color model is preferred to an index color model because gray scale gives
+     * directly the intensity, while index color model is indirect (need to lookup in a table).
+     * Therefore, sample values associated to gray scale can be interpolated while sample values
+     * that are indexes cannot be interpolated easily.
+     */
+    private boolean isGrayScale() {
+        if (ARGB == null) {
+            return true;
+        }
+        switch (ARGB.length) {
+            default: return false;
+            case  0: return true;
+            case  1: break;
+        }
+        final int[] codes = ARGB[0];
+        return codes.length == 2 && codes[0] == 0xFF000000 && codes[1] == 0xFFFFFFFF;
     }
 
     /**
