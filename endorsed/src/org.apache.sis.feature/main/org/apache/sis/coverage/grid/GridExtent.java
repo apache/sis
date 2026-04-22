@@ -2266,7 +2266,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         @Override
         public boolean tryAdvance(final Consumer<? super long[]> action) {
             if (done) return false;
-            action.accept(current);
+            action.accept(current.clone());
             done = !next(extent.length >>> 1);
             return true;
         }
