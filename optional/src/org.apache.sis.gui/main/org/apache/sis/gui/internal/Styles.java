@@ -72,7 +72,7 @@ public final class Styles {
      * Color of text for information purpose but which are not the main topic.
      * This is using a lighter color for avoiding to be a source of distraction.
      */
-    public static final Color FAINT_TEXT = Color.GRAY;
+    public static final Color FAINT_TEXT = Color.DIMGRAY;
 
     /**
      * Color of the text saying that data are in process of being loaded.

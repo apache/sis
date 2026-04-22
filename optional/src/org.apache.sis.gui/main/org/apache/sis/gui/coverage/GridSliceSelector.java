@@ -458,7 +458,7 @@ public class GridSliceSelector extends Widget {
         final void setPosition(final boolean adjusting, final long position) {
             final StatusBar bar = status;
             if (bar != null) {
-                bar.setInfoMessage(adjusting ? toString(position, true) : null);
+                bar.setProgressMessage(adjusting ? toString(position, true) : null);
             }
             if (!adjusting) {
                 final GridExtent extent = selectedExtent.get();
