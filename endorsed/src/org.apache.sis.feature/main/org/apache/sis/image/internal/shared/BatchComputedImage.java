@@ -45,7 +45,7 @@ public abstract class BatchComputedImage extends ComputedImage {
      * Image properties, or an empty map if none.
      * May contain instances of {@link DeferredProperty}.
      */
-    private final Map<String,Object> properties;
+    private final Map<String, Object> properties;
 
     /**
      * Tiles fetched by a calls to {@link #prefetch(Rectangle)}, or {@code null} if none.
@@ -89,7 +89,7 @@ public abstract class BatchComputedImage extends ComputedImage {
      * @param  properties   image properties ({@link DeferredProperty} supported), or {@code null} if none.
      * @param  sources      sources of this image (may be an empty array), or a null array if unknown.
      */
-    protected BatchComputedImage(final SampleModel sampleModel, final Map<String,Object> properties, final RenderedImage... sources) {
+    protected BatchComputedImage(final SampleModel sampleModel, final Map<String, Object> properties, final RenderedImage... sources) {
         super(sampleModel, sources);
         this.properties = (properties != null) ? Map.copyOf(properties) : Map.of();
     }
@@ -117,8 +117,7 @@ public abstract class BatchComputedImage extends ComputedImage {
      */
     @Override
     public String[] getPropertyNames() {
-        final int n = properties.size();
-        return (n == 0) ? null : properties.keySet().toArray(new String[n]);
+        return properties.isEmpty() ? null : properties.keySet().toArray(String[]::new);
     }
 
     /**
