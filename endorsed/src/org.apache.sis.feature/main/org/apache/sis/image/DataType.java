@@ -346,7 +346,7 @@ public enum DataType {
      * @since 1.3
      */
     public final int bytes() {
-        return size() >>> 3;        // `size()` is never smaller than 8.
+        return size() / Byte.SIZE;  // `size()` is never smaller than 8.
     }
 
     /**
