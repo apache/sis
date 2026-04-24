@@ -17,16 +17,22 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Set;
+import java.util.List;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.DerivedCRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.operation.MissingSourceDimensionsException;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
@@ -808,10 +814,12 @@ public final class GridGeometryTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridGeometry#createImageCRS(String, PixelInCell)}.
+     * Tests {@link GridGeometry#createGridCRS(Identifier, PixelInCell)}.
+     *
+     * @throws FactoryException if the <abbr>CRS</abbr> cannot be built.
      */
     @Test
-    public void testCreateImageCRS() {
+    public void testCreateGridCRS() throws FactoryException {
         final var gg = new GridGeometry(
                 new GridExtent(null, null, new long[] {17, 10, 4}, true),
                 PixelInCell.CELL_CENTER,
@@ -822,14 +830,27 @@ public final class GridGeometryTest extends TestCase {
                     0,   0,  0,  1)),
                 HardCodedCRS.WGS84_WITH_TIME);
 
-        final DerivedCRS crs = gg.createImageCRS("Horizontal part", PixelInCell.CELL_CENTER);
-        assertEquals("Horizontal part", crs.getName().getCode());
-        assertSame(HardCodedCRS.WGS84, crs.getBaseCRS());
+        final Identifier name = new ImmutableIdentifier(null, null, "Tested grid CRS");
+        final CoordinateReferenceSystem crs = gg.createGridCRS(name, PixelInCell.CELL_CENTER);
+        assertSame(name, crs.getName());
+
+        final List<SingleCRS> components = CRS.getSingleComponents(crs);
+        assertEquals(2, components.size());
+
+        final var horizontal = assertInstanceOf(DerivedCRS.class, components.get(0));
+        assertSame(HardCodedCRS.WGS84, horizontal.getBaseCRS());
         assertMatrixEquals(
                 new Matrix3(1,  0,  7,      // Opposite sign because this is the inverse transform.
                             0, -1, 50,      // Opposite sign cancelled by -1 scale factor.
                             0,  0,  1),
-                crs.getConversionFromBase().getMathTransform(),
+                horizontal.getConversionFromBase().getMathTransform(),
+                "CRS to grid");
+
+        final var temporal = assertInstanceOf(DerivedCRS.class, components.get(1));
+        assertSame(HardCodedCRS.TIME, temporal.getBaseCRS());
+        assertMatrixEquals(
+                new Matrix2(0.125, -2.5, 0, 1),
+                temporal.getConversionFromBase().getMathTransform(),
                 "CRS to grid");
     }
 

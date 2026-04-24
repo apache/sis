@@ -49,8 +49,8 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 
 /**
- * A list of authority codes (usually for CRS) which fetch code values in a background thread
- * and CRS names only when needed.
+ * A list of authority codes (usually for <abbr>CRS</abbr>) for which to fetch code values in a background thread.
+ * The <abbr>CRS</abbr> names are fetched only when needed.
  *
  * @todo {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess} internally uses a {@link java.util.Map}
  *       from codes to descriptions. We could open an access to this map for a little bit more efficiency.
@@ -64,7 +64,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
 {
     /**
      * Delay in nanoseconds before to refresh the list with new content.
-     * Data will be transferred from background threads to JavaFX threads every time this delay is elapsed.
+     * Data will be transferred from background threads to JavaFX thread every time this delay is elapsed.
      * The delay value is a compromise between fast user experience and giving enough time for doing a few
      * large data transfers instead of many small data transfers.
      */
@@ -235,6 +235,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
             final ListIterator<Object> it = codes.listIterator();
             while (it.hasNext()) {
                 final Object value = it.next();
+                @SuppressWarnings("element-type-mismatch")
                 final String name = result.names.remove(value);
                 if (name != null) {
                     final int i = it.previousIndex();
@@ -381,7 +382,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
          * @param  factory  value of {@link #getFactory()}.
          * @return the names of CRS authority codes submitted to {@link #requestName(Code)}, or {@code null} if none.
          */
-        private Map<Code,String> processNameRequests(final CRSAuthorityFactory factory) {
+        private Map<Code, String> processNameRequests(final CRSAuthorityFactory factory) {
             final Code[] snapshot;
             synchronized (toDescribe) {
                 final int size = toDescribe.size();
@@ -389,7 +390,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
                 snapshot = toDescribe.toArray(new Code[size]);
                 toDescribe.clear();
             }
-            final Map<Code,String> updated = new IdentityHashMap<>(snapshot.length);
+            final var updated = new IdentityHashMap<Code, String>(snapshot.length);
             for (final Code code : snapshot) {
                 String text;
                 try {
@@ -434,7 +435,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
                     while (it.hasNext()) {
                         codes.add(it.next());
                         if (System.nanoTime() - lastTime > REFRESH_DELAY) {
-                            final PartialResult p = new PartialResult(codes.toArray(), processNameRequests(factory));
+                            final var p = new PartialResult(codes.toArray(), processNameRequests(factory));
                             codes.clear();
                             Platform.runLater(() -> update(p));
                             lastTime = System.nanoTime();
@@ -479,7 +480,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
             final Throwable e = getException();
             errorOccurred(e);
             if (loadCodes) {
-                final Code code = new Code(Vocabulary.forLocale(locale).getString(Vocabulary.Keys.Errors));
+                final var code = new Code(Vocabulary.forLocale(locale).getString(Vocabulary.Keys.Errors));
                 String message = Exceptions.getLocalizedMessage(e, locale);
                 if (message == null) {
                     message = Classes.getShortClassName(e);

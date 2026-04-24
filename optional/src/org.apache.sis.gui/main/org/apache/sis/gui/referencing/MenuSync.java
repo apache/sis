@@ -31,7 +31,6 @@ import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.ToggleGroup;
 import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -80,7 +79,7 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
      * The content of this list depends on the grid coverages shown in the widget.
      * This is {@code null} if that sub-menu is omitted.
      */
-    private final List<DerivedCRS> cellIndicesSystems;
+    private final List<CoordinateReferenceSystem> cellIndicesSystems;
 
     /**
      * The list of menu items to keep up-to-date with {@link #recentSystems}.
@@ -125,7 +124,7 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
      * @param  bean     the menu to keep synchronized with the list of reference systems.
      * @param  action   a wrapper over the user-specified action to execute when a reference system is selected.
      */
-    MenuSync(final List<ReferenceSystem> systems, final boolean byIds, final List<DerivedCRS> derived,
+    MenuSync(final List<ReferenceSystem> systems, final boolean byIds, final List<CoordinateReferenceSystem> derived,
              final Menu bean, final RecentReferenceSystems.SelectionListener action)
     {
         super(bean, "value");
@@ -230,7 +229,7 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
     private void updateCellIndicesMenus(final Locale locale) {
         final int n = cellIndicesSystems.size();
         for (int i=0; i<n; i++) {
-            final DerivedCRS crs = cellIndicesSystems.get(i);
+            final CoordinateReferenceSystem crs = cellIndicesSystems.get(i);
             final RadioMenuItem item;
             if (i < cellIndicesMenus.size()) {
                 item = (RadioMenuItem) cellIndicesMenus.get(i);

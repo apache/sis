@@ -329,9 +329,9 @@ public final class IdentifiedObjects {
      *   <li><code>object.{@linkplain AbstractIdentifiedObject#getIdentifiers() getIdentifiers()}</code> in iteration order</li>
      * </ul>
      *
-     * This method is can be used for fetching a more human-friendly identifier than the numerical values
-     * typically returned by {@link IdentifiedObject#getIdentifiers()}. However, the returned value is not
-     * guaranteed to be unique.
+     * This method can be used for fetching a more human-friendly identifier than the numerical values
+     * typically returned by {@link IdentifiedObject#getIdentifiers()}.
+     * However, the returned value is not guaranteed to be unique.
      *
      * @param  object  the identified object, or {@code null}.
      * @return the first name, alias or identifier which is a valid Unicode identifier, or {@code null} if none.

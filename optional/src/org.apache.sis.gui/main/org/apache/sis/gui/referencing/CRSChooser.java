@@ -166,8 +166,8 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
          * Columns to show in CRS table. First column is typically EPSG codes and second
          * column is the CRS descriptions. The content is loaded in a background thread.
          */
-        final TableColumn<Code,Code>   codes = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.Code));
-        final TableColumn<Code,String> names = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.Name));
+        final var codes = new TableColumn<Code, Code>  (vocabulary.getString(Vocabulary.Keys.Code));
+        final var names = new TableColumn<Code, String>(vocabulary.getString(Vocabulary.Keys.Name));
         names.setCellValueFactory(codeList);
         codes.setCellValueFactory(IdentityValueFactory.instance());
         codes.setCellFactory(Code.Cell::new);
@@ -199,7 +199,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
              * Button for showing the CRS description in Well Known Text (WKT) format.
              * The button is enabled only if a row in the table is selected.
              */
-            final ToggleButton infoButton = new ToggleButton("\uD83D\uDDB9");   // Unicode U+1F5B9: Document With Text.
+            final var infoButton = new ToggleButton("\uD83D\uDDB9");   // Unicode U+1F5B9: Document With Text.
             table.getSelectionModel().selectedItemProperty().addListener((e,o,n) -> {
                 infoButton.setDisable(n == null);
                 updateSummary(n);

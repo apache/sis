@@ -39,13 +39,13 @@ import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.gazetteer.MilitaryGridReferenceSystem;
@@ -211,26 +211,18 @@ public class RecentReferenceSystems {
      * instances and duplicated values removed. This is the list given to JavaFX controls that we build.
      * This list includes {@link #OTHER} as its last item.
      *
-     * <p>This list is initially null and created only when first needed. After the list has been created,
-     * this reference is never modified. As long as the reference is null, we can skip the synchronization
-     * of this list content with the {@link #systemsOrCodes} content when the latter changed. Because that
-     * synchronization may involve accesses to the EPSG database, it is potentially costly.</p>
-     *
      * @see #getReferenceSystems(boolean)
      */
-    private ObservableList<ReferenceSystem> referenceSystems;
+    private final ObservableList<ReferenceSystem> referenceSystems;
 
     /**
      * A view of {@link #referenceSystems} with only items that are instances of {@link CoordinateReferenceSystem}.
      * This list includes also {@link #OTHER} as its last item. This list is used for menus shown in contexts where
      * identifiers cannot be used, for example for selecting the CRS to use for displaying a map.
      *
-     * <p>This list is lazily created when first needed,
-     * because it depends on {@link #referenceSystems} which is itself lazily created.</p>
-     *
      * @see #getReferenceSystems(boolean)
      */
-    private ObservableList<ReferenceSystem> coordinateReferenceSystems;
+    private final ObservableList<ReferenceSystem> coordinateReferenceSystems;
 
     /**
      * A filtered view of {@link #referenceSystems} without the {@link #OTHER} item.
@@ -242,12 +234,9 @@ public class RecentReferenceSystems {
      * handled in a special way by {@link ObjectStringConverter} for making the "Other…" item present in the
      * list of choices. But since {@link #OTHER} is not a real CRS, we want to hide that trick to users.
      *
-     * <p>This list is lazily created when first needed,
-     * because it depends on {@link #referenceSystems} which is itself lazily created.</p>
-     *
      * @see #getItems()
      */
-    private ObservableList<ReferenceSystem> publicItemList;
+    private final ObservableList<ReferenceSystem> publicItemList;
 
     /**
      * Coordinate reference systems used for computing cell indices of grid coverages.
@@ -256,7 +245,7 @@ public class RecentReferenceSystems {
      *
      * @see #setGridReferencing(boolean, Map)
      */
-    private final List<DerivedCRS> cellIndiceSystems;
+    private final List<CoordinateReferenceSystem> cellIndiceSystems;
 
     /**
      * {@code true} if the {@link #referenceSystems} list needs to be rebuilt from {@link #systemsOrCodes} content.
@@ -310,6 +299,11 @@ public class RecentReferenceSystems {
             geographicAOI = Utils.toGeographic(RecentReferenceSystems.class, "areaOfInterest", n);
             listModified();
         });
+        referenceSystems = FXCollections.observableArrayList();
+        publicItemList = new FilteredList<>(referenceSystems, Objects::nonNull);
+        coordinateReferenceSystems = new FilteredList<>(referenceSystems, (ReferenceSystem system) -> {
+            return (system == OTHER) || (system instanceof CoordinateReferenceSystem);
+        });
     }
 
     /**
@@ -344,33 +338,34 @@ public class RecentReferenceSystems {
          * Fetch or compute information needed, but without modifying the state of this object yet.
          * All assignments to `this` should be done inside the `try … finally` block.
          */
-        int countEnv = 0;
         int countCRS = 0;
         int countCIR = 0;
-        final Envelope[] envelopes = new Envelope[geometries.size()];
-        final DerivedCRS[] derived = new DerivedCRS[geometries.size()];
-        final var alt = new CoordinateReferenceSystem[Math.max(derived.length - 1, 0)];
-        CoordinateReferenceSystem firstCRS = null;
-        for (final Map.Entry<String,GridGeometry> entry : geometries.entrySet()) {
+        final var refsys    = new CoordinateReferenceSystem[geometries.size()];
+        final var derived   = new CoordinateReferenceSystem[refsys.length];
+        final var envelopes = new Envelope[refsys.length];
+        for (final Map.Entry<String, GridGeometry> entry : geometries.entrySet()) {
             final GridGeometry gg = entry.getValue();
-            if (gg.isDefined(GridGeometry.ENVELOPE)) {
-                envelopes[countEnv++] = gg.getEnvelope();
-            }
             if (gg.isDefined(GridGeometry.CRS)) {
-                final CoordinateReferenceSystem crs = gg.getCoordinateReferenceSystem();
-                if (firstCRS == null) {
-                    firstCRS = crs;
-                } else {
-                    alt[countCRS++] = crs;
+                if (gg.isDefined(GridGeometry.ENVELOPE)) {
+                    envelopes[countCRS] = gg.getEnvelope();
                 }
-                if (gg.isDefined(GridGeometry.GRID_TO_CRS | GridGeometry.EXTENT)) {
-                    derived[countCIR++] = gg.createImageCRS(entry.getKey(), PixelInCell.CELL_CENTER);
-                }
+                refsys[countCRS++] = gg.getCoordinateReferenceSystem();
             }
+            try {
+                final var name = new ImmutableIdentifier(null, null, entry.getKey());
+                derived[countCIR] = gg.createGridCRS(name, PixelInCell.CELL_CENTER);
+                countCIR++;     // Increment only if above line was successful.
+            } catch (FactoryException e) {
+                errorOccurred(e);
+            }
+        }
+        if (countCRS == 0 && countCIR != 0) {
+            refsys[0] = derived[0];
+            countCRS = 1;
         }
         Envelope union;
         try {
-            union = Envelopes.union(envelopes);       // No need to trim null elements.
+            union = Envelopes.union(envelopes);       // Null elements are ignored.
         } catch (TransformException e) {
             errorOccurred("setGridReferencing", e);
             union = null;
@@ -381,24 +376,19 @@ public class RecentReferenceSystems {
          * in order to have only one call to `filterReferenceSystems(…)`.
          */
         final Envelope aoi = union;     // Because lambda functions want a final variable.
-        final CoordinateReferenceSystem preferred = firstCRS;
-        final List<DerivedCRS> cellCRS = Containers.viewAsUnmodifiableList(derived, 0, countCIR);
+        final List<CoordinateReferenceSystem> cellCRS = Containers.viewAsUnmodifiableList(derived, 0, countCIR);
         final int stamp = modificationCount.incrementAndGet();
         Platform.runLater(() -> {
             if (modificationCount.get() == stamp) {
-                final ObservableList<ReferenceSystem> savedReferenceSystemList = referenceSystems;
-                try {
-                    referenceSystems = null;
-                    if (preferred != null) {
-                        setPreferred(replaceByAuthoritativeDefinition, preferred);
-                        addAlternatives(replaceByAuthoritativeDefinition, alt);         // No need to trim null elements.
-                        cellIndiceSystems.clear();
-                        cellIndiceSystems.addAll(cellCRS);
-                    }
-                    areaOfInterest.set(aoi);
-                } finally {
-                    referenceSystems = savedReferenceSystemList;
+                final CoordinateReferenceSystem preferred = refsys[0];
+                if (preferred != null) {
+                    refsys[0] = null;
+                    setPreferred(replaceByAuthoritativeDefinition, preferred);
+                    addAlternatives(replaceByAuthoritativeDefinition, refsys);  // Null elements are ignored.
+                    cellIndiceSystems.clear();
+                    cellIndiceSystems.addAll(cellCRS);
                 }
+                areaOfInterest.set(aoi);
                 listModified();
             }
         });
@@ -560,7 +550,7 @@ public class RecentReferenceSystems {
             boolean noFactoryFound = false;
             boolean searchedFinder = false;
             IdentifiedObjectFinder finder = null;
-            for (int i=systemsOrCodes.size(); --i >= 0;) {
+            for (int i = systemsOrCodes.size(); --i >= 0;) {
                 final Object item = systemsOrCodes.get(i);
                 if (item instanceof ReferenceSystem) {
                     continue;
@@ -617,7 +607,7 @@ public class RecentReferenceSystems {
              * (execution time of O(N²)) but it should not be an issue if this list is short (e.g.
              * 20 elements). We cut the list if we reach the maximal number of systems to keep.
              */
-            for (int i=0,j; i < (j=systemsOrCodes.size()); i++) {
+            for (int i=0, j; i < (j = systemsOrCodes.size()); i++) {
                 if (i >= RecentChoices.MAXIMUM_REFERENCE_SYSTEMS) {
                     systemsOrCodes.subList(i, j).clear();
                     break;
@@ -673,10 +663,7 @@ public class RecentReferenceSystems {
     private void listModified() {
         synchronized (systemsOrCodes) {
             isModified = true;
-            if (referenceSystems != null) {
-                // ChoiceBox or Menu already created. They will observe the changes in item list.
-                getReferenceSystems(false);
-            }
+            getReferenceSystems(false);
         }
     }
 
@@ -690,9 +677,6 @@ public class RecentReferenceSystems {
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private ObservableList<ReferenceSystem> getReferenceSystems(final boolean filtered) {
-        if (referenceSystems == null) {
-            referenceSystems = FXCollections.observableArrayList();
-        }
         synchronized (systemsOrCodes) {
             /*
              * Prepare a temporary list as the concatenation of all items that are currently visible in JavaFX
@@ -736,20 +720,9 @@ public class RecentReferenceSystems {
             }
         }
         if (filtered) {
-            if (coordinateReferenceSystems == null) {
-                coordinateReferenceSystems = new FilteredList<>(referenceSystems, RecentReferenceSystems::isCRS);
-            }
             return coordinateReferenceSystems;
         }
         return referenceSystems;
-    }
-
-    /**
-     * Returns {@code true} if the given reference system can be included
-     * in the {@link #coordinateReferenceSystems} list.
-     */
-    private static boolean isCRS(final ReferenceSystem system) {
-        return (system == OTHER) || (system instanceof CoordinateReferenceSystem);
     }
 
     /**
@@ -945,9 +918,6 @@ public class RecentReferenceSystems {
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public ObservableList<ReferenceSystem> getItems() {
-        if (publicItemList == null) {
-            publicItemList = new FilteredList<>(getReferenceSystems(false), Objects::nonNull);
-        }
         return publicItemList;
     }
 
@@ -1062,7 +1032,7 @@ next:       for (int i=0; i<count; i++) {
     public Menu createMenuItems(final boolean filtered, final ChangeListener<ReferenceSystem> action) {
         ArgumentChecks.ensureNonNull("action", action);
         final List<ReferenceSystem> main = getReferenceSystems(filtered);
-        final List<DerivedCRS> derived = (filtered) ? null : cellIndiceSystems;
+        final List<CoordinateReferenceSystem> derived = (filtered) ? null : cellIndiceSystems;
         final var menu = new Menu(Vocabulary.forLocale(locale).getString(Vocabulary.Keys.ReferenceSystem));
         final var property = new MenuSync(main, !filtered, derived, menu, new SelectionListener(action));
         menu.getProperties().put(SELECTED_ITEM_KEY, property);

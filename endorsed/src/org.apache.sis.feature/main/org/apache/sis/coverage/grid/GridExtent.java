@@ -60,7 +60,6 @@ import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
-import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.referencing.internal.shared.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -113,7 +112,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
 
     /**
      * The dimension name types for given coordinate system axis directions.
-     * This map contains only the "positive" axis directions.
      *
      * @todo Verify if there is more directions to add as of ISO 19111:2018.
      *
@@ -121,16 +119,20 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     private static final Map<AxisDirection, DimensionNameType> AXIS_DIRECTIONS = Map.of(
             AxisDirection.COLUMN_POSITIVE, DimensionNameType.COLUMN,
+            AxisDirection.COLUMN_NEGATIVE, DimensionNameType.COLUMN,
             AxisDirection.ROW_POSITIVE,    DimensionNameType.ROW,
+            AxisDirection.ROW_NEGATIVE,    DimensionNameType.ROW,
             AxisDirection.UP,              DimensionNameType.VERTICAL,
-            AxisDirection.FUTURE,          DimensionNameType.TIME);
+            AxisDirection.DOWN,            DimensionNameType.VERTICAL,
+            AxisDirection.FUTURE,          DimensionNameType.TIME,
+            AxisDirection.PAST,            DimensionNameType.TIME);
 
     /**
      * Default axis types for the two-dimensional cases.
      */
-    private static final DimensionNameType[] DEFAULT_TYPES = new DimensionNameType[] {
-        DimensionNameType.COLUMN,
-        DimensionNameType.ROW
+    private static final DimensionNameType[] DEFAULT_TYPES = {
+            DimensionNameType.COLUMN,
+            DimensionNameType.ROW
     };
 
     /**
@@ -426,15 +428,15 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @since 1.5
      */
     public static Optional<DimensionNameType> typeFromAxis(final CoordinateSystemAxis axis) {
-        return Optional.ofNullable(AXIS_DIRECTIONS.get(AxisDirections.absolute(axis.getDirection())));
+        return Optional.ofNullable(AXIS_DIRECTIONS.get(axis.getDirection()));
     }
 
     /**
      * Infers the axis types from the given coordinate reference system.
-     * This method is the converse of {@link GridExtentCRS}.
+     * This method is the converse of {@link GridCRSBuilder}.
      *
      * @param  crs        the coordinate reference system, or {@code null}.
-     * @param  dimension  number of name type to infer. Shall not be greater than the CRS dimension.
+     * @param  dimension  number of name types to infer. Shall not be greater than the <abbr>CRS</abbr> dimension.
      * @return axis types, or {@code null} if no axis were recognized.
      */
     static DimensionNameType[] typeFromAxes(final CoordinateReferenceSystem crs, final int dimension) {
@@ -442,7 +444,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         if (crs != null) {
             final CoordinateSystem cs = crs.getCoordinateSystem();
             for (int i=0; i<dimension; i++) {
-                final DimensionNameType type = AXIS_DIRECTIONS.get(AxisDirections.absolute(cs.getAxis(i).getDirection()));
+                final DimensionNameType type = AXIS_DIRECTIONS.get(cs.getAxis(i).getDirection());
                 if (type != null) {
                     if (axisTypes == null) {
                         axisTypes = new DimensionNameType[dimension];
@@ -1257,7 +1259,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         final GeneralEnvelope envelope = toEnvelope(cornerToCRS, false, cornerToCRS, null);
         final Matrix gridToCRS = MathTransforms.getMatrix(cornerToCRS);
         if (gridToCRS != null && Matrices.isAffine(gridToCRS)) try {
-            envelope.setCoordinateReferenceSystem(GridExtentCRS.forExtentAlone(gridToCRS, getAxisTypes()));
+            GridCRSBuilder.forExtentAlone(gridToCRS, getAxisTypes()).ifPresent(envelope::setCoordinateReferenceSystem);
         } catch (FactoryException e) {
             throw new TransformException(e);
         }
