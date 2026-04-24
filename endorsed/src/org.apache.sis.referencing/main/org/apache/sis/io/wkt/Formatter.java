@@ -1941,7 +1941,8 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Appends the warnings after the WKT string. If there are no warnings, then this method does nothing.
+     * Appends the warnings after the <abbr>WKT</abbr> string.
+     * If there are no warnings, then this method does nothing.
      * If this method is invoked, then it shall be the last method before {@link #toWKT()}.
      */
     final void appendWarnings() throws IOException {
@@ -1980,7 +1981,7 @@ public class Formatter implements Localized {
     public String toString() {
         final StringBuilder b = new StringBuilder(Classes.getShortClassName(this));
         String separator = " of ";
-        for (int i=enclosingElements.size(); --i >= 0;) {
+        for (int i = enclosingElements.size(); --i >= 0;) {
             b.append(separator).append(Classes.getShortClassName(enclosingElements.get(i)));
             separator = " inside ";
         }

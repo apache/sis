@@ -19,10 +19,9 @@ package org.apache.sis.io.wkt;
 import java.util.Locale;
 import java.util.Set;
 import java.util.Map;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.metadata.Identifier;
@@ -37,7 +36,7 @@ import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * Warnings that occurred during a <i>Well Known Text</i> (WKT) parsing or formatting.
+ * Warnings that occurred during a <i>Well Known Text</i> (<abbr>WKT</abbr>) parsing or formatting.
  * Information provided by this object include:
  *
  * <ul>
@@ -47,7 +46,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * </ul>
  *
  * <h2>Example</h2>
- * After parsing the following WKT:
+ * After parsing the following <abbr>WKT</abbr>:
  *
  * {@snippet lang="wkt" :
  *   GeographicCRS[“WGS 84”,
@@ -67,7 +66,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see WKTFormat#getWarnings()
  *
@@ -77,7 +76,7 @@ public final class Warnings implements Localized, Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -1825161781642905329L;
+    private static final long serialVersionUID = -7472758787116735634L;
 
     /**
      * The locale in which warning messages are reported.
@@ -101,19 +100,58 @@ public final class Warnings implements Localized, Serializable {
     private String root;
 
     /**
+     * An item in the {@link #message} list.
+     */
+    private static final class Message extends org.apache.sis.pending.jdk.Record implements Serializable {
+        private static final long serialVersionUID = 5917311137600422421L;
+
+        /** An optional message. */
+        @SuppressWarnings("serial")
+        final InternationalString text;
+
+        /** An optional warning cause. */
+        final Exception cause;
+
+        Message(final InternationalString text, final Exception cause) {
+            this.text = text;
+            this.cause = cause;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(text, cause);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof Message) {
+                final var other = (Message) obj;
+                return Objects.equals(text, other.text) && Objects.equals(cause, other.cause);
+            }
+            return false;
+        }
+    }
+
+    /**
      * Warning messages or exceptions emitted during parsing or formatting.
-     * Objects in this list must be a sequence of the following tuple:
+     * Objects in this list must be a sequence of the following fields:
      *
      * <ul>
      *   <li>An optional message as an {@link InternationalString}.</li>
      *   <li>An optional warning cause as an {@link Exception}.</li>
      * </ul>
      *
-     * Any element of the above tuple can be null, but at least one element must be non-null.
+     * Any element of the above record can be null, but at least one element must be non-null.
      *
      * @see #add(InternationalString, Exception, String[])
      */
-    private final ArrayList<Object> messages;
+    private final LinkedHashSet<Message> messages;
+
+    /**
+     * The content of {@link #messages} as an array,
+     * for compatibility with <abbr>API</abbr> working with indexes.
+     */
+    private transient Message[] messageArray;
 
     /**
      * The keywords of elements in which exception occurred.
@@ -151,7 +189,7 @@ public final class Warnings implements Localized, Serializable {
         this.isParsing       = isParsing;
         this.ignoredElements = ignoredElements;
         exceptionSources = new LinkedHashMap<>(4);
-        messages = new ArrayList<>();
+        messages = new LinkedHashSet<>(4);
     }
 
     /**
@@ -183,11 +221,10 @@ public final class Warnings implements Localized, Serializable {
      */
     final void add(final InternationalString message, final Exception cause, final String[] source) {
         assert (message != null) || (cause != null);
-        messages.add(message);
-        messages.add(cause);
-        if (cause != null) {
+        if (messages.add(new Message(message, cause)) && cause != null) {
             exceptionSources.put(cause, source);
         }
+        messageArray = null;
     }
 
     /**
@@ -231,7 +268,17 @@ public final class Warnings implements Localized, Serializable {
      * @return the number of warning messages.
      */
     public final int getNumMessages() {
-        return (messages != null) ? messages.size() / 2 : 0;
+        return messages.size();
+    }
+
+    /**
+     * Returns the message at thegiven index.
+     */
+    private Message message(final int index) {
+        if (messageArray == null) {
+            messageArray = messages.toArray(Message[]::new);
+        }
+        return messageArray[index];
     }
 
     /**
@@ -240,14 +287,13 @@ public final class Warnings implements Localized, Serializable {
      * @param  index 0 for the first warning, 1 for the second warning, <i>etc.</i> until {@link #getNumMessages()} - 1.
      * @return the <var>i</var>-th warning message.
      */
-    public String getMessage(int index) {
-        Objects.checkIndex(index, getNumMessages());
-        index *= 2;
-        final var i18n = (InternationalString) messages.get(index);
+    public String getMessage(final int index) {
+        final Message item = message(index);
+        final var i18n = item.text;
         if (i18n != null) {
             return i18n.toString(errorLocale);
         } else {
-            final Exception cause = (Exception) messages.get(index + 1);
+            final Exception cause = item.cause;
             final String[] sources = exceptionSources.get(cause);           // See comment in 'toString(Locale)'.
             if (sources != null) {
                 return Errors.forLocale(errorLocale).getString(Errors.Keys.UnparsableStringInElement_2, sources);
@@ -264,8 +310,7 @@ public final class Warnings implements Localized, Serializable {
      * @return the exception which was the cause of the warning message, or {@code null} if none.
      */
     public Exception getException(final int index) {
-        Objects.checkIndex(index, getNumMessages());
-        return (Exception) messages.get(index*2 + 1);
+        return message(index).cause;
     }
 
     /**
@@ -275,7 +320,7 @@ public final class Warnings implements Localized, Serializable {
      * @return the non-fatal exceptions that occurred.
      */
     public Set<Exception> getExceptions() {
-        return (exceptionSources != null) ? exceptionSources.keySet() : Collections.emptySet();
+        return Collections.unmodifiableSet(exceptionSources.keySet());
     }
 
     /**
@@ -289,20 +334,20 @@ public final class Warnings implements Localized, Serializable {
      * @return the keywords of the WKT element where the given exception occurred, or {@code null} if unknown.
      */
     public String[] getExceptionSource(final Exception ex) {
-        return (exceptionSources != null) ? exceptionSources.get(ex) : null;
+        return exceptionSources.get(ex);
     }
 
     /**
-     * Returns the keywords of all unknown elements found during the WKT parsing.
+     * Returns the keywords of all unknown elements found during the <abbr>WKT</abbr> parsing.
      *
-     * @return the keywords of unknown WKT elements, or an empty set if none.
+     * @return the keywords of unknown <abbr>WKT</abbr> elements, or an empty set if none.
      */
     public Set<String> getUnknownElements() {
         return ignoredElements.keySet();
     }
 
     /**
-     * Returns the keyword of WKT elements that contains the given unknown element.
+     * Returns the keyword of <abbr>WKT</abbr> elements that contains the given unknown element.
      * If the given element is not one of the value returned by {@link #getUnknownElements()},
      * then this method returns {@code null}.
      *
@@ -339,34 +384,32 @@ public final class Warnings implements Localized, Serializable {
         final Messages resources   = Messages.forLocale(locale);
         buffer.append(resources.getString(isParsing ? Messages.Keys.IncompleteParsing_1
                                                     : Messages.Keys.NonConformFormatting_1, root));
-        if (messages != null) {
-            for (final Iterator<?> it = messages.iterator(); it.hasNext();) {
-                final var i18n = (InternationalString) it.next();
-                Exception cause = (Exception) it.next();
-                final String message;
-                if (i18n != null) {
-                    message = i18n.toString(locale);
+        for (final Message item : messages) {
+            final InternationalString i18n = item.text;
+            Exception cause = item.cause;
+            final String message;
+            if (i18n != null) {
+                message = i18n.toString(locale);
+            } else {
+                /*
+                 * If there is no message, then we must have at least an exception.
+                 * Consequently, a NullPointerException in following line would be a bug.
+                 */
+                final String[] sources = exceptionSources.get(cause);
+                if (sources != null) {
+                    message = Errors.forLocale(locale).getString(Errors.Keys.UnparsableStringInElement_2, sources);
                 } else {
-                    /*
-                     * If there is no message, then we must have at least an exception.
-                     * Consequently, a NullPointerException in following line would be a bug.
-                     */
-                    final String[] sources = exceptionSources.get(cause);
-                    if (sources != null) {
-                        message = Errors.forLocale(locale).getString(Errors.Keys.UnparsableStringInElement_2, sources);
-                    } else {
-                        message = cause.toString();
-                        cause = null;
-                    }
+                    message = cause.toString();
+                    cause = null;
                 }
-                buffer.append(lineSeparator).append(" • ").append(message);
-                if (cause != null) {
-                    String details = Exceptions.getLocalizedMessage(cause, locale);
-                    if (details == null) {
-                        details = Classes.getShortClassName(cause);
-                    }
-                    buffer.append(lineSeparator).append("   ").append(details);
+            }
+            buffer.append(lineSeparator).append(" • ").append(message);
+            if (cause != null) {
+                String details = Exceptions.getLocalizedMessage(cause, locale);
+                if (details == null) {
+                    details = Classes.getShortClassName(cause);
                 }
+                buffer.append(lineSeparator).append("   ").append(details);
             }
         }
         /*

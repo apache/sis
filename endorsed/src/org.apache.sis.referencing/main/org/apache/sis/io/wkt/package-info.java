@@ -82,7 +82,7 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rémi Eve (IRD)
  * @author  Rueben Schulz (UBC)
- * @version 1.6
+ * @version 1.7
  * @since   0.4
  */
 package org.apache.sis.io.wkt;
