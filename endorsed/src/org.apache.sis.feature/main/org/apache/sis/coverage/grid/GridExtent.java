@@ -60,6 +60,7 @@ import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
+import org.apache.sis.referencing.internal.shared.DirectPositionView;
 import org.apache.sis.referencing.internal.shared.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -980,6 +981,18 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             center[i] = MathFunctions.average(low, coordinates[i + dimension]);
         }
         return center;
+    }
+
+    /**
+     * Returns the derivative of the given transform at the point of interest.
+     *
+     * @param  gridToCRS  the transform for which to take the derivative.
+     * @param  anchor  the convention to be used for conversion to "real world" coordinates.
+     * @return derivative of the given transform at the point of interest.
+     * @throws TransformException if the derivative cannot be computed.
+     */
+    final Matrix derivativeAtPOI(final MathTransform gridToCRS, final PixelInCell anchor) throws TransformException {
+        return gridToCRS.derivative(new DirectPositionView.Double(getPointOfInterest(anchor)));
     }
 
     /**

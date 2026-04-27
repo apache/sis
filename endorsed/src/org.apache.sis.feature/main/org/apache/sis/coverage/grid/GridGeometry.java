@@ -578,7 +578,7 @@ public class GridGeometry implements LenientComparable, Serializable {
             this.envelope = new ImmutableEnvelope(env);
             if (scales == null) try {
                 // `gridToCRS` cannot be null if `cornerToCRS` is non-null.
-                scales = gridToCRS.derivative(new DirectPositionView.Double(extent.getPointOfInterest(anchor)));
+                scales = extent.derivativeAtPOI(gridToCRS, anchor);
                 numToIgnore = 0;
             } catch (TransformException e) {
                 recoverableException("<init>", e);
@@ -1375,7 +1375,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         if (matrix != null) {
             return resolution(matrix, 1);
         } else if (domain != null && gridToCRS != null) try {
-            return resolution(gridToCRS.derivative(new DirectPositionView.Double(domain.getPointOfInterest(anchor))), 0);
+            return resolution(domain.derivativeAtPOI(gridToCRS, anchor), 0);
         } catch (TransformException e) {
             recoverableException("resolution", e);
         }
