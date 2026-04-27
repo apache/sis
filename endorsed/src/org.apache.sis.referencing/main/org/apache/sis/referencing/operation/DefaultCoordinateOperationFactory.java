@@ -349,7 +349,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     {
         final Conversion conversion;
         try {
-            conversion = new DefaultConversion(properties, method, null, parameters);
+            conversion = new DefiningConversion(properties, method, null, parameters);
         } catch (IllegalArgumentException exception) {
             throw new InvalidGeodeticParameterException(exception.getLocalizedMessage(), exception);
         }

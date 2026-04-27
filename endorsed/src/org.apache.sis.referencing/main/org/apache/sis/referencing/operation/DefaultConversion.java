@@ -49,29 +49,16 @@ import org.opengis.referencing.crs.DerivedCRS;
 
 
 /**
- * A parameterized mathematical operation that converts coordinates to another CRS without any change of
- * {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum}.
+ * A parameterized mathematical operation that converts coordinates
+ * to another <abbr>CRS</abbr> without any change of datum.
  * The best-known example of a coordinate conversion is a map projection.
  * The parameters describing coordinate conversions are defined rather than empirically derived.
  *
- * <p>This coordinate operation contains an {@linkplain DefaultOperationMethod operation method}, usually
- * with associated {@linkplain org.apache.sis.parameter.DefaultParameterValueGroup parameter values}.
- * In the SIS implementation, the parameter values can be either inferred from the
- * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform math transform}
- * or explicitly provided at construction time in a <dfn>defining conversion</dfn> (see below).</p>
- *
- * <h2>Defining conversions</h2>
- * {@code OperationMethod} instances are generally created for a pair of existing {@linkplain #getSourceCRS() source}
- * and {@linkplain #getTargetCRS() target CRS}. But {@code Conversion} instances without those information may exist
- * temporarily while creating a {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS derived} or
- * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
- * Those <i>defining conversions</i> have no source and target CRS since those elements are provided by the
- * derived or projected CRS themselves. This class provides a {@linkplain #DefaultConversion(Map, OperationMethod,
- * MathTransform, ParameterValueGroup) constructor} for such defining conversions.
- *
- * <p>After the source and target CRS become known, we can invoke the {@link #specialize specialize(…)} method
- * for {@linkplain DefaultMathTransformFactory#builder creating a math transform from the parameters}
- * and assign the source and target CRS to it.</p>
+ * <p>This coordinate operation contains an {@linkplain OperationMethod operation method},
+ * usually with associated {@linkplain ParameterValueGroup parameter values}.
+ * In the <abbr>SIS</abbr> implementation, the parameter values can be either inferred from the
+ * {@linkplain MathTransform math transform} or explicitly provided at construction time in a
+ * {@linkplain DefiningConversion defining conversion}.</p>
  *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
@@ -80,7 +67,7 @@ import org.opengis.referencing.crs.DerivedCRS;
  * by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see DefaultTransformation
  *
@@ -134,7 +121,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * with different source and target datum, it does not accept to use such instances for
      * {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS derived CRS} construction.</p>
      *
-     * <h4>Example</h4>
+     * <h5>Example</h5>
      * Converting time instants from a {@linkplain org.apache.sis.referencing.crs.DefaultTemporalCRS temporal CRS}
      * using the <i>January 1st, 1950</i> epoch to another temporal CRS using the <i>January 1st, 1970</i> epoch is
      * a datum change, since the epoch is part of {@linkplain org.apache.sis.referencing.datum.DefaultTemporalDatum
@@ -165,38 +152,15 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
 
     /**
      * Creates a defining conversion from the given transform and/or parameters.
-     * This conversion has no source and target CRS since those elements are usually unknown
-     * at <i>defining conversion</i> construction time.
-     * The source and target CRS will become known later, at the
-     * {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS Derived CRS} or
-     * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS Projected CRS}
-     * construction time.
-     *
-     * <p>The {@code properties} map given in argument follows the same rules as for the
-     * {@linkplain #DefaultConversion(Map, CoordinateReferenceSystem, CoordinateReferenceSystem,
-     * CoordinateReferenceSystem, OperationMethod, MathTransform) above constructor}.</p>
-     *
-     * <h4>Transform and parameters arguments</h4>
-     * At least one of the {@code transform} or {@code parameters} argument must be non-null.
-     * If the caller supplies a {@code transform} argument, then it shall be a transform expecting
-     * {@linkplain org.apache.sis.referencing.cs.AxesConvention#NORMALIZED normalized} input coordinates
-     * and producing normalized output coordinates. See {@link org.apache.sis.referencing.cs.AxesConvention}
-     * for more information about what Apache SIS means by "normalized".
-     *
-     * <p>If the caller cannot yet supply a {@code MathTransform}, then (s)he shall supply the parameter values needed
-     * for creating that transform, with the possible omission of {@code "semi_major"} and {@code "semi_minor"} values.
-     * The semi-major and semi-minor parameter values will be set automatically when the
-     * {@link #specialize specialize(…)} method will be invoked.</p>
-     *
-     * <p>If both the {@code transform} and {@code parameters} arguments are non-null, then the latter should describe
-     * the parameters used for creating the transform. Those parameters will be stored for information purpose and can
-     * be given back by the {@link #getParameterValues()} method.</p>
      *
      * @param properties  the properties to be given to the identified object.
      * @param method      the operation method.
      * @param transform   transform from positions in the source CRS to positions in the target CRS, or {@code null}.
      * @param parameters  the {@code transform} parameter values, or {@code null}.
+     *
+     * @deprecated Moved to the {@link DefiningConversion} subclass.
      */
+    @Deprecated(since = "1.7", forRemoval = true)
     @SuppressWarnings("this-escape")    // False positive.
     public DefaultConversion(final Map<String,?>       properties,
                              final OperationMethod     method,
@@ -214,16 +178,39 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
     }
 
     /**
-     * Constructs a new conversion with the same values as the specified one, together with the
-     * specified source and target CRS. While the source conversion can be an arbitrary one,
-     * it is typically a defining conversion.
+     * Creates a new coordinate operation initialized from the given properties.
+     * It is caller's responsibility to set the following fields:
+     *
+     * <ul>
+     *   <li>{@link #sourceCRS}</li>
+     *   <li>{@link #targetCRS}</li>
+     *   <li>{@link #transform}</li>
+     *   <li>{@link #parameters}</li>
+     * </ul>
+     */
+    DefaultConversion(final Map<String,?> properties, final OperationMethod method) {
+        super(properties, method);
+    }
+
+    /**
+     * Constructs a new conversion with the same values as the specified one,
+     * together with the specified source and target <abbr>CRS</abbr>.
+     * While the source conversion can be an arbitrary one, it is typically a defining conversion.
+     *
+     * <p>The {@code normalized} argument is {@code true} if the defining conversion provides a normalized transform.
+     * In such case, an adjustment for axis directions and units of measurement will be added for matching the given
+     * source and target <abbr>CRS</abbr>s. If {@code normalized} is {@code false}, then the defining conversion shall
+     * provide the complete transform and no adjustments is added. This argument is ignored if the defining conversion
+     * already provides source and target <abbr>CRS</abbr>s.</p>
      *
      * @param definition  the defining conversion.
-     * @param source      the new source CRS.
-     * @param target      the new target CRS.
+     * @param normalized  whether the transform provided by the defining conversion is normalized.
+     * @param source      the new source <abbr>CRS</abbr>.
+     * @param target      the new target <abbr>CRS</abbr>.
      * @param factory     the factory to use for creating a transform from the parameters or for performing axis changes.
      */
     private DefaultConversion(final Conversion definition,
+                              final boolean normalized,
                               final CoordinateReferenceSystem source,
                               final CoordinateReferenceSystem target,
                               final MathTransformFactory factory) throws FactoryException
@@ -255,7 +242,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                 final var context = (MathTransformProvider.Context) builder;
                 setParameterValues(context.getCompletedParameters(), new HashMap<>(context.getContextualParameters()));
             }
-        } else {
+        } else if (normalized) {
             /*
              * If the user specified explicitly a MathTransform, we may still need to swap or scale axes.
              * If this conversion is a defining conversion (which is usually the case when creating a new
@@ -338,18 +325,30 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
     }
 
     /**
-     * Returns a specialization of this conversion with non-null <abbr>CRS</abbr>s.
-     * This {@code specialize(…)} method is typically invoked on {@linkplain #DefaultConversion(Map,
-     * OperationMethod, MathTransform, ParameterValueGroup) defining conversion} instances,
-     * when more information become available about the conversion to create.
+     * Returns {@code true} if this conversion is defined between a pair of normalized <abbr>CRS</abbr>s.
+     * In such case, the conversion needs to be completed by a call to {@link #specialize specialize(…)}.
      *
-     * @param  sourceCRS  the source CRS.
-     * @param  targetCRS  the target CRS.
+     * @return whether this conversion is defined between a pair of normalized <abbr>CRS</abbr>s.
+     */
+    boolean normalized() {
+        return true;        // Ignored if this conversion has source and target CRSs.
+    }
+
+    /**
+     * Returns a specialization of this conversion with non-null <abbr>CRS</abbr>s.
+     * This method is typically invoked on {@linkplain DefiningConversion defining conversion} instances,
+     * when more information become available about the conversion to create.
+     * But this method can also be invoked on a fully defined conversion if the caller wants a conversion
+     * with slightly different source or target <abbr>CRS</abbr>. In the latter case, the changes in the
+     * <abbr>CRS</abbr>s should be limited to axis order and units of measurement.
+     *
+     * @param  sourceCRS  the source <abbr>CRS</abbr>.
+     * @param  targetCRS  the target <abbr>CRS</abbr>.
      * @param  factory    the factory to use for creating a transform from the parameters
      *         or for performing axis changes, or {@code null} for the default factory.
      * @return conversion which declares the given <abbr>CRS</abbr>s as the source and target.
-     * @throws MismatchedDatumException if the given CRS do not use the same datum as the source and target CRS
-     *         of this conversion.
+     * @throws MismatchedDatumException if the given <abbr>CRS</abbr>s do not use the same datum
+     *         as the source and target <abbr>CRS</abbr>s of this conversion.
      * @throws FactoryException if the creation of a {@link MathTransform} from the {@linkplain #getParameterValues()
      *         parameter values}, or a {@linkplain CoordinateSystems#swapAndScaleAxes change of axis order or units}
      *         failed.
@@ -391,7 +390,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
         if (factory == null) {
             factory = DefaultMathTransformFactory.provider();
         }
-        return new DefaultConversion(this, sourceCRS, targetCRS, factory);
+        return new DefaultConversion(this, normalized(), sourceCRS, targetCRS, factory);
     }
 
     /**

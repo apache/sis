@@ -223,7 +223,7 @@ public final class DefaultConversionTest extends TestCase {
     @Test
     public void testDefiningConversion() throws FactoryException {
         final DefaultConversion reference = createLongitudeRotation(true);
-        final DefaultConversion definingConversion = new DefaultConversion(
+        final DefaultConversion definingConversion = new DefiningConversion(
                 IdentifiedObjects.getProperties(reference),
                 reference.getMethod(),
                 reference.getMathTransform(),

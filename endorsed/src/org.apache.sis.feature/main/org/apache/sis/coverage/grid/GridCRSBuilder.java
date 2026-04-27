@@ -49,7 +49,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AbstractCS;
-import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.operation.DefiningConversion;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
@@ -166,7 +166,7 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
         this.locale     = locale;
         this.finalName  = name;
         this.properties = new HashMap<>(8);
-        properties.put(DefaultConversion.LOCALE_KEY, locale);
+        properties.put(DefiningConversion.LOCALE_KEY, locale);
         properties.put(ObjectDomain.SCOPE_KEY, SCOPE);
         grid.getGeographicExtent().ifPresent((domain) -> {
             properties.put(ObjectDomain.DOMAIN_OF_VALIDITY_KEY, new DefaultExtent(null, domain, null, null));
@@ -276,7 +276,7 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
         final ParameterValueGroup params = METHOD.getParameters().createValue();
         params.parameter(NAME_PARAM).setValue(finalName);
         params.parameter(ANCHOR_PARAM).setValue(anchor);
-        final var conversion = new DefaultConversion(properties(METHOD.getName()), METHOD, gridToCRS.inverse(), params);
+        final var conversion = new DefiningConversion(properties(METHOD.getName()), METHOD, gridToCRS.inverse(), params);
         return getCRSFactory().createDerivedCRS(properties(name), baseCRS, conversion, cs);
     }
 

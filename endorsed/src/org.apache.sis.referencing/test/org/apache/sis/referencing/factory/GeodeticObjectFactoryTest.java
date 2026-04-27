@@ -40,7 +40,7 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.MultiRegisterOperations;
-import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.operation.DefiningConversion;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;
@@ -61,6 +61,7 @@ import static org.apache.sis.test.Assertions.assertMessageContains;
  *
  * @author  Cédric Briançon (Geomatys)
  */
+@SuppressWarnings("exports")
 @ExtendWith(FailureDetailsReporter.class)
 public final class GeodeticObjectFactoryTest extends ObjectFactoryTest {
     /**
@@ -204,7 +205,7 @@ public final class GeodeticObjectFactoryTest extends ObjectFactoryTest {
         parameters.parameter("latitude_of_origin").setValue(     -2);
         parameters.parameter("false_easting")     .setValue( 400000);
         parameters.parameter("false_northing")    .setValue(-100000);
-        projection = new DefaultConversion(name("GBN grid"), method, null, parameters);
+        projection = new DefiningConversion(name("GBN grid"), method, null, parameters);
         /*
          * Projected coordinate reference system
          */

@@ -31,7 +31,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
-import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.operation.DefiningConversion;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.operation.provider.Mercator1SP;
@@ -290,7 +290,7 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
              */
             final DefaultProjectedCRS crs = new DefaultProjectedCRS(dummyName,
                     HardCodedCRS.WGS84,
-                    new DefaultConversion(dummyName, method, mt, null),
+                    new DefiningConversion(dummyName, method, mt, null),
                     HardCodedCS.PROJECTED);
             final Conversion projection = crs.getConversionFromBase();
             assertSame(mt, projection.getMathTransform(), classification);
