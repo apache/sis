@@ -1878,7 +1878,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         final var id = new org.apache.sis.referencing.ImmutableIdentifier(null, null, name);
         try {
             // Note: the `true` boolean argument can be removed after the removal of this method.
-            final CoordinateReferenceSystem crs = new GridCRSBuilder(this, anchor, id, true, null).forCoverage();
+            final CoordinateReferenceSystem crs = new GridCRSBuilder(anchor).forCoverage(this, true, id);
             return (DerivedCRS) org.apache.sis.referencing.CRS.getSingleComponents(crs).get(0);
         } catch (FactoryException e) {
             throw new BackingStoreException(e);
@@ -1896,6 +1896,10 @@ public class GridGeometry implements LenientComparable, Serializable {
      * Otherwise (if there is no grid to <abbr>CRS</abbr> transform or no real-world <abbr>CRS</abbr>),
      * this method creates {@link org.opengis.referencing.crs.EngineeringCRS} instances.
      *
+     * <p><b>Alternative:</b> if the target grid geometry is known in advance,
+     * {@link #createTransformTo(GridGeometry, PixelInCell)} can provide a
+     * transform more robust to grids that cross the anti-meridian.</p>
+     *
      * @param  name    name of the <abbr>CRS</abbr> to create.
      * @param  anchor  the cell part to map (center or corner).
      * @return a derived, engineering or compound <abbr>CRS</abbr> for cell indices associated to the grid extent.
@@ -1907,7 +1911,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     public CoordinateReferenceSystem createGridCRS(final Identifier name, final PixelInCell anchor) throws FactoryException {
         ArgumentChecks.ensureNonNull("name", name);
         ArgumentChecks.ensureNonNull("anchor", anchor);
-        return new GridCRSBuilder(this, anchor, name, false, null).forCoverage();
+        return new GridCRSBuilder(anchor).forCoverage(this, false, name);
     }
 
     /**
