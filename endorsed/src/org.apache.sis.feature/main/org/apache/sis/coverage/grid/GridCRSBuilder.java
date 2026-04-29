@@ -56,6 +56,7 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.internal.shared.AxisDirections;
+import org.apache.sis.referencing.internal.shared.DirectPositionView;
 import org.apache.sis.referencing.internal.shared.ReferencingFactoryContainer;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.ArraysExt;
@@ -184,6 +185,9 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
         grid.getGeographicExtent().ifPresent((domain) -> {
             properties.put(ObjectDomain.DOMAIN_OF_VALIDITY_KEY, new DefaultExtent(null, domain, null, null));
         });
+        if (grid.isDefined(GridGeometry.EXTENT)) {
+            extent = grid.getExtent();
+        }
         if (derived || grid.isDefined(GridGeometry.CRS | GridGeometry.GRID_TO_CRS)) try {
             separator = new TransformSeparator(grid.getGridToCRS(anchor).inverse());
             return forComponent(name, grid.getCoordinateReferenceSystem(), 0, 0);
@@ -197,12 +201,12 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
          */
         final int dimension = grid.getDimension();
         final DimensionNameType[] dimensionNames;
-        if (grid.extent != null) {
-            dimensionNames = Arrays.copyOf(grid.extent.getAxisTypes(), dimension);
+        if (extent != null) {
+            dimensionNames = Arrays.copyOf(extent.getAxisTypes(), dimension);
         } else {
             dimensionNames = new DimensionNameType[dimension];
         }
-        final CoordinateSystem cs = createCS(dimension, dimensionNames, directions(dimensionNames), 0, true);
+        final CoordinateSystem cs = createCS(dimension, dimensionNames, directions(dimensionNames), 1, true);
         return getCRSFactory().createEngineeringCRS(properties(name), CommonCRS.Engineering.GRID.datum(), cs);
     }
 
@@ -281,7 +285,7 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
 toGrid: try {
             final Matrix derivative;
             if (extent != null) {
-                derivative = extent.derivativeAtPOI(crsToGrid, anchor);
+                derivative = crsToGrid.derivative(new DirectPositionView.Double(extent.getPointOfInterest(anchor), srcDim, dimension));
             } else try {
                 derivative = crsToGrid.derivative(null);
             } catch (NullPointerException e) {
@@ -308,7 +312,7 @@ toGrid: try {
         /*
          * Creates the coordinate system, then the conversion, and finally the derived CRS.
          */
-        final CoordinateSystem cs = createCS(dispatch.length, dimensionNames, directions, tgtDim, true);
+        final CoordinateSystem cs = createCS(dispatch.length, dimensionNames, directions, tgtDim + 1, true);
         final ParameterValueGroup params = METHOD.getParameters().createValue();
         params.parameter(ANCHOR_PARAM).setValue(anchor);
         final var conversion = new DefiningConversion(properties(METHOD.getName()), METHOD, crsToGrid, params);
@@ -343,12 +347,12 @@ toGrid: try {
      * @param  dimension       number of dimensions of the coordinate system to create.
      * @param  dimensionNames  names of grid dimension. Shall not be null but may contain null elements.
      * @param  directions      directions of the axes of the coordinate system to create. May contain null elements.
-     * @param  offset          index of the first dimension in the final {@link CompoundCRS}. Used for default axis names.
+     * @param  labelOffset     offset to add to the dimension for producing a default axis name or abbreviation.
      * @return coordinate system for the grid extent, or {@code null} if it cannot be inferred.
      * @throws FactoryException if an error occurred during the use of {@link CSFactory}.
      */
     private CoordinateSystem createCS(final int dimension, final DimensionNameType[] dimensionNames,
-            final AxisDirection[] directions, final int offset, final boolean cartesian)
+            final AxisDirection[] directions, final int labelOffset, final boolean cartesian)
             throws FactoryException
     {
         final CSFactory csFactory = getCSFactory();
@@ -382,7 +386,7 @@ toGrid: try {
                 }
             }
             if (abbreviation == null) {
-                final var b = new StringBuilder(4).append('x').append(offset + j);
+                final var b = new StringBuilder(4).append('x').append(labelOffset + j);
                 for (int i = b.length(); --i >= 1;) {
                     b.setCharAt(i, Characters.toSubScript(b.charAt(i)));
                 }
@@ -394,7 +398,7 @@ toGrid: try {
              */
             String name = Types.toString(Types.getCodeTitle(type), LOCALE);
             if (name == null) {
-                name = Vocabulary.forLocale(LOCALE).getString(Vocabulary.Keys.Dimension_1, offset + j);
+                name = Vocabulary.forLocale(LOCALE).getString(Vocabulary.Keys.Dimension_1, labelOffset + j);
             }
             AxisDirection direction = directions[j];
             if (direction == null) {
@@ -525,7 +529,7 @@ toGrid: try {
         final var dimensionNames = new DimensionNameType[dimension];
         AxisDirection[] directions = directions(ArraysExt.resize(types, dimension));
         directions = reorder(directions, derivative, types, dimensionNames);
-        final CoordinateSystem cs = createCS(dimension, dimensionNames, directions, 0, false);
+        final CoordinateSystem cs = createCS(dimension, dimensionNames, directions, 1, false);
         if (cs == null) {
             return Optional.empty();
         }

@@ -22,7 +22,10 @@ import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.spatial.DimensionNameType;
+import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.referencing.ObjectDomain;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -46,9 +49,11 @@ import org.apache.sis.util.ComparisonMode;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.referencing.Assertions.assertMatrixEquals;
@@ -822,36 +827,60 @@ public final class GridGeometryTest extends TestCase {
     public void testCreateGridCRS() throws FactoryException {
         final var gg = new GridGeometry(
                 new GridExtent(null, null, new long[] {17, 10, 4}, true),
-                PixelInCell.CELL_CENTER,
+                PixelInCell.CELL_CORNER,
                 MathTransforms.linear(new Matrix4(
-                    1,   0,  0, -7,
-                    0,  -1,  0, 50,
-                    0,   0,  8, 20,
+                    0,  -1,  0, 50,     // Longitude
+                    1,   0,  0, -7,     // Latitude
+                    0,   0,  8, 20,     // Time
                     0,   0,  0,  1)),
                 HardCodedCRS.WGS84_WITH_TIME);
-
+        /*
+         * Metadata about the CRS as a whole (a CompoundCRS).
+         * Axes are like "Dimension 1 (x₁)" because we did not
+         * specified some `DimentionNameType` parameter values.
+         */
         final Identifier name = new ImmutableIdentifier(null, null, "Tested grid CRS");
-        final CoordinateReferenceSystem crs = gg.createGridCRS(name, PixelInCell.CELL_CENTER);
+        final CoordinateReferenceSystem crs = gg.createGridCRS(name, PixelInCell.CELL_CORNER);
+        final ObjectDomain domain = assertSingleton(crs.getDomains());
+        final GeographicBoundingBox bbox = assertInstanceOf(GeographicBoundingBox.class,
+                assertSingleton(domain.getDomainOfValidity().getGeographicElements()));
+        assertEquals(39, bbox.getWestBoundLongitude());
+        assertEquals(50, bbox.getEastBoundLongitude());
+        assertEquals(-7, bbox.getSouthBoundLatitude());
+        assertEquals(11, bbox.getNorthBoundLatitude());
+        assertNotNull(domain.getScope());   // Text depends on the locale.
         assertSame(name, crs.getName());
-
+        /*
+         * Check the horizontal and temporal components.
+         */
         final List<SingleCRS> components = CRS.getSingleComponents(crs);
         assertEquals(2, components.size());
-
         final var horizontal = assertInstanceOf(DerivedCRS.class, components.get(0));
+        final var temporal   = assertInstanceOf(DerivedCRS.class, components.get(1));
         assertSame(HardCodedCRS.WGS84, horizontal.getBaseCRS());
+        assertSame(HardCodedCRS.TIME,  temporal  .getBaseCRS());
+        assertAxisDirectionsEqual(horizontal.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.WEST);
+        assertAxisDirectionsEqual(temporal  .getCoordinateSystem(), AxisDirection.FUTURE);
         assertMatrixEquals(
-                new Matrix3(1,  0,  7,      // Opposite sign because this is the inverse transform.
-                            0, -1, 50,      // Opposite sign cancelled by -1 scale factor.
-                            0,  0,  1),
+                new Matrix3(0, 1,  7,   // Opposite sign of translation term because this is the inverse transform.
+                           -1, 0, 50,   // Reminder: sign of translation term is inversed by the scale factor -1.
+                            0, 0,  1),
                 horizontal.getConversionFromBase().getMathTransform(),
                 "CRS to grid");
-
-        final var temporal = assertInstanceOf(DerivedCRS.class, components.get(1));
-        assertSame(HardCodedCRS.TIME, temporal.getBaseCRS());
         assertMatrixEquals(
                 new Matrix2(0.125, -2.5, 0, 1),
                 temporal.getConversionFromBase().getMathTransform(),
                 "CRS to grid");
+        /*
+         * Check axis names. The grid dimension which is mapped to longitudes has its direction
+         * reversed because of the -1 sign in the scale factor.
+         */
+        final CoordinateSystem cs = crs.getCoordinateSystem();
+        assertEquals(3, cs.getDimension());
+        assertEquals("x₁", cs.getAxis(0).getAbbreviation());
+        assertEquals("x₂", cs.getAxis(1).getAbbreviation());
+        assertEquals("t",  cs.getAxis(2).getAbbreviation());
+        assertAxisDirectionsEqual(cs, AxisDirection.NORTH, AxisDirection.WEST, AxisDirection.FUTURE);
     }
 
     /**
