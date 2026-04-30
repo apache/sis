@@ -82,7 +82,7 @@ public class ImageRequest {
      * This is used only if we want to create a new canvas initialized to the same viewing region and zoom
      * level than an existing canvas.
      */
-    GridGeometry zoom;
+    GridGeometry visibleArea;
 
     /**
      * Creates a new request with both a resource and a coverage. At least one argument shall be non-null.

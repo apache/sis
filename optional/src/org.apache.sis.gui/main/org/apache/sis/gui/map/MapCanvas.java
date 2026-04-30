@@ -413,7 +413,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * to discard any zoom or translation and reset the view to the given bounds. This method does not
      * cause new repaint event; {@link #requestRepaint()} must be invoked by the caller if desired.</p>
      *
-     * @param  visibleArea  bounding box, objective CRS and or initial zoom level,
+     * @param  visibleArea  bounding box, objective <abbr>CRS</abbr> and or initial zoom level,
      *         or {@code null} if unknown (in which case an identity transform will be set).
      * @throws MismatchedDimensionException if the given grid geometry is not two-dimensional.
      *

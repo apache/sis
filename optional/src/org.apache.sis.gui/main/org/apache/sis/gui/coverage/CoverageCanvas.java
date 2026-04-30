@@ -58,9 +58,11 @@ import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
@@ -599,17 +601,17 @@ public class CoverageCanvas extends MapCanvasAWT {
         final GridCoverageResource resource;
         final GridCoverage coverage;
         final GridExtent sliceExtent;
-        final GridGeometry zoom;
+        final GridGeometry visibleArea;
         if (request != null) {
             resource    = request.resource;
             coverage    = request.coverage;
             sliceExtent = request.slice;
-            zoom        = request.zoom;
+            visibleArea = request.visibleArea;
         } else {
             resource    = null;
             coverage    = null;
             sliceExtent = null;
-            zoom        = null;
+            visibleArea = null;
         }
         final GridCoverageResource discard = getResource();
         if (discard != resource || getCoverage() != coverage || getSliceExtent() != sliceExtent) {
@@ -622,7 +624,7 @@ public class CoverageCanvas extends MapCanvasAWT {
             } finally {
                 isCoverageAdjusting = p;
             }
-            onPropertySpecified(discard, resource, coverage, null, zoom);
+            onPropertySpecified(discard, resource, coverage, null, visibleArea);
         }
     }
 
@@ -632,18 +634,21 @@ public class CoverageCanvas extends MapCanvasAWT {
      * Those information will be used for initializing "objective CRS" and "objective to display" to new values.
      * Rendering will happen in another background computation.
      *
-     * @param  discard   the old resource, or {@code null} if none.
-     * @param  resource  the new resource, or {@code null} if none.
-     * @param  coverage  the new coverage, or {@code null} if none.
-     * @param  toClear   the property which is an alternative to the property that has been set.
-     * @param  zoom      initial "objective to display" transform to use, or {@code null} for automatic.
+     * <p>The {@code visibleArea} argument is used when we want to create a new canvas
+     * initialized to the same viewing region and zoom level than an existing canvas.</p>
+     *
+     * @param  discard      the old resource, or {@code null} if none.
+     * @param  resource     the new resource, or {@code null} if none.
+     * @param  coverage     the new coverage, or {@code null} if none.
+     * @param  toClear      the property which is an alternative to the property that has been set.
+     * @param  visibleArea  initial "objective to display" transform to use, or {@code null} for automatic.
      */
     private void onPropertySpecified(
             final GridCoverageResource discard,
             final GridCoverageResource resource,
             final GridCoverage         coverage,
             final ObjectProperty<?>    toClear,
-            final GridGeometry         zoom)
+            final GridGeometry         visibleArea)
     {
         hasCoverageOrResource = (resource != null || coverage != null);
         if (isCoverageAdjusting) {
@@ -750,7 +755,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                 @Override protected void succeeded() {
                     runAfterRendering(() -> {
                         try {
-                            setNewSource(getValue(), ranges, zoom);
+                            setNewSource(getValue(), ranges, visibleArea);
                             requestRepaint();                   // Cause `Worker` class to be executed.
                         } catch (RuntimeException ex) {         // Mostly for `BackingStoreException`.
                             clear();
@@ -798,14 +803,18 @@ public class CoverageCanvas extends MapCanvasAWT {
      * Caller should invoke {@link #requestRepaint()} after this method
      * for loading and resampling the image in a background thread.
      *
+     * <p>The {@code visibleArea} argument is used when we want to create a new canvas
+     * initialized to the same viewing region and zoom level than an existing canvas.
+     * It should have a <abbr>CRS</abbr> compatible with the one of the data to show.</p>
+     *
      * <p>All arguments can be {@code null} for clearing the canvas.
      * This method is invoked in JavaFX thread.</p>
      *
-     * @param  domain  the multi-dimensional grid geometry, or {@code null} if there is no data.
-     * @param  ranges  descriptions of bands, or {@code null} if there is no data.
-     * @param  zoom    initial "objective to display" transform to use, or {@code null} for automatic.
+     * @param  domain       the multi-dimensional grid geometry, or {@code null} if there is no data.
+     * @param  ranges       descriptions of bands, or {@code null} if there is no data.
+     * @param  visibleArea  initial "objective to display" transform to use, or {@code null} for automatic.
      */
-    private void setNewSource(GridGeometry domain, final List<SampleDimension> ranges, final GridGeometry zoom) {
+    private void setNewSource(GridGeometry domain, final List<SampleDimension> ranges, final GridGeometry visibleArea) {
         if (TRACE) {
             trace("setNewSource(…): the new domain of data is:%n\t%s", domain);
         }
@@ -837,16 +846,26 @@ public class CoverageCanvas extends MapCanvasAWT {
         }
         /*
          * Notify the `RenderingData` and `MapCanvas`. All information below must be two-dimensional.
+         * The objective CRS is set indirectly through the envelope. Therefore, we should try hard to
+         * provide a CRS compatible with the coverage.
          */
         Envelope bounds = null;
         if (domain != null) {
             domain = domain.selectDimensions(xyDimensions);
             if (domain.isDefined(GridGeometry.ENVELOPE)) {
                 bounds = domain.getEnvelope();
+                if (bounds.getCoordinateReferenceSystem() == null) try {
+                    final var name = new ImmutableIdentifier(null, null, "Cell indices");
+                    final var copy = new GeneralEnvelope(bounds);
+                    copy.setCoordinateReferenceSystem(domain.createGridCRS(name, PixelInCell.CELL_CORNER));
+                    bounds = copy;
+                } catch (FactoryException e) {
+                    unexpectedException(e);
+                }
             }
         }
         data.setImageSpace(domain, ranges, xyDimensions);
-        initialize(zoom);
+        initialize(visibleArea);
         setObjectiveBounds(bounds);
     }
 

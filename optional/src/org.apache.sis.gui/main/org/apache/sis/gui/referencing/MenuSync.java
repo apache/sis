@@ -69,8 +69,8 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
     /**
      * The list of reference systems to show in the root menu, not including items in sub-menus.
      * This is the list of most recently used reference systems, so its content may change often.
-     * {@code MenuSync} does not register listeners on this list;
-     * if the content is changed, then {@link #notifyChanges()} should be invoked explicitly.
+     * {@code MenuSync} does not register listeners on this list. Instead, If the content is changed,
+     * {@link #notifyChanges()} should be invoked explicitly.
      */
     private final List<ReferenceSystem> recentSystems;
 
@@ -124,8 +124,10 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
      * @param  bean     the menu to keep synchronized with the list of reference systems.
      * @param  action   a wrapper over the user-specified action to execute when a reference system is selected.
      */
-    MenuSync(final List<ReferenceSystem> systems, final boolean byIds, final List<CoordinateReferenceSystem> derived,
-             final Menu bean, final RecentReferenceSystems.SelectionListener action)
+    MenuSync(final List<ReferenceSystem> systems, final boolean byIds,
+             final List<CoordinateReferenceSystem> derived,
+             final Menu bean,
+             final RecentReferenceSystems.SelectionListener action)
     {
         super(bean, "value");
         recentSystems      = systems;
@@ -275,7 +277,7 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
          */
         SeparatorMenuItem separator = null;
         final var subMenus = new ArrayList<Menu>(2);
-        final var mapping  = new IdentityHashMap<Object,MenuItem>(10);
+        final var mapping  = new IdentityHashMap<Object, MenuItem>(10);
         for (final Iterator<MenuItem> it = rootMenus.iterator(); it.hasNext();) {
             final MenuItem item = it.next();
             switch (item) {
@@ -291,7 +293,7 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
         }
         /*
          * Prepare a list of menu items and assign a value to all elements where the menu item can be reused as-is.
-         * Other menu items are left to null for now; those null values may appear anywhere in the array. After this
+         * Other menu items are left to null for now. Such null values may appear anywhere in the array. After this
          * loop, the map will contain only menu items for CRS that are no longer in the list of CRS to offer.
          */
         final int newCount = recentSystems.size();
@@ -388,11 +390,14 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
     }
 
     /**
-     * Selects the specified reference system. This method is invoked by {@link RecentReferenceSystems} when the
-     * selected CRS changed, either programmatically or by user action. User-specified {@link #action} is invoked,
-     * which will typically start a background thread for transforming data. This method does nothing if the given
-     * reference system is same as current one; this is important both for avoiding infinite loop and for avoiding
-     * to invoke the potentially costly {@link #action}.
+     * Selects the specified reference system. This method is invoked by {@link RecentReferenceSystems}
+     * when the reference system selected in a menu changed, either programmatically or by user action.
+     * The user-specified {@link #action} is invoked, which will typically start a background thread
+     * for transforming data.
+     *
+     * <p>This method does nothing if the given reference system is same as current one.
+     * This is important both for avoiding infinite loop and for avoiding to invoke the
+     * potentially costly {@link #action}.</p>
      */
     @Override
     public void set(ReferenceSystem system) {
@@ -418,7 +423,7 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
             }
             super.set(system);
             group.selectToggle(null);
-            action.owner().addSelected(system);
+            action.owner().addSelectedItem(system);
             if (system != RecentReferenceSystems.OTHER) {
                 action.changed(this, old, system);
             }

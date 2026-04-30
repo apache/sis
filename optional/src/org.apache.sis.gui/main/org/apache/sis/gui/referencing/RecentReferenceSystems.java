@@ -38,7 +38,6 @@ import javafx.concurrent.Task;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
@@ -71,7 +70,7 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 /**
  * A short list (~10 items) of most recently used {@link ReferenceSystem}s.
- * The list can be shown in a {@link ChoiceBox} or in a list of {@link MenuItem} controls.
+ * The reference systems can be listed in {@link ChoiceBox} or i{@link Menu} controls.
  * The last choice is an "Other…" item which, when selected, popups the {@link CRSChooser}.
  *
  * <p>The choices are listed in following order:</p>
@@ -125,7 +124,14 @@ public class RecentReferenceSystems {
      * The factory to use for creating a Coordinate Reference System from an authority code.
      * If {@code null}, then a default factory will be fetched when first needed.
      */
-    private volatile CRSAuthorityFactory factory;
+    private CRSAuthorityFactory factory;
+
+    /**
+     * Filter for reference systems to shown in the menus of combo boxes.
+     * Used for showing only the reference systems that are compatible with the data.
+     * A {@code null} value means that no filtering is applied.
+     */
+    private FilterByDatum filterByDatum;
 
     /**
      * The area of interest, or {@code null} if none. This is used for filtering the reference systems added by
@@ -134,11 +140,15 @@ public class RecentReferenceSystems {
      * <h4>API note</h4>
      * We do not provide getter/setter for this property; use {@link ObjectProperty#set(Object)}
      * directly instead. We omit the "Property" suffix for making this operation more natural.
+     *
+     * @see #addAlternatives(String...)
+     * @see #addAlternatives(boolean, ReferenceSystem...)
      */
     public final ObjectProperty<Envelope> areaOfInterest;
 
     /**
      * Area of interest converted to geographic coordinates, or {@code null} if none.
+     * This is recomputed automatically when {@link #areaOfInterest} is modified.
      */
     private ImmutableEnvelope geographicAOI;
 
@@ -147,16 +157,17 @@ public class RecentReferenceSystems {
      * The default value is {@link ComparisonMode#ALLOW_VARIANT}, i.e. axis orders are ignored.
      *
      * <h4>API note</h4>
-     * We do not provide getter/setter for this property; use {@link ObjectProperty#set(Object)}
+     * We do not provide getter/setter for this property, use {@link ObjectProperty#set(Object)}
      * directly instead. We omit the "Property" suffix for making this operation more natural.
      */
     public final ObjectProperty<ComparisonMode> duplicationCriterion;
 
     /**
-     * Values of controls created by this {@code RecentReferenceSystems} instance. We retain those properties
-     * because modifying the {@link #referenceSystems} list sometimes causes controls to clear their selection
-     * if we removed the selected item from the list. We use {@code controlValues} for saving currently selected
-     * values before to modify the item list, and restore selections after we finished to modify the list.
+     * Values of controls created by this {@code RecentReferenceSystems} instance. We memorize those properties
+     * because we sometime move items in the {@link #referenceSystems} list in a way that looks like we removed
+     * items (before to insert them elsewhere), which can cause menus or combo boxes to clear their selection.
+     * For preventing that, we use {@code controlValues} for saving the currently selected values before to
+     * modify the item list, then restore the selections after we finished to modify the list.
      */
     private final List<WritableValue<ReferenceSystem>> controlValues;
 
@@ -166,43 +177,18 @@ public class RecentReferenceSystems {
     final Locale locale;
 
     /**
-     * Wrapper for a {@link ReferenceSystem} which has not yet been compared with authoritative definitions.
-     * Those wrappers are created when {@link ReferenceSystem} instances have been specified to {@code setPreferred(…)}
-     * or {@code addAlternatives(…)} methods with {@code replaceByAuthoritativeDefinition} argument set to {@code true}.
-     *
-     * @see #setPreferred(boolean, ReferenceSystem)
-     * @see #addAlternatives(boolean, ReferenceSystem...)
-     */
-    private static final class Unverified {
-        /** The reference system to verify. */
-        private final ReferenceSystem system;
-
-        /** Flags the given reference system as unverified. */
-        Unverified(final ReferenceSystem system) {
-            this.system = system;
-        }
-
-        /** Returns the verified (if possible) reference system. */
-        ReferenceSystem find(final IdentifiedObjectFinder finder) throws FactoryException {
-            if (finder != null && finder.findSingleton(system) instanceof ReferenceSystem replacement) {
-                return replacement;
-            }
-            return system;
-        }
-    }
-
-    /**
      * The reference systems either as {@link ReferenceSystem} instances, {@link Unverified} wrappers or
      * {@link String} codes. All {@code String} elements should be authority codes that {@link #factory}
      * can recognize. The first item in this list should be the native or preferred reference system.
      * The {@link #OTHER} reference system is <em>not</em> included in this list.
      *
      * <p>The list content is specified by calls to {@code setPreferred(…)} and {@code addAlternatives(…)} methods,
-     * then is filtered by {@link #filterReferenceSystems(ImmutableEnvelope, ComparisonMode)} for resolving authority
-     * codes and removing duplicated elements.</p>
+     * then is filtered by {@link #filterReferenceSystems filterReferenceSystems(…)} for resolving authority codes
+     * and removing duplicated elements. A view is returned by {@code filterReferenceSystems(…)} for excluding the
+     * elements that are not applicable for the current <abbr>AOI</abbr> and datum types.</p>
      *
      * <p>All accesses to this field and all accesses to the {@link #isModified}
-     * field shall be done in a block synchronized on {@code systemsOrCodes}.</p>
+     * field shall be done in a block synchronized on {@code this}.</p>
      */
     private final List<Object> systemsOrCodes;
 
@@ -226,7 +212,7 @@ public class RecentReferenceSystems {
 
     /**
      * A filtered view of {@link #referenceSystems} without the {@link #OTHER} item.
-     * This is the list returned to users by public API, but otherwise it is not used by this class.
+     * This is the list returned to users by public <abbr>API</abbr>.
      *
      * <h4>Design notes</h4>
      * The {@link #OTHER} item needs to exist in the list used internally by this class because those lists
@@ -249,9 +235,9 @@ public class RecentReferenceSystems {
 
     /**
      * {@code true} if the {@link #referenceSystems} list needs to be rebuilt from {@link #systemsOrCodes} content.
-     * This field shall be read and modified in a block synchronized on {@link #systemsOrCodes}.
+     * This field shall be read and modified in a block synchronized on {@code this}.
      *
-     * @see #listModified()
+     * @see #refreshObservedReferenceSystemList()
      */
     private boolean isModified;
 
@@ -270,7 +256,7 @@ public class RecentReferenceSystems {
 
     /**
      * Creates a builder which will use a default authority factory.
-     * The factory will be capable to handle at least some EPSG codes.
+     * The factory will be capable to handle at least some <abbr>EPSG</abbr> codes.
      */
     public RecentReferenceSystems() {
         this(null, null);
@@ -294,10 +280,10 @@ public class RecentReferenceSystems {
         modificationCount    = new AtomicInteger();
         areaOfInterest       = new SimpleObjectProperty<>(this, "areaOfInterest");
         duplicationCriterion = new NonNullObjectProperty<>(this, "duplicationCriterion", ComparisonMode.ALLOW_VARIANT);
-        duplicationCriterion.addListener((e) -> listModified());
+        duplicationCriterion.addListener((e) -> refreshObservedReferenceSystemList());
         areaOfInterest.addListener((e,o,n) -> {
             geographicAOI = Utils.toGeographic(RecentReferenceSystems.class, "areaOfInterest", n);
-            listModified();
+            refreshObservedReferenceSystemList();
         });
         referenceSystems = FXCollections.observableArrayList();
         publicItemList = new FilteredList<>(referenceSystems, Objects::nonNull);
@@ -308,11 +294,12 @@ public class RecentReferenceSystems {
 
     /**
      * Sets the reference systems, area of interest and "referencing by grid indices" systems.
-     * This method performs all the following work:
+     * Contrarily to other methods in this class, this method can be invoked from any thread.
+     * This method performs the following tasks, whith the other methods invoked from the JavaFX thread:
      *
      * <ul>
-     *   <li>Invokes {@link #setPreferred(boolean, ReferenceSystem)} with the first CRS in iteration order.</li>
-     *   <li>Invokes {@link #addAlternatives(boolean, ReferenceSystem...)} for all other CRS (single call).</li>
+     *   <li>Invokes {@link #setPreferred(boolean, ReferenceSystem)} with the first <abbr>CRS</abbr> in iteration order.</li>
+     *   <li>Invokes {@link #addAlternatives(boolean, ReferenceSystem...)} once for all other <abbr>CRS</abbr>s.</li>
      *   <li>Sets the {@link #areaOfInterest} to the union of all envelopes.</li>
      *   <li>Sets the content of "Referencing by cell indices" sub-menu.</li>
      * </ul>
@@ -322,9 +309,10 @@ public class RecentReferenceSystems {
      * the resource that provided the {@link GridGeometry} value, or other text allowing the user to identify the resource.
      * Those keys are used for naming the <abbr>CRS</abbr>s of cell coordinates, which are different for each grid coverage.
      *
-     * <p>This method can be invoked from any thread. The reference systems are collected in the current thread,
-     * then the state of this {@code RecentReferenceSystems} is updated in the JavaFX thread after all reference
-     * systems are ready.</p>
+     * <p>The {@code replaceByAuthoritativeDefinition} argument specifies whether the coordinate reference systems
+     * should be replaced by authoritative definitions when such definitions are found. If {@code true} then,
+     * for example, a <q>WGS 84</q> geographic <abbr>CRS</abbr> with (λ, ϕ) axis order may be replaced by the
+     * "EPSG::4326" definition with (ϕ, λ) axis order.</p>
      *
      * @param  replaceByAuthoritativeDefinition  whether the reference systems should be replaced by authoritative definition.
      * @param  geometries  grid coverage names together with their grid geometry. May be empty.
@@ -361,7 +349,6 @@ public class RecentReferenceSystems {
         }
         if (countCRS == 0 && countCIR != 0) {
             refsys[0] = derived[0];
-            countCRS = 1;
         }
         Envelope union;
         try {
@@ -370,26 +357,29 @@ public class RecentReferenceSystems {
             errorOccurred("setGridReferencing", e);
             union = null;
         }
-        /*
-         * Modify now the state of `this` object but with `listModified()` made almost no-op.
-         * The intent is to have only one effective call to `listModified()` at the end,
-         * in order to have only one call to `filterReferenceSystems(…)`.
-         */
         final Envelope aoi = union;     // Because lambda functions want a final variable.
+        final FilterByDatum filter = FilterByDatum.create(refsys);
         final List<CoordinateReferenceSystem> cellCRS = Containers.viewAsUnmodifiableList(derived, 0, countCIR);
         final int stamp = modificationCount.incrementAndGet();
         Platform.runLater(() -> {
             if (modificationCount.get() == stamp) {
-                final CoordinateReferenceSystem preferred = refsys[0];
-                if (preferred != null) {
-                    refsys[0] = null;
-                    setPreferred(replaceByAuthoritativeDefinition, preferred);
-                    addAlternatives(replaceByAuthoritativeDefinition, refsys);  // Null elements are ignored.
-                    cellIndiceSystems.clear();
-                    cellIndiceSystems.addAll(cellCRS);
+                final boolean old = isAdjusting;
+                try {
+                    isAdjusting = true;
+                    final CoordinateReferenceSystem preferred = refsys[0];
+                    if (preferred != null) {
+                        refsys[0] = null;
+                        setPreferred(replaceByAuthoritativeDefinition, preferred);
+                        addAlternatives(replaceByAuthoritativeDefinition, refsys);  // Null elements are ignored.
+                        cellIndiceSystems.clear();
+                        cellIndiceSystems.addAll(cellCRS);
+                    }
+                    filterByDatum = filter;
+                    areaOfInterest.set(aoi);
+                } finally {
+                    isAdjusting = old;
                 }
-                areaOfInterest.set(aoi);
-                listModified();
+                refreshObservedReferenceSystemList();
             }
         });
     }
@@ -399,21 +389,18 @@ public class RecentReferenceSystems {
      * choice and should typically be the native {@link CoordinateReferenceSystem} of visualized data.
      * If a previous preferred system existed, the previous system will be moved to alternative choices.
      *
-     * <p>The {@code replaceByAuthoritativeDefinition} argument specifies whether the given reference system should
-     * be replaced by authoritative definition. If {@code true} then for example a <q>WGS 84</q> geographic
-     * CRS with (<var>longitude</var>, <var>latitude</var>) axis order may be replaced by "EPSG::4326" definition with
-     * (<var>latitude</var>, <var>longitude</var>) axis order.</p>
+     * <p>The {@code replaceByAuthoritativeDefinition} argument specifies whether the given reference system
+     * should be replaced by an authoritative definition when such definition is found. If {@code true} then,
+     * for example, a <q>WGS 84</q> geographic <abbr>CRS</abbr> with (λ, ϕ) axis order may be replaced by the
+     * "EPSG::4326" definition with (ϕ, λ) axis order.</p>
      *
      * @param  replaceByAuthoritativeDefinition  whether the given system should be replaced by authoritative definition.
      * @param  system  the native or preferred reference system to show as the first choice.
      */
-    public final void setPreferred(final boolean replaceByAuthoritativeDefinition, final ReferenceSystem system) {
-        // Final because `setGridReferencing(…)` needs to be sure that `referenceSystems` is not rebuilt.
+    public synchronized void setPreferred(final boolean replaceByAuthoritativeDefinition, final ReferenceSystem system) {
         ArgumentChecks.ensureNonNull("system", system);
-        synchronized (systemsOrCodes) {
-            systemsOrCodes.add(0, replaceByAuthoritativeDefinition ? new Unverified(system) : system);
-            listModified();
-        }
+        systemsOrCodes.add(0, replaceByAuthoritativeDefinition ? new Unverified(system) : system);
+        refreshObservedReferenceSystemList();
     }
 
     /**
@@ -428,62 +415,58 @@ public class RecentReferenceSystems {
      *
      * @param  code  authority code of the native of preferred reference system to show as the first choice.
      */
-    public void setPreferred(final String code) {
+    public synchronized void setPreferred(final String code) {
         ArgumentChecks.ensureNonEmpty("code", code);
-        synchronized (systemsOrCodes) {
-            systemsOrCodes.add(0, code);
-            listModified();
-        }
+        systemsOrCodes.add(0, code);
+        refreshObservedReferenceSystemList();
     }
 
     /**
-     * Invoked when a new CRS is selected and that CRS has not been found in the list.
-     * The new CRS is added after the CRS and menu items will be added in background thread.
+     * Invoked when a new reference system is selected and has not been found in the current list of systems.
+     * It may be, for example, a system selected among the content of a registry shown by {@link CRSChooser}.
+     * The new system is added at the beginning of the list but after the preferred (native) reference system.
+     * Because the added system is considered as one alternative among others, it may be ignored.
+     * Menu items will be updated in background thread.
      */
-    final void addSelected(final ReferenceSystem system) {
-        if (isAccepted(system)) {
-            synchronized (systemsOrCodes) {
-                systemsOrCodes.add(Math.min(systemsOrCodes.size(), NUM_CORE_ITEMS), system);
-                listModified();
-            }
+    final synchronized void addSelectedItem(final ReferenceSystem system) {
+        if (isAuthoritative(system)) {
+            systemsOrCodes.add(Math.min(systemsOrCodes.size(), NUM_CORE_ITEMS), system);
+            refreshObservedReferenceSystemList();
         }
     }
 
     /**
      * Adds the given reference systems to the list of alternative choices.
-     * If there is duplicated values in the given list or with previously added systems,
+     * If there are duplicated values in the given list or with previously added systems,
      * then only the first occurrence of duplicated values is retained.
      * If an {@linkplain #areaOfInterest area of interest} (AOI) is specified,
      * then reference systems that do not intersect the AOI will be hidden.
      *
-     * <p>The {@code replaceByAuthoritativeDefinition} argument specifies whether the given reference systems should
-     * be replaced by authoritative definitions. If {@code true} then for example a <q>WGS 84</q> geographic
-     * CRS with (<var>longitude</var>, <var>latitude</var>) axis order may be replaced by "EPSG::4326" definition with
-     * (<var>latitude</var>, <var>longitude</var>) axis order.</p>
+     * <p>The {@code replaceByAuthoritativeDefinition} argument specifies whether the given reference systems
+     * should be replaced by authoritative definitions when such definitions are found. If {@code true} then,
+     * for example, a <q>WGS 84</q> geographic <abbr>CRS</abbr> with (λ, ϕ) axis order may be replaced by the
+     * "EPSG::4326" definition with (ϕ, λ) axis order.</p>
      *
      * @param  replaceByAuthoritativeDefinition  whether the given systems should be replaced by authoritative definitions.
      * @param  systems  the reference systems to add as alternative choices. Null elements are ignored.
      */
-    public final void addAlternatives(final boolean replaceByAuthoritativeDefinition, final ReferenceSystem... systems) {
-        // Final because `setGridReferencing(…)` needs to be sure that `referenceSystems` is not rebuilt.
+    public synchronized void addAlternatives(final boolean replaceByAuthoritativeDefinition, final ReferenceSystem... systems) {
         ArgumentChecks.ensureNonNull("systems", systems);
-        synchronized (systemsOrCodes) {
-            for (final ReferenceSystem system : systems) {
-                if (system != null) {
-                    systemsOrCodes.add(replaceByAuthoritativeDefinition ? new Unverified(system) : system);
-                }
+        for (final ReferenceSystem system : systems) {
+            if (system != null) {
+                systemsOrCodes.add(replaceByAuthoritativeDefinition ? new Unverified(system) : system);
             }
-            listModified();
         }
-        // Check for duplication will be done in `filterReferenceSystems()` method.
+        refreshObservedReferenceSystemList();
+        // Check for duplication will be done in `filterReferenceSystems(…)` method.
     }
 
     /**
      * Adds the coordinate reference system identified by the given authority codes.
-     * If there is duplicated values in the given list or with previously added systems,
+     * If there are duplicated values in the given list or with previously added systems,
      * then only the first occurrence of duplicated values is retained.
-     * If an {@linkplain #areaOfInterest area of interest} (AOI) is specified,
-     * then reference systems that do not intersect the AOI will be hidden.
+     * If an {@linkplain #areaOfInterest area of interest} (<abbr>AOI</abbr>) is specified,
+     * then reference systems that do not intersect the <abbr>AOI</abbr> will be hidden.
      *
      * <p>If a code is not recognized, then the error will be notified at some later time by a call to
      * {@link #errorOccurred(FactoryException)} in a background thread and the code will be silently ignored.
@@ -493,236 +476,224 @@ public class RecentReferenceSystems {
      * @param  codes  authority codes of the coordinate reference systems to add as alternative choices.
      *                Null or empty elements are ignored.
      */
-    public void addAlternatives(final String... codes) {
+    public synchronized void addAlternatives(final String... codes) {
         ArgumentChecks.ensureNonNull("codes", codes);
-        synchronized (systemsOrCodes) {
-            for (String code : codes) {
-                code = Strings.trimOrNull(code);
-                if (code != null) {
-                    systemsOrCodes.add(code);
-                }
+        for (String code : codes) {
+            code = Strings.trimOrNull(code);
+            if (code != null) {
+                systemsOrCodes.add(code);
             }
-            listModified();
         }
-        // Parsing will be done in `filterReferenceSystems()` method.
+        refreshObservedReferenceSystemList();
+        // Parsing will be done in `filterReferenceSystems(…)` method.
     }
 
     /**
      * Adds the coordinate reference systems saved in user preferences. The user preferences are determined
      * from the reference systems observed during current execution or previous executions of JavaFX application.
-     * If an {@linkplain #areaOfInterest area of interest} (AOI) is specified,
-     * then reference systems that do not intersect the AOI will be ignored.
+     * If an {@linkplain #areaOfInterest area of interest} (<abbr>AOI</abbr>) is specified,
+     * then reference systems that do not intersect the <abbr>AOI</abbr> will be ignored.
      */
     public void addUserPreferences() {
         addAlternatives(RecentChoices.getReferenceSystems());
     }
 
     /**
-     * Returns whether the given object is accepted for inclusion in the list of CRS choices.
-     * In current implementation we accept a CRS if it has an authority code (typically an EPSG code).
+     * Returns whether the given object seems authoritative. For example, if two objects are considered
+     * equivalent according the {@linkplain #duplicationCriterion duplication criterion}, then the one
+     * with an identifier (typically an <abbr>EPSG</abbr> code) is preferred. Objects without identifier
+     * are typically a <abbr>CRS</abbbr> with non-standard axis order, for example for an image which has
+     * just been read.
      */
-    private static boolean isAccepted(final IdentifiedObject object) {
+    private static boolean isAuthoritative(final ReferenceSystem object) {
         return IdentifiedObjects.getIdentifier(object, null) != null;
     }
 
     /**
-     * Filters the {@link #systemsOrCodes} list by making sure that it contains only {@link ReferenceSystem} instances.
-     * Authority codes are resolved if possible or removed if they cannot be resolved. Unverified CRSs are compared
-     * with authoritative definitions and replaced when a match is found. Duplications are removed.
-     * Finally reference systems with a domain of validity outside the {@link #geographicAOI} are omitted
-     * from the returned list (but not removed from the original {@link #systemsOrCodes} list).
+     * Filters the {@link #systemsOrCodes} list by resolving and verifying the reference systems.
+     * This is invoked by {@link #refreshObservedReferenceSystemList()} in a background thread.
+     * First, this method modifies {@link #systemsOrCodes} as below:
      *
-     * <p>This method can be invoked from any thread. In practice, it is invoked from a background thread.</p>
+     * <ul>
+     *   <li>Authority codes are resolved if possible or removed if they cannot be resolved.</li>
+     *   <li>Unverified <abbr>CRS</abbr>s are replaced by authoritative definitions when a match is found.</li>
+     *   <li>Duplications are removed.</li>
+     * </ul>
      *
+     * Then, this method returns a list which hides the following elements,
+     * but without removing them from the {@link #systemsOrCodes} list:
+     *
+     * <ul>
+     *   <li>Reference systems with incompatible datum types.</li>
+     *   <li>Reference systems with a domain of validity outside the {@link #geographicAOI}.</li>
+     * </ul>
+     *
+     * The caller will copy the returned list into {@link #referenceSystems} in the JavaFX thread.
+     *
+     * @param  filter  the {@link #filterByDatum} value read from JavaFX thread, or {@code null} if none.
      * @param  domain  the {@link #areaOfInterest} value read from JavaFX thread, or {@code null} if none.
      * @param  mode    the {@link #duplicationCriterion} value read from JavaFX thread.
      * @return the filtered reference systems, or {@code null} if already filtered.
      */
-    private List<ReferenceSystem> filterReferenceSystems(final ImmutableEnvelope domain, final ComparisonMode mode) {
-        final List<ReferenceSystem> systems;
-        final var gf = new GazetteerFactory();                  // Cheap to construct.
-        synchronized (systemsOrCodes) {
-            @SuppressWarnings("LocalVariableHidesMemberVariable")
-            CRSAuthorityFactory factory = this.factory;         // Hide volatile field by local field.
-            if (!isModified) {
-                return null;                                    // Another thread already did the work.
-            }
-            boolean noFactoryFound = false;
-            boolean searchedFinder = false;
-            IdentifiedObjectFinder finder = null;
-            for (int i = systemsOrCodes.size(); --i >= 0;) {
-                final Object item = systemsOrCodes.get(i);
-                if (item instanceof ReferenceSystem) {
-                    continue;
-                }
-                ReferenceSystem system = null;
-                if (item != OTHER) try {
-                    if (item instanceof String) {
-                        /*
-                         * The current list element is an authority code such as "EPSG::4326".
-                         * Replace that code by the full `CoordinateReferenceSystem` instance.
-                         * Note that authority factories are optional, so it is okay if we can
-                         * not resolve the code. In such case the item will be removed.
-                         */
-                        system = gf.forNameIfKnown((String) item).orElse(null);
-                        if (system == null && !noFactoryFound) {
-                            if (factory == null) {
-                                factory = Utils.getDefaultFactory();
-                            }
-                            system = factory.createCoordinateReferenceSystem((String) item);
-                        }
-                    } else if (item instanceof Unverified) {
-                        /*
-                         * The current list element is a `ReferenceSystem` instance but maybe not
-                         * conform to authoritative definition, for example regarding axis order.
-                         * If we can find an authoritative definition, do the replacement.
-                         * If this operation cannot be done, accept the reference system as-is.
-                         */
-                        if (!searchedFinder) {
-                            searchedFinder = true;          // Set now in case an exception is thrown.
-                            if (factory instanceof GeodeticAuthorityFactory) {
-                                finder = ((GeodeticAuthorityFactory) factory).newIdentifiedObjectFinder();
-                            } else {
-                                finder = IdentifiedObjects.newFinder(null);
-                            }
-                            finder.setIgnoringAxes(true);
-                        }
-                        system = ((Unverified) item).find(finder);
-                    }
-                } catch (FactoryException e) {
-                    errorOccurred(e);
-                    noFactoryFound = (factory == null);
-                } catch (GazetteerException e) {
-                    errorOccurred("getReferenceSystems", e);
-                    // Note: `getReferenceSystems(…)` is indirectly the caller of this method.
-                }
-                if (system != null) {
-                    systemsOrCodes.set(i, system);
-                } else {
-                    systemsOrCodes.remove(i);
-                }
-            }
-            /*
-             * Search for duplicated values after we finished filtering. This block is inefficient
-             * (execution time of O(N²)) but it should not be an issue if this list is short (e.g.
-             * 20 elements). We cut the list if we reach the maximal number of systems to keep.
-             */
-            for (int i=0, j; i < (j = systemsOrCodes.size()); i++) {
-                if (i >= RecentChoices.MAXIMUM_REFERENCE_SYSTEMS) {
-                    systemsOrCodes.subList(i, j).clear();
-                    break;
-                }
-                Object item = systemsOrCodes.get(i);
-                while (--j > i) {
-                    if (Utilities.deepEquals(item, systemsOrCodes.get(j), mode)) {
-                        final Object removed = systemsOrCodes.remove(j);
-                        if (isAccepted((IdentifiedObject) removed) && !isAccepted((IdentifiedObject) item)) {
-                            /*
-                             * Keep the instance which has an identifier. The instance without identifier
-                             * is typically a CRS with non-standard axis order. It happens when it is the
-                             * CRS associated to an image that has just been read.
-                             */
-                            systemsOrCodes.set(i, item = removed);
-                        }
-                    }
-                }
-            }
-            /*
-             * Finished to filter the `systemsOrCodes` list: all elements are now guaranteed to be
-             * `ReferenceSystem` instances with no duplicated values. Copy those reference systems
-             * in a separated list as a protection against changes in `systemsOrCodes` list that
-             * could happen after this method returned, and also for retaining only the reference
-             * systems that are valid in the area of interest. We do not remove "invalid" CRS
-             * because they may become valid later if the area of interest changes.
-             */
-            final int n = systemsOrCodes.size();
-            systems = new ArrayList<>(Math.min(NUM_SHOWN_ITEMS, n) + NUM_OTHER_ITEMS);
-            for (int i=0; i<n; i++) {
-                final var system = (ReferenceSystem) systemsOrCodes.get(i);
-                if (i >= NUM_CORE_ITEMS && !Utils.intersects(domain, system)) {
-                    continue;
-                }
-                if (Utils.isIgnoreable(system)) {       // Ignore "Computer display" CRS.
-                    continue;
-                }
-                systems.add(system);
-                if (systems.size() >= NUM_SHOWN_ITEMS) break;
-            }
-            systems.add(OTHER);
-            isModified   = false;
-            this.factory = factory;         // Save in volatile field.
+    private synchronized List<ReferenceSystem> filterReferenceSystems(
+            final FilterByDatum     filter,
+            final ImmutableEnvelope domain,
+            final ComparisonMode    mode)
+    {
+        if (!isModified) {
+            return null;    // Another thread already did the work.
         }
+        boolean noFactoryFound = false;
+        boolean searchedFinder = false;
+        IdentifiedObjectFinder finder = null;
+        final var gf = new GazetteerFactory();
+        for (int i = systemsOrCodes.size(); --i >= 0;) {
+            final Object item = systemsOrCodes.get(i);
+            if (item instanceof ReferenceSystem) {
+                continue;
+            }
+            ReferenceSystem system = null;
+            if (item != OTHER) try {
+                if (item instanceof String) {
+                    /*
+                     * The current list element is an authority code such as "EPSG::4326".
+                     * Replace that code by the full `CoordinateReferenceSystem` instance.
+                     * Note that authority factories are optional, so it is okay if we can
+                     * not resolve the code. In such case the item will be removed.
+                     */
+                    system = gf.forNameIfKnown((String) item).orElse(null);
+                    if (system == null && !noFactoryFound) {
+                        if (factory == null) {
+                            factory = Utils.getDefaultFactory();
+                        }
+                        system = factory.createCoordinateReferenceSystem((String) item);
+                    }
+                } else if (item instanceof Unverified) {
+                    /*
+                     * The current list element is a `ReferenceSystem` instance but maybe not
+                     * conform to authoritative definition, for example regarding axis order.
+                     * If we can find an authoritative definition, do the replacement.
+                     * If this operation cannot be done, accept the reference system as-is.
+                     */
+                    if (!searchedFinder) {
+                        searchedFinder = true;          // Set now in case an exception is thrown.
+                        if (factory instanceof GeodeticAuthorityFactory f) {
+                            finder = f.newIdentifiedObjectFinder();
+                        } else {
+                            finder = IdentifiedObjects.newFinder(null);
+                        }
+                        finder.setIgnoringAxes(true);
+                    }
+                    system = ((Unverified) item).find(finder);
+                }
+            } catch (FactoryException e) {
+                errorOccurred(e);
+                noFactoryFound = (factory == null);
+            } catch (GazetteerException e) {
+                errorOccurred("getReferenceSystems", e);
+                // Note: `getReferenceSystems(…)` is indirectly the caller of this method.
+            }
+            if (system != null) {
+                systemsOrCodes.set(i, system);
+            } else {
+                systemsOrCodes.remove(i);
+            }
+        }
+        /*
+         * Search for duplicated values after we finished filtering. This block is inefficient
+         * (execution time of O(N²)) but it should not be an issue if this list is short (e.g.
+         * 20 elements). We cut the list if we reach the maximal number of systems to keep.
+         */
+        for (int i=0, j; i < (j = systemsOrCodes.size()); i++) {
+            if (i >= RecentChoices.MAXIMUM_REFERENCE_SYSTEMS) {
+                systemsOrCodes.subList(i, j).clear();
+                break;
+            }
+            var item = (ReferenceSystem) systemsOrCodes.get(i);
+            while (--j > i) {
+                if (Utilities.deepEquals(item, systemsOrCodes.get(j), mode)) {
+                    final var removed = (ReferenceSystem) systemsOrCodes.remove(j);
+                    if (isAuthoritative(removed) && !isAuthoritative(item)) {
+                        // Keep the instance which has an authority code.
+                        systemsOrCodes.set(i, item = removed);
+                    }
+                }
+            }
+        }
+        /*
+         * Finished to filter the `systemsOrCodes` list: all elements are now guaranteed to be
+         * `ReferenceSystem` instances with no duplicated values. Copy those reference systems
+         * in a separated list as a protection against concurrent changes in `systemsOrCodes`,
+         * and for retaining only the reference systems that are valid in the area of interest.
+         * We do not remove hidden CRS because they may become valid later if the AOI changes.
+         */
+        final int n = systemsOrCodes.size();
+        final var systems = new ArrayList<ReferenceSystem>(Math.min(NUM_SHOWN_ITEMS, n) + NUM_OTHER_ITEMS);
+        for (int i=0; i<n; i++) {
+            final var system = (ReferenceSystem) systemsOrCodes.get(i);
+            if (filter == null || filter.test(system)) {
+                if (i < NUM_CORE_ITEMS || Utils.intersects(domain, system)) {
+                    if (Utils.isIgnoreable(system)) continue;   // Ignore "Computer display" CRS.
+                    systems.add(system);
+                    if (systems.size() >= NUM_SHOWN_ITEMS) break;
+                }
+            }
+        }
+        systems.add(OTHER);
+        isModified = false;
         return systems;
     }
 
     /**
-     * Invoked when {@link #systemsOrCodes} has been modified. If the modification happens after
-     * some controls have been created ({@link ChoiceBox} or {@link MenuItem}s), then this method
-     * updates their list of items. The update may happen at some time after this method returned.
+     * Updates the {@link #referenceSystems} list with the elements added into the {@link #systemsOrCodes} list.
+     * This method must be invoked from the JavaFX thread. The <abbr>CRS</abbr> will be processed in background
+     * thread and transferred later (in the JavaFX thread) to the {@link #referenceSystems} list when ready.
+     * This copy will cause an update of the {@link ChoiceBox} and {@link MenuItem} controls created by this class.
      */
-    private void listModified() {
-        synchronized (systemsOrCodes) {
-            isModified = true;
-            getReferenceSystems(false);
+    private synchronized void refreshObservedReferenceSystemList() {
+        isModified = true;  // Will be reset to `false` after `filterReferenceSystems(…)` finished.
+        if (isAdjusting) {
+            return;         // `refreshObservedReferenceSystemList()` will be invoked again later.
         }
-    }
-
-    /**
-     * Updates {@link #referenceSystems} with the reference systems added to {@link #systemsOrCodes} list.
-     * The new items may not be added immediately; instead the CRS will be processed in background thread
-     * and copied to the {@link #referenceSystems} list when ready.
-     *
-     * @param  filtered  whether to filter the list for retaining only {@link CoordinateReferenceSystem} instances.
-     * @return the list of items. May be empty on return and filled later.
-     */
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    private ObservableList<ReferenceSystem> getReferenceSystems(final boolean filtered) {
-        synchronized (systemsOrCodes) {
-            /*
-             * Prepare a temporary list as the concatenation of all items that are currently visible in JavaFX
-             * controls with all items that were specified by `setPreferred(…)` or `addAlternatives(…)` methods.
-             * This concatenation creates a lot of duplicated values, but those duplications will be filtered by
-             * `filterReferenceSystems(…)` method. The intent is to preserve following order:
-             *
-             *   - NUM_CORE_ITEMS preferred reference systems first.
-             *   - All reference systems that are currently selected by JavaFX controls.
-             *   - All reference systems offered as choice in JavaFX controls.
-             *   - All reference systems specified by `addAlternatives(…)`.
-             *   - NUM_OTHER_ITEMS systems (will be handled in a special way by `filterReferenceSystems(…)`).
-             *
-             * The list will be truncated to NUM_SHOWN_ITEMS after duplications are removed and before OTHER
-             * is added. The first occurrence of duplicated values is kept, which will result in above-cited
-             * order as the priority order where to insert the CRS.
-             */
-            if (isModified) {
-                final int insertAt = Math.min(systemsOrCodes.size(), NUM_CORE_ITEMS);
-                final List<ReferenceSystem> selected = getSelectedItems();
-                systemsOrCodes.addAll(insertAt, selected);
-                systemsOrCodes.addAll(insertAt + selected.size(), referenceSystems);
-                final ImmutableEnvelope domain = geographicAOI;
-                final ComparisonMode mode = duplicationCriterion.get();
-                BackgroundThreads.execute(new Task<List<ReferenceSystem>>() {
-                    /** Filters the {@link ReferenceSystem}s in a background thread. */
-                    @Override protected List<ReferenceSystem> call() {
-                        return filterReferenceSystems(domain, mode);
-                    }
-
-                    /** Should never happen. */
-                    @Override protected void failed() {
-                        ExceptionReporter.show(null, this);
-                    }
-
-                    /** Sets the {@link ChoiceBox} content to the list computed in background thread. */
-                    @Override protected void succeeded() {
-                        setReferenceSystems(getValue(), mode);
-                    }
-                });
+        /*
+         * Prepare a temporary list as the concatenation of all items that are currently visible in JavaFX
+         * controls with all items that were specified by `setPreferred(…)` or `addAlternatives(…)` methods.
+         * This concatenation creates a lot of duplicated values, but those duplications will be filtered by
+         * `filterReferenceSystems(…)` method. The intent is to preserve following order:
+         *
+         *   - NUM_CORE_ITEMS preferred reference systems first.
+         *   - All reference systems that are currently selected by JavaFX controls.
+         *   - All reference systems offered as choice in JavaFX controls.
+         *   - All reference systems specified by `addAlternatives(…)`.
+         *   - NUM_OTHER_ITEMS systems (will be handled in a special way by `filterReferenceSystems(…)`).
+         *
+         * The list will be truncated to NUM_SHOWN_ITEMS after duplications are removed and before OTHER
+         * is added. The first occurrence of duplicated values is kept, which will result in above-cited
+         * order as the priority order where to insert the CRS.
+         */
+        final int insertAt = Math.min(systemsOrCodes.size(), NUM_CORE_ITEMS);
+        final List<ReferenceSystem> selected = getSelectedItems();
+        systemsOrCodes.addAll(insertAt, selected);
+        systemsOrCodes.addAll(insertAt + selected.size(), referenceSystems);
+        final FilterByDatum filter = filterByDatum;
+        final ImmutableEnvelope domain = geographicAOI;
+        final ComparisonMode mode = duplicationCriterion.get();
+        BackgroundThreads.execute(new Task<List<ReferenceSystem>>() {
+            /** Filters the {@link ReferenceSystem}s in a background thread. */
+            @Override protected List<ReferenceSystem> call() {
+                return filterReferenceSystems(filter, domain, mode);
             }
-        }
-        if (filtered) {
-            return coordinateReferenceSystems;
-        }
-        return referenceSystems;
+
+            /** Should never happen. */
+            @Override protected void failed() {
+                ExceptionReporter.show(null, this);
+            }
+
+            /** Sets the {@link ChoiceBox} content to the list computed in background thread. */
+            @Override protected void succeeded() {
+                setReferenceSystems(getValue(), mode);
+            }
+        });
     }
 
     /**
@@ -741,21 +712,17 @@ public class RecentReferenceSystems {
             /*
              * The call to `copyAsDiff(…)` may cause some ChoiceBox values to be lost if the corresponding
              * item in the `referenceSystems` list is temporarily removed before to be inserted elsewhere.
-             * Save the values before to modify the list. Note that if `referenceSystems` was empty before
-             * the copy, `controlValues` should be null before the copy but may become non-null after the
-             * copy because listeners will have initialized them to the first `ReferenceSystem` available.
-             * Those non-null values will not be reflected in the `values` array, so we should ignore them.
+             * Save the values before to modify the list.
              */
             final ReferenceSystem[] values = controlValues.stream().map(WritableValue::getValue).toArray(ReferenceSystem[]::new);
             if (GUIUtilities.copyAsDiff(systems, referenceSystems)) {
                 notifyChanges();
             }
             /*
-             * Restore the previous selections. This code also serves another purpose: the previous selection
-             * may not be an item in the list.  If the value was set by a call to `ChoiceBox.setValue(…)` and
-             * is a `GeographicCRS` with (λ,φ) axis order, it may have been replaced in the list by a CRS with
-             * (φ,λ) axis order. We need to replace the previous value by the instance in the list, otherwise
-             * `ChoiceBox` will not show the CRS as selected.
+             * Restore the previous selections, or a variant of these selections. For example, if the value
+             * is a `GeographicCRS` with (λ,φ) axis order which was set by a call to `ChoiceBox.setValue(…)`,
+             * that value may have been replaced in the list by a CRS with (φ,λ) axis order. We must replace
+             * the selected value by an instance from the list, otherwise it will not appear as selected.
              */
             final int n = referenceSystems.size();
             for (int j=0; j<values.length; j++) {
@@ -777,9 +744,25 @@ public class RecentReferenceSystems {
     }
 
     /**
-     * Invoked when user selects a reference system. If the choice is "Other…", then {@link CRSChooser} popups
-     * and the selected reference system is added to the list of choices. If the selected CRS is different than
-     * the previous one, then {@link RecentChoices} is notified and the user-specified listener is notified.
+     * Returns the list of reference systems to show in a {@link Menu} or {@link ChoiceBox} control.
+     * The returned list may be temporarily empty or outdated, and updated later after a background
+     * thread finished to update the list.
+     *
+     * @param  renderable  whether the list should be restricted to items that can be used for rendering maps.
+     * @return the list of items. May be empty on return and populated later.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    private synchronized ObservableList<ReferenceSystem> getReferenceSystems(final boolean renderable) {
+        if (isModified) {
+            refreshObservedReferenceSystemList();
+        }
+        return renderable ? coordinateReferenceSystems : referenceSystems;
+    }
+
+    /**
+     * Invoked when the user selects a reference system in a choice box or a menu.
+     * This listener intercepts the case where the selected item is "Other…", in which case {@code SelectionListener}
+     * popups a {@link CRSChooser}, then {@linkplain #addSelectedItem adds the user's selection} to the system list.
      */
     final class SelectionListener implements ChangeListener<ReferenceSystem> {
         /** The user-specified action to execute when a reference system is selected. */
@@ -806,7 +789,7 @@ public class RecentReferenceSystems {
             }
             final ComparisonMode mode = duplicationCriterion.get();
             if (newValue == OTHER) {
-                final var chooser = new CRSChooser(factory, geographicAOI, locale);
+                final var chooser = new CRSChooser(factory, filterByDatum, geographicAOI, locale);
                 newValue = chooser.showDialog(GUIUtilities.getWindow(property)).orElse(null);
                 if (newValue == null) {
                     newValue = oldValue;
@@ -898,8 +881,8 @@ public class RecentReferenceSystems {
 
     /**
      * Notifies all {@link MenuSync} that the list of reference systems changed. We send a notification manually
-     * instead of relying on {@code ListChangeListener} in order to process only one event after we have done
-     * a bunch of changes instead of an event after each individual add or remove operation.
+     * instead of relying on {@code ListChangeListener} because we want to process only one event after we have
+     * done a bunch of changes instead of an event after each individual add or remove operation.
      */
     private void notifyChanges() {
         for (final WritableValue<ReferenceSystem> value : controlValues) {
@@ -946,7 +929,7 @@ public class RecentReferenceSystems {
          * Now filter the `referenceSystems` list, retaining only elements that are present in `selected`.
          * We do that way for having selected elements in the same order as they appear in JavaFX controls.
          */
-        final List<ReferenceSystem> ordered = new ArrayList<>(count);
+        final var ordered = new ArrayList<ReferenceSystem>(count);
         if (count != 0) {
             // (count > 0) implies (referenceSystems != null).
             for (final ReferenceSystem system : referenceSystems) {
@@ -981,28 +964,26 @@ next:       for (int i=0; i<count; i++) {
 
     /**
      * Creates a box offering choices among the reference systems specified to this {@code RecentReferenceSystems}.
-     * The returned control may be initially empty, in which case its content will be automatically set at
-     * a later time (after a background thread finished to process the {@link CoordinateReferenceSystem}s).
+     * The returned control may be initially empty and be automatically populated at a later time,
+     * after a background thread finished to process the list of reference systems.
      *
-     * <p>If the {@code filtered} argument is {@code true}, then the choice box will contain only reference systems
-     * that can be used for rendering purposes. That filtered list can contain {@link CoordinateReferenceSystem}
-     * instances but not reference systems by identifiers such as {@linkplain MilitaryGridReferenceSystem MGRS}.
-     * The latter are usable only for the purposes of formatting coordinate values as texts.</p>
+     * <p>If the {@code renderable} argument is {@code true}, then the choice box will contain only reference systems
+     * that can be used for rendering purposes. The list includes {@link CoordinateReferenceSystem} instances
+     * but not reference systems by identifiers such as {@linkplain MilitaryGridReferenceSystem MGRS}.</p>
      *
      * <h4>Limitations</h4>
      * There is currently no mechanism for disposing the returned control. For garbage collecting the
      * returned {@code ChoiceBox}, this {@code RecentReferenceSystems} must be garbage-collected as well.
      *
-     * @param  filtered  whether the choice box should contain only {@link CoordinateReferenceSystem} instances.
-     * @param  action    the action to execute when a reference system is selected.
-     * @return a choice box with reference systems specified by {@code setPreferred(…)}
-     *         and {@code addAlternatives(…)} methods.
+     * @param  renderable  whether the choice box should be restricted to items that can be used for rendering maps.
+     * @param  action      the action to execute when a reference system is selected.
+     * @return a choice box with reference systems specified by {@code setPreferred(…)} and {@code addAlternatives(…)} methods.
      *
      * @since 1.3
      */
-    public ChoiceBox<ReferenceSystem> createChoiceBox(final boolean filtered, final ChangeListener<ReferenceSystem> action) {
+    public ChoiceBox<ReferenceSystem> createChoiceBox(final boolean renderable, final ChangeListener<ReferenceSystem> action) {
         ArgumentChecks.ensureNonNull("action", action);
-        final var choices = new ChoiceBox<ReferenceSystem>(getReferenceSystems(filtered));
+        final var choices = new ChoiceBox<ReferenceSystem>(getReferenceSystems(renderable));
         choices.setConverter(new ObjectStringConverter<>(choices.getItems(), locale));
         choices.valueProperty().addListener(new SelectionListener(action));
         controlValues.add(choices.valueProperty());
@@ -1010,38 +991,37 @@ next:       for (int i=0; i<count; i++) {
     }
 
     /**
-     * Creates menu items offering choices among the reference systems specified to this {@code RecentReferenceSystems}.
-     * The items will be inserted in the {@linkplain Menu#getItems() menu list}. The content of that list will
-     * change at any time after this method returned: items will be added or removed as a result of user actions.
+     * Creates a menu offering choices among the reference systems specified to this {@code RecentReferenceSystems}.
+     * The returned control may be initially empty and be automatically populated at a later time,
+     * after a background thread finished to process the list of reference systems.
      *
-     * <p>If the {@code filtered} argument is {@code true}, then the menu items will contain only reference systems
-     * that can be used for rendering purposes. That filtered list can contain {@link CoordinateReferenceSystem}
-     * instances but not reference systems by identifiers such as {@linkplain MilitaryGridReferenceSystem MGRS}.
-     * The latter are usable only for the purposes of formatting coordinate values as texts.</p>
+     * <p>If the {@code renderable} argument is {@code true}, then the menu will contain only reference systems
+     * that can be used for rendering purposes. The list includes {@link CoordinateReferenceSystem} instances
+     * but not reference systems by identifiers such as {@linkplain MilitaryGridReferenceSystem MGRS}.</p>
      *
      * <h4>Limitations</h4>
      * There is currently no mechanism for disposing the returned control. For garbage collecting the
      * returned {@code Menu}, this {@code RecentReferenceSystems} must be garbage-collected as well.
      *
-     * @param  filtered  whether the menu should contain only {@link CoordinateReferenceSystem} instances.
-     * @param  action    the action to execute when a reference system is selected.
-     * @return the menu containing items for reference systems.
+     * @param  renderable  whether the menu should be restricted to items that can be used for rendering maps.
+     * @param  action      the action to execute when a reference system is selected.
+     * @return a menu with reference systems specified by {@code setPreferred(…)} and {@code addAlternatives(…)} methods.
      *
      * @since 1.3
      */
-    public Menu createMenuItems(final boolean filtered, final ChangeListener<ReferenceSystem> action) {
+    public Menu createMenuItems(final boolean renderable, final ChangeListener<ReferenceSystem> action) {
         ArgumentChecks.ensureNonNull("action", action);
-        final List<ReferenceSystem> main = getReferenceSystems(filtered);
-        final List<CoordinateReferenceSystem> derived = (filtered) ? null : cellIndiceSystems;
+        final List<ReferenceSystem> main = getReferenceSystems(renderable);
+        final List<CoordinateReferenceSystem> derived = (renderable) ? null : cellIndiceSystems;
         final var menu = new Menu(Vocabulary.forLocale(locale).getString(Vocabulary.Keys.ReferenceSystem));
-        final var property = new MenuSync(main, !filtered, derived, menu, new SelectionListener(action));
+        final var property = new MenuSync(main, !renderable, derived, menu, new SelectionListener(action));
         menu.getProperties().put(SELECTED_ITEM_KEY, property);
         controlValues.add(property);
         return menu;
     }
 
     /**
-     * Returns the property for the selected value in a menu created by {@link #createMenuItems(boolean, ChangeListener)}.
+     * Returns the property for the selected value in a menu created by {@code createMenuItems(…)}.
      *
      * @param  menu  the menu, or {@code null} if none.
      * @return the property for the selected value, or {@code null} if none.

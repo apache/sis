@@ -76,7 +76,7 @@ import org.opengis.referencing.crs.DerivedCRS;
 
 
 /**
- * A list of Coordinate Reference Systems (CRS) from which the user can select.
+ * A list of Coordinate Reference Systems (<abbr>CRS</abbr>) from which the user can select.
  * The CRS choices is built in a background thread from a specified {@link CRSAuthorityFactory}.
  *
  * @author  Johann Sorel (Geomatys)
@@ -137,29 +137,45 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
     private WKTPane wktPane;
 
     /**
-     * Creates a chooser proposing all coordinate reference systems from the default factory.
+     * Creates a chooser proposing coordinate reference systems from the default factory.
      */
     public CRSChooser() {
-        this(null, null, null);
+        this(null, null, null, null);
     }
 
     /**
-     * Creates a chooser proposing all coordinate reference systems from the given factory.
-     * If the given factory is {@code null}, then a
-     * {@linkplain org.apache.sis.referencing.CRS#getAuthorityFactory(String) default factory}
-     * capable to handle at least some EPSG codes will be used.
+     * Creates a chooser proposing coordinate reference systems from the given factory.
+     * If the given factory is {@code null}, then a default factory capable to handle
+     * at least some <abbr>EPSG</abbr> codes will be used.
      *
      * @param  factory         the factory to use for creating coordinate reference systems, or {@code null} for default.
      * @param  areaOfInterest  geographic area for which to choose a CRS, or {@code null} if no restriction.
      * @param  locale          the preferred locale for displaying object name, or {@code null} for the default locale.
      */
-    @SuppressWarnings({"unchecked", "this-escape"})
     public CRSChooser(final CRSAuthorityFactory factory, final Envelope areaOfInterest, Locale locale) {
+        this(factory, null, areaOfInterest, locale);
+    }
+
+    /**
+     * Creates a chooser proposing identified objects from the given factory.
+     * If the given factory is {@code null}, then a default factory capable to handle
+     * at least some <abbr>EPSG</abbr> codes will be used.
+     *
+     * @param  factory         the factory to use for creating coordinate reference systems, or {@code null} for default.
+     * @param  filter          provides the base type of objects for which we want authority codes.
+     * @param  areaOfInterest  geographic area for which to choose a CRS, or {@code null} if no restriction.
+     * @param  locale          the preferred locale for displaying object name, or {@code null} for the default locale.
+     */
+    @SuppressWarnings({"unchecked", "this-escape"})
+    CRSChooser(final CRSAuthorityFactory factory,
+               final FilterByDatum filter,
+               final Envelope areaOfInterest, Locale locale)
+    {
         this.areaOfInterest = Utils.toGeographic(CRSChooser.class, "<init>", areaOfInterest);
         if (locale == null)  locale     = Locale.getDefault();
         final Resources      i18n       = Resources.forLocale(locale);
         final Vocabulary     vocabulary = Vocabulary.forLocale(locale);
-        final AuthorityCodes codeList   = new AuthorityCodes(factory, locale);
+        final AuthorityCodes codeList   = new AuthorityCodes(factory, filter, locale);
         table = new TableView<>(codeList);
         codeList.owner = table;
         /*

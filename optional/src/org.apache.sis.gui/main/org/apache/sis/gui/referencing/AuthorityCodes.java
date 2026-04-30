@@ -52,11 +52,6 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  * A list of authority codes (usually for <abbr>CRS</abbr>) for which to fetch code values in a background thread.
  * The <abbr>CRS</abbr> names are fetched only when needed.
  *
- * @todo {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess} internally uses a {@link java.util.Map}
- *       from codes to descriptions. We could open an access to this map for a little bit more efficiency.
- *       It will be necessary if we want to use {@link AuthorityCodes} for other kinds of objects than CRS
- *       (see {@link #type} field).
- *
  * @author  Martin Desruisseaux (Geomatys)
  */
 final class AuthorityCodes extends ObservableListBase<Code>
@@ -77,11 +72,9 @@ final class AuthorityCodes extends ObservableListBase<Code>
     TableView<Code> owner;
 
     /**
-     * The type of object for which we want authority codes. Fixed to {@link CoordinateReferenceSystem} for now,
-     * but could be made configurable in a future version. Making this field configurable would require resolving
-     * the "todo" documented in class javadoc.
+     * The type of object for which we want authority codes.
      */
-    private static final Class<? extends IdentifiedObject> type = CoordinateReferenceSystem.class;
+    private final Class<? extends IdentifiedObject> type;
 
     /**
      * The authority codes obtained from the factory. The list elements are provided by a background thread.
@@ -132,11 +125,13 @@ final class AuthorityCodes extends ObservableListBase<Code>
      * capable to handle at least some EPSG codes will be used.
      *
      * @param  factory  the authority factory, or {@code null} for default factory.
+     * @param  filter   provides the base type of objects for which we want authority codes.
      * @param  locale   the preferred locale of CRS descriptions.
      */
-    AuthorityCodes(final CRSAuthorityFactory factory, final Locale locale) {
-        this.locale  = locale;
+    AuthorityCodes(final CRSAuthorityFactory factory, final FilterByDatum filter, final Locale locale) {
         this.factory = factory;
+        this.type    = (filter != null) ? filter.baseType() : CoordinateReferenceSystem.class;
+        this.locale  = locale;
         this.codes   = new ArrayList<>();
         this.loader  = new Loader();
         loader.start();

@@ -657,7 +657,7 @@ public class CoverageExplorer extends Widget {
             final ImageRequest request = new ImageRequest(resource, coverage, null);
             final CoverageControls c = (CoverageControls) views.get(View.IMAGE);
             if (c != null) try {
-                request.zoom = c.view.getGridGeometry();
+                request.visibleArea = c.view.getGridGeometry();
             } catch (RenderException e) {
                 CoverageCanvas.unexpectedException("getGridGeometry", e);
             }
