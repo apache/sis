@@ -19,6 +19,7 @@ package org.apache.sis.gui.coverage;
 import java.util.Map;
 import java.util.concurrent.Future;
 import java.awt.image.RenderedImage;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.storage.DataStoreException;
@@ -39,6 +40,11 @@ import org.apache.sis.map.coverage.RenderingData;
  * @author  Martin Desruisseaux (Geomatys)
  */
 final class StyledRenderingData extends RenderingData {
+    /**
+     * Name of the grid <abbr>CRS</abbr>, derived from the resource identifier.
+     */
+    Identifier gridCrsName;
+
     /**
      * Key of the currently selected alternative in {@link CoverageCanvas#derivedImages} map.
      *

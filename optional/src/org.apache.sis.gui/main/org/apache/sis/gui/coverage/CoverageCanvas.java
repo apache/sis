@@ -58,11 +58,11 @@ import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
@@ -676,6 +676,9 @@ public class CoverageCanvas extends MapCanvasAWT {
             });
         } else {
             BackgroundThreads.execute(new Task<GridGeometry>() {
+                /** Name of the grid <abbr>CRS</abbr>, derived from the resource identifier. */
+                private Identifier gridCrsName;
+
                 /** Information about all bands. */
                 private List<SampleDimension> ranges;
 
@@ -693,13 +696,12 @@ public class CoverageCanvas extends MapCanvasAWT {
                             domain = coverage.getGridGeometry();
                             ranges = coverage.getSampleDimensions();
                             scales = null;
-                        } else try {
+                        } else {
                             domain = resource.getGridGeometry();
                             ranges = resource.getSampleDimensions();
                             scales = Containers.peekFirst(resource.getAvailableResolutions());
-                        } catch (BackingStoreException e) {
-                            throw e.unwrapOrRethrow(DataStoreException.class);
                         }
+                        gridCrsName = ImageRequest.gridCrsName(resource, domain);
                         if (domain != null) {
                             /*
                              * The domain should never be null and should always be complete (including envelope).
@@ -742,6 +744,8 @@ public class CoverageCanvas extends MapCanvasAWT {
                                 }
                             }
                         }
+                    } catch (BackingStoreException e) {
+                        throw e.unwrapOrRethrow(DataStoreException.class);
                     } finally {
                         LogHandler.loadingStop(id);
                     }
@@ -755,7 +759,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                 @Override protected void succeeded() {
                     runAfterRendering(() -> {
                         try {
-                            setNewSource(getValue(), ranges, visibleArea);
+                            setNewSource(gridCrsName, getValue(), ranges, visibleArea);
                             requestRepaint();                   // Cause `Worker` class to be executed.
                         } catch (RuntimeException ex) {         // Mostly for `BackingStoreException`.
                             clear();
@@ -810,14 +814,20 @@ public class CoverageCanvas extends MapCanvasAWT {
      * <p>All arguments can be {@code null} for clearing the canvas.
      * This method is invoked in JavaFX thread.</p>
      *
+     * @param  gridCrsName  name of the grid <abbr>CRS</abbr>, derived from the resource identifier.
      * @param  domain       the multi-dimensional grid geometry, or {@code null} if there is no data.
      * @param  ranges       descriptions of bands, or {@code null} if there is no data.
      * @param  visibleArea  initial "objective to display" transform to use, or {@code null} for automatic.
      */
-    private void setNewSource(GridGeometry domain, final List<SampleDimension> ranges, final GridGeometry visibleArea) {
+    private void setNewSource(final Identifier gridCrsName,
+                                    GridGeometry domain,
+                              final List<SampleDimension> ranges,
+                              final GridGeometry visibleArea)
+    {
         if (TRACE) {
             trace("setNewSource(…): the new domain of data is:%n\t%s", domain);
         }
+        data.gridCrsName = null;
         clearRenderedImage();
         data.clear();
         /*
@@ -855,18 +865,30 @@ public class CoverageCanvas extends MapCanvasAWT {
             if (domain.isDefined(GridGeometry.ENVELOPE)) {
                 bounds = domain.getEnvelope();
                 if (bounds.getCoordinateReferenceSystem() == null) try {
-                    final var name = new ImmutableIdentifier(null, null, "Cell indices");
                     final var copy = new GeneralEnvelope(bounds);
-                    copy.setCoordinateReferenceSystem(domain.createGridCRS(name, PixelInCell.CELL_CORNER));
+                    copy.setCoordinateReferenceSystem(domain.createGridCRS(gridCrsName, PixelInCell.CELL_CORNER));
                     bounds = copy;
                 } catch (FactoryException e) {
                     unexpectedException(e);
                 }
             }
         }
+        data.gridCrsName = gridCrsName;
         data.setImageSpace(domain, ranges, xyDimensions);
         initialize(visibleArea);
         setObjectiveBounds(bounds);
+    }
+
+    /**
+     * Return a name of the grid <abbr>CRS</abbr>, derived from the resource identifier.
+     * This method never return {@code null}.
+     */
+    final Identifier gridCrsName() {
+        Identifier name = data.gridCrsName;
+        if (name == null) {
+            name = CommonCRS.Engineering.GRID.datum().getName();
+        }
+        return name;
     }
 
     /**
@@ -1478,7 +1500,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         } finally {
             isCoverageAdjusting = false;
         }
-        setNewSource(null, null, null);
+        setNewSource(null, null, null, null);
         super.clear();
     }
 

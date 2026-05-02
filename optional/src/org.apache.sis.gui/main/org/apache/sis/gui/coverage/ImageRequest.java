@@ -18,9 +18,12 @@ package org.apache.sis.gui.coverage;
 
 import java.util.Objects;
 import java.util.Optional;
+import org.opengis.metadata.Identifier;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 
@@ -31,7 +34,7 @@ import org.apache.sis.storage.DataStoreException;
  * {@linkplain GridCoverage#render(GridExtent) rendering} and image in a background thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.7
  *
  * @see GridView#setImage(ImageRequest)
  * @see CoverageExplorer#setCoverage(ImageRequest)
@@ -162,6 +165,29 @@ public class ImageRequest {
      */
     public final Optional<GridCoverage> getCoverage() {
         return Optional.ofNullable(coverage);
+    }
+
+    /**
+     * Returns the name of the grid <abbr>CRS</abbr>, derived from the resource identifier.
+     *
+     * @param  resource  resource from which to get the identifier, or {@code null} if none.
+     * @param  domain    grid geometry of the resource or coverage loaded from the resource.
+     * @return name derived from the identifier which can be used for the grid <abbr>CRS</abbr>.
+     * @throws DataStoreException if an error occurred while fetching the identifier.
+     */
+    static Identifier gridCrsName(final GridCoverageResource resource, final GridGeometry domain)
+            throws DataStoreException
+    {
+        if (resource != null) {
+            final Identifier name = NamedIdentifier.castOrCopy(resource.getIdentifier().orElse(null));
+            if (name != null) {
+                return name;
+            }
+        }
+        return (domain.isDefined(GridGeometry.GRID_TO_CRS)
+                        ? CommonCRS.Engineering.GRID.datum()    // "Unknown grid"
+                        : CommonCRS.Engineering.GRID.crs())     // "Cell indices"
+                .getName();
     }
 
     /**

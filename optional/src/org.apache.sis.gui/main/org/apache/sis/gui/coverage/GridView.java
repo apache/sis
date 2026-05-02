@@ -36,6 +36,7 @@ import javafx.scene.control.ScrollBar;
 import javafx.scene.control.Skin;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import org.opengis.metadata.Identifier;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -58,7 +59,7 @@ import org.apache.sis.image.DataType;
  * <p>This class is designed for large images, with tiles loaded in a background thread only when first needed.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see CoverageExplorer
  *
@@ -196,7 +197,7 @@ public class GridView extends Control {
      * This is used only for notifications. A future version may use a more generic listener.
      * We use this specific mechanism because there is no {@code coverageProperty} in this class.
      *
-     * @see GridControls#notifyDataChanged(GridCoverageResource, GridCoverage)
+     * @see GridControls#notifyDataChanged(Identifier, GridCoverageResource, GridCoverage)
      */
     final GridControls controls;
 
@@ -308,7 +309,7 @@ public class GridView extends Control {
         if (source == null) {
             setImage((RenderedImage) null);
             if (controls != null) {
-                controls.notifyDataChanged(null, null);
+                controls.notifyDataChanged(null, null, null);
             }
         } else {
             cancelLoader();
@@ -320,15 +321,19 @@ public class GridView extends Control {
     /**
      * Invoked after the image has been loaded or after failure.
      *
+     * @param  name      an identifier for the grid <abbr>CRS</abbr>. Can be null only if {@code coverage} is null.
      * @param  resource  the new source of coverage, or {@code null} if none.
      * @param  coverage  the new coverage, or {@code null} if none.
      * @param  image     the loaded image, or {@code null} on failure.
      */
-    private void setLoadedImage(GridCoverageResource resource, GridCoverage coverage, RenderedImage image) {
+    private void setLoadedImage(final Identifier name,
+                                final GridCoverageResource resource,
+                                final GridCoverage coverage,
+                                final RenderedImage image) {
         loader = null;          // Must be first for preventing cancellation.
         setImage(image);
         if (controls != null && !controls.isAdjustingSlice) {
-            controls.notifyDataChanged(resource, coverage);
+            controls.notifyDataChanged(name, resource, coverage);
         }
     }
 
@@ -342,6 +347,11 @@ public class GridView extends Control {
          * The image source together with optional parameters for reading only a subset.
          */
         private final ImageRequest request;
+
+        /**
+         * An identifier of the coverage, or {@code null} if none.
+         */
+        private Identifier gridCrsName;
 
         /**
          * The coverage that has been read.
@@ -373,10 +383,11 @@ public class GridView extends Control {
                 if (isCancelled()) {
                     return null;
                 }
+                final GridGeometry gg = coverage.getGridGeometry();
+                gridCrsName = ImageRequest.gridCrsName(request.resource, gg);
                 GridExtent slice = request.slice;
                 final GridControls c = controls;
                 if (c != null) {
-                    final GridGeometry gg = coverage.getGridGeometry();
                     slice = BackgroundThreads.runAndWait(() -> {
                         final GridExtent s = c.configureSliceSelector(gg);
                         final int[] xydims = c.sliceSelector.getXYDimensions();
@@ -396,7 +407,7 @@ public class GridView extends Control {
          */
         @Override
         protected void succeeded() {
-            setLoadedImage(request.resource, coverage, getValue());
+            setLoadedImage(gridCrsName, request.resource, coverage, getValue());
         }
 
         /**
@@ -404,7 +415,7 @@ public class GridView extends Control {
          */
         @Override
         protected void cancelled() {
-            setLoadedImage(null, null, null);
+            setLoadedImage(null, null, null, null);
         }
 
         /**

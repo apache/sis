@@ -183,7 +183,7 @@ final class CoverageControls extends ViewAndControls {
             final int visibleBand = 0;          // TODO: provide a selector for the band to show.
             items.setAll(coverage.getSampleDimensions().get(visibleBand).getCategories());
         }
-        owner.notifyDataChanged(resource, coverage);
+        owner.notifyDataChanged(view.gridCrsName(), resource, coverage);
     }
 
     /**

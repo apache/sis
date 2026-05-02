@@ -37,6 +37,7 @@ import javafx.scene.control.Menu;
 import javafx.concurrent.Task;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -44,7 +45,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.gazetteer.MilitaryGridReferenceSystem;
@@ -295,7 +295,7 @@ public class RecentReferenceSystems {
     /**
      * Sets the reference systems, area of interest and "referencing by grid indices" systems.
      * Contrarily to other methods in this class, this method can be invoked from any thread.
-     * This method performs the following tasks, whith the other methods invoked from the JavaFX thread:
+     * This method performs the following tasks, where the methods cited below are invoked from the JavaFX thread:
      *
      * <ul>
      *   <li>Invokes {@link #setPreferred(boolean, ReferenceSystem)} with the first <abbr>CRS</abbr> in iteration order.</li>
@@ -308,6 +308,7 @@ public class RecentReferenceSystems {
      * For each entry, the map key should be the {@link org.apache.sis.storage.Resource#getIdentifier() identifier} of
      * the resource that provided the {@link GridGeometry} value, or other text allowing the user to identify the resource.
      * Those keys are used for naming the <abbr>CRS</abbr>s of cell coordinates, which are different for each grid coverage.
+     * See the {@linkplain GridGeometry#createGridCRS grid <abbr>grid CRS</abbr> documentation} for more details.
      *
      * <p>The {@code replaceByAuthoritativeDefinition} argument specifies whether the coordinate reference systems
      * should be replaced by authoritative definitions when such definitions are found. If {@code true} then,
@@ -320,7 +321,7 @@ public class RecentReferenceSystems {
      * @since 1.3
      */
     public void setGridReferencing(final boolean replaceByAuthoritativeDefinition,
-                                   final Map<String, GridGeometry> geometries)
+                                   final Map<Identifier, GridGeometry> geometries)
     {
         /*
          * Fetch or compute information needed, but without modifying the state of this object yet.
@@ -331,7 +332,7 @@ public class RecentReferenceSystems {
         final var refsys    = new CoordinateReferenceSystem[geometries.size()];
         final var derived   = new CoordinateReferenceSystem[refsys.length];
         final var envelopes = new Envelope[refsys.length];
-        for (final Map.Entry<String, GridGeometry> entry : geometries.entrySet()) {
+        for (final Map.Entry<Identifier, GridGeometry> entry : geometries.entrySet()) {
             final GridGeometry gg = entry.getValue();
             if (gg.isDefined(GridGeometry.CRS)) {
                 if (gg.isDefined(GridGeometry.ENVELOPE)) {
@@ -340,8 +341,7 @@ public class RecentReferenceSystems {
                 refsys[countCRS++] = gg.getCoordinateReferenceSystem();
             }
             try {
-                final var name = new ImmutableIdentifier(null, null, entry.getKey());
-                derived[countCIR] = gg.createGridCRS(name, PixelInCell.CELL_CENTER);
+                derived[countCIR] = gg.createGridCRS(entry.getKey(), PixelInCell.CELL_CENTER);
                 countCIR++;     // Increment only if above line was successful.
             } catch (FactoryException e) {
                 errorOccurred(e);
