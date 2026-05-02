@@ -289,12 +289,12 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      *     findResource(getIdentifier().toString()) == this
      *     }
      *
-     * Note that this identifier is not guaranteed to be unique between different {@code DataStore} instances;
-     * it only needs to be unique among the resources provided by this data store instance.
+     * Note that this identifier is not guaranteed to be unique between different {@code DataStore} instances.
+     * It only needs to be unique among the resources provided by this data store instance.
      *
      * <h4>Default implementation</h4>
-     * <p>The default implementation searches for an identifier in the metadata,
-     * at the location shown below, provided that conditions are met:</p>
+     * The default implementation searches for an identifier in the metadata,
+     * at the locations shown below, provided that the following conditions are met:
      *
      * <blockquote>
      * <p><b>Path:</b> {@link Resource#getMetadata() metadata} /
@@ -302,7 +302,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getCitation() citation} /
      * {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getIdentifiers() identifier}</p>
      *
-     * <p><b>Condition:</b> in default implementation, the identifier is presents only if exactly one
+     * <p><b>Condition:</b> in default implementation, the identifier is present only if exactly one
      * {@code citation} is found at above path. If two or more {@code citation} instances are found,
      * the identification is considered ambiguous and an empty value is returned.</p>
      *

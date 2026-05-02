@@ -94,6 +94,7 @@ import static org.apache.sis.referencing.CRS.SeparationMode;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coordinate.CoordinateMetadata;
 import org.opengis.coordinate.MismatchedDimensionException;
+import org.opengis.referencing.crs.EngineeringCRS;
 
 
 /**
@@ -1891,10 +1892,19 @@ public class GridGeometry implements LenientComparable, Serializable {
      * by the {@linkplain #getGridToCRS grid to <abbr>CRS</abbr>} transform,
      * then this method creates {@link DerivedCRS} instances derived from the
      * {@link #getCoordinateReferenceSystem() <abbr>CRS</abbr> of this grid}.
-     * This strategy makes possible to use the returned <abbr>CRS</abbr> in a chain of operations
-     * with (for example) {@link org.apache.sis.referencing.CRS#findOperation CRS.findOperation(…)}.
+     * This strategy makes possible to use the returned <abbr>CRS</abbr> in a chain of coordinate operations
+     * created by (for example) {@link org.apache.sis.referencing.CRS#findOperation CRS.findOperation(…)}.
      * Otherwise (if there is no grid to <abbr>CRS</abbr> transform or no real-world <abbr>CRS</abbr>),
-     * this method creates {@link org.opengis.referencing.crs.EngineeringCRS} instances.
+     * then this method creates an {@link org.opengis.referencing.crs.EngineeringCRS} instance
+     * associated to an engineering datum identified by the given {@code name}.
+     *
+     * <h4>Recommendation about the name</h4>
+     * The {@code name} argument is not very important when this method creates {@link DerivedCRS} instances,
+     * because the datum is inherited from the real world <abbr>CRS</abbr>. However, if this method fallbacks
+     * on {@link EngineeringCRS}, then the {@code name} argument become the only way to determine whether
+     * a coordinate operation is possible between two such engineering <abbr>CRS</abbr>s.
+     * It is recommended to use an identifier which is unique for the grid. It may be, for example, derived
+     * from the {@linkplain org.apache.sis.storage.GridCoverageResource#getIdentifier() resource identifier}.
      *
      * <p><b>Alternative:</b> if the target grid geometry is known in advance,
      * {@link #createTransformTo(GridGeometry, PixelInCell)} can provide a
@@ -1905,6 +1915,8 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @return a derived, engineering or compound <abbr>CRS</abbr> for cell indices associated to the grid extent.
      * @throws InvalidGeodeticParameterException if characteristics of this grid geometry disallow this operation.
      * @throws FactoryException if another error occurred during the use of a referencing factory.
+     *
+     * @see #createTransformTo(GridGeometry, PixelInCell)
      *
      * @since 1.7
      */

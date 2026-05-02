@@ -51,7 +51,6 @@ import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import org.apache.sis.referencing.datum.DatumOrEnsemble;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import org.apache.sis.referencing.datum.DefaultTemporalDatum;
@@ -1915,7 +1914,7 @@ public enum CommonCRS {
      * </table></blockquote>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.1
+     * @version 1.7
      * @since   1.1
      */
     public enum Engineering {
@@ -1967,7 +1966,7 @@ public enum CommonCRS {
          *   <tr><th>Unit:</th> <td>{@link Units#UNITY}</td></tr>
          * </table></blockquote>
          */
-        GRID(new DefaultEngineeringDatum(Map.of(EngineeringDatum.NAME_KEY, "Cell indices"))),
+        GRID(new DefaultEngineeringDatum(properties(Vocabulary.Keys.UnknownGrid))),
 
         /**
          * A single-dimensional coordinate system for time in seconds since an unknown epoch.
@@ -1984,7 +1983,7 @@ public enum CommonCRS {
          *
          * @see Temporal
          */
-        TIME(new DefaultEngineeringDatum(Map.of(EngineeringDatum.NAME_KEY, "Time")));
+        TIME(new DefaultEngineeringDatum(properties(Vocabulary.Keys.Time)));
 
         /**
          * The datum.
@@ -2006,20 +2005,20 @@ public enum CommonCRS {
         /**
          * Returns the coordinate reference system associated to this engineering object.
          *
-         * @return the CRS associated to this enum.
+         * @return the CRS associated to this enumeration value.
          */
         public synchronized EngineeringCRS crs() {
             if (crs == null) {
                 final String x, y;
                 final AxisDirection dx, dy;
-                final Map<String,Object> pcs = Map.of(CartesianCS.NAME_KEY, datum.getName());
-                final Map<String,Object> properties = new HashMap<>(pcs);
                 CoordinateSystem cs = null;
+                Map<String, ?> properties = Map.of(CartesianCS.NAME_KEY, datum.getName());
+                Map<String, ?> csName = properties;
                 switch (this) {
                     case GEODISPLAY: {
                         x = "i"; dx = AxisDirection.EAST;
                         y = "j"; dy = AxisDirection.SOUTH;
-                        properties.put(EngineeringCRS.NAME_KEY, new NamedIdentifier(Citations.WMS, "1"));
+                        properties = Map.of(EngineeringCRS.NAME_KEY, new NamedIdentifier(Citations.WMS, "1"));
                         break;
                     }
                     case DISPLAY: {
@@ -2030,19 +2029,21 @@ public enum CommonCRS {
                     case GRID: {
                         x = "i"; dx = AxisDirection.COLUMN_POSITIVE;
                         y = "j"; dy = AxisDirection.ROW_POSITIVE;
+                        properties = properties(Vocabulary.Keys.CellIndices);
+                        csName = properties;
                         break;
                     }
                     case TIME: {
                         x  = y  = "t";
                         dx = dy = AxisDirection.FUTURE;
-                        cs = new DefaultTimeCS(pcs, new DefaultCoordinateSystemAxis(
-                                Map.of(TimeCS.NAME_KEY, x), x, dx, Units.SECOND));
+                        cs = new DefaultTimeCS(properties,
+                                new DefaultCoordinateSystemAxis(Map.of(TimeCS.NAME_KEY, x), x, dx, Units.SECOND));
                         break;
                     }
                     default: throw new AssertionError(this);
                 }
                 if (cs == null) {
-                    cs = new DefaultCartesianCS(pcs,
+                    cs = new DefaultCartesianCS(csName,
                             new DefaultCoordinateSystemAxis(Map.of(CartesianCS.NAME_KEY, x), x, dx, Units.PIXEL),
                             new DefaultCoordinateSystemAxis(Map.of(CartesianCS.NAME_KEY, y), y, dy, Units.PIXEL));
                 }
@@ -2054,7 +2055,7 @@ public enum CommonCRS {
         /**
          * Returns the datum associated to this engineering object.
          *
-         * @return the datum associated to this enum.
+         * @return the datum associated to this enumeration value.
          */
         public EngineeringDatum datum() {
             return datum;
@@ -2101,7 +2102,7 @@ public enum CommonCRS {
      * Puts the given name in a map of properties to be given to object constructors.
      */
     private static Map<String,?> properties(final InternationalString name) {
-        return Map.of(NAME_KEY, new NamedIdentifier(null, name));
+        return Map.of(IdentifiedObject.NAME_KEY, new NamedIdentifier(null, name));
     }
 
     /**

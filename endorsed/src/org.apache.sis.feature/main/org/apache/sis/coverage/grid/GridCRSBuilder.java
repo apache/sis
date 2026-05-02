@@ -38,16 +38,15 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
+import org.opengis.referencing.datum.EngineeringDatum;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
-import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.CoordinateSystems;
@@ -105,14 +104,6 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
      * This is a localized text saying "Conversions from coverage <abbr>CRS</abbr> to grid cell indices."
      */
     private static final InternationalString SCOPE = Resources.formatInternational(Resources.Keys.CrsToGridConversion);
-
-    /**
-     * Name of the coordinate systems created by this class.
-     * The current version uses the same name for all coordinate systems.
-     * We do not create different names for different combination of axes.
-     */
-    private static final NamedIdentifier CS_NAME = new NamedIdentifier(
-            Citations.SIS, Vocabulary.formatInternational(Vocabulary.Keys.GridExtent));
 
     /**
      * The extent of the grid geometry, or {@code null} if none.
@@ -207,7 +198,8 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
             dimensionNames = new DimensionNameType[dimension];
         }
         final CoordinateSystem cs = createCS(dimension, dimensionNames, directions(dimensionNames), 1, true);
-        return getCRSFactory().createEngineeringCRS(properties(name), CommonCRS.Engineering.GRID.datum(), cs);
+        final EngineeringDatum datum = getDatumFactory().createEngineeringDatum(properties(name));
+        return getCRSFactory().createEngineeringCRS(properties(datum.getName()), datum, cs);
     }
 
     /**
@@ -342,6 +334,15 @@ toGrid: try {
     }
 
     /**
+     * Returns the coordinate reference system that we use as a template for object names.
+     * This template uses generic terms such as "Cell indices" for the <abbr>CRS</abbr> name
+     * and "Unknown grid" for the datum.
+     */
+    private static EngineeringCRS template() {
+        return CommonCRS.Engineering.GRID.crs();
+    }
+
+    /**
      * Creates the coordinate system for the derived or engineering <abbr>CRS</abbr> of a grid.
      *
      * @param  dimension       number of dimensions of the coordinate system to create.
@@ -412,7 +413,7 @@ toGrid: try {
          * coordinate system type in last resort.
          */
         @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final Map<String,?> properties = properties(CS_NAME);
+        final Map<String,?> properties = properties(template().getCoordinateSystem().getName());
         final CoordinateSystemAxis axis = axes[0];
         switch (dimension) {
             case 1:  {
@@ -533,6 +534,7 @@ toGrid: try {
         if (cs == null) {
             return Optional.empty();
         }
-        return Optional.of(getCRSFactory().createEngineeringCRS(properties(cs.getName()), CommonCRS.Engineering.GRID.datum(), cs));
+        final EngineeringCRS template = template();
+        return Optional.of(getCRSFactory().createEngineeringCRS(properties(template.getName()), template.getDatum(), cs));
     }
 }
