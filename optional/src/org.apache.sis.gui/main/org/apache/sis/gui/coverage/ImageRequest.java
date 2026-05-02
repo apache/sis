@@ -18,12 +18,14 @@ package org.apache.sis.gui.coverage;
 
 import java.util.Objects;
 import java.util.Optional;
+import org.opengis.util.NameSpace;
+import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 
@@ -179,9 +181,24 @@ public class ImageRequest {
             throws DataStoreException
     {
         if (resource != null) {
-            final Identifier name = NamedIdentifier.castOrCopy(resource.getIdentifier().orElse(null));
+            final GenericName name = resource.getIdentifier().orElse(null);
             if (name != null) {
-                return name;
+                if (name instanceof Identifier) {
+                    return (Identifier) name;
+                }
+                /*
+                 * Do not use `NamedIdentifier` because we want the full name as identifier code.
+                 * By contrast, `NamedIdentifier` takes only the tip (because it is better suited
+                 * to datum names or projection parameter names). In the context of resource, the
+                 * tip alone is not sufficient because it is often only an image number in a file
+                 * specified by the name component before the tip.
+                 */
+                String codeSpace = null;
+                final NameSpace scope = name.scope();
+                if (scope != null && !scope.isGlobal()) {
+                    codeSpace = scope.name().toString();
+                }
+                return new ImmutableIdentifier(null, codeSpace, name.toString());
             }
         }
         return (domain.isDefined(GridGeometry.GRID_TO_CRS)

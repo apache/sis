@@ -742,8 +742,8 @@ public final class IdentifiedObjects {
      *   <li>Some Latin diacritical signs (e.g. {@code "Réunion"} and {@code "Reunion"} are considered equal).</li>
      *   <li>All characters that are not {@linkplain Character#isLetterOrDigit(int) letters or digits}
      *       (e.g. {@code "Mercator (1SP)"} and {@code "Mercator_1SP"} are considered equal).</li>
-     *   <li>Namespaces or scopes, because this method is typically invoked with either the value of another
-     *       <code>IdentifiedObject.getName().getCode()</code> or with the <i>Well Known Text</i> (WKT)
+     *   <li>Namespaces or scopes, because this method is typically invoked with either the value of another call
+     *       to {@code IdentifiedObject.getName().getCode()} or with the <i>Well Known Text</i> (<abbr>WKT</abbr>)
      *       projection or parameter name.</li>
      * </ul>
      *

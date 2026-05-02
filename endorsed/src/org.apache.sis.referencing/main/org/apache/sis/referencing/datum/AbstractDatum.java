@@ -391,17 +391,21 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *       be ignored.</li>
      * </ul>
      *
+     * Note that the comparison ignores {@linkplain Identifier#getCodeSpace() code spaces}
+     * and {@linkplain GenericName#scope() scopes}.
+     *
      * <h4>Future evolutions</h4>
-     * This method implements heuristic rules learned from experience while trying to provide inter-operability
-     * with different data producers. Those rules may be adjusted in any future SIS version according experience
-     * gained while working with more data producers.
+     * This method implements recommendations from the <abbr>WKT</abbr> 2 specification,
+     * together with heuristic rules learned from experience while trying to provide inter-operability
+     * with different data producers. Those rules may be adjusted in any future <abbr>SIS</abbr> version
+     * according experience gained while working with more data producers.
      *
      * @param  name  the name to compare.
      * @return {@code true} if the primary name or at least one alias matches the specified {@code name}.
      */
     @Override
     public boolean isHeuristicMatchForName(final String name) {
-        return NameToIdentifier.isHeuristicMatchForName(super.getName(), super.getAlias(), name, Simplifier.INSTANCE);
+        return NameToIdentifier.isHeuristicMatchForName(super.getName(), super.getAlias(), name, Simplifier.FOR_DATUM);
     }
 
     /**
@@ -413,7 +417,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     static class Simplifier extends NameToIdentifier.Simplifier {
         /** The singleton simplifier for non-geodetic datum. */
-        static final Simplifier INSTANCE = new Simplifier();
+        static final Simplifier FOR_DATUM = new Simplifier();
 
         /** For subclasses and default instance only. */
         Simplifier() {}

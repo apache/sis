@@ -147,7 +147,7 @@ public final class DefaultImageDatum extends AbstractDatum {
         if (object == this) {
             return true;        // Slight optimization.
         }
-        return (object instanceof DefaultImageDatum) &&
+        return (super.equals(object, mode) && object instanceof DefaultImageDatum) &&
                 Objects.equals(pixelInCell, ((DefaultImageDatum) object).pixelInCell);
     }
 

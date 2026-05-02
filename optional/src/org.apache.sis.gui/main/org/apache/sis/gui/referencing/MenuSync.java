@@ -158,7 +158,7 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
         if (derived != null) {
             final Menu menu = new Menu(Resources.forLocale(locale).getString(Resources.Keys.ReferenceByCellIndices));
             cellIndicesMenus = menu.getItems();
-            updateCellIndicesMenus(locale);
+            updateCellIndicesMenus();
             rootMenus.add(menu);
         } else {
             cellIndicesMenus = null;
@@ -225,10 +225,8 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
      * Updates the {@link #cellIndicesMenus} list with current content of {@link #cellIndicesSystems}.
      * This method recycles existing menu items, creates new ones if needed and discards the ones that
      * are no longer in use.
-     *
-     * @param  systems  all CRS for grid indices to show in the "Referencing by cell indices" sub-menu.
      */
-    private void updateCellIndicesMenus(final Locale locale) {
+    private void updateCellIndicesMenus() {
         final int n = cellIndicesSystems.size();
         for (int i=0; i<n; i++) {
             final CoordinateReferenceSystem crs = cellIndicesSystems.get(i);
@@ -242,7 +240,10 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
                 cellIndicesMenus.add(item);
             }
             if (item.getProperties().put(REFERENCE_SYSTEM_KEY, crs) != crs) {
-                item.setText(IdentifiedObjects.getDisplayName(crs, locale));
+                item.setText(IdentifiedObjects.toString(crs.getName()));
+                // Note: use `toString(…)` instead of `getDisplayName(…)`
+                // because we are better to show the code space, since it
+                // is often the name of the file of the grid.
             }
         }
         for (int i = cellIndicesMenus.size(); --i >= n;) {
@@ -355,7 +356,7 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
             initialize();
         }
         if (cellIndicesSystems != null) {
-            updateCellIndicesMenus(locale);
+            updateCellIndicesMenus();
         }
     }
 

@@ -19,7 +19,6 @@ package org.apache.sis.storage.netcdf.base;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
 import java.util.OptionalLong;
@@ -565,12 +564,12 @@ public final class Axis extends NamedElement {
          * because this is controlled vocabulary.
          */
         final String name = getName();
-        final Map<String,Object> properties = new HashMap<>(4);
+        final var properties = new HashMap<String, Object>(4);
         properties.put(CoordinateSystemAxis.NAME_KEY, name);                        // Intentionally no namespace.
-        final List<GenericName> aliases = new ArrayList<>(2);
+        final var aliases = new ArrayList<GenericName>(2);
         final String standardName = coordinates.getAttributeAsString(CF.STANDARD_NAME);
         if (standardName != null) {
-            final NamedIdentifier std = new NamedIdentifier(Citations.NETCDF, standardName);
+            final var std = new NamedIdentifier(Citations.NETCDF, standardName);
             if (standardName.equals(name)) {
                 properties.put(CoordinateSystemAxis.NAME_KEY, std);                 // Store as primary name.
             } else {

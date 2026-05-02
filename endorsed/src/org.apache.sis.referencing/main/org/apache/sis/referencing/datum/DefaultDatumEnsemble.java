@@ -470,14 +470,14 @@ check:  if (it.hasNext()) {
      * Returns {@code true} if either the {@linkplain #getName() primary name} or at least
      * one {@linkplain #getAlias() alias} matches the given string according heuristic rules.
      * This method performs the comparison documented in the
-     * {@linkplain AbstractDatum#isHeuristicMatchForName(String) datum-class}.
+     * {@linkplain AbstractDatum#isHeuristicMatchForName(String) datum class}.
      *
      * @param  name  the name to compare.
      * @return {@code true} if the primary name or at least one alias matches the specified {@code name}.
      */
     @Override
     public boolean isHeuristicMatchForName(final String name) {
-        return NameToIdentifier.isHeuristicMatchForName(super.getName(), super.getAlias(), name, AbstractDatum.Simplifier.INSTANCE);
+        return NameToIdentifier.isHeuristicMatchForName(super.getName(), super.getAlias(), name, AbstractDatum.Simplifier.FOR_DATUM);
     }
 
     /**

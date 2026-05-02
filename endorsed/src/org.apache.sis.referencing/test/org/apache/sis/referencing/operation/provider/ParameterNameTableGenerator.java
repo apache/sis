@@ -201,8 +201,8 @@ public final class ParameterNameTableGenerator extends SimpleFileVisitor<Path> {
                 write(insertAt++, "  <caption>Parameter names</caption>");
                 write(insertAt++, descriptor.getName(), false);
                 for (final GenericName alias : descriptor.getAlias()) {
-                    write(insertAt++, (alias instanceof Identifier) ? (Identifier) alias : new NamedIdentifier(alias),
-                                       alias instanceof Deprecable && ((Deprecable) alias).isDeprecated());
+                    write(insertAt++, NamedIdentifier.toIdentifier(alias),
+                          alias instanceof Deprecable && ((Deprecable) alias).isDeprecated());
                 }
                 write(insertAt++, "</table>");
                 /*

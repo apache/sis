@@ -30,6 +30,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Michael Hausegger
  */
+@SuppressWarnings("exports")
 public final class AssociationRoleBuilderTest extends TestCase {
     /**
      * Creates a new test case.
@@ -42,9 +43,9 @@ public final class AssociationRoleBuilderTest extends TestCase {
      */
     @Test
     public void testMetadata() {
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder().setName("Highway");
-        final NamedIdentifier target = new NamedIdentifier(null, "Bridge");
-        final AssociationRoleBuilder builder = new AssociationRoleBuilder(ftb, null, target)
+        final var ftb     = new FeatureTypeBuilder().setName("Highway");
+        final var target  = new NamedIdentifier(null, "Bridge");
+        final var builder = new AssociationRoleBuilder(ftb, null, target)
                 .setDescription("Bridges on the highway")
                 .setDefinition("A definition")
                 .setDesignation("A designation")

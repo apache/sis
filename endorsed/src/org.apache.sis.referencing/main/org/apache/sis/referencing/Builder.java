@@ -350,14 +350,6 @@ public abstract class Builder<B extends Builder<B>> {
     }
 
     /**
-     * Converts the given name into an identifier. Note that {@link NamedIdentifier}
-     * implements both {@link GenericName} and {@link Identifier} interfaces.
-     */
-    private static Identifier toIdentifier(final GenericName name) {
-        return (name instanceof Identifier) ? (Identifier) name : new NamedIdentifier(name);
-    }
-
-    /**
      * Sets the property value for the given key, if a change is still possible. The check for change permission
      * is needed for all keys defined in the {@link Identifier} interface. This check is not needed for other keys,
      * so callers do not need to invoke this method for other keys.
@@ -582,7 +574,7 @@ public abstract class Builder<B extends Builder<B>> {
     public B addName(final Identifier name) {
         if (properties.putIfAbsent(IdentifiedObject.NAME_KEY, Objects.requireNonNull(name)) != null) {
             // A primary name is already present. Add the given name as an alias instead.
-            aliases.add(name instanceof GenericName ? (GenericName) name : new NamedIdentifier(name));
+            aliases.add(NamedIdentifier.toGenericName(name));
         }
         return self();
     }
@@ -607,7 +599,7 @@ public abstract class Builder<B extends Builder<B>> {
     public B addName(final GenericName name) {
         Objects.requireNonNull(name);
         if (properties.get(IdentifiedObject.NAME_KEY) == null) {
-            properties.put(IdentifiedObject.NAME_KEY, toIdentifier(name));
+            properties.put(IdentifiedObject.NAME_KEY, NamedIdentifier.toIdentifier(name));
         } else {
             aliases.add(name);
         }
@@ -838,7 +830,7 @@ public abstract class Builder<B extends Builder<B>> {
          * take the first alias as the new primary name.
          */
         if (properties.get(IdentifiedObject.NAME_KEY) == null && !aliases.isEmpty()) {
-            properties.put(IdentifiedObject.NAME_KEY, toIdentifier(aliases.remove(0)));
+            properties.put(IdentifiedObject.NAME_KEY, NamedIdentifier.toIdentifier(aliases.remove(0)));
         }
         return self();
     }

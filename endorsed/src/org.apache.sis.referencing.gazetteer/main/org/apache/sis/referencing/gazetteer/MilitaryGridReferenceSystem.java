@@ -301,7 +301,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             party = null;
             Logging.unexpectedException(LOGGER, MilitaryGridReferenceSystem.class, "<init>", e);
         }
-        NamedIdentifier name = new NamedIdentifier(null, "NATO", Resources.formatInternational(Resources.Keys.MGRS), null, null);
+        var name = new NamedIdentifier(null, "NATO", Resources.formatInternational(Resources.Keys.MGRS), null, null);
         return properties(name, IDENTIFIER, party);
     }
 
@@ -410,7 +410,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         /**
          * Cached information needed for building a MGRS reference from a direct position in the given CRS.
          */
-        private final Map<CoordinateReferenceSystem,Encoder> encoders;
+        private final Map<CoordinateReferenceSystem, Encoder> encoders;
 
         /**
          * Temporary positions used for encoding. References are kept for avoiding

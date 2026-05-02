@@ -86,7 +86,7 @@ final class FilterByDatum implements Predicate<ReferenceSystem> {
             }
         }
         types.remove(null);
-        if (types.isEmpty()) {
+        if (instances.isEmpty() && types.equals(Set.of(Datum.class))) {
             return null;
         }
         return new FilterByDatum(types.toArray(Class[]::new), instances.toArray(EngineeringDatum[]::new));

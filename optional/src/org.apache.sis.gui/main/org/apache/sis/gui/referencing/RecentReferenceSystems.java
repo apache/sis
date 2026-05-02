@@ -366,14 +366,13 @@ public class RecentReferenceSystems {
                 final boolean old = isAdjusting;
                 try {
                     isAdjusting = true;
-                    final CoordinateReferenceSystem preferred = refsys[0];
-                    if (preferred != null) {
+                    if (refsys.length != 0) {
+                        setPreferred(replaceByAuthoritativeDefinition, refsys[0]);
                         refsys[0] = null;
-                        setPreferred(replaceByAuthoritativeDefinition, preferred);
                         addAlternatives(replaceByAuthoritativeDefinition, refsys);  // Null elements are ignored.
-                        cellIndiceSystems.clear();
-                        cellIndiceSystems.addAll(cellCRS);
                     }
+                    cellIndiceSystems.clear();
+                    cellIndiceSystems.addAll(cellCRS);
                     filterByDatum = filter;
                     areaOfInterest.set(aoi);
                 } finally {
@@ -727,7 +726,7 @@ public class RecentReferenceSystems {
             final int n = referenceSystems.size();
             for (int j=0; j<values.length; j++) {
                 ReferenceSystem system = values[j];
-                if (system != null) {                   // See comment about empty `referenceSystems` list.
+                if (system != null) {
                     for (int i=0; i<n; i++) {
                         final ReferenceSystem candidate = referenceSystems.get(i);
                         if (Utilities.deepEquals(candidate, system, mode)) {
@@ -821,7 +820,7 @@ public class RecentReferenceSystems {
                     if (!found) {
                         if (count >= NUM_SHOWN_ITEMS) {
                             final List<ReferenceSystem> selected = getSelectedItems();
-                            for (int i=count; --i >= NUM_CORE_ITEMS;) {
+                            for (int i = count; --i >= NUM_CORE_ITEMS;) {
                                 if (!selected.contains(items.get(i))) {         // Do not remove selected items.
                                     items.remove(i);                            // Remove an item before `OTHER`.
                                     if (--count < NUM_SHOWN_ITEMS) break;

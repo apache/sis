@@ -637,13 +637,13 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *   <li>Some Latin diacritical signs (e.g. {@code "Réunion"} and {@code "Reunion"} are considered equal).</li>
      *   <li>All characters that are not {@linkplain Character#isLetterOrDigit(int) letters or digits}
      *       (e.g. {@code "Mercator (1SP)"} and {@code "Mercator_1SP"} are considered equal).</li>
-     *   <li>Namespaces or scopes, because this method is typically invoked with either the value of another
-     *       <code>IdentifiedObject.getName().getCode()</code> or with the <i>Well Known Text</i> (WKT)
+     *   <li>Namespaces or scopes, because this method is typically invoked with either the value of another call
+     *       to {@code IdentifiedObject.getName().getCode()} or with the <i>Well Known Text</i> (<abbr>WKT</abbr>)
      *       projection or parameter name.</li>
      * </ul>
      *
      * <h4>Usage</h4>
-     * This method is invoked by SIS when comparing in {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} mode
+     * This method is invoked by <abbr>SIS</abbr> when comparing with {@link ComparisonMode#IGNORE_METADATA}
      * two objects that can be differentiated only by some identifier (name or alias), like
      * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis coordinate system axes},
      * {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum},
@@ -653,8 +653,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *
      * <p>This method is also invoked when searching a parameter or operation method for a given name.
      * For example, the same projection is known as {@code "Mercator (variant A)"} (the primary name according EPSG)
-     * and {@code "Mercator (1SP)"} (the legacy name prior EPSG 7.6). Since the latter is still in frequent use, SIS
-     * accepts it as an alias of the <cite>Mercator (variant A)</cite> projection.</p>
+     * and {@code "Mercator (1SP)"} (the legacy name prior EPSG 7.6). Since the latter is still in frequent use,
+     * <abbr>SIS</abbr> accepts it as an alias of the <cite>Mercator (variant A)</cite> projection.</p>
      *
      * <h4>Overriding by subclasses</h4>
      * Some subclasses add more flexibility to the comparisons:
@@ -673,8 +673,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * <h4>Future evolutions</h4>
      * This method implements recommendations from the <abbr>WKT</abbr> 2 specification,
      * together with heuristic rules learned from experience while trying to provide inter-operability
-     * with different data producers. Those rules may be adjusted in any future SIS version according experience
-     * gained while working with more data producers.
+     * with different data producers. Those rules may be adjusted in any future <abbr>SIS</abbr> version
+     * according experience gained while working with more data producers.
      *
      * @param  name  the name to compare with the object name or aliases.
      * @return {@code true} if the primary name or at least one alias matches the specified {@code name}.
@@ -1149,7 +1149,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
                  * Our Code and RS_Identifier implementations should always create NamedIdentifier instance,
                  * so the `instanceof` check should not be necessary. But we do a paranoiac check anyway.
                  */
-                final GenericName n = id instanceof GenericName ? (GenericName) id : new NamedIdentifier(id);
+                final GenericName n = NamedIdentifier.toGenericName(id);
                 if (alias == null) {
                     alias = Collections.singleton(n);
                 } else {

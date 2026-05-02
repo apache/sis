@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.Collections;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.EvaluationMethodType;
@@ -94,7 +93,7 @@ final class Validator {
             final GenericName name = type.getName();
             report = new DefaultDomainConsistency();
             // Do not invoke report.setMeasureDescription(type.getDescription()) - see above javadoc.
-            report.setMeasureIdentification(name instanceof Identifier ? (Identifier) name : new NamedIdentifier(name));
+            report.setMeasureIdentification(NamedIdentifier.toIdentifier(name));
             report.setEvaluationMethodType(EvaluationMethodType.DIRECT_INTERNAL);
             quality.getReports().add(report);
         }

@@ -881,14 +881,16 @@ public class CoverageCanvas extends MapCanvasAWT {
 
     /**
      * Return a name of the grid <abbr>CRS</abbr>, derived from the resource identifier.
-     * This method never return {@code null}.
+     * This method returns {@code null} if no worker has read the resource identifier yet.
+     * It may happen randomly depending on thread execution order.
+     *
+     * <p>Note: do not fallback on an artificial name if the name is {@code null}.
+     * This method is used for building a grid <abbr>CRS</abbr> for cell indices.
+     * If this method returns an artificial name, it would cause an unusable menu
+     * item to appear in the menu that offers different <abbr>CRS</abbr>.</p>
      */
     final Identifier gridCrsName() {
-        Identifier name = data.gridCrsName;
-        if (name == null) {
-            name = CommonCRS.Engineering.GRID.datum().getName();
-        }
-        return name;
+        return data.gridCrsName;
     }
 
     /**

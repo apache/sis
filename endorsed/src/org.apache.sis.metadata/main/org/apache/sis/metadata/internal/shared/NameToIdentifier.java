@@ -37,7 +37,7 @@ import static org.apache.sis.util.Characters.Filter.LETTERS_AND_DIGITS;
  * method since that method involves a mix of names and identifiers.
  *
  * <h2>Limitations</h2>
- * Current version does not yet work with URN or HTTP syntax.
+ * Current version does not yet work with <abbr>URN</abbr> or <abbr>HTTP</abbr> syntax.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -45,7 +45,7 @@ public final class NameToIdentifier implements Identifier {
     /**
      * The name from which to infer the identifier attributes.
      */
-    private final GenericName name;
+    public final GenericName name;
 
     /**
      * Infers the attributes from the given name.
@@ -104,6 +104,8 @@ public final class NameToIdentifier implements Identifier {
 
     /**
      * Takes everything except the tip as the code space.
+     *
+     * @return the path before the tip, or {@code null} if none.
      */
     @Override
     public String getCodeSpace() {
@@ -112,6 +114,8 @@ public final class NameToIdentifier implements Identifier {
 
     /**
      * Takes the last element as the code.
+     *
+     * @return the name tip, interpreted as identifier code.
      */
     @Override
     public String getCode() {
@@ -120,6 +124,8 @@ public final class NameToIdentifier implements Identifier {
 
     /**
      * Returns a hash code value for this object.
+     *
+     * @return hash code for this object.
      */
     @Override
     public int hashCode() {
