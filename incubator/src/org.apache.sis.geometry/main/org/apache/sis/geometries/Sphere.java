@@ -26,7 +26,6 @@ import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.math.Vectors;
-import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.ArgumentChecks;
 
 // Specific to the geoapi-4.0 branch:
@@ -43,7 +42,7 @@ import org.opengis.metadata.Identifier;
 @UML(identifier="Sphere", specification=ISO_19107) // section 8.5.2
 public final class Sphere extends AbstractGeometry implements ParametricCurveSurface {
 
-    private Tuple center;
+    private Tuple<?> center;
     private double radius = 1.0;
 
     /**
@@ -108,7 +107,7 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
     /**
      * @return sphere center, modifiable.
      */
-    public Tuple getCenter() {
+    public Tuple<?> getCenter() {
         return center;
     }
 
@@ -117,7 +116,7 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
      */
     @Override
     public Envelope getEnvelope() {
-        final Tuple center = getCenter();
+        final Tuple<?> center = getCenter();
         final BBox env = new BBox(center, center);
         env.setCoordinateReferenceSystem(getCoordinateReferenceSystem());
         if (radius > 0) {
