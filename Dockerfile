@@ -1,7 +1,9 @@
 FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 COPY . .
-RUN mvn install -DskipTests
+RUN mvn install
+RUN mvn package
+RUN mvn verify
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app
