@@ -89,6 +89,8 @@ public class RecentReferenceSystems {
     /**
      * Number of reference systems to always show before all other reference systems.
      * They are the native of preferred reference system for the visualized data.
+     *
+     * @see #numCoreItems(List)
      */
     private static final int NUM_CORE_ITEMS = 1;
 
@@ -421,6 +423,16 @@ public class RecentReferenceSystems {
     }
 
     /**
+     * Returns the number of reference systems to always show before all other reference systems.
+     * This is {@link #NUM_CORE_ITEMS}, but taking in account the case when the list is empty.
+     */
+    private static int numCoreItems(final List<?> items) {
+        int n = Math.min(items.size(), NUM_CORE_ITEMS);
+        if (n != 0 && items.get(n-1) == OTHER) n--;
+        return n;
+    }
+
+    /**
      * Invoked when a new reference system is selected and has not been found in the current list of systems.
      * It may be, for example, a system selected among the content of a registry shown by {@link CRSChooser}.
      * The new system is added at the beginning of the list but after the preferred (native) reference system.
@@ -429,7 +441,7 @@ public class RecentReferenceSystems {
      */
     final synchronized void addSelectedItem(final ReferenceSystem system) {
         if (isAuthoritative(system)) {
-            systemsOrCodes.add(Math.min(systemsOrCodes.size(), NUM_CORE_ITEMS), system);
+            systemsOrCodes.add(numCoreItems(systemsOrCodes), system);
             refreshObservedReferenceSystemList();
         }
     }
@@ -630,7 +642,7 @@ public class RecentReferenceSystems {
         final var systems = new ArrayList<ReferenceSystem>(Math.min(NUM_SHOWN_ITEMS, n) + NUM_OTHER_ITEMS);
         for (int i=0; i<n; i++) {
             final var system = (ReferenceSystem) systemsOrCodes.get(i);
-            if (filter == null || filter.test(system)) {
+            if (system != OTHER && (filter == null || filter.test(system))) {
                 if (i < NUM_CORE_ITEMS || Utils.intersects(domain, system)) {
                     if (Utils.isIgnoreable(system)) continue;   // Ignore "Computer display" CRS.
                     systems.add(system);
@@ -670,7 +682,7 @@ public class RecentReferenceSystems {
          * is added. The first occurrence of duplicated values is kept, which will result in above-cited
          * order as the priority order where to insert the CRS.
          */
-        final int insertAt = Math.min(systemsOrCodes.size(), NUM_CORE_ITEMS);
+        final int insertAt = numCoreItems(systemsOrCodes);
         final List<ReferenceSystem> selected = getSelectedItems();
         systemsOrCodes.addAll(insertAt, selected);
         systemsOrCodes.addAll(insertAt + selected.size(), referenceSystems);
@@ -827,7 +839,7 @@ public class RecentReferenceSystems {
                                 }
                             }
                         }
-                        items.add(Math.min(items.size(), NUM_CORE_ITEMS), newValue);
+                        items.add(numCoreItems(items), newValue);
                         notifyChanges();
                     }
                 }
@@ -864,7 +876,7 @@ public class RecentReferenceSystems {
                         break;
                     }
                 }
-                items.add(Math.min(items.size(), NUM_CORE_ITEMS), newValue);
+                items.add(numCoreItems(items), newValue);
                 /*
                  * Notify the user-specified listeners. It will typically starts a background process.
                  * We test (oldValue != newValue) again because `newValue` may have been replaced.
