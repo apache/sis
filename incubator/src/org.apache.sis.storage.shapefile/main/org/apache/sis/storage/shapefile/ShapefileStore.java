@@ -41,6 +41,7 @@ import java.util.OptionalLong;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
@@ -296,7 +297,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
     private final class AsFeatureSet extends AbstractFeatureSet implements WritableFeatureSet {
 
         private final Rectangle2D.Double filter;
-        private final Set<String> dbfProperties;
+        private final Set<String> readProperties;
         private final boolean readShp;
         private Charset charset;
 
@@ -321,14 +322,25 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
             super(null);
             this.readShp = readShp;
             this.filter = filter;
-            this.dbfProperties = properties;
+            this.readProperties = properties;
         }
 
         /**
          * @return true if this view reads all data without any filter.
          */
         private boolean isDefaultView() {
-            return filter == null && dbfProperties == null && readShp;
+            return filter == null && readProperties == null && readShp;
+        }
+
+        /**
+         * @return true if a feature id must be created.
+         * @throws DataStoreException
+         */
+        private boolean mustGenerateId() throws DataStoreException {
+            getType();
+            if (idField != null) return false;
+            if (readProperties == null) return true;
+            return readProperties.contains(AttributeConvention.IDENTIFIER);
         }
 
         /**
@@ -399,16 +411,16 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                         this.dbfHeader = header;
                         boolean hasId = false;
 
-                        if (dbfProperties == null) {
+                        if (readProperties == null) {
                             dbfPropertiesIndex = new int[header.fields.length];
                         } else {
-                            dbfPropertiesIndex = new int[dbfProperties.size()];
+                            dbfPropertiesIndex = new int[readProperties.size()];
                         }
 
                         int idx=0;
                         for (int i = 0; i < header.fields.length; i++) {
                             final DBFField field = header.fields[i];
-                            if (dbfProperties != null && !dbfProperties.contains(field.fieldName)) {
+                            if (readProperties != null && !readProperties.contains(field.fieldName)) {
                                 //skip unwanted fields
                                 continue;
                             }
@@ -431,6 +443,13 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                     }
                 } else {
                     throw new DataStoreException("DBF file is missing.");
+                }
+
+                //create a computed identifier field
+                if (readProperties == null && idField == null) {
+                    ftb.addAttribute(Integer.class)
+                       .setName(AttributeConvention.IDENTIFIER_PROPERTY)
+                       .addRole(AttributeRole.IDENTIFIER_COMPONENT);
                 }
 
                 type = ftb.build();
@@ -484,6 +503,9 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
             }
             final int geomSrid = srid;
 
+            final boolean generateId = mustGenerateId();
+            final AtomicInteger nextId = new AtomicInteger();
+
             final Spliterator spliterator;
             if (readShp && dbfPropertiesIndex.length > 0) {
                 //read both shp and dbf
@@ -508,6 +530,8 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                             for (int i = 0; i < dbfPropertiesIndex.length; i++) {
                                 next.setPropertyValue(header.fields[dbfPropertiesIndex[i]].fieldName, dbfRecord[i]);
                             }
+                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, nextId.getAndIncrement());
+
                             action.accept(next);
                             return true;
                         } catch (IOException ex) {
@@ -529,6 +553,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                                 shpRecord.geometry.setSRID(geomSrid);
                             }
                             next.setPropertyValue(GEOMETRY_NAME, shpRecord.geometry);
+                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, nextId.getAndIncrement());
                             action.accept(next);
                             return true;
                         } catch (IOException ex) {
@@ -549,6 +574,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                             for (int i = 0; i < dbfPropertiesIndex.length; i++) {
                                 next.setPropertyValue(header.fields[dbfPropertiesIndex[i]].fieldName, dbfRecord[i]);
                             }
+                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, nextId.getAndIncrement());
                             action.accept(next);
                             return true;
                         } catch (IOException ex) {
@@ -621,7 +647,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                     }
 
                     //if link fields are referenced, add target fields
-                    if (properties.contains(AttributeConvention.IDENTIFIER)) simpleSelection &= !properties.add(idField);
+                    if (properties.contains(AttributeConvention.IDENTIFIER) && idField != null) simpleSelection &= !properties.add(idField);
                     if (properties.contains(AttributeConvention.GEOMETRY)) simpleSelection &= !properties.add(GEOMETRY_NAME);
                     if (properties.contains(AttributeConvention.ENVELOPE)) simpleSelection &= !properties.add(GEOMETRY_NAME);
                 }
