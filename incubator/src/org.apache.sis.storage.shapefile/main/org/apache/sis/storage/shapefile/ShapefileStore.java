@@ -375,8 +375,15 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                     }
 
                     //read prj file for projection
+                    final Path qpjFile = files.getQpj(false);
                     final Path prjFile = files.getPrj(false);
-                    if (prjFile != null) {
+                    if (qpjFile != null) {
+                        try {
+                            crs = CRS.fromWKT(Files.readString(qpjFile, StandardCharsets.ISO_8859_1));
+                        } catch (IOException | FactoryException ex) {
+                            throw new DataStoreException("Failed to parse qpj file.", ex);
+                        }
+                    } else if (prjFile != null) {
                         try {
                             crs = CRS.fromWKT(Files.readString(prjFile, StandardCharsets.ISO_8859_1));
                         } catch (IOException | FactoryException ex) {
@@ -972,6 +979,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
         private Path shxFile;
         private Path dbfFile;
         private Path prjFile;
+        private Path qpjFile;
         private Path cpgFile;
 
         public ShpFiles(Path shpFile) {
@@ -990,6 +998,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
             shxFile = findSibling("shx");
             dbfFile = findSibling("dbf");
             prjFile = findSibling("prj");
+            qpjFile = findSibling("qpj");
             cpgFile = findSibling("cpg");
         }
 
@@ -1030,6 +1039,17 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
          * @param create true to create the path even if file do not exist.
          * @return file if it exist or create is true, null otherwise
          */
+        public Path getQpj(boolean create) {
+            if (create && qpjFile == null) {
+                return shpFile.resolveSibling(baseName + '.' + (baseUpper ? "QPJ" : "qpj"));
+            }
+            return qpjFile;
+        }
+
+        /**
+         * @param create true to create the path even if file do not exist.
+         * @return file if it exist or create is true, null otherwise
+         */
         public Path getCpg(boolean create) {
             if (create && cpgFile == null) {
                 return shpFile.resolveSibling(baseName + '.' + (baseUpper ? "CPG" : "cpg"));
@@ -1055,6 +1075,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
             if (dbfFile != null) Files.deleteIfExists(dbfFile);
             if (cpgFile != null) Files.deleteIfExists(cpgFile);
             if (prjFile != null) Files.deleteIfExists(prjFile);
+            if (qpjFile != null) Files.deleteIfExists(qpjFile);
         }
 
         /**
@@ -1066,6 +1087,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
             replace(dbfFile, toReplace.getDbf(true));
             replace(cpgFile, toReplace.getCpg(true));
             replace(prjFile, toReplace.getPrj(true));
+            replace(qpjFile, toReplace.getQpj(true));
         }
 
         private static void replace(Path current, Path toReplace) throws IOException{
