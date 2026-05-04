@@ -104,11 +104,11 @@ final class GridControls extends ViewAndControls {
      * Invoked after {@link GridView#setImage(ImageRequest)} for updating the table of sample
      * dimensions when information become available. This method is invoked in JavaFX thread.
      *
-     * @param  name      value of {@link CoverageCanvas#gridCrsName()}.
+     * @param  gridName  value of {@link CoverageCanvas#gridCrsName()}.
      * @param  resource  the new source of coverage, or {@code null} if none.
      * @param  coverage  the new coverage, or {@code null} if none.
      */
-    final void notifyDataChanged(final Identifier name, final GridCoverageResource resource, final GridCoverage coverage) {
+    final void notifyDataChanged(final Identifier gridName, final GridCoverageResource resource, final GridCoverage coverage) {
         final ObservableList<SampleDimension> items = sampleDimensions.getItems();
         if (coverage != null) {
             items.setAll(coverage.getSampleDimensions());
@@ -116,7 +116,7 @@ final class GridControls extends ViewAndControls {
         } else {
             items.clear();
         }
-        owner.notifyDataChanged(name, resource, coverage);
+        owner.notifyDataChanged(gridName, resource, coverage);
     }
 
     /**

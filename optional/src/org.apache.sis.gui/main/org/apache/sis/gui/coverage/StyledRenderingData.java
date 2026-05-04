@@ -23,6 +23,8 @@ import org.opengis.metadata.Identifier;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.image.ErrorHandler;
 import org.apache.sis.image.processing.isoline.Isolines;
@@ -42,6 +44,8 @@ import org.apache.sis.map.coverage.RenderingData;
 final class StyledRenderingData extends RenderingData {
     /**
      * Name of the grid <abbr>CRS</abbr>, derived from the resource identifier.
+     *
+     * @see ImageRequest#gridCrsName(GridCoverageResource, GridGeometry)
      */
     Identifier gridCrsName;
 

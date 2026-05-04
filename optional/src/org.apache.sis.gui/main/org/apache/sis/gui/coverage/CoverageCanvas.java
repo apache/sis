@@ -888,6 +888,8 @@ public class CoverageCanvas extends MapCanvasAWT {
      * This method is used for building a grid <abbr>CRS</abbr> for cell indices.
      * If this method returns an artificial name, it would cause an unusable menu
      * item to appear in the menu that offers different <abbr>CRS</abbr>.</p>
+     *
+     * @see ImageRequest#gridCrsName(GridCoverageResource, GridGeometry)
      */
     final Identifier gridCrsName() {
         return data.gridCrsName;
