@@ -30,7 +30,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -122,13 +121,13 @@ public class IndexedResourceCompiler {
      * Integer IDs allocated to resource keys.
      * This map will be shared for all languages of a given resource bundle.
      */
-    private final Map<Integer,String> allocatedIDs = new HashMap<>();
+    private final Map<Integer, String> allocatedIDs = new HashMap<>();
 
     /**
      * Resource keys and their localized values.
      * This map will be cleared for each language in a resource bundle.
      */
-    private final Map<Object,Object> resources = new HashMap<>();
+    private final Map<Object, Object> resources = new HashMap<>();
 
     /**
      * Buffer to use for writing UTF data in an array of bytes.
@@ -191,12 +190,12 @@ public class IndexedResourceCompiler {
      * @param  resourcesToProcess  the files to filter. This map will be modified in-place.
      * @param  checkSourceExists   whether to check that the Java source file exists.
      */
-    static void filterLanguages(final SortedMap<File,Boolean> resourcesToProcess, final boolean checkSourceExists) {
-        final Iterator<Map.Entry<File,Boolean>> it = resourcesToProcess.entrySet().iterator();
-        Map.Entry<File,Boolean> baseEntry = null;
+    static void filterLanguages(final SortedMap<File, Boolean> resourcesToProcess, final boolean checkSourceExists) {
+        final Iterator<Map.Entry<File, Boolean>> it = resourcesToProcess.entrySet().iterator();
+        Map.Entry<File, Boolean> baseEntry = null;
         String baseName = null;
         while (it.hasNext()) {
-            final Map.Entry<File,Boolean> entry = it.next();
+            final Map.Entry<File, Boolean> entry = it.next();
             final File file = entry.getKey();
             if (baseName != null && file.getName().startsWith(baseName)) {
                 if (baseEntry != null) {
@@ -248,7 +247,7 @@ public class IndexedResourceCompiler {
         if (files == null) {
             throw new FileNotFoundException(directory + " not found or is not a directory.");
         }
-        final var resourcesToProcess = new TreeMap<File,Boolean>();
+        final var resourcesToProcess = new TreeMap<File, Boolean>();
         for (final File file : files) {
             final String name = file.getName();
             if (!name.isEmpty() && name.charAt(0) != '.') {
@@ -264,7 +263,7 @@ public class IndexedResourceCompiler {
             }
         }
         filterLanguages(resourcesToProcess, true);
-        for (final Map.Entry<File,Boolean> entry : resourcesToProcess.entrySet()) {
+        for (final Map.Entry<File, Boolean> entry : resourcesToProcess.entrySet()) {
             final File source = entry.getKey();
             if (entry.getValue()) {
                 onJavaSource(new File(source.getParentFile(), getBaseName(source) + JAVA_EXT));
@@ -299,7 +298,7 @@ public class IndexedResourceCompiler {
      * @throws IOException if an error occurred while reading the source file.
      */
     private void loadKeyValues() throws IOException {
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(bundleClass), JAVA_ENCODING))) {
+        try (var in = new BufferedReader(new InputStreamReader(new FileInputStream(bundleClass), JAVA_ENCODING))) {
             String line;
             while ((line = in.readLine()) != null) {
                 if ((line = line.trim()).startsWith(KEY_MODIFIERS)) {
@@ -399,7 +398,7 @@ public class IndexedResourceCompiler {
      */
     private static Properties loadRawProperties(final File file) throws IOException {
         final Properties properties;
-        try (InputStream input = new FileInputStream(file)) {
+        try (var input = new FileInputStream(file)) {
             properties = new Properties();
             properties.load(input);
         }
@@ -424,7 +423,7 @@ public class IndexedResourceCompiler {
     private void loadProperties(final File file) throws IOException {
         resources.clear();
         final Properties properties = loadRawProperties(file);
-        for (final Map.Entry<Object,Object> entry : properties.entrySet()) {
+        for (final Map.Entry<Object, Object> entry : properties.entrySet()) {
             final String key   = (String) entry.getKey();
             final String value = (String) entry.getValue();
             /*
@@ -496,7 +495,7 @@ public class IndexedResourceCompiler {
     private static String toMessageFormatString(final String text) {
         int level =  0;
         int last  = -1;
-        final StringBuilder buffer = new StringBuilder(text);
+        final var buffer = new StringBuilder(text);
 search: for (int i=0; i<buffer.length(); i++) {                 // Length of `buffer` will vary.
             switch (buffer.charAt(i)) {
                 /*
@@ -559,7 +558,7 @@ search: for (int i=0; i<buffer.length(); i++) {                 // Length of `bu
     private byte[] writeUTF() throws IOException {
         bufferUTF.reset();
         final int count = allocatedIDs.isEmpty() ? 0 : Collections.max(allocatedIDs.keySet());
-        try (DataOutputStream out = new DataOutputStream(bufferUTF)) {
+        try (var out = new DataOutputStream(bufferUTF)) {
             out.writeInt(count);
             for (int i=1; i<=count; i++) {
                 final String value = (String) resources.get(allocatedIDs.get(i));
@@ -616,6 +615,19 @@ search: for (int i=0; i<buffer.length(); i++) {                 // Length of `bu
                     buffer.append(line).append(lineSeparator);
                 } while (!pattern.matcher(line).matches());
             }
+            buffer.append(lineSeparator)
+                  .append("        /**").append(lineSeparator)
+                  .append("         * Returns the value of a field declared in this {@code Keys} class.").append(lineSeparator)
+                  .append("         * This method is needed for encapsulation reason, because classes in").append(lineSeparator)
+                  .append("         * other modules cannot access this class even by reflection.").append(lineSeparator)
+                  .append("         */").append(lineSeparator)
+                  .append("        @Override").append(lineSeparator)
+                  .append("        protected Object getStaticValue(final Field field) throws IllegalAccessException {").append(lineSeparator)
+                  .append("            if (field.getDeclaringClass() == Keys.class) {").append(lineSeparator)
+                  .append("                return field.get(null);").append(lineSeparator)
+                  .append("            }").append(lineSeparator)
+                  .append("            throw new IllegalAccessException();").append(lineSeparator)
+                  .append("        }").append(lineSeparator);
             /*
              * Starting from this point, the content that we are going to write in the buffer
              * may be different than the file content.  Remember the buffer position in order
@@ -635,7 +647,7 @@ search: for (int i=0; i<buffer.length(); i++) {                 // Length of `bu
                 if (message != null) {
                     message = message.replace('\t', ' ');
                     buffer.append(KEY_MARGIN).append("/**").append(lineSeparator);
-                    while (((message=message.trim()).length()) != 0) {
+                    while (((message = message.trim()).length()) != 0) {
                         buffer.append(KEY_MARGIN).append(" * ");
                         int stop = message.indexOf('\n');
                         if (stop < 0) {
@@ -754,7 +766,7 @@ search: for (int i=0; i<buffer.length(); i++) {                 // Length of `bu
     private void warning(final File file,      final String key,
                          final String message, final Exception exception)
     {
-        final StringBuilder buffer = new StringBuilder("ERROR ");
+        final var buffer = new StringBuilder("ERROR ");
         if (file != null) {
             String filename = file.getPath();
             if (filename.endsWith(PROPERTIES_EXT)) {

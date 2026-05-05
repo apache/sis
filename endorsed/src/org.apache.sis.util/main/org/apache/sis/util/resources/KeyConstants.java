@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.CharSequences;
 
 
 /**
@@ -32,12 +31,7 @@ import org.apache.sis.util.CharSequences;
  *
  * @see IndexedResourceBundle#getKeyConstants()
  */
-public class KeyConstants {
-    /**
-     * The class that defines key constants.
-     */
-    private final Class<?> keysClass;
-
+public abstract class KeyConstants {
     /**
      * The key names in the exact same order as {@link IndexedResourceBundle#values}.
      * This is usually not needed, but may be created from the {@code Keys} inner class in some occasions.
@@ -51,15 +45,26 @@ public class KeyConstants {
      * For sub-classes constructors only.
      */
     protected KeyConstants() {
-        keysClass = getClass();
     }
 
     /**
-     * Creates a new instance for key constants defined in an independent class.
+     * Returns the value of the given static field.
+     * Subclasses should implement this method as below:
+     *
+     * {@snippet lang="java" :
+     *     return field.get(null);
+     *     }
+     *
+     * This implementation must be provided by subclasses for Java security reason.
+     * This is because this {@code KeyConstants} class is not allowed to perform the
+     * above call if the module that provides the {@code KeyConstants} subclass does
+     * not export the package that contain the subclass.
+     *
+     * @param  field  the field for which to get the value.
+     * @return value of the given field.
+     * @throws IllegalAccessException if access to the field is denied.
      */
-    KeyConstants(final Class<?> keysClass) {
-        this.keysClass = keysClass;
-    }
+    protected abstract Object getStaticValue(Field field) throws IllegalAccessException;
 
     /**
      * Returns the internal array of key names. <strong>Do not modify the returned array.</strong>
@@ -73,11 +78,11 @@ public class KeyConstants {
             String[] names;
             int length = 0;
             try {
-                final Field[] fields = keysClass.getFields();
+                final Field[] fields = getClass().getFields();
                 names = new String[fields.length];
                 for (final Field field : fields) {
                     if (Modifier.isStatic(field.getModifiers()) && field.getType() == Short.TYPE) {
-                        final int index = Short.toUnsignedInt((Short) field.get(null)) - IndexedResourceBundle.FIRST;
+                        final int index = Short.toUnsignedInt((Short) getStaticValue(field)) - IndexedResourceBundle.FIRST;
                         if (index >= length) {
                             length = index + 1;
                             if (length > names.length) {
@@ -89,7 +94,7 @@ public class KeyConstants {
                     }
                 }
             } catch (IllegalAccessException e) {
-                names = CharSequences.EMPTY_ARRAY;
+                throw new IllegalCallerException(e);
             }
             keys = ArraysExt.resize(names, length);
         }
@@ -118,6 +123,6 @@ public class KeyConstants {
      * Returns the numerical value for the key of the given name.
      */
     final short getKeyValue(final String name) throws NoSuchFieldException, IllegalAccessException {
-        return (Short) keysClass.getField(name).get(null);
+        return (Short) getStaticValue(getClass().getField(name));
     }
 }
