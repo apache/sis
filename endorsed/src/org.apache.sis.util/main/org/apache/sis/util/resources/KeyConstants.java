@@ -103,6 +103,7 @@ public class KeyConstants {
      */
     final String getKeyName(final short index) {
         final int i = Short.toUnsignedInt(index) - IndexedResourceBundle.FIRST;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final String[] keys = getKeyNames();
         if (i >= 0 && i < keys.length) {
             final String key = keys[i];
