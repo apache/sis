@@ -288,6 +288,9 @@ public class ShapefileStoreTest {
 
             Object[] result = store.features(false).toArray();
             assertEquals(1, result.length);
+
+            //because of incremental id, feature2 will now have sis:identifer=0
+            feature2.setPropertyValue(AttributeConvention.IDENTIFIER, 0);
             assertEquals(feature2, result[0]);
         }
     }
@@ -334,7 +337,6 @@ public class ShapefileStoreTest {
         try (final ShapefileStore store = new ShapefileStore(Paths.get(url.toURI()))) {
 
             final FeatureType type = store.getType();
-            System.out.println(type);
             final PropertyType generatedID = type.getProperty(AttributeConvention.IDENTIFIER);
             assertTrue(generatedID instanceof AttributeType);
             assertEquals(5, type.getProperties(true).size());
@@ -367,6 +369,7 @@ public class ShapefileStoreTest {
     private static Feature createFeature1(FeatureType type) {
         Feature feature = type.newInstance();
         feature.setPropertyValue("geometry", GF.createPoint(new Coordinate(10,20)));
+        feature.setPropertyValue(AttributeConvention.IDENTIFIER, 0);
         feature.setPropertyValue("id", 1);
         feature.setPropertyValue("text", "some text 1");
         feature.setPropertyValue("integer", 123);
@@ -378,6 +381,7 @@ public class ShapefileStoreTest {
     private static Feature createFeature2(FeatureType type) {
         Feature feature = type.newInstance();
         feature.setPropertyValue("geometry", GF.createPoint(new Coordinate(30,40)));
+        feature.setPropertyValue(AttributeConvention.IDENTIFIER, 1);
         feature.setPropertyValue("id", 2);
         feature.setPropertyValue("text", "some text 2");
         feature.setPropertyValue("integer", 456);

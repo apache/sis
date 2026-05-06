@@ -308,10 +308,6 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
         private int[] dbfPropertiesIndex;
         private ShapeHeader shpHeader;
         private DBFHeader dbfHeader;
-        /**
-         * Name of the field used as identifier, may be null.
-         */
-        private String idField;
         private CoordinateReferenceSystem crs;
         private FeatureType type;
 
@@ -339,7 +335,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
          */
         private boolean mustGenerateId() throws DataStoreException {
             try {
-                return getType().getProperty(AttributeConvention.IDENTIFIER) instanceof AttributeType;
+                return getType().getProperty(AttributeConvention.IDENTIFIER) != null;
             } catch (PropertyNotFoundException ex) {
                 return false;
             }
@@ -418,7 +414,6 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                     try (DBFReader reader = new DBFReader(ShpFiles.openReadChannel(dbfFile), charset, timezone, null)) {
                         final DBFHeader header = reader.getHeader();
                         this.dbfHeader = header;
-                        boolean hasId = false;
 
                         if (readProperties == null) {
                             dbfPropertiesIndex = new int[header.fields.length];
@@ -436,13 +431,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                             dbfPropertiesIndex[idx] = i;
                             idx++;
 
-                            final AttributeTypeBuilder atb = ftb.addAttribute(field.valueClass).setName(field.fieldName);
-                            //no official but 'id' field is common
-                            if (!hasId && "id".equalsIgnoreCase(field.fieldName) || "identifier".equalsIgnoreCase(field.fieldName)) {
-                                idField = field.fieldName;
-                                atb.addRole(AttributeRole.IDENTIFIER_COMPONENT);
-                                hasId = true;
-                            }
+                            ftb.addAttribute(field.valueClass).setName(field.fieldName);
                         }
                         //the properties collection may have contain other names, for links or geometry, trim those
                         dbfPropertiesIndex = Arrays.copyOf(dbfPropertiesIndex, idx);
@@ -455,7 +444,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                 }
 
                 //create a computed identifier field
-                if (readProperties == null && idField == null) {
+                if (readProperties == null || readProperties.contains(AttributeConvention.IDENTIFIER)) {
                     ftb.addAttribute(Integer.class)
                        .setName(AttributeConvention.IDENTIFIER_PROPERTY)
                        .addRole(AttributeRole.IDENTIFIER_COMPONENT);
@@ -656,7 +645,6 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                     }
 
                     //if link fields are referenced, add target fields
-                    if (properties.contains(AttributeConvention.IDENTIFIER) && idField != null) simpleSelection &= !properties.add(idField);
                     if (properties.contains(AttributeConvention.GEOMETRY)) simpleSelection &= !properties.add(GEOMETRY_NAME);
                     if (properties.contains(AttributeConvention.ENVELOPE)) simpleSelection &= !properties.add(GEOMETRY_NAME);
                 }
