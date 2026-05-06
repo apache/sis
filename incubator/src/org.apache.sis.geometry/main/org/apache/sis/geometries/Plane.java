@@ -24,89 +24,95 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
- * A cylinder centered at the origin and aligned along the Y axis in local space, with potentially different radii at each end.
+ * A plane centered at the origin in local space, with normal along the +Y axis in local space,
+ * optionally with finite extents and may be double or single-sided.
  * <p>
- * A cone is a special case of cylinder when one of the radii is zero.
+ * Synonym : Quad , for a plane with finite extents
  * <p>
- * Synonym : conical frustrum is a volume defined by 2 circles aligned on the same axis
+ * Synonym : Sheet , for a double-sided plane
  *
- * ISO 19107 : classified as a conic surface
  *
  * @author Johann Sorel (Geomatys)
- * @spec ISO_19107 section 8.5.4  Cylinder
- * @spec ISO_19107 section 8.5.3  Cone
- * @spec ISO_12113 KHR_implicit_shapes extension Cylinder
+ * @spec ISO_12113 KHR_implicit_shapes extension Plane
  */
-@UML(identifier="Cylinder", specification=ISO_12113)
-public final class Cylinder extends AbstractOrientedGeometry {
+@UML(identifier="Plane", specification=ISO_12113)
+public final class Plane extends AbstractOrientedGeometry {
 
-    private double height = 1.0;
-    private double radiusTop = 1.0;
-    private double radiusBottom = 1.0;
+    private double sizeX = Double.NaN;
+    private double sizeZ = Double.NaN;
+    private boolean doubleSided = false;
 
-    public Cylinder() {
+    public Plane() {
     }
 
     @Override
     public String getGeometryType() {
-        return "CYLINDER";
+        return "PLANE";
     }
 
     /**
-     * Height is along the Y axis, right handed as defined in GLTF.
-     * @return the cylinder height
+     * @return the plane X size
      */
-    public double getHeight() {
-        return height;
+    public double getSizeX() {
+        return sizeX;
     }
 
     /**
-     * @param height new cylinder height
+     * @param size new plane X size
      */
-    public void setHeight(double height) {
-        this.height = height;
+    public void setSizeX(double size) {
+        this.sizeX = size;
     }
 
     /**
-     * @return cylinder top circle radius
+     * @return the plane Z size
      */
-    public double getRadiusTop() {
-        return radiusTop;
+    public double getSizeZ() {
+        return sizeZ;
     }
 
     /**
-     * @param radius new cylinder top radius
+     * @param size new plane Z size
      */
-    public void setRadiusTop(double radius) {
-        this.radiusTop = radius;
+    public void setSizeZ(double size) {
+        this.sizeZ = size;
     }
 
     /**
-     * @return cylinder bottom circle radius
+     * @return true if double sided
      */
-    public double getRadiusBottom() {
-        return radiusBottom;
+    public boolean isDoubleSided() {
+        return doubleSided;
     }
 
     /**
-     * @param radius new cylinder bottom radius
+     * @param doubleSided true if double sided
      */
-    public void setRadiusBottom(double radius) {
-        this.radiusBottom = radius;
-    }
-
-    /**
-     * A cylinder becomes a cone when the top or bottom radius is set to 0.0.
-     *
-     * @return true if cylinder is a cone, top or bottom radius is 0.0.
-     */
-    public boolean isCone() {
-        return radiusBottom == 0.0 || radiusTop == 0.0;
+    public void setDoubleSided(boolean doubleSided) {
+        this.doubleSided = doubleSided;
     }
 
     @Override
     public boolean isEmpty() {
         return false;
+    }
+
+    /**
+     * A plane becomes a quad when the sizes are set.
+     *
+     * @return true if plane is a quad
+     */
+    public boolean isQuad() {
+        return Double.isFinite(sizeX) && Double.isFinite(sizeZ);
+    }
+
+    /**
+     * A plane becomes a sheet when it is double sided.
+     *
+     * @return true if plane is a sheet
+     */
+    public boolean isSheet() {
+        return doubleSided;
     }
 
     @Override

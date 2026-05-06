@@ -24,32 +24,26 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
- * A cylinder centered at the origin and aligned along the Y axis in local space, with potentially different radii at each end.
- * <p>
- * A cone is a special case of cylinder when one of the radii is zero.
- * <p>
- * Synonym : conical frustrum is a volume defined by 2 circles aligned on the same axis
+ * A capsule (cylinder with hemispherical ends) centered at the origin and defined by two "capping" spheres
+ * with potentially different radii, aligned along the Y axis in local space.
  *
- * ISO 19107 : classified as a conic surface
  *
  * @author Johann Sorel (Geomatys)
- * @spec ISO_19107 section 8.5.4  Cylinder
- * @spec ISO_19107 section 8.5.3  Cone
- * @spec ISO_12113 KHR_implicit_shapes extension Cylinder
+ * @spec ISO_12113 KHR_implicit_shapes extension Capsule
  */
-@UML(identifier="Cylinder", specification=ISO_12113)
-public final class Cylinder extends AbstractOrientedGeometry {
+@UML(identifier="Capsule", specification=ISO_12113)
+public final class Capsule extends AbstractOrientedGeometry {
 
     private double height = 1.0;
     private double radiusTop = 1.0;
     private double radiusBottom = 1.0;
 
-    public Cylinder() {
+    public Capsule() {
     }
 
     @Override
     public String getGeometryType() {
-        return "CYLINDER";
+        return "CAPSULE";
     }
 
     /**
