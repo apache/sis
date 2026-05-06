@@ -183,7 +183,7 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
         if (!AxisDirections.isSpatialOrUserDefined(direction, true)) {
             return INVALID_DIRECTION;
         }
-        if (!Units.isLinear(unit) && !Units.UNITY.equals(unit) && !Units.PIXEL.equals(unit)) {
+        if (!(Units.isLinear(unit) || Units.UNITY.equals(unit) || Units.PIXEL.equals(unit))) {
             return INVALID_UNIT;
         }
         return VALID;

@@ -456,9 +456,8 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      *
      * @see <a href="http://issues.apache.org/jira/browse/SIS-291">SIS-291</a>
      */
-    @Override
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     final void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-        super.afterUnmarshal(unmarshaller, parent);
         if (parameters == null && method != null) {
             final ParameterDescriptorGroup descriptor = method.getParameters();
             if (descriptor != null && descriptor.descriptors().isEmpty()) {

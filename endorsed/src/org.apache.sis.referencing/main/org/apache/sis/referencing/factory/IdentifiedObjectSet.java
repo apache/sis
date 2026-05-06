@@ -317,7 +317,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * Returns {@code true} if this collection contains the specified {@code IdentifiedObject}.
      *
      * @param  object  the {@code IdentifiedObject} to test for presence in this set.
-     * @return {@code true} if the given object is presents in this set.
+     * @return {@code true} if the given object is present in this set.
      * @throws ClassCastException if the given object is non-null and not an instance of {@code <T>}.
      */
     @Override

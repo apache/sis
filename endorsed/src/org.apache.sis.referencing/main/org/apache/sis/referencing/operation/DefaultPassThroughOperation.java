@@ -395,10 +395,8 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      * Invoked by JAXB after unmarshalling. If needed, this method tries to infer source/target CRS
      * of the nested operation from the source/target CRS of the enclosing pass-through operation.
      */
-    @Override
     @SuppressWarnings("LocalVariableHidesMemberVariable")
     final void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-        super.afterUnmarshal(unmarshaller, parent);
         /*
          * State validation. The `missing` string will be used in exception message
          * at the end of this method if a required component is reported missing.

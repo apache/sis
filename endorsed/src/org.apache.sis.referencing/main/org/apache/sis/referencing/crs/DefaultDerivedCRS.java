@@ -522,6 +522,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
 
     /**
      * @hidden because nothing new to said.
+     *
+     * @return the hash code value.
      */
     @Override
     protected long computeHashCode() {
@@ -531,6 +533,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     /**
      * Formats the inner part of the <i>Well Known Text</i> (WKT) representation of this CRS.
      *
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "Fitted_CS"} (WKT 1) or a type-dependent keyword (WKT 2).
      */
     @Override

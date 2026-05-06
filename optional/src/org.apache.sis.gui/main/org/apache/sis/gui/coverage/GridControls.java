@@ -23,6 +23,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import org.opengis.metadata.Identifier;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -103,10 +104,11 @@ final class GridControls extends ViewAndControls {
      * Invoked after {@link GridView#setImage(ImageRequest)} for updating the table of sample
      * dimensions when information become available. This method is invoked in JavaFX thread.
      *
+     * @param  gridName  value of {@link CoverageCanvas#gridCrsName()}.
      * @param  resource  the new source of coverage, or {@code null} if none.
      * @param  coverage  the new coverage, or {@code null} if none.
      */
-    final void notifyDataChanged(final GridCoverageResource resource, final GridCoverage coverage) {
+    final void notifyDataChanged(final Identifier gridName, final GridCoverageResource resource, final GridCoverage coverage) {
         final ObservableList<SampleDimension> items = sampleDimensions.getItems();
         if (coverage != null) {
             items.setAll(coverage.getSampleDimensions());
@@ -114,7 +116,7 @@ final class GridControls extends ViewAndControls {
         } else {
             items.clear();
         }
-        owner.notifyDataChanged(resource, coverage);
+        owner.notifyDataChanged(gridName, resource, coverage);
     }
 
     /**

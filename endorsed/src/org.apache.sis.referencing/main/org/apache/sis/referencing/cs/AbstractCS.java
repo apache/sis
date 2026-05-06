@@ -306,7 +306,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * Returns the axes of the given coordinate system.
      */
     private static CoordinateSystemAxis[] getAxes(final CoordinateSystem cs) {
-        final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[cs.getDimension()];
+        final var axes = new CoordinateSystemAxis[cs.getDimension()];
         for (int i=0; i<axes.length; i++) {
             axes[i] = cs.getAxis(i);
         }

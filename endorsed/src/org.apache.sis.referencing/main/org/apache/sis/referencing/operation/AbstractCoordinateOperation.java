@@ -22,8 +22,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Collection;
 import java.util.logging.Logger;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
@@ -111,7 +109,7 @@ import org.opengis.coordinate.CoordinateSet;
  * synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   0.6
  */
 @XmlType(name = "AbstractCoordinateOperationType", propOrder = {
@@ -138,7 +136,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     static final Logger LOGGER = Logger.getLogger(Loggers.COORDINATE_OPERATION);
 
     /**
-     * The source CRS, or {@code null} if not available.
+     * The source <abbr>CRS</abbr>, or {@code null} if not available.
      *
      * <p><b>Consider this field as final!</b>
      * This field is non-final only for the convenience of constructors and for initialization
@@ -150,7 +148,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     CoordinateReferenceSystem sourceCRS;
 
     /**
-     * The target CRS, or {@code null} if not available.
+     * The target <abbr>CRS</abbr>, or {@code null} if not available.
      *
      * <p><b>Consider this field as final!</b>
      * This field is non-final only for the convenience of constructors and for initialization
@@ -213,10 +211,11 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * This is usually the longitude axis when the source CRS uses the [-180 … +180]° range and the target
      * CRS uses the [0 … 360]° range, or the converse. If there is no change, then this is an empty set.
      *
+     * <p>This is initially {@code null} and computed when first needed.</p>
+     *
      * @see #getWrapAroundChanges()
-     * @see #computeTransientFields()
      */
-    private transient Set<Integer> wrapAroundChanges;
+    private transient volatile Set<Integer> wrapAroundChanges;
 
     /**
      * The inverse of this coordinate operation, computed when first needed. This is stored for making
@@ -385,30 +384,6 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                 }
             }
         }
-        computeTransientFields();
-    }
-
-    /**
-     * Computes the {@link #wrapAroundChanges} field after we verified that the coordinate operation is valid.
-     */
-    final void computeTransientFields() {
-        if (sourceCRS != null && targetCRS != null) {
-            wrapAroundChanges = CoordinateOperations.wrapAroundChanges(sourceCRS, targetCRS.getCoordinateSystem());
-        } else {
-            wrapAroundChanges = Set.of();
-        }
-    }
-
-    /**
-     * Computes transient fields after deserialization.
-     *
-     * @param  in  the input stream from which to deserialize a coordinate operation.
-     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException if the class serialized on the stream is not on the module path.
-     */
-    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        computeTransientFields();
     }
 
     /**
@@ -431,9 +406,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         coordinateOperationAccuracy = operation.getCoordinateOperationAccuracy();
         transform                   = operation.getMathTransform();
         if (operation instanceof AbstractCoordinateOperation) {
-            wrapAroundChanges = ((AbstractCoordinateOperation) operation).wrapAroundChanges;
-        } else {
-            computeTransientFields();
+            wrapAroundChanges = ((AbstractCoordinateOperation) operation).getWrapAroundChanges();
         }
     }
 
@@ -821,7 +794,16 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Set<Integer> getWrapAroundChanges() {
-        return wrapAroundChanges;
+        Set<Integer> changes = wrapAroundChanges;
+        if (changes == null) {
+            if (sourceCRS != null && targetCRS != null) {
+                changes = CoordinateOperations.wrapAroundChanges(sourceCRS, targetCRS.getCoordinateSystem());
+            } else {
+                changes = Set.of();
+            }
+            wrapAroundChanges = changes;
+        }
+        return changes;
     }
 
     /**
@@ -1193,13 +1175,5 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         } else {
             ImplementationHelper.propertyAlreadySet(AbstractCoordinateOperation.class, "setAccuracy", "coordinateOperationAccuracy");
         }
-    }
-
-    /**
-     * Invoked by JAXB after unmarshalling.
-     * May be overridden by subclasses.
-     */
-    void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-        computeTransientFields();
     }
 }

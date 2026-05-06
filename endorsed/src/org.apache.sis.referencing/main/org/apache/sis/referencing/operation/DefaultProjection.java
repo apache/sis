@@ -75,11 +75,12 @@ final class DefaultProjection extends DefaultConversion implements Projection {
      * @throws IllegalArgumentException if the source or targe CRS is not of the expected types.
      */
     DefaultProjection(final Conversion definition,
+                      final boolean normalized,
                       final CoordinateReferenceSystem sourceCRS,
                       final CoordinateReferenceSystem targetCRS,
                       final MathTransformFactory factory) throws FactoryException
     {
-        super(definition, sourceCRS, targetCRS, factory);
+        super(definition, normalized, sourceCRS, targetCRS, factory);
         ArgumentChecks.ensureCanCast("sourceCRS", GeographicCRS.class, sourceCRS);
         ArgumentChecks.ensureCanCast("targetCRS", ProjectedCRS .class, targetCRS);
     }

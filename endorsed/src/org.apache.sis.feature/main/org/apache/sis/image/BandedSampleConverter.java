@@ -301,8 +301,10 @@ class BandedSampleConverter extends WritableComputedImage {
      */
     @Override
     public String[] getPropertyNames() {
-        return SourceAlignedImage.filterPropertyNames(getSource().getPropertyNames(),
-                SourceAlignedImage.POSITIONAL_PROPERTIES, (sampleResolutions != null) ? ADDED_PROPERTIES : null);
+        return SourceAlignedImage.filterPropertyNames(
+                getSource().getPropertyNames(),
+                SourceAlignedImage.POSITIONAL_PROPERTIES,
+                (sampleResolutions != null) ? ADDED_PROPERTIES : null);
     }
 
     /**

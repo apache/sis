@@ -348,6 +348,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  ensemble    collection of reference frames which for low accuracy requirements may be considered to be
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the three-dimensional Cartesian coordinate system for the created CRS.
+     * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultGeocentricCRS#DefaultGeocentricCRS(Map, GeodeticDatum, DatumEnsemble, CartesianCS)
@@ -412,6 +413,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  axis0       the first  axis (e.g. “Geocentric X”).
      * @param  axis1       the second axis (e.g. “Geocentric Y”).
      * @param  axis2       the third  axis (e.g. “Geocentric Z”).
+     * @return the coordinate system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultCartesianCS#DefaultCartesianCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
@@ -461,6 +463,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  ensemble    collection of reference frames which for low accuracy requirements may be considered to be
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the spherical coordinate system for the created CRS.
+     * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultGeocentricCRS#DefaultGeocentricCRS(Map, GeodeticDatum, DatumEnsemble, SphericalCS)
@@ -525,6 +528,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  axis0       the first  axis (e.g. “Spherical latitude”).
      * @param  axis1       the second axis (e.g. “Spherical longitude”).
      * @param  axis2       the third  axis (e.g. “Geocentric radius”).
+     * @return the coordinate system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultSphericalCS#DefaultSphericalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
@@ -561,6 +565,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  properties  name and other properties to give to the new object.
      * @param  axis0       the first  axis (e.g. “Spherical latitude”).
      * @param  axis1       the second axis (e.g. “Spherical longitude”).
+     * @return the coordinate system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultSphericalCS#DefaultSphericalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
@@ -611,6 +616,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  ensemble    collection of reference frames which for low accuracy requirements may be considered to be
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the two- or three-dimensional ellipsoidal coordinate system for the created <abbr>CRS</abbr>.
+     * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultGeographicCRS#DefaultGeographicCRS(Map, GeodeticDatum, DatumEnsemble, EllipsoidalCS)
@@ -702,6 +708,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  properties     name and other properties to give to the new object.
      * @param  ellipsoid      the ellipsoid to use in new geodetic reference frame.
      * @param  primeMeridian  the prime meridian to use in new geodetic reference frame.
+     * @return the datum for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultGeodeticDatum#DefaultGeodeticDatum(Map, Ellipsoid, PrimeMeridian)
@@ -732,6 +739,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  ellipsoid      the ellipsoid to use in new geodetic reference frame.
      * @param  primeMeridian  the prime meridian to use in new geodetic reference frame.
      * @param  epoch          the epoch to which the definition of the dynamic reference frame is referenced.
+     * @return the datum for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultGeodeticDatum.Dynamic#Dynamic(Map, Ellipsoid, PrimeMeridian, Temporal)
@@ -764,6 +772,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  properties   name and other properties to give to the new object.
      * @param  longitude    the longitude of prime meridian in supplied angular units East of Greenwich.
      * @param  angularUnit  the angular units of longitude.
+     * @return the prime meridian for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultPrimeMeridian#DefaultPrimeMeridian(Map, double, Unit)
@@ -799,6 +808,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  properties  name and other properties to give to the new object.
      * @param  axis0       the first  axis (e.g. “Geodetic latitude”).
      * @param  axis1       the second axis (e.g. “Geodetic longitude”).
+     * @return the coordinate system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultEllipsoidalCS#DefaultEllipsoidalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
@@ -836,6 +846,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  axis0       the first  axis (e.g. “Geodetic latitude”).
      * @param  axis1       the second axis (e.g. “Geodetic longitude”).
      * @param  axis2       the third  axis (e.g. “Ellipsoidal height”).
+     * @return the coordinate system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultEllipsoidalCS#DefaultEllipsoidalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
@@ -865,6 +876,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  semiMajorAxis  the equatorial radius in supplied linear units.
      * @param  semiMinorAxis  the polar radius in supplied linear units.
      * @param  unit           the linear units of ellipsoid axes.
+     * @return the ellipsoid for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultEllipsoid#createEllipsoid(Map, double, double, Unit)
@@ -894,6 +906,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  semiMajorAxis      the equatorial radius in supplied linear units.
      * @param  inverseFlattening  the eccentricity of ellipsoid.
      * @param  unit               the linear units of major axis.
+     * @return the ellipsoid for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultEllipsoid#createFlattenedSphere(Map, double, double, Unit)
@@ -946,6 +959,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  baseCRS        the geographic coordinate reference system to base projection on.
      * @param  baseToDerived  the defining conversion from a {@linkplain AxesConvention#NORMALIZED normalized} base to a normalized derived CRS.
      * @param  derivedCS      the coordinate system for the projected CRS.
+     * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultProjectedCRS#DefaultProjectedCRS(Map, GeographicCRS, Conversion, CartesianCS)
@@ -986,6 +1000,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  properties  name and other properties to give to the new object.
      * @param  axis0       the first  axis (e.g. “Easting”).
      * @param  axis1       the second axis (e.g. “Northing”).
+     * @return the coordinate system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultCartesianCS#DefaultCartesianCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
@@ -1031,6 +1046,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  baseCRS        the coordinate reference system to base projection on. Shall be an instance of {@link SingleCRS}.
      * @param  baseToDerived  the defining conversion from a {@linkplain AxesConvention#NORMALIZED normalized} base to a normalized derived CRS.
      * @param  derivedCS      the coordinate system for the derived CRS.
+     * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultDerivedCRS#create(Map, SingleCRS, Conversion, CoordinateSystem)
@@ -1079,6 +1095,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  ensemble    collection of reference frames which for low accuracy requirements may be considered to be
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the vertical coordinate system for the created <abbr>CRS</abbr>.
+     * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultVerticalCRS#DefaultVerticalCRS(Map, VerticalDatum, DatumEnsemble, VerticalCS)
@@ -1129,6 +1146,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @param  properties  name and other properties to give to the new object.
      * @param  method      the realization method of the vertical datum, or {@code null} if none.
+     * @return the datum for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultVerticalDatum#DefaultVerticalDatum(Map, RealizationMethod)
@@ -1186,6 +1204,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  properties  name and other properties to give to the new object.
      * @param  method      the realization method of the vertical datum, or {@code null} if none.
      * @param  epoch       the epoch to which the definition of the dynamic reference frame is referenced.
+     * @return the datum for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultVerticalDatum.Dynamic#Dynamic(Map, RealizationMethod, Temporal)
@@ -1254,6 +1273,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @param  properties  name and other properties to give to the new object.
      * @param  axis        the single axis (e.g. “height” or “depth”).
+     * @return the coordinate system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultVerticalCS#DefaultVerticalCS(Map, CoordinateSystemAxis)
@@ -1293,6 +1313,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  ensemble    collection of datum which for low accuracy requirements may be considered to be
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the temporal coordinate system for the created <abbr>CRS</abbr>.
+     * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultTemporalCRS#DefaultTemporalCRS(Map, TemporalDatum, DatumEnsemble, TimeCS)
@@ -1342,6 +1363,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @param  properties  name and other properties to give to the new object.
      * @param  origin      the date and time origin of this temporal datum.
+     * @return the datum for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultTemporalDatum#DefaultTemporalDatum(Map, Date)
@@ -1375,6 +1397,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @param  properties  name and other properties to give to the new object.
      * @param  axis        the single axis.
+     * @return the coordinate system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultTimeCS#DefaultTimeCS(Map, CoordinateSystemAxis)
@@ -1416,6 +1439,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  ensemble    collection of datum which for low accuracy requirements may be considered to be
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the parametric coordinate system for the created <abbr>CRS</abbr>.
+     * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultParametricCRS#DefaultParametricCRS(Map, ParametricDatum, DatumEnsemble, ParametricCS)
@@ -1465,6 +1489,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * The default implementation creates a {@link DefaultParametricDatum} instance.
      *
      * @param  properties  name and other properties to give to the new object.
+     * @return the datum for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultParametricDatum#DefaultParametricDatum(Map)
@@ -1497,6 +1522,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @param  properties  name and other properties to give to the new object.
      * @param  axis        the single axis.
+     * @return the coordinate system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultParametricCS#DefaultParametricCS(Map, CoordinateSystemAxis)
@@ -1531,6 +1557,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @param  properties  name and other properties to give to the new object.
      * @param  components  the sequence of coordinate reference systems making the compound CRS.
+     * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultCompoundCRS#DefaultCompoundCRS(Map, CoordinateReferenceSystem...)
@@ -1623,6 +1650,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  properties  name and other properties to give to the new object.
      * @param  axis0       the first  axis.
      * @param  axis1       the second axis.
+     * @return the coordinate system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultAffineCS#DefaultAffineCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
@@ -1668,6 +1696,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  ensemble    collection of datum which for low accuracy requirements may be considered to be
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the coordinate system for the created <abbr>CRS</abbr>.
+     * @return the coordinate reference system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultEngineeringCRS#DefaultEngineeringCRS(Map, EngineeringDatum, CoordinateSystem)
@@ -1717,6 +1746,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * The default implementation creates a {@link DefaultEngineeringDatum} instance.
      *
      * @param  properties  name and other properties to give to the new object.
+     * @return the datum for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultEngineeringDatum#DefaultEngineeringDatum(Map)
@@ -1751,6 +1781,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  axis0       the first  axis.
      * @param  axis1       the second axis.
      * @param  axis2       the third  axis.
+     * @return the coordinate system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultAffineCS#DefaultAffineCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
@@ -1787,6 +1818,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  axis0       the first  axis.
      * @param  axis1       the second axis.
      * @param  axis2       the third  axis.
+     * @return the coordinate system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultCylindricalCS#DefaultCylindricalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
@@ -1823,6 +1855,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  properties  name and other properties to give to the new object.
      * @param  axis0       the first  axis.
      * @param  axis1       the second axis.
+     * @return the coordinate system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultPolarCS#DefaultPolarCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
@@ -1857,6 +1890,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @param  properties  name and other properties to give to the new object.
      * @param  axis        the single axis.
+     * @return the coordinate system for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultLinearCS#DefaultLinearCS(Map, CoordinateSystemAxis)
@@ -1960,6 +1994,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  abbreviation  the coordinate axis abbreviation.
      * @param  direction     the axis direction.
      * @param  unit          the coordinate axis unit.
+     * @return the axis for the given properties.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultCoordinateSystemAxis#DefaultCoordinateSystemAxis(Map, String, AxisDirection, Unit)
@@ -1989,6 +2024,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * <p>The default implementation delegates to {@link XML#unmarshal(String)}</p>
      *
      * @param  xml  coordinate reference system encoded in XML format.
+     * @return the coordinate reference system for the given <abbr>XML</abbr>.
      * @throws FactoryException if the object creation failed.
      *
      * @see XML#unmarshal(String)
@@ -2074,6 +2110,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * the {@link org.apache.sis.io.wkt.WKTFormat} class instead of this method.
      *
      * @param  wkt  coordinate system encoded in Well-Known Text format (version 1 or 2).
+     * @return the coordinate reference system for the given <abbr>WKT</abbr>.
      * @throws FactoryException if the object creation failed.
      *
      * @see org.apache.sis.io.wkt

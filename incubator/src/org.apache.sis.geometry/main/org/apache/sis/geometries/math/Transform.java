@@ -23,7 +23,7 @@ import static org.apache.sis.geometries.math.DataType.FLOAT;
  * A Transformation is a mathematic operation which transform a tuple values.
  * Example : Affine, Matrix, Similarity.
  *
- * This class is a experimental light and GIS neutral version of MathTransform.
+ * This class is an experimental light and GIS neutral version of MathTransform.
  * This class will evolve to match requirements for the upcoming Java Vector API and Java HAT Kernel.
  *
  * @author Johann Sorel (Geomatys)

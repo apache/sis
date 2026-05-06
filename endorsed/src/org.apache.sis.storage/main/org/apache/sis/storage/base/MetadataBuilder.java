@@ -992,7 +992,7 @@ public class MetadataBuilder {
      */
     public final void addIdentifier(final GenericName id, final Scope scope) {
         if (id != null) {
-            addIdentifier((id instanceof Identifier) ? (Identifier) id : new NamedIdentifier(id), scope);
+            addIdentifier(NamedIdentifier.toIdentifier(id), scope);
         }
     }
 
@@ -1739,8 +1739,8 @@ public class MetadataBuilder {
      *   <li>{@code metadata/identificationInfo/extent/geographicElement/identifier}</li>
      * </ul>
      *
-     * @param authority  the authority of the identifier code, or {@code null} if none.
-     * @param code       the identifier code used to represent a geographic area, or {@code null} if none.
+     * @param  authority   the authority of the identifier code, or {@code null} if none.
+     * @param  identifier  the identifier code used to represent a geographic area, or {@code null} if none.
      */
     public final void addExtent(final Citation authority, final String identifier) {
         if (authority != null || identifier != null) {

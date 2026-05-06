@@ -32,7 +32,7 @@ import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.AxisFilter;
-import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.operation.DefiningConversion;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
@@ -155,8 +155,10 @@ final class EllipsoidalHeightSeparator implements AxisFilter {
              * constructor expects a normalized transform, while the `projection.getMathTransform()` may not
              * be normalized. So we are better to let constructor recreate the transform from the parameters.
              */
-            projection = new DefaultConversion(getPropertiesForModifiedCRS(projection),
-                                projection.getMethod(), null, projection.getParameterValues());
+            projection = new DefiningConversion(
+                    getPropertiesForModifiedCRS(projection),
+                    projection.getMethod(), null,
+                    projection.getParameterValues());
             return factory().createProjectedCRS(getPropertiesForModifiedCRS(crs), baseCRS, projection, (CartesianCS) cs);
         }
         throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedType_1, crs.getClass()));

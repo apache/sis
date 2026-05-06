@@ -27,6 +27,7 @@ import java.util.NavigableSet;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
+import java.io.NotSerializableException;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
@@ -57,7 +58,7 @@ import org.opengis.metadata.citation.Responsibility;
  * Then the information is fetched in the underlying metadata database.
  *
  * <p>There is usually a one-to-one correspondence between invoked methods and the columns to be read, but not always.
- * Some method invocations may actually trig a computation using the values of other columns. This happen for example
+ * Some method invocations may actually trig a computation using the values of other columns. It happens for example
  * when invoking a deprecated method which computes its value from non-deprecated methods. Such situations happen in
  * the transition from ISO 19115:2003 to ISO 19115:2014 and may happen again in the future as standards are revised.
  * The algorithms are encoded in implementation classes like the ones in {@link org.apache.sis.metadata.iso} packages,
@@ -130,6 +131,7 @@ final class Dispatcher implements InvocationHandler {
 
     /**
      * Invoked when any method from a metadata interface is invoked.
+     * Handles also the methods inherited from {@link Object} class.
      *
      * @param  proxy   the object on which the method is invoked.
      * @param  method  the method invoked.
@@ -137,7 +139,7 @@ final class Dispatcher implements InvocationHandler {
      * @return the value to be returned from the public method invoked by the method.
      */
     @Override
-    public Object invoke(final Object proxy, Method method, final Object[] args) {
+    public Object invoke(final Object proxy, Method method, final Object[] args) throws Exception {
         final int n = (args != null) ? args.length : 0;
         switch (method.getName()) {
             case "toString": {
@@ -155,6 +157,10 @@ final class Dispatcher implements InvocationHandler {
             case "identifier": {
                 if (n != 1) break;
                 return (args[0] == source) ? identifier : null;
+            }
+            case "writeReplace": {
+                if (n != 0) break;
+                return writeReplace(proxy);
             }
             default: {
                 if (n != 0) break;
@@ -231,7 +237,7 @@ final class Dispatcher implements InvocationHandler {
      * <ol>
      *   <li>If the property value is present in the {@linkplain #cache}, the cached value.</li>
      *   <li>If the "cache" can compute the value from other property values, the result of that computation.
-     *       This case happen mostly for deprecated properties that are replaced by one or more newer properties.</li>
+     *       This case happens mostly for deprecated properties that are replaced by one or more newer properties.</li>
      *   <li>The value stored in the database. The database is queried only once for the requested property
      *       and the result is cached for future reuse.</li>
      * </ol>
@@ -332,6 +338,27 @@ final class Dispatcher implements InvocationHandler {
     }
 
     /**
+     * Copies the content to an ordinary implementation class (plain old object).
+     * The returned object should be serializable if allowed by the implementation.
+     *
+     * @param  proxy   the object on which the method is invoked.
+     * @return a copy of this metadata object.
+     */
+    private Object writeReplace(final Object proxy) throws NotSerializableException {
+        ReflectiveOperationException cause = null;
+        final Class<?> type = proxy.getClass().getInterfaces()[0];
+        final Class<?> impl = source.standard.getImplementation(type);
+        if (impl != null) try {
+            return impl.getDeclaredConstructor(argument(type)).newInstance(proxy);
+        } catch (ReflectiveOperationException e) {
+            cause = e;
+        }
+        final var e = new NotSerializableException(type.getCanonicalName());
+        e.initCause(cause);
+        throw e;
+    }
+
+    /**
      * Returns the error message for a failure to query the database for the property identified by the given method.
      */
     final String error(final Method method) {
@@ -359,6 +386,16 @@ final class Dispatcher implements InvocationHandler {
     @Override
     public String toString() {
         return toString(getClass());
+    }
+
+    /**
+     * Compatibility with deprecated types.
+     */
+    private static Class<?> argument(final Class<?> type) {
+        if (type == ResponsibleParty.class) {
+            return Responsibility.class;
+        }
+        return type;
     }
 
     /**

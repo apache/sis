@@ -33,23 +33,24 @@ import javafx.scene.layout.Region;
 import javafx.event.ActionEvent;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import org.opengis.metadata.Identifier;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.gui.Widget;
+import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.gui.internal.FontGIS;
-import org.apache.sis.gui.internal.DataStoreOpener;
 import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.gui.internal.ToolbarButton;
 import org.apache.sis.gui.internal.NonNullObjectProperty;
 import org.apache.sis.gui.internal.PrivateAccess;
 import org.apache.sis.gui.internal.BackgroundThreads;
-import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
+import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 import org.apache.sis.gui.dataset.WindowHandler;
-import org.apache.sis.gui.map.StatusBar;
 
 
 /**
@@ -610,21 +611,23 @@ public class CoverageExplorer extends Widget {
      * {@link #coverageProperty}. In the latter case, the {@code resource} and {@code coverage} arguments
      * given to this method may be the value that the properties already have.</p>
      *
+     * @param  gridName  value of {@link CoverageCanvas#gridCrsName()} or equivalent.
      * @param  resource  the new source of coverage, or {@code null} if none.
      * @param  coverage  the new coverage, or {@code null} if none.
      */
-    final void notifyDataChanged(final GridCoverageResource resource, final GridCoverage coverage) {
+    final void notifyDataChanged(final Identifier gridName, final GridCoverageResource resource, final GridCoverage coverage) {
         if (coverage != null) {
             BackgroundThreads.execute(() -> {
-                String name;
-                try {
-                    name = DataStoreOpener.findLabel(resource, getLocale(), true);
-                } catch (DataStoreException | RuntimeException e) {
+                final GridGeometry gg = coverage.getGridGeometry();
+                Identifier name = gridName;
+                if (name == null && resource != null) try {
+                    // May happen if `CoverageCanvas.setNewSource(…)` did not had the time to be executed.
+                    name = ImageRequest.gridCrsName(resource, gg);
+                } catch (DataStoreException e) {
                     // Declare `setResource` as the public method invoking (indirectly) this method.
                     Logging.recoverableException(LOGGER, CoverageExplorer.class, "setResource", e);
-                    name = DataStoreOpener.fallbackLabel(resource, getLocale());
-                }
-                referenceSystems.setGridReferencing(true, Map.of(name, coverage.getGridGeometry()));
+                 }
+                referenceSystems.setGridReferencing(true, (name == null) ? Map.of() : Map.of(name, gg));
             });
         }
         /*
@@ -657,7 +660,7 @@ public class CoverageExplorer extends Widget {
             final ImageRequest request = new ImageRequest(resource, coverage, null);
             final CoverageControls c = (CoverageControls) views.get(View.IMAGE);
             if (c != null) try {
-                request.zoom = c.view.getGridGeometry();
+                request.visibleArea = c.view.getGridGeometry();
             } catch (RenderException e) {
                 CoverageCanvas.unexpectedException("getGridGeometry", e);
             }

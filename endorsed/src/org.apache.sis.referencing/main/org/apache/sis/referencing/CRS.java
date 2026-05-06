@@ -84,7 +84,7 @@ import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.CoordinateOperationContext;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
-import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.operation.DefiningConversion;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.coordinate.DefaultCoordinateMetadata;
@@ -1772,8 +1772,10 @@ public final class CRS {
                     final var proj = (ProjectedCRS) crs;
                     final var base = (GeographicCRS) getHorizontalComponent(proj.getBaseCRS());
                     Conversion fromBase = proj.getConversionFromBase();
-                    fromBase = new DefaultConversion(IdentifiedObjects.getProperties(fromBase),
-                            fromBase.getMethod(), null, fromBase.getParameterValues());
+                    fromBase = new DefiningConversion(
+                            IdentifiedObjects.getProperties(fromBase),
+                            fromBase.getMethod(), null,
+                            fromBase.getParameterValues());
                     return new DefaultProjectedCRS(properties, base, fromBase, (CartesianCS) cs);
                 }
                 /*

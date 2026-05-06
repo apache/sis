@@ -147,7 +147,7 @@ public abstract class ResourceInternationalString extends AbstractInternationalS
         if (object == null || object.getClass() != getClass()) {
             return false;
         }
-        final ResourceInternationalString that = (ResourceInternationalString) object;
+        final var that = (ResourceInternationalString) object;
         return (key == that.key) && (hasArguments == that.hasArguments) && Objects.deepEquals(arguments, that.arguments);
     }
 
@@ -181,10 +181,14 @@ public abstract class ResourceInternationalString extends AbstractInternationalS
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
+        final String name = in.readUTF();
         try {
-            key = getKeyConstants().getKeyValue(in.readUTF());
+            key = getKeyConstants().getKeyValue(name);
         } catch (ReflectiveOperationException cause) {
-            throw (InvalidObjectException) new InvalidObjectException(cause.toString()).initCause(cause);
+            String message = getBundle(null).getClass().getCanonicalName();
+            message = Errors.format(Errors.Keys.PropertyNotFound_2, message, name);
+            throw (InvalidObjectException) new InvalidObjectException(message).initCause(cause);
+            // TODO: simplify above line with JDK19.
         }
     }
 }

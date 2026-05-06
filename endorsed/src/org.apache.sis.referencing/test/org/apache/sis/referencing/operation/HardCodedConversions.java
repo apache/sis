@@ -100,7 +100,7 @@ public final class HardCodedConversions {
      * Creates a defining conversion of the given name with given parameter values.
      */
     private static DefaultConversion create(final String name, final OperationMethod method, final ParameterValueGroup pg) {
-        return new DefaultConversion(Map.of(OperationMethod.NAME_KEY, name), method, null, pg);
+        return new DefiningConversion(Map.of(OperationMethod.NAME_KEY, name), method, null, pg);
     }
 
     /**

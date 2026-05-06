@@ -18,9 +18,14 @@ package org.apache.sis.gui.coverage;
 
 import java.util.Objects;
 import java.util.Optional;
+import org.opengis.util.NameSpace;
+import org.opengis.util.GenericName;
+import org.opengis.metadata.Identifier;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 
@@ -31,7 +36,7 @@ import org.apache.sis.storage.DataStoreException;
  * {@linkplain GridCoverage#render(GridExtent) rendering} and image in a background thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.7
  *
  * @see GridView#setImage(ImageRequest)
  * @see CoverageExplorer#setCoverage(ImageRequest)
@@ -82,7 +87,7 @@ public class ImageRequest {
      * This is used only if we want to create a new canvas initialized to the same viewing region and zoom
      * level than an existing canvas.
      */
-    GridGeometry zoom;
+    GridGeometry visibleArea;
 
     /**
      * Creates a new request with both a resource and a coverage. At least one argument shall be non-null.
@@ -162,6 +167,44 @@ public class ImageRequest {
      */
     public final Optional<GridCoverage> getCoverage() {
         return Optional.ofNullable(coverage);
+    }
+
+    /**
+     * Returns the name of the grid <abbr>CRS</abbr>, derived from the resource identifier.
+     *
+     * @param  resource  resource from which to get the identifier, or {@code null} if none.
+     * @param  domain    grid geometry of the resource or coverage loaded from the resource.
+     * @return name derived from the identifier which can be used for the grid <abbr>CRS</abbr>.
+     * @throws DataStoreException if an error occurred while fetching the identifier.
+     */
+    static Identifier gridCrsName(final GridCoverageResource resource, final GridGeometry domain)
+            throws DataStoreException
+    {
+        if (resource != null) {
+            final GenericName name = resource.getIdentifier().orElse(null);
+            if (name != null) {
+                if (name instanceof Identifier) {
+                    return (Identifier) name;
+                }
+                /*
+                 * Do not use `NamedIdentifier` because we want the full name as identifier code.
+                 * By contrast, `NamedIdentifier` takes only the tip (because it is better suited
+                 * to datum names or projection parameter names). In the context of resource, the
+                 * tip alone is not sufficient because it is often only an image number in a file
+                 * specified by the name component before the tip.
+                 */
+                String codeSpace = null;
+                final NameSpace scope = name.scope();
+                if (scope != null && !scope.isGlobal()) {
+                    codeSpace = scope.name().toString();
+                }
+                return new ImmutableIdentifier(null, codeSpace, name.toString());
+            }
+        }
+        return (domain.isDefined(GridGeometry.GRID_TO_CRS)
+                        ? CommonCRS.Engineering.GRID.datum()    // "Unknown grid"
+                        : CommonCRS.Engineering.GRID.crs())     // "Cell indices"
+                .getName();
     }
 
     /**

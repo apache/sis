@@ -48,7 +48,7 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.metadata.internal.shared.AxisNames;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.operation.DefiningConversion;
 import org.apache.sis.referencing.operation.provider.Mercator1SP;
 import org.apache.sis.referencing.operation.provider.PseudoMercator;
 import org.apache.sis.referencing.operation.provider.TransverseMercator;
@@ -228,7 +228,7 @@ final class StandardDefinitions {
         }
         final ParameterValueGroup parameters = method.getParameters().createValue();
         String name = setup.apply(parameters);
-        final var conversion = new DefaultConversion(properties(0, name, null, false), method, null, parameters);
+        final var conversion = new DefiningConversion(properties(0, name, null, false), method, null, parameters);
         name = baseCRS.getName().getCode() + " / " + name;
         return new DefaultProjectedCRS(properties(code, name, null, false), baseCRS, conversion, derivedCS);
     }

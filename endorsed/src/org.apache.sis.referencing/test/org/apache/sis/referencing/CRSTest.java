@@ -21,6 +21,12 @@ import java.util.HashMap;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
+import java.io.Serializable;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -47,6 +53,7 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.test.Assertions.assertMessageContains;
+import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.ObjectDomain;
@@ -539,5 +546,30 @@ public final class CRSTest extends TestCaseWithLogs {
         IdentifiedObjectsTest.testLookupEPSG();
         IdentifiedObjectsTest.testLookupWMS();
         loggings.assertNoUnexpectedLog();
+    }
+
+    /**
+     * Tests serialization of an object created from the <abbr>EPSG</abbr> database.
+     * This test uses {@code EPSG:3857} (Pseudo-Mercator), which should be available
+     * even in absence of connection to the <abbr>EPSG</abbr> database.
+     *
+     * @throws FactoryException if an error occurred while creating the <abbr>CRS</abbr>.
+     * @throws IOException if an error occurred during serialization or deserialization.
+     * @throws ClassNotFoundException if an error occurred while resolving the class.
+     */
+    @Test
+    public void testSerialization() throws FactoryException, IOException, ClassNotFoundException {
+        final CoordinateReferenceSystem crs = CRS.forCode("EPSG:3857");
+        assertInstanceOf(Serializable.class, crs);
+        final var buffer = new ByteArrayOutputStream();
+        try (var output = new ObjectOutputStream(buffer)) {
+            output.writeObject(crs);
+        }
+        final CoordinateReferenceSystem read;
+        try (var input = new ObjectInputStream(new ByteArrayInputStream(buffer.toByteArray()))) {
+            read = assertInstanceOf(CoordinateReferenceSystem.class, input.readObject());
+        }
+        // Cannot test for strict equality because serialization replaced some objects.
+        assertMultilinesEquals(crs.toString(), read.toString());
     }
 }

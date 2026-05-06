@@ -16,6 +16,9 @@
  */
 package org.apache.sis.metadata.sql;
 
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+
 
 /**
  * Interface for metadata that are implemented by a proxy class.
@@ -24,10 +27,18 @@ package org.apache.sis.metadata.sql;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-interface MetadataProxy {
+interface MetadataProxy extends Serializable {
     /**
      * Returns the identifier (primary key) of this metadata if it is using the given source,
      * or {@code null} otherwise.
      */
     String identifier(MetadataSource source);
+
+    /**
+     * Copies all proxy content to a serializable implementation.
+     *
+     * @return a serializable object with the same content as this proxy.
+     * @throws ObjectStreamException if an error occurred while copying the content.
+     */
+    Object writeReplace() throws ObjectStreamException;
 }

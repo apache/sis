@@ -161,7 +161,7 @@ public class DefaultCylindricalCS extends AbstractCS implements CylindricalCS {
         if (!AxisDirections.isSpatialOrUserDefined(direction, false)) {
             return INVALID_DIRECTION;
         }
-        if (!Units.isAngular(unit) && !Units.isLinear(unit)) {
+        if (!(Units.isAngular(unit) || Units.isLinear(unit))) {
             return INVALID_UNIT;
         }
         return VALID;

@@ -31,6 +31,7 @@ import javafx.beans.Observable;
 import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.beans.value.ObservableObjectValue;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Button;
@@ -151,6 +152,12 @@ final class MultiCanvas extends Widget implements Observable {
         final List<GestureFollower> followers;
 
         /**
+         * Tool tip for the name of the reference system shown in the status bar.
+         * The tip suggests to use the contextual menu for changing the <abbr>CRS</abbr>.
+         */
+        private final Tooltip tooltip;
+
+        /**
          * Creates new controls for a new map canvas, then registers the listeners.
          * Note that these listeners create cyclic references: most references are from {@code canvas} to {@code owner}
          * (therefore could be garbage-collected), but there are also some references from {@link #referenceSystems} to
@@ -161,13 +168,47 @@ final class MultiCanvas extends Widget implements Observable {
          */
         Controls(final MultiCanvas owner, final MapCanvas canvas) {
             followers = new ArrayList<>();
-            title  = new Label();
-            status = new StatusBar(owner.referenceSystems);
+            title     = new Label();
+            status    = new StatusBar(owner.referenceSystems);
             status.track(canvas);
             final var menu = new MapMenu(canvas);
             menu.addReferenceSystems(owner.referenceSystems);
             menu.addCopyOptions(status);
             getView(canvas).addEventHandler(MouseEvent.MOUSE_ENTERED, (event) -> owner.showStatusBar(canvas));
+            /*
+             * Add listeners for showing the name of the selected CRS on the status bar.
+             */
+            final ObservableObjectValue<String> mapCRS = menu.selectedReferenceSystem().orElse(null);
+            if (mapCRS == null) {
+                tooltip = null;
+            } else {
+                final Resources resources = Resources.forLocale(canvas.getLocale());
+                tooltip = new Tooltip(resources.getString(Resources.Keys.SelectCrsByContextMenu));
+                mapCRS.addListener((p,o,n) -> notifyReferenceSystemChanged(n, status.getReferenceSystemName().get(), true));
+                status.getReferenceSystemName().addListener((p,o,n) -> notifyReferenceSystemChanged(mapCRS.get(), n, false));
+            }
+        }
+
+        /**
+         * Invoked in JavaFX thread after the reference system of the canvas or of the status bar changed.
+         * The {@code interim} argument is {@code true} if the change was in the <abbr>CRS</abbr> of the map,
+         * and the <abbr>CRS</abbr> shown in the status bar is expected to be updated to the same value soon.
+         * In the latter case, we avoid distracting the user with a message saying that the reference systems
+         * are not consistent.
+         *
+         * @param  rendered  the name of the reference system of the map canvas.
+         * @param  written   the name of the reference system of coordinates shown in the status bar.
+         * @param  interim   {@code true} if this event is expected to be followed soon by another event.
+         */
+        private void notifyReferenceSystemChanged(String rendered, final String written, final boolean interim) {
+            if (rendered != null && written != null && !rendered.equals(written)) {
+                if (interim) {
+                    status.setDefaultMessage(null, tooltip);
+                    return;
+                }
+                rendered = Resources.format(Resources.Keys.MismatchedRS);
+            }
+            status.setDefaultMessage(rendered, rendered == null ? null : tooltip);
         }
 
         /**

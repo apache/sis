@@ -120,6 +120,7 @@ public class MapMenu extends ContextMenu {
         defined |= mask;
         if (menuHandler == null) {
             menuHandler = canvas.new MenuHandler(this);
+            menuHandler.registerListeners();
         }
         return menuHandler;
     }

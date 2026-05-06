@@ -632,14 +632,18 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * The meridian can be safely ignored in the datum name because the {@link PrimeMeridian} object is already
      * compared by the {@link #equals(Object)} method.
      *
+     * <p>Note that the comparison ignores {@linkplain Identifier#getCodeSpace() code spaces}
+     * and {@linkplain GenericName#scope() scopes}.</p>
+     *
      * <h4>Example</h4>
      * If the datum name is <q>Nouvelle Triangulation Française (Paris)</q> and the prime meridian name is
      * <q>Paris</q>, then this method compares only the <q>Nouvelle Triangulation Française</q> part.
      *
      * <h4>Future evolutions</h4>
-     * This method implements heuristic rules learned from experience while trying to provide inter-operability
-     * with different data producers. Those rules may be adjusted in any future SIS version according experience
-     * gained while working with more data producers.
+     * This method implements recommendations from the <abbr>WKT</abbr> 2 specification,
+     * together with heuristic rules learned from experience while trying to provide inter-operability
+     * with different data producers. Those rules may be adjusted in any future <abbr>SIS</abbr> version
+     * according experience gained while working with more data producers.
      *
      * @param  name  the name to compare.
      * @return {@code true} if the primary name or at least one alias matches the specified {@code name}.

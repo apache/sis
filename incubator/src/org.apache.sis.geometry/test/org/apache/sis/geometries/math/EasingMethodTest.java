@@ -14,17 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries;
+package org.apache.sis.geometries.math;
 
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
-
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * ISO 19107 : classified as a conic surface
- * @author Johann Sorel (Geomatys)
+ * Easing method tests.
+ *
+ * @author Johann Sorel
  */
-@UML(identifier="Cone", specification=ISO_19107) // section 8.5.3
-public interface Cone extends ParametricCurveSurface{
+public class EasingMethodTest {
+    protected static final double TOLERANCE = 0.0000001;
+
+    public EasingMethodTest(){}
+
+    @Test
+    public void testStartEndValues() {
+
+        for (EasingMethod.Method method : EasingMethod.Method.values()) {
+            final EasingMethod increasing = new EasingMethod(method, 10.0, 20.0);
+            assertEquals(10.0, increasing.applyAsDouble(-1.0));
+            assertEquals(10.0, increasing.applyAsDouble( 0.0));
+            assertEquals(20.0, increasing.applyAsDouble( 1.0));
+            assertEquals(20.0, increasing.applyAsDouble( 2.0));
+
+        }
+
+    }
 
 }
