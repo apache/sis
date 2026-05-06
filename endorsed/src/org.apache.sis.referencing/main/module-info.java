@@ -204,6 +204,9 @@ module org.apache.sis.referencing {
             org.apache.sis.console,
             org.apache.sis.openoffice;
 
+    exports org.apache.sis.pending.geoapi.referencing to
+            org.apache.sis.gui;                             // In the "optional" sub-project.
+
     /*
      * Allow JAXB to use reflection for marshalling and
      * unmarshalling Apache SIS objects in XML documents.

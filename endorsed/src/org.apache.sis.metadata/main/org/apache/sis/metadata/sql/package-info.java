@@ -42,7 +42,7 @@
  *
  * @author  Touraïvane (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.6
+ * @version 1.7
  *
  * @see org.apache.sis.referencing.factory.sql
  *

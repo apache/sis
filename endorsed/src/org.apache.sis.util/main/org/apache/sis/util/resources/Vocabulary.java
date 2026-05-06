@@ -17,6 +17,7 @@
 package org.apache.sis.util.resources;
 
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Locale;
 import java.util.MissingResourceException;
@@ -47,6 +48,19 @@ public class Vocabulary extends IndexedResourceBundle {
          * For {@link #INSTANCE} creation only.
          */
         private Keys() {
+        }
+
+        /**
+         * Returns the value of a field declared in this {@code Keys} class.
+         * This method is needed for encapsulation reason, because classes in
+         * other modules cannot access this class even by reflection.
+         */
+        @Override
+        protected Object getStaticValue(final Field field) throws IllegalAccessException {
+            if (field.getDeclaringClass() == Keys.class) {
+                return field.get(null);
+            }
+            throw new IllegalAccessException();
         }
 
         /**
@@ -178,6 +192,11 @@ public class Vocabulary extends IndexedResourceBundle {
          * Cell geometry
          */
         public static final short CellGeometry = 23;
+
+        /**
+         * Cell indices
+         */
+        public static final short CellIndices = 286;
 
         /**
          * Cells
@@ -1358,6 +1377,11 @@ public class Vocabulary extends IndexedResourceBundle {
          * Units
          */
         public static final short Units = 206;
+
+        /**
+         * Unknown grid
+         */
+        public static final short UnknownGrid = 287;
 
         /**
          * Unnamed

@@ -76,7 +76,7 @@ import org.apache.sis.coverage.CannotEvaluateException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   1.1
  */
 public class BufferedGridCoverage extends GridCoverage {
@@ -255,6 +255,7 @@ public class BufferedGridCoverage extends GridCoverage {
             return cachedRenderings.computeIfAbsent(sliceExtent, (slice) -> {
                 var renderer = new ImageRenderer(this, slice);
                 renderer.setData(data);
+                configure(renderer);
                 return renderer.createImage();
             });
         } catch (IllegalGridGeometryException | MismatchedDimensionException e) {
@@ -279,7 +280,7 @@ public class BufferedGridCoverage extends GridCoverage {
      *
      * @since 1.3
      */
-    protected void configure(final ImageRenderer renderer) {
+    protected void configure(ImageRenderer renderer) {
     }
 
     /**

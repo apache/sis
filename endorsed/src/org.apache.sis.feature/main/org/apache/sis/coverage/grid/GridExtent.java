@@ -60,7 +60,7 @@ import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
-import org.apache.sis.referencing.internal.shared.AxisDirections;
+import org.apache.sis.referencing.internal.shared.DirectPositionView;
 import org.apache.sis.referencing.internal.shared.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -114,25 +114,38 @@ public class GridExtent implements Serializable, LenientComparable {
     static final Logger LOGGER = Logger.getLogger(Modules.RASTER);
 
     /**
+     * Axis directions for dimension names. This map is partially the converse of {@link #DIMENSION_NAMES}.
+     */
+    static final Map<DimensionNameType, AxisDirection> AXIS_DIRECTIONS = Map.of(
+            DimensionNameType.ROW,      AxisDirection.ROW_POSITIVE,
+            DimensionNameType.LINE,     AxisDirection.ROW_POSITIVE,
+            DimensionNameType.COLUMN,   AxisDirection.COLUMN_POSITIVE,
+            DimensionNameType.SAMPLE,   AxisDirection.COLUMN_POSITIVE,
+            DimensionNameType.VERTICAL, AxisDirection.UP,
+            DimensionNameType.TIME,     AxisDirection.FUTURE);
+
+    /**
      * The dimension name types for given coordinate system axis directions.
-     * This map contains only the "positive" axis directions.
-     *
-     * @todo Verify if there is more directions to add as of ISO 19111:2018.
+     * This map is partially the converse of {@link #AXIS_DIRECTIONS}.
      *
      * @see #typeFromAxes(CoordinateReferenceSystem, int)
      */
-    private static final Map<AxisDirection, DimensionNameType> AXIS_DIRECTIONS = Map.of(
+    static final Map<AxisDirection, DimensionNameType> DIMENSION_NAMES = Map.of(
             AxisDirection.COLUMN_POSITIVE, DimensionNameType.COLUMN,
+            AxisDirection.COLUMN_NEGATIVE, DimensionNameType.COLUMN,
             AxisDirection.ROW_POSITIVE,    DimensionNameType.ROW,
+            AxisDirection.ROW_NEGATIVE,    DimensionNameType.ROW,
             AxisDirection.UP,              DimensionNameType.VERTICAL,
-            AxisDirection.FUTURE,          DimensionNameType.TIME);
+            AxisDirection.DOWN,            DimensionNameType.VERTICAL,
+            AxisDirection.FUTURE,          DimensionNameType.TIME,
+            AxisDirection.PAST,            DimensionNameType.TIME);
 
     /**
      * Default axis types for the two-dimensional cases.
      */
-    private static final DimensionNameType[] DEFAULT_TYPES = new DimensionNameType[] {
-        DimensionNameType.COLUMN,
-        DimensionNameType.ROW
+    private static final DimensionNameType[] DEFAULT_TYPES = {
+            DimensionNameType.COLUMN,
+            DimensionNameType.ROW
     };
 
     /**
@@ -428,15 +441,15 @@ public class GridExtent implements Serializable, LenientComparable {
      * @since 1.5
      */
     public static Optional<DimensionNameType> typeFromAxis(final CoordinateSystemAxis axis) {
-        return Optional.ofNullable(AXIS_DIRECTIONS.get(AxisDirections.absolute(axis.getDirection())));
+        return Optional.ofNullable(DIMENSION_NAMES.get(axis.getDirection()));
     }
 
     /**
      * Infers the axis types from the given coordinate reference system.
-     * This method is the converse of {@link GridExtentCRS}.
+     * This method is the converse of {@link GridCRSBuilder}.
      *
      * @param  crs        the coordinate reference system, or {@code null}.
-     * @param  dimension  number of name type to infer. Shall not be greater than the CRS dimension.
+     * @param  dimension  number of name types to infer. Shall not be greater than the <abbr>CRS</abbr> dimension.
      * @return axis types, or {@code null} if no axis were recognized.
      */
     static DimensionNameType[] typeFromAxes(final CoordinateReferenceSystem crs, final int dimension) {
@@ -444,7 +457,7 @@ public class GridExtent implements Serializable, LenientComparable {
         if (crs != null) {
             final CoordinateSystem cs = crs.getCoordinateSystem();
             for (int i=0; i<dimension; i++) {
-                final DimensionNameType type = AXIS_DIRECTIONS.get(AxisDirections.absolute(cs.getAxis(i).getDirection()));
+                final DimensionNameType type = DIMENSION_NAMES.get(cs.getAxis(i).getDirection());
                 if (type != null) {
                     if (axisTypes == null) {
                         axisTypes = new DimensionNameType[dimension];
@@ -939,6 +952,18 @@ public class GridExtent implements Serializable, LenientComparable {
     }
 
     /**
+     * Returns the derivative of the given transform at the point of interest.
+     *
+     * @param  gridToCRS  the transform for which to take the derivative.
+     * @param  anchor  the convention to be used for conversion to "real world" coordinates.
+     * @return derivative of the given transform at the point of interest.
+     * @throws TransformException if the derivative cannot be computed.
+     */
+    final Matrix derivativeAtPOI(final MathTransform gridToCRS, final PixelInCell anchor) throws TransformException {
+        return gridToCRS.derivative(new DirectPositionView.Double(getPointOfInterest(anchor)));
+    }
+
+    /**
      * Returns the grid coordinates for all dimensions where the grid has a size of 1.
      * Keys are dimensions as values from 0 inclusive to {@link #getDimension()} exclusive.
      * Values are the {@linkplain #getLow(int) low} and {@linkplain #getHigh(int) high} coordinates
@@ -1213,11 +1238,12 @@ public class GridExtent implements Serializable, LenientComparable {
     public GeneralEnvelope toEnvelope(final MathTransform cornerToCRS) throws TransformException {
         ArgumentChecks.ensureNonNull("cornerToCRS", cornerToCRS);
         final GeneralEnvelope envelope = toEnvelope(cornerToCRS, false, cornerToCRS, null);
-        final Matrix gridToCRS = MathTransforms.getMatrix(cornerToCRS);
-        if (gridToCRS != null && Matrices.isAffine(gridToCRS)) try {
-            envelope.setCoordinateReferenceSystem(GridExtentCRS.forExtentAlone(gridToCRS, getAxisTypes()));
-        } catch (FactoryException e) {
-            throw new TransformException(e.getMessage(), e);
+        try {
+            final Matrix derivative = derivativeAtPOI(cornerToCRS, PixelInCell.CELL_CORNER);
+            final var builder = new GridCRSBuilder(PixelInCell.CELL_CORNER);
+            builder.forExtentAlone(derivative, getAxisTypes()).ifPresent(envelope::setCoordinateReferenceSystem);
+        } catch (FactoryException | TransformException e) {
+            Logging.ignorableException(LOGGER, GridExtent.class, "toEnvelope", e);
         }
         return envelope;
     }
@@ -2224,7 +2250,7 @@ public class GridExtent implements Serializable, LenientComparable {
         @Override
         public boolean tryAdvance(final Consumer<? super long[]> action) {
             if (done) return false;
-            action.accept(current);
+            action.accept(current.clone());
             done = !next(extent.length >>> 1);
             return true;
         }

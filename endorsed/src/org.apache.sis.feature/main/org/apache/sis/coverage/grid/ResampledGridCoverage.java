@@ -33,7 +33,6 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.internal.shared.DoubleDouble;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.internal.shared.DirectPositionView;
 import org.apache.sis.referencing.internal.shared.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -130,8 +129,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
         if (srcDim <= BIDIMENSIONAL) return null;                           // Dimension mapping not needed.
         Matrix derivative = MathTransforms.getMatrix(mt);
         if (derivative == null) try {
-            derivative = mt.derivative(new DirectPositionView.Double(
-                    domain.getExtent().getPointOfInterest(PixelInCell.CELL_CENTER)));
+            derivative = domain.getExtent().derivativeAtPOI(mt, PixelInCell.CELL_CENTER);
         } catch (TransformException e) {
             GridCoverageProcessor.recoverableException("resample", e);      // Public caller of this method.
             return null;

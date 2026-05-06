@@ -43,6 +43,7 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 @Execution(ExecutionMode.CONCURRENT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class ParameterFormatTest extends TestCase {
@@ -66,7 +67,7 @@ public final class ParameterFormatTest extends TestCase {
      * The default values are not part of EPSG definitions. They are added here only for testing purpose.
      */
     static ParameterDescriptorGroup createMercatorParameters() {
-        ParameterBuilder builder = new ParameterBuilder();
+        final var builder = new ParameterBuilder();
         builder.setCodeSpace(EPSG, "EPSG").setRequired(true);
         ParameterDescriptor<?>[] parameters = {
             builder.addIdentifier("8801").addName("Latitude of natural origin").addName(OGC, "latitude_of_origin")

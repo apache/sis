@@ -285,6 +285,8 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
                         continue;
                     }
                     coordinate -= shift;
+                } else {
+                    continue;
                 }
                 setCoordinate(i, coordinate);
                 changed = true;

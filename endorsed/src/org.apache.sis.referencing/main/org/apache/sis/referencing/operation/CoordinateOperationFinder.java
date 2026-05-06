@@ -1259,7 +1259,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             p = identifierOfStepCRS.get(oldID);
         }
         final int count = (p != null) ? (Integer) p + 1 : 1;
-        final Identifier newID = new NamedIdentifier(Citations.SIS, oldID.getCode() + " (step " + count + ')');
+        final var newID = new NamedIdentifier(Citations.SIS, oldID.getCode() + " (step " + count + ')');
         identifierOfStepCRS.put(newID, oldID);
         identifierOfStepCRS.put(oldID, count);
 

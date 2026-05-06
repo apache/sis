@@ -86,7 +86,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * any public {@code NamedIdentifier} state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.7
  *
  * @see org.apache.sis.metadata.iso.DefaultIdentifier
  * @see org.apache.sis.util.iso.AbstractName
@@ -126,10 +126,14 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      */
     public NamedIdentifier(final ReferenceIdentifier identifier) {
         super(identifier);
-        if (identifier instanceof GenericName) {
+        if (identifier instanceof NameToIdentifier) {
+            name = ((NameToIdentifier) identifier).name;
+        } else if (identifier instanceof GenericName) {
             name = (GenericName) identifier;
-            isNameSupplied = true;
+        } else {
+            return;
         }
+        isNameSupplied = true;
     }
 
     /**
@@ -342,6 +346,8 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      *
+     * @see #toGenericName(Identifier)
+     *
      * @since 1.0
      */
     public static NamedIdentifier castOrCopy(final ReferenceIdentifier object) {
@@ -369,11 +375,43 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      *
+     * @see #toIdentifier(GenericName)
+     *
      * @since 1.0
      */
     public static NamedIdentifier castOrCopy(final GenericName object) {
         if (object == null || object instanceof NamedIdentifier) {
             return (NamedIdentifier) object;
+        }
+        return new NamedIdentifier(object);
+    }
+
+    /**
+     * Returns the given identifier as a name. This method is similar to {@link #castOrCopy(Identifier)}
+     * except that it does not require the given {@code object} to be a {@code NamedIdentifier} instance.
+     *
+     * @param  object  the object to get as a name, or {@code nulk}.
+     * @return the given object as a name, or {@code null} if the argument was null.
+     * @since  1.7
+     */
+    public static GenericName toGenericName(final ReferenceIdentifier object) {
+        if (object == null || object instanceof GenericName) {
+            return (GenericName) object;
+        }
+        return new NamedIdentifier(object);
+    }
+
+    /**
+     * Returns the given name as an identifier. This method is similar to {@link #castOrCopy(GenericName)}
+     * except that it does not require the given {@code object} to be a {@code NamedIdentifier} instance.
+     *
+     * @param  object  the object to get as an identifier, or {@code nulk}.
+     * @return the given object as an identifier, or {@code null} if the argument was null.
+     * @since  1.7
+     */
+    public static ReferenceIdentifier toIdentifier(final GenericName object) {
+        if (object == null || object instanceof ReferenceIdentifier) {
+            return (ReferenceIdentifier) object;
         }
         return new NamedIdentifier(object);
     }

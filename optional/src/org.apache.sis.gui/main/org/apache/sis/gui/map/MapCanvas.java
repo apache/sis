@@ -413,7 +413,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * to discard any zoom or translation and reset the view to the given bounds. This method does not
      * cause new repaint event; {@link #requestRepaint()} must be invoked by the caller if desired.</p>
      *
-     * @param  visibleArea  bounding box, objective CRS and or initial zoom level,
+     * @param  visibleArea  bounding box, objective <abbr>CRS</abbr> and or initial zoom level,
      *         or {@code null} if unknown (in which case an identity transform will be set).
      * @throws MismatchedDimensionException if the given grid geometry is not two-dimensional.
      *
@@ -540,8 +540,8 @@ public abstract class MapCanvas extends PlanarCanvas {
         protected StaticGraphics unique() {
             final ObservableList<Node> siblings = floatingPane.getChildren();
             for (int i = siblings.size(); --i >= 0;) {
-                if (siblings.get(i) instanceof EvanescentPane pane) {
-                    final StaticGraphics other = pane.owner;
+                if (siblings.get(i) instanceof EvanescentPane graphics) {
+                    final StaticGraphics other = graphics.owner;
                     if (other.getClass() == getClass()
                             && Objects.equals(objectiveCRS, other.objectiveCRS)
                             && objectiveToDisplay.equals(other.objectiveToDisplay))
@@ -864,11 +864,17 @@ public abstract class MapCanvas extends PlanarCanvas {
         /**
          * Creates and registers a new handler for showing a contextual menu in the enclosing canvas.
          * It is caller responsibility to ensure that this method is invoked only once.
+         * Callers shall invoke {@link #registerListeners()} after this constructor.
          */
-        @SuppressWarnings("this-escape")
         MenuHandler(final ContextMenu menu) {
             super(getDisplayCRS());
             this.menu = menu;
+        }
+
+        /**
+         * Registers the listeners after construction.
+         */
+        final void registerListeners() {
             fixedPane.setOnMousePressed (this);
             fixedPane.setOnMouseReleased(this);     // As recommended by MouseEvent.isPopupTrigger().
         }
@@ -1426,7 +1432,7 @@ public abstract class MapCanvas extends PlanarCanvas {
             }
         } catch (TransformException | RenderException ex) {
             restoreCursorAfterPaint();
-            isRendering.set(false);
+            fireRenderingCompletedEvent(null);
             errorOccurred(ex);
             return;
         }
@@ -1460,10 +1466,10 @@ public abstract class MapCanvas extends PlanarCanvas {
                 isCursorChangeScheduled = true;
             }
         } else {
-            if (!hasError) {
+            if (!hasError) {    // Confirmation that the error message is not actual anymore.
                 clearError();
             }
-            isRendering.set(false);
+            fireRenderingCompletedEvent(null);
             restoreCursorAfterPaint();
         }
     }
@@ -1566,7 +1572,7 @@ public abstract class MapCanvas extends PlanarCanvas {
         /*
          * At this point the rendering is completed. If some error occurred, report them.
          */
-        isRendering.set(false);
+        fireRenderingCompletedEvent(changeInProgress);
         final Throwable ex = task.getException();
         if (ex != null) {
             errorOccurred(ex);
@@ -1581,9 +1587,9 @@ public abstract class MapCanvas extends PlanarCanvas {
         if (t != null) try {
             afterRendering = null;
             t.run();
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             // `runAfterRendering(…)` is the documented method providing this feature.
-            unexpectedException("runAfterRendering", e);
+            Logging.recoverableException(LOGGER, MapCanvas.class, "runAfterRendering", e);
         }
     }
 
@@ -1678,6 +1684,18 @@ public abstract class MapCanvas extends PlanarCanvas {
                 isCursorChangeScheduled = true;
             }
         }
+    }
+
+    /**
+     * Sets {@link #isRendering} to {@code false} and notifies the listeners that the rendering is completed.
+     * The {@code change} argument is the value of {@link RenderingTask#changeInProgress}, or {@code null} if
+     * the rendering failed.
+     *
+     * @param  change  the change in the transform between previous rendering and new rendering, or {@code null}.
+     */
+    private void fireRenderingCompletedEvent(final Transform change) {
+        isRendering.set(false);
+        firePropertyChange(new RenderingCompletedEvent(this, change));
     }
 
     /**
@@ -1800,8 +1818,13 @@ public abstract class MapCanvas extends PlanarCanvas {
             afterRendering = () -> {
                 try {
                     before.run();
-                } catch (Exception e) {
-                    unexpectedException("runAfterRendering", e);
+                } catch (RuntimeException e) {
+                    try {
+                        task.run();
+                    } catch (RuntimeException s) {
+                        e.addSuppressed(s);
+                    }
+                    throw e;
                 }
                 task.run();
             };

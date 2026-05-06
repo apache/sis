@@ -171,7 +171,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     /**
      * The tool tip to show on the default message, or {@code null} if none.
      */
-    private Tooltip defaultMessageTeooltip;
+    private Tooltip defaultMessageTooltip;
 
     /**
      * Message to write in the middle of the status bar.
@@ -179,7 +179,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * It takes all the space before {@link #position}.
      *
      * @see #getMessage()
-     * @see #setInfoMessage(String)
+     * @see #setProgressMessage(String)
      * @see #setErrorMessage(String, Throwable)
      * @see #setDefaultMessage(String, Tooltip)
      */
@@ -245,30 +245,34 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
 
     /**
      * Conversion from local coordinates to geographic or projected coordinates of rendered data.
-     * The local coordinates are the coordinates of the JavaFX view, as given for example in {@link MouseEvent}
-     * The objective coordinates are geographic or projected coordinates of rendered data, ignoring all CRS changes
-     * that may result from user selecting a different CRS in the contextual menu. Consequently while this transform
-     * is often the conversion from pixel coordinates to the coordinates shown in this status bar,
-     * this is not always the case.
+     * The local coordinates are the coordinates of the JavaFX view, as given for example in {@link MouseEvent}.
+     * The objective coordinates are the (usually geographic or projected) coordinates of the image shown in the
+     * {@link MapCanvas} or other control associated with this status bar. Objective coordinates are not
+     * necessarily the coordinates shown in the status bar, because another transformation step may happen
+     * if the user selected a different <abbr>CRS</abbr> in the contextual menu of the status bar.
      *
      * <p>This transform shall never be null. It is initially an identity transform and is modified by
      * {@link #applyCanvasGeometry(GridGeometry)}. The transform is usually (but not necessarily) affine
      * and should have no {@linkplain CoordinateOperation#getCoordinateOperationAccuracy() inaccuracy}
-     * (ignoring rounding error). This transform is normally the inverse of {@linkplain #canvas}
+     * (ignoring rounding error). This transform is normally the inverse of the canvas's
      * {@linkplain MapCanvas#getObjectiveToDisplay() objective to display} transform,
      * but temporary mismatches may exist during gesture events such as pans, zooms and rotations.</p>
      *
-     * <p>If this transform is set to a new value, the given transform must have the same number of source
-     * and target dimensions than the previous value (if a change in the number of dimension is desired,
-     * use {@link #applyCanvasGeometry(GridGeometry)} instead). The status bar is updated as if the new
-     * conversion was applied <em>before</em> any CRS changes resulting from user selecting a different
-     * CRS in the contextual menu. Note however that any specified transform may be overwritten if some
-     * {@linkplain #canvas} gesture events happen later; setting an explicit transform is more useful
-     * when this {@code StatusBar} is <em>not</em> associated to a {@link MapCanvas}
-     * (for example it may be used with a {@link org.apache.sis.gui.coverage.GridView} instead).</p>
+     * <p>This transform may change continuously as a result of gesture events such as zooms and pans.
+     * It is possible to set explicitly a value to this property, but the specified value may be overwritten
+     * by the next gesture event. Therefore, setting an explicit value is more useful when this status bar is
+     * <em>not</em> associated to a {@link MapCanvas}. For example, it may be associated to a
+     * {@link org.apache.sis.gui.coverage.GridView} instead).</p>
+     *
+     * <h4>Setting a value explicitly</h4>
+     * If this transform is set to a new value, the given transform must have the same number of source
+     * and target dimensions as the previous value (if a change in the number of dimensions is desired,
+     * use {@link #applyCanvasGeometry(GridGeometry)} instead).
+     * The status bar is updated as if the specified transform was applied <em>before</em> transformation
+     * to the <abbr>CRS</abbr> specified through the contextual menu.
      *
      * <h4>API note</h4>
-     * We do not provide getter/setter for this property; use {@link ObjectProperty#set(Object)}
+     * We do not provide getter/setter for this property. Use {@link ObjectProperty#set(Object)}
      * directly instead. We omit the "Property" suffix for making this operation more natural.
      *
      * @see MapCanvas#getObjectiveCRS()
@@ -522,7 +526,6 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         lowestAccuracy          = new SimpleObjectProperty<>(this, "lowestAccuracy");
 
         message = new Label();
-        message.setVisible(false);                      // Waiting for getting a message to display.
         message.setMaxWidth(Double.POSITIVE_INFINITY);
         HBox.setHgrow(message, Priority.ALWAYS);
 
@@ -632,10 +635,10 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         lowestAccuracy.bind(canvas.positionalAccuracyProperty());
         sampleValuesProvider.set(ValuesUnderCursor.create(canvas));
         canvas.errorProperty().addListener((p,o,n) -> setRenderingError(n));
-        canvas.renderingProperty().addListener((p,o,n) -> {
-            if (!n) applyCanvasGeometry();      // Apply only after completion of the background rendering task.
+        canvas.addPropertyChangeListener(RenderingCompletedEvent.NAME, (event) -> {
+            displaySpaceChanged((RenderingCompletedEvent) event);
         });
-        applyCanvasGeometry();
+        displaySpaceChanged(null);
         if (canvas.getObjectiveCRS() != null) {
             registerMouseListeners();
         } else {
@@ -676,22 +679,31 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     }
 
     /**
-     * Invoked when {@link MapCanvas} completed its rendering. This method sets
-     * {@link StatusBar#localToObjectiveCRS} to the inverse of {@link MapCanvas#objectiveToDisplay}.
-     * It assumes that even if the JavaFX local coordinates and {@link #localToPositionCRS} transform
-     * changed, the "real world" coordinates under the mouse cursor is still the same. This assumption
-     * should be true if this listener is notified as a result of zoom, translation or rotation events.
+     * Invoked when {@link MapCanvas} completed its rendering, either successfully or with an error.
+     * This method sets {@link #localToObjectiveCRS} to the inverse of {@link MapCanvas#objectiveToDisplay}.
+     *
+     * The geospatial coordinates under the mouse cursor are usually unchanged if this listener is notified as a
+     * result of zoom or pan. But the number of fraction digits used for formatting the same coordinates may have
+     * changed, because the pixels on the screen may have a different resolution after a zoom (or even, sometime,
+     * after a pan). Reformatting the geospatial coordinates requires the JavaFX local coordinates of the mouse,
+     * which may have changed because of the change in the {@link #localToPositionCRS} transform. We don't have
+     * an <abbr>API</abbr> for asking again the mouse coordinates, so the best we can do is to try to reuse
+     * {@link #lastX} and {@link #lastY}.
+     *
+     * @param  event  contains the change in the display space of the {@link MapCanvas}.
      */
-    private void applyCanvasGeometry() {
+    private void displaySpaceChanged(final RenderingCompletedEvent event) {
+        final Point2D point = (event != null) ? event.updateDisplayCoordinates(lastX, lastY) : null;
         try {
             apply(canvas.getGridGeometry());
-            /*
-             * Do not hide `position` since we assume that "real world" coordinates are still valid.
-             * Do not try to rewrite position neither since `lastX` and `lastY` are not valid anymore.
-             */
         } catch (RenderException e) {
             setRenderingError(e);
         }
+        if (point != null) {
+            lastX = point.getX();
+            lastY = point.getY();
+        }
+        rewritePosition(null);
     }
 
     /**
@@ -764,11 +776,10 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
 
     /**
      * Implementation of {@link #applyCanvasGeometry(GridGeometry)} without changing {@link #position} visibility state.
-     * Invoking this method usually invalidates the coordinates shown in this status bar. The new coordinates cannot be
-     * easily recomputed because the {@link #lastX} and {@link #lastY} values may not be valid anymore, as a result of
-     * possible changes in JavaFX local coordinate system. Consequently, the coordinates should be temporarily hidden
-     * until a new {@link MouseEvent} gives us the new local coordinates, unless this method is invoked in a context
-     * where we know that the "real world" coordinates should be the same even if local coordinates changed.
+     * This method sets the {@link #lastX} and {@link #lastY} fields to NaN because these coordinates become invalid as
+     * a consequence of the change in the {@link #localToPositionCRS} transform. However, the {@linkplain #position} is
+     * not hidden because this method may be invoked in a context where we know that the "real world" coordinates should
+     * be the same even if local coordinates changed.
      *
      * @param  geometry  geometry of the coverage shown in {@link MapCanvas}, or {@code null}.
      */
@@ -832,11 +843,14 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         if (localToCRS == null) {
             localToCRS = MathTransforms.identity(BIDIMENSIONAL);
         }
+        final MathTransform localToWritten;
         if (sameCRS && objectiveToPositionCRS != null) {
-            localToCRS = MathTransforms.concatenate(localToCRS, objectiveToPositionCRS);
+            localToWritten = MathTransforms.concatenate(localToCRS, objectiveToPositionCRS);
+        } else {
+            localToWritten = localToCRS;
         }
-        final int srcDim = Math.max(localToCRS.getSourceDimensions(), BIDIMENSIONAL);
-        final int tgtDim = localToCRS.getTargetDimensions();
+        final int srcDim = Math.max(localToWritten.getSourceDimensions(), BIDIMENSIONAL);
+        final int tgtDim = localToWritten.getTargetDimensions();
         /*
          * Remaining code should not fail, so we can start modifying the `StatusBar` fields.
          * The buffers for source and target coordinates are recreated because the number of
@@ -850,7 +864,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         sourceCoordinates   = Arrays.copyOf(pointOfInterest, srcDim);
         targetCoordinates   = new GeneralDirectPosition(tgtDim);
         objectiveCRS        = crs;
-        localToPositionCRS  = localToCRS;
+        localToPositionCRS  = localToWritten;
         inflatePrecisions   = inflate;
         precisions          = null;
         lastX = lastY       = Double.NaN;           // Not valid anymove — see above block comment.
@@ -917,7 +931,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * a background thread for computing the coordinate operation. That task may be long
      * the first time that it is executed, but should be fast on subsequent invocations.
      *
-     * @param  crs  the new CRS, or {@code null} for {@link #objectiveCRS}.
+     * @param  crs  the new <abbr>CRS</abbr>, or {@code null} for {@link #objectiveCRS}.
      *
      * @see #setPositionRID(ReferencingByIdentifiers)
      * @see #getPositionCRS()
@@ -980,13 +994,11 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         } else {
             /*
              * If the requested CRS is the objective CRS, avoid above costly operation.
-             * The work that we need to do is to cancel the effect of `localToPositionCRS`.
-             * As a special case if `objectiveCRS` was unknown before this method call,
-             * set it to the given value. This is needed for initializing the format CRS
-             * to the first reference system listed in `RecentReferenceSystems` choices.
-             * We could not do this work at construction time because the CRS choices may
-             * be computed in a background thread, in which case it became known only a
-             * little bit later and given to `StatusBar` through listeners.
+             * Instead, we only need to remove the `localToPositionCRS` transform step.
+             * If `objectiveCRS` was unknown before this method call, use the given value.
+             * This is needed for initializing the format CRS to the first reference system
+             * listed in `RecentReferenceSystems` choices. This initialization could not be
+             * done at construction time because the CRS choices may be computed in a background thread.
              */
             if (objectiveCRS == null) {
                 objectiveCRS = crs;
@@ -1022,8 +1034,8 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     }
 
     /**
-     * Invoked after a new reference system has been set. This method rewrites the coordinates
-     * on the assumption that {@link #lastX} and {@link #lastY} are still valid.
+     * Rewrites the coordinates on the assumption that {@link #lastX} and {@link #lastY} are still valid.
+     * This method is invoked after a new reference system has been set or after a navigation event.
      *
      * @param  current  the local coordinates used for current text, or {@code null} if not valid.
      */
@@ -1325,10 +1337,13 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     }
 
     /**
-     * Returns the coordinates given to the last call to {@link #setLocalCoordinates(double, double)},
-     * or an empty value if those coordinates are not visible.
+     * Returns the pixel coordinates from which the geospatial coordinates have been computed. The returned
+     * point contains the coordinates given in the last call to {@link #setLocalCoordinates(double, double)}.
+     * Note that the latter call may have been caused by a user an action such as a mouse displacement,
+     * not necessarily an explicit call from the application code.
+     * If the coordinates are not currently shown in the status bar, then this method returns an empty value.
      *
-     * @return the local coordinates currently shown in the status bar.
+     * @return the local coordinates which are the sources of the coordinates currently shown in the status bar.
      */
     public Optional<Point2D> getLocalCoordinates() {
         if (isPositionVisible() && !Double.isNaN(lastX) && !Double.isNaN(lastY)) {
@@ -1517,7 +1532,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     private boolean isPositionVisible() {
         if (position.isVisible()) {
             final String text = position.getText();
-            return text != null && text != outsideText;           // Identity comparison is okay for that value.
+            return text != null && !text.isBlank() && text != outsideText;  // Identity comparison is okay for that value.
         }
         return false;
     }
@@ -1621,11 +1636,12 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     }
 
     /**
-     * Returns the message currently shown. It may be an error message or an informative message.
+     * Returns the message currently shown. It may be an error message, a message for an operation in progress
+     * or a default message to show when there is no error or operation in progress.
      *
      * @return the current message, or an empty value if none.
      *
-     * @see #setInfoMessage(String)
+     * @see #setProgressMessage(String)
      * @see #setErrorMessage(String, Throwable)
      * @see #setDefaultMessage(String, Tooltip)
      *
@@ -1646,19 +1662,19 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
         if (text == null) {
             text     = defaultMessage;
             textFill = Styles.FAINT_TEXT;
-            tooltip  = defaultMessageTeooltip;
+            tooltip  = defaultMessageTooltip;
         }
-        message.setVisible(text != null);
         message.setText(text);
         message.setTextFill(textFill);
         message.setTooltip(tooltip);
     }
 
     /**
-     * Sets the default message to show when there is no error or operation in progress.
-     * If {@link #setInfoMessage(String)} or {@link #setErrorMessage(String, Throwable)}
+     * Sets the default message to show when there is no error and no operation in progress.
+     * If {@link #setProgressMessage(String)} or {@link #setErrorMessage(String, Throwable)}
      * is invoked, the informative or error message has precedence over this default message.
-     * When the informative or error message is reset to {@code null}, the default message is restored.
+     * When the informative and error message are reset to {@code null},
+     * this default message is restored.
      *
      * @param  text     message to show when there is no other kind of message, or {@code null} if none.
      * @param  tooltip  optional tool tip to show on the default message, or {@code null} if none.
@@ -1668,9 +1684,9 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     public void setDefaultMessage(String text, final Tooltip tooltip) {
         text = Strings.trimOrNull(text);
         defaultMessage = text;
-        defaultMessageTeooltip = tooltip;
+        defaultMessageTooltip = tooltip;
         // Use the text fill as a way to identify that the message is not an error or information.
-        if (message.getText() == null || message.getTextFill() == Styles.FAINT_TEXT) {
+        if (Strings.isNullOrEmpty(message.getText()) || message.getTextFill() == Styles.FAINT_TEXT) {
             message.setTextFill(Styles.FAINT_TEXT);
             message.setText(text);
             message.setTooltip(tooltip);
@@ -1684,8 +1700,25 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @param  text  the message to show, or {@code null} if none.
      *
      * @since 1.3
+     * @deprecated Renamed {@link #setProgressMessage(String)}.
      */
+    @Deprecated(since = "1.7", forRemoval = true)
     public void setInfoMessage(String text) {
+        setProgressMessage(text);
+    }
+
+    /**
+     * Shows or hides a message for an operation in progress.
+     * The given text should be a temporary message, for example for telling that a loading is in progress.
+     * If {@code text} is non-null, it replaces the {@linkplain #setDefaultMessage default message}.
+     * If {@code text} is null (typically after completion of the operation which was in progress),
+     * the default message is restored.
+     *
+     * @param  text  the message to show, or {@code null} for restoring the default message.
+     *
+     * @since 1.7
+     */
+    public void setProgressMessage(String text) {
         setMessage(Strings.trimOrNull(text), Styles.LOADING_TEXT);
         message.setGraphic(null);
     }

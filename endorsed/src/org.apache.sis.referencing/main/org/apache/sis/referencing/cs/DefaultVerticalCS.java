@@ -156,7 +156,7 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
     /**
      * Returns {@code VALID} if the given argument values are allowed for this coordinate system,
      * or an {@code INVALID_*} error code otherwise. This method is invoked at construction time.
-     * The current implementation accepts only temporal directions (i.e. {@link AxisDirection#UP}
+     * The current implementation accepts only vertical directions (i.e. {@link AxisDirection#UP}
      * and {@link AxisDirection#DOWN}).
      */
     @Override

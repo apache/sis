@@ -130,7 +130,10 @@ public final class ColorModelFactory {
 
     /**
      * The minimum (inclusive) and maximum (exclusive) sample values.
-     * This is used only if {@link #dataType} is not {@link DataBuffer#TYPE_BYTE} or {@link DataBuffer#TYPE_USHORT}.
+     * If no category or color map was specified, then the minimum and maximum are set to the standard range of values.
+     * For integer types, this is the full range of values allowed by that type. For floating-point types, this is 0…1.
+     *
+     * @see #isStandardRange(int, double, double)
      */
     private final double minimum, maximum;
 
@@ -215,9 +218,21 @@ public final class ColorModelFactory {
                 }
             }
         }
+        /*
+         * If no category or color map was specified, default to the standard range of values.
+         * For floating point types, the standard range of values is defined by Java2D as 0 … 1.
+         */
         if (minimum >= maximum) {
             minimum = 0;
             maximum = 1;
+            if (ImageUtilities.isIntegerType(dataType)) {
+                if (dataType == DataBuffer.TYPE_SHORT) {
+                    minimum = Short.MIN_VALUE;
+                    maximum = Short.MAX_VALUE + 1;  // Exclusive.
+                } else {
+                    maximum = 1L << DataBuffer.getDataTypeSize(dataType);
+                }
+            }
         }
         /*
          * The length of `pieceStarts` may differ from the expected length if there is holes between categories.
@@ -266,7 +281,7 @@ public final class ColorModelFactory {
             return true;
         }
         if (other instanceof ColorModelFactory) {
-            final ColorModelFactory that = (ColorModelFactory) other;
+            final var that = (ColorModelFactory) other;
             return this.dataType    == that.dataType
                 && this.numBands    == that.numBands
                 && this.visibleBand == that.visibleBand
@@ -340,6 +355,17 @@ public final class ColorModelFactory {
     }
 
     /**
+     * Creates a color model for opaque images with sample values in the range defined by this factory.
+     * This method is invoked as a fallback when an {@link IndexColorModel} cannot be created.
+     * This is only a fallback because this method ignores the {@link #ARGB} colors.
+     *
+     * @return the color model for the range of values of this factory, ignoring {@link #ARGB} colors.
+     */
+    private ColorModel createGrayScale() {
+        return createGrayScale(dataType, numBands, visibleBand, minimum, maximum);
+    }
+
+    /**
      * Constructs the color model from the {@link #ARGB} data.
      * This method is invoked the first time the color model is created,
      * or when the value in the cache has been discarded.
@@ -353,38 +379,44 @@ public final class ColorModelFactory {
          *       But a future implementation may use them.
          */
         if (dataType != DataBuffer.TYPE_BYTE && dataType != DataBuffer.TYPE_USHORT) {
-            return createGrayScale(dataType, numBands, visibleBand, minimum, maximum);
+            return createGrayScale();
         }
         /*
-         * If there are no categories, construct a gray scale palette.
+         * If no categories or ARGB colors were specified, construct a gray scale palette.
+         * If there is a single band, the performance should be fine since above condition
+         * verified that the data type is one of the types supported by Java2D.
+         *
+         * If there are more than one band, the color model may be very slow but we use it anyway
+         * because a gray scale gives directly the intensity while an index color model is indirect.
+         * It makes a difference during interpolations, which can be unsupported for indexed values
+         * because not all code paths resolve the indirection.
          */
         final int categoryCount = pieceStarts.length - 1;
-        if (numBands == 1 && categoryCount <= 0) {
-            final ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
-            final int[] numBits = {
-                DataBuffer.getDataTypeSize(dataType)
-            };
-            return unique(new ComponentColorModel(cs, numBits, false, true, Transparency.OPAQUE, dataType));
+        if (categoryCount <= 0) {
+            return createGrayScale();
         }
         /*
          * Interpolates the colors in the color palette. Colors that do not fall
          * in the range of a category will be set to a transparent color.
+         * A gray scale color palette
          */
-        final int[] colorMap;
         int transparent = -1;
-        if (categoryCount <= 0) {
-            colorMap = ArraysExt.range(0, 256);
-        } else {
-            colorMap = new int[pieceStarts[categoryCount]];
-            for (int i=0; i<categoryCount; i++) {
-                final int[] colors = ARGB[i];
-                final int   lower  = pieceStarts[i  ];
-                final int   upper  = pieceStarts[i+1];
-                if (transparent < 0 && colors.length == 0) {
-                    transparent = lower;
-                }
-                expand(colors, colorMap, lower, upper);
+        final int[] colorMap = new int[pieceStarts[categoryCount]];
+        for (int i=0; i<categoryCount; i++) {
+            final int[] colors = ARGB[i];
+            final int   lower  = pieceStarts[i  ];
+            final int   upper  = pieceStarts[i+1];
+            if (transparent < 0 && colors.length == 0) {
+                transparent = lower;
             }
+            expand(colors, colorMap, lower, upper);
+        }
+        /*
+         * If the color palette appears to be gray scale, replace by a gray scale even if potentially slower.
+         * This is for the same reason as in previous comment: enable interpolations on sample values.
+         */
+        if (colorMap.length == (1 << DataBuffer.getDataTypeSize(dataType)) && isGrayScale(colorMap)) {
+            return createGrayScale();
         }
         return createIndexColorModel(null, 0, numBands, visibleBand, colorMap, true, transparent);
     }
@@ -435,8 +467,8 @@ public final class ColorModelFactory {
             final boolean hasAlpha, final int transparent)
     {
         /*
-         * No need to scan the ARGB values in search of a transparent pixel;
-         * the IndexColorModel constructor does that for us.
+         * No need to scan the ARGB values in search of a transparent pixel
+         * since the `IndexColorModel` constructor does that for us.
          */
         final int length = ARGB.length;
         if (numBits == 0) {
@@ -490,11 +522,12 @@ public final class ColorModelFactory {
     }
 
     /**
-     * Creates a color model for opaque images storing pixels as real numbers.
+     * Creates a color model for opaque images storing pixels as integers or floating-point numbers.
      * The color model can have an arbitrary number of bands, but in current implementation only one band is used.
      *
-     * <p><b>Warning:</b> the use of this color model may be very slow.
-     * It should be used only when no standard color model can be used.</p>
+     * <p><b>Warning:</b> the returned color model has good performance for data stored in a single band of bytes
+     * or unsigned short integers when the full range of values allowed by those types is used. For other cases,
+     * the color model is very slow and should be used only when no standard color model can be used.</p>
      *
      * @param  dataType       the color model type as one of {@code DataBuffer.TYPE_*} constants.
      * @param  numComponents  the number of components.
@@ -538,10 +571,10 @@ public final class ColorModelFactory {
     static boolean isStandardRange(final int dataType, double minimum, final double maximum) {
         final boolean signed;
         switch (dataType) {
-            case DataBuffer.TYPE_BYTE:
+            case DataBuffer.TYPE_BYTE:   // Fall through
             case DataBuffer.TYPE_USHORT: signed = false; break;
-            case DataBuffer.TYPE_SHORT:
-            case DataBuffer.TYPE_INT:    signed = true; break;
+            case DataBuffer.TYPE_SHORT:  signed = true;  break;
+            case DataBuffer.TYPE_INT:    signed = (minimum < 0); break;
             /*
              * The standard range of floating point types is [0 … 1], but we never return `true`
              * for those types even if the specified minimum and maximum values match that range
@@ -726,6 +759,32 @@ public final class ColorModelFactory {
         assert (1 << count) >= mapSize : mapSize;
         assert (1 << (count-1)) < mapSize : mapSize;
         return Math.max(1, count);
+    }
+
+    /**
+     * Returns {@code true} if the given <abbr>ARGB</abbr> values define a gray scale.
+     * The number of values should be the full range of byte or unsigned short values,
+     * but this method accepts any power of 2.
+     *
+     * <p>A gray scale color model is preferred to an index color model because gray scale gives
+     * directly the intensity, while index color model is indirect (need to lookup in a table).
+     * Therefore, sample values associated to gray scale can be interpolated while sample values
+     * that are indexes cannot be interpolated easily.</p>
+     */
+    private static boolean isGrayScale(final int[] ARGB) {
+        int shift = Integer.numberOfTrailingZeros(ARGB.length);
+        if (ARGB.length != (1 << shift)) {
+            return false;
+        }
+        shift -= Byte.SIZE;
+        for (int i = ARGB.length; --i >= 0;) {
+            int c = i >>> shift;
+            c |= (c << 8) | (c << 16) | (c << 24) | 0xFF000000;
+            if (ARGB[i] != c) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

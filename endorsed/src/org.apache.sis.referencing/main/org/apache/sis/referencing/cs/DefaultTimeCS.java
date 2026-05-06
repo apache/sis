@@ -47,7 +47,7 @@ import org.apache.sis.measure.Units;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see org.apache.sis.referencing.crs.DefaultTemporalCRS
  * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
@@ -146,14 +146,18 @@ public class DefaultTimeCS extends AbstractCS implements TimeCS {
      * Returns {@code VALID} if the given argument values are allowed for this coordinate system,
      * or an {@code INVALID_*} error code otherwise. This method is invoked at construction time.
      * The current implementation accepts only temporal directions (i.e. {@link AxisDirection#FUTURE}
-     * and {@link AxisDirection#PAST}) and units compatible with {@link Units#SECOND}.
+     * and {@link AxisDirection#PAST}).
+     *
+     * @see #getCoordinateType()
      */
     @Override
     final int validateAxis(final AxisDirection direction, final Unit<?> unit) {
         if (!AxisDirections.isTemporal(direction)) {
             return INVALID_DIRECTION;
         }
-        if (!Units.isTemporal(unit)) {
+        // ISO 19111 allows count of something. SIS uses that for cell index.
+        // TODO: A null unit should be valid and means to use `java.time`.
+        if (!(Units.isTemporal(unit) || Units.UNITY.equals(unit))) {
             return INVALID_UNIT;
         }
         return VALID;

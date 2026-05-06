@@ -17,6 +17,7 @@
 package org.apache.sis.storage.internal;
 
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import org.opengis.util.InternationalString;
@@ -51,6 +52,19 @@ public class Resources extends IndexedResourceBundle {
          * For {@link #INSTANCE} creation only.
          */
         private Keys() {
+        }
+
+        /**
+         * Returns the value of a field declared in this {@code Keys} class.
+         * This method is needed for encapsulation reason, because classes in
+         * other modules cannot access this class even by reflection.
+         */
+        @Override
+        protected Object getStaticValue(final Field field) throws IllegalAccessException {
+            if (field.getDeclaringClass() == Keys.class) {
+                return field.get(null);
+            }
+            throw new IllegalAccessException();
         }
 
         /**

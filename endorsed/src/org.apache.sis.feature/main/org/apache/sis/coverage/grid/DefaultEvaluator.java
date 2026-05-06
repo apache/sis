@@ -36,7 +36,6 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.internal.shared.DirectPositionView;
 import org.apache.sis.referencing.internal.shared.WraparoundAxesFinder;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -251,7 +250,7 @@ abstract class DefaultEvaluator implements GridCoverage.Evaluator {
                 final GridExtent extent = gridGeometry.getExtent();
                 MathTransform gridToCRS = gridGeometry.getGridToCRS(PixelInCell.CELL_CENTER);
                 gridToWraparound = MathTransforms.concatenate(gridToCRS, f.preferredToSpecified.inverse());
-                final Matrix m = gridToWraparound.derivative(new DirectPositionView.Double(extent.getPointOfInterest(PixelInCell.CELL_CENTER)));
+                final Matrix m = extent.derivativeAtPOI(gridToWraparound, PixelInCell.CELL_CENTER);
                 /*
                  * `gridToWraparound` is the transform from grid coordinates to a CRS where wraparound axes exist.
                  * It may be the coverage CRS or its base CRS. The wraparound axes are identified by `periods`.

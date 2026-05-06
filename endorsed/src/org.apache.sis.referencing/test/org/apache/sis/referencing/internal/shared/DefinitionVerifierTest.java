@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.internal.shared;
 
-import java.util.Map;
 import java.util.HashMap;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
@@ -83,7 +82,7 @@ public final class DefinitionVerifierTest extends TestCase {
      */
     @Test
     public void testDifferentAxisOrder() throws FactoryException {
-        final Map<String,Object> properties = new HashMap<>(4);
+        final var properties = new HashMap<String, Object>(4);
         properties.put(DefaultGeographicCRS.NAME_KEY, "WGS 84");
         properties.put(DefaultGeographicCRS.IDENTIFIERS_KEY, new NamedIdentifier(HardCodedCitations.EPSG, "4326"));
         DefaultGeographicCRS crs = HardCodedCRS.WGS84;

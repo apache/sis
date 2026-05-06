@@ -356,7 +356,7 @@ public final class ReferencingUtilities {
         if (keepName && overwrite == null) {
             return properties;
         }
-        final var copy = new HashMap<String,Object>(properties);
+        final var copy = new HashMap<String, Object>(properties);
         if (!keepName) {
             copy.put(IdentifiedObject.NAME_KEY, new NamedIdentifier(null, name.getCode()));
         }
@@ -410,7 +410,7 @@ public final class ReferencingUtilities {
                         }
                         name = CharSequences.trimWhitespaces(name, 0, i).toString();
                         if (!name.isEmpty()) {
-                            final Map<String,Object> copy = new HashMap<>(properties);
+                            final var copy = new HashMap<String, Object>(properties);
                             copy.put(IdentifiedObject.NAME_KEY, name);
                             return copy;
                         }
@@ -486,8 +486,8 @@ public final class ReferencingUtilities {
      * @throws NumberFormatException if a parameter identifier of the given authority is not numeric.
      * @throws IllegalArgumentException if the same identifier is used for two or more parameters.
      */
-    public static Map<Integer,String> identifierToName(final ParameterDescriptorGroup parameters, final Citation authority) {
-        final Map<Integer,String> mapping = new HashMap<>();
+    public static Map<Integer, String> identifierToName(final ParameterDescriptorGroup parameters, final Citation authority) {
+        final var mapping = new HashMap<Integer, String>();
         for (final GeneralParameterDescriptor descriptor : parameters.descriptors()) {
             final Identifier id = IdentifiedObjects.getIdentifier(descriptor, authority);
             if (id != null) {

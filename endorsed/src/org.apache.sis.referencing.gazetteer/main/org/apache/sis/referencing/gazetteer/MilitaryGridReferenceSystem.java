@@ -289,7 +289,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      */
     @Workaround(library="JDK", version="8", fixed="25")
     private static Map<String,?> properties() {
-        AbstractParty party = new AbstractParty("North Atlantic Treaty Organization", null);
+        final var party = new AbstractParty("North Atlantic Treaty Organization", null);
         return properties(new NamedIdentifier(null, "NATO", Resources.formatInternational(Resources.Keys.MGRS), null, null), IDENTIFIER, party);
     }
 
@@ -398,7 +398,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         /**
          * Cached information needed for building a MGRS reference from a direct position in the given CRS.
          */
-        private final Map<CoordinateReferenceSystem,Encoder> encoders;
+        private final Map<CoordinateReferenceSystem, Encoder> encoders;
 
         /**
          * Temporary positions used for encoding. References are kept for avoiding

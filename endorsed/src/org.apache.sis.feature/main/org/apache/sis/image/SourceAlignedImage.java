@@ -170,7 +170,7 @@ abstract class SourceAlignedImage extends ComputedImage {
             return ArraysExt.resize(names, n);
         }
         names = ArraysExt.resize(names, n + append.length);
-        System.arraycopy(names, n, append, 0, append.length);
+        System.arraycopy(append, 0, names, n, append.length);
         return names;
     }
 

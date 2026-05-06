@@ -159,7 +159,7 @@ public class DefaultPolarCS extends AbstractCS implements PolarCS {
         if (!AxisDirections.isSpatialOrUserDefined(direction, false)) {
             return INVALID_DIRECTION;
         }
-        if (!Units.isLinear(unit) && !Units.isAngular(unit)) {
+        if (!(Units.isLinear(unit) || Units.isAngular(unit))) {
             return INVALID_UNIT;
         }
         return VALID;

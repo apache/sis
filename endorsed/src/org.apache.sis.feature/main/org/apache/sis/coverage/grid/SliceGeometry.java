@@ -31,7 +31,6 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
-import org.apache.sis.referencing.internal.shared.DirectPositionView;
 import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArraysExt;
@@ -304,7 +303,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
         Matrix derivative = MathTransforms.getMatrix(gridToCRS);
         if (derivative == null) {
             if (extent != null) try {
-                derivative = gridToCRS.derivative(new DirectPositionView.Double(extent.getPointOfInterest(PixelInCell.CELL_CENTER)));
+                derivative = extent.derivativeAtPOI(gridToCRS, PixelInCell.CELL_CENTER);
             } catch (TransformException e) {
                 // GridGeometry.reduce(…) is the public method invoking indirectly this method.
                 GridGeometry.recoverableException("reduce", e);

@@ -37,9 +37,9 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.DerivedCRS;
+import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.math.MathFunctions;
@@ -60,6 +60,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.internal.shared.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.internal.shared.DirectPositionView;
 import org.apache.sis.referencing.internal.shared.TemporalAccessor;
@@ -577,7 +578,7 @@ public class GridGeometry implements LenientComparable, Serializable {
             this.envelope = new ImmutableEnvelope(env);
             if (scales == null) try {
                 // `gridToCRS` cannot be null if `cornerToCRS` is non-null.
-                scales = gridToCRS.derivative(new DirectPositionView.Double(extent.getPointOfInterest(anchor)));
+                scales = extent.derivativeAtPOI(gridToCRS, anchor);
                 numToIgnore = 0;
             } catch (TransformException e) {
                 recoverableException("<init>", e);
@@ -1374,7 +1375,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         if (matrix != null) {
             return resolution(matrix, 1);
         } else if (domain != null && gridToCRS != null) try {
-            return resolution(gridToCRS.derivative(new DirectPositionView.Double(domain.getPointOfInterest(anchor))), 0);
+            return resolution(domain.derivativeAtPOI(gridToCRS, anchor), 0);
         } catch (TransformException e) {
             recoverableException("resolution", e);
         }
@@ -1865,19 +1866,63 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @param  name    name of the CRS to create.
      * @param  anchor  the cell part to map (center or corner).
      * @return a derived CRS for coordinates (cell indices) associated to the grid extent.
-     * @throws IncompleteGridGeometryException if the CRS, grid extent or "grid to CRS" transform is missing.
+     * @throws IncompleteGridGeometryException if the CRS or "grid to CRS" transform is missing.
      *
      * @since 1.3
+     *
+     * @deprecated Replaced by the more generic {@link #createGridCRS(Identifier, PixelInCell)} method.
      */
+    @Deprecated(since = "1.7", forRemoval = true)
     public DerivedCRS createImageCRS(final String name, final PixelInCell anchor) {
         ArgumentChecks.ensureNonEmpty("name", name);
+        final var id = new org.apache.sis.referencing.ImmutableIdentifier(null, null, name);
         try {
-            return GridExtentCRS.forCoverage(name, this, anchor, null);
+            // Note: the `true` boolean argument can be removed after the removal of this method.
+            final CoordinateReferenceSystem crs = new GridCRSBuilder(anchor).forCoverage(this, true, id);
+            return (DerivedCRS) org.apache.sis.referencing.CRS.getSingleComponents(crs).get(0);
         } catch (FactoryException e) {
             throw new BackingStoreException(e);
-        } catch (NoninvertibleTransformException e) {
-            throw new IllegalStateException(e);
         }
+    }
+
+    /**
+     * Creates a coordinate reference system for cell indices in the grid.
+     * If the cell indices can be related to the real world <abbr>CRS</abbr>
+     * by the {@linkplain #getGridToCRS grid to <abbr>CRS</abbr>} transform,
+     * then this method creates {@link DerivedCRS} instances derived from the
+     * {@link #getCoordinateReferenceSystem() <abbr>CRS</abbr> of this grid}.
+     * This strategy makes possible to use the returned <abbr>CRS</abbr> in a chain of coordinate operations
+     * created by (for example) {@link org.apache.sis.referencing.CRS#findOperation CRS.findOperation(…)}.
+     * Otherwise (if there is no grid to <abbr>CRS</abbr> transform or no real-world <abbr>CRS</abbr>),
+     * then this method creates an {@link org.opengis.referencing.crs.EngineeringCRS} instance
+     * associated to an engineering datum identified by the given {@code name}.
+     *
+     * <h4>Recommendation about the name</h4>
+     * The {@code name} argument is not very important when this method creates {@link DerivedCRS} instances,
+     * because the datum is inherited from the real world <abbr>CRS</abbr>. However, if this method fallbacks
+     * on {@link EngineeringCRS}, then the {@code name} argument become the only way to determine whether
+     * a coordinate operation is possible between two such engineering <abbr>CRS</abbr>s.
+     * It is recommended to use an identifier which is unique for the grid. It may be, for example, derived
+     * from the {@linkplain org.apache.sis.storage.GridCoverageResource#getIdentifier() resource identifier}.
+     *
+     * <p><b>Alternative:</b> if the target grid geometry is known in advance,
+     * {@link #createTransformTo(GridGeometry, PixelInCell)} can provide a
+     * transform more robust to grids that cross the anti-meridian.</p>
+     *
+     * @param  name    name of the <abbr>CRS</abbr> to create.
+     * @param  anchor  the cell part to map (center or corner).
+     * @return a derived, engineering or compound <abbr>CRS</abbr> for cell indices associated to the grid extent.
+     * @throws InvalidGeodeticParameterException if characteristics of this grid geometry disallow this operation.
+     * @throws FactoryException if another error occurred during the use of a referencing factory.
+     *
+     * @see #createTransformTo(GridGeometry, PixelInCell)
+     *
+     * @since 1.7
+     */
+    public CoordinateReferenceSystem createGridCRS(final Identifier name, final PixelInCell anchor) throws FactoryException {
+        ArgumentChecks.ensureNonNull("name", name);
+        ArgumentChecks.ensureNonNull("anchor", anchor);
+        return new GridCRSBuilder(anchor).forCoverage(this, false, name);
     }
 
     /**

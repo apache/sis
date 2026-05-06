@@ -113,7 +113,7 @@ import org.apache.sis.pending.geoapi.evolution.Interim;
  *
  * @author  Touraïvane (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   0.8
  */
 public class MetadataSource implements AutoCloseable {
@@ -257,7 +257,7 @@ public class MetadataSource implements AutoCloseable {
      *
      * @see #lookup(Class, String)
      */
-    private final WeakValueHashMap<CacheKey,Object> pool;
+    private final WeakValueHashMap<CacheKey, Object> pool;
 
     /**
      * Some information about last used objects. Cached on assumption that the same information
@@ -630,7 +630,7 @@ public class MetadataSource implements AutoCloseable {
      * @throws ClassCastException if the metadata object does not implement a metadata interface
      *         of the expected package.
      */
-    final Map<String,Object> asValueMap(final Object metadata) throws ClassCastException {
+    final Map<String, Object> asValueMap(final Object metadata) throws ClassCastException {
         return standard.asValueMap(metadata, null, NAME_POLICY, ValueExistencePolicy.ALL);
     }
 
@@ -676,7 +676,7 @@ public class MetadataSource implements AutoCloseable {
                 identifier = ((Enum<?>) metadata).name();
             } else {
                 final String table;
-                final Map<String,Object> asMap;
+                final Map<String, Object> asMap;
                 try {
                     table = getTableName(standard.getInterface(metadata.getClass()));
                     asMap = asValueMap(metadata);
@@ -710,12 +710,12 @@ public class MetadataSource implements AutoCloseable {
      * @return the identifier of the given metadata, or {@code null} if none.
      * @throws SQLException if an error occurred while searching in the database.
      */
-    final String search(final String table, Set<String> columns, final Map<String,Object> metadata,
+    final String search(final String table, Set<String> columns, final Map<String, Object> metadata,
             final Statement stmt, final SQLBuilder helper) throws SQLException, FactoryException
     {
         assert Thread.holdsLock(this);
         helper.clear();
-        for (final Map.Entry<String,Object> entry : metadata.entrySet()) {
+        for (final Map.Entry<String, Object> entry : metadata.entrySet()) {
             /*
              * Gets the value and the column where this value is stored. If the value is non-null,
              * then the column must exist otherwise the metadata will be considered as not found.
@@ -888,14 +888,18 @@ public class MetadataSource implements AutoCloseable {
                 throw new MetadataStoreException(Errors.format(Errors.Keys.DatabaseError_2, type, identifier), e);
             }
         } else {
-            final CacheKey key = new CacheKey(type, identifier);
+            final var key = new CacheKey(type, identifier);
             /*
              * IMPLEMENTATION NOTE: be careful to not invoke any method that may synchronize on `this`
              * inside a block synchronized on `pool` (implicit synchronization of `pool` method calls).
              */
             value = pool.get(key);
             if (value == null && type.isInterface()) {
-                final Dispatcher toSearch = new Dispatcher(identifier, this);
+                final var toSearch = new Dispatcher(identifier, this);
+                /*
+                 * IMPLEMENTATION NOTE: declaration order of interfacs matter. The `type` must be first,
+                 * because `Dispatcher.writeReplace(proxy)` will look for that interface at that location.
+                 */
                 value = Proxy.newProxyInstance(classloader, new Class<?>[] {type, MetadataProxy.class}, toSearch);
                 if (verify) try {
                     /*
@@ -1259,7 +1263,7 @@ public class MetadataSource implements AutoCloseable {
              * which need to never fail, otherwise some memory leak could occur. Pretend that the message come
              * from closeExpired(), which is the closest we can get to a public API.
              */
-            final LogRecord record = new LogRecord(Level.WARNING, e.toString());
+            final var record = new LogRecord(Level.WARNING, e.toString());
             record.setThrown(e);
             warning(MetadataSource.class, "closeExpired", record);
         }

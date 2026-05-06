@@ -32,6 +32,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.collections.ObservableList;
+import org.opengis.metadata.Identifier;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -112,7 +113,7 @@ abstract class ViewAndControls {
     /**
      * The widget which contain this view. This is the widget to inform when the coverage changed.
      *
-     * @see CoverageExplorer#notifyDataChanged(GridCoverageResource, GridCoverage)
+     * @see CoverageExplorer#notifyDataChanged(Identifier, GridCoverageResource, GridCoverage)
      */
     protected final CoverageExplorer owner;
 

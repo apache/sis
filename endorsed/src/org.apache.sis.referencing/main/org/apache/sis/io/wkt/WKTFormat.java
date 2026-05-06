@@ -122,7 +122,7 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Eve (IRD)
- * @version 1.5
+ * @version 1.7
  * @since   0.4
  */
 public class WKTFormat extends CompoundFormat<Object> {
@@ -1198,7 +1198,7 @@ public class WKTFormat extends CompoundFormat<Object> {
              * We can avoid the call to `Warnings.publish()` because we know that we are not keeping a
              * reference for long, so we do not need to copy the `AbstractParser.ignoredElements` map.
              */
-            final LogRecord record = new LogRecord(Level.WARNING, warnings.toString());
+            final var record = new LogRecord(Level.WARNING, warnings.toString());
             Logging.completeAndLog(LOGGER, classe, method, record);
         }
     }
@@ -1218,7 +1218,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      */
     @Override
     public WKTFormat clone() {
-        final WKTFormat clone = (WKTFormat) super.clone();
+        final var clone = (WKTFormat) super.clone();
         clone.clear();
         clone.factories = null;                             // Not thread-safe; clone needs its own.
         clone.formatter = null;                             // Do not share the formatter.

@@ -19,6 +19,7 @@ package org.apache.sis.gui.map;
 import javafx.concurrent.Task;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.Transform;
+import javafx.scene.transform.Translate;
 
 
 /**
@@ -45,13 +46,22 @@ abstract class RenderingTask<V> extends Task<V> {
     }
 
     /**
-     * Takes a copy of the given transform.
+     * Takes a copy of the given transform. This method may use an implementation simpler than {@link Affine},
+     * such as {@link Translate}, because the transform stored by this method may become part of the transform
+     * chain of graphics such as {@link MapCanvas.StaticGraphics}.
      *
      * @param  transform  value of {@link MapCanvas#transform}.
      */
     final void setChangeInProgress(final Affine transform) {
-        // TODO: select a simpler transform implementation when possible.
-        changeInProgress = new Affine(transform);
+        if (transform.getMxx() == 1 && transform.getMxy() == 0 && transform.getMxz() == 0 &&
+            transform.getMyx() == 0 && transform.getMyy() == 1 && transform.getMyz() == 0 &&
+            transform.getMzx() == 0 && transform.getMzy() == 0 && transform.getMzz() == 1)
+        {
+            // Pans are a very frequent operations.
+            changeInProgress = new Translate(transform.getTx(), transform.getTy(), transform.getTz());
+        } else {
+            changeInProgress = new Affine(transform);
+        }
     }
 
     /**
