@@ -41,7 +41,6 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.apache.sis.swing.internal.Resources;
-import org.apache.sis.util.Static;
 
 
 /**
@@ -60,7 +59,7 @@ import org.apache.sis.util.Static;
  * @version 1.1
  * @since   1.1
  */
-final class SwingUtilities extends Static {
+final class SwingUtilities {
     /**
      * Do not allow any instance of this class to be created.
      */

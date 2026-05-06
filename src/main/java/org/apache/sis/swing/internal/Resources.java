@@ -17,8 +17,10 @@
 package org.apache.sis.swing.internal;
 
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.util.Locale;
 import java.util.MissingResourceException;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.KeyConstants;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 
@@ -42,6 +44,19 @@ public class Resources extends IndexedResourceBundle {
          * The unique instance of key constants handler.
          */
         static final Keys INSTANCE = new Keys();
+
+        /**
+         * Returns the value of a field declared in this {@code Keys} class.
+         * This method is needed for encapsulation reason, because classes in
+         * other modules cannot access this class even by reflection.
+         */
+        @Override
+        protected Object getStaticValue(final Field field) throws IllegalAccessException {
+            if (field.getDeclaringClass() == Errors.Keys.class) {
+                return field.get(null);
+            }
+            throw new IllegalAccessException();
+        }
 
         /**
          * For {@link #INSTANCE} creation only.
