@@ -22,6 +22,7 @@ import org.apache.sis.geometries.math.Matrix4D;
 
 
 /**
+ * Synonym : Skeleton mapping
  *
  * @author Johann Sorel (Geomatys)
  */

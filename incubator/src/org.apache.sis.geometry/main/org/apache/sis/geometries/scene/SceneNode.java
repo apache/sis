@@ -31,6 +31,10 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.math.Similarity;
 import org.apache.sis.geometries.math.Similarity3D;
+import org.apache.sis.geometries.scene.physics.Collider;
+import org.apache.sis.geometries.scene.physics.Joint;
+import org.apache.sis.geometries.scene.physics.Motion;
+import org.apache.sis.geometries.scene.physics.Trigger;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.measure.NumberRange;
@@ -104,6 +108,10 @@ public class SceneNode {
     private String name;
     private Feature feature;
     private Skin skin;
+    private Motion motion;
+    private Collider collider;
+    private Trigger trigger;
+    private Joint joint;
     private final List<Animation> animations = new ArrayList<>();
     //user properties
     private Map<String,Object> properties;
@@ -259,6 +267,62 @@ public class SceneNode {
     }
 
     /**
+     * @return node motion, can be null
+     */
+    public Motion getMotion() {
+        return motion;
+    }
+
+    /**
+     * @param motion set motion
+     */
+    public void setMotion(Motion motion) {
+        this.motion = motion;
+    }
+
+    /**
+     * @return node collider, can be null
+     */
+    public Collider getCollider() {
+        return collider;
+    }
+
+    /**
+     * @param collider set collider
+     */
+    public void setCollider(Collider collider) {
+        this.collider = collider;
+    }
+
+    /**
+     * @return node trigger, can be null
+     */
+    public Trigger getTrigger() {
+        return trigger;
+    }
+
+    /**
+     * @param trigger set trigger
+     */
+    public void setTrigger(Trigger trigger) {
+        this.trigger = trigger;
+    }
+
+    /**
+     * @return node joint, can be null
+     */
+    public Joint getJoint() {
+        return joint;
+    }
+
+    /**
+     * @param joint set joint
+     */
+    public void setJoint(Joint joint) {
+        this.joint = joint;
+    }
+
+    /**
      * @return animations attached to this node
      */
     public List<Animation> getAnimations() {
@@ -395,6 +459,18 @@ public class SceneNode {
             return false;
         }
         if (!Objects.equals(this.skin, other.skin)) {
+            return false;
+        }
+        if (!Objects.equals(this.motion, other.motion)) {
+            return false;
+        }
+        if (!Objects.equals(this.collider, other.collider)) {
+            return false;
+        }
+        if (!Objects.equals(this.trigger, other.trigger)) {
+            return false;
+        }
+        if (!Objects.equals(this.joint, other.joint)) {
             return false;
         }
         if (!Objects.equals(this.animations, other.animations)) {
