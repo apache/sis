@@ -49,6 +49,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.PropertyType;
 import org.opengis.filter.BinaryComparisonOperator;
 import org.opengis.filter.FilterFactory;
 
@@ -322,6 +323,33 @@ public class ShapefileStoreTest {
             assertEquals(45, f1.getPropertyValue("id"));
             assertEquals(feature2, result[1]);
         }
+    }
+
+    /**
+     * Test incremental id creation.
+     */
+    @Test
+    public void testGeneratedId() throws DataStoreException, IOException, URISyntaxException {
+        final URL url = ShapefileStoreTest.class.getResource("/org/apache/sis/storage/shapefile/noid.shp");
+        try (final ShapefileStore store = new ShapefileStore(Paths.get(url.toURI()))) {
+
+            final FeatureType type = store.getType();
+            System.out.println(type);
+            final PropertyType generatedID = type.getProperty(AttributeConvention.IDENTIFIER);
+            assertTrue(generatedID instanceof AttributeType);
+            assertEquals(5, type.getProperties(true).size());
+
+            try (Stream<Feature> stream = store.features(false)) {
+                Iterator<Feature> iterator = stream.iterator();
+                assertTrue(iterator.hasNext());
+                Feature feature1 = iterator.next();
+                assertEquals(0, feature1.getPropertyValue(AttributeConvention.IDENTIFIER));
+                assertEquals("some text", feature1.getPropertyValue("text"));
+
+                assertFalse(iterator.hasNext());
+            }
+        }
+
     }
 
     private static FeatureType createType() {

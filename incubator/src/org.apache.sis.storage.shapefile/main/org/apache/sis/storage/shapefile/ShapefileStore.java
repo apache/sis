@@ -131,6 +131,7 @@ import org.opengis.filter.LogicalOperatorName;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.ValueReference;
 import org.apache.sis.geometry.wrapper.*;
+import org.opengis.feature.PropertyNotFoundException;
 
 
 /**
@@ -337,10 +338,11 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
          * @throws DataStoreException
          */
         private boolean mustGenerateId() throws DataStoreException {
-            getType();
-            if (idField != null) return false;
-            if (readProperties == null) return true;
-            return readProperties.contains(AttributeConvention.IDENTIFIER);
+            try {
+                return getType().getProperty(AttributeConvention.IDENTIFIER) instanceof AttributeType;
+            } catch (PropertyNotFoundException ex) {
+                return false;
+            }
         }
 
         /**
