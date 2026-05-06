@@ -32,6 +32,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -48,7 +49,6 @@ import org.apache.sis.metadata.sql.internal.shared.Reflection;
 import org.apache.sis.io.stream.InternalOptionKey;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Version;
-import org.apache.sis.setup.OptionKey;
 
 
 /**

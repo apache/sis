@@ -36,6 +36,7 @@ import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
@@ -51,7 +52,6 @@ import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.storage.folder.ConcurrentCloser;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.setup.OptionKey;
 
 
 /**

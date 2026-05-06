@@ -41,7 +41,7 @@ import jakarta.xml.bind.JAXBException;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.DataOptionKey;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
@@ -49,7 +49,6 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.stream.IOUtilities;
-import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.resources.Errors;
@@ -124,7 +123,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource {
         location       = connector.getStorageAs(URI.class);
         locationAsPath = connector.getStorageAs(Path.class);
         if (locationAsPath != null || location != null) {
-            metadataPath = connector.getOption(DataOptionKey.METADATA_PATH);
+            metadataPath = connector.getOption(OptionKey.METADATA_PATH);
         } else {
             metadataPath = null;
         }
@@ -183,7 +182,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource {
      * Returns the main and metadata locations as {@code Path} components, or an empty value if none.
      * The default implementation returns the storage specified at construction time converted to a
      * {@link Path} if such conversion was possible, or an empty value otherwise. The set may also
-     * contains the path to the {@linkplain DataOptionKey#METADATA_PATH auxiliary metadata file}.
+     * contains the path to the {@linkplain OptionKey#METADATA_PATH auxiliary metadata file}.
      *
      * @return the URI to component files as paths, or an empty value if unknown.
      * @throws DataStoreException if an error occurred while getting the paths.
@@ -284,7 +283,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource {
 
     /**
      * Returns the path to the auxiliary metadata file, or {@code null} if none.
-     * This is a path built from the {@link DataOptionKey#METADATA_PATH} value if present.
+     * This is a path built from the {@link OptionKey#METADATA_PATH} value if present.
      * Note that the metadata may be unavailable as a {@link Path} but available as an {@link URI}.
      *
      * @return the path to the auxiliary metadata file, or {@code null} if none.
@@ -308,7 +307,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource {
 
     /**
      * Returns the <abbr>URI</abbr> to the auxiliary metadata file, or {@code null} if none.
-     * This is a path built from the {@link DataOptionKey#METADATA_PATH} value if present.
+     * This is a path built from the {@link OptionKey#METADATA_PATH} value if present.
      * Note that the metadata may be unavailable as an {@link URI} but available as a {@link Path}.
      *
      * @return the <abbr>URI</abbr> to the auxiliary metadata file, or {@code null} if none.

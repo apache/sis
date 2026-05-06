@@ -36,7 +36,7 @@ import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStore;

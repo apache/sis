@@ -35,6 +35,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
@@ -43,7 +44,6 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.IOUtilities;
-import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.logging.Logging;
 

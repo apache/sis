@@ -134,7 +134,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
         this.provider    = provider;
         this.displayName = connector.getDisplayName();
         this.locale      = Locale.getDefault(Locale.Category.DISPLAY);
-        this.listeners   = new StoreListeners(connector.getOption(DataOptionKey.PARENT_LISTENERS), this);
+        this.listeners   = new StoreListeners(connector.getOption(OptionKey.PARENT_LISTENERS), this);
         /*
          * Above locale is NOT OptionKey.LOCALE because we are not talking about the same locale.
          * The one in this DataStore is for warning and exception messages, not for parsing data.
@@ -232,6 +232,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * @param locale  the new locale to use.
      *
      * @see DataStoreException#getLocalizedMessage()
+     * @see OptionKey#LOCALE
      */
     public synchronized void setLocale(final Locale locale) {
         this.locale = Objects.requireNonNull(locale);

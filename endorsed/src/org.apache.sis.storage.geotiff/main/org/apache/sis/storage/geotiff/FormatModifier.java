@@ -16,7 +16,7 @@
  */
 package org.apache.sis.storage.geotiff;
 
-import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.io.stream.InternalOptionKey;
 

@@ -18,12 +18,9 @@
 /**
  * Provides information and some controls about Apache <abbr>SIS</abbr> configuration.
  * System-wide information are provided by the {@link org.apache.sis.setup.About} class.
- * Some controls, for example on the {@linkplain org.apache.sis.setup.GeometryLibrary geometry library} to use,
- * is provided by a set of {@linkplain org.apache.sis.setup.OptionKey options} which can be used when a data store
- * is created.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   0.3
  */
 package org.apache.sis.setup;

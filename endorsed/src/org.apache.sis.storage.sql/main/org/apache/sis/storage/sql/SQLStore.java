@@ -31,6 +31,7 @@ import java.lang.reflect.Method;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
@@ -56,7 +57,6 @@ import org.apache.sis.util.Version;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.setup.OptionKey;
 
 
 /**

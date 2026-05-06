@@ -28,8 +28,7 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.feature.FoliationRepresentation;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.DataOptionKey;
-import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.setup.GeometryLibrary;
 
 // Test dependencies
@@ -91,7 +90,7 @@ public final class StoreTest extends TestCase {
     private static Store open(final boolean fragmented) throws DataStoreException {
         final var connector = new StorageConnector(testData());
         if (fragmented) {
-            connector.setOption(DataOptionKey.FOLIATION_REPRESENTATION, FoliationRepresentation.FRAGMENTED);
+            connector.setOption(OptionKey.FOLIATION_REPRESENTATION, FoliationRepresentation.FRAGMENTED);
         }
         connector.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.ESRI);
         return new Store(null, connector);

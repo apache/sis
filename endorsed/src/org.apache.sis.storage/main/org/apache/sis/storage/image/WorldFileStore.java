@@ -42,6 +42,7 @@ import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.io.stream.IOUtilities;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.StorageConnector;
@@ -61,7 +62,6 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.ListOfUnknownSize;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.setup.OptionKey;
 
 
 /**

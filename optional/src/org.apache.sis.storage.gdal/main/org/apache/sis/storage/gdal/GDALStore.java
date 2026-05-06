@@ -39,7 +39,7 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;

@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.net.URI;
 import java.net.URL;
@@ -77,7 +78,6 @@ import org.apache.sis.io.stream.ChannelImageInputStream;
 import org.apache.sis.io.stream.ChannelImageOutputStream;
 import org.apache.sis.io.stream.InternalOptionKey;
 import org.apache.sis.system.Configuration;
-import org.apache.sis.setup.OptionKey;
 
 
 /**
@@ -294,7 +294,7 @@ public class StorageConnector implements Serializable {
      * @see #setOption(OptionKey, Object)
      */
     @SuppressWarnings("serial")         // Not statically typed as Serializable.
-    private Map<OptionKey<?>, Object> options;
+    private Map<org.apache.sis.setup.OptionKey<?>, Object> options;
 
     /**
      * If a probing operation is ongoing, the provider doing the operation. Otherwise {@code null}.
@@ -670,7 +670,7 @@ public class StorageConnector implements Serializable {
      * @param key    the option for which to set the value.
      * @param value  the new value for the given option, or {@code null} for removing the value.
      */
-    public <T> void setOption(final OptionKey<T> key, final T value) {
+    public <T> void setOption(final org.apache.sis.setup.OptionKey<T> key, final T value) {
         options = key.setValueInto(options, value);
     }
 
@@ -682,7 +682,7 @@ public class StorageConnector implements Serializable {
      * @param  key  the option for which to get the value.
      * @return the current value for the given option, or {@code null} if none.
      */
-    public <T> T getOption(final OptionKey<T> key) {
+    public <T> T getOption(final org.apache.sis.setup.OptionKey<T> key) {
         return key.getValueFrom(options);
     }
 
@@ -1307,14 +1307,14 @@ public class StorageConnector implements Serializable {
      * @return the byte buffer to use with {@link ChannelDataInput} or {@link ChannelDataOutput}.
      */
     private ByteBuffer getChannelBuffer(final ChannelFactory factory) {
-        @SuppressWarnings("deprecation")
-        ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);               // User-supplied buffer.
-        if (buffer == null) {
-            if (factory.suggestDirectBuffer) {
+        ByteBuffer buffer;
+        final Supplier<ByteBuffer> s = getOption(OptionKey.BYTE_BUFFER);
+        if (s == null || (buffer = s.get()) == null) {
+           if (factory.suggestDirectBuffer) {
                 buffer = ByteBuffer.allocateDirect(DEFAULT_BUFFER_SIZE);
             } else {
                 buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);
-            }
+           }
         }
         return buffer;
     }
@@ -1842,6 +1842,7 @@ public class StorageConnector implements Serializable {
      *
      * @since 1.2
      */
+    @SuppressWarnings("UseSpecificCatch")
     public <S> S commit(final Class<S> type, final String format) throws IllegalArgumentException, DataStoreException {
         final S view;
         try {
