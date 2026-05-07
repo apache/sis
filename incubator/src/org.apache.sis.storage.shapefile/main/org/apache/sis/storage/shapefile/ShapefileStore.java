@@ -445,7 +445,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
 
                 //create a computed identifier field
                 if (readProperties == null || readProperties.contains(AttributeConvention.IDENTIFIER)) {
-                    ftb.addAttribute(Integer.class)
+                    ftb.addAttribute(String.class)
                        .setName(AttributeConvention.IDENTIFIER_PROPERTY)
                        .addRole(AttributeRole.IDENTIFIER_COMPONENT);
                 }
@@ -503,6 +503,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
 
             final boolean generateId = mustGenerateId();
             final AtomicInteger nextId = new AtomicInteger();
+            final String baseId = type.getName().tip().toString() +".";
 
             final Spliterator spliterator;
             if (readShp && dbfPropertiesIndex.length > 0) {
@@ -528,7 +529,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                             for (int i = 0; i < dbfPropertiesIndex.length; i++) {
                                 next.setPropertyValue(header.fields[dbfPropertiesIndex[i]].fieldName, dbfRecord[i]);
                             }
-                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, nextId.getAndIncrement());
+                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, baseId + nextId.incrementAndGet());
 
                             action.accept(next);
                             return true;
@@ -551,7 +552,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                                 shpRecord.geometry.setSRID(geomSrid);
                             }
                             next.setPropertyValue(GEOMETRY_NAME, shpRecord.geometry);
-                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, nextId.getAndIncrement());
+                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, baseId + nextId.incrementAndGet());
                             action.accept(next);
                             return true;
                         } catch (IOException ex) {
@@ -572,7 +573,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                             for (int i = 0; i < dbfPropertiesIndex.length; i++) {
                                 next.setPropertyValue(header.fields[dbfPropertiesIndex[i]].fieldName, dbfRecord[i]);
                             }
-                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, nextId.getAndIncrement());
+                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, baseId + nextId.incrementAndGet());
                             action.accept(next);
                             return true;
                         } catch (IOException ex) {
