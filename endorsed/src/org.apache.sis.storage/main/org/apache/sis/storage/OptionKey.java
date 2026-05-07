@@ -26,6 +26,8 @@ import java.nio.file.Path;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import java.io.ObjectStreamException;
+import javax.xml.XMLConstants;
+import javax.xml.stream.XMLInputFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.setup.GeometryLibrary;
@@ -180,6 +182,16 @@ public class OptionKey<T> extends org.apache.sis.setup.OptionKey<T> {
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static final OptionKey<Supplier<ByteBuffer>> BYTE_BUFFER = new OptionKey("BYTE_BUFFER", Supplier.class);
+
+    /**
+     * Provider of a factory for creating <abbr>XML</abbr> stream readers or event readers.
+     * If this option is not specified or if the supplier returns {@code null}, Apache <abbr>SIS</abbr> uses a default
+     * factory with the {@link XMLConstants#ACCESS_EXTERNAL_DTD} property set to an empty string for security reasons.
+     * If a factory is supplied, the suppliers should {@linkplain XMLInputFactory#setProperty(String, Object) set the
+     * factory properties} itself for the desired security level.
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static final OptionKey<Supplier<XMLInputFactory>> XML_INPUT_FACTORY = new OptionKey("XML_INPUT_FACTORY", Supplier.class);
 
     /**
      * Path to an auxiliary file containing metadata encoded in an <abbr>ISO</abbr> 19115-3 <abbr>XML</abbr> document.

@@ -207,7 +207,8 @@ public final class XMLMetadata implements Filter {
     }
 
     /**
-     * Returns a reader for the XML document, or {@code null} if the document could not be read.
+     * Returns a reader for the <abbr>XML</abbr> document,
+     * or {@code null} if the document could not be read.
      */
     private XMLEventReader toXML() throws XMLStreamException {
         if (bytes != null) {

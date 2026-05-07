@@ -56,10 +56,10 @@ import org.apache.sis.util.resources.Errors;
  * <ul>
  *   <li>Save properties before modification, in order to restore them to their original values
  *       when the unmarshaller is recycled.</li>
- *   <li>Constructs a SIS {@link Context} object on unmarshalling, in order to give
- *       additional information to the SIS object being unmarshalled.</li>
- *   <li>Wraps the input stream in a {@link TransformingReader} if the document GML version
- *       in not the SIS native GML version.</li>
+ *   <li>Construct a <abbr>SIS</abbr> {@link Context} object on unmarshalling,
+ *       in order to give additional information to the SIS object being unmarshalled.</li>
+ *   <li>Wrap the input stream in a {@link TransformingReader} if the document <abbr>GML</abbr>
+ *       version is not the <abbr>SIS</abbr> native <abbr>GML</abbr> version.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
