@@ -129,6 +129,8 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
 
     /**
      * Returns the formula(s) or procedure used by the operation method, or {@code null} if none.
+     *
+     * @return a textual description of the formula.
      */
     @Override
     public InternationalString getFormula() {
@@ -138,6 +140,8 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
     /**
      * Returns the reference to a publication giving the formula(s) or procedure used by the
      * coordinate operation method, or {@code null} if none.
+     *
+     * @return reference to the publication giving the formula.
      */
     @Override
     public Citation getCitation() {
@@ -146,6 +150,8 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
 
     /**
      * Returns a hash code value for this formula.
+     *
+     * @return hash code value computed from the textual representation or reference to the formula.
      */
     @Override
     public int hashCode() {
@@ -167,7 +173,7 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
             return true;
         }
         if (object != null && object.getClass() == getClass()) {
-            final DefaultFormula that = (DefaultFormula) object;
+            final var that = (DefaultFormula) object;
             return Objects.equals(this.formula,  that.formula) &&
                    Objects.equals(this.citation, that.citation);
         }
@@ -188,6 +194,7 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
     @Override
     protected String formatTo(final Formatter formatter) {
         InternationalString text = null;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Citation citation = getCitation();    // Gives to users a chance to override properties.
         if (citation != null) {
             text = citation.getTitle();

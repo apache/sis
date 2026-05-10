@@ -230,8 +230,8 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * This situation happens when this operation has been initialized from a <em>defining conversion</em>
      * and the caller refined the parameters using information provided by the math transform factory.
      * On one hand, we want to take advantage of additional information present in {@code definition}
-     * such as OGC aliases (those information are often missing in {@link #method} if the latter
-     * is not a {@link org.apache.sis.referencing.operation.transform.MathTransformProvider}).
+     * such as <abbr>OGC</abbr> aliases (those information are often missing in {@link #method} if the
+     * latter is not a {@link org.apache.sis.referencing.operation.transform.MathTransformProvider}).
      * But on the other hand, {@code definition} may contain contextual parameters (ellipsoid semi-axis lengths)
      * which are unknown to {@link #method} and would cause an {@link InvalidParameterValueException} if we try
      * to set them. We could replace {@link #method}, but if the latter was created from EPSG database it also

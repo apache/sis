@@ -28,12 +28,13 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.OperationMethod;
 
 
 /**
  * An object capable to create {@code MathTransform} instances from given parameter values.
- * This interface is the Apache SIS mechanism by which
- * {@linkplain org.apache.sis.referencing.operation.DefaultFormula formula} are concretized as Java code.
+ * This interface is the Apache <abbr>SIS</abbr> mechanism by which
+ * {@linkplain org.opengis.referencing.operation.Formula formula} are concretized as Java code.
  * A math transform provider ignores the source and target <abbr>CRS</abbr> and works with coordinates in
  * predefined axis order and units — typically (east, north, up) in degrees or meters — although some
  * variations are allowed in the number of dimensions (typically the "up" dimension being optional).
@@ -41,21 +42,21 @@ import org.opengis.referencing.operation.MathTransformFactory;
  *
  * <p>This interface is generally not used directly. The recommended way to get a {@link MathTransform}
  * is to {@linkplain org.apache.sis.referencing.CRS#findOperation find the coordinate operation}
- * (generally from a pair of <var>source</var> and <var>target</var> CRS), then to invoke
- * {@link org.opengis.referencing.operation.CoordinateOperation#getMathTransform()}.
+ * (generally from a pair of <var>source</var> and <var>target</var> <abbr>CRS</abbr>s),
+ * then to invoke {@link org.opengis.referencing.operation.CoordinateOperation#getMathTransform()}.
  * Alternatively, one can also use a {@linkplain DefaultMathTransformFactory math transform factory}.</p>
  *
- * <p>Implementations of this interface usually extend {@link org.apache.sis.referencing.operation.DefaultOperationMethod},
- * but this is not mandatory. This interface can also be used alone since {@link MathTransform} instances can be created
- * for other purpose than coordinate operations.</p>
+ * <p>Implementations of this interface usually implement also the {@link OperationMethod} interface,
+ * but this is not mandatory. This interface can be used alone since {@link MathTransform} instances
+ * can be created for other purposes than coordinate operations.</p>
  *
  *
- * <h2>How to add custom coordinate operations to Apache SIS</h2>
- * {@link DefaultMathTransformFactory} can discover automatically new coordinate operations
- * (including map projections) by scanning the module path. To define a custom coordinate operation,
- * one needs to define a <strong>thread-safe</strong> class implementing <strong>both</strong> this
- * {@code MathTransformProvider} interface and the {@link org.opengis.referencing.operation.OperationMethod} one.
- * While not mandatory, we suggest to extend {@link org.apache.sis.referencing.operation.DefaultOperationMethod}.
+ * <h2>How to add custom coordinate operation methods to Apache <abbr>SIS</abbr></h2>
+ * {@link DefaultMathTransformFactory} can discover automatically new coordinate operation methods
+ * (including map projections) by scanning the module path. To define a custom method, one needs to
+ * define a <em>thread-safe</em> class implementing <em>both</em> this {@code MathTransformProvider}
+ * interface and the {@link OperationMethod} interface. The latter can be implemented indirectly by
+ * extending {@link org.apache.sis.referencing.operation.DefaultOperationMethod}.
  * Example:
  *
  * {@snippet lang="java" :
@@ -124,7 +125,7 @@ public interface MathTransformProvider {
             throws InvalidParameterNameException, ParameterNotFoundException,
                    InvalidParameterValueException, FactoryException
     {
-        return createMathTransform(new MathTransformProvider.Context() {
+        return createMathTransform(new Context() {
             @Override public MathTransformFactory getFactory() {
                 return (factory != null) ? factory : Context.super.getFactory();
             }
@@ -279,7 +280,7 @@ public interface MathTransformProvider {
          *
          * @return names of parameters inferred from context.
          */
-        default Map<String,Boolean> getContextualParameters() {
+        default Map<String, Boolean> getContextualParameters() {
             return Map.of();
         }
 

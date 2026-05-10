@@ -135,7 +135,7 @@ public final class CoordinateOperations {
             }
             properties = Map.of();
         }
-        final HashMap<String,Object> p = new HashMap<>(properties);
+        final var p = new HashMap<String, Object>(properties);
         p.putIfAbsent(ReferencingFactoryContainer.CRS_FACTORY, crsFactory);
         p.putIfAbsent(ReferencingFactoryContainer.CS_FACTORY,  csFactory);
         properties = p;
@@ -370,7 +370,7 @@ public final class CoordinateOperations {
          * unmodifiable List<Integer>. The list is for public API; internally, Apache SIS will use toBitMask(…).
          */
         long r = changes;
-        final Integer[] indices = new Integer[Long.bitCount(r)];
+        final var indices = new Integer[Long.bitCount(r)];
         for (int i=0; i<indices.length; i++) {
             final int dim = Long.numberOfTrailingZeros(r);
             indices[i] = dim;
