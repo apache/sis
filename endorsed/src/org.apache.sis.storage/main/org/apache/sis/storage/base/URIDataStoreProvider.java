@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.charset.Charset;
+import java.time.ZoneId;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -193,7 +194,16 @@ public abstract class URIDataStoreProvider extends DataStoreProvider {
         if (parameters != null) try {
             final Object location = parameters.parameter(LOCATION).getValue();
             if (location != null) {
-                return new StorageConnector(location);
+                StorageConnector cnx = new StorageConnector(location);
+                try {
+                    final Object zoneId = parameters.parameter(TIMEZONE).getValue();
+                    if (zoneId instanceof ZoneId) {
+                        cnx.setOption(org.apache.sis.setup.OptionKey.TIMEZONE, (ZoneId) zoneId);
+                    } else if (zoneId instanceof String) {
+                        cnx.setOption(org.apache.sis.setup.OptionKey.TIMEZONE, ZoneId.of((String) zoneId));
+                    }
+                } catch (ParameterNotFoundException e) {}
+                return cnx;
             }
         } catch (ParameterNotFoundException e) {
             cause = e;
