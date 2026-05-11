@@ -502,7 +502,6 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
             final int geomSrid = srid;
 
             final boolean generateId = mustGenerateId();
-            final AtomicInteger nextId = new AtomicInteger();
             final String baseId = type.getName().tip().toString() +".";
 
             final Spliterator spliterator;
@@ -529,7 +528,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                             for (int i = 0; i < dbfPropertiesIndex.length; i++) {
                                 next.setPropertyValue(header.fields[dbfPropertiesIndex[i]].fieldName, dbfRecord[i]);
                             }
-                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, baseId + nextId.incrementAndGet());
+                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, baseId + shpRecord.recordNumber);
 
                             action.accept(next);
                             return true;
@@ -552,7 +551,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                                 shpRecord.geometry.setSRID(geomSrid);
                             }
                             next.setPropertyValue(GEOMETRY_NAME, shpRecord.geometry);
-                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, baseId + nextId.incrementAndGet());
+                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, baseId + shpRecord.recordNumber);
                             action.accept(next);
                             return true;
                         } catch (IOException ex) {
@@ -562,6 +561,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                 };
             } else {
                 //read only dbf
+                final AtomicInteger nextId = new AtomicInteger();
                 final DBFHeader header = dbfreader.getHeader();
                 spliterator = new Spliterators.AbstractSpliterator(Long.MAX_VALUE, Spliterator.ORDERED) {
                     @Override
