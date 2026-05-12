@@ -99,15 +99,12 @@ public final class ItemInfo extends FullBox {
      *
      * @param  context  the tree being formatted. Can be used for fetching contextual information.
      * @param  target   the node where to add properties.
-     * @param  after    {@code false} for the first nodes, or {@code true} for the last nodes.
      */
     @Override
-    protected void appendTreeNodes(final Tree context, final TreeTable.Node target, final boolean after) {
-        super.appendTreeNodes(context, target, after);
-        if (!after) {
-            for (ItemInfoEntry entry : entries) {
-                context.names.put(entry.itemID, entry);       // In case of conflict, keep the most recent item.
-            }
+    protected void prependTreeNodes(final Tree context, final TreeTable.Node target) {
+        super.prependTreeNodes(context, target);
+        for (ItemInfoEntry entry : entries) {
+            context.names.put(entry.itemID, entry);       // In case of conflict, keep the most recent item.
         }
     }
 }

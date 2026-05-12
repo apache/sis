@@ -22,7 +22,6 @@ import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.isobmff.Reader;
 import org.apache.sis.storage.isobmff.Incomplete;
-import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 
 
@@ -109,17 +108,10 @@ public final class TrackHeader extends HeaderBox {
      *
      * @param  context  the tree being formatted. Can be used for fetching contextual information.
      * @param  target   the node where to add properties.
-     * @param  after    {@code false} for the first nodes, or {@code true} for the last nodes.
      */
     @Override
-    protected void appendTreeNodes(final Tree context, final TreeTable.Node target, final boolean after) {
-        super.appendTreeNodes(context, target, after);
-        if (!after) {
-            final boolean enabled = isEnabled();
-            TreeTable.Node child = target.newChild();
-            child.setValue(TableColumn.NAME, "enabled");
-            child.setValue(TableColumn.VALUE, enabled);
-            child.setValue(TableColumn.VALUE_AS_TEXT, String.valueOf(enabled));
-        }
+    protected void prependTreeNodes(final Tree context, final TreeTable.Node target) {
+        super.prependTreeNodes(context, target);
+        Tree.addNode(target, "enabled", isEnabled());
     }
 }

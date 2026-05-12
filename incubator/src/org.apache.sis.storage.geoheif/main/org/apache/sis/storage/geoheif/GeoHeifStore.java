@@ -290,7 +290,7 @@ public class GeoHeifStore extends DataStore implements Aggregate {
      */
     @Override
     public synchronized Optional<TreeTable> getNativeMetadata() throws DataStoreException {
-        return Optional.of(root().toTree(getDisplayName(), true));
+        return Optional.of(root().toTree(getLocale(), getDisplayName(), true));
     }
 
     /**
@@ -325,6 +325,7 @@ public class GeoHeifStore extends DataStore implements Aggregate {
      * Logs a warning emitted (usually indirectly) by {@link #components()}.
      */
     final void warning(final LogRecord record) {
+        record.setLoggerName("org.apache.sis.storage.geoheif");
         record.setSourceClassName(GeoHeifStore.class.getCanonicalName());
         record.setSourceMethodName("components");
         listeners.warning(record);

@@ -18,6 +18,7 @@ package org.apache.sis.storage.isobmff;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Locale;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -29,6 +30,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.nio.charset.StandardCharsets;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
@@ -155,20 +157,21 @@ public abstract class TreeNode {
     }
 
     /**
-     * Returns a string representation of element for debugging purposes.
+     * Returns a string representation of this tree node for debugging purposes.
      * This method shows all non-static public fields, including inherited fields, in no particular order.
      *
      * @return a string representation of this element for debugging purposes.
      */
     @Override
     public final String toString() {
-        return toTree(getClass().getSimpleName(), false).toString();
+        return toTree(null, getClass().getSimpleName(), false).toString();
     }
 
     /**
      * Returns <abbr>HEIF</abbr> boxes and their fields as a tree.
      * Used for showing native metadata or for debugging purposes.
      *
+     * @param  locale    the locale to use, or {@code null} for the default.
      * @param  rootName  name of the root node.
      * @param  withSummary  workaround, see {@link Tree#withSummary}.
      * @return fields contained in this node, together with child boxes.
@@ -176,8 +179,8 @@ public abstract class TreeNode {
      * @todo It is sometime possible, through the tree cell values, to modify the content of internal arrays.
      *       This is unsafe, we should makes this implementation safer before this module is released.
      */
-    public final TreeTable toTree(final String rootName, final boolean withSummary) {
-        final var tree = new Tree(withSummary);
+    public final TreeTable toTree(final Locale locale, final String rootName, final boolean withSummary) {
+        final var tree = new Tree(locale, withSummary);
         final TreeTable.Node root = tree.getRoot();
         root.setValue(TableColumn.NAME, rootName);
         tree.appendProperties(this, root);
@@ -201,6 +204,11 @@ public abstract class TreeNode {
      */
     @SuppressWarnings("serial")
     protected static final class Tree extends DefaultTreeTable {
+        /**
+         * The locale to use, or {@code null} for the default.
+         */
+        protected final Locale locale;
+
         /**
          * Properties saved during the creation of the tree.
          */
@@ -227,8 +235,9 @@ public abstract class TreeNode {
         /**
          * Creates an initially empty tree table.
          */
-        Tree(final boolean withSummary) {
+        Tree(final Locale locale, final boolean withSummary) {
             super(TableColumn.NAME, TableColumn.VALUE, TableColumn.VALUE_AS_TEXT);
+            this.locale = locale;
             properties = new HashMap<>();
             names = new HashMap<>();
             this.withSummary = withSummary;
@@ -279,7 +288,7 @@ public abstract class TreeNode {
          */
         private String appendProperties(final TreeNode source, final TreeTable.Node target) {
             String summary = null;
-            source.appendTreeNodes(this, target, false);
+            source.prependTreeNodes(this, target);
             for (final Field field : source.getClass().getFields()) {
                 if (Modifier.isStatic(field.getModifiers())) {
                     continue;
@@ -358,20 +367,67 @@ public abstract class TreeNode {
                     child.setValue(TableColumn.VALUE_AS_TEXT, Utilities.deepToString(value));
                 }
             }
-            source.appendTreeNodes(this, target, true);
+            source.appendTreeNodes(this, target);
             return summary;
+        }
+
+        /**
+         * Convenience method for adding a child node.
+         *
+         * @param target  where to add the node.
+         * @param name    the programmatic (camel-case) name of the node.
+         * @param value   value of the node, or {@code null} if none.
+         */
+        public static void addNode(final TreeTable.Node target, final String name, final Object value) {
+            if (value != null) {
+                addNode(target, name, value, value.toString());
+            }
+        }
+
+        /**
+         * Convenience method for adding a child node.
+         *
+         * @param target       where to add the node.
+         * @param name         the programmatic (camel-case) name of the node.
+         * @param value        value of the node. Should not be null.
+         * @param valueAsText  string representation of the value.
+         */
+        public static void addNode(final TreeTable.Node target, String name, Object value, String valueAsText) {
+            TreeTable.Node child = target.newChild();
+            child.setValue(TableColumn.NAME,  CharSequences.camelCaseToWords(name, true).toString());
+            child.setValue(TableColumn.VALUE, value);
+            child.setValue(TableColumn.VALUE_AS_TEXT, valueAsText);
         }
     }
 
     /**
-     * Appends properties other than the ones defined by public fields.
-     * This method is invoked automatically by {@link #toTree toTree(…)}
-     * for generating the first or last nodes, before or after the nodes inferred by reflection.
+     * Inserts custom properties before the properties inferred from the public fields.
+     * This method is invoked automatically by {@link #toTree toTree(…)} for generating
+     * the first nodes, before the nodes inferred by reflection.
      *
      * @param  context  the tree being formatted. Can be used for fetching contextual information.
      * @param  target   the node where to add properties.
-     * @param  after    {@code false} for the first nodes, or {@code true} for the last nodes.
      */
-    protected void appendTreeNodes(Tree context, TreeTable.Node target, boolean after) {
+    protected void prependTreeNodes(Tree context, TreeTable.Node target) {
+    }
+
+    /**
+     * Appends custom properties after the properties inferred from the public fields.
+     * This method is invoked automatically by {@link #toTree toTree(…)} for generating
+     * the last nodes, after the nodes inferred by reflection.
+     *
+     * <p>The default implementation adds an artificial node saying that some nodes are missing
+     * if the class is annotated with {@link Incomplete}.</p>
+     *
+     * @param  context  the tree being formatted. Can be used for fetching contextual information.
+     * @param  target   the node where to add properties.
+     */
+    protected void appendTreeNodes(Tree context, TreeTable.Node target) {
+        if (getClass().isAnnotationPresent(Incomplete.class)) {
+            final Vocabulary vocabulary = Vocabulary.forLocale(context.locale);
+            final TreeTable.Node child = target.newChild();
+            child.setValue(TableColumn.NAME,  vocabulary.getString(Vocabulary.Keys.UnsupportedProperties));
+            child.setValue(TableColumn.VALUE, vocabulary.getString(Vocabulary.Keys.Omitted));
+        }
     }
 }

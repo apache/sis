@@ -86,10 +86,11 @@ public final class ItemProperties extends ContainerBox {
 
         /**
          * Creates an initially empty list of boxes.
+         * Parameter {@code itemID} is defined for using this constructor as a lambda function.
          *
          * @param  itemID  identifier of the item for which properties are collected.
          */
-        private ForID(final Integer itemID) {
+        private ForID(@SuppressWarnings("unused") final Integer itemID) {
             essentials = new BitSet();
         }
 
@@ -188,20 +189,29 @@ public final class ItemProperties extends ContainerBox {
      *
      * @param  context  the tree being formatted. Can be used for fetching contextual information.
      * @param  target   the node where to add properties.
-     * @param  after    {@code false} for the first nodes, or {@code true} for the last nodes.
      */
     @Override
-    protected void appendTreeNodes(final Tree context, final TreeTable.Node target, final boolean after) {
+    protected void prependTreeNodes(final Tree context, final TreeTable.Node target) {
         Box[] properties = null;
-        if (!after) {
-            for (final Box box : children) {
-                if (box.type() == ItemPropertyContainer.BOXTYPE) {
-                    properties = ((ItemPropertyContainer) box).children;
-                    break;
-                }
+        for (final Box box : children) {
+            if (box.type() == ItemPropertyContainer.BOXTYPE) {
+                properties = ((ItemPropertyContainer) box).children;
+                break;
             }
         }
         context.setContext(Box[].class, properties);
-        super.appendTreeNodes(context, target, after);
+        super.prependTreeNodes(context, target);
+    }
+
+    /**
+     * Clears the context after formatting.
+     *
+     * @param  context  the tree being formatted.
+     * @param  target   the node where to add properties.
+     */
+    @Override
+    protected void appendTreeNodes(final Tree context, final TreeTable.Node target) {
+        super.appendTreeNodes(context, target);
+        context.setContext(Box[].class, null);
     }
 }

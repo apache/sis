@@ -17,7 +17,6 @@
 package org.apache.sis.storage.isobmff;
 
 import java.io.IOException;
-import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 
 
@@ -86,26 +85,17 @@ public abstract class FullBox extends Box {
      *
      * @param  context  the tree being formatted. Can be used for fetching contextual information.
      * @param  target   the node where to add properties.
-     * @param  after    {@code false} for the first nodes, or {@code true} for the last nodes.
      */
     @Override
-    protected void appendTreeNodes(final Tree context, final TreeTable.Node target, final boolean after) {
-        super.appendTreeNodes(context, target, after);
-        if (!after) {
-            final int version = version();
-            final int options = flags & ((1 << VERSION_BIT_SHIFT) - 1);
-            if (version != 0) {
-                TreeTable.Node child = target.newChild();
-                child.setValue(TableColumn.NAME, "version");
-                child.setValue(TableColumn.VALUE, version);
-                child.setValue(TableColumn.VALUE_AS_TEXT, String.valueOf(version));
-            }
-            if (options != 0) {
-                TreeTable.Node child = target.newChild();
-                child.setValue(TableColumn.NAME, "flags");
-                child.setValue(TableColumn.VALUE, options);
-                child.setValue(TableColumn.VALUE_AS_TEXT, Integer.toBinaryString(options));
-            }
+    protected void prependTreeNodes(final Tree context, final TreeTable.Node target) {
+        super.prependTreeNodes(context, target);
+        final int version = version();
+        final int options = flags & ((1 << VERSION_BIT_SHIFT) - 1);
+        if (version != 0) {
+            Tree.addNode(target, "version", version, String.valueOf(version));
+        }
+        if (options != 0) {
+            Tree.addNode(target, "flags", options, Integer.toBinaryString(options));
         }
     }
 }
