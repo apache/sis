@@ -17,31 +17,33 @@
 package org.apache.sis.referencing.factory;
 
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 
 
 /**
- * Thrown when a factory contains invalid data.
- *
- * <h2>Example</h2>
- * An <abbr>EPSG</abbr> database record containing a null value in a column where nulls should not have been allowed.
+ * Thrown when an internal error occurred in a {@code Factory} implementation.
+ * This error is not necessarily caused by a malformed <abbr>CRS</abbr> or other geodetic object.
+ * It is more likely caused by a bug in the implementation, for example a
+ * {@linkplain NoninvertibleTransformException non invertible transform}
+ * in a context where this error should not have occurred.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.7
  *
- * @see MissingFactoryResourceException
+ * @see org.apache.sis.storage.InternalDataStoreException
  *
- * @since 0.7
+ * @since 1.7
  */
-public class FactoryDataException extends FactoryException {
+public class InternalFactoryException extends FactoryException {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -6296443455120500463L;
+    private static final long serialVersionUID = 2987973777167896560L;
 
     /**
      * Construct an exception with no detail message.
      */
-    public FactoryDataException() {
+    public InternalFactoryException() {
     }
 
     /**
@@ -49,7 +51,7 @@ public class FactoryDataException extends FactoryException {
      *
      * @param  message  the detail message, saved for later retrieval by the {@link #getMessage()} method.
      */
-    public FactoryDataException(String message) {
+    public InternalFactoryException(String message) {
         super(message);
     }
 
@@ -60,7 +62,7 @@ public class FactoryDataException extends FactoryException {
      *
      * @since 1.2
      */
-    public FactoryDataException(Throwable cause) {
+    public InternalFactoryException(Throwable cause) {
         super(cause);
     }
 
@@ -70,7 +72,7 @@ public class FactoryDataException extends FactoryException {
      * @param  message  the detail message, saved for later retrieval by the {@link #getMessage()} method.
      * @param  cause    the cause for this exception, saved for later retrieval by the {@link #getCause()} method.
      */
-    public FactoryDataException(String message, Throwable cause) {
+    public InternalFactoryException(String message, Throwable cause) {
         super(message, cause);
     }
 }

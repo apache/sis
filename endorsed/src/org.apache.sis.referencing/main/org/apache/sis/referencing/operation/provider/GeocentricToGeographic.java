@@ -24,6 +24,7 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.util.FactoryException;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.referencing.factory.InternalFactoryException;
 
 
 /**
@@ -79,7 +80,7 @@ public final class GeocentricToGeographic extends AbstractProvider {
         try {
             tr = tr.inverse();
         } catch (NoninvertibleTransformException e) {
-            throw new FactoryException(e);                  // Should never happen with SIS implementation.
+            throw new InternalFactoryException(e);          // Should never happen with SIS implementation.
         }
         return tr;
     }

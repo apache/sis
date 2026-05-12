@@ -26,6 +26,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.referencing.factory.InternalFactoryException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 
@@ -118,7 +119,7 @@ public final class VerticalOffset extends AbstractProvider {
         if (after.getElement(0,0) < 0) try {
             parameterized = parameterized.inverse();
         } catch (NoninvertibleTransformException e) {
-            throw new FactoryException(e);                  // Should never happe since matrix element is not zero.
+            throw new InternalFactoryException(e);          // Should never happe since matrix element is not zero.
         }
         return parameterized;
     }
