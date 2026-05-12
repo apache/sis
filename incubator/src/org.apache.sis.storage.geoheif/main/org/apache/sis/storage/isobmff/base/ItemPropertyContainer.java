@@ -59,6 +59,6 @@ public final class ItemPropertyContainer extends ContainerBox {
      * @throws DataStoreException if the stream contains inconsistent or unsupported data.
      */
     public ItemPropertyContainer(final Reader reader) throws IOException, DataStoreException {
-        super(reader, null, true);
+        super(reader, true);
     }
 }

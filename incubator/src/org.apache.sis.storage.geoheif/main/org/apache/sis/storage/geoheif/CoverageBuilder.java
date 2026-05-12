@@ -72,9 +72,6 @@ import org.apache.sis.pending.jdk.JDK18;
  * Helper class for building the grid geometry and sample dimensions of a grid coverage.
  * Also opportunistically builds the coverage metadata associated to the resource.
  *
- * <p>The call to {@link #buildAndFreeze()} shall be last because metadata are completed
- * as side-effect of other method calls (for building name, grid geometry, <i>etc</i>).</p>
- *
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */

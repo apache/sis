@@ -19,6 +19,7 @@ package org.apache.sis.storage.isobmff.base;
 import java.io.IOException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.isobmff.BoxRegistry;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
 
@@ -62,7 +63,7 @@ public final class ItemReference extends FullBox {
     public ItemReference(final Reader reader) throws IOException, DataStoreException {
         super(reader);
         requireVersionZero();
-        references = reader.readChildren(null, false).toArray(SingleItemTypeReference[]::new);
+        references = reader.readChildren(BoxRegistry.global(), false).toArray(SingleItemTypeReference[]::new);
     }
 
     /**

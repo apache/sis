@@ -207,7 +207,7 @@ public final class Reader implements Cloneable {
                 listeners.warning(record);
             }
         }
-        assert endOfCurrentBox == end;      // Ensure that the value has not been modified.
+        endOfCurrentBox = end;      // May have been modified by recursive invocations.
         assert (end < 0) || input.getStreamPosition() <= end : Box.formatFourCC(box.type());
         return box;
     }
@@ -217,7 +217,7 @@ public final class Reader implements Cloneable {
      * A custom registry is specified for filtering the type of boxes to accept.
      * Boxes of unknown types are ignored and skipped.
      *
-     * @param  registry  the registry to use for box instantiations, or {@code null} for the main registry.
+     * @param  registry  the registry to use for box instantiations.
      * @param  indexed   whether index matter. If {@code true}, then the returned array may contain null elements.
      * @return children boxes. May contain null elements if {@code indexed} is true.
      * @throws IOException if an error occurred while reading the box.
@@ -227,10 +227,9 @@ public final class Reader implements Cloneable {
      * @throws DataStoreContentException if the <abbr>HEIF</abbr> file is malformed.
      * @throws DataStoreException if the reading failed for another reason.
      */
-    public final List<Box> readChildren(BoxRegistry registry, final boolean indexed) throws IOException, DataStoreException {
-        if (registry == null) {
-            registry = MainBoxRegistry.INSTANCE;
-        }
+    public final List<Box> readChildren(final BoxRegistry registry, final boolean indexed)
+            throws IOException, DataStoreException
+    {
         final var children = new ArrayList<Box>();
         final long end = endOfCurrentBox - 2*Integer.BYTES;     // With a margin of at least the space of a box header.
         final boolean toEnd = (end < 0);

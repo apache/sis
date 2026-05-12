@@ -38,7 +38,7 @@ public final class Root extends ContainerBox {
      * @throws DataStoreException if the reading failed for another reason.
      */
     public Root(final Reader reader) throws IOException, DataStoreException {
-        super(reader, MainBoxRegistry.INSTANCE, false);
+        super(reader, false);
     }
 
     /**

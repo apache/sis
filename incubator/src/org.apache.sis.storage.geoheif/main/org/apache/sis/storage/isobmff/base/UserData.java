@@ -54,6 +54,6 @@ public final class UserData extends ContainerBox {
      * @throws DataStoreException if the stream contains inconsistent or unsupported data.
      */
     public UserData(final Reader reader) throws IOException, DataStoreException {
-        super(reader, null, false);
+        super(reader, false);
     }
 }
