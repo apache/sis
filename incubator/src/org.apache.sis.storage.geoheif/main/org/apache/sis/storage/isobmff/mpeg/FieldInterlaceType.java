@@ -19,16 +19,17 @@ package org.apache.sis.storage.isobmff.mpeg;
 import java.io.IOException;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
+import org.apache.sis.storage.isobmff.Incomplete;
 
 
 /**
  * Describes the field layout in a sample data in case of interlaced video content.
- *
- * @todo Not yet implemented.
+ * <b>Not yet implemented.</b>
  *
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */
+@Incomplete
 public final class FieldInterlaceType extends FullBox {
     /**
      * Numerical representation of the {@code "ilce"} box type.

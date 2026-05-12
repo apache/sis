@@ -18,17 +18,18 @@ package org.apache.sis.storage.isobmff.video;
 
 import java.io.IOException;
 import org.apache.sis.storage.isobmff.Reader;
+import org.apache.sis.storage.isobmff.Incomplete;
 import org.apache.sis.storage.isobmff.base.SingleItemTypeReference;
 
 
 /**
  * Place holder for future work.
- *
- * @todo Not yet implemented.
+ * <b>Not yet implemented.</b>
  *
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */
+@Incomplete
 public final class ContentDescribes extends SingleItemTypeReference {
     /**
      * Numerical representation of the {@code "cdsc"} box type.

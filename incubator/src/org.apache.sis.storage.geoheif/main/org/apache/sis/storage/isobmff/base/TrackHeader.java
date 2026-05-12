@@ -21,6 +21,7 @@ import java.io.IOException;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.isobmff.Reader;
+import org.apache.sis.storage.isobmff.Incomplete;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 
@@ -28,8 +29,7 @@ import org.apache.sis.util.collection.TreeTable;
 /**
  * Characteristics of a single track.
  * Exactly one {@code TrackHeader} is contained in a {@code Track}.
- *
- * @todo Not yet fully implemented.
+ * <b>Not yet fully implemented.</b>
  *
  * <h4>Container</h4>
  * The container can be a {@link Track} box.
@@ -37,6 +37,7 @@ import org.apache.sis.util.collection.TreeTable;
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */
+@Incomplete
 public final class TrackHeader extends HeaderBox {
     /**
      * Numerical representation of the {@code "tkhd"} box type.

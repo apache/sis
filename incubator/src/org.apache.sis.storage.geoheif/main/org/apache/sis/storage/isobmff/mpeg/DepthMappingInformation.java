@@ -19,12 +19,12 @@ package org.apache.sis.storage.isobmff.mpeg;
 import java.io.IOException;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
+import org.apache.sis.storage.isobmff.Incomplete;
 
 
 /**
  * Indicates the number of components to which the disparity information applies.
- *
- * @todo Not yet implemented.
+ * <b>Not yet implemented.</b>
  *
  * <h4>Container</h4>
  * The container can be a {@link ItemPropertyContainer} box.
@@ -32,6 +32,7 @@ import org.apache.sis.storage.isobmff.Reader;
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */
+@Incomplete
 public final class DepthMappingInformation extends FullBox {
     /**
      * Numerical representation of the {@code "depi"} box type.

@@ -85,7 +85,7 @@ public abstract class Box extends TreeNode {
     }
 
     /**
-     * Returns a human-readable name for this node to shown in the tree.
+     * Returns a human-readable name for this node to show in the tree.
      * This method adds the {@linkplain #typeKey() type} between parenthesis after the box name.
      *
      * @return Human-readable name of this node.
