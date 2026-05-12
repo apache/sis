@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.isobmff.gimi;
+package org.apache.sis.storage.isobmff.geo;
 
 import java.util.UUID;
 import java.io.IOException;
@@ -51,14 +51,14 @@ public final class ModelTransformation extends FullBox {
 
     /**
      * The most significant bits of the <abbr>UUID</abbr> as a long integer.
-     * It was used in an older version of the <abbr>GIMI</abbr> specification.
+     * It was used in an older version of the GeoHEIF specification draft.
      * Should not be used anymore, but nevertheless kept for compatibility.
      */
     public static final long UUID_HIGH_BITS = 0x763cf838_b630_440bL;
 
     /**
      * The <abbr>UUID</abbr> that identify this extension.
-     * It was used in an older version of the <abbr>GIMI</abbr> specification.
+     * It was used in an older version of the GeoHEIF specification draft.
      * Should not be used anymore, but nevertheless kept for compatibility.
      */
     public static final UUID EXTENDED_TYPE = new UUID(UUID_HIGH_BITS, 0x84f8_be44bf9910afL);

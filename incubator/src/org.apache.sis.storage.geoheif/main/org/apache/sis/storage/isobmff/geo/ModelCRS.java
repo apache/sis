@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.isobmff.gimi;
+package org.apache.sis.storage.isobmff.geo;
 
 import java.util.UUID;
 import java.util.logging.Level;
@@ -53,14 +53,14 @@ public final class ModelCRS extends FullBox {
 
     /**
      * The most significant bits of the <abbr>UUID</abbr> as a long integer.
-     * It was used in an older version of the <abbr>GIMI</abbr> specification.
+     * It was used in an older version of the GeoHEIF specification draft.
      * Should not be used anymore, but nevertheless kept for compatibility.
      */
     public static final long UUID_HIGH_BITS = 0x137a1742_75ac_4747L;
 
     /**
      * The <abbr>UUID</abbr> that identify this extension.
-     * It was used in an older version of the <abbr>GIMI</abbr> specification.
+     * It was used in an older version of the GeoHEIF specification draft.
      * Should not be used anymore, but nevertheless kept for compatibility.
      */
     public static final UUID EXTENDED_TYPE = new UUID(UUID_HIGH_BITS, 0x82bc_659576e8675bL);

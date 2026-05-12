@@ -14,42 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.isobmff.gimi;
+package org.apache.sis.storage.isobmff.geo;
 
-import java.util.UUID;
 import java.io.IOException;
-import org.apache.sis.storage.isobmff.Extension;
+import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
 
 
 /**
- * Unknown property observed in GIMI test file.
- * For now, we keep this class only as a reminder for the pattern to use for box by UUID.
- * We will remove or rename this class in the future if we identify a real case of such box.
+ * Configuration of the tile matrix.
+ *
+ * @todo Not yet implemented.
  *
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */
-public final class UnknownProperty extends Extension {    // Could also be `FullBox` if the parent type is `ItemFullProperty`.
+public final class TiledImageConfiguration extends FullBox {
     /**
-     * The most significant bits of the <abbr>UUID</abbr> as a long integer.
+     * Numerical representation of the {@code "tilC"} box type.
      */
-    public static final long UUID_HIGH_BITS = 0x4a66efa7_e541_526cL;
+    public static final int BOXTYPE = ((((('t' << 8) | 'i') << 8) | 'l') << 8) | 'C';
 
     /**
-     * The <abbr>UUID</abbr> that identify this extension.
-     *
-     * @see #extendedType()
-     */
-    public static final UUID EXTENDED_TYPE = new UUID(UUID_HIGH_BITS, 0x9427_9e77617feb7dL);
-
-    /**
-     * Returns the identifier of this extension.
-     * This value is fixed to {@link #EXTENDED_TYPE}.
+     * Returns the four-character type of this box.
+     * This value is fixed to {@link #BOXTYPE}.
      */
     @Override
-    public final UUID extendedType() {
-        return EXTENDED_TYPE;
+    public final int type() {
+        return BOXTYPE;
     }
 
     /**
@@ -58,6 +50,7 @@ public final class UnknownProperty extends Extension {    // Could also be `Full
      * @param  reader  the reader from which to read the payload.
      * @throws IOException if an error occurred while reading the payload.
      */
-    public UnknownProperty(final Reader reader) throws IOException {
+    public TiledImageConfiguration(final Reader reader) throws IOException {
+        super(reader);
     }
 }
