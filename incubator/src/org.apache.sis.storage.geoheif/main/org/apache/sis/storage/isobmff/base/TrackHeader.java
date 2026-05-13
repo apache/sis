@@ -103,15 +103,12 @@ public final class TrackHeader extends HeaderBox {
     }
 
     /**
-     * Appends properties other than the ones defined by public fields.
-     * Those properties will be shown first in the tree.
+     * Appends a description of the flags.
      *
-     * @param  context  the tree being formatted. Can be used for fetching contextual information.
-     * @param  target   the node where to add properties.
+     * @param  target  the {@code flag} node where to add properties.
      */
     @Override
-    protected void prependTreeNodes(final Tree context, final TreeTable.Node target) {
-        super.prependTreeNodes(context, target);
+    protected void appendFlagDescriptions(final TreeTable.Node target) {
         Tree.addNode(target, "enabled", isEnabled());
     }
 }

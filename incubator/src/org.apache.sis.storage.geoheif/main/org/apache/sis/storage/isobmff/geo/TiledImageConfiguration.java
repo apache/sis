@@ -150,17 +150,14 @@ public final class TiledImageConfiguration extends FullBox {
     }
 
     /**
-     * Appends properties other than the ones defined by public fields.
-     * Those properties will be shown last in the tree.
+     * Appends a description of the flags.
      *
-     * @param  context  the tree being formatted. Can be used for fetching contextual information.
-     * @param  target   the node where to add properties.
+     * @param  target  the {@code flag} node where to add properties.
      */
     @Override
-    protected void appendTreeNodes(final Tree context, final TreeTable.Node target) {
+    protected void appendFlagDescriptions(final TreeTable.Node target) {
         Tree.addNode(target, "offsetFieldLength", offsetFieldLength());
         Tree.addNode(target, "sizeFieldLength",   sizeFieldLength());
         Tree.addNode(target, "sequential",        sequential());
-        super.appendTreeNodes(context, target);
     }
 }

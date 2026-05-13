@@ -387,16 +387,18 @@ public abstract class TreeNode {
         /**
          * Convenience method for adding a child node.
          *
-         * @param target       where to add the node.
-         * @param name         the programmatic (camel-case) name of the node.
-         * @param value        value of the node. Should not be null.
-         * @param valueAsText  string representation of the value.
+         * @param  target       where to add the node.
+         * @param  name         the programmatic (camel-case) name of the node.
+         * @param  value        value of the node. Should not be null.
+         * @param  valueAsText  string representation of the value.
+         * @return the node which has been added.
          */
-        public static void addNode(final TreeTable.Node target, String name, Object value, String valueAsText) {
-            TreeTable.Node child = target.newChild();
+        public static TreeTable.Node addNode(final TreeTable.Node target, String name, Object value, String valueAsText) {
+            final TreeTable.Node child = target.newChild();
             child.setValue(TableColumn.NAME,  CharSequences.camelCaseToWords(name, true).toString());
             child.setValue(TableColumn.VALUE, value);
             child.setValue(TableColumn.VALUE_AS_TEXT, valueAsText);
+            return child;
         }
     }
 

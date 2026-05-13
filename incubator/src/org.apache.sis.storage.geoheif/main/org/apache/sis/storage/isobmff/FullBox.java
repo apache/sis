@@ -95,7 +95,15 @@ public abstract class FullBox extends Box {
             Tree.addNode(target, "version", version, String.valueOf(version));
         }
         if (options != 0) {
-            Tree.addNode(target, "flags", options, Integer.toBinaryString(options));
+            appendFlagDescriptions(Tree.addNode(target, "flags", options, Integer.toBinaryString(options)));
         }
+    }
+
+    /**
+     * Appends a description of the flags.
+     *
+     * @param  target  the {@code flag} node where to add properties.
+     */
+    protected void appendFlagDescriptions(final TreeTable.Node target) {
     }
 }
