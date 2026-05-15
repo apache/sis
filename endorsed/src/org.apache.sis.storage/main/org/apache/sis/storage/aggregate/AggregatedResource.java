@@ -27,7 +27,7 @@ import org.apache.sis.storage.DataSet;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.util.internal.shared.Strings;

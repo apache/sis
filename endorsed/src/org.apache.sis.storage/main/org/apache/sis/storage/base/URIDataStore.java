@@ -47,6 +47,7 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.ReadOnlyStorageException;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.util.ArraysExt;

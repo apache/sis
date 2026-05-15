@@ -61,7 +61,7 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.storage.internal.RewindableLineReader;
 import org.apache.sis.storage.internal.Resources;

@@ -18,7 +18,7 @@ package org.apache.sis.storage.isobmff;
 
 import java.time.Instant;
 import java.util.UUID;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 
 
 /**

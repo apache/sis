@@ -16,7 +16,7 @@
  */
 
 /**
- * Base classes for the implementation of Apache <abbr>SIS</abbr> data stores.
+ * Helper methods for handling <abbr>ISO</abbr> or native metadata in data stores.
  *
  * <STRONG>Do not use!</STRONG>
  *
@@ -26,4 +26,4 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
-package org.apache.sis.storage.base;
+package org.apache.sis.storage.metadata;

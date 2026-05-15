@@ -42,7 +42,7 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.PRJDataStore;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.image.internal.shared.ColorModelFactory;
 import org.apache.sis.image.internal.shared.ColorModelBuilder;
 import org.apache.sis.image.internal.shared.ObservableImage;

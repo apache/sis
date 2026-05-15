@@ -40,7 +40,7 @@ import javax.xml.namespace.QName;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.temporal.LenientDateFormat;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.geotiff.base.Tags;
 import org.apache.sis.util.collection.TreeTable;

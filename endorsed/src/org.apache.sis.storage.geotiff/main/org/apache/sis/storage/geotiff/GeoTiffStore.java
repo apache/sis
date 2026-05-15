@@ -48,7 +48,7 @@ import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.WriteOnlyStorageException;
 import org.apache.sis.storage.IncompatibleResourceException;
 import org.apache.sis.storage.IllegalNameException;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.storage.base.URIDataStoreProvider;

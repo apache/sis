@@ -22,7 +22,7 @@ import org.apache.sis.storage.isobmff.Box;
 import org.apache.sis.storage.isobmff.Reader;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.BoxRegistry;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 
 
 /**

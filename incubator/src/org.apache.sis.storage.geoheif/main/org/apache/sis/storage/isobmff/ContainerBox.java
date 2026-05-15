@@ -19,7 +19,7 @@ package org.apache.sis.storage.isobmff;
 import java.io.IOException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 
 
 /**

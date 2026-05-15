@@ -45,7 +45,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.storage.isobmff.Box;
 import org.apache.sis.storage.isobmff.base.ItemInfoEntry;

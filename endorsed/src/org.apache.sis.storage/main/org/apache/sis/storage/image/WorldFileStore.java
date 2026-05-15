@@ -54,7 +54,7 @@ import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.storage.base.PRJDataStore;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.base.AuxiliaryContent;
 import org.apache.sis.referencing.internal.shared.AffineTransform2D;
 import org.apache.sis.util.CharSequences;

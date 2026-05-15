@@ -41,7 +41,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.storage.event.StoreListeners;

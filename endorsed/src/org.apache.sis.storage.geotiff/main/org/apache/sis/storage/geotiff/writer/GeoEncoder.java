@@ -79,7 +79,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.storage.IncompatibleResourceException;
-import org.apache.sis.storage.base.MetadataFetcher;
+import org.apache.sis.storage.metadata.MetadataFetcher;
 import org.apache.sis.storage.geotiff.base.UnitKey;
 import org.apache.sis.storage.geotiff.base.GeoKeys;
 import org.apache.sis.storage.geotiff.base.GeoCodes;

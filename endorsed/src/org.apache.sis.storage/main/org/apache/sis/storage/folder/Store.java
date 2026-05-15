@@ -49,7 +49,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.aggregate.CoverageAggregator;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.storage.internal.Resources;
