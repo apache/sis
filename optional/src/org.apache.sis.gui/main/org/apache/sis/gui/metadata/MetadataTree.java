@@ -22,9 +22,8 @@ import java.io.IOException;
 import javafx.util.Callback;
 import javafx.beans.DefaultProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Dialog;
@@ -338,7 +337,7 @@ check:      if (data != null) {
         } else {
             text = (value != null) ? value.toString() : null;
         }
-        return new ReadOnlyStringWrapper(text);
+        return new SimpleStringProperty(text);
     }
 
     /**
@@ -376,7 +375,7 @@ check:      if (data != null) {
             } catch (IOException e) {               // Should never happen because we append in a StringBuilder.
                 throw new AssertionError(e);
             }
-            return new ReadOnlyObjectWrapper<>(value);
+            return new SimpleObjectProperty<>(value);
         }
     }
 

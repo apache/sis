@@ -22,7 +22,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
-import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
 import org.opengis.util.GenericName;
@@ -141,7 +141,7 @@ final class BandRangeTable implements Callback<TableColumn<SampleDimension, Numb
             case UNITS: text = sd.getUnits(); break;
             default: throw new AssertionError();       // Should not happen.
         }
-        return text.map(Object::toString).map(ReadOnlyObjectWrapper::new).orElse(null);
+        return text.map(Object::toString).map(SimpleObjectProperty::new).orElse(null);
     }
 
     /**
@@ -155,6 +155,6 @@ final class BandRangeTable implements Callback<TableColumn<SampleDimension, Numb
             case MAXIMUM: value = range.map(NumberRange::getMaxValue); break;
             default: throw new AssertionError();       // Should not happen.
         }
-        return value.map(ReadOnlyObjectWrapper::new).orElse(null);
+        return value.map(SimpleObjectProperty::new).orElse(null);
     }
 }
