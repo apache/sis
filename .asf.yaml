@@ -6,17 +6,30 @@
 #
 github:
   description: Java language library for developing geospatial applications following OGC/ISO standards.
-  homepage:    https://sis.apache.org/
+  homepage: https://sis.apache.org/
   labels:
     - java
     - geospatial
     - standards
+  rulesets:
+    - name: "Default Branch Protection"
+      type: branch
+      branches:
+        includes:
+          - "~DEFAULT_BRANCH"
+          - "release/*"
+          - "rel/*"
+        excludes: []
+      bypass_teams:
+        - root
+      restrict_deletion: true
+      restrict_force_push: true
 notifications:
-  commits:              commits@sis.apache.org
-  issues:               dev@sis.apache.org
-  issues_status:        issues@sis.apache.org
-  issues_comment:       issues@sis.apache.org
-  pullrequests:         dev@sis.apache.org
-  pullrequests_status:  issues@sis.apache.org
+  commits: commits@sis.apache.org
+  issues: dev@sis.apache.org
+  issues_status: issues@sis.apache.org
+  issues_comment: issues@sis.apache.org
+  pullrequests: dev@sis.apache.org
+  pullrequests_status: issues@sis.apache.org
   pullrequests_comment: issues@sis.apache.org
-  jira_options:         worklog
+  jira_options: worklog
