@@ -26,7 +26,10 @@ import java.util.NoSuchElementException;
 import java.util.ConcurrentModificationException;
 import java.util.function.Function;
 import org.opengis.annotation.Obligation;
+import org.opengis.metadata.citation.Citation;
 import org.apache.sis.xml.NilReason;
+import org.apache.sis.xml.bind.NonMarshalledAuthority;
+import org.apache.sis.xml.bind.SpecializedIdentifier;
 import org.apache.sis.xml.bind.lan.LocaleAndCharset;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
@@ -403,7 +406,7 @@ class TreeNode implements Node {
          * as a {@link java.util.Locale} node with a {@link java.nio.charset.Charset} child. This separation is done by
          * {@link LocaleAndCharset}.
          */
-        final Function<TreeNode,Node> decorator;
+        final Function<TreeNode, Node> decorator;
 
         /**
          * Creates a new child for a property of the given metadata at the given index.
@@ -543,7 +546,7 @@ class TreeNode implements Node {
          * Gets whether the property is mandatory, optional or conditional, or {@code null} if unspecified.
          */
         @Override
-        Obligation getObligation() {
+        final Obligation getObligation() {
             return accessor.obligation(indexInData);
         }
 
@@ -605,7 +608,7 @@ class TreeNode implements Node {
     /**
      * A node for an element in a collection. This class needs the iteration order to be stable.
      */
-    static final class CollectionElement extends Element {
+    static class CollectionElement extends Element {
         /**
          * Index of the element in the collection, in iteration order.
          */
@@ -633,7 +636,7 @@ class TreeNode implements Node {
          */
         @Debug
         @Override
-        void appendIdentifier(final StringBuilder buffer) {
+        final void appendIdentifier(final StringBuilder buffer) {
             super.appendIdentifier(buffer);
             buffer.append('[').append(indexInList).append(']');
         }
@@ -642,7 +645,7 @@ class TreeNode implements Node {
          * Returns the zero-based index of this node in the metadata property.
          */
         @Override
-        Integer getIndex() {
+        final Integer getIndex() {
             return indexInList;
         }
 
@@ -651,7 +654,7 @@ class TreeNode implements Node {
          * Index numbering begins at 1, since this name if for human reading.
          */
         @Override
-        CharSequence getName() {
+        final CharSequence getName() {
             CharSequence name = super.getName();
             final int size = PropertyAccessor.size(super.getUserObject());
             if (size >= 2) {
@@ -665,7 +668,7 @@ class TreeNode implements Node {
          * then fetch the element at the index represented by this node.
          */
         @Override
-        public Object getUserObject() {
+        public final Object getUserObject() {
             final Object collection = super.getUserObject();
             final Collection<?> values;
             if (collection instanceof Collection<?>) {
@@ -709,7 +712,7 @@ class TreeNode implements Node {
          * Sets the property value for this node.
          */
         @Override
-        void setUserObject(Object value) {
+        final void setUserObject(Object value) {
             cachedValue = null;
             canUseCache = false;
             final Collection<?> values = (Collection<?>) super.getUserObject();
@@ -748,7 +751,7 @@ class TreeNode implements Node {
          * This is a bit unusual, since nil reasons usually apply to the whole property.
          */
         @Override
-        NilReason getNilReason() {
+        final NilReason getNilReason() {
             // Do not check `canUseCache` because it applies to TableColumn.VALUE.
             if (cachedValue == null) cachedValue = getUserObject();
             return NilReason.forObject(cachedValue);
@@ -760,7 +763,7 @@ class TreeNode implements Node {
          * This is a bit unusual, since nil reasons usually apply to the whole property.
          */
         @Override
-        void setNilReason(final NilReason value) {
+        final void setNilReason(final NilReason value) {
             setUserObject(value != null ? value.createNilObject(baseType) : null);
         }
 
@@ -769,7 +772,7 @@ class TreeNode implements Node {
          * should be the same for both nodes.
          */
         @Override
-        public boolean equals(final Object other) {
+        public final boolean equals(final Object other) {
             return super.equals(other) && ((CollectionElement) other).indexInList == indexInList;
         }
 
@@ -777,13 +780,68 @@ class TreeNode implements Node {
          * Returns a hash code value for this node.
          */
         @Override
-        public int hashCode() {
+        public final int hashCode() {
             return super.hashCode() ^ indexInList;
         }
     }
 
 
-    // -------- Final methods (defined in terms of above methods only) ----------------------------
+
+
+    /**
+     * Special case for a node for which the parent is a {@link Citation}.
+     * This node hides the <abbr>ISBN</abbr> and <abbr>ISSN</abbr> identifiers,
+     * because they will be formatted in the {@code ISBN} and {@code ISSN} properties instead.
+     * We apply this filtering for avoiding redundancies in the tree representation.
+     */
+    static final class CitationElement extends CollectionElement {
+        /**
+         * Creates a new node for the given collection element.
+         *
+         * @param  parent       the parent of this node. Shall be for a {@link Citation}.
+         * @param  metadata     the metadata object for which this node will be a value.
+         * @param  accessor     accessor to use for fetching the name, type and collection.
+         * @param  indexInData  index to be given to the accessor of fetching the collection.
+         * @param  indexInList  index of the element in the collection, in iteration order.
+         */
+        CitationElement(final TreeNode parent, final Object metadata,
+                final PropertyAccessor accessor, final int indexInData, final int indexInList)
+        {
+            super(parent, metadata, accessor, indexInData, indexInList);
+        }
+
+        /**
+         * Returns {@code false} if the value is an <abbr>ISBN</abbr> or <abbr>ISSN</abbr> identifier.
+         * Those identifiers will be formatted in the {@code ISBN} and {@code ISSN} properties instead.
+         *
+         * <p>Since this method is invoked (indirectly) during iteration over the children, the value
+         * may have been cached by {@link org.apache.sis.metadata.TreeNodeChildren.Iter#next()}.
+         * This method tries to use the cached value instead of computing it again.</p>
+         */
+        @Override
+        public boolean isVisible() {
+            Object value = cachedValue;
+            if (value == null) {
+                value = getUserObject();
+            }
+            if (value instanceof SpecializedIdentifier) {
+                final Citation authority = ((SpecializedIdentifier) value).getAuthority();
+                if (authority instanceof NonMarshalledAuthority && ((NonMarshalledAuthority) authority).isBookOrSerialNumber()) {
+                    return false;
+                }
+            }
+            return super.isVisible();
+        }
+    }
+
+
+
+
+    // ┌───────────────────────────────────────────────────────────────────────────────────────────────────────┐
+    // │                        Final methods (defined in terms of above methods only)                         │
+    // └───────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
 
 
     /**

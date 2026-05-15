@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.AbstractCollection;
 import java.util.NoSuchElementException;
 import java.util.ConcurrentModificationException;
+import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -269,7 +270,11 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
              * A ClassCastException below would be a logical error in this class.
              */
             if (node == null || ((TreeNode.CollectionElement) node).indexInList != subIndex) {
-                node = new TreeNode.CollectionElement(parent, metadata, accessor, index, subIndex);
+                if (Citation.class.isAssignableFrom(parent.baseType)) {
+                    node = new TreeNode.CitationElement(parent, metadata, accessor, index, subIndex);
+                } else {
+                    node = new TreeNode.CollectionElement(parent, metadata, accessor, index, subIndex);
+                }
             }
         } else {
             /*
@@ -322,7 +327,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      */
     @Override
     public void clear() {
-        for (int i=childCount(); --i>=0;) {
+        for (int i = childCount(); --i >= 0;) {
             clearAt(i);
         }
     }
