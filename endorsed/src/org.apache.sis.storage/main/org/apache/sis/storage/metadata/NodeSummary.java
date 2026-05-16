@@ -14,16 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.storage.metadata;
+
+import org.apache.sis.util.SimpleInternationalString;
+
 
 /**
- * Widgets about metadata.
- * Those widgets can show a {@link org.opengis.metadata.Metadata} instance in a tree,
- * or show a summary of those metadata in an "overview" panel.
+ * Value or a {@code TreeTable.Node} which is used only for summarizing the children of the node.
+ * Since this text is redundant with the children, a <abbr>GUI</abbr> can show this text when the
+ * node is collapsed and hide this text when the node is expanded.
  *
- * @author  Smaniotto Enzo (GSoC)
- * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.7
- * @since   1.1
  */
-package org.apache.sis.gui.metadata;
+public final class NodeSummary extends SimpleInternationalString {
+    /**
+     * Serial number for inter-operability with different versions.
+     */
+    private static final long serialVersionUID = 5768405462866237705L;
+
+    /**
+     * Creates a new instance from the given string.
+     *
+     * @param text the string for all locales.
+     */
+    public NodeSummary(final String text) {
+        super(text);
+    }
+}

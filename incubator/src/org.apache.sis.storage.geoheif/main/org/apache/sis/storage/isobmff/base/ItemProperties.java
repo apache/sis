@@ -184,14 +184,14 @@ public final class ItemProperties extends ContainerBox {
 
     /**
      * Opportunistically saves contextual information before to format the tree.
-     * {@link ItemPropertyAssociation.Entry#appendTreeNodes(Tree, TreeTable.Node, boolean)}
+     * {@link ItemPropertyAssociation.Entry#appendTreeNodes(TreeBuilder, TreeTable.Node)}
      * will need the children of the property container.
      *
-     * @param  context  the tree being formatted. Can be used for fetching contextual information.
-     * @param  target   the node where to add properties.
+     * @param  tree    builder of the tree to format.
+     * @param  target  the node where to add properties.
      */
     @Override
-    protected void prependTreeNodes(final Tree context, final TreeTable.Node target) {
+    protected void prependTreeNodes(final TreeBuilder tree, final TreeTable.Node target) {
         Box[] properties = null;
         for (final Box box : children) {
             if (box.type() == ItemPropertyContainer.BOXTYPE) {
@@ -199,19 +199,19 @@ public final class ItemProperties extends ContainerBox {
                 break;
             }
         }
-        context.setContext(Box[].class, properties);
-        super.prependTreeNodes(context, target);
+        tree.setContext(Box[].class, properties);
+        super.prependTreeNodes(tree, target);
     }
 
     /**
      * Clears the context after formatting.
      *
-     * @param  context  the tree being formatted.
-     * @param  target   the node where to add properties.
+     * @param  tree    builder of the tree to format.
+     * @param  target  the node where to add properties.
      */
     @Override
-    protected void appendTreeNodes(final Tree context, final TreeTable.Node target) {
-        super.appendTreeNodes(context, target);
-        context.setContext(Box[].class, null);
+    protected void appendTreeNodes(final TreeBuilder tree, final TreeTable.Node target) {
+        super.appendTreeNodes(tree, target);
+        tree.setContext(Box[].class, null);
     }
 }

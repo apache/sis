@@ -37,11 +37,13 @@ public abstract class EntityToGroup extends FullBox {
      * Unique identifier assigned to the particular grouping.
      * Should not be equal to any other {@code groupID} or {@code itemID}.
      */
+    @Interpretation(value=Type.IDENTIFIER, summary=true)
     public final int groupID;
 
     /**
      * Identifiers of items in the group.
      */
+    @Interpretation(Type.IDENTIFIER)
     public final int[] entityID;
 
     /**

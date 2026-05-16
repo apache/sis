@@ -51,6 +51,7 @@ public final class CreationTime extends FullBox {
     /**
      * The creation time of the item.
      */
+    @Interpretation(value=Type.NONE, summary=true)
     public final Instant creationTime;
 
     /**

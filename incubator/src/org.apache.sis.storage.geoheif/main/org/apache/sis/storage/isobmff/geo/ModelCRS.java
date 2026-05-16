@@ -90,7 +90,7 @@ public final class ModelCRS extends FullBox {
      *   <li>{@code "wkt2"} for a Well-Known Text definition.</li>
      * </ul>
      */
-    @Interpretation(Type.FOURCC)
+    @Interpretation(value=Type.FOURCC, summary=true)
     public final int crsEncoding;
 
     /**
@@ -143,6 +143,7 @@ public final class ModelCRS extends FullBox {
                 warning = new LogRecord(Level.WARNING, "Cannot decode the CRS.");
                 warning.setThrown(e);
             }
+            warning.setLoggerName(Reader.LOGGER_NAME);
             warning.setSourceClassName(ModelCRS.class.getName());
             warning.setSourceMethodName("toCRS");
             listeners.warning(warning);

@@ -68,12 +68,12 @@ public abstract class Extension extends Box {
      * Appends properties other than the ones defined by public fields.
      * Those properties will be shown first in the tree.
      *
-     * @param  context  the tree being formatted. Can be used for fetching contextual information.
-     * @param  target   the node where to add properties.
+     * @param  tree    builder of the tree to format.
+     * @param  target  the node where to add properties.
      */
     @Override
-    protected void prependTreeNodes(final Tree context, final TreeTable.Node target) {
-        super.prependTreeNodes(context, target);
-        Tree.addNode(target, "extendedType", extendedType());
+    protected void prependTreeNodes(final TreeBuilder tree, final TreeTable.Node target) {
+        super.prependTreeNodes(tree, target);
+        tree.addNode(target, "extendedType", extendedType());
     }
 }

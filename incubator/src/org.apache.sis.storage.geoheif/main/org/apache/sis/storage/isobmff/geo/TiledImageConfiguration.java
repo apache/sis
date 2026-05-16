@@ -67,7 +67,7 @@ public final class TiledImageConfiguration extends FullBox {
      * The image type used for all tiles.
      * Examples: {@code hvc1} for h265 compression or {@code j2k1} for JPEG2000.
      */
-    @Interpretation(Type.FOURCC)
+    @Interpretation(value=Type.FOURCC, summary=true)
     public final int tileItemType;
 
     /**
@@ -152,12 +152,13 @@ public final class TiledImageConfiguration extends FullBox {
     /**
      * Appends a description of the flags.
      *
+     * @param  tree    builder of the tree to format.
      * @param  target  the {@code flag} node where to add properties.
      */
     @Override
-    protected void appendFlagDescriptions(final TreeTable.Node target) {
-        Tree.addNode(target, "offsetFieldLength", offsetFieldLength());
-        Tree.addNode(target, "sizeFieldLength",   sizeFieldLength());
-        Tree.addNode(target, "sequential",        sequential());
+    protected void appendFlagDescriptions(final TreeBuilder tree, final TreeTable.Node target) {
+        tree.addNode(target, "offsetFieldLength", offsetFieldLength());
+        tree.addNode(target, "sizeFieldLength",   sizeFieldLength());
+        tree.addNode(target, "sequential",        sequential());
     }
 }

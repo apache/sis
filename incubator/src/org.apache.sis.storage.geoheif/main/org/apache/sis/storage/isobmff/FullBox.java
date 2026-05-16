@@ -83,27 +83,28 @@ public abstract class FullBox extends Box {
      * Appends properties other than the ones defined by public fields.
      * Those properties will be shown first in the tree.
      *
-     * @param  context  the tree being formatted. Can be used for fetching contextual information.
-     * @param  target   the node where to add properties.
+     * @param  tree    builder of the tree to format.
+     * @param  target  the node where to add properties.
      */
     @Override
-    protected void prependTreeNodes(final Tree context, final TreeTable.Node target) {
-        super.prependTreeNodes(context, target);
+    protected void prependTreeNodes(final TreeBuilder tree, final TreeTable.Node target) {
+        super.prependTreeNodes(tree, target);
         final int version = version();
         final int options = flags & ((1 << VERSION_BIT_SHIFT) - 1);
         if (version != 0) {
-            Tree.addNode(target, "version", version, String.valueOf(version));
+            TreeBuilder.addNode(target, "version", version, String.valueOf(version));
         }
         if (options != 0) {
-            appendFlagDescriptions(Tree.addNode(target, "flags", options, Integer.toBinaryString(options)));
+            appendFlagDescriptions(tree, TreeBuilder.addNode(target, "flags", options, Integer.toBinaryString(options)));
         }
     }
 
     /**
      * Appends a description of the flags.
      *
+     * @param  tree    builder of the tree to format.
      * @param  target  the {@code flag} node where to add properties.
      */
-    protected void appendFlagDescriptions(final TreeTable.Node target) {
+    protected void appendFlagDescriptions(TreeBuilder tree, TreeTable.Node target) {
     }
 }

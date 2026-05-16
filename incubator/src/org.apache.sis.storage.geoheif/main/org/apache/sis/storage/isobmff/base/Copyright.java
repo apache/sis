@@ -57,6 +57,7 @@ public final class Copyright extends FullBox {
     /**
      * The copyright notice, or {@code null} if none.
      */
+    @Interpretation(value=Type.NONE, summary=true)
     public final String notice;
 
     /**

@@ -18,13 +18,16 @@ package org.apache.sis.gui.metadata;
 
 import java.util.Locale;
 import java.util.List;
+import java.util.WeakHashMap;
 import java.io.IOException;
 import javafx.util.Callback;
 import javafx.beans.DefaultProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.beans.value.WeakChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
@@ -50,6 +53,7 @@ import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.storage.metadata.NodeSummary;
 
 
 /**
@@ -76,7 +80,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Siddhesh Rane (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   1.1
  */
 @DefaultProperty("content")
@@ -88,9 +92,10 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
 
     /**
      * The column for metadata property value in the view.
-     * Values are typically {@link InternationalString}, {@link Number} or dates.
+     * Values are typically {@link InternationalString}, {@link Number} or dates
+     * formatted as character strings by {@link Formatter}.
      */
-    private final TreeTableColumn<TreeTable.Node, Object> valueColumn;
+    private final TreeTableColumn<TreeTable.Node, String> valueColumn;
 
     /**
      * The column for metadata property value in the model.
@@ -129,9 +134,9 @@ public class MetadataTree extends TreeTableView<TreeTable.Node> {
          * The columns where to search for values, in preference order.
          */
         private static final TableColumn<?>[] VALUES_COLUMNS = {
-            TableColumn.VALUE,
             TableColumn.VALUE_AS_NUMBER,
-            TableColumn.VALUE_AS_TEXT
+            TableColumn.VALUE_AS_TEXT,
+            TableColumn.VALUE
         };
 
         /** Creates a new property. */
@@ -304,32 +309,25 @@ check:      if (data != null) {
             final var children = super.getChildren();
             if (children.isEmpty()) {
                 // Fire a single event instead of multiple `add`.
-                children.setAll(getValue().getChildren().stream().map(Item::new).toList());
+                children.setAll(getValue().getChildren().stream()
+                        .filter(TreeTable.Node::isVisible)
+                        .map(Item::new)
+                        .toList());
             }
             return children;
         }
     }
 
     /**
-     * Returns the value for the specified column.
-     * The generic type in this method signature reduces the risk that we confuse columns.
-     *
-     * @param  <T>      the type of values in the column.
-     * @param  cell     a wrapper around the {@link TreeTable.Node} from which to get the value.
-     * @param  column   column of the desired value.
-     * @return value in the specified column. May be {@code null}.
-     */
-    private static <T> T getValue(final CellDataFeatures<TreeTable.Node, ?> cell, final TableColumn<T> column) {
-        final TreeTable.Node node = cell.getValue().getValue();
-        return node.getValue(column);
-    }
-
-    /**
      * Returns the name of the metadata property wrapped by the given argument.
      * This method is invoked by JavaFX when a new cell needs to be rendered.
+     *
+     * @param  cell  a wrapper around the {@link TreeTable.Node} from which to get the name.
+     * @return the name. May be {@code null}.
      */
     private static ObservableValue<String> getPropertyName(final CellDataFeatures<TreeTable.Node, String> cell) {
-        final CharSequence value = getValue(cell, TableColumn.NAME);
+        final TreeTable.Node node = cell.getValue().getValue();
+        final CharSequence value = node.getValue(TableColumn.NAME);
         final String text;
         if (value instanceof InternationalString) {
             final var view = (MetadataTree) cell.getTreeTableView();
@@ -342,16 +340,26 @@ check:      if (data != null) {
 
     /**
      * Formatter for metadata property value in a tree cell. This formatter handles in a special way
-     * many object classes like {@link InternationalString}, <i>etc</i>.
+     * many object classes like {@link InternationalString}, <i>etc</i>. This handling is done by the
+     * {@link org.apache.sis.util.internal.shared.PropertyFormat} parent class.
      */
     private static final class Formatter extends PropertyValueFormatter
-            implements Callback<CellDataFeatures<TreeTable.Node, Object>, ObservableValue<Object>>
+            implements Callback<CellDataFeatures<TreeTable.Node, String>, ObservableValue<String>>
     {
+        /**
+         * The observable properties created for each tree table node.
+         * We need to reuse the instances created for each node in order to keep listeners.
+         *
+         * @see #call(TreeTableColumn.CellDataFeatures)
+         */
+        private final WeakHashMap<TreeTable.Node, SimpleStringProperty> observables;
+
         /**
          * Creates a new formatter for the given locale.
          */
         Formatter(final Locale locale) {
             super(new StringBuilder(), locale);
+            observables = new WeakHashMap<>();
         }
 
         /**
@@ -359,23 +367,65 @@ check:      if (data != null) {
          * This method is invoked by JavaFX when a new cell needs to be rendered.
          */
         @Override
-        public ObservableValue<Object> call(final CellDataFeatures<TreeTable.Node, Object> cell) {
-            final var view = (MetadataTree) cell.getTreeTableView();
-            Object value = getValue(cell, view.valueSourceColumn);
-            if (value instanceof IdentifiedObject) {
-                value = IdentifiedObjects.getDisplayName((IdentifiedObject) value, getLocale());
+        public ObservableValue<String> call(final CellDataFeatures<TreeTable.Node, String> cell) {
+            final TreeItem<TreeTable.Node> item = cell.getValue();
+            final TreeTable.Node node = item.getValue();
+            SimpleStringProperty property = observables.get(node);
+            if (property == null) {
+                final var view = (MetadataTree) cell.getTreeTableView();
+                final Object value = node.getValue(view.valueSourceColumn);
+                final String text;
+                if (value instanceof IdentifiedObject) {
+                    text = IdentifiedObjects.getDisplayName((IdentifiedObject) value, getLocale());
+                } else try {
+                    clear();
+                    final var buffer = (StringBuilder) out;
+                    buffer.setLength(0);
+                    appendValue(value);
+                    flush();
+                    text = buffer.toString();
+                } catch (IOException e) {               // Should never happen because we append in a StringBuilder.
+                    throw new AssertionError(e);
+                }
+                if (value instanceof NodeSummary) {
+                    final var summary = new SummaryProperty(text);
+                    item.expandedProperty().addListener(new WeakChangeListener<>(summary));
+                    property = summary;
+                } else {
+                    property = new SimpleStringProperty(text);
+                }
+                observables.put(node, property);
             }
-            try {
-                clear();
-                final var buffer = (StringBuilder) out;
-                buffer.setLength(0);
-                appendValue(value);
-                flush();
-                value = buffer.toString();
-            } catch (IOException e) {               // Should never happen because we append in a StringBuilder.
-                throw new AssertionError(e);
-            }
-            return new SimpleObjectProperty<>(value);
+            return property;
+        }
+    }
+
+    /**
+     * A property with a text which is shown or hidden depending on whether the node is collapsed or expanded.
+     * This is used for content of {@link NodeSummary}. We want to hide this content when the node is expanded
+     * because it become redundant with the children, and this redundancy is distracting when the user wants
+     * to look for the child that contains this information.
+     */
+    private static final class SummaryProperty extends SimpleStringProperty implements ChangeListener<Boolean> {
+        /**
+         * The text to show or hide.
+         */
+        private final String text;
+
+        /**
+         * Creates a new property with the given summary text.
+         */
+        SummaryProperty(final String text) {
+            super(text);
+            this.text = text;
+        }
+
+        /**
+         * Invoked when the node is expanded or collapsed.
+         */
+        @Override
+        public void changed(ObservableValue<? extends Boolean> property, Boolean oldValue, Boolean newValue) {
+            set(newValue ? null : text);
         }
     }
 
@@ -396,6 +446,7 @@ check:      if (data != null) {
         /**
          * Creates a new row for the given tree table.
          */
+        @SuppressWarnings("LeakingThisInConstructor")
         Row(final TreeTableView<TreeTable.Node> owner) {
             final var md = (MetadataTree) owner;
             final Resources localized = Resources.forLocale(md.getLocale());
@@ -424,11 +475,14 @@ check:      if (data != null) {
          */
         private Object getValue() {
             final TreeTable.Node node = getItem();
-            if (node != null) {
-                final Object obj = node.getUserObject();
-                return (obj != null) ? obj : node.getValue(((MetadataTree) getTreeTableView()).valueSourceColumn);
+            if (node == null) {
+                return null;
             }
-            return null;
+            Object value = node.getUserObject();
+            if (value == null) {
+                value = node.getValue(((MetadataTree) getTreeTableView()).valueSourceColumn);
+            }
+            return value;
         }
 
         /**
@@ -440,7 +494,7 @@ check:      if (data != null) {
         public void handle(final ActionEvent event) {
             final Object value = getValue();
             if (value != null) {
-                final ClipboardContent content = new ClipboardContent();
+                final var content = new ClipboardContent();
                 content.putString(toString(value));
                 Clipboard.getSystemClipboard().setContent(content);
             }

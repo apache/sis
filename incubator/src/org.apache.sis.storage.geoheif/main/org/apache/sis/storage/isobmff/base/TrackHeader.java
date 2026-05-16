@@ -56,7 +56,7 @@ public final class TrackHeader extends HeaderBox {
      * An identifier that uniquely identifies this track over the entire life-time of the presentation.
      * Cannot be zero.
      */
-    @Interpretation(Type.UNSIGNED)
+    @Interpretation(value=Type.UNSIGNED, summary=true)
     public final int identifier;
 
     /**
@@ -105,10 +105,11 @@ public final class TrackHeader extends HeaderBox {
     /**
      * Appends a description of the flags.
      *
+     * @param  tree    builder of the tree to format.
      * @param  target  the {@code flag} node where to add properties.
      */
     @Override
-    protected void appendFlagDescriptions(final TreeTable.Node target) {
-        Tree.addNode(target, "enabled", isEnabled());
+    protected void appendFlagDescriptions(final TreeBuilder tree, final TreeTable.Node target) {
+        tree.addNode(target, "enabled", isEnabled());
     }
 }

@@ -58,6 +58,11 @@ import org.apache.sis.util.resources.Errors;
  */
 public final class Reader implements Cloneable {
     /**
+     * The logger used by GeoHEIF stores.
+     */
+    public static final String LOGGER_NAME = "org.apache.sis.storage.geoheif";
+
+    /**
      * The stream from which to read the data.
      *
      * @todo Should be an implementation that blocks reading after {@link #endOfCurrentBox}.
@@ -203,6 +208,7 @@ public final class Reader implements Cloneable {
             box = null;
             if (isNewWarning(type, Classes.getClass(cause))) {
                 var record = new LogRecord(Level.WARNING, "Cannot read the “" + Box.formatFourCC(type) + "” box.");
+                record.setLoggerName(LOGGER_NAME);
                 record.setThrown(cause);
                 listeners.warning(record);
             }
@@ -339,6 +345,7 @@ public final class Reader implements Cloneable {
                 type = Box.formatFourCC(fourCC);
             }
             var record = new LogRecord(Level.WARNING, "The “" + type + "” type of box is unrecognized.");
+            record.setLoggerName(LOGGER_NAME);
             listeners.warning(record);
         }
     }
@@ -370,6 +377,7 @@ public final class Reader implements Cloneable {
         if (isNewWarning(error.getClass(), value)) {
             final LogRecord record = Errors.forLocale(listeners.getLocale())
                     .createLogRecord(ignoreable ? Level.FINE : Level.WARNING, Errors.Keys.CanNotParse_1, value);
+            record.setLoggerName(LOGGER_NAME);
             record.setThrown(error);
             listeners.warning(record);
         }

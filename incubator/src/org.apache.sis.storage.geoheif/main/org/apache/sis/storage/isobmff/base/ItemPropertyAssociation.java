@@ -61,7 +61,7 @@ public final class ItemPropertyAssociation extends FullBox {
         /**
          * Identifies the item with which properties are associated.
          */
-        @Interpretation(Type.IDENTIFIER)
+        @Interpretation(value=Type.IDENTIFIER, summary=true)
         public final int itemID;
 
         /**
@@ -124,15 +124,14 @@ public final class ItemPropertyAssociation extends FullBox {
          * Appends properties other than the ones defined by public fields.
          * Those properties will be shown last in the tree.
          *
-         * @param  context  the tree being formatted. Can be used for fetching contextual information.
-         * @param  target   the node where to add properties.
-         * @param  after    {@code false} for the first nodes, or {@code true} for the last nodes.
+         * @param  tree    builder of the tree to format.
+         * @param  target  the node where to add properties.
          *
          * @see ItemProperties#collect(Map)
          */
         @Override
-        protected void appendTreeNodes(final Tree context, final TreeTable.Node target) {
-            final Box[] properties = context.getContext(Box[].class);
+        protected void appendTreeNodes(final TreeBuilder tree, final TreeTable.Node target) {
+            final Box[] properties = tree.getContext(Box[].class);
             final TreeTable.Node indexes = target.newChild();
             indexes.setValue(TableColumn.NAME, "property index");
             for (int i : propertyIndex) {
@@ -149,7 +148,7 @@ public final class ItemPropertyAssociation extends FullBox {
                     }
                 }
             }
-            super.appendTreeNodes(context, target);
+            super.appendTreeNodes(tree, target);
         }
     }
 

@@ -54,12 +54,8 @@ public final class ItemInfoEntry extends FullBox {
 
     /**
      * 0 for the primary resource, or the identifier of the item for which the information are defined.
-     *
-     * <h4>Implementation note</h4>
-     * This field is not annotated with {@link Type#IDENTIFIER} because it
-     * would cause this field to repeat the value shown in {@link #itemName}.
      */
-    @Interpretation(Type.UNSIGNED)
+    @Interpretation(Type.IDENTIFIER)
     public final int itemID;
 
     /**
@@ -87,6 +83,7 @@ public final class ItemInfoEntry extends FullBox {
     /**
      * Symbolic name of the item (source file), or {@code null} if none.
      */
+    @Interpretation(value=Type.NONE, summary=true)
     public final String itemName;
 
     /**

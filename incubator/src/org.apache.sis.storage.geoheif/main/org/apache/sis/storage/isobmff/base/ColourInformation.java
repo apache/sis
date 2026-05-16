@@ -69,7 +69,7 @@ public final class ColourInformation extends Box {
      * Type of color information supplied.
      * Can be {@link #NCLX}, {@link #RICC} or {@link #PROF}.
      */
-    @Interpretation(Type.FOURCC)
+    @Interpretation(value=Type.FOURCC, summary=true)
     public final int colourType;
 
     /**

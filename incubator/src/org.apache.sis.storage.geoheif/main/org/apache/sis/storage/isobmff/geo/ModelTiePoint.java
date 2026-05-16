@@ -19,6 +19,7 @@ package org.apache.sis.storage.isobmff.geo;
 import java.util.UUID;
 import java.io.IOException;
 import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.TreeNode;
 import org.apache.sis.storage.isobmff.Reader;
@@ -111,11 +112,31 @@ public final class ModelTiePoint extends FullBox {
     public ModelTiePoint(final Reader reader) throws IOException, UnsupportedVersionException {
         super(reader);
         requireVersionZero();
-        final int dimension = ((flags & 0x01) == 1) ? 2 : 3;
+        final int dimension = dimension();
         final ChannelDataInput input = reader.input;
         tiepoints = new TiePoint[input.readUnsignedShort()];
         for (int i=0; i<tiepoints.length; i++) {
             tiepoints[i] = new TiePoint(input, dimension);
         }
+    }
+
+    /**
+     * Returns the number of dimensions (2 or 3).
+     *
+     * @return number of dimensions.
+     */
+    public final int dimension() {
+        return 2 + (flags & 0x01);
+    }
+
+    /**
+     * Appends a description of the flags.
+     *
+     * @param  tree    builder of the tree to format.
+     * @param  target  the {@code flag} node where to add properties.
+     */
+    @Override
+    protected void appendFlagDescriptions(final TreeBuilder tree, final TreeTable.Node target) {
+        tree.addNode(target, "dimension", dimension());
     }
 }

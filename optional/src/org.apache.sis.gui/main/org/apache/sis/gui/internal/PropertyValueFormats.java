@@ -76,7 +76,7 @@ public class PropertyValueFormats extends CompoundFormat<Object> {
      */
     @Override
     public final void format(final Object value, final Appendable toAppendTo) {
-        final StringBuffer buffer = (StringBuffer) toAppendTo;
+        final var buffer = (StringBuffer) toAppendTo;
         final Format f = getFormat(value.getClass());
         if (f != null) {
             f.format(value, buffer, new FieldPosition(0));
@@ -115,7 +115,7 @@ public class PropertyValueFormats extends CompoundFormat<Object> {
      * @param  toAppendTo  where to append the property value.
      */
     public final void formatPair(final double first, final String separator, final double second, final StringBuffer toAppendTo) {
-        final FieldPosition pos = new FieldPosition(0);
+        final var pos = new FieldPosition(0);
         final Format f = getFormat(Number.class);
         format(f, first,  toAppendTo, pos); toAppendTo.append(separator);
         format(f, second, toAppendTo, pos);

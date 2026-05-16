@@ -102,8 +102,8 @@ public class StandardMetadataTree extends MetadataTree {
         final TreeTable tree;
         if (metadata == null) {
             tree = null;
-        } else if (metadata instanceof AbstractMetadata) {
-            tree = ((AbstractMetadata) metadata).asTreeTable();
+        } else if (metadata instanceof AbstractMetadata md) {
+            tree = md.asTreeTable();
         } else {
             // `COMPACT` is the default policy of `AbstractMetadata.asTreeTable()`.
             tree = MetadataStandard.ISO_19115.asTreeTable(metadata, Metadata.class, ValueExistencePolicy.COMPACT);
@@ -128,6 +128,7 @@ public class StandardMetadataTree extends MetadataTree {
         /**
          * Creates a new row for the given tree table.
          */
+        @SuppressWarnings("LeakingThisInConstructor")
         Row(final TreeTableView<TreeTable.Node> view) {
             super(view);
             final var md = (StandardMetadataTree) view;
@@ -178,6 +179,7 @@ public class StandardMetadataTree extends MetadataTree {
          * menu items.
          */
         @Override
+        @SuppressWarnings("UseSpecificCatch")
         public void handle(final ActionEvent event) {
             final TreeTable.Node node = getItem();
             if (node != null) {

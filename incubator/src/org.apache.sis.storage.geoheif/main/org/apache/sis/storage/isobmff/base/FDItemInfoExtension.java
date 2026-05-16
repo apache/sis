@@ -39,7 +39,7 @@ public final class FDItemInfoExtension extends Box {
     /**
      * Identifies the extension fields of version 1 with respect to version 0 of the item information entry.
      */
-    @Interpretation(Type.FOURCC)
+    @Interpretation(value=Type.FOURCC, summary=true)
     public final int extensionType;
 
     /**

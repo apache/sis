@@ -59,6 +59,7 @@ public final class UserDescription extends FullBox {
     /**
      * Human-readable name for the item, or {@code null} if none.
      */
+    @Interpretation(value=Type.NONE, summary=true)
     public final String name;
 
     /**
