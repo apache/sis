@@ -17,15 +17,16 @@
 package org.apache.sis.metadata;
 
 import java.util.List;
+import java.util.Collection;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.internal.shared.TreeTableForGUI;
 import org.apache.sis.system.Semaphores;
 
 
@@ -46,7 +47,7 @@ import org.apache.sis.system.Semaphores;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class TreeTableView implements TreeTable, Serializable {
+final class TreeTableView implements TreeTableForGUI, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -122,6 +123,15 @@ final class TreeTableView implements TreeTable, Serializable {
     @Override
     public Node getRoot() {
         return root;
+    }
+
+    /**
+     * Returns whether the given value produces by the given node is a title.
+     */
+    @Override
+    public boolean isNodeTitle(final Node node, final Object value) {
+        final Collection<Node> children = node.getChildren();
+        return (children instanceof TreeNodeChildren) && ((TreeNodeChildren) children).isNodeTitle();
     }
 
     /**

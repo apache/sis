@@ -63,7 +63,8 @@ public final class TreeTableViewTest extends TestCase {
 
     /**
      * The expected string representation of the tree created by {@link #create(ValueExistencePolicy)}
-     * with {@link ValueExistencePolicy#NON_EMPTY}.
+     * with {@link ValueExistencePolicy#COMPACT}. The citation title property is omitted, replaced by
+     * the title at the level of the {@code Citation} object.
      */
     private static final String EXPECTED =
             "Citation………………………………………………………………………………………………… Some title\n" +

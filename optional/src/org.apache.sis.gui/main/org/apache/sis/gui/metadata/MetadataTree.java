@@ -52,7 +52,7 @@ import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.storage.metadata.NodeSummary;
+import org.apache.sis.util.internal.shared.TreeTableForGUI;
 
 
 /**
@@ -150,7 +150,9 @@ check:      if (data != null) {
                 if (columns.contains(TableColumn.NAME)) {
                     for (final TableColumn<?> value : VALUES_COLUMNS) {
                         if (columns.contains(value)) {
-                            ((MetadataTree) getBean()).valueSourceColumn = value;
+                            final var tree = (MetadataTree) getBean();
+                            tree.valueSourceColumn = value;
+                            tree.formatter.setTree(data);
                             break check;
                         }
                     }
@@ -346,6 +348,11 @@ check:      if (data != null) {
             implements Callback<CellDataFeatures<TreeTable.Node, String>, ObservableValue<String>>
     {
         /**
+         * The tree table if it is an instance of {@code TreeTableForGUI}, or {@code null} otherwise.
+         */
+        private TreeTableForGUI treeIfGUI;
+
+        /**
          * The observable properties created for each tree table node.
          * We need to reuse the instances created for each node in order to keep listeners.
          *
@@ -359,6 +366,13 @@ check:      if (data != null) {
         Formatter(final Locale locale) {
             super(new StringBuilder(), locale);
             observables = new WeakHashMap<>();
+        }
+
+        /**
+         * Sets the source of the tree nodes to be formatted.
+         */
+        final void setTree(final TreeTable data) {
+            treeIfGUI = (data instanceof TreeTableForGUI c) ? c : null;
         }
 
         /**
@@ -379,7 +393,7 @@ check:      if (data != null) {
                 } else {
                     text = formatUsingStringBuilder(value);
                 }
-                if (value instanceof NodeSummary) {
+                if (treeIfGUI != null && treeIfGUI.isNodeTitle(node, value)) {
                     final var summary = new SummaryProperty(text);
                     item.expandedProperty().addListener(new WeakChangeListener<>(summary));
                     property = summary;
@@ -394,9 +408,9 @@ check:      if (data != null) {
 
     /**
      * A property with a text which is shown or hidden depending on whether the node is collapsed or expanded.
-     * This is used for content of {@link NodeSummary}. We want to hide this content when the node is expanded
-     * because it become redundant with the children, and this redundancy is distracting when the user wants
-     * to look for the child that contains this information.
+     * This is used for content of node titles. We want to hide this content when the node is expanded because
+     * it become redundant with the children, and this redundancy is distracting when the user wants to look
+     * for the child that contains this information.
      */
     private static final class SummaryProperty extends SimpleStringProperty implements ChangeListener<Boolean> {
         /**

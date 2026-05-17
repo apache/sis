@@ -27,7 +27,6 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.IdentifiedObject;
-import org.apache.sis.metadata.AbstractMetadata;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.xml.XML;
@@ -64,7 +63,7 @@ import org.apache.sis.io.wkt.WKTFormat;
  *
  * @author  Siddhesh Rane (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.7
  * @since   1.1
  */
 public class StandardMetadataTree extends MetadataTree {
@@ -102,11 +101,8 @@ public class StandardMetadataTree extends MetadataTree {
         final TreeTable tree;
         if (metadata == null) {
             tree = null;
-        } else if (metadata instanceof AbstractMetadata md) {
-            tree = md.asTreeTable();
         } else {
-            // `COMPACT` is the default policy of `AbstractMetadata.asTreeTable()`.
-            tree = MetadataStandard.ISO_19115.asTreeTable(metadata, Metadata.class, ValueExistencePolicy.COMPACT);
+            tree = MetadataStandard.ISO_19115.asTreeTable(metadata, Metadata.class, ValueExistencePolicy.TITLED);
         }
         setContent(tree);
     }

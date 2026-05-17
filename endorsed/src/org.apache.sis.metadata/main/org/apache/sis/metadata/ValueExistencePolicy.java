@@ -38,7 +38,7 @@ import org.apache.sis.xml.NilReason;
  * Those explanations can be obtained by calls to the {@link org.apache.sis.xml.NilReason#forObject(Object)} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.7
  *
  * @see MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)
  *
@@ -47,13 +47,13 @@ import org.apache.sis.xml.NilReason;
 public enum ValueExistencePolicy {
     /*
      * Implementation note: enumeration order matter.
-     * The `acceptNilValues()` method relies on it.
+     * The `acceptNilValues()` and `isTitled()` methods rely on this order.
      */
 
     /**
      * Includes all entries in the map, including those having a null value or an empty collection.
      */
-    ALL() {
+    ALL {
         /** Never skip values. */
         @Override boolean isSkipped(final Object value) {
             return false;
@@ -73,7 +73,7 @@ public enum ValueExistencePolicy {
      *
      * <p>The set of {@code NON_NULL} properties is a subset of {@link #ALL} properties.</p>
      */
-    NON_NULL() {
+    NON_NULL {
         /** Skips all null values. */
         @Override boolean isSkipped(final Object value) {
             return (value == null);
@@ -94,7 +94,7 @@ public enum ValueExistencePolicy {
      *
      * @since 0.4
      */
-    NON_NIL() {
+    NON_NIL {
         /** Skips all null or nil values. */
         @Override boolean isSkipped(final Object value) {
             return (value == null) || (value instanceof NilObject) || NilReason.forObject(value) != null;
@@ -122,34 +122,47 @@ public enum ValueExistencePolicy {
      *
      * <p>The set of {@code NON_EMPTY} properties is a subset of {@link #NON_NIL} properties.</p>
      */
-    NON_EMPTY() {
-        /** Skips all null or empty values. */
-        @Override boolean isSkipped(final Object value) {
-            return isNullOrEmpty(value);
-        }
-
-        /** Never substitute null or empty collections since they should be skipped. */
-        @Override boolean substituteByNullElement(final Collection<?> values) {
-            return false;
-        }
-    },
+    NON_EMPTY,
 
     /**
-     * Includes non-empty properties but omits {@linkplain TitleProperty title properties}.
-     * Values associated to title properties are instead associated with the parent node.
-     * This policy is relevant for metadata classes annotated with {@link TitleProperty};
-     * for all other classes, this policy is identical to {@link #NON_EMPTY}.
+     * Same as {@code NON_EMPTY}, but with the addition of titles associated to metadata objects.
+     * Metadata objects such as {@link Citation} are normally associated to no textual value.
+     * Texts are rather associated to <em>properties</em> of the metadata object.
+     * But some metadata classes have a property which can summarize the whole object.
+     * For example, for {@link org.opengis.metadata.citation.Citation} objects, this property
+     * is the {@linkplain org.opengis.metadata.citation.Citation#getTitle() citation title}.
+     *
+     * <p>The property to use as the title of a metadata object is specified by
+     * the {@link TitleProperty} annotation on the metadata implementation class
+     * (for example, {@link org.apache.sis.metadata.iso.citation.DefaultCitation}).
+     * When using this {@code TITLED} or the {@link #COMPACT} policy, the values of
+     * the properties identified by the {@link TitleProperty} annotations are copied
+     * in the root of the metadata sub-tree.
+     * See {@link #COMPACT} Javadoc for an example.</p>
+     *
+     * @see TitleProperty
+     *
+     * @since 1.7
+     */
+    TITLED,
+
+    /**
+     * Same as {@code TITLED} but omitting the properties which have been used as titles.
+     * This omission removes a redundancy, thus making the tree a little bit more compact,
+     * at the expanse of a slight departure from the metadata model. For metadata classes
+     * without {@link TitleProperty} annotation, this policy is equivalent to {@link #NON_EMPTY}.
      *
      * <h4>Example</h4>
-     * the {@link org.apache.sis.metadata.iso.citation.DefaultCitation} and
+     * The {@link org.apache.sis.metadata.iso.citation.DefaultCitation} and
      * {@link org.apache.sis.metadata.iso.citation.DefaultCitationDate} classes are annotated with
      * <code>&#64;TitleProperty(name="title")</code> and <code>&#64;TitleProperty(name="date")</code>
-     * respectively. The following table compares the trees produced by two policies:
+     * respectively. The following table compares the trees produced by three policies:
      *
      * <table class="sis">
-     *   <caption>Comparison of "non-empty" and "compact" policy on the same metadata</caption>
+     *   <caption>Comparison of policies on the same metadata</caption>
      *   <tr>
      *     <th>{@code NON_EMPTY}</th>
+     *     <th class="sep">{@code TITLED}</th>
      *     <th class="sep">{@code COMPACT}</th>
      *   </tr><tr><td>
      *     <pre class="text">
@@ -161,29 +174,33 @@ public enum ValueExistencePolicy {
      *   </td><td class="sep">
      *     <pre class="text">
      * Citation……………………… My document
+     *  ├─Title……………………… My document
+     *  └─Date………………………… 2012/01/01
+     *     ├─Date………………… 2012/01/01
+     *     └─Date type…… Creation</pre>
+     *   </td><td class="sep">
+     *     <pre class="text">
+     * Citation……………………… My document
      *  └─Date………………………… 2012/01/01
      *     └─Date type…… Creation</pre>
      *   </td></tr>
      * </table>
      *
-     * This policy is the default behavior of {@link AbstractMetadata#asTreeTable()},
-     * and consequently defines the default rendering of {@link AbstractMetadata#toString()}.
+     * This {@code COMPACT} policy is the default behavior of {@link AbstractMetadata#asTreeTable()}.
+     * Therefore, this policy defines the default rendering of {@link AbstractMetadata#toString()}.
      *
      * @see TitleProperty
      *
      * @since 0.8
      */
-    COMPACT() {
-        /** Skips all null or empty values. */
-        @Override boolean isSkipped(final Object value) {
-            return isNullOrEmpty(value);
-        }
+    COMPACT;
 
-        /** Never substitute null or empty collections since they should be skipped. */
-        @Override boolean substituteByNullElement(final Collection<?> values) {
-            return false;
-        }
-    };
+    /**
+     * Returns whether this policy add a title in metadata objects.
+     */
+    final boolean isTitled() {
+        return ordinal() >= TITLED.ordinal();
+    }
 
     /**
      * Returns whether this policy accepts nil values.
@@ -194,18 +211,29 @@ public enum ValueExistencePolicy {
 
     /**
      * Returns {@code true} if the given value shall be skipped for this policy.
+     * By default, this method implements the {@link #NON_EMPTY} policy
+     * because that policy is reused in more than one enumeration values.
      */
-    abstract boolean isSkipped(Object value);
+    boolean isSkipped(final Object value) {
+        return isNullOrEmpty(value);
+    }
 
     /**
      * Returns {@code true} if {@link TreeNode} shall substitute the given collection by
      * a singleton containing only a null element.
      *
-     * <h4>Purpose</h4>
+     * <p><b>Purpose:</b>
      * When a collection is null or empty, while not excluded according this {@code ValueExistencePolicy},
-     * we need an empty space for making the metadata property visible in {@code TreeNode}.
+     * we need an empty space for making the metadata property visible in {@code TreeNode}.</p>
+     *
+     * <p>By default, this method implements the {@link #NON_EMPTY} policy
+     * because that policy is reused in more than one enumeration values.
+     * This default never substitute null or empty collections since they should be
+     * skipped according the default implementation of {@link #isSkipped(Object)}.</p>
      */
-    abstract boolean substituteByNullElement(Collection<?> values);
+    boolean substituteByNullElement(Collection<?> values) {
+        return false;
+    }
 
     /**
      * Returns {@code true} if the specified object is null or an empty collection, array or string.

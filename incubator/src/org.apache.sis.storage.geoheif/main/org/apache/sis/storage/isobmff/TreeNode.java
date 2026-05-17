@@ -42,6 +42,7 @@ import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.util.internal.shared.PropertyFormat;
+import org.apache.sis.util.internal.shared.TreeTableForGUI;
 import org.apache.sis.storage.isobmff.base.ItemInfoEntry;
 import org.apache.sis.storage.geoheif.GeoHeifStore;
 import org.apache.sis.storage.metadata.NodeSummary;
@@ -123,7 +124,7 @@ public abstract class TreeNode {
             @Override CharSequence summary(final TreeBuilder tree, final Number value, final String text) {
                 final String name = tree.getItemName(value);
                 if (name != null) {
-                    // Do not wrap in `NodeSummary` for keeping the name always visible.
+                    // Do not wrap in `NodeSummary` because we want to keep that name always visible.
                     return name;
                 }
                 return super.summary(tree, value, text);
@@ -157,7 +158,7 @@ public abstract class TreeNode {
                     }
                     break;
                 }
-            };
+            }
             return tree.integerFormat.format(value);
         }
 
@@ -170,7 +171,7 @@ public abstract class TreeNode {
          * @return text to show as a summary of a collapsed node.
          */
         CharSequence summary(final TreeBuilder tree, final Number value, final String text) {
-            return new NodeSummary(text);
+            return NodeSummary.of(text);
         }
 
         /**
@@ -258,7 +259,7 @@ public abstract class TreeNode {
      * The value column is replaced by the {@code VALUE_AS_TEXT} column at {@link #toString()} time.
      */
     @SuppressWarnings("serial")
-    private static final class Tree extends DefaultTreeTable implements Localized {
+    private static final class Tree extends DefaultTreeTable implements TreeTableForGUI, Localized {
         /**
          * The locale to use, or {@code null} for the default.
          */
@@ -282,6 +283,14 @@ public abstract class TreeNode {
         @Override
         public final Locale getLocale() {
             return locale;
+        }
+
+        /**
+         * Returns whether the given value produces by the given node is a title.
+         */
+        @Override
+        public boolean isNodeTitle(final TreeTable.Node node, final Object value) {
+            return (value instanceof NodeSummary);
         }
 
         /**
@@ -511,10 +520,7 @@ public abstract class TreeNode {
             if (summary == null) {
                 final TreeTable.Node child = Containers.peekIfSingleton(target.getChildren());
                 if (child != null) {
-                    summary = child.getValue(TableColumn.VALUE_AS_TEXT);
-                    if (summary != null && !(summary instanceof NodeSummary)) {
-                        summary = new NodeSummary(summary.toString());
-                    }
+                    summary = NodeSummary.of(child.getValue(TableColumn.VALUE_AS_TEXT));
                 }
             }
             if (summary != null) {

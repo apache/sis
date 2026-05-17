@@ -1026,10 +1026,12 @@ class TreeNode implements Node {
     }
 
     /**
-     * Returns the children if the value policy is {@link ValueExistencePolicy#COMPACT}, or {@code null} otherwise.
+     * Returns the children if the value policy puts a title on metadata objects, or {@code null} otherwise.
+     * The callers are not interested in the collection of children, but rather in specialized methods such
+     * as {@link TreeNodeChildren#getParentTitle()}.
      */
     private TreeNodeChildren getCompactChildren() {
-        if (table.valuePolicy == ValueExistencePolicy.COMPACT) {
+        if (table.valuePolicy.isTitled()) {
             @SuppressWarnings("LocalVariableHidesMemberVariable")
             final Collection<Node> children = getChildren();
             if (children instanceof TreeNodeChildren) {

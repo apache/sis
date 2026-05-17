@@ -25,6 +25,8 @@ import org.apache.sis.util.SimpleInternationalString;
  * node is collapsed and hide this text when the node is expanded.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ *
+ * @see org.apache.sis.metadata.TitleProperty
  */
 public final class NodeSummary extends SimpleInternationalString {
     /**
@@ -37,7 +39,21 @@ public final class NodeSummary extends SimpleInternationalString {
      *
      * @param text the string for all locales.
      */
-    public NodeSummary(final String text) {
+    private NodeSummary(final String text) {
         super(text);
+    }
+
+    /**
+     * Returns the given text as a {@code NodeSummary} instance.
+     *
+     * @param  text  the text to wrap, or {@code null}.
+     * @return the wrapped text, or {@code null} if the given text was null.
+     */
+    public static NodeSummary of(final CharSequence text) {
+        if (text == null || text instanceof NodeSummary) {
+            return (NodeSummary) text;
+        } else {
+            return new NodeSummary(text.toString());
+        }
     }
 }

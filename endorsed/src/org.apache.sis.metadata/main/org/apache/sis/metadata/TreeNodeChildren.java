@@ -96,8 +96,9 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
 
     /**
      * Index of the property to write in the parent node instead of as a child.
-     * If a property has the same name as the parent property that contains it,
-     * we write its value in that parent property. For example, instead of:
+     * If a property is specified in a {@link TitleProperty} class annotation,
+     * we write the property value value in the parent node.
+     * For example, instead of:
      *
      * <pre class="text">
      *   Citation
@@ -115,6 +116,13 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>
      */
     final int titleProperty;
+
+    /**
+     * Index of the property to hide, or -1 if none.
+     * This is positive only in the {@link ValueExistencePolicy#COMPACT} case,
+     * in which case this value is the same as {@link #titleProperty}.
+     */
+    private final int hiddenProperty;
 
     /**
      * Modification count, incremented when the content of this collection is modified. This check
@@ -137,10 +145,10 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
         this.children = new TreeNode.Element[accessor.count()];
         /*
          * Search for something that looks like the main property, to be associated with the parent node
-         * instead of provided as a child. The intent is to have more compact and easy to read trees.
+         * instead of provided as a child. The intent is to make trees more compact and easier to read.
          * That property shall be a singleton for a simple value (not another metadata object).
          */
-        if (parent.table.valuePolicy == ValueExistencePolicy.COMPACT) {
+        if (parent.table.valuePolicy.isTitled()) {
             TitleProperty an = accessor.implementation.getAnnotation(TitleProperty.class);
             if (an == null) {
                 Class<?> implementation = parent.table.standard.getImplementation(accessor.type);
@@ -152,12 +160,21 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
                 final int index = accessor.indexOf(an.name(), false);
                 final Class<?> type = accessor.type(index, TypeValuePolicy.ELEMENT_TYPE);
                 if (type != null && !parent.isMetadata(type) && type == accessor.type(index, TypeValuePolicy.PROPERTY_TYPE)) {
+                    hiddenProperty = (parent.table.valuePolicy == ValueExistencePolicy.COMPACT) ? index : -1;
                     titleProperty = index;
                     return;
                 }
             }
         }
-        titleProperty = -1;
+        titleProperty  = -1;
+        hiddenProperty = -1;
+    }
+
+    /**
+     * Returns whether the value returned by this node is a title fetched from another property.
+     */
+    final boolean isNodeTitle() {
+        return titleProperty >= 0;
     }
 
     /**
@@ -178,7 +195,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
 
     /**
      * Sets the value associated to the parent node, if possible.
-     * This returned boolean tells whether the value has been written.
+     * The returned Boolean tells whether the value has been written.
      */
     final boolean setParentTitle(final Object value) {
         if (titleProperty < 0) {
@@ -306,7 +323,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
     @Override
     public int size() {
         int count = accessor.count(metadata, parent.table.valuePolicy, PropertyAccessor.COUNT_DEEP);
-        if (titleProperty >= 0 && !isSkipped(valueAt(titleProperty))) count--;
+        if (hiddenProperty >= 0 && !isSkipped(valueAt(hiddenProperty))) count--;
         return count;
     }
 
@@ -316,7 +333,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      */
     @Override
     public boolean isEmpty() {
-        if (titleProperty >= 0) return size() == 0;     // COUNT_FIRST is not reliable in this case.
+        if (hiddenProperty >= 0) return size() == 0;     // COUNT_FIRST is not reliable in this case.
         return accessor.count(metadata, parent.table.valuePolicy, PropertyAccessor.COUNT_FIRST) == 0;
     }
 
@@ -475,7 +492,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
              */
             final int count = childCount();
             while (nextInAccessor < count) {
-                if (nextInAccessor != titleProperty) {
+                if (nextInAccessor != hiddenProperty) {
                     nextValue = valueAt(nextInAccessor);
                     if (!isSkipped(nextValue)) {
                         if (isCollectionOrMap(nextInAccessor)) {
