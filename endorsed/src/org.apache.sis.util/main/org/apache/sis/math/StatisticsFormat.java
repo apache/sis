@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
 import java.text.DecimalFormat;
-import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import org.opengis.util.InternationalString;
@@ -37,7 +36,7 @@ import org.apache.sis.util.internal.shared.Numerics;
 
 
 /**
- * Formats a {@link Statistics} object.
+ * Formats a {@code Statistics} object.
  * By default, newly created {@code StatisticsFormat} instances will format statistical values
  * in a tabular format using spaces as the column separator.
  *
@@ -57,7 +56,7 @@ import org.apache.sis.util.internal.shared.Numerics;
  * </ul>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 1.0
+ * @version 1.7
  *
  * @see Statistics#toString()
  *
@@ -236,19 +235,18 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      *
      * @param  object      the object to format.
      * @param  toAppendTo  where to format the object.
-     * @param  pos         ignored in current implementation.
-     * @return the given buffer, returned for convenience.
+     * @throws IllegalArgumentException if the given object is not an instance of one of the above-cited types.
+     * @throws IOException if an error occurred while writing to the given appendable.
      */
     @Override
-    public StringBuffer format(final Object object, final StringBuffer toAppendTo, final FieldPosition pos) {
+    public void formatObject(final Object object, final Appendable toAppendTo) throws IOException {
         if (object instanceof Statistics[]) try {
             format((Statistics[]) object, toAppendTo);
-            return toAppendTo;
         } catch (IOException e) {
             // Same exception handling as in the super-class.
             throw new BackingStoreException(e);
         } else {
-            return super.format(object, toAppendTo, pos);
+            super.formatObject(object, toAppendTo);
         }
     }
 

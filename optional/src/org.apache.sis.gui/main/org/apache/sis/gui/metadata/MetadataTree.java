@@ -19,7 +19,6 @@ package org.apache.sis.gui.metadata;
 import java.util.Locale;
 import java.util.List;
 import java.util.WeakHashMap;
-import java.io.IOException;
 import javafx.util.Callback;
 import javafx.beans.DefaultProperty;
 import javafx.beans.property.ObjectProperty;
@@ -377,15 +376,8 @@ check:      if (data != null) {
                 final String text;
                 if (value instanceof IdentifiedObject) {
                     text = IdentifiedObjects.getDisplayName((IdentifiedObject) value, getLocale());
-                } else try {
-                    clear();
-                    final var buffer = (StringBuilder) out;
-                    buffer.setLength(0);
-                    appendValue(value);
-                    flush();
-                    text = buffer.toString();
-                } catch (IOException e) {               // Should never happen because we append in a StringBuilder.
-                    throw new AssertionError(e);
+                } else {
+                    text = formatUsingStringBuilder(value);
                 }
                 if (value instanceof NodeSummary) {
                     final var summary = new SummaryProperty(text);

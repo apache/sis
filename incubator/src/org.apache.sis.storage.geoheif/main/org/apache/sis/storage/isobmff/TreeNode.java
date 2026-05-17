@@ -30,7 +30,6 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import org.apache.sis.math.NumberType;
 import org.apache.sis.util.Localized;
@@ -421,25 +420,6 @@ public abstract class TreeNode {
         }
 
         /**
-         * Formats the given value.
-         *
-         * @param  value  the value to format.
-         * @return the formatted value.
-         */
-        private String format(final Object value) {
-            try {
-                clear();
-                final var buffer = (StringBuilder) out;
-                buffer.setLength(0);
-                appendValue(value);
-                flush();
-                return buffer.toString();
-            } catch (IOException e) {               // Should never happen because we append in a StringBuilder.
-                throw new AssertionError(e);
-            }
-        }
-
-        /**
          * Appends public fields as child nodes of the given root, ignoring null values and empty arrays.
          * This method may invoke itself recursively if some values are other {@code TreeNode} instances.
          *
@@ -489,7 +469,7 @@ public abstract class TreeNode {
                                     values[i] = type.format(this, n);
                                 }
                             } else {
-                                values[i] = format(element);
+                                values[i] = formatUsingStringBuilder(element);
                             }
                         }
                     }
@@ -511,7 +491,7 @@ public abstract class TreeNode {
                         if (type != null) {
                             text = type.format(this, (Number) value);
                         } else {
-                            text = format(value);
+                            text = formatUsingStringBuilder(value);
                         }
                         if (text != null) {
                             addNode(target, field.getName(), value, text);
@@ -551,7 +531,7 @@ public abstract class TreeNode {
          */
         public final void addNode(final TreeTable.Node target, final String name, final Object value) {
             if (value != null) {
-                addNode(target, name, value, format(value));
+                addNode(target, name, value, formatUsingStringBuilder(value));
             }
         }
 

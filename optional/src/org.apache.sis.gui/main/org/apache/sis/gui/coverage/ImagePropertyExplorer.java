@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.function.Predicate;
 import java.text.NumberFormat;
-import java.io.IOException;
 import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
 import javafx.beans.property.BooleanProperty;
@@ -716,16 +715,7 @@ public class ImagePropertyExplorer extends Widget {
          */
         @Override protected void updateItem(final Object value, final boolean empty) {
             super.updateItem(value, empty);
-            String text = null;
-            if (!empty) try {
-                buffer.setLength(0);
-                format.appendValue(value);
-                format.flush();
-                text = buffer.toString();
-            } catch (IOException e) {           // Should never happen since we write in a StringBuilder.
-                text = e.toString();
-            }
-            setText(text);
+            setText(empty ? null : format.formatUsingStringBuilder(value));
         }
     }
 

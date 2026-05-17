@@ -31,6 +31,7 @@ import java.text.Format;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
 import org.apache.sis.measure.UnitFormat;
@@ -640,6 +641,12 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         private final Format[] formats;
 
         /**
+         * The format for the column in process of being written. This is a format to use for the column as a whole.
+         * This field is updated for every new column to write. May be {@code null} if the format is unspecified.
+         */
+        private transient Format columnFormat;
+
+        /**
          * The node values to format.
          */
         private final Object[] values;
@@ -690,6 +697,26 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         @Override
         public Locale getLocale() {
             return TreeTableFormat.this.getLocale();
+        }
+
+        /**
+         * Appends a textual representation of the given value.
+         *
+         * @param  value  the value to format (may be {@code null}).
+         * @throws IOException if an error occurred while writing the value.
+         */
+        @Override
+        public final void appendValue(final Object value) throws IOException {
+            if (value != null && columnFormat != null) {
+                if (columnFormat instanceof CompoundFormat<?>) {
+                    final var format = (CompoundFormat<?>) columnFormat;
+                    format.formatObject(value, this);
+                } else {
+                    append(columnFormat.format(value));
+                }
+            } else {
+                super.appendValue(value);
+            }
         }
 
         /**
