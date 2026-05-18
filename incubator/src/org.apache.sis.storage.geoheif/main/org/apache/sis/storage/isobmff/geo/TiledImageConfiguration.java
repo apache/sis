@@ -157,8 +157,8 @@ public final class TiledImageConfiguration extends FullBox {
      */
     @Override
     protected void appendFlagDescriptions(final TreeBuilder tree, final TreeTable.Node target) {
-        tree.addNode(target, "offsetFieldLength", offsetFieldLength());
-        tree.addNode(target, "sizeFieldLength",   sizeFieldLength());
-        tree.addNode(target, "sequential",        sequential());
+        tree.addNode(target, "offset field length", offsetFieldLength());
+        tree.addNode(target, "size field length",   sizeFieldLength());
+        tree.addNode(target, "sequential",          sequential());
     }
 }

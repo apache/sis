@@ -26,7 +26,7 @@ import org.apache.sis.util.collection.TreeTable;
  */
 public interface TreeTableForGUI extends TreeTable {
     /**
-     * Returns whether the given value produces by the given node is a title.
+     * Returns whether the given value produced by the given node is a title.
      * Title are a short description of the node, typically copied from one of the children.
      * For example for the code of a {@code Citation} object, this is the {@code title} property.
      *

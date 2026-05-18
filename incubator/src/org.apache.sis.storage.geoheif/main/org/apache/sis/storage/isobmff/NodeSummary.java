@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.metadata;
+package org.apache.sis.storage.isobmff;
 
 import org.apache.sis.util.SimpleInternationalString;
 
@@ -28,7 +28,7 @@ import org.apache.sis.util.SimpleInternationalString;
  *
  * @see org.apache.sis.metadata.TitleProperty
  */
-public final class NodeSummary extends SimpleInternationalString {
+final class NodeSummary extends SimpleInternationalString {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -39,7 +39,7 @@ public final class NodeSummary extends SimpleInternationalString {
      *
      * @param text the string for all locales.
      */
-    private NodeSummary(final String text) {
+    NodeSummary(final String text) {
         super(text);
     }
 
@@ -49,7 +49,7 @@ public final class NodeSummary extends SimpleInternationalString {
      * @param  text  the text to wrap, or {@code null}.
      * @return the wrapped text, or {@code null} if the given text was null.
      */
-    public static NodeSummary of(final CharSequence text) {
+    static NodeSummary of(final CharSequence text) {
         if (text == null || text instanceof NodeSummary) {
             return (NodeSummary) text;
         } else {

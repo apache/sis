@@ -126,7 +126,7 @@ final class TreeTableView implements TreeTableForGUI, Serializable {
     }
 
     /**
-     * Returns whether the given value produces by the given node is a title.
+     * Returns whether the given value produced by the given node is a title.
      */
     @Override
     public boolean isNodeTitle(final Node node, final Object value) {

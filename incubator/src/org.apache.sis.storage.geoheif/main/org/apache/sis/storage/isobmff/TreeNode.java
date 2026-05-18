@@ -45,7 +45,6 @@ import org.apache.sis.util.internal.shared.PropertyFormat;
 import org.apache.sis.util.internal.shared.TreeTableForGUI;
 import org.apache.sis.storage.isobmff.base.ItemInfoEntry;
 import org.apache.sis.storage.geoheif.GeoHeifStore;
-import org.apache.sis.storage.metadata.NodeSummary;
 
 
 /**
@@ -113,21 +112,7 @@ public abstract class TreeNode {
          */
         IDENTIFIER {
             @Override String format(final TreeBuilder tree, final Number value) {
-                 return Long.toUnsignedString(switch (value) {
-                     case Byte    i -> Byte   .toUnsignedLong(i);
-                     case Short   i -> Short  .toUnsignedLong(i);
-                     case Integer i -> Integer.toUnsignedLong(i);
-                     default        -> value.longValue();
-                 });
-            }
-
-            @Override CharSequence summary(final TreeBuilder tree, final Number value, final String text) {
-                final String name = tree.getItemName(value);
-                if (name != null) {
-                    // Do not wrap in `NodeSummary` because we want to keep that name always visible.
-                    return name;
-                }
-                return super.summary(tree, value, text);
+                return formatUnsigned(value);
             }
         },
 
@@ -163,18 +148,6 @@ public abstract class TreeNode {
         }
 
         /**
-         * Returns the text to show as the summary of a node when the node is collapsed.
-         *
-         * @param  tree   builder of the tree to format.
-         * @param  value  the integer value which has been formatted.
-         * @param  text   the {@link #format(TreeBuilder, Number)} result.
-         * @return text to show as a summary of a collapsed node.
-         */
-        CharSequence summary(final TreeBuilder tree, final Number value, final String text) {
-            return NodeSummary.of(text);
-        }
-
-        /**
          * Returns the value of the given annotation, or {@code null} if none.
          *
          * @param  itpr  the annotation, or {@code null}.
@@ -204,6 +177,21 @@ public abstract class TreeNode {
             (byte) (value >>>  8),
             (byte) (value)
         }, StandardCharsets.ISO_8859_1).trim();
+    }
+
+    /**
+     * Returns the string representation of the given number interpreted as an unsigned integer.
+     *
+     * @param  value  the value to format as an unsigned integer.
+     * @return the formatted value.
+     */
+    static String formatUnsigned(final Number value) {
+        return Long.toUnsignedString(switch (value) {
+            case Byte    i -> Byte   .toUnsignedLong(i);
+            case Short   i -> Short  .toUnsignedLong(i);
+            case Integer i -> Integer.toUnsignedLong(i);
+            default        -> value.longValue();
+        });
     }
 
     /**
@@ -286,7 +274,7 @@ public abstract class TreeNode {
         }
 
         /**
-         * Returns whether the given value produces by the given node is a title.
+         * Returns whether the given value produced by the given node is a title.
          */
         @Override
         public boolean isNodeTitle(final TreeTable.Node node, final Object value) {
@@ -453,9 +441,7 @@ public abstract class TreeNode {
                 if (value instanceof TreeNode[]) {
                     for (final TreeNode child : (TreeNode[]) value) {
                         if (child != null) {
-                            final TreeTable.Node node = target.newChild();
-                            node.setValue(TableColumn.NAME, child.typeName());
-                            appendProperties(child, node);
+                            appendProperties(child, addNode(target, child.typeName(), child, null));
                         }
                     }
                 } else if (value.getClass().isArray()) {
@@ -465,7 +451,13 @@ public abstract class TreeNode {
                      * the names of the identified items.
                      */
                     final Type type = Type.of(field.getAnnotation(Interpretation.class));
-                    final TreeTable.Node addTo = (type == Type.IDENTIFIER) ? addNode(target, field, value) : null;
+                    final TreeTable.Node addTo;
+                    if (type == Type.IDENTIFIER) {
+                        addTo = addNode(target, camelCaseToWords(field), value, null);
+                        // No `VALUE_AS_TEXT` because this is an array that we will develop below.
+                    } else {
+                        addTo = null;
+                    }
                     final var values = new String[Array.getLength(value)];
                     for (int i=0; i < values.length; i++) {
                         final Object element = Array.get(value, i);
@@ -473,7 +465,7 @@ public abstract class TreeNode {
                             if (type != null) {
                                 final var n = (Number) element;
                                 if (addTo != null) {
-                                    addNode(addTo, Type.UNSIGNED.format(this, n), n, getItemName(n));
+                                    addNode(addTo, formatUnsigned(n), n, getItemName(n));
                                 } else {
                                     values[i] = type.format(this, n);
                                 }
@@ -483,16 +475,16 @@ public abstract class TreeNode {
                         }
                     }
                     if (addTo == null) {
-                        addNode(target, field.getName(), value, String.join(", ", values));
+                        addNode(target, camelCaseToWords(field), value, String.join(", ", values));
                     }
                 } else {
                     /*
-                     * Case of a single element.
+                     * Case where the property is a single element (not an array).
                      * Identifier codes will be converted to their four-character code (4CC) representations.
                      * The fields to convert to 4CC are identified by the `@Interpretation` annotation.
                      */
                     if (value instanceof TreeNode addTo) {
-                        appendProperties(addTo, addNode(target, field, value));
+                        appendProperties(addTo, addNode(target, camelCaseToWords(field), addTo, null));
                     } else {
                         final Interpretation itpr = field.getAnnotation(Interpretation.class);
                         final Type type = Type.of(itpr);
@@ -503,10 +495,20 @@ public abstract class TreeNode {
                             text = formatUsingStringBuilder(value);
                         }
                         if (text != null) {
-                            addNode(target, field.getName(), value, text);
+                            addNode(target, camelCaseToWords(field), value, text);
                         }
+                        /*
+                         * If the field is annotated with `Interpretation(…, summary=true)`,
+                         * take the field value is a summary of the whole node.
+                         */
                         if (summary == null && withSummary && itpr != null && itpr.summary()) {
-                            summary = (type != null) ? type.summary(this, (Number) value, text) : text;
+                            if (type == Type.IDENTIFIER) {
+                                String name = getItemName((Number) value);
+                                if (name != null) summary = name;
+                                // Do not wrap in `NodeSummary` because we want that name always visible.
+                            } else if (text != null) {
+                                summary = new NodeSummary(text);
+                            }
                         }
                     }
                 }
@@ -529,11 +531,11 @@ public abstract class TreeNode {
         }
 
         /**
-         * Convenience method for adding a child node.
+         * Convenience method for adding a child node if the given value is non-null.
          *
-         * @param target  where to add the node.
-         * @param name    the programmatic (camel-case) name of the node.
-         * @param value   value of the node, or {@code null} if none.
+         * @param  target  where to add the node.
+         * @param  name    name of the node or property to add.
+         * @param  value   value of the node, or {@code null} for skipping the node.
          */
         public final void addNode(final TreeTable.Node target, final String name, final Object value) {
             if (value != null) {
@@ -545,33 +547,27 @@ public abstract class TreeNode {
          * Convenience method for adding a child node.
          *
          * @param  target       where to add the node.
-         * @param  name         the programmatic (camel-case) name of the node.
-         * @param  value        value of the node. Should not be null.
-         * @param  valueAsText  string representation of the value.
+         * @param  name         name of the node or property to add.
+         * @param  value        value of the node, or {@code null} for a node without value.
+         * @param  valueAsText  string representation of the value, or {@code null} if none.
          * @return the node which has been added.
          */
         public static TreeTable.Node addNode(final TreeTable.Node target, String name, Object value, String valueAsText) {
             final TreeTable.Node child = target.newChild();
-            child.setValue(TableColumn.NAME,  CharSequences.camelCaseToWords(name, true).toString());
+            child.setValue(TableColumn.NAME, name);
             child.setValue(TableColumn.VALUE, value);
             child.setValue(TableColumn.VALUE_AS_TEXT, valueAsText);
             return child;
         }
 
         /**
-         * Adds a node for a field. The {@code NAME} and {@code VALUE} columns are set to values
-         * derived from the given arguments. The {@code VALUE_AS_TEXT} column is left {@code null}.
+         * Returns the name of the given field with camel-case converted to a sentence of words.
          *
-         * @param  target  where to add the node.
-         * @param  field   field of the property to represent as a node.
-         * @param  value   value of the property to represent as a node.
-         * @return the node which has been added.
+         * @param  field  the field for which to get the name.
+         * @return field name as a sequence of words.
          */
-        private static TreeTable.Node addNode(final TreeTable.Node target, final Field field, final Object value) {
-            final TreeTable.Node child = target.newChild();
-            child.setValue(TableColumn.NAME, CharSequences.camelCaseToWords(field.getName(), false).toString());
-            child.setValue(TableColumn.VALUE, value);
-            return child;
+        private static String camelCaseToWords(final Field field) {
+            return CharSequences.camelCaseToWords(field.getName(), false).toString();
         }
     }
 

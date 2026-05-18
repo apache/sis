@@ -74,6 +74,6 @@ public abstract class Extension extends Box {
     @Override
     protected void prependTreeNodes(final TreeBuilder tree, final TreeTable.Node target) {
         super.prependTreeNodes(tree, target);
-        tree.addNode(target, "extendedType", extendedType());
+        tree.addNode(target, "extended type", extendedType());
     }
 }
