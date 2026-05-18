@@ -33,7 +33,6 @@ import org.apache.sis.storage.MemoryGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.NoSuchDataException;
 import org.apache.sis.storage.UnsupportedQueryException;
-import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -131,6 +130,12 @@ final class ImageTileMatrix implements TileMatrix {
      * capacity of 32-bits integers.
      */
     private RenderedImage image;
+
+    /**
+     * Extent of {@link #image} in the {@link #coverage} {@link TileMatrix#getTilingScheme() tiling scheme}.
+     * Id {@link #image} is null, this should also be null. If image is not null, this must not be null.
+     */
+    private GridExtent imageTilingExtent;
 
     /**
      * The grid coverage processor to use when tiles use a subset of the bands.
@@ -350,11 +355,60 @@ final class ImageTileMatrix implements TileMatrix {
         if (indiceRanges == null) {
             indiceRanges = tilingScheme.getExtent();
         }
+
+        final var coverage = coverage();
+        for (int dim = 0 ; dim < indiceRanges.getDimension(); dim++) {
+            if (dim != coverage.xDimension && dim != coverage.yDimension && dim > 1) {
+                return slice(indiceRanges, coverage.xDimension, coverage.yDimension, parallel);
+            }
+        }
+
+        assert indiceRanges.getDegreesOfFreedom() <= 2 : "This code should only be reached if requested extent is 2D";
         try {
             return StreamSupport.stream(iterator(indiceRanges).iterator(), parallel);
         } catch (ArithmeticException e) {
             throw new UnsupportedQueryException(e);
         }
+    }
+
+    /**
+     * Split given extent in a lazy sequence of 2D extents. For each 2D slice,
+     * we query all tiles contained in user requested area.
+     *
+     * @param indiceRanges N-D tile extent to slice and to load tiles for.
+     * @param xDim X dimension of the coverage, first axis of the 2D part to preserve in slices.
+     * @param yDim Y dimension of the coverage, second axis of the 2D part to preserve in slices.
+     * @param parallel True if we want a parallel stream returned, false otherwise.
+     * @return A lazy sequence of all tiles contained in the given tile range.
+     */
+    private Stream<Tile> slice(GridExtent indiceRanges, int xDim, int yDim, boolean parallel) {
+        final var slicingStart = indiceRanges.getLow().getCoordinateValues();
+        final var slicingEnd   = indiceRanges.getHigh().getCoordinateValues();
+        final long xMax = slicingEnd[xDim];
+        final long yMax = slicingEnd[yDim];
+        slicingEnd[xDim] = slicingStart[xDim];
+        slicingEnd[yDim] = slicingStart[yDim];
+
+        final var slicingExtent = new GridExtent(null, slicingStart, slicingEnd, true);
+        // NOTE: not sure here, but depending on stream fork policy,
+        // allowing parallel extents ould hurt performance,
+        // because it potentially allows to load tiles from different slices in parallel.
+        // As this class image caching strategy is based on 2D extents,
+        // we instead push parallelism down on tile loading level directly (see flatMap block).
+        return slicingExtent.latticePointStream(false)
+                .map(slicePoint -> {
+                    final var sliceHigh = Arrays.copyOf(slicePoint, slicePoint.length);
+                    sliceHigh[xDim] = xMax;
+                    sliceHigh[yDim] = yMax;
+                    return new GridExtent(null, slicePoint, sliceHigh, true);
+                })
+                .flatMap(slice -> {
+                    try {
+                        return StreamSupport.stream(iterator(slice).iterator(), parallel);
+                    } catch (DataStoreException e) {
+                        throw new BackingStoreException("Cannot load tiles for 2D extent", e);
+                    }
+                });
     }
 
     /**
@@ -368,26 +422,12 @@ final class ImageTileMatrix implements TileMatrix {
     private synchronized IterationDomain<Tile> iterator(final GridExtent indiceRanges) throws DataStoreException {
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final TiledGridCoverage coverage = coverage();
-        boolean retry = false;
-        do {    // This loop will be executed only 1 or 2 times.
-            if (image != null) {
-                final long xmin, ymin, xmax, ymax;
-                xmin = Math.subtractExact(indiceRanges.getLow (coverage.xDimension), imageToTileX);
-                xmax = Math.subtractExact(indiceRanges.getHigh(coverage.xDimension), imageToTileX);
-                final long x0 = image.getMinTileX();
-                if (xmin >= x0 && xmax < x0 + image.getNumXTiles()) {
-                    ymin = Math.subtractExact(indiceRanges.getLow (coverage.yDimension), imageToTileY);
-                    ymax = Math.subtractExact(indiceRanges.getHigh(coverage.yDimension), imageToTileY);
-                    final long y0 = image.getMinTileY();
-                    if (ymin >= y0 && ymax < y0 + image.getNumYTiles()) {
-                        return new Iterator(Math.toIntExact(xmin),
-                                            Math.toIntExact(ymin),
-                                            Math.toIntExact(xmax),
-                                            Math.toIntExact(ymax),
-                                            indiceRanges.getLow().getCoordinateValues());
-                    }
-                }
-            }
+        assert Arrays.equals(indiceRanges.getSubspaceDimensions(2), new int[] {coverage.xDimension, coverage.yDimension})
+                : "Iterator can only return tiles for a 2D slice over coverage XY dimensions.";
+
+        // Returns currently cached image if it
+        final var indiceRangesLow = indiceRanges.getLow().getCoordinateValues();
+        if (image == null || !imageTilingExtent.contains(indiceRanges)) {
             /*
              * Gets the bounds of the image to read. If deferred reading is supported,
              * we can expand to the bounds of the whole coverage in order to perform a
@@ -400,7 +440,7 @@ final class ImageTileMatrix implements TileMatrix {
             for (int i=0; i<dimension; i++) {
                 final long limit = Math.incrementExact(extent.getHigh(i));
                 high[i] = Math.min(limit, tileToCell(Math.incrementExact(indiceRanges.getHigh(i)), i));
-                low [i] = Math.max(extent.getLow(i), tileToCell(indiceRanges.getLow(i), i));
+                low [i] = Math.max(extent.getLow(i), tileToCell(indiceRangesLow[i], i));
                 final long span = high[i] - low[i];
                 if (span < 0 || span > Integer.MAX_VALUE) {
                     throw new ArithmeticException(resource.errors().getString(Errors.Keys.IntegerOverflow_1, Integer.SIZE));
@@ -413,11 +453,24 @@ final class ImageTileMatrix implements TileMatrix {
                     high[i] += after;
                 }
             }
-            image = coverage.render(extent.reshape(low, high, false));
+
+
+            final var imagePixelExtent = extent.reshape(low, high, false);
+            imageTilingExtent = imagePixelExtent
+                    .translate(Arrays.stream(tileToCell).map(v -> -v).toArray())
+                    .subsample(Arrays.stream(tileSize).mapToLong(v -> v).toArray());
+            image = coverage.render(imagePixelExtent);
             imageToTileX = low[coverage.xDimension];
             imageToTileY = low[coverage.yDimension];
-        } while ((retry = !retry) == true);
-        throw new InternalDataStoreException();     // Should never happen.
+        }
+
+        return new Iterator(
+                Math.toIntExact(Math.subtractExact(indiceRangesLow[coverage.xDimension], imageToTileX)),
+                Math.toIntExact(Math.subtractExact(indiceRangesLow[coverage.yDimension], imageToTileY)),
+                Math.toIntExact(Math.subtractExact(indiceRanges.getHigh(coverage.xDimension), imageToTileX)),
+                Math.toIntExact(Math.subtractExact(indiceRanges.getHigh(coverage.yDimension), imageToTileY)),
+                indiceRangesLow
+        );
     }
 
     /**
