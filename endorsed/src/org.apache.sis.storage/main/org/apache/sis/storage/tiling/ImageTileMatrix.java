@@ -383,7 +383,8 @@ final class ImageTileMatrix implements TileMatrix {
                         return new Iterator(Math.toIntExact(xmin),
                                             Math.toIntExact(ymin),
                                             Math.toIntExact(xmax),
-                                            Math.toIntExact(ymax));
+                                            Math.toIntExact(ymax),
+                                            indiceRanges.getLow().getCoordinateValues());
                     }
                 }
             }
@@ -449,18 +450,41 @@ final class ImageTileMatrix implements TileMatrix {
         private final long offsetX, offsetY;
 
         /**
+         * Dimension indices for the X and Y axes in the tile matrix coordinate system.
+         */
+        private final int xDim, yDim;
+
+        /**
+         * Base template of tile indices.
+         * Used when returning {@link Tile#getIndices() tile indices}.
+         * Tiles will use these coordinates, replacing {link #xDim X} and {link #yDim Y} dimensions.
+         */
+        private final long[] baseIndices;
+
+        /**
          * Creates a new request for tile iterators.
          *
-         * @param xmin  first column index of tiles, inclusive.
-         * @param xmin  first row index of tiles, inclusive.
-         * @param xmax  last column index of tiles, inclusive.
-         * @param ymax  last row index of tiles, inclusive.
+         * @param xmin        first column index of tiles, inclusive.
+         * @param ymin        first row index of tiles, inclusive.
+         * @param xmax        last column index of tiles, inclusive.
+         * @param ymax        last row index of tiles, inclusive.
+         * @param baseIndices tile coordinate template.
+         *                    It can be any valid coordinate of the tiles managed by this iterator.
+         *                    It serves as base to build correct tile coordinate for each returned tile.
+         *                    Each tile will clone this array and replace its X and Y indices with its own.
+         *                    Therefore, it is important that it represent properly the "slice" of extra-dimensions
+         *                    this iterator operates on.
          */
-        Iterator(final int xmin, final int ymin, final int xmax, final int ymax) {
+        Iterator(final int xmin, final int ymin, final int xmax, final int ymax,
+                 final long[] baseIndices)
+        {
             super(xmin, ymin, xmax, ymax);
             tiles   = image;
             offsetX = imageToTileX;
             offsetY = imageToTileY;
+            xDim    = coverage.xDimension;
+            yDim    = coverage.yDimension;
+            this.baseIndices = baseIndices;
         }
 
         /**
@@ -481,7 +505,10 @@ final class ImageTileMatrix implements TileMatrix {
 
                 /** Returns the indices of this tile in the {@code TileMatrix}. */
                 @Override public long[] getIndices() {
-                    return new long[] {offsetX + tileX, offsetY + tileY};
+                    final long[] indices = baseIndices.clone();
+                    indices[xDim] = offsetX + tileX;
+                    indices[yDim] = offsetY + tileY;
+                    return indices;
                 }
 
                 /** Returns information about whether the tile failed to load. */
