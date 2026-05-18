@@ -21,8 +21,8 @@ import java.awt.image.ColorModel;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import org.apache.sis.storage.GridCoverageResource;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.util.GenericName;
@@ -44,7 +44,11 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
 
 
 /**
- * Minimal test case for image tile matrices
+ * Verify behavior of {@link ImageTileMatrix} in a 3D space.
+ * </br>
+ * This test creates a {@link MockTiledResource coverage mockup} that contains two 2D slices.
+ * Each slice contains {@link #NUM_COLS} tile columns and {@link #NUM_ROWS} tile rows.
+ * Each tile is a single band image whose diagonal is filled with its tile indices.
  *
  * @author  Alexis Manin (Geomatys)
  */
@@ -61,38 +65,130 @@ public final class ImageTileMatrixTest extends TestCase {
     /**
      * Test that a tile from a 3D dataset can return its associated resource.
      * This is an anti-regression test because of a bug encountered while fetching tile resource.
-     *
-     * @throws DataStoreException if a data store error occurred.
      */
     @Test
-    public void testGetResourceFromTile3D() throws DataStoreException {
+    public void testGetIndividualTiles3D() throws DataStoreException {
+        final var matrix = get3DMockupTileMatrix();
+        final var tilingExtent = matrix.getTilingScheme().getExtent();
+        assertEquals(3, tilingExtent.getDimension());
+        tilingExtent.latticePointStream(true)
+                .map(tileCoord -> loadTile(tileCoord, matrix))
+                .forEach(ImageTileMatrixTest::checkTileContent);
+    }
+
+    /**
+     * Check another path to obtain and validate tiles: get a batch of (all in fact) tiles using {@link TileMatrix#getTiles(GridExtent, boolean)}
+     */
+    @Test
+    public void testGetTileBatch3D() throws DataStoreException {
+        final var matrix = get3DMockupTileMatrix();
+        matrix.getTiles(null, true)
+              .forEach(ImageTileMatrixTest::checkTileContent);
+    }
+
+    /**
+     * Check tile content by querying a full rendering on each slice in the 3D coverage mockup.
+     * The aim is to ensure that coverage rendering properly returns a tiled image,
+     * and that each tile in the rendered image gives back its associated Tile content.
+     * Said otherwise, it checks that there's no tile mismatch or mixup when using ImageIO accessor.
+     */
+    @Test
+    public void testGetTilesViaRender() throws DataStoreException {
+        final var resource = new MockTiledResource();
+        final var coverage = resource.read((GridGeometry) null);
+        final var overallExtent = coverage.getGridGeometry().getExtent();
+        overallExtent.resize(1, 1).latticePointStream(true)
+                .forEach(temporalSlice -> {
+                    var sliceHigh = temporalSlice.clone();
+                    sliceHigh[0] = overallExtent.getHigh(0);
+                    sliceHigh[1] = overallExtent.getHigh(1);
+                    final var renderExtent = new GridExtent(null, temporalSlice, sliceHigh, true);
+
+                    final var image = coverage.render(renderExtent);
+                    for (int col = 0; col < NUM_COLS; col++) {
+                        for (int row = 0; row < NUM_ROWS; row++) {
+                            final var tileIndices = temporalSlice.clone();
+                            tileIndices[0] = col;
+                            tileIndices[1] = row;
+                            final var tileRaster = image.getTile(col, row);
+                            checkTileOrigin(tileRaster, tileIndices);
+                            checkTileRaster(tileRaster, tileIndices);
+                        }
+                    }
+                });
+    }
+
+    private void checkTileOrigin(Raster tileRaster, long[] tileIndices) {
+        final var expectedTileOrigin = new int[] {
+                Math.toIntExact(Math.multiplyExact(tileIndices[0], TILE_WIDTH)),
+                Math.toIntExact(Math.multiplyExact(tileIndices[1], TILE_HEIGHT))
+        };
+        final var actualTileOrigin = new int[] { tileRaster.getMinX(), tileRaster.getMinY() };
+        assertArrayEquals(expectedTileOrigin, actualTileOrigin,
+                () -> String.format(
+                        "Tile (%s): raster origin does not match rendering location. Expected: (%s) but was (%s)",
+                        Arrays.toString(tileIndices), Arrays.toString(expectedTileOrigin), Arrays.toString(actualTileOrigin)
+                )
+        );
+    }
+
+    private TileMatrix get3DMockupTileMatrix() throws DataStoreException {
         final var resource = new MockTiledResource();
         final var tileMatrixSets = resource.getTileMatrixSets();
         assertFalse(tileMatrixSets.isEmpty());
-        final TileMatrixSet tms = tileMatrixSets.iterator().next();
-        assertFalse(tms.getTileMatrices().isEmpty());
-        final TileMatrix matrix = tms.getTileMatrices().values().iterator().next();
+        final var tms = tileMatrixSets.iterator().next();
+        final var tileMatrixIterator = tms.getTileMatrices().values().iterator();
+        assertTrue(tileMatrixIterator.hasNext());
+        final var matrix = tileMatrixIterator.next();
+        assertFalse(tileMatrixIterator.hasNext());
+        return matrix;
+    }
 
-        final GridExtent tilingExtent = matrix.getTilingScheme().getExtent();
-        assertEquals(3, tilingExtent.getDimension());
-        final long[] indices = new long[] {
-            tilingExtent.getLow(0),
-            tilingExtent.getLow(1),
-            tilingExtent.getLow(2)
-        };
-
-        final Optional<Tile> optTile = matrix.getTile(indices);
-        assertTrue(optTile.isPresent());
-        final var tile = optTile.get();
-        assertEquals(TileStatus.EXISTS, tile.getStatus());
-        final var tResource = tile.getResource();
-        assertNotNull(tResource);
-        if (!(tResource instanceof GridCoverageResource tileGridResource)) {
-            throw new AssertionError("Tile resource is not a grid resource");
+    /**
+     * Load a specific tile from the given tile matrix.
+     * This method expects that tile content will respect this test
+     */
+    private Tile loadTile(long[] requestedTileIndices, TileMatrix matrix) {
+        try {
+            final var optTile = matrix.getTile(requestedTileIndices);
+            assertTrue(optTile.isPresent());
+            final var tile = optTile.get();
+            final var tIndices = tile.getIndices();
+            assertArrayEquals(requestedTileIndices, tIndices, "Tile indices differ from request");
+            return tile;
+        } catch (DataStoreException e) {
+            throw new AssertionError("Extraction of tile ("+ Arrays.toString(requestedTileIndices)+") failed", e);
         }
-        var tileImage = tileGridResource.read(null).render(null);
-        assertEquals(TILE_WIDTH, tileImage.getWidth());
-        assertEquals(TILE_HEIGHT, tileImage.getHeight());
+    }
+
+    private static void checkTileContent(Tile tile) {
+        final var tileIndices = tile.getIndices();
+        try {
+            assertEquals(TileStatus.EXISTS, tile.getStatus());
+            final var tResource = tile.getResource();
+            assertNotNull(tResource);
+            if (!(tResource instanceof GridCoverageResource tileGridResource)) {
+                throw new AssertionError("Tile resource is not a grid resource");
+            }
+            final var tileImage = tileGridResource.read(null).render(null);
+            assertEquals(TILE_WIDTH, tileImage.getWidth());
+            assertEquals(TILE_HEIGHT, tileImage.getHeight());
+
+            assertEquals(1, tileImage.getNumXTiles() * tileImage.getNumYTiles(),
+                    "Tile image should contain only a single raster tile.");
+            final var tileRaster = tileImage.getTile(tileImage.getMinTileX(), tileImage.getMinTileY());
+            checkTileRaster(tileRaster, tileIndices);
+        } catch (DataStoreException e) {
+            fail("Validation of tile ("+ Arrays.toString(tileIndices)+") failed", e);
+        }
+    }
+
+    private static void checkTileRaster(Raster tileRaster, long[] tileIndices) {
+        for (int i=0 ; i < tileIndices.length ; i++) {
+            final var index = i;
+            assertEquals(tileIndices[i], tileRaster.getSample(tileRaster.getMinX() + i, tileRaster.getMinY() + i, 0),
+                    () -> String.format("Tile sample at coordinate (%1$d, %1$d) should be the tile coordinate at dimension %1$d", index));
+        }
     }
 
     /**
@@ -180,6 +276,10 @@ public final class ImageTileMatrixTest extends TestCase {
             final Raster[] tiles = new Raster[iterator.tileCountInQuery];
             do {
                 final WritableRaster raster = iterator.createRaster();
+                final var tileCoords = iterator.getTileCoordinatesInResource();
+                for (int i = 0; i < tileCoords.length; i++) {
+                    raster.setSample(raster.getMinX() + i, raster.getMinY() + i, 0, tileCoords[i]);
+                }
                 tiles[iterator.getTileIndexInResultArray()] = raster;
             } while (iterator.next());
             return tiles;
