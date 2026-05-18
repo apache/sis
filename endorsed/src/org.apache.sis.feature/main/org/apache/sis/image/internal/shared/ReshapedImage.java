@@ -128,7 +128,7 @@ public final class ReshapedImage extends PlanarImage {
                 0, 0,
                 tileWidth,
                 tileHeight,
-                0, 0);
+                tileX, tileY);
         return image.isIdentity() ? image.source : image;
     }
 
@@ -298,6 +298,14 @@ public final class ReshapedImage extends PlanarImage {
      */
     @Override
     public Raster getTile(final int tileX, final int tileY) {
+        // Ensure reshaped image strictly respect its boundaries and does not access source tiles outside its domain.
+        if (!(
+                getMinTileX() <= tileX && tileX < getMinTileX() + getNumXTiles()
+                &&
+                getMinTileY() <= tileY && tileY < getMinTileY() + getNumYTiles()
+        )) {
+            throw new IllegalArgumentException("Requested tile is outside Image domain");
+        }
         return offset(source.getTile(tileX, tileY));
     }
 

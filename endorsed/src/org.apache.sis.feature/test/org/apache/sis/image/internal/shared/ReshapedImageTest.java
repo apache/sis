@@ -198,4 +198,28 @@ public final class ReshapedImageTest extends TestCase {
             {1210, 1211, 1212  ,  1310, 1311, 1312  ,  1410, 1411, 1412}
         });
     }
+
+    /**
+     * Verify a reshaped image created to expose a single tile from a source tiled image only serves the requested tile.
+     */
+    @Test
+    public void testExposeSingleTileFromTiledImage() {
+        var source  = new TiledImageMock(DataBuffer.TYPE_USHORT, 1, 0, 0, 4, 4, 2, 2, 0, 0, false);
+        source.validate();
+        source.initializeAllTiles(0);
+
+        var lastTile = ReshapedImage.singleTile(source, 1, 1);
+        try {
+            lastTile.getTile(0, 0);
+            fail("Tile (0, 0) should not be available");
+        } catch (IllegalArgumentException e) {
+            // Expected
+        }
+
+        final var exposedTile = lastTile.getTile(1, 1);
+        assertValuesEqual(exposedTile, 0, new int[][] {
+                { 400, 401 },
+                { 410, 411 }
+        });
+    }
 }
