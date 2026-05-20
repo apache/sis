@@ -400,7 +400,11 @@ public final class Numerics {
     public static boolean epsilonEqual(final double v1, final double v2, final ComparisonMode mode) {
         if (mode.isApproximate()) {
             final double mg = max(abs(v1), abs(v2));
-            if (mg != Double.POSITIVE_INFINITY) {
+            /*
+             * If one of the numbers to compare is not finite, it is not possible to compare them using an epsilon.
+             * In such cases, we must fall back to the standard equal to check if their bit representation is the same.
+             */
+            if (Double.isFinite(mg)) {
                 return epsilonEqual(v1, v2, COMPARISON_THRESHOLD * mg);
             }
         }

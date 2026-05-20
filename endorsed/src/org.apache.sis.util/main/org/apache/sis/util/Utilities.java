@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.Objects;
 import java.util.Optional;
 import org.apache.sis.util.collection.CheckedContainer;
+import org.apache.sis.util.internal.shared.Numerics;
 
 
 /**
@@ -204,6 +205,16 @@ public final class Utilities {
             }
             return true;
         }
+
+        if (object1 instanceof Number && object2 instanceof Number) {
+            final Number n1 = (Number) object1;
+            final Number n2 = (Number) object2;
+            return (n1 == n2 || (
+                    (n1 instanceof Double || n1 instanceof Float || n2 instanceof Double || n2 instanceof Float)
+                            && Numerics.epsilonEqual(n1.doubleValue(), n2.doubleValue(), mode)
+            ));
+        }
+
         return Objects.deepEquals(object1, object2);
     }
 
