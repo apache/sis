@@ -102,7 +102,7 @@ public final class ItemLocation extends FullBox {
         /**
          * Identifier of this item, as an unsigned integer.
          */
-        @Interpretation(Type.IDENTIFIER)
+        @Interpretation(value=Type.IDENTIFIER, summary=true)
         public final int itemID;
 
         /**

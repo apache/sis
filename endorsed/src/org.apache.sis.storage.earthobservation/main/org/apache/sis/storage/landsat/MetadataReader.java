@@ -64,7 +64,7 @@ import org.apache.sis.referencing.internal.shared.GeodeticObjectBuilder;
 import org.apache.sis.referencing.internal.shared.ReferencingFactoryContainer;
 import org.apache.sis.referencing.operation.provider.PolarStereographicB;
 import org.apache.sis.referencing.operation.provider.TransverseMercator;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.operation.MathTransform;

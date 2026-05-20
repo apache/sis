@@ -17,7 +17,6 @@
 package org.apache.sis.storage.isobmff;
 
 import java.io.IOException;
-import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 
 
@@ -84,28 +83,28 @@ public abstract class FullBox extends Box {
      * Appends properties other than the ones defined by public fields.
      * Those properties will be shown first in the tree.
      *
-     * @param  context  the tree being formatted. Can be used for fetching contextual information.
-     * @param  target   the node where to add properties.
-     * @param  after    {@code false} for the first nodes, or {@code true} for the last nodes.
+     * @param  tree    builder of the tree to format.
+     * @param  target  the node where to add properties.
      */
     @Override
-    protected void appendTreeNodes(final Tree context, final TreeTable.Node target, final boolean after) {
-        super.appendTreeNodes(context, target, after);
-        if (!after) {
-            final int version = version();
-            final int options = flags & ((1 << VERSION_BIT_SHIFT) - 1);
-            if (version != 0) {
-                TreeTable.Node child = target.newChild();
-                child.setValue(TableColumn.NAME, "version");
-                child.setValue(TableColumn.VALUE, version);
-                child.setValue(TableColumn.VALUE_AS_TEXT, String.valueOf(version));
-            }
-            if (options != 0) {
-                TreeTable.Node child = target.newChild();
-                child.setValue(TableColumn.NAME, "flags");
-                child.setValue(TableColumn.VALUE, options);
-                child.setValue(TableColumn.VALUE_AS_TEXT, Integer.toBinaryString(options));
-            }
+    protected void prependTreeNodes(final TreeBuilder tree, final TreeTable.Node target) {
+        super.prependTreeNodes(tree, target);
+        final int version = version();
+        final int options = flags & ((1 << VERSION_BIT_SHIFT) - 1);
+        if (version != 0) {
+            TreeBuilder.addNode(target, "version", version, String.valueOf(version));
         }
+        if (options != 0) {
+            appendFlagDescriptions(tree, TreeBuilder.addNode(target, "flags", options, Integer.toBinaryString(options)));
+        }
+    }
+
+    /**
+     * Appends a description of the flags.
+     *
+     * @param  tree    builder of the tree to format.
+     * @param  target  the {@code flag} node where to add properties.
+     */
+    protected void appendFlagDescriptions(TreeBuilder tree, TreeTable.Node target) {
     }
 }

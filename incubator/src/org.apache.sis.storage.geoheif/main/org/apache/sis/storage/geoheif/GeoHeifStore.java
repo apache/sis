@@ -41,7 +41,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.storage.event.StoreListeners;
@@ -290,7 +290,7 @@ public class GeoHeifStore extends DataStore implements Aggregate {
      */
     @Override
     public synchronized Optional<TreeTable> getNativeMetadata() throws DataStoreException {
-        return Optional.of(root().toTree(getDisplayName(), true));
+        return Optional.of(root().toTree(getLocale(), getDisplayName(), true));
     }
 
     /**
@@ -325,6 +325,7 @@ public class GeoHeifStore extends DataStore implements Aggregate {
      * Logs a warning emitted (usually indirectly) by {@link #components()}.
      */
     final void warning(final LogRecord record) {
+        record.setLoggerName(Reader.LOGGER_NAME);
         record.setSourceClassName(GeoHeifStore.class.getCanonicalName());
         record.setSourceMethodName("components");
         listeners.warning(record);

@@ -28,6 +28,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
+import org.apache.sis.referencing.factory.InternalFactoryException;
 import org.apache.sis.math.Vector;
 
 
@@ -103,7 +104,7 @@ final class Localization {
             grid.setDesiredPrecision(PRECISION);
             final MathTransform tr = grid.create(null);
             if (addTo != null && addTo.put(grid.getSourceEnvelope(false), tr) != null) {
-                throw new FactoryException();       // Should never happen. If it does, we have a bug in our algorithm.
+                throw new InternalFactoryException();   // Should never happen. If it does, we have a bug in our algorithm.
             }
             return tr;
         } catch (ArithmeticException | FactoryException e) {

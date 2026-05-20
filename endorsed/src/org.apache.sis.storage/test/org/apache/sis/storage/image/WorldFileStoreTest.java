@@ -28,7 +28,7 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.ResourceAlreadyExistsException;
-import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.util.ArraysExt;
 
 // Test dependencies

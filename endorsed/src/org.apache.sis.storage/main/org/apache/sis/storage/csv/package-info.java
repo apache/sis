@@ -44,7 +44,7 @@
  *
  * <ul>
  *   <li>Character encoding is not necessarily UTF-8 since a different encoding can be specified with
- *       {@link org.apache.sis.setup.OptionKey#ENCODING} in the {@link org.apache.sis.storage.StorageConnector}.
+ *       {@link org.apache.sis.storage.OptionKey#ENCODING} in the {@link org.apache.sis.storage.StorageConnector}.
  *       If not specified, Apache SIS uses the Java platform default encoding (which is often UTF-8).</li>
  *   <li>The Apache SIS implementation does not replace the XML entities by the referenced characters.
  *       XML entities, if present, are included verbatim in the parsed text.</li>

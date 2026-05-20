@@ -55,6 +55,7 @@ public final class Component extends TreeNode {
      *
      * @see ComponentDefinition#componentTypes
      */
+    @Interpretation(value=Type.NONE, summary=true)
     public Object type;
 
     /**

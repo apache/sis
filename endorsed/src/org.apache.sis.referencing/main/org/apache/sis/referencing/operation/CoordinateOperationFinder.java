@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.time.Duration;
 import javax.measure.Unit;
 import javax.measure.IncommensurableException;
@@ -50,6 +51,7 @@ import org.apache.sis.referencing.internal.AnnotatedMatrix;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.shared.AxisDirections;
+import org.apache.sis.referencing.internal.shared.OperationMethodExt;
 import org.apache.sis.referencing.internal.shared.CoordinateOperations;
 import org.apache.sis.referencing.internal.shared.EllipsoidalHeightCombiner;
 import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
@@ -65,6 +67,7 @@ import org.apache.sis.referencing.operation.provider.DatumShiftMethod;
 import org.apache.sis.referencing.operation.provider.GeocentricAffine;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.internal.shared.DoubleDouble;
 import org.apache.sis.util.resources.Vocabulary;
@@ -1151,7 +1154,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             if (isAxisChange2 && mt2.getSourceDimensions() == mt2.getTargetDimensions()) main = step1;
         }
         if (AbstractCoordinateOperation.isSingleOperation(main)) {
-            final SingleOperation op = (SingleOperation) main;
+            final var op = (SingleOperation) main;
             main = createFromMathTransform(
                     new HashMap<>(IdentifiedObjects.getProperties(main)),
                     sourceCRS,
@@ -1161,9 +1164,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                     op.getParameterValues(),
                     typeOf(op));
         } else {
-            main = factory.createConcatenatedOperation(
-                    defaultName(sourceCRS, targetCRS),
-                    sourceCRS, targetCRS, step1, step2);
+            main = createConcatenatedOperation(sourceCRS, targetCRS, step1, step2);
         }
         /*
          * Sometimes we get a concatenated operation made of an operation followed by its inverse.
@@ -1205,8 +1206,50 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         if (isIdentity(step3)) return concatenate(step1, step2);
         if (canHide(step1.getName())) return concatenate(concatenate(step1, step2), step3);
         if (canHide(step3.getName())) return concatenate(step1, concatenate(step2, step3));
-        final Map<String, ?> properties = defaultName(step1.getSourceCRS(), step3.getTargetCRS());
-        return factory.createConcatenatedOperation(properties, step1, step2, step3);
+        return createConcatenatedOperation(step1.getSourceCRS(), step3.getTargetCRS(), step1, step2, step3);
+    }
+
+    /**
+     * Creates an ordered sequence of two or more single coordinate operations.
+     * The {@code sourceCRS} and {@code targetCRS} arguments of this method are
+     * needed for detecting whether the source or last step needs to be reversed.
+     *
+     * <p>If any operation step uses a method that implements the {@link OperationMethodExt} interface,
+     * it will be used for enriching the metadata. It may go as far as overriding the default algorithm for
+     * computing the transform if a method supplies an {@value DefaultConcatenatedOperation#TRANSFORM_KEY}
+     * value.</p>
+     *
+     * @param  sourceCRS   the source <abbr>CRS</abbr>, or {@code null} for the source of the first step.
+     * @param  targetCRS   the target <abbr>CRS</abbr>, or {@code null} for the target of the last effective step.
+     * @param  operations  the sequence of operations. Should contain at least two operations.
+     * @return the concatenated operation created from the given arguments.
+     * @throws FactoryException if the object creation failed.
+     */
+    private CoordinateOperation createConcatenatedOperation(
+            final CoordinateReferenceSystem sourceCRS,
+            final CoordinateReferenceSystem targetCRS,
+            final CoordinateOperation... operations) throws FactoryException
+    {
+        final var properties = new HashMap<String, Object>(4);
+        properties.put(IdentifiedObject.NAME_KEY, new CRSPair(sourceCRS, targetCRS).toString());
+        final var merge  = new Consumer<CoordinateOperation>() {
+            @Override public void accept(final CoordinateOperation operation) {
+                final OperationMethod method = CoordinateOperations.getMethod(operation);
+                if (method instanceof OperationMethodExt) {
+                    final var provider = (OperationMethodExt) method;
+                    provider.completeOperationMetadata(context, sourceCRS, targetCRS, properties);
+                }
+                if (operation instanceof ConcatenatedOperation) {
+                    ((ConcatenatedOperation) operation).getOperations().stream().forEach(this);
+                }
+            }
+        };
+        try {
+            for (CoordinateOperation step : operations) merge.accept(step);
+            return factory.createConcatenatedOperation(properties, sourceCRS, targetCRS, operations);
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(FactoryException.class);
+        }
     }
 
     /**
@@ -1244,13 +1287,6 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     }
 
     /**
-     * Returns the given name in a singleton map.
-     */
-    private static Map<String, ?> properties(final String name) {
-        return Map.of(IdentifiedObject.NAME_KEY, name);
-    }
-
-    /**
      * Returns a name for an object derived from the specified one.
      * This method builds a name of the form "{@literal <original identifier>} (step 1)"
      * where "(step 1)" may be replaced by "(step 2)", "(step 3)", <i>etc.</i> if this
@@ -1271,13 +1307,6 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final Map<String, Object> properties = properties(newID);
         properties.put(IdentifiedObject.REMARKS_KEY, Vocabulary.formatInternational(Vocabulary.Keys.DerivedFrom_1, label(object)));
         return properties;
-    }
-
-    /**
-     * Returns a name for a transformation between two CRS.
-     */
-    private static Map<String, ?> defaultName(CoordinateReferenceSystem source, CoordinateReferenceSystem target) {
-        return properties(new CRSPair(source, target).toString());
     }
 
     /**

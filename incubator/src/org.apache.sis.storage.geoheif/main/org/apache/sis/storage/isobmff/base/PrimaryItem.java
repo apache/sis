@@ -50,7 +50,7 @@ public final class PrimaryItem extends FullBox {
     /**
      * The identifier of the primary item. Shall be the identifier on an item in the enclosing {@link Meta} box.
      */
-    @Interpretation(Type.IDENTIFIER)
+    @Interpretation(value=Type.IDENTIFIER, summary=true)
     public final int itemID;
 
     /**

@@ -43,7 +43,7 @@ public final class Constants {
      * The default indentation value to use in various text formats (both WKT and XML).
      * We use a small value (2 instead of 4) because OGC's XML are very verbose.
      *
-     * @see org.apache.sis.setup.OptionKey#INDENTATION
+     * @see org.apache.sis.storage.OptionKey#INDENTATION
      */
     public static final byte DEFAULT_INDENTATION = 2;
 

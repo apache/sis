@@ -19,12 +19,12 @@ package org.apache.sis.storage.isobmff.base;
 import java.io.IOException;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
+import org.apache.sis.storage.isobmff.Incomplete;
 
 
 /**
  * Combination of effective file download bit-rate, together with a suggested initial playback delay.
- *
- * @todo Not yet implemented. This is currently an empty box.
+ * <b>Not yet implemented.</b>
  *
  * <h4>Container</h4>
  * The container can be the file.
@@ -32,6 +32,7 @@ import org.apache.sis.storage.isobmff.Reader;
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */
+@Incomplete
 public final class ProgressiveDownloadInfo extends FullBox {
     /**
      * Numerical representation of the {@code "pdin"} box type.

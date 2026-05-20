@@ -20,7 +20,7 @@ import java.util.Locale;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import org.apache.sis.io.stream.ChannelDataInput;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
 import org.apache.sis.storage.isobmff.UnsupportedVersionException;
@@ -57,6 +57,7 @@ public final class Copyright extends FullBox {
     /**
      * The copyright notice, or {@code null} if none.
      */
+    @Interpretation(value=Type.NONE, summary=true)
     public final String notice;
 
     /**

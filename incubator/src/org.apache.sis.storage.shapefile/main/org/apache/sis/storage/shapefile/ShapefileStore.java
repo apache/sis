@@ -88,7 +88,7 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -131,6 +131,7 @@ import org.opengis.filter.LogicalOperatorName;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.ValueReference;
 import org.apache.sis.geometry.wrapper.*;
+import org.opengis.feature.PropertyNotFoundException;
 
 
 /**
@@ -307,10 +308,6 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
         private int[] dbfPropertiesIndex;
         private ShapeHeader shpHeader;
         private DBFHeader dbfHeader;
-        /**
-         * Name of the field used as identifier, may be null.
-         */
-        private String idField;
         private CoordinateReferenceSystem crs;
         private FeatureType type;
 
@@ -337,10 +334,11 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
          * @throws DataStoreException
          */
         private boolean mustGenerateId() throws DataStoreException {
-            getType();
-            if (idField != null) return false;
-            if (readProperties == null) return true;
-            return readProperties.contains(AttributeConvention.IDENTIFIER);
+            try {
+                return getType().getProperty(AttributeConvention.IDENTIFIER) != null;
+            } catch (PropertyNotFoundException ex) {
+                return false;
+            }
         }
 
         /**
@@ -416,7 +414,6 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                     try (DBFReader reader = new DBFReader(ShpFiles.openReadChannel(dbfFile), charset, timezone, null)) {
                         final DBFHeader header = reader.getHeader();
                         this.dbfHeader = header;
-                        boolean hasId = false;
 
                         if (readProperties == null) {
                             dbfPropertiesIndex = new int[header.fields.length];
@@ -434,13 +431,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                             dbfPropertiesIndex[idx] = i;
                             idx++;
 
-                            final AttributeTypeBuilder atb = ftb.addAttribute(field.valueClass).setName(field.fieldName);
-                            //no official but 'id' field is common
-                            if (!hasId && "id".equalsIgnoreCase(field.fieldName) || "identifier".equalsIgnoreCase(field.fieldName)) {
-                                idField = field.fieldName;
-                                atb.addRole(AttributeRole.IDENTIFIER_COMPONENT);
-                                hasId = true;
-                            }
+                            ftb.addAttribute(field.valueClass).setName(field.fieldName);
                         }
                         //the properties collection may have contain other names, for links or geometry, trim those
                         dbfPropertiesIndex = Arrays.copyOf(dbfPropertiesIndex, idx);
@@ -453,8 +444,8 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                 }
 
                 //create a computed identifier field
-                if (readProperties == null && idField == null) {
-                    ftb.addAttribute(Integer.class)
+                if (readProperties == null || readProperties.contains(AttributeConvention.IDENTIFIER)) {
+                    ftb.addAttribute(String.class)
                        .setName(AttributeConvention.IDENTIFIER_PROPERTY)
                        .addRole(AttributeRole.IDENTIFIER_COMPONENT);
                 }
@@ -511,7 +502,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
             final int geomSrid = srid;
 
             final boolean generateId = mustGenerateId();
-            final AtomicInteger nextId = new AtomicInteger();
+            final String baseId = type.getName().tip().toString() +".";
 
             final Spliterator spliterator;
             if (readShp && dbfPropertiesIndex.length > 0) {
@@ -537,7 +528,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                             for (int i = 0; i < dbfPropertiesIndex.length; i++) {
                                 next.setPropertyValue(header.fields[dbfPropertiesIndex[i]].fieldName, dbfRecord[i]);
                             }
-                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, nextId.getAndIncrement());
+                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, baseId + shpRecord.recordNumber);
 
                             action.accept(next);
                             return true;
@@ -560,7 +551,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                                 shpRecord.geometry.setSRID(geomSrid);
                             }
                             next.setPropertyValue(GEOMETRY_NAME, shpRecord.geometry);
-                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, nextId.getAndIncrement());
+                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, baseId + shpRecord.recordNumber);
                             action.accept(next);
                             return true;
                         } catch (IOException ex) {
@@ -570,6 +561,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                 };
             } else {
                 //read only dbf
+                final AtomicInteger nextId = new AtomicInteger();
                 final DBFHeader header = dbfreader.getHeader();
                 spliterator = new Spliterators.AbstractSpliterator(Long.MAX_VALUE, Spliterator.ORDERED) {
                     @Override
@@ -581,7 +573,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                             for (int i = 0; i < dbfPropertiesIndex.length; i++) {
                                 next.setPropertyValue(header.fields[dbfPropertiesIndex[i]].fieldName, dbfRecord[i]);
                             }
-                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, nextId.getAndIncrement());
+                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, baseId + nextId.incrementAndGet());
                             action.accept(next);
                             return true;
                         } catch (IOException ex) {
@@ -654,7 +646,6 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                     }
 
                     //if link fields are referenced, add target fields
-                    if (properties.contains(AttributeConvention.IDENTIFIER) && idField != null) simpleSelection &= !properties.add(idField);
                     if (properties.contains(AttributeConvention.GEOMETRY)) simpleSelection &= !properties.add(GEOMETRY_NAME);
                     if (properties.contains(AttributeConvention.ENVELOPE)) simpleSelection &= !properties.add(GEOMETRY_NAME);
                 }

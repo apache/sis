@@ -716,7 +716,7 @@ forDim: switch (axes.length) {
                          * Those two coordinate system types can be differentiated by the unit of the two first axes.
                          * If a future implementation supports more CS types, above condition will need to be updated.
                          */
-                        final AxisDirection[] directions = new AxisDirection[axes.length];
+                        final var directions = new AxisDirection[axes.length];
                         for (int i=0; i<directions.length; i++) {
                             final CoordinateSystemAxis axis = axes[i];
                             ArgumentChecks.ensureNonNullElement("axes", i, axis);

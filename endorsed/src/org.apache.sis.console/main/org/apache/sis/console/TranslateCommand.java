@@ -18,10 +18,10 @@ package org.apache.sis.console;
 
 import java.util.EnumSet;
 import java.nio.file.StandardOpenOption;
-import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStores;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.WritableGridCoverageResource;

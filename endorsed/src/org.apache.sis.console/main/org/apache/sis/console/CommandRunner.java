@@ -37,7 +37,7 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.X364;
 import org.apache.sis.pending.jdk.JDK22;
-import org.apache.sis.storage.DataOptionKey;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.StorageConnector;
 
 
@@ -419,7 +419,7 @@ abstract class CommandRunner {
         final var connector = new StorageConnector(input);
         final Path p = getOptionAsPath(Option.METADATA);
         if (p != null) {
-            connector.setOption(DataOptionKey.METADATA_PATH, p);
+            connector.setOption(OptionKey.METADATA_PATH, p);
         }
         return connector;
     }

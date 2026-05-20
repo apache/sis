@@ -21,7 +21,8 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.isobmff.Box;
 import org.apache.sis.storage.isobmff.Reader;
 import org.apache.sis.storage.isobmff.FullBox;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.isobmff.BoxRegistry;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 
 
 /**
@@ -85,7 +86,7 @@ public final class Meta extends FullBox {
     public Meta(final Reader reader) throws IOException, DataStoreException {
         super(reader);
         requireVersionZero();
-        children = reader.readChildren(null, false).toArray(Box[]::new);
+        children = reader.readChildren(BoxRegistry.global(), false).toArray(Box[]::new);
     }
 
     /**

@@ -200,8 +200,8 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * to positions in the {@linkplain #getTargetCRS target coordinate reference system}.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is non-final only for the convenience of constructors and for initialization
-     * at XML unmarshalling time by {@link AbstractSingleOperation#afterUnmarshal(Unmarshaller, Object)}.</p>
+     * This field is non-final for the convenience of constructors and for initialization at <abbr>XML</abbr>
+     * unmarshalling time by {@link AbstractSingleOperation#afterUnmarshal(Unmarshaller, Object)}.</p>
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     MathTransform transform;
@@ -505,8 +505,10 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * When this method returns {@code true}, the source and target CRS are not marshalled in XML documents.
      *
      * @return {@code true} if this coordinate operation is for the definition of a derived or projected CRS.
+     *
+     * @deprecated Replaced by the {@link DefiningConversion} class.
      */
-    @SuppressWarnings("deprecation")
+    @Deprecated(since = "1.7", forRemoval = true)
     public boolean isDefiningConversion() {
         /*
          * Trick: we do not need to verify if (this instanceof Conversion) because:

@@ -42,6 +42,7 @@ import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.referencing.internal.shared.CoordinateOperations;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
+import org.apache.sis.referencing.factory.InternalFactoryException;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.system.Reflect;
@@ -750,7 +751,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             }
             p = c.newInstance(this);
         } catch (ReflectiveOperationException e) {
-            throw new FactoryException(e);
+            throw new InternalFactoryException(e);
         }
         /*
          * No need to check the type of the parsed object, because MathTransformParser

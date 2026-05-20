@@ -335,37 +335,18 @@ final class CoordinateOperationFinder extends CoordinateOperationContext {
      */
     private CoordinateOperation changeOfCRS() throws FactoryException, TransformException {
         if (!knowChangeOfCRS) {
-            changeOfCRS = changeOfCRS(source, target, this);
+            if (source.isDefined(GridGeometry.CRS) && target.isDefined(GridGeometry.CRS)) try {
+                /*
+                 * Unconditionally create the operation even if the CRS are equivalent. A non-null operation
+                 * trigs the check for wraparound axes, which is necessary even if the transform is identity.
+                 */
+                addAreaOfInterest(source.envelope);
+                addAreaOfInterest(target.envelope);
+                changeOfCRS = CRS.findOperation(source.getCoordinateMetadata(), target.getCoordinateMetadata(), this);
+            } catch (BackingStoreException e) {
+                throw e.unwrapOrRethrow(TransformException.class);
+            }
             knowChangeOfCRS = true;
-        }
-        return changeOfCRS;
-    }
-
-    /**
-     * Computes the change of <abbr>CRS</abbr> between the given pair of grid geometries.
-     *
-     * @param  source   the grid geometry which is the source of the coordinate operation to find.
-     * @param  target   the grid geometry which is the target of the coordinate operation to find.
-     * @param  context  contains coordinate values to use as constant if a source CRS is missing.
-     * @return coordinate operation from source to target CRS, or {@code null} if none.
-     * @throws FactoryException if no operation can be found between the source and target CRS.
-     * @throws TransformException if some coordinates cannot be transformed to the specified target.
-     */
-    private static CoordinateOperation changeOfCRS(final GridGeometry source, final GridGeometry target,
-                                                   final CoordinateOperationContext context)
-            throws FactoryException, TransformException
-    {
-        CoordinateOperation changeOfCRS = null;
-        if (source.isDefined(GridGeometry.CRS) && target.isDefined(GridGeometry.CRS)) try {
-            /*
-             * Unconditionally create the operation even if the CRS are equivalent. A non-null operation
-             * trigs the check for wraparound axes, which is necessary even if the transform is identity.
-             */
-            context.addAreaOfInterest(source.envelope);
-            context.addAreaOfInterest(target.envelope);
-            changeOfCRS = CRS.findOperation(source.getCoordinateMetadata(), target.getCoordinateMetadata(), context);
-        } catch (BackingStoreException e) {
-            throw e.unwrapOrRethrow(TransformException.class);
         }
         return changeOfCRS;
     }
@@ -468,7 +449,8 @@ apply:          if (forwardChangeOfCRS == null) {
                     inverseChangeOfCRS = changeOfCRS.getMathTransform().inverse();
                 }
             } else {
-                final CoordinateOperation inverse = changeOfCRS(target, source, new CoordinateOperationContext());
+                // Really need the `CoordinateOperationFinder` subclass because of `instanceof` checks elsewhere.
+                final CoordinateOperation inverse = new CoordinateOperationFinder(target, source).changeOfCRS();
                 if (inverse != null) {
                     sourceCRS = inverse.getTargetCRS();
                     inverseChangeOfCRS = inverse.getMathTransform();

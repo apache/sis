@@ -68,7 +68,7 @@ public final class InputFactoryTest extends TestCase {
     @Test
     @Disabled("JAXP09020006")   // NullPointerException: argument 'catalog' cannot be NULL. TODO: test with Maven4.
     public void verifyExternalEntityAccess() throws IOException, XMLStreamException {
-        final XMLInputFactory factory = XMLInputFactory.newInstance();
+        final XMLInputFactory factory = XMLInputFactory.newDefaultFactory();
         assumeTrue("all".equals(factory.getProperty(XMLConstants.ACCESS_EXTERNAL_DTD)));
         assumeTrue(Boolean.TRUE.equals(factory.getProperty(XMLInputFactory.SUPPORT_DTD)));
         assumeTrue(Boolean.TRUE.equals(factory.getProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES)));
@@ -84,7 +84,7 @@ public final class InputFactoryTest extends TestCase {
      */
     @Test
     public void testDisableExternalEntities() throws IOException, XMLStreamException {
-        final XMLInputFactory factory = XMLInputFactory.newInstance();
+        final XMLInputFactory factory = XMLInputFactory.newDefaultFactory();
         factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
         readExternalEntity(factory, true);
     }
@@ -97,7 +97,7 @@ public final class InputFactoryTest extends TestCase {
      */
     @Test
     public void testDisableDTD() throws IOException {
-        final XMLInputFactory factory = XMLInputFactory.newInstance();
+        final XMLInputFactory factory = XMLInputFactory.newDefaultFactory();
         factory.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
         var ex = assertThrows(XMLStreamException.class, () -> readExternalEntity(factory, false));
         assertMessageContains(ex, "xxe");
@@ -112,7 +112,7 @@ public final class InputFactoryTest extends TestCase {
     @Test
     @Disabled("JAXP09020006")   // NullPointerException: argument 'catalog' cannot be NULL. TODO: test with Maven4.
     public void testDisableAccessExternalDTD() throws IOException {
-        final XMLInputFactory factory = XMLInputFactory.newInstance();
+        final XMLInputFactory factory = XMLInputFactory.newDefaultFactory();
         factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "http,https");
         var ex = assertThrows(XMLStreamException.class, () -> readExternalEntity(factory, false));
         assertMessageContains(ex, "sis-");          // Prefix of the temporary file.

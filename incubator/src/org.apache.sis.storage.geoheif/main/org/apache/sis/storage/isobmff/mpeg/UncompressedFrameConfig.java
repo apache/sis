@@ -78,7 +78,7 @@ public final class UncompressedFrameConfig extends FullBox {
      * Predefined configuration as a code such as {@link #RGB}, {@link #RGBA} or {@link #ARGB}.
      * Value 0 means no profile.
      */
-    @Interpretation(Type.FOURCC)
+    @Interpretation(value=Type.FOURCC, summary=true)
     public final int profile;
 
     /**

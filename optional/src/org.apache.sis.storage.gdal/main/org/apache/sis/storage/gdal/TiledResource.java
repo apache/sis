@@ -47,7 +47,7 @@ import org.apache.sis.image.internal.shared.ColorModelBuilder;
 import org.apache.sis.image.internal.shared.ColorModelFactory;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.tiling.TiledGridCoverage;
 import org.apache.sis.storage.tiling.TiledGridCoverageResource;
 import org.apache.sis.system.Configuration;

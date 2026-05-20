@@ -17,20 +17,16 @@
 package org.apache.sis.metadata;
 
 import java.util.List;
+import java.util.Collection;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.function.Predicate;
-import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.internal.shared.TreeFormatCustomization;
-import org.apache.sis.xml.bind.SpecializedIdentifier;
-import org.apache.sis.xml.bind.NonMarshalledAuthority;
+import org.apache.sis.util.internal.shared.TreeTableForGUI;
 import org.apache.sis.system.Semaphores;
 
 
@@ -51,7 +47,7 @@ import org.apache.sis.system.Semaphores;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class TreeTableView implements TreeTable, TreeFormatCustomization, Serializable {
+final class TreeTableView implements TreeTableForGUI, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -130,6 +126,15 @@ final class TreeTableView implements TreeTable, TreeFormatCustomization, Seriali
     }
 
     /**
+     * Returns whether the given value produced by the given node is a title.
+     */
+    @Override
+    public boolean isNodeTitle(final Node node, final Object value) {
+        final Collection<Node> children = node.getChildren();
+        return (children instanceof TreeNodeChildren) && ((TreeNodeChildren) children).isNodeTitle();
+    }
+
+    /**
      * Returns a string representation of this tree table.
      * The current implementation uses a shared instance of {@link TreeTableFormat}.
      * This is okay for debugging or occasional usages. However for more extensive usages,
@@ -151,54 +156,6 @@ final class TreeTableView implements TreeTable, TreeFormatCustomization, Seriali
                 return MetadataFormat.INSTANCE.format(this);
             }
         });
-    }
-
-    /**
-     * Returns the filter to use when formatting an instance of this {@code TreeTable}.
-     * This filter will be combined with the filter that the user may specify by a call
-     * to {@link TreeTableFormat#setNodeFilter(Predicate)}.
-     */
-    @Override
-    public Predicate<TreeTable.Node> filter() {
-        return TreeTableView::filter;
-    }
-
-    /**
-     * Invoked during the formatting of a tree node for hiding the ISBN and ISSN identifiers of a {@link Citation}.
-     * Those identifiers will be formatted in the {@code ISBN} and {@code ISSN} properties instead. We apply this
-     * filtering for avoiding redundancies in the tree representation.
-     */
-    private static boolean filter(final TreeTable.Node node) {
-        /*
-         * The special case implemented in this method applies only to two attributes in the Citation interface.
-         * We test for this condition first because the call to TreeNode.getParent() is cheap and allow to detect
-         * soon the metadata instances that do not need further examination.
-         */
-        final Node parent = node.getParent();
-        if (parent instanceof TreeNode && Citation.class.isAssignableFrom(((TreeNode) parent).baseType)) {
-            Object value = null;
-            if (node instanceof TreeNode) {
-                /*
-                 * Since this method is invoked (indirectly) during iteration over the children, the value may have
-                 * been cached by TreeNodeChildren.Iter.next(). Try to use this value instead of computing it again.
-                 */
-                value = ((TreeNode) node).cachedValue;
-            }
-            if (value == null) {
-                value = node.getUserObject();
-            }
-            /*
-             * Filter out the ISBN and ISSN identifiers if they are inside a Citation object.
-             * We keep them if the user added them to other kinds of objects.
-             */
-            if (value instanceof SpecializedIdentifier) {
-                final Citation authority = ((SpecializedIdentifier) value).getAuthority();
-                if (authority instanceof NonMarshalledAuthority && ((NonMarshalledAuthority) authority).isBookOrSerialNumber()) {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     /**

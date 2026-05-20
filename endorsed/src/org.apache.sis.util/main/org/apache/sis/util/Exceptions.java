@@ -203,10 +203,10 @@ public final class Exceptions {
      *       details about the reason are less accessible.</li>
      * </ul>
      *
-     * This method uses only the exception class as criterion;
-     * it does not verify if the exception messages are the same.
+     * This method uses only the exception class as criterion.
+     * It does not verify if the exception messages are the same.
      *
-     * @param  exception  the exception to unwrap (may be {@code null}.
+     * @param  exception  the exception to unwrap (may be {@code null}).
      * @return the unwrapped exception (may be the given argument itself).
      *
      * @since 0.8

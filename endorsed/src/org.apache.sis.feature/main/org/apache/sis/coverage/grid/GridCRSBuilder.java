@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.EnumSet;
 import java.util.Locale;
 import java.util.Optional;
 import org.opengis.util.FactoryException;
@@ -40,7 +41,7 @@ import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
@@ -52,16 +53,20 @@ import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.DefiningConversion;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
+import org.apache.sis.referencing.operation.CoordinateOperationContext;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.referencing.internal.shared.DirectPositionView;
+import org.apache.sis.referencing.internal.shared.OperationMethodExt;
 import org.apache.sis.referencing.internal.shared.ReferencingFactoryContainer;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Units;
 
@@ -83,20 +88,87 @@ import org.opengis.referencing.ObjectDomain;
  */
 final class GridCRSBuilder extends ReferencingFactoryContainer {
     /**
+     * Name of the parameter specifying the grid geometry.
+     * In principle, this parameter should be mandatory. However, it is defined as optional for now
+     * for avoiding the need to separate grid geometries when the <abbr>CRS</abbr> is compound.
+     */
+    private static final String GRID_PARAM = "Grid geometry";
+
+    /**
      * Name of the parameter specifying which part (center or corner)
-     * of the call is associated with the coverage data attributes.
+     * of the cell is associated with the coverage data attributes.
      */
     private static final String ANCHOR_PARAM = "Pixel in cell";
 
     /**
      * Description of the "<abbr>CRS</abbr> to grid indices" operation method.
      */
-    private static final OperationMethod METHOD;
-    static {
-        final ParameterBuilder b = new ParameterBuilder().setRequired(true);
-        final ParameterDescriptor<?>   anchor = b.addName(ANCHOR_PARAM).create(PixelInCell.class, PixelInCell.CELL_CENTER);
-        final ParameterDescriptorGroup params = b.addName("CRS to grid indices").createGroup(anchor);
-        METHOD = new DefaultOperationMethod(Map.of(IdentifiedObject.NAME_KEY, params.getName()), params);
+    private static final class Method extends DefaultOperationMethod implements OperationMethodExt {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = -404891574462494877L;
+
+        /** Copy of {@link org.apache.sis.referencing.operation.DefaultConcatenatedOperation#TRANSFORM_KEY}. */
+        private static final String TRANSFORM_KEY = "transform";
+
+        /** The unique instance. */
+        static final Method INSTANCE;
+        static {
+            final ParameterBuilder b = new ParameterBuilder().setRequired(true);
+            final ParameterDescriptor<?> anchor = b.addName(ANCHOR_PARAM).create(PixelInCell.class, PixelInCell.CELL_CENTER);
+            final ParameterDescriptor<?> grid   = b.addName(GRID_PARAM).setRequired(false).create(GridGeometry.class, null);
+            INSTANCE = new Method(b.addName("CRS to grid indices").createGroup(grid, anchor));
+        }
+
+        /** Creates the unique instance. */
+        private Method(final ParameterDescriptorGroup params) {
+            super(Map.of(IdentifiedObject.NAME_KEY, params.getName()), params);
+        }
+
+        /**
+         * If the given <abbr>CRS</abbr> has been built by this method, returns the grid geometry.
+         * Otherwise, returns {@code null}. The {@code anchor} argument is used for verifying that
+         * the two operations use the same "pixel in cell" configuration.
+         */
+        private static GridGeometry grid(final CoordinateReferenceSystem crs, final EnumSet<PixelInCell> anchor) {
+            if (crs instanceof DerivedCRS) {
+                final Conversion conversion = ((DerivedCRS) crs).getConversionFromBase();
+                if (conversion.getMethod() instanceof Method) {
+                    final ParameterValueGroup values = conversion.getParameterValues();
+                    if (anchor.isEmpty() == anchor.add((PixelInCell) values.parameter(ANCHOR_PARAM).getValue())) {
+                        return (GridGeometry) values.parameter(GRID_PARAM).getValue();
+                    }
+                }
+            }
+            return null;
+        }
+
+        /**
+         * If the given pair of <abbr>CRS</abbr>s is derived from grid geometries, finds a transform between them.
+         * Compared to the default transform, the returned transform may handle the anti-meridian crossing.
+         */
+        @Override
+        public boolean completeOperationMetadata(final CoordinateOperationContext context,
+                                                 final CoordinateReferenceSystem  sourceCRS,
+                                                 final CoordinateReferenceSystem  targetCRS,
+                                                 final Map<String, Object> properties)
+        {
+            // The `instanceof` check is important for preventing never ending recursive invocations.
+            if (!(context instanceof CoordinateOperationFinder || properties.containsKey(TRANSFORM_KEY))) {
+                final EnumSet<PixelInCell> anchor = EnumSet.noneOf(PixelInCell.class);
+                final GridGeometry source = grid(sourceCRS, anchor);
+                if (source != null) {
+                    final GridGeometry target = grid(targetCRS, anchor);
+                    if (target != null) try {
+                        // The set should always have exactly one element. If not, it would be a bug in `grid(…)`.
+                        properties.put(TRANSFORM_KEY, source.createTransformTo(target, Containers.peekIfSingleton(anchor)));
+                        return true;
+                    } catch (TransformException e) {
+                        throw new BackingStoreException(e);
+                    }
+                }
+            }
+            return false;
+        }
     }
 
     /**
@@ -106,9 +178,12 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
     private static final InternationalString SCOPE = Resources.formatInternational(Resources.Keys.CrsToGridConversion);
 
     /**
-     * The extent of the grid geometry, or {@code null} if none.
+     * The grid geometry for which to create a derived or compound <abbr>CRS</abbr> for cell indices.
+     * This is kept constant after initialization, i.e. this field is not updated when descending in
+     * <abbr>CRS</abbr> components. May be {@code null} if the <abbr>CRS</abbr> is built only from a
+     * grid extent.
      */
-    private GridExtent extent;
+    private GridGeometry fullGrid;
 
     /**
      * The cell part (center or corner) to map.
@@ -176,9 +251,7 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
         grid.getGeographicExtent().ifPresent((domain) -> {
             properties.put(ObjectDomain.DOMAIN_OF_VALIDITY_KEY, new DefaultExtent(null, domain, null, null));
         });
-        if (grid.isDefined(GridGeometry.EXTENT)) {
-            extent = grid.getExtent();
-        }
+        fullGrid = grid;
         if (derived || grid.isDefined(GridGeometry.CRS | GridGeometry.GRID_TO_CRS)) try {
             separator = new TransformSeparator(grid.getGridToCRS(anchor).inverse());
             return forComponent(name, grid.getCoordinateReferenceSystem(), 0, 0);
@@ -192,8 +265,8 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
          */
         final int dimension = grid.getDimension();
         final DimensionNameType[] dimensionNames;
-        if (extent != null) {
-            dimensionNames = Arrays.copyOf(extent.getAxisTypes(), dimension);
+        if (grid.isDefined(GridGeometry.EXTENT)) {
+            dimensionNames = Arrays.copyOf(grid.getExtent().getAxisTypes(), dimension);
         } else {
             dimensionNames = new DimensionNameType[dimension];
         }
@@ -210,11 +283,11 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
      * Caller can get the dimensions that have been used. Caller shall invoke {@code transform.clear()}
      * before to invoke this method again.</p>
      *
-     * @param  name     name of the <abbr>CRS</abbr> to create.
+     * @param  name     name of the derived or compound <abbr>CRS</abbr> to create.
      * @param  baseCRS  real world <abbr>CRS</abbr> or component of that <abbr>CRS</abbr>.
      * @param  srcDim   dimension of the first axis of {@code baseCRS} relatively to the full real world <abbr>CRS</abbr>.
      * @param  tgtDim   dimension of the first axis of the return value relatively to the full derived <abbr>CRS</abbr>.
-     * @return grid extent <abbr>CRS</abbr> derived from the given {@code baseCRS}.
+     * @return <abbr>CRS</abbr> for cell indices derived from the <abbr>CRS</abbr> of the given grid geometry.
      * @throws FactoryException if an error occurred during the use of a referencing factory.
      */
     private CoordinateReferenceSystem forComponent(final Object name, final CoordinateReferenceSystem baseCRS, int srcDim, int tgtDim)
@@ -263,9 +336,6 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
         final MathTransform crsToGrid = separator.separate();
         final int[] dispatch = separator.getTargetDimensions();
         final var dimensionNames = new DimensionNameType[dispatch.length];
-        if (extent != null) {
-            Arrays.setAll(dimensionNames, (i) -> extent.getAxisType(dispatch[i]).orElse(null));
-        }
         /*
          * Get the directions of the axes of the coverage coordinate system, but in the order of grid dimensions.
          * The direction array may contain null elements if directions could not be inferred for some dimensions.
@@ -276,7 +346,9 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
         AxisDirection[] directions;
 toGrid: try {
             final Matrix derivative;
-            if (extent != null) {
+            if (fullGrid.isDefined(GridGeometry.EXTENT)) {
+                final GridExtent extent = fullGrid.getExtent();
+                Arrays.setAll(dimensionNames, (i) -> extent.getAxisType(dispatch[i]).orElse(null));
                 derivative = crsToGrid.derivative(new DirectPositionView.Double(extent.getPointOfInterest(anchor), srcDim, dimension));
             } else try {
                 derivative = crsToGrid.derivative(null);
@@ -302,12 +374,18 @@ toGrid: try {
             directions = directions(dimensionNames);
         }
         /*
-         * Creates the coordinate system, then the conversion, and finally the derived CRS.
+         * Create the coordinate system, then the conversion, and finally the derived CRS.
+         * The `GRID_PARAM` parameter should be mandatory, but for now it is not clear that
+         * it is worth to pay the cost of creating sub-grids.
          */
-        final CoordinateSystem cs = createCS(dispatch.length, dimensionNames, directions, tgtDim + 1, true);
-        final ParameterValueGroup params = METHOD.getParameters().createValue();
+        final Method method = Method.INSTANCE;
+        final ParameterValueGroup params = method.getParameters().createValue();
+        if (srcDim == 0 && dimension == fullGrid.getDimension()) {
+            params.parameter(GRID_PARAM).setValue(fullGrid);
+        }
         params.parameter(ANCHOR_PARAM).setValue(anchor);
-        final var conversion = new DefiningConversion(properties(METHOD.getName()), METHOD, crsToGrid, params);
+        final var conversion = new DefiningConversion(properties(method.getName()), method, crsToGrid, params);
+        final CoordinateSystem cs = createCS(dispatch.length, dimensionNames, directions, tgtDim + 1, true);
         return getCRSFactory().createDerivedCRS(properties(name), baseCRS, conversion, cs);
     }
 

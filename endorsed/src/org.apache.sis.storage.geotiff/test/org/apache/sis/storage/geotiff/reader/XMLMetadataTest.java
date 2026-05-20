@@ -17,7 +17,7 @@
 package org.apache.sis.storage.geotiff.reader;
 
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.util.collection.DefaultTreeTable;

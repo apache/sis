@@ -14,9 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.setup;
+package org.apache.sis.storage;
 
 import java.util.Map;
+import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.collection.CheckedContainer;
 import static org.apache.sis.setup.OptionKey.*;
 
@@ -75,7 +76,7 @@ public final class OptionKeyTest extends TestCase {
      */
     @Test
     public void testSetAndGet() {
-        final Map<OptionKey<?>,Object> options = URL_ENCODING.setValueInto(null, "UTF-8");
+        final Map<OptionKey<?>, Object> options = URL_ENCODING.setValueInto(null, "UTF-8");
         assertEquals("UTF-8", assertSingleton(options.values()));
         assertEquals("UTF-8", URL_ENCODING.getValueFrom(options));
 
@@ -100,7 +101,23 @@ public final class OptionKeyTest extends TestCase {
      */
     @Test
     public void testSubclassSerialization() {
-        final CustomKey<Integer> key = new CustomKey<>("key", Integer.class);
+        final var key = new CustomKey<Integer>("key", Integer.class);
         assertNotSame(key, assertSerializedEquals(key));
+    }
+
+    /**
+     * Temporary test for migration.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-633">SIS-633</a>
+     */
+    @Test
+    public void testCompatibility() {
+        assertSame(org.apache.sis.storage.OptionKey.LOCALE,       LOCALE);
+        assertSame(org.apache.sis.storage.OptionKey.TIMEZONE,     TIMEZONE);
+        assertSame(org.apache.sis.storage.OptionKey.ENCODING,     ENCODING);
+        assertSame(org.apache.sis.storage.OptionKey.URL_ENCODING, URL_ENCODING);
+        assertSame(org.apache.sis.storage.OptionKey.OPEN_OPTIONS, OPEN_OPTIONS);
+        assertSame(org.apache.sis.storage.OptionKey.DEFAULT_CRS,  DEFAULT_CRS);
+        assertSame(org.apache.sis.storage.OptionKey.INDENTATION,  INDENTATION);
     }
 }

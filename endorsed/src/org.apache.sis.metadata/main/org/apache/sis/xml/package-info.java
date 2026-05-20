@@ -16,9 +16,9 @@
  */
 
 /**
- * Provides methods for marshalling and unmarshalling SIS objects in XML.
- * The XML format is compliant with ISO 19115-3 specification for metadata,
- * and compliant with GML for referencing objects.
+ * Provides methods for marshalling and unmarshalling SIS objects in <abbr>XML</abbr>.
+ * The <abbr>XML</abbr> format is compliant with <abbr>ISO</abbr> 19115-3 specification for metadata,
+ * and compliant with <abbr>GML</abbr> for referencing objects.
  *
  * <p>The main class in this package is {@link org.apache.sis.xml.XML}, which provides
  * property keys that can be used for configuring (un)marshallers and convenience static methods.
@@ -41,16 +41,16 @@
  *   </cit:CI_Citation>
  *   }
  *
- * <h2>Customizing the XML</h2>
- * In order to parse and format ISO 19115-3 compliant documents, SIS needs its own
- * {@link jakarta.xml.bind.Marshaller} and {@link jakarta.xml.bind.Unmarshaller} instances
- * (which are actually wrappers around standard instances). Those instances are created
- * and cached by {@link org.apache.sis.xml.MarshallerPool}, which is used internally by
- * the above-cited {@code XML} class. However, developers can instantiate their own
- * {@code MarshallerPool} in order to get more control on the marshalling and unmarshalling
- * processes, including the namespace URLs and the errors handling.
+ * <h2>Customizing the <abbr>XML</abbr></h2>
+ * In order to parse and format <abbr>ISO</abbr> 19115-3 compliant documents,
+ * Apache <abbr>SIS</abbr> needs its own {@link jakarta.xml.bind.Marshaller}
+ * and {@link jakarta.xml.bind.Unmarshaller} instances
+ * (which are actually wrappers around standard instances).
+ * Those instances are created and cached by {@link org.apache.sis.xml.MarshallerPool}.
+ * Developers can instantiate their own {@code MarshallerPool} if they need to configure,
+ * properties such as the namespace <abbr>URL</abbr>s and the errors handling.
  *
- * <p>The most common namespace URLs are defined in the {@link org.apache.sis.xml.Namespaces} class.
+ * <p>The most common namespace <abbr>URL</abbr>s are defined in the {@link org.apache.sis.xml.Namespaces} class.
  * The parsing of some objects like {@link java.net.URL} and {@link java.util.UUID},
  * together with the behavior in case of parsing error, can be specified by the
  * {@link org.apache.sis.xml.ValueConverter} class.</p>

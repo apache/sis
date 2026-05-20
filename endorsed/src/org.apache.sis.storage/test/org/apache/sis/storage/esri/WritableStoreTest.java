@@ -27,11 +27,11 @@ import java.awt.image.DataBufferByte;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.grid.GridCoverageBuilder;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.ResourceAlreadyExistsException;
 import org.apache.sis.geometry.Envelope2D;
-import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.CharSequences;
 
 // Test dependencies

@@ -33,6 +33,7 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.WritableAggregate;
@@ -44,7 +45,6 @@ import org.apache.sis.storage.IncompatibleResourceException;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.setup.OptionKey;
 
 
 /**

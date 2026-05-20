@@ -16,22 +16,20 @@
  */
 package org.apache.sis.util.internal.shared;
 
-import java.text.Format;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.Currency;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import org.opengis.util.Type;
 import org.opengis.util.Record;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.io.LineAppender;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -44,21 +42,22 @@ import org.opengis.util.ControlledVocabulary;
  * Tabulations are replaced by spaces, and line feeds can optionally
  * be replaced by the Pilcrow character.
  *
- * Subclasses need to override {@link #getLocale()}, and should also override {@link #toString(Object)}.
+ * <p>Subclasses need to override {@link #getLocale()}, and should also override {@link #toString(Object)}
+ * for formatting dates and numbers</p>.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
 public abstract class PropertyFormat extends LineAppender implements Localized {
     /**
      * The string to insert for missing values.
+     * This is a string to be appended into {@link LineAppender}, not a public return value.
      */
     private static final String MISSING = " ";
 
     /**
-     * The format for the column in process of being written. This is a format to use for the column as a whole.
-     * This field is updated for every new column to write. May be {@code null} if the format is unspecified.
+     * {@code true} if this method is invoking itself for writing collection values.
      */
-    protected transient Format columnFormat;
+    private transient boolean recursive;
 
     /**
      * Creates a new instance which will write to the given appendable.
@@ -70,31 +69,37 @@ public abstract class PropertyFormat extends LineAppender implements Localized {
     }
 
     /**
+     * Returns a textual representation of the given value. This implementation assumes
+     * that this {@code PropertyFormat} was created with a {@link StringBuilder} argument.
+     * This is a convenience method for a common case.
+     *
+     * @param  value  the value to format (may be {@code null}).
+     * @return string representation of the given value.
+     * @throws ClassCastException if {@link #out} is not an instance of {@link StringBuilder}.
+     */
+    public final String formatUsingStringBuilder(final Object value) {
+        final var buffer = (StringBuilder) out;
+        buffer.setLength(0);
+        try {
+            clear();
+            appendValue(value);
+            flush();
+        } catch (IOException e) {           // Should never happen since we write in a StringBuilder.
+            throw new UncheckedIOException(e);
+        }
+        return Strings.trimOrNull(buffer.toString());
+    }
+
+    /**
      * Appends a textual representation of the given value.
      *
      * @param  value  the value to format (may be {@code null}).
      * @throws IOException if an error occurred while writing the value.
      */
-    public final void appendValue(final Object value) throws IOException {
-        appendValue(value, false);
-    }
-
-    /**
-     * Appends a textual representation of the given value, with a check for nested collections.
-     *
-     * @param  value      the value to format (may be {@code null}).
-     * @param  recursive  {@code true} if this method is invoking itself for writing collection values.
-     */
-    private void appendValue(final Object value, final boolean recursive) throws IOException {
+    public void appendValue(final Object value) throws IOException {
         final CharSequence text;
         if (value == null) {
             text = MISSING;
-        } else if (columnFormat != null) {
-            if (columnFormat instanceof CompoundFormat<?>) {
-                appendCompound((CompoundFormat<?>) columnFormat, value);
-                return;
-            }
-            text = columnFormat.format(value);
         } else if (value instanceof InternationalString) {
             text = freeText(((InternationalString) value).toString(getLocale()));
         } else if (value instanceof CharSequence) {
@@ -121,13 +126,13 @@ public abstract class PropertyFormat extends LineAppender implements Localized {
             final Locale locale = getLocale();
             text = (locale != Locale.ROOT) ? ((Currency) value).getDisplayName(locale) : value.toString();
         } else if (value instanceof Record) {
-            appendCollection(((Record) value).getFields().values(), recursive);
+            appendCollection(((Record) value).getFields().values());
             return;
         } else if (value instanceof Iterable<?>) {
-            appendCollection((Iterable<?>) value, recursive);
+            appendCollection((Iterable<?>) value);
             return;
         } else if (value instanceof Object[]) {
-            appendCollection(Arrays.asList((Object[]) value), recursive);
+            appendCollection(Arrays.asList((Object[]) value));
             return;
         } else if (value instanceof Map.Entry<?,?>) {
             final Map.Entry<?,?> entry = (Map.Entry<?,?>) value;
@@ -136,11 +141,11 @@ public abstract class PropertyFormat extends LineAppender implements Localized {
             if (k == null) {
                 append(null);
             } else {
-                appendValue(k, recursive);
+                appendValue(k);
             }
             if (v != null) {
                 append(" → ");
-                appendValue(v, recursive);
+                appendValue(v);
             }
             return;
         } else {
@@ -185,7 +190,7 @@ public abstract class PropertyFormat extends LineAppender implements Localized {
      * If the collection contains other collections, the other collections will <strong>not</strong>
      * be written recursively.
      */
-    private void appendCollection(final Iterable<?> values, final boolean recursive) throws IOException {
+    private void appendCollection(final Iterable<?> values) throws IOException {
         if (values != null) {
             if (recursive) {
                 append('…');                                // Do not format collections inside collections.
@@ -194,7 +199,12 @@ public abstract class PropertyFormat extends LineAppender implements Localized {
                 for (final Object value : values) {
                     if (value != null) {
                         if (count != 0) append(", ");
-                        appendValue(value, true);
+                        try {
+                            recursive = true;
+                            appendValue(value);
+                        } finally {
+                            recursive = false;
+                        }
                         if (++count == 10) {                // Arbitrary limit.
                             append(", …");
                             break;
@@ -203,14 +213,6 @@ public abstract class PropertyFormat extends LineAppender implements Localized {
                 }
             }
         }
-    }
-
-    /**
-     * Workaround for the inability to define the variable {@code <V>} locally.
-     */
-    @Workaround(library="JDK", version="1.7")
-    private <V> void appendCompound(final CompoundFormat<V> format, final Object value) throws IOException {
-        format.format(format.getValueType().cast(value), this);
     }
 
     /**

@@ -51,6 +51,7 @@ public final class ModificationTime extends FullBox {
     /**
      * The last modification time of the item.
      */
+    @Interpretation(value=Type.NONE, summary=true)
     public final Instant modificationTime;
 
     /**

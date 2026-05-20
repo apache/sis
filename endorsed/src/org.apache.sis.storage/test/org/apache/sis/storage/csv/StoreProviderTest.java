@@ -16,11 +16,11 @@
  */
 package org.apache.sis.storage.csv;
 
-import org.apache.sis.setup.OptionKey;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
+import org.apache.sis.storage.OptionKey;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

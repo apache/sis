@@ -37,6 +37,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.operation.provider.Spherical2Dto3D;
 import org.apache.sis.referencing.operation.provider.Spherical3Dto2D;
+import org.apache.sis.referencing.factory.InternalFactoryException;
 import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.parameter.Parameters;
@@ -228,7 +229,7 @@ public class EllipsoidToRadiusTransform extends AbstractMathTransform implements
             }
             return complete;
         } catch (NoninvertibleTransformException e) {
-            throw new FactoryException(e);      // Should never happen.
+            throw new InternalFactoryException(e);      // Should never happen.
         }
         /*
          * Spherical case: the radius value is a constant. In this case,

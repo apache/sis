@@ -34,7 +34,7 @@ import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.coverage.internal.shared.RangeArgument;
 import org.apache.sis.referencing.internal.shared.DirectPositionView;
 import org.apache.sis.storage.internal.Resources;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.pending.jdk.JDK16;

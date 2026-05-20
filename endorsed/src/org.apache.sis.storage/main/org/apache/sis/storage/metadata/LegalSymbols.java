@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.base;
+package org.apache.sis.storage.metadata;
 
 import java.time.Year;
 import java.util.Locale;
@@ -26,6 +26,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.DefaultInternationalString;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.metadata.iso.citation.AbstractParty;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;

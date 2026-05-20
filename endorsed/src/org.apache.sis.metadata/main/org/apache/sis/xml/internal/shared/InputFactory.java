@@ -37,14 +37,14 @@ import org.apache.sis.util.logging.Logging;
 
 
 /**
- * Provides access to {@link XMLInputFactory} methods as static methods working on a SIS-wide instance.
- * This convenience is provided in a separated class in order to allow the JVM to instantiate the factory
- * only when first needed, when initializing this class.
+ * Provides access to {@link XMLInputFactory} methods as static methods working on a <abbr>SIS</abbr>-wide instance.
+ * This convenience class is provided in a separated class in order to allow the <abbr>JVM</abbr> to instantiate the
+ * factory only when first needed, when initializing this class.
  *
  * <h2>Security</h2>
- * Unless the user has configured the {@code javax.xml.accessExternalDTD} property to something else
- * than {@code "all"}, this class disallows external DTDs referenced by the {@code "file"} protocols.
- * Allowed protocols are <abbr>HTTP</abbr> and <abbr>HTTPS</abbr> (list may be expanded if needed).
+ * Unless user has configured the {@code javax.xml.accessExternalDTD} property to something else than {@code "all"},
+ * this class disallows external <abbr>DTD</abbr>s. While {@code "file"} is the most important protocol to disable
+ * for preventing leaks of sensitive data, other protocols are disabled too for avoiding recursive fetching.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
@@ -52,19 +52,26 @@ import org.apache.sis.util.logging.Logging;
  */
 public final class InputFactory {
     /**
-     * The SIS-wide factory. This factory can be specified by the user, for example using the
-     * {@code javax.xml.stream.XMLInputFactory} system property or with {@code META-INF/services}.
+     * The <abbr>SIS</abbr>-wide factory.
      *
-     * @see org.apache.sis.storage.xml.stream.StaxDataStore#inputFactory()
+     * @todo Should be replaced by a field in the classes that need it. There are not many.
      */
-    private static final XMLInputFactory FACTORY = XMLInputFactory.newInstance();
-    static {
+    private static final XMLInputFactory FACTORY = newSecureFactory();
+
+    /**
+     * Creates a new <abbr>XML</abbr> factory with some security setting enabled.
+     *
+     * @return a new <abbr>XML</abbr> factory.
+     */
+    public static XMLInputFactory newSecureFactory() {
+        final XMLInputFactory factory = XMLInputFactory.newFactory();
+        if (factory.isPropertySupported(XMLConstants.FEATURE_SECURE_PROCESSING)) {
+            factory.setProperty(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);
+        }
         try {
-            if (FACTORY.isPropertySupported(XMLConstants.FEATURE_SECURE_PROCESSING)) {
-                FACTORY.setProperty(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);
-            }
-            if ("all".equals(FACTORY.getProperty(XMLConstants.ACCESS_EXTERNAL_DTD))) {
-                FACTORY.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            // No `isPropertySupported(…)` because support of this property is required.
+            if ("all".equals(factory.getProperty(XMLConstants.ACCESS_EXTERNAL_DTD))) {
+                factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
             }
         } catch (IllegalArgumentException e) {
             /*
@@ -74,8 +81,9 @@ public final class InputFactory {
              */
             final var record = new LogRecord(Level.CONFIG, e.getLocalizedMessage());
             record.setThrown(e);
-            Logging.completeAndLog(Logger.getLogger(Loggers.XML), InputFactory.class, "createXMLEventReader", record);
+            Logging.completeAndLog(Logger.getLogger(Loggers.XML), InputFactory.class, "newSecureFactory", record);
         }
+        return factory;
     }
 
     /**

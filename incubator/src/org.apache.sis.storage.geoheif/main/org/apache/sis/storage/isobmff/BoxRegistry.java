@@ -40,6 +40,15 @@ public abstract class BoxRegistry {
     }
 
     /**
+     * Returns the registry for all boxes.
+     *
+     * @return the registry for all boxes.
+     */
+    public static BoxRegistry global() {
+        return MainBoxRegistry.INSTANCE;
+    }
+
+    /**
      * Creates a new box for the given box type.
      * Unknown types should be ignored.
      *

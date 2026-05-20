@@ -797,7 +797,7 @@ class CoordinateOperationRegistry {
         final CoordinateReferenceSystem targetCRS = op.getTargetCRS();
         final MathTransform transform = op.getMathTransform().inverse();
         final OperationMethod method = InverseOperationMethod.create(op.getMethod(), this);
-        final Map<String,Object> properties = properties(INVERSE_OPERATION);
+        final Map<String, Object> properties = properties(INVERSE_OPERATION);
         InverseOperationMethod.properties(op, properties);
         inverse = createFromMathTransform(properties, targetCRS, sourceCRS, transform, method, null, typeOf(op));
         AbstractCoordinateOperation.setCachedInverse(op, inverse);
@@ -831,7 +831,7 @@ class CoordinateOperationRegistry {
         if (operation instanceof ConcatenatedOperation) {
             final CoordinateOperation[] inverted = getSteps((ConcatenatedOperation) operation, true);
             ArraysExt.reverse(inverted);
-            final Map<String,Object> properties = properties(INVERSE_OPERATION);
+            final Map<String, Object> properties = properties(INVERSE_OPERATION);
             final MathTransform transform = operation.getMathTransform();
             if (transform != null) {
                 properties.put(DefaultConcatenatedOperation.TRANSFORM_KEY, transform.inverse());
@@ -1026,7 +1026,7 @@ class CoordinateOperationRegistry {
         CoordinateReferenceSystem crs;
         if (Utilities.equalsApproximately(sourceCRS, crs = operation.getSourceCRS())) sourceCRS = crs;
         if (Utilities.equalsApproximately(targetCRS, crs = operation.getTargetCRS())) targetCRS = crs;
-        final Map<String,Object> properties = new HashMap<>(derivedFrom(operation));
+        final var properties = new HashMap<String, Object>(derivedFrom(operation));
         properties.put(CoordinateOperations.OPERATION_TYPE_KEY, typeOf(operation));
         /*
          * Reuse the same operation method, but we may need to change its number of dimension.
@@ -1034,7 +1034,7 @@ class CoordinateOperationRegistry {
          * The capability to resize an operation method is specific to Apache SIS.
          */
         if (AbstractCoordinateOperation.isSingleOperation(operation)) {
-            final SingleOperation single = (SingleOperation) operation;
+            final var single = (SingleOperation) operation;
             properties.put(CoordinateOperations.PARAMETERS_KEY, single.getParameterValues());
             if (method == null) {
                 method = single.getMethod();
@@ -1290,8 +1290,8 @@ class CoordinateOperationRegistry {
      * @param  name  the name to put in a map.
      * @return a modifiable map containing the given name. Callers can put other entries in this map.
      */
-    static Map<String,Object> properties(final Identifier name) {
-        final var properties = new HashMap<String,Object>(4);
+    static Map<String, Object> properties(final Identifier name) {
+        final var properties = new HashMap<String, Object>(4);
         properties.put(CoordinateOperation.NAME_KEY, name);
         return properties;
     }
@@ -1356,7 +1356,7 @@ class CoordinateOperationRegistry {
      * @return a coordinate operation using the specified math transform.
      * @throws FactoryException if the operation cannot be created.
      */
-    final CoordinateOperation createFromMathTransform(final Map<String,Object>        properties,
+    final CoordinateOperation createFromMathTransform(final Map<String, Object>       properties,
                                                       final CoordinateReferenceSystem sourceCRS,
                                                       final CoordinateReferenceSystem targetCRS,
                                                       final MathTransform             transform,

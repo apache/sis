@@ -40,7 +40,7 @@ import javax.xml.namespace.QName;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.temporal.LenientDateFormat;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.geotiff.base.Tags;
 import org.apache.sis.util.collection.TreeTable;
@@ -207,7 +207,8 @@ public final class XMLMetadata implements Filter {
     }
 
     /**
-     * Returns a reader for the XML document, or {@code null} if the document could not be read.
+     * Returns a reader for the <abbr>XML</abbr> document,
+     * or {@code null} if the document could not be read.
      */
     private XMLEventReader toXML() throws XMLStreamException {
         if (bytes != null) {

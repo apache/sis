@@ -46,6 +46,7 @@ import org.apache.sis.referencing.operation.gridded.LoadedGrid;
 import org.apache.sis.referencing.operation.gridded.GridLoader;
 import org.apache.sis.referencing.operation.gridded.CompressedGrid;
 import org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform;
+import org.apache.sis.referencing.factory.InternalFactoryException;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.shared.NilReferencingObject;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -303,7 +304,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
         try {
             tr = tr.inverse();
         } catch (NoninvertibleTransformException e) {
-            throw new FactoryException(e);                  // Should never happen.
+            throw new InternalFactoryException(e);          // Should never happen.
         }
         return tr;
     }

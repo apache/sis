@@ -86,6 +86,8 @@ public final class Anchor extends XLink implements InternationalString {
     /**
      * Returns the text as a string, or {@code null} if none. The null value is needed for proper
      * working of {@link org.apache.sis.xml.bind.gco.GO_CharacterString#toString()} method.
+     *
+     * @return the string in the default locale.
      */
     @Override
     public String toString() {
@@ -126,13 +128,14 @@ public final class Anchor extends XLink implements InternationalString {
      * appropriate for the sub-sequence.
      */
     @Override
+    @SuppressWarnings("StringEquality")
     public CharSequence subSequence(final int start, final int end) {
         String original = value;
         if (original == null) {
             original = "";
         }
         final String substring = original.substring(start, end);
-        if (substring == original) {                                // Identity comparison is ok here.
+        if (substring == original) {        // Identity comparison is ok here.
             return this;
         }
         return new Anchor(this, substring);
@@ -164,7 +167,7 @@ public final class Anchor extends XLink implements InternationalString {
             return true;
         }
         if (super.equals(object)) {
-            final Anchor that = (Anchor) object;
+            final var that = (Anchor) object;
             return Objects.equals(this.value, that.value);
         }
         return false;
@@ -172,6 +175,8 @@ public final class Anchor extends XLink implements InternationalString {
 
     /**
      * Returns a hash code value for this anchor type.
+     *
+     * @return an arbitrary hash code value.
      */
     @Override
     public int hashCode() {

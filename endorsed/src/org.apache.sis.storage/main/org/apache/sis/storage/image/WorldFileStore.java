@@ -42,6 +42,7 @@ import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.io.stream.IOUtilities;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.StorageConnector;
@@ -53,7 +54,7 @@ import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.storage.base.PRJDataStore;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.base.AuxiliaryContent;
 import org.apache.sis.referencing.internal.shared.AffineTransform2D;
 import org.apache.sis.util.CharSequences;
@@ -61,7 +62,6 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.ListOfUnknownSize;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.setup.OptionKey;
 
 
 /**

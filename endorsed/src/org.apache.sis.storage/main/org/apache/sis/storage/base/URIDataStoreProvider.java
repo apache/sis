@@ -29,12 +29,14 @@ import java.nio.file.Path;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.charset.Charset;
+import java.time.ZoneId;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
@@ -43,7 +45,6 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.IOUtilities;
-import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.logging.Logging;
 
@@ -193,7 +194,16 @@ public abstract class URIDataStoreProvider extends DataStoreProvider {
         if (parameters != null) try {
             final Object location = parameters.parameter(LOCATION).getValue();
             if (location != null) {
-                return new StorageConnector(location);
+                StorageConnector cnx = new StorageConnector(location);
+                try {
+                    final Object zoneId = parameters.parameter(TIMEZONE).getValue();
+                    if (zoneId instanceof ZoneId) {
+                        cnx.setOption(org.apache.sis.setup.OptionKey.TIMEZONE, (ZoneId) zoneId);
+                    } else if (zoneId instanceof String) {
+                        cnx.setOption(org.apache.sis.setup.OptionKey.TIMEZONE, ZoneId.of((String) zoneId));
+                    }
+                } catch (ParameterNotFoundException e) {}
+                return cnx;
             }
         } catch (ParameterNotFoundException e) {
             cause = e;

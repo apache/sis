@@ -304,7 +304,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      */
     static String reformat(String code) {
         try {
-            final CommonAuthorityCode parsed = new CommonAuthorityCode(code);
+            final var parsed = new CommonAuthorityCode(code);
             code = parsed.localCode;
             code = parsed.isNumeric ? format(Integer.parseInt(code)) : format(code);
         } catch (NoSuchAuthorityCodeException | NumberFormatException e) {
@@ -368,7 +368,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     private void add(final int code, final Class<? extends SingleCRS> type) throws FactoryException {
         assert (code >= FIRST_PROJECTION_CODE) == (ProjectedCRS.class.isAssignableFrom(type)) : code;
         if (codes.put(format(code), type) != null) {
-            throw new FactoryException();    // Should never happen, but we are paranoiac.
+            throw new InternalFactoryException();     // Should never happen, but we are paranoiac.
         }
     }
 
@@ -421,7 +421,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     public Optional<InternationalString> getDescriptionText(final Class<? extends IdentifiedObject> type, final String code)
             throws FactoryException
     {
-        final CommonAuthorityCode parsed = new CommonAuthorityCode(code);
+        final var parsed = new CommonAuthorityCode(code);
         if (parsed.isNumeric && parsed.isParameterless()) {
             /*
              * For codes in the "AUTO(2)" namespace without parameters, we cannot rely on the default implementation

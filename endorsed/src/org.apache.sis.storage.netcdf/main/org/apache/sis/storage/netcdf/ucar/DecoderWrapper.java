@@ -52,7 +52,7 @@ import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.Variable;

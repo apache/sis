@@ -20,9 +20,9 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.concurrent.locks.ReadWriteLock;
-import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreProvider;
+import org.apache.sis.storage.OptionKey;
 
 
 /**

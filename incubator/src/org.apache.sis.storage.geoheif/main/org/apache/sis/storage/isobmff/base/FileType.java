@@ -50,7 +50,7 @@ public final class FileType extends Box {
     /**
      * Brand identifier.
      */
-    @Interpretation(Type.FOURCC)
+    @Interpretation(value=Type.FOURCC, summary=true)
     public final int majorBrand;
 
     /**

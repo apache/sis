@@ -33,6 +33,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.ImmutableIdentifier;
@@ -43,6 +44,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.WraparoundTransform;
 import org.apache.sis.referencing.internal.shared.ExtendedPrecisionMatrix;
 import org.apache.sis.util.ComparisonMode;
 
@@ -881,6 +883,52 @@ public final class GridGeometryTest extends TestCase {
         assertEquals("x₂", cs.getAxis(1).getAbbreviation());
         assertEquals("t",  cs.getAxis(2).getAbbreviation());
         assertAxisDirectionsEqual(cs, AxisDirection.NORTH, AxisDirection.WEST, AxisDirection.FUTURE);
+    }
+
+    /**
+     * Tests coordinate operation between two derived <abbr>CRS</abbr>s
+     * created by {@link GridGeometry#createGridCRS(Identifier, PixelInCell)}.
+     * Apache <abbr>SIS</abbr> should recognize this special case and redirects
+     * to {@link GridGeometry#createTransformTo(GridGeometry, PixelInCell)}.
+     *
+     * @throws FactoryException if the <abbr>CRS</abbr> cannot be built.
+     */
+    @Test
+    public void testCreateConcatenatedOperation() throws FactoryException {
+        final var extent  = new GridExtent(90, 30);
+        final var crsPair = new CoordinateReferenceSystem[2];
+        for (int i=0; i<crsPair.length; i++) {
+            MathTransform gridToCRS = MathTransforms.linear(new Matrix3(
+                    1, 0, 150 + i,  // Longitude overlapping the anti-meridian.
+                    0, 1, 25,       // Latitude
+                    0, 0,  1));
+            if (i == 0) {
+                /*
+                 * Add an arbitrary non-linear transform while still pretending that the CRS is WGS84.
+                 * This is not correct as the CRS is Mercator. But we don't declare that CRS because,
+                 * for the purpose of this test, we don't want the projected CRS to be reversed, thus
+                 * cancelling our artificial non-linear part.
+                 */
+                gridToCRS = MathTransforms.concatenate(gridToCRS,
+                        HardCodedConversions.mercator().getConversionFromBase().getMathTransform());
+            }
+            final var name = new ImmutableIdentifier(null, null, "Grid #" + i);
+            final var grid = new GridGeometry(extent, PixelInCell.CELL_CORNER, gridToCRS, HardCodedCRS.WGS84);
+            crsPair[i] = grid.createGridCRS(name, PixelInCell.CELL_CENTER);
+        }
+        /*
+         * Ask for the transform between the two grids and verify that it contains a `WraparoundTransform` step.
+         * The presence of this step is what differentiate the result from what we would get without the special
+         * case.
+         */
+        int wraparound = 0;
+        final CoordinateOperation op = CRS.findOperation(crsPair[0], crsPair[1], null);
+        for (MathTransform step : MathTransforms.getSteps(op.getMathTransform())) {
+            if (step instanceof WraparoundTransform) {
+                wraparound++;
+            }
+        }
+        assertEquals(1, wraparound);
     }
 
     /**

@@ -20,17 +20,18 @@ import java.io.IOException;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
+import org.apache.sis.storage.isobmff.Incomplete;
 import org.apache.sis.storage.isobmff.UnsupportedVersionException;
 
 
 /**
  * From ISO/IEC 23001-17:2024 amendment 1.
- *
- * @todo Verify box structure and document.
  * The specification was not yet published at the time of writing this class.
+ * Therefore, the box structure needs to be verified and may change.
  *
  * @author Johann Sorel (Geomatys)
  */
+@Incomplete
 public final class TAITimeStamp extends FullBox {
     /**
      * Numerical representation of the {@code "itai"} box type.

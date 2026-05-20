@@ -47,7 +47,7 @@ import org.apache.sis.measure.Longitude;
  * </ul>
  *
  * While optional, those information can help {@link DefaultCoordinateOperationFactory}
- * to choose the most suitable coordinate transformation between two CRS.
+ * to choose the most suitable coordinate transformation between two <abbr>CRS</abbr>s.
  *
  * <p>{@code CoordinateOperationContext} is part of the <abbr>API</abbr>
  * used by <abbr>SIS</abbr> for implementing the <i>late binding</i> model.

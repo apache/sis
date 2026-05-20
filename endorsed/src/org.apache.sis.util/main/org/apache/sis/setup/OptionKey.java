@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Objects;
 import java.time.ZoneId;
-import java.nio.ByteBuffer;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import java.nio.charset.Charset;
@@ -63,12 +62,15 @@ import org.apache.sis.system.Modules;
  *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @param <T>  the type of option values.
  *
  * @since 0.3
+ *
+ * @deprecated Moved to the {@link org.apache.sis.storage} because these options appear to be used only by data stores.
  */
+@Deprecated(since = "1.7", forRemoval = true)
 public class OptionKey<T> implements Serializable {
     /**
      * For cross-version compatibility.
@@ -88,7 +90,7 @@ public class OptionKey<T> implements Serializable {
      *
      * @since 0.8
      */
-    public static final OptionKey<Locale> LOCALE = new OptionKey<>("LOCALE", Locale.class);
+    public static OptionKey<Locale> LOCALE = new OptionKey<>("LOCALE", Locale.class);
 
     /**
      * The timezone to use when parsing or formatting dates and times without explicit timezone.
@@ -99,7 +101,7 @@ public class OptionKey<T> implements Serializable {
      *
      * @since 0.8
      */
-    public static final OptionKey<ZoneId> TIMEZONE = new OptionKey<>("TIMEZONE", ZoneId.class);
+    public static OptionKey<ZoneId> TIMEZONE = new OptionKey<>("TIMEZONE", ZoneId.class);
 
     /**
      * The character encoding of document content.
@@ -114,7 +116,7 @@ public class OptionKey<T> implements Serializable {
      *
      * @since 0.4
      */
-    public static final OptionKey<Charset> ENCODING = new OptionKey<>("ENCODING", Charset.class);
+    public static OptionKey<Charset> ENCODING = new OptionKey<>("ENCODING", Charset.class);
 
     /**
      * The encoding of a URL (<strong>not</strong> the encoding of the document content).
@@ -146,7 +148,7 @@ public class OptionKey<T> implements Serializable {
      *
      * @see java.net.URLDecoder
      */
-    public static final OptionKey<String> URL_ENCODING = new OptionKey<>("URL_ENCODING", String.class);
+    public static OptionKey<String> URL_ENCODING = new OptionKey<>("URL_ENCODING", String.class);
 
     /**
      * Whether a storage object shall be opened in read, write, append or other modes.
@@ -161,27 +163,7 @@ public class OptionKey<T> implements Serializable {
      *   <tr><td>{@link StandardOpenOption#CREATE}</td> <td>Creates a new storage object (file or database) if it does not exist.</td></tr>
      * </table>
      */
-    public static final OptionKey<OpenOption[]> OPEN_OPTIONS = new OptionKey<>("OPEN_OPTIONS", OpenOption[].class);
-
-    /**
-     * The byte buffer to use for input/output operations. Some {@link org.apache.sis.storage.DataStore}
-     * implementations allow a byte buffer to be specified, thus allowing users to choose the buffer
-     * {@linkplain ByteBuffer#capacity() capacity}, whether the buffer {@linkplain ByteBuffer#isDirect()
-     * is direct}, or to recycle existing buffers.
-     *
-     * <p>It is user's responsibility to ensure that:</p>
-     * <ul>
-     *   <li>The buffer does not contains any valuable data, as it will be {@linkplain ByteBuffer#clear() cleared}.</li>
-     *   <li>The same buffer is not used concurrently by two different {@code DataStore} instances.</li>
-     * </ul>
-     *
-     * @deprecated This option forces unconditional allocation of byte buffer, even if the data store does not use it.
-     * It should be replaced by a {@link java.util.function.Supplier} or {@link java.util.function.Function}, but the
-     * exact form has not been determined yet.
-     */
-    @Deprecated(since="1.5")
-    // TODO: provide replacement in DataOptionKey, because this option is specific to data stores.
-    public static final OptionKey<ByteBuffer> BYTE_BUFFER = new OptionKey<>("BYTE_BUFFER", ByteBuffer.class);
+    public static OptionKey<OpenOption[]> OPEN_OPTIONS = new OptionKey<>("OPEN_OPTIONS", OpenOption[].class);
 
     /**
      * The coordinate reference system (CRS) of data to use if not explicitly defined.
@@ -191,7 +173,7 @@ public class OptionKey<T> implements Serializable {
      *
      * @since 1.5
      */
-    public static final OptionKey<CoordinateReferenceSystem> DEFAULT_CRS =
+    public static OptionKey<CoordinateReferenceSystem> DEFAULT_CRS =
             new OptionKey<>("DEFAULT_CRS", CoordinateReferenceSystem.class);
 
     /**
@@ -202,7 +184,7 @@ public class OptionKey<T> implements Serializable {
      *
      * @since 0.8
      */
-    public static final OptionKey<GeometryLibrary> GEOMETRY_LIBRARY = new OptionKey<>("GEOMETRY_LIBRARY", GeometryLibrary.class);
+    public static OptionKey<GeometryLibrary> GEOMETRY_LIBRARY = new OptionKey<>("GEOMETRY_LIBRARY", GeometryLibrary.class);
 
     /**
      * The number of spaces to use for indentation when formatting text files in WKT or XML formats.
@@ -218,7 +200,7 @@ public class OptionKey<T> implements Serializable {
      *
      * @since 0.8
      */
-    public static final OptionKey<Integer> INDENTATION = new OptionKey<>("INDENTATION", Integer.class);
+    public static OptionKey<Integer> INDENTATION = new OptionKey<>("INDENTATION", Integer.class);
 
     /*
      * Note: we do not provide a LINE_SEPARATOR option for now because we cannot control the line separator
@@ -278,7 +260,7 @@ public class OptionKey<T> implements Serializable {
      * @param  options  the map where to search for the value, or {@code null} if not yet created.
      * @return the current value in the map for the this option, or {@code null} if none.
      */
-    public T getValueFrom(final Map<OptionKey<?>,?> options) {
+    public T getValueFrom(final Map<? extends OptionKey<?>, ?> options) {
         return (options != null) ? type.cast(options.get(this)) : null;
     }
 
@@ -297,7 +279,7 @@ public class OptionKey<T> implements Serializable {
      * @return the given map of options, or a new map if the given map was null. The returned value
      *         may be null if the given map and the given value are both null.
      */
-    public Map<OptionKey<?>,Object> setValueInto(Map<OptionKey<?>,Object> options, final T value) {
+    public Map<OptionKey<?>, Object> setValueInto(Map<OptionKey<?>, Object> options, final T value) {
         if (value != null) {
             if (options == null) {
                 options = new HashMap<>();

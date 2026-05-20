@@ -46,6 +46,7 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultTransformationTest extends TestCase {
     /**
      * Creates a new test case.
@@ -93,7 +94,7 @@ public final class DefaultTransformationTest extends TestCase {
          * did not bothered to define a specialized MathTransform class for our case. So we will help
          * a little bit DefaultTransformation by telling it the parameters that we used.
          */
-        final Map<String, Object> properties = new HashMap<>(4);
+        final var properties = new HashMap<String, Object>(4);
         properties.put(DefaultTransformation.NAME_KEY, "Tokyo to JGD2000 (GSI)");
         properties.put(DefaultTransformation.OPERATION_VERSION_KEY, "GSI-Jpn");
         properties.put(CoordinateOperations.PARAMETERS_KEY, pg);

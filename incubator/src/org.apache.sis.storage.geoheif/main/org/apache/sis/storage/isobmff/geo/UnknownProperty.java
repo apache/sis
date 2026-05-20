@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.isobmff.gimi;
+package org.apache.sis.storage.isobmff.geo;
 
 import java.util.UUID;
 import java.io.IOException;
@@ -23,7 +23,7 @@ import org.apache.sis.storage.isobmff.Reader;
 
 
 /**
- * Unknown property observed in GIMI test file.
+ * Unknown property observed in GeoHEIF test file.
  * For now, we keep this class only as a reminder for the pattern to use for box by UUID.
  * We will remove or rename this class in the future if we identify a real case of such box.
  *

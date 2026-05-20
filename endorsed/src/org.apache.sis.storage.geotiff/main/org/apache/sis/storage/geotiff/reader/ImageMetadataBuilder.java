@@ -22,7 +22,7 @@ import javax.measure.quantity.Length;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.geotiff.GeoTiffStore;
 import org.apache.sis.storage.geotiff.base.Resources;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Units;

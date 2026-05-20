@@ -14,33 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage;
-
-// Test dependencies
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.Assertions.assertSerializedEquals;
-
 
 /**
- * Tests {@link DataOptionKey}.
+ * Helper methods for handling <abbr>ISO</abbr> or native metadata in data stores.
+ *
+ * <STRONG>Do not use!</STRONG>
+ *
+ * This package is for internal use by SIS only. Classes in this package
+ * may change in incompatible ways in any future version without notice.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  */
-public final class DataOptionKeyTest extends TestCase {
-    /**
-     * Creates a new test case.
-     */
-    public DataOptionKeyTest() {
-    }
-
-    /**
-     * Tests the serialization of constants.
-     * Those constants shall be resolved to their singleton instance on deserialization.
-     */
-    @Test
-    public void testSerialization() {
-        assertSame(DataOptionKey.METADATA_PATH,  assertSerializedEquals(DataOptionKey.METADATA_PATH));
-    }
-}
+package org.apache.sis.storage.metadata;

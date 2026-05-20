@@ -29,7 +29,6 @@ import javafx.scene.layout.Region;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.DefaultProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
@@ -276,8 +275,8 @@ public class FeatureTable extends TableView<Feature> {
      */
     private void createColumns() {
         final Collection<? extends PropertyType> properties = featureType.getProperties(true);
-        final List<TableColumn<Feature,?>> columns = new ArrayList<>(properties.size());
-        final List<String> multiValued = new ArrayList<>(columns.size());
+        final var columns = new ArrayList<TableColumn<Feature, ?>>(properties.size());
+        final var multiValued = new ArrayList<String>(columns.size());
         for (final PropertyType pt : properties) {
             /*
              * Get localized text to show in column header. Also remember
@@ -309,7 +308,7 @@ public class FeatureTable extends TableView<Feature> {
              * gives the whole collection. Fetching a particular element in that collection will
              * be ElementCell's work.
              */
-            final TableColumn<Feature,Object> column = new TableColumn<>(title);
+            final var column = new TableColumn<Feature, Object>(title);
             column.setCellValueFactory(new ValueGetter(name));
             column.setCellFactory(isMultiValued ? ElementCell::new : ValueCell::new);
             if (AttributeConvention.contains(qualifiedName)) {
@@ -326,7 +325,7 @@ public class FeatureTable extends TableView<Feature> {
         } else {
             final ExpandableList list = getExpandableList();
             list.setMultivaluedColumns(multiValued);
-            final TableColumn<Feature,Feature> column = new TableColumn<>("▤");
+            final var column = new TableColumn<Feature, Feature>("▤");
             column.setCellValueFactory(IdentityValueFactory.instance());
             column.setCellFactory(list);
             column.setReorderable(false);
@@ -349,7 +348,7 @@ public class FeatureTable extends TableView<Feature> {
      * easy way to know the current row number. Fetching a particular element in that collection will be done by
      * {@link ExpandedFeature}.
      */
-    private static final class ValueGetter implements Callback<TableColumn.CellDataFeatures<Feature,Object>, ObservableValue<Object>> {
+    private static final class ValueGetter implements Callback<TableColumn.CellDataFeatures<Feature, Object>, ObservableValue<Object>> {
         /**
          * The name of the feature property for which to fetch values.
          */
@@ -375,7 +374,7 @@ public class FeatureTable extends TableView<Feature> {
             if (feature != null) {
                 value = feature.getPropertyValue(name);
             }
-            return new ReadOnlyObjectWrapper<>(value);
+            return new SimpleObjectProperty<>(value);
         }
     }
 
@@ -383,13 +382,13 @@ public class FeatureTable extends TableView<Feature> {
      * A cell displaying a value in {@link FeatureTable}. This base class expects single values.
      * If the property values are collections, then {@link ElementCell} should be used instead.
      */
-    private static class ValueCell extends TableCell<Feature,Object> {
+    private static class ValueCell extends TableCell<Feature, Object> {
         /**
          * Creates a new cell for feature property value.
          *
          * @param  column  the column where the cell will be shown.
          */
-        ValueCell(final TableColumn<Feature,Object> column) {
+        ValueCell(final TableColumn<Feature, Object> column) {
             // Column not used at this time, but we need it in method signature.
         }
 
@@ -431,7 +430,7 @@ public class FeatureTable extends TableView<Feature> {
          *
          * @param  column  the column where the cell will be shown.
          */
-        ElementCell(final TableColumn<Feature,Object> column) {
+        ElementCell(final TableColumn<Feature, Object> column) {
             super(column);
         }
 

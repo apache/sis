@@ -39,10 +39,9 @@ import org.opengis.util.NameSpace;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
-import org.apache.sis.storage.DataOptionKey;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreProvider;
@@ -50,7 +49,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.aggregate.CoverageAggregator;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.storage.internal.Resources;
@@ -315,7 +314,7 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
                          * check if we can open it as a child folder store before to skip it.
                          */
                         final StorageConnector connector = new StorageConnector(configuration, candidate);
-                        connector.setOption(DataOptionKey.PARENT_LISTENERS, listeners);
+                        connector.setOption(OptionKey.PARENT_LISTENERS, listeners);
                         connector.setOption(OptionKey.OPEN_OPTIONS, new StandardOpenOption[] {
                             StandardOpenOption.READ         // Restrict to read-only mode.
                         });

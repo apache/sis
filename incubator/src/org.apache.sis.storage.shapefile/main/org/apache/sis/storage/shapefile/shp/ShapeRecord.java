@@ -35,6 +35,7 @@ public final class ShapeRecord {
 
     /**
      * Record number.
+     * Starts at 1 in the file.
      */
     public int recordNumber;
     /**

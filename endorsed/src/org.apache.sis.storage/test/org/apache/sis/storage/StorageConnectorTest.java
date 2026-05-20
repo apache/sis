@@ -29,7 +29,6 @@ import java.nio.channels.ReadableByteChannel;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import java.sql.Connection;
-import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelImageInputStream;

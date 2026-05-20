@@ -55,6 +55,7 @@ import org.opengis.metadata.citation.Party;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class TreeNodeTest extends TestCase {
     /**
      * Creates a new test case.
@@ -95,8 +96,8 @@ public final class TreeNodeTest extends TestCase {
         assertTrue(citation.getCitedResponsibleParties().add(responsibility));
 
         // Add a second responsible party with deeper hierarchy.
-        final DefaultContact contact = new DefaultContact();
-        final DefaultAddress address = new DefaultAddress();
+        final var contact = new DefaultContact();
+        final var address = new DefaultAddress();
         address.setElectronicMailAddresses(Set.of("Some email"));
         contact.setAddresses(Set.of(address));
         party = new DefaultIndividual("Some person of contact", null, contact);
@@ -116,8 +117,8 @@ public final class TreeNodeTest extends TestCase {
      */
     private <T extends AbstractMetadata> TreeNode create(final T metadata, final Class<? super T> baseType) {
         final MetadataStandard  standard = MetadataStandard.ISO_19115;
-        final TreeTableView table = new TreeTableView(standard, metadata, baseType, valuePolicy);
-        return (TreeNode) table.getRoot();
+        final var table = new TreeTableView(standard, metadata, baseType, valuePolicy);
+        return assertInstanceOf(TreeNode.class, table.getRoot());
     }
 
     /**
@@ -135,7 +136,7 @@ public final class TreeNodeTest extends TestCase {
         assertNull  (                node.getParent());
         assertFalse (                node.isLeaf());
 
-        final TreeNodeChildren children = (TreeNodeChildren) node.getChildren();
+        final TreeNodeChildren children = assertInstanceOf(TreeNodeChildren.class, node.getChildren());
         assertEquals(-1, children.titleProperty);
         assertSame  (citation, children.metadata);
         assertFalse (node.getChildren().isEmpty());

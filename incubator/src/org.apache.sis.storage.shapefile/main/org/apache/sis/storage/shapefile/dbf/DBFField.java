@@ -151,7 +151,7 @@ public final class DBFField {
         switch (Character.toUpperCase(fieldType)) {
             case TYPE_BINARY : valueClass = Long.class;      reader = this::readBinary; writer = this::writeBinary; break;
             case TYPE_CHAR :   valueClass = String.class;    reader = this::readChar;   writer = this::writeChar; break;
-            case TYPE_DATE :   valueClass = LocalDate.class; reader = this::readDate;   writer = this::writeDate; break;
+            case TYPE_DATE :   valueClass = timezone == null ? LocalDate.class : ZonedDateTime.class; reader = this::readDate;   writer = this::writeDate; break;
             case TYPE_NUMBER : {
                 if (fieldDecimals != 0) {  valueClass = Double.class;  reader = this::readNumber;     writer = this::writeNumber;
                     format = NumberFormat.getNumberInstance(Locale.US);

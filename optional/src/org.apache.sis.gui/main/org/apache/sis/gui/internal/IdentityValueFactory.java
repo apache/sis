@@ -16,7 +16,7 @@
  */
 package org.apache.sis.gui.internal;
 
-import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.TableColumn;
 import javafx.util.Callback;
@@ -66,6 +66,6 @@ public final class IdentityValueFactory<S extends T, T>
      */
     @Override
     public ObservableValue<T> call(final TableColumn.CellDataFeatures<S,T> cell) {
-        return new ReadOnlyObjectWrapper<>(cell.getValue());
+        return new SimpleObjectProperty<>(cell.getValue());
     }
 }
