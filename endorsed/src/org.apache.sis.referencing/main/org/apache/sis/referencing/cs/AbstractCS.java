@@ -79,7 +79,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see DefaultCoordinateSystemAxis
  * @see org.apache.sis.referencing.crs.AbstractCRS
@@ -348,14 +348,15 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
      * The default implementation returns {@code CoordinateSystem.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
      * @return the coordinate system interface implemented by this class.
+     * @since 1.7
      */
     @Override
-    public Class<? extends CoordinateSystem> getInterface() {
+    public Class<? extends CoordinateSystem> getStandardType() {
         return CoordinateSystem.class;
     }
 
@@ -514,7 +515,7 @@ next:   for (final CoordinateSystemAxis axis : axes) {
      */
     private AbstractCS resolveEPSG(final AbstractCS original) {
         if (IdentifiedObjects.getIdentifier(original, Citations.EPSG) != null) {
-            final Integer epsg = CoordinateSystems.getEpsgCode(getInterface(), axes);
+            final Integer epsg = CoordinateSystems.getEpsgCode(getStandardType(), axes);
             if (epsg != null) try {
                 final AuthorityFactory factory = CRS.getAuthorityFactory(Constants.EPSG);
                 if (factory instanceof CSAuthorityFactory) {
@@ -643,7 +644,7 @@ next:   for (final CoordinateSystemAxis axis : axes) {
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        final String type = WKTUtilities.toType(CoordinateSystem.class, getInterface());
+        final String type = WKTUtilities.toType(CoordinateSystem.class, getStandardType());
         if (type == null) {
             formatter.setInvalidWKT(this, null);
         }

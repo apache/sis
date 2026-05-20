@@ -38,7 +38,6 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
-import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Errors;
 
@@ -1360,7 +1359,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
          * Get the actual type of the object. Returns the GeoAPI type if possible,
          * or fallback on the implementation class otherwise.
          */
-        final Class<?> actual = ReferencingUtilities.getInterface(IdentifiedObject.class, object);
+        final Class<?> actual = Classes.getStandardClass(object, IdentifiedObject.class);
         /*
          * Get the authority from the object if possible, in order to avoid a call
          * to the potentially costly (for EPSGDataAccess) getAuthority() method.

@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.lang.reflect.Type;
 import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlSchemaType;
@@ -83,7 +84,7 @@ import static org.opengis.annotation.Specification.*;
  * and static constants can be shared by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see org.apache.sis.referencing.cs.AbstractCS
  * @see org.apache.sis.referencing.crs.AbstractCRS
@@ -288,14 +289,14 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
      * The default implementation returns {@code Datum.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
      * @return the datum interface implemented by this class.
      */
     @Override
-    public Class<? extends Datum> getInterface() {
+    public Type getStandardType() {
         return Datum.class;
     }
 

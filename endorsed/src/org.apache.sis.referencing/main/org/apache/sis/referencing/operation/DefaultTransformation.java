@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Map;
+import java.lang.reflect.Type;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.operation.Transformation;
@@ -47,7 +48,7 @@ import org.apache.sis.util.ArgumentChecks;
  * by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.7
  *
  * @see DefaultConversion
  *
@@ -145,18 +146,14 @@ public class DefaultTransformation extends AbstractSingleOperation implements Tr
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code Transformation.class}.
-     *
-     * <h4>Note for implementers</h4>
-     * Subclasses usually do not need to override this method since GeoAPI does not define {@code Transformation}
-     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
-     * own set of interfaces.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code Transformation.class} or a user-defined sub-interface.
+     * @since 1.7
      */
     @Override
-    public Class<? extends Transformation> getInterface() {
+    public Type getStandardType() {
         return Transformation.class;
     }
 

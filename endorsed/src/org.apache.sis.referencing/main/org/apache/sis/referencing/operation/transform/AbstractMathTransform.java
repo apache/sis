@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.logging.Logger;
+import java.lang.reflect.Type;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -84,7 +85,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * running the same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.6
+ * @version 1.7
  *
  * @see DefaultMathTransformFactory
  * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation
@@ -973,6 +974,23 @@ public abstract class AbstractMathTransform extends FormattableObject
                                         that.getContextualParameters(), mode);
         }
         return false;
+    }
+
+    /**
+     * Returns the class that defines the public properties of this instance.
+     * This is the base type required by all {@code equals(…)} methods for
+     * returning a potentially {@code true} value.
+     *
+     * <p><b>Note:</b> this method does not return subtypes such as
+     * {@link org.opengis.referencing.operation.MathTransform2D} because most methods,
+     * including {@code equals(…)}, can produce the same results with the generic {@code MathTransform} type.</p>
+     *
+     * @return {@code MathTransform.class}.
+     * @since 1.7
+     */
+    @Override
+    public final Type getStandardType() {
+        return MathTransform.class;
     }
 
     /**

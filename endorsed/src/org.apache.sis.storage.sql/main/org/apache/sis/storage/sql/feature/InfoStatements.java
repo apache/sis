@@ -45,11 +45,11 @@ import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.internal.shared.DefinitionVerifier;
-import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.metadata.sql.internal.shared.SQLBuilder;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.system.CommonExecutor;
 import org.apache.sis.system.Modules;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
@@ -536,8 +536,10 @@ public class InfoStatements implements Localized, AutoCloseable {
                     if (parsed == null || parsed instanceof CoordinateReferenceSystem) {
                         fromDefinition = (CoordinateReferenceSystem) parsed;
                     } else {
-                        throw invalidSRID(Resources.Keys.UnexpectedTypeForSRID_2,
-                                ReferencingUtilities.getInterface(parsed), srid, authorityError);
+                        throw invalidSRID(
+                                Resources.Keys.UnexpectedTypeForSRID_2,
+                                Classes.getStandardClass(parsed, Object.class),
+                                srid, authorityError);
                     }
                 } catch (ParseException e) {
                     if (authorityError != null) {

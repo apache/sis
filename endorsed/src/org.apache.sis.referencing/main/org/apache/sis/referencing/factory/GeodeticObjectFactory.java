@@ -307,7 +307,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
                 final LogRecord record = Messages.forLocale(null).createLogRecord(level,
                         (id != null) ? Messages.Keys.CreatedIdentifiedObject_3
                                      : Messages.Keys.CreatedNamedObject_2,
-                        c.getInterface(), c.getName().getCode(), id);
+                        c.getStandardType(), c.getName().getCode(), id);
 
                 Logging.completeAndLog(LOGGER, GeodeticObjectFactory.class, caller, record);
             }

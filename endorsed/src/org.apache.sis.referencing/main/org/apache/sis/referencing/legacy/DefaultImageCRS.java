@@ -18,6 +18,7 @@ package org.apache.sis.referencing.legacy;
 
 import java.util.Map;
 import java.util.Objects;
+import java.lang.reflect.Type;
 import java.lang.reflect.Field;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -131,7 +132,7 @@ public final class DefaultImageCRS extends AbstractCRS implements SingleCRS {
      * @return the coordinate reference system interface implemented by this class.
      */
     @Override
-    public Class<? extends SingleCRS> getInterface() {
+    public Type getStandardType() {
         return SingleCRS.class;
     }
 

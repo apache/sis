@@ -17,6 +17,7 @@
 package org.apache.sis.referencing;
 
 import java.util.Map;
+import java.lang.reflect.Type;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
@@ -48,7 +49,7 @@ import org.opengis.metadata.Identifier;
  * synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   0.4
  */
 @XmlTransient
@@ -113,14 +114,15 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
      * The default implementation returns {@code ReferenceSystem.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
      * @return the GeoAPI interface implemented by this class.
+     * @since 1.7
      */
     @Override
-    public Class<? extends ReferenceSystem> getInterface() {
+    public Type getStandardType() {
         return ReferenceSystem.class;
     }
 

@@ -19,6 +19,7 @@ package org.apache.sis.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.lang.reflect.Type;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class UtilitiesTest extends TestCase {
     /**
      * Creates a new test case.
@@ -105,6 +107,11 @@ public final class UtilitiesTest extends TestCase {
         DummyLenient(final String label, final ComparisonMode expected) {
             this.label = label;
             this.expected = expected;
+        }
+
+        /** Returns the type of object expected by {@code equals(…)} methods. */
+        @Override public Type getStandardType() {
+            return DummyLenient.class;
         }
 
         /** Compares this object with the given one. */

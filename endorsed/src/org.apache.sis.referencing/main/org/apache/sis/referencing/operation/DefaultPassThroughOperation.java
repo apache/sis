@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.Objects;
+import java.lang.reflect.Type;
 import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -46,7 +47,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * Specifies that a subset of a coordinate tuple is subject to a specific coordinate operation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   0.6
  */
 @XmlType(name = "PassThroughOperationType", propOrder = {
@@ -176,18 +177,14 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code PassThroughOperation.class}.
-     *
-     * <h4>Note for implementers</h4>
-     * Subclasses usually do not need to override this method since GeoAPI does not define {@code PassThroughOperation}
-     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
-     * own set of interfaces.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code PassThroughOperation.class} or a user-defined sub-interface.
+     * @since 1.7
      */
     @Override
-    public Class<? extends PassThroughOperation> getInterface() {
+    public Type getStandardType() {
         return PassThroughOperation.class;
     }
 

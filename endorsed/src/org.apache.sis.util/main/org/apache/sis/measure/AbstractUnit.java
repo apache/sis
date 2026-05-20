@@ -23,6 +23,7 @@ import java.util.MissingResourceException;
 import java.util.logging.Logger;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import javax.measure.Unit;
 import javax.measure.Prefix;
 import javax.measure.Quantity;
@@ -124,7 +125,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
     final transient byte scope;
 
     /**
-     * The EPSG code, or 0 if this unit has no EPSG code.
+     * The <abbr>EPSG</abbr> code, or 0 if this unit has no <abbr>EPSG</abbr> code.
      *
      * <p>This information is not serialized because {@link #readResolve()} will replace the deserialized instance
      * by a hard-coded instance with appropriate value, if possible.</p>
@@ -134,7 +135,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
     final transient short epsg;
 
     /**
-     * Creates a new unit having the given symbol and EPSG code.
+     * Creates a new unit having the given symbol and <abbr>EPSG</abbr> code.
      *
      * @param  symbol  the unit symbol, or {@code null} if this unit has no specific symbol.
      * @param  scope   {@link UnitRegistry#SI}, {@link UnitRegistry#ACCEPTED}, other constants or 0 if unknown.
@@ -405,7 +406,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
     @Override
     public final Unit<Q> shift(final Number offset) {
         if (offset instanceof Fraction) {
-            final Fraction f = (Fraction) offset;
+            final var f = (Fraction) offset;
             return transform(LinearConverter.offset(f.numerator, f.denominator));
         }
         return shift(AbstractConverter.doubleValue(offset));
@@ -421,7 +422,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
     @Override
     public final Unit<Q> multiply(final Number multiplier) {
         if (multiplier instanceof Fraction) {
-            final Fraction f = (Fraction) multiplier;
+            final var f = (Fraction) multiplier;
             return transform(LinearConverter.scale(f.numerator, f.denominator));
         }
         return multiply(AbstractConverter.doubleValue(multiplier));
@@ -437,7 +438,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
     @Override
     public final Unit<Q> divide(final Number divisor) {
         if (divisor instanceof Fraction) {
-            final Fraction f = (Fraction) divisor;
+            final var f = (Fraction) divisor;
             return transform(LinearConverter.scale(f.denominator, f.numerator));
         }
         return divide(AbstractConverter.doubleValue(divisor));
@@ -545,6 +546,18 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
     }
 
     /**
+     * Returns the standard interface that defines the contract of this class.
+     * This is the base type required by all {@code equals(…)} methods
+     * for returning a potentially {@code true} value.
+     *
+     * @return {@code Unit.class}.
+     */
+    @Override
+    public final Type getStandardType() {
+        return Unit.class;
+    }
+
+    /**
      * Compares this unit with the given object for equality.
      *
      * @param  other  the other object to compare with this unit, or {@code null}.
@@ -567,7 +580,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
         if (mode.isIgnoringMetadata()) {
             return true;
         }
-        final AbstractUnit<?> that = (AbstractUnit<?>) other;
+        final var that = (AbstractUnit<?>) other;
         return equals(epsg, that.epsg) && equals(scope, that.scope) && Objects.equals(symbol, that.symbol);
     }
 

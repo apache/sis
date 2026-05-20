@@ -17,6 +17,8 @@
 package org.apache.sis.parameter;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Type;
+import java.lang.reflect.ParameterizedType;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -137,7 +139,7 @@ import org.apache.sis.util.logging.Logging;
  * for modifying the behavior of all getter and setter methods.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @param  <T>  the type of the value stored in this parameter.
  *
@@ -910,6 +912,20 @@ convert:            if (componentType != null) {
      * @throws InvalidParameterValueException if the given value is invalid for implementation-specific reasons.
      */
     protected void validate(final T newValue) throws InvalidParameterValueException {
+    }
+
+    /**
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
+     *
+     * @todo We could return {@link ParameterizedType} here.
+     *
+     * @return {@code ParameterValue.class} or a user-defined sub-interface.
+     * @hidden
+     */
+    @Override
+    public Type getStandardType() {
+        return ParameterValue.class;
     }
 
     /**

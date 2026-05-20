@@ -19,6 +19,7 @@ package org.apache.sis.referencing.internal.shared;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform;
+import java.lang.reflect.Type;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -377,6 +378,16 @@ public class AffineTransform2D extends ImmutableAffineTransform
             }
         }
         return inverse;
+    }
+
+    /**
+     * Returns the interface implemented by this implementation class.
+     *
+     * @return {@code LinearTransform.class}.
+     */
+    @Override
+    public final Type getStandardType() {
+        return LinearTransform.class;
     }
 
     /**

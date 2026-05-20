@@ -16,6 +16,7 @@
  */
 package org.apache.sis.xml.bind.metadata.replace;
 
+import java.lang.reflect.Type;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -104,6 +105,18 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
      */
     public ReferenceSystemMetadata(final Identifier name) {
         super(name);
+    }
+
+    /**
+     * Returns the standard interface that defines the contract of this class.
+     * This is the base type required by all {@code equals(…)} methods
+     * for returning a potentially {@code true} value.
+     *
+     * @return {@code ReferenceSystem.class} or a subtype.
+     */
+    @Override
+    public Type getStandardType() {
+        return ReferenceSystem.class;
     }
 
     /**

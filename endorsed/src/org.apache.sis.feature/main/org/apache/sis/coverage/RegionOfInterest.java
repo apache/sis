@@ -36,7 +36,7 @@ import org.apache.sis.util.Utilities;
 
 
 /**
- * Region of interest (ROI) for an operation to apply on a coverage.
+ * Region of interest (<abbr>ROI</abbr>) for an operation to apply on a coverage.
  *
  * <h2>Multi-threading</h2>
  * Instances of {@code RegionOfInterest} are immutable and thread-safe.
@@ -137,7 +137,7 @@ public class RegionOfInterest implements LenientComparable, Serializable {
     @Override
     public boolean equals(final Object other, final ComparisonMode mode) {
         if (other instanceof RegionOfInterest) {
-            final RegionOfInterest that = (RegionOfInterest) other;
+            final var that = (RegionOfInterest) other;
             if (mode != ComparisonMode.STRICT || other.getClass() == getClass()) {
                 return geometry.equals(that.geometry) && Utilities.deepEquals(crs, that.crs, mode);
             }
@@ -148,7 +148,7 @@ public class RegionOfInterest implements LenientComparable, Serializable {
     /**
      * Returns a hash code value for this region of interest.
      *
-     * @return a hash code for this ROI.
+     * @return a hash code for this <abbr>ROI</abbr>.
      */
     @Override
     public int hashCode() {

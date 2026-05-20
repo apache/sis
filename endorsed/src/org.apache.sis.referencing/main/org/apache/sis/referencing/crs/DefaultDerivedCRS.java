@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
+import java.lang.reflect.Type;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -43,7 +44,6 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -57,6 +57,7 @@ import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import static org.apache.sis.referencing.internal.Legacy.DERIVED_TYPE_KEY;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.collection.Containers;
 
@@ -94,7 +95,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createDerivedCRS(String)
  *
@@ -382,18 +383,14 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS implements DerivedCRS 
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code DerivedCRS.class}.
-     *
-     * <h4>Note for implementers</h4>
-     * Subclasses usually do not need to override this method since GeoAPI does not define {@code DerivedCRS}
-     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with
-     * their own set of interfaces.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code DerivedCRS.class} or a user-defined sub-interface.
+     * @since 1.7
      */
     @Override
-    public Class<? extends DerivedCRS> getInterface() {
+    public Type getStandardType() {
         return DerivedCRS.class;
     }
 
@@ -605,17 +602,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS implements DerivedCRS 
     static String getTypeKeyword(final Map<String,?> properties, final SingleCRS baseCRS, final CoordinateSystem derivedCS) {
         Class<?> type = Containers.property(properties, DERIVED_TYPE_KEY, Class.class);
         if (type == null) {
-            if (baseCRS instanceof AbstractIdentifiedObject) {
-                /*
-                 * For avoiding ambiguity if a user chooses to implement more
-                 * than 1 CRS interface (not recommended, but may happen).
-                 */
-                type = ((AbstractIdentifiedObject) baseCRS).getInterface();
-            } else if (baseCRS != null) {
-                type = baseCRS.getClass();
-            } else {
-                return null;
-            }
+            type = Classes.getStandardClass(baseCRS, SingleCRS.class);
         }
         if (GeodeticCRS.class.isAssignableFrom(type) && CoordinateSystems.isGeodetic(derivedCS)) {
             return WKTKeywords.GeodeticCRS;

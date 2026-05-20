@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.lang.reflect.Type;
 import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -116,7 +117,7 @@ import org.opengis.referencing.crs.DerivedCRS;
  * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see DefaultConversion
  * @see DefaultTransformation
@@ -315,18 +316,14 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code OperationMethod.class}.
-     *
-     * <h4>Note for implementers</h4>
-     * Subclasses usually do not need to override this information since GeoAPI does not define {@code OperationMethod}
-     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
-     * own set of interfaces.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code OperationMethod.class} or a user-defined sub-interface.
+     * @since 1.7
      */
     @Override
-    public Class<? extends OperationMethod> getInterface() {
+    public Type getStandardType() {
         return OperationMethod.class;
     }
 

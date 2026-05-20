@@ -62,8 +62,8 @@
  *       {@link org.apache.sis.measure.UnitFormat})</li>
  * </ul>
  *
- * Apache SIS supports arithmetic operations on units and on quantities.
- * The unit (including SI prefix) and the quantity type resulting from
+ * Apache <abbr>SIS</abbr> supports arithmetic operations on units and on quantities.
+ * The unit (including <abbr>SI</abbr> prefix) and the quantity type resulting from
  * those arithmetic operations are automatically inferred.
  * For example, this line of code:
  *
@@ -85,19 +85,19 @@
  *   }
  *
  * prints <q>8 mW</q> and <q>Instance of Power: true</q>,
- * i.e. Apache SIS detects that the result of N⋅m∕s is Watt,
+ * i.e. Apache <abbr>SIS</abbr> detects that the result of N⋅m∕s is Watt,
  * inherits the milli prefix from millimetre and creates an instance
  * of {@link javax.measure.quantity.Power}, not just {@code Quantity<Power>} (the generic parent).
  *
  * <p>{@linkplain org.apache.sis.measure.Units#valueOf(String) Parsing} and formatting use Unicode symbols by default, as in µg/m².
  * Parenthesis are recognized at parsing time and used for denominators at formatting time, as in kg/(m²⋅s).
- * While uncommon, Apache SIS accepts fractional powers as in m^⅔.
+ * While uncommon, Apache <abbr>SIS</abbr> accepts fractional powers as in m^⅔.
  * Some sentences like <q>100 feet</q>, <q>square metre</q> and <q>degree Kelvin</q>
  * are also recognized at parsing time.</p>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   0.3
  */
 package org.apache.sis.measure;

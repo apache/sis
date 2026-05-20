@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.lang.reflect.Type;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import javax.measure.IncommensurableException;
@@ -314,13 +315,14 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The default implementation returns {@code Conversion.class}.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
-     * @return the conversion interface implemented by this class.
+     * @return {@code Conversion.class} or a user-defined sub-interface.
+     * @since 1.7
      */
     @Override
-    public Class<? extends Conversion> getInterface() {
+    public Type getStandardType() {
         return Conversion.class;
     }
 

@@ -597,7 +597,7 @@ public class MetadataStandard implements Serializable {
      * @return the interface implemented by the given implementation class.
      * @throws ClassCastException if the specified implementation class does not implement an interface of this standard.
      *
-     * @see AbstractMetadata#getInterface()
+     * @see AbstractMetadata#getStandardType()
      */
     public <T> Class<? super T> getInterface(final Class<T> type) throws ClassCastException {
         return getInterface(new CacheKey(Objects.requireNonNull(type)));

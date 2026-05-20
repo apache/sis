@@ -1412,7 +1412,7 @@ class CoordinateOperationRegistry {
      * @param  op  the coordinate operation for which to identify the type.
      * @return the operation type, or {@code null} if not one of the types of interest for this factory.
      *
-     * @see AbstractCoordinateOperation#getInterface()
+     * @see AbstractCoordinateOperation#getStandardType()
      */
     static Class<? extends CoordinateOperation> typeOf(final CoordinateOperation op) {
         if (op instanceof Transformation) return Transformation.class;

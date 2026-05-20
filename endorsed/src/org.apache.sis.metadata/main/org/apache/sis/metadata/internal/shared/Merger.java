@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.function.BiFunction;
+import java.lang.reflect.Type;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.AbstractMetadata;
 import org.apache.sis.metadata.InvalidMetadataException;
@@ -99,7 +100,9 @@ public class Merger {
      * This is used for formatting error messages.
      */
     private static String name(final ModifiableMetadata target, final String propertyName) {
-        return Classes.getShortName(target.getInterface()) + '.' + propertyName;
+        final Type type = target.getStandardType();
+        final String name = (type instanceof Class<?>) ? Classes.getShortName((Class<?>) type) : type.getTypeName();
+        return name + '.' + propertyName;
     }
 
     /**
@@ -194,7 +197,7 @@ public class Merger {
                          */
                         if (dryRun) break;
                         throw new InvalidMetadataException(errors().getString(Errors.Keys.IllegalPropertyValueClass_3,
-                                    name(target, propertyName), md.getInterface(), Classes.getClass(sourceValue)));
+                                    name(target, propertyName), md.getStandardType(), Classes.getClass(sourceValue)));
                     }
                 } else if (targetValue instanceof Collection<?>) {
                     /*

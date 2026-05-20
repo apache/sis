@@ -16,6 +16,7 @@
  */
 package org.apache.sis.temporal;
 
+import java.lang.reflect.Type;
 import java.util.Objects;
 import java.util.Optional;
 import java.time.Duration;
@@ -261,6 +262,18 @@ cmp:    if (canTestBefore | canTestAfter | canTestEqual) {
             if (canTestEqual  && ((TimeMethods) comparators).isEqual .test(t1, t2)) return TemporalOperatorName.EQUALS;
         }
         throw new IndeterminatePositionException(Errors.format(Errors.Keys.IndeterminatePosition));
+    }
+
+    /**
+     * Returns the standard interface that defines the contract of this class.
+     * This is the base type required by all {@code equals(…)} methods
+     * for returning a potentially {@code true} value.
+     *
+     * @return {@code Instant.class}.
+     */
+    @Override
+    public final Type getStandardType() {
+        return Instant.class;
     }
 
     /**

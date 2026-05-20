@@ -36,7 +36,6 @@ import org.apache.sis.feature.internal.shared.FeatureExpression;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -341,7 +340,7 @@ public abstract class Node implements Serializable {
      * @param  root     where to create a tree representation of this node.
      * @param  visited  nodes already visited. This method will write in this map.
      */
-    private void toTree(final TreeTable.Node root, final Map<Object,Boolean> visited) {
+    private void toTree(final TreeTable.Node root, final Map<Object, Boolean> visited) {
         root.setValue(TableColumn.VALUE, getDisplayName());
         for (final Object child : getChildren()) {
             final TreeTable.Node node = root.newChild();
@@ -355,7 +354,7 @@ public abstract class Node implements Serializable {
                 }
             } else if (child instanceof IdentifiedObject) {
                 final var object = (IdentifiedObject) child;
-                value = Classes.getShortName(ReferencingUtilities.getInterface(object))
+                value = Classes.getShortName(Classes.getStandardClass(object, IdentifiedObject.class))
                         + "[“" + IdentifiedObjects.getDisplayName(object, null) + "”]";
             } else {
                 value = String.valueOf(child);

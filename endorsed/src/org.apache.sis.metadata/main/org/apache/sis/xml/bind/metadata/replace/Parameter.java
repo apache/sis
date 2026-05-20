@@ -17,6 +17,7 @@
 package org.apache.sis.xml.bind.metadata.replace;
 
 import java.util.Objects;
+import java.lang.reflect.Type;
 import org.opengis.util.TypeName;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValue;
@@ -130,6 +131,18 @@ abstract class Parameter<T> extends SimpleIdentifiedObject implements ParameterD
      */
 
     /**
+     * Returns the standard interface that defines the contract of this class.
+     * This is the base type required by all {@code equals(…)} methods
+     * for returning a potentially {@code true} value.
+     *
+     * @return {@code ParameterDescriptor.class}.
+     */
+    @Override
+    public final Type getStandardType() {
+        return ParameterDescriptor.class;
+    }
+
+    /**
      * Compares this object with the given one for equality. This implementation should be consistent
      * with {@link org.apache.sis.parameter.DefaultParameterDescriptor#equals(Object)} implementation,
      * with the simplification that some {@code Parameter} property values are always null.
@@ -144,7 +157,7 @@ abstract class Parameter<T> extends SimpleIdentifiedObject implements ParameterD
             return true;
         }
         if (super.equals(object, mode) && object instanceof ParameterDescriptor<?>) {
-            final ParameterDescriptor<?> that = (ParameterDescriptor<?>) object;
+            final var that = (ParameterDescriptor<?>) object;
             if (that.getUnit()         == null &&
                 that.getDefaultValue() == null &&
                 that.getValueClass()   == getValueClass())

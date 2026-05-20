@@ -365,7 +365,7 @@ final class Normalizer implements Comparable<Normalizer> {
          * We need to change the Coordinate System name, since it is likely to not be valid anymore.
          */
         final AbstractCS impl = castOrCopy(cs);
-        final var buffer = (StringBuilder) CharSequences.camelCaseToSentence(impl.getInterface().getSimpleName());
+        final var buffer = (StringBuilder) CharSequences.camelCaseToSentence(impl.getStandardType().getSimpleName());
         final String name = AxisDirections.appendTo(buffer, newAxes);
         return impl.createForAxes(name, newAxes);
     }

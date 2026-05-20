@@ -18,6 +18,7 @@ package org.apache.sis.measure;
 
 import java.util.List;
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import org.apache.sis.math.DecimalFunctions;
@@ -34,7 +35,7 @@ import org.apache.sis.math.DecimalFunctions;
  * See {@link Units#logarithm(Unit)} for an example.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see Units#converter(Number, Number)
  * @see Units#logarithm(Unit)
@@ -54,6 +55,18 @@ public abstract class AbstractConverter implements UnitConverter, Serializable {
     }
 
     /**
+     * Returns the standard interface that defines the contract of this implementation class.
+     * This method is defined for the convenience of subclasses that implement
+     * the {@link org.apache.sis.util.LenientComparable} interface.
+     *
+     * @return {@code UnitConverter.class} or a user-defined sub-interface.
+     * @since 1.7
+     */
+    public Type getStandardType() {
+        return UnitConverter.class;
+    }
+
+    /**
      * Returns {@code true} if {@link #convert(double)} returns given values unchanged.
      * The default implementation returns {@code false} for convenience of non-linear conversions.
      * Subclasses should override if their conversions may be identity.
@@ -66,7 +79,7 @@ public abstract class AbstractConverter implements UnitConverter, Serializable {
     }
 
     /**
-     * Indicates if this converter is linear in JSR-385 sense (not the usual mathematical sense).
+     * Indicates if this converter is linear in <abbr>JSR</abbr>-385 sense (not the usual mathematical sense).
      * This is {@code true} if this converter contains a scale <em>but no offset</em>.
      *
      * @return whether this converter contains an offset.
@@ -110,7 +123,7 @@ public abstract class AbstractConverter implements UnitConverter, Serializable {
     public abstract double derivative(double value);
 
     /**
-     * Delegates to {@link #derivative(double)} if the given converter is an Apache SIS implementation,
+     * Delegates to {@link #derivative(double)} if the given converter is an Apache <abbr>SIS</abbr> implementation,
      * or use a fallback otherwise.
      */
     static double derivative(final UnitConverter converter, final double value) {
@@ -125,7 +138,7 @@ public abstract class AbstractConverter implements UnitConverter, Serializable {
     }
 
     /**
-     * Returns the scale factor of the given converter if the conversion is linear, or NaN otherwise.
+     * Returns the scale factor of the given converter if the conversion is linear, or {@code NaN} otherwise.
      */
     static double scale(final UnitConverter converter) {
         if (converter != null && converter.isLinear() && converter.convert(0) == 0) {

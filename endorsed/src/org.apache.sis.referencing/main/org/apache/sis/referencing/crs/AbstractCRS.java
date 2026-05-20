@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.EnumMap;
 import java.util.Objects;
 import java.util.function.Function;
+import java.lang.reflect.Type;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
@@ -87,7 +88,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see AbstractCS
  * @see org.apache.sis.referencing.datum.AbstractDatum
@@ -276,14 +277,15 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
      * The default implementation returns {@code CoordinateReferenceSystem.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
      * @return the coordinate reference system interface implemented by this class.
+     * @since 1.7
      */
     @Override
-    public Class<? extends CoordinateReferenceSystem> getInterface() {
+    public Type getStandardType() {
         return CoordinateReferenceSystem.class;
     }
 
