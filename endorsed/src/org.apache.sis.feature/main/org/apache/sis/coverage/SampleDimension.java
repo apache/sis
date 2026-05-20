@@ -28,6 +28,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.io.Serializable;
 import javax.measure.Unit;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.LenientComparable;
+import org.apache.sis.util.Utilities;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.operation.MathTransform1D;
@@ -85,7 +88,7 @@ import org.opengis.feature.IdentifiedType;
  *
  * @since 1.0
  */
-public class SampleDimension implements IdentifiedType, Serializable {
+public class SampleDimension implements IdentifiedType, LenientComparable, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -496,6 +499,18 @@ public class SampleDimension implements IdentifiedType, Serializable {
             return name.equals(that.name) && Objects.equals(background, that.background) && categories.equals(that.categories);
         }
         return false;
+    }
+
+    @Override
+    public boolean equals(Object other, ComparisonMode mode) {
+        if (other == this) return true;
+        if (mode.isApproximate() && other instanceof SampleDimension) {
+            final var otherDim = (SampleDimension) other;
+            return Utilities.deepEquals(this.transferFunction, otherDim.transferFunction, mode)
+                    && Utilities.deepEquals(this.categories, otherDim.categories, mode)
+                    && Utilities.deepEquals(this.background, otherDim.background, mode);
+        }
+        return equals(other);
     }
 
     /**
