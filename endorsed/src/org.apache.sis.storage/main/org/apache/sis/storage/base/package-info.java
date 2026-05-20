@@ -16,7 +16,7 @@
  */
 
 /**
- * Base classes for the implementation of SIS storages.
+ * Base classes for the implementation of Apache <abbr>SIS</abbr> data stores.
  *
  * <STRONG>Do not use!</STRONG>
  *

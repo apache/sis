@@ -58,6 +58,11 @@ import org.apache.sis.util.resources.Errors;
  */
 public final class Reader implements Cloneable {
     /**
+     * The logger used by GeoHEIF stores.
+     */
+    public static final String LOGGER_NAME = "org.apache.sis.storage.geoheif";
+
+    /**
      * The stream from which to read the data.
      *
      * @todo Should be an implementation that blocks reading after {@link #endOfCurrentBox}.
@@ -203,11 +208,12 @@ public final class Reader implements Cloneable {
             box = null;
             if (isNewWarning(type, Classes.getClass(cause))) {
                 var record = new LogRecord(Level.WARNING, "Cannot read the “" + Box.formatFourCC(type) + "” box.");
+                record.setLoggerName(LOGGER_NAME);
                 record.setThrown(cause);
                 listeners.warning(record);
             }
         }
-        assert endOfCurrentBox == end;      // Ensure that the value has not been modified.
+        endOfCurrentBox = end;      // May have been modified by recursive invocations.
         assert (end < 0) || input.getStreamPosition() <= end : Box.formatFourCC(box.type());
         return box;
     }
@@ -217,7 +223,7 @@ public final class Reader implements Cloneable {
      * A custom registry is specified for filtering the type of boxes to accept.
      * Boxes of unknown types are ignored and skipped.
      *
-     * @param  registry  the registry to use for box instantiations, or {@code null} for the main registry.
+     * @param  registry  the registry to use for box instantiations.
      * @param  indexed   whether index matter. If {@code true}, then the returned array may contain null elements.
      * @return children boxes. May contain null elements if {@code indexed} is true.
      * @throws IOException if an error occurred while reading the box.
@@ -227,10 +233,9 @@ public final class Reader implements Cloneable {
      * @throws DataStoreContentException if the <abbr>HEIF</abbr> file is malformed.
      * @throws DataStoreException if the reading failed for another reason.
      */
-    public final List<Box> readChildren(BoxRegistry registry, final boolean indexed) throws IOException, DataStoreException {
-        if (registry == null) {
-            registry = MainBoxRegistry.INSTANCE;
-        }
+    public final List<Box> readChildren(final BoxRegistry registry, final boolean indexed)
+            throws IOException, DataStoreException
+    {
         final var children = new ArrayList<Box>();
         final long end = endOfCurrentBox - 2*Integer.BYTES;     // With a margin of at least the space of a box header.
         final boolean toEnd = (end < 0);
@@ -340,6 +345,7 @@ public final class Reader implements Cloneable {
                 type = Box.formatFourCC(fourCC);
             }
             var record = new LogRecord(Level.WARNING, "The “" + type + "” type of box is unrecognized.");
+            record.setLoggerName(LOGGER_NAME);
             listeners.warning(record);
         }
     }
@@ -371,6 +377,7 @@ public final class Reader implements Cloneable {
         if (isNewWarning(error.getClass(), value)) {
             final LogRecord record = Errors.forLocale(listeners.getLocale())
                     .createLogRecord(ignoreable ? Level.FINE : Level.WARNING, Errors.Keys.CanNotParse_1, value);
+            record.setLoggerName(LOGGER_NAME);
             record.setThrown(error);
             listeners.warning(record);
         }

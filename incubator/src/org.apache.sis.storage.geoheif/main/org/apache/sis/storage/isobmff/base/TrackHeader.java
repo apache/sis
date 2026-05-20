@@ -21,15 +21,14 @@ import java.io.IOException;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.isobmff.Reader;
-import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.storage.isobmff.Incomplete;
 import org.apache.sis.util.collection.TreeTable;
 
 
 /**
  * Characteristics of a single track.
  * Exactly one {@code TrackHeader} is contained in a {@code Track}.
- *
- * @todo Not yet fully implemented.
+ * <b>Not yet fully implemented.</b>
  *
  * <h4>Container</h4>
  * The container can be a {@link Track} box.
@@ -37,6 +36,7 @@ import org.apache.sis.util.collection.TreeTable;
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */
+@Incomplete
 public final class TrackHeader extends HeaderBox {
     /**
      * Numerical representation of the {@code "tkhd"} box type.
@@ -56,7 +56,7 @@ public final class TrackHeader extends HeaderBox {
      * An identifier that uniquely identifies this track over the entire life-time of the presentation.
      * Cannot be zero.
      */
-    @Interpretation(Type.UNSIGNED)
+    @Interpretation(value=Type.UNSIGNED, summary=true)
     public final int identifier;
 
     /**
@@ -103,22 +103,13 @@ public final class TrackHeader extends HeaderBox {
     }
 
     /**
-     * Appends properties other than the ones defined by public fields.
-     * Those properties will be shown first in the tree.
+     * Appends a description of the flags.
      *
-     * @param  context  the tree being formatted. Can be used for fetching contextual information.
-     * @param  target   the node where to add properties.
-     * @param  after    {@code false} for the first nodes, or {@code true} for the last nodes.
+     * @param  tree    builder of the tree to format.
+     * @param  target  the {@code flag} node where to add properties.
      */
     @Override
-    protected void appendTreeNodes(final Tree context, final TreeTable.Node target, final boolean after) {
-        super.appendTreeNodes(context, target, after);
-        if (!after) {
-            final boolean enabled = isEnabled();
-            TreeTable.Node child = target.newChild();
-            child.setValue(TableColumn.NAME, "enabled");
-            child.setValue(TableColumn.VALUE, enabled);
-            child.setValue(TableColumn.VALUE_AS_TEXT, String.valueOf(enabled));
-        }
+    protected void appendFlagDescriptions(final TreeBuilder tree, final TreeTable.Node target) {
+        tree.addNode(target, "enabled", isEnabled());
     }
 }

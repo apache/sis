@@ -18,7 +18,7 @@ package org.apache.sis.storage.isobmff.image;
 
 import java.util.Locale;
 import java.io.IOException;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
 import org.apache.sis.storage.isobmff.UnsupportedVersionException;
@@ -59,6 +59,7 @@ public final class UserDescription extends FullBox {
     /**
      * Human-readable name for the item, or {@code null} if none.
      */
+    @Interpretation(value=Type.NONE, summary=true)
     public final String name;
 
     /**

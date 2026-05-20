@@ -27,7 +27,7 @@ import org.apache.sis.util.internal.shared.DefinitionURI;
 
 /**
  * Heuristic rules for determining whether an authority code seems to be actually a file path,
- * or a code defined in the URN namespace, or a simple code.
+ * or a code defined in the <abbr>URN</abbr> namespace, or a simple authority code.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
@@ -39,9 +39,9 @@ public enum CodeType {
     FILE(false, false),
 
     /**
-     * The code is a URL like {@code "http:"} or {@code "file:"},
-     * with the exception of HTTP in the "www.opengis.net" domain.
-     * The latter case is identified by {@link #HTTP_OGC} instead of this enum.
+     * The code is a <abbr>URL</abbr> like {@code "http:"} or {@code "file:"},
+     * with the exception of <abbr>HTTP</abbr> in the {@code "www.opengis.net"} domain.
+     * The latter case is identified by {@link #HTTP_OGC} instead of this enumeration value.
      */
     URL(false, true),
 
@@ -51,7 +51,7 @@ public enum CodeType {
     URN(true, true),
 
     /**
-     * The code is an URL in the {@code "http://www.opengis.net"} namespace.
+     * The code is an <abbr>URL</abbr> in the {@code "http://www.opengis.net"} namespace.
      */
     HTTP_OGC(true, true),
 
@@ -114,7 +114,7 @@ public enum CodeType {
      * Infers the type for the given authority code.
      *
      * @param  codeOrPath  the code or file path.
-     * @return whether the given argument seems to be a file path, URL, URN of authority code.
+     * @return whether the given argument seems to be a file path, <abbr>URL</abbr>, <abbr>URN</abbr> of authority code.
      */
     public static CodeType guess(final String codeOrPath) {
         final int length = codeOrPath.length();

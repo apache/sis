@@ -17,7 +17,7 @@
 package org.apache.sis.storage.landsat;
 
 import java.nio.charset.StandardCharsets;
-import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;

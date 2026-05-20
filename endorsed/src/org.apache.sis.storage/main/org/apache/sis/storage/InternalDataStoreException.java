@@ -19,13 +19,16 @@ package org.apache.sis.storage;
 
 /**
  * Thrown when an internal error occurred in a {@code DataStore} implementation.
- * This error is not necessarily caused by an illegal data file;
- * it is more likely caused by a bug in the implementation,
+ * This error is not necessarily caused by an illegal data file.
+ * It is more likely caused by a bug in the implementation,
  * for example when an inconsistent state is detected.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- * @since   1.0
+ *
+ * @see org.apache.sis.referencing.factory.InternalFactoryException
+ *
+ * @since 1.0
  */
 public class InternalDataStoreException extends DataStoreException {
     /**

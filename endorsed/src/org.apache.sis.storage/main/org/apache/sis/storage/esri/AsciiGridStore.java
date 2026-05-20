@@ -31,6 +31,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.math.Statistics;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
@@ -48,9 +49,8 @@ import org.apache.sis.util.resources.Errors;
  * Data store implementation for ESRI ASCII grid format.
  * This is a very simple format for reading and writing single-banded raster data.
  * As the "ASCII" name implies, files are text files in US-ASCII character encoding
- * no matter what the {@link org.apache.sis.setup.OptionKey#ENCODING} value is,
- * and numbers are parsed or formatted according the US locale no matter
- * what the {@link org.apache.sis.setup.OptionKey#LOCALE} value is.
+ * no matter what the {@link OptionKey#ENCODING} value is, and numbers are parsed or
+ * formatted according the US locale no matter what the {@link OptionKey#LOCALE} value is.
  *
  * <p>ASCII grid files contains a header before the actual data.
  * The header contains (<var>key</var> <var>value</var>) pairs,

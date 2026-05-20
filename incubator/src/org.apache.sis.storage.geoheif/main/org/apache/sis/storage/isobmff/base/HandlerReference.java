@@ -52,7 +52,7 @@ public final class HandlerReference extends FullBox {
      * The format of the {@code Meta} box content.
      * The value {@code "null"} indicates that this box is merely used to hold resources.
      */
-    @Interpretation(Type.FOURCC)
+    @Interpretation(value=Type.FOURCC, summary=true)
     public final int handlerType;
 
     /**

@@ -31,7 +31,7 @@ import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.MemoryGridCoverageResource;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.BackingStoreException;

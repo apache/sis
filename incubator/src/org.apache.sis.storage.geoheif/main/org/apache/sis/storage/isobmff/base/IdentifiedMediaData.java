@@ -50,7 +50,7 @@ public final class IdentifiedMediaData extends MediaData {
      * An identifier used in setting up data references to the contained media data.
      * Shall be unique within all {@code IdentifiedMediaData} boxes of the file.
      */
-    @Interpretation(Type.UNSIGNED)
+    @Interpretation(value=Type.UNSIGNED, summary=true)
     public final int identifier;
 
     /**

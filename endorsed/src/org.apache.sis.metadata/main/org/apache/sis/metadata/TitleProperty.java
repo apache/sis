@@ -61,7 +61,7 @@ import java.lang.annotation.Documented;
  * @version 0.8
  * @since   0.8
  *
- * @see ValueExistencePolicy#COMPACT
+ * @see ValueExistencePolicy#TITLED
  */
 @Documented
 @Inherited

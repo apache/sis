@@ -72,7 +72,7 @@ public final class TreeNodeChildrenTest extends TestCase {
      *     └─Other citation details…… Some other details</pre>
      */
     static DefaultCitation metadataWithoutCollections() {
-        final DefaultCitation citation = new DefaultCitation("Some title");
+        final var citation = new DefaultCitation("Some title");
         citation.setEdition(new SimpleInternationalString("Some edition"));
         citation.setOtherCitationDetails(new SimpleInternationalString("Some other details"));
         return citation;
@@ -138,8 +138,8 @@ public final class TreeNodeChildrenTest extends TestCase {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>
      */
     static DefaultCitation metadataSimplifiable() {
-        final DefaultCitation citation = new DefaultCitation();
-        final DefaultCitationDate date = new DefaultCitationDate(LocalDate.of(2012, 1, 1), DateType.CREATION);
+        final var citation = new DefaultCitation();
+        final var date = new DefaultCitationDate(LocalDate.of(2012, 1, 1), DateType.CREATION);
         assertTrue(citation.getDates().add(date));
         return citation;
     }
@@ -232,8 +232,8 @@ public final class TreeNodeChildrenTest extends TestCase {
          * We need to perform the tests on the "Date" node, not on the "DefaultCitation" node.
          */
         final TreeTable.Node node = assertSingleton(create(citation, ValueExistencePolicy.COMPACT));
-        assertEquals(15340, ((LocalDate) node.getValue(TableColumn.VALUE)).toEpochDay());
-        final TreeNodeChildren children = (TreeNodeChildren) node.getChildren();
+        assertEquals(15340, assertInstanceOf(LocalDate.class, node.getValue(TableColumn.VALUE)).toEpochDay());
+        final TreeNodeChildren children = assertInstanceOf(TreeNodeChildren.class, node.getChildren());
         final String[] expected = {
             // The "Date" node should be omitted because merged with the parent "Date" node.
             "DateType[CREATION]"
@@ -253,9 +253,7 @@ public final class TreeNodeChildrenTest extends TestCase {
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
         assertEquals(-1, children.titleProperty);
 
-        final DefaultTreeTable.Node toAdd = new DefaultTreeTable.Node(new DefaultTreeTable(
-                TableColumn.IDENTIFIER,
-                TableColumn.VALUE));
+        final var toAdd = new DefaultTreeTable.Node(new DefaultTreeTable(TableColumn.IDENTIFIER, TableColumn.VALUE));
         final String[] expected = {
             "Some title",
             "First alternate title",

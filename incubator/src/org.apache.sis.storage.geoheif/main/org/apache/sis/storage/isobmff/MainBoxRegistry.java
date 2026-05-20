@@ -26,7 +26,7 @@ import org.apache.sis.storage.isobmff.base.*;
 import org.apache.sis.storage.isobmff.video.*;
 import org.apache.sis.storage.isobmff.image.*;
 import org.apache.sis.storage.isobmff.mpeg.*;
-import org.apache.sis.storage.isobmff.gimi.*;
+import org.apache.sis.storage.isobmff.geo.*;
 
 
 /**

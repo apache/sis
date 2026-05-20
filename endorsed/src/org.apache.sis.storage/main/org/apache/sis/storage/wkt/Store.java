@@ -26,15 +26,15 @@ import java.text.ParseException;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceSystem;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.internal.Resources;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.CharSequences;
 
 

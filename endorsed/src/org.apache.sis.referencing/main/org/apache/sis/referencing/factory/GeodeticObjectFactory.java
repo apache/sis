@@ -2074,7 +2074,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
             }
             p = c.newInstance(defaultProperties, this, DefaultMathTransformFactory.provider());
         } catch (ReflectiveOperationException e) {
-            throw new FactoryException(e);
+            throw new InternalFactoryException(e);
         }
         final Object object;
         try {

@@ -32,7 +32,7 @@ import java.util.stream.Stream;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStores;

@@ -25,7 +25,7 @@ import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polyline;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.gps.Fix;

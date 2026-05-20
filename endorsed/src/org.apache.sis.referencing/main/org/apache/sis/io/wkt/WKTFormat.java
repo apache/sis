@@ -142,7 +142,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @see #getIndentation()
      * @see #setIndentation(int)
-     * @see org.apache.sis.setup.OptionKey#INDENTATION
+     * @see org.apache.sis.storage.OptionKey#INDENTATION
      */
     public static final int SINGLE_LINE = -1;
 
@@ -660,7 +660,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @param  numSpaces  the new indentation to use in number of spaces.
      *
-     * @see org.apache.sis.setup.OptionKey#INDENTATION
+     * @see org.apache.sis.storage.OptionKey#INDENTATION
      */
     public void setIndentation(final int numSpaces) {
         ArgumentChecks.ensureBetween("indentation", SINGLE_LINE, Byte.MAX_VALUE, numSpaces);

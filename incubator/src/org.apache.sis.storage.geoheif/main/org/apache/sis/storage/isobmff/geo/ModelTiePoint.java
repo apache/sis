@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.isobmff.gimi;
+package org.apache.sis.storage.isobmff.geo;
 
 import java.util.UUID;
 import java.io.IOException;
 import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.TreeNode;
 import org.apache.sis.storage.isobmff.Reader;
@@ -48,14 +49,14 @@ public final class ModelTiePoint extends FullBox {
 
     /**
      * The most significant bits of the <abbr>UUID</abbr> as a long integer.
-     * It was used in an older version of the <abbr>GIMI</abbr> specification.
+     * It was used in an older version of the GeoHEIF specification draft.
      * Should not be used anymore, but nevertheless kept for compatibility.
      */
     public static final long UUID_HIGH_BITS = 0xc683364f_d6a4_48b8L;
 
     /**
      * The <abbr>UUID</abbr> that identify this extension.
-     * It was used in an older version of the <abbr>GIMI</abbr> specification.
+     * It was used in an older version of the GeoHEIF specification draft.
      * Should not be used anymore, but nevertheless kept for compatibility.
      */
     public static final UUID EXTENDED_TYPE = new UUID(UUID_HIGH_BITS, 0xa76b_17a30af40c10L);
@@ -111,11 +112,31 @@ public final class ModelTiePoint extends FullBox {
     public ModelTiePoint(final Reader reader) throws IOException, UnsupportedVersionException {
         super(reader);
         requireVersionZero();
-        final int dimension = ((flags & 0x01) == 1) ? 2 : 3;
+        final int dimension = dimension();
         final ChannelDataInput input = reader.input;
         tiepoints = new TiePoint[input.readUnsignedShort()];
         for (int i=0; i<tiepoints.length; i++) {
             tiepoints[i] = new TiePoint(input, dimension);
         }
+    }
+
+    /**
+     * Returns the number of dimensions (2 or 3).
+     *
+     * @return number of dimensions.
+     */
+    public final int dimension() {
+        return 2 + (flags & 0x01);
+    }
+
+    /**
+     * Appends a description of the flags.
+     *
+     * @param  tree    builder of the tree to format.
+     * @param  target  the {@code flag} node where to add properties.
+     */
+    @Override
+    protected void appendFlagDescriptions(final TreeBuilder tree, final TreeTable.Node target) {
+        tree.addNode(target, "dimension", dimension());
     }
 }

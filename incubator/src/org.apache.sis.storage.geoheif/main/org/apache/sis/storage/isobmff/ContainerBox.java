@@ -19,7 +19,7 @@ package org.apache.sis.storage.isobmff;
 import java.io.IOException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 
 
 /**
@@ -41,6 +41,19 @@ public abstract class ContainerBox extends Box {
      * </ul>
      */
     public final Box[] children;
+
+    /**
+     * Creates a new box and loads the payload using the global box registry.
+     *
+     * @param  reader    the reader from which to read the payload.
+     * @param  indexed   whether index matter. If {@code true}, then the children array may contain null elements.
+     * @throws IOException if an error occurred while reading the payload.
+     * @throws DataStoreContentException if the <abbr>HEIF</abbr> file is malformed.
+     * @throws DataStoreException if the reading failed for another reason.
+     */
+    protected ContainerBox(final Reader reader, final boolean indexed) throws IOException, DataStoreException {
+        this(reader, MainBoxRegistry.INSTANCE, indexed);
+    }
 
     /**
      * Creates a new box and loads the payload using the given box registry.

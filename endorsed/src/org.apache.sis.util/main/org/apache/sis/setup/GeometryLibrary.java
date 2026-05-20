@@ -31,7 +31,7 @@ import org.apache.sis.util.internal.shared.Constants;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
  *
- * @see OptionKey#GEOMETRY_LIBRARY
+ * @see org.apache.sis.storage.OptionKey#GEOMETRY_LIBRARY
  * @see org.apache.sis.feature.builder.FeatureTypeBuilder#addAttribute(GeometryType)
  *
  * @since 0.8

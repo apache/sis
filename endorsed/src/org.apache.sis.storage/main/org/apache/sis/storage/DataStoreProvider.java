@@ -83,6 +83,19 @@ public abstract class DataStoreProvider {
     public static final String LOCATION = "location";
 
     /**
+     * Name of the parameter that specifies the data store time zone.
+     * A parameter named {@value} should be included in the group of parameters returned by {@link #getOpenParameters()}.
+     * The parameter value is often a {@link String} or a {@link ZoneId}, other types should not be allowed.
+     *
+     * <p>Implementers are encouraged to define a parameter with this name
+     * to ensure a common and consistent definition among providers.</p>
+     *
+     * @see #CREATE
+     * @see #getOpenParameters()
+     */
+    public static final String TIMEZONE = "timezone";
+
+    /**
      * Name of the parameter that specifies whether to allow creation of a new {@code DataStore} if none exist
      * at the given location. A parameter named {@value} may be included in the group of parameters returned by
      * {@link #getOpenParameters()} if the data store supports write operations. The parameter value is often a

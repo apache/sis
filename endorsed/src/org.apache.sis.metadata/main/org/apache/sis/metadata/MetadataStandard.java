@@ -672,7 +672,7 @@ public class MetadataStandard implements Serializable {
      * @return the title property value of the given metadata, or {@code null} if none.
      *
      * @see TitleProperty
-     * @see ValueExistencePolicy#COMPACT
+     * @see ValueExistencePolicy#TITLED
      */
     final Object getTitle(final Object metadata) {
         if (metadata != null) {

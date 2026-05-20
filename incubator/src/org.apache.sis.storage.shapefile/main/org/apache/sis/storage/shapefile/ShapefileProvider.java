@@ -55,11 +55,19 @@ public final class ShapefileProvider extends DataStoreProvider {
             .create(URI.class, null);
 
     /**
+     * Timezone of the dbf date fields.
+     */
+    public static final ParameterDescriptor<String> ZONEID = new ParameterBuilder()
+            .addName(TIMEZONE)
+            .setRequired(false)
+            .create(String.class, null);
+
+    /**
      * Shapefile store creation parameters.
      */
     public static final ParameterDescriptorGroup PARAMETERS_DESCRIPTOR =
             new ParameterBuilder().addName(NAME).addName("EsriShapefileParameters").createGroup(
-                PATH);
+                PATH, ZONEID);
 
     private static ShapefileProvider INSTANCE;
 
@@ -117,7 +125,6 @@ public final class ShapefileProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(StorageConnector connector) throws DataStoreException {
-        final Path path = connector.getStorageAs(Path.class);
-        return new ShapefileStore(path);
+        return new ShapefileStore(connector);
     }
 }

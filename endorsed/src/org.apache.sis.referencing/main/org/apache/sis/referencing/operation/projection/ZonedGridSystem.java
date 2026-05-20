@@ -36,6 +36,7 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.transform.DomainDefinition;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.factory.InternalFactoryException;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.measure.Longitude;
@@ -226,7 +227,7 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
             try {
                 inverseProjection = (AbstractMathTransform) forward.projection.inverse();
             } catch (NoninvertibleTransformException e) {
-                throw new FactoryException(e);                  // Should not happen.
+                throw new InternalFactoryException(e);          // Should not happen.
             }
         }
 

@@ -40,7 +40,7 @@ import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.geometry.wrapper.Geometries;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.util.iso.DefaultNameFactory;
 
 // Specific to the main branch:

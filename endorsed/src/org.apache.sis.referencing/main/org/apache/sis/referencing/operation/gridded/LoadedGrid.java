@@ -494,7 +494,7 @@ public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> e
         if (subgrids == null) {
             return global;
         }
-        final Map<Envelope,MathTransform> specializations = JDK19.newLinkedHashMap(subgrids.length);
+        final Map<Envelope, MathTransform> specializations = JDK19.newLinkedHashMap(subgrids.length);
         for (final LoadedGrid<Angle,Angle> sg : subgrids) try {
             final Envelope domain = sg.getDomainOfValidity(Units.DEGREE);
             final MathTransform st = createGeodeticTransformation(provider, factory, sg);

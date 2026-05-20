@@ -117,7 +117,7 @@ public final class XML {
      * {@link org.apache.sis.metadata.iso.DefaultMetadata#setLanguage(Locale) setLanguage(Locale)}
      * method will have precedence over this property. This behavior is compliant with INSPIRE rules.
      *
-     * @see org.apache.sis.setup.OptionKey#LOCALE
+     * @see org.apache.sis.storage.OptionKey#LOCALE
      * @see Marshaller#setProperty(String, Object)
      * @see org.apache.sis.metadata.iso.DefaultMetadata#setLanguage(Locale)
      */
@@ -132,7 +132,7 @@ public final class XML {
      * If this property is never set, then (un)marshalling will use the
      * {@linkplain TimeZone#getDefault() default timezone}.
      *
-     * @see org.apache.sis.setup.OptionKey#TIMEZONE
+     * @see org.apache.sis.storage.OptionKey#TIMEZONE
      */
     public static final String TIMEZONE = "org.apache.sis.xml.timezone";
 

@@ -24,7 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import com.esri.core.geometry.Point;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.gps.Fix;

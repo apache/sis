@@ -26,7 +26,7 @@ import org.opengis.metadata.content.CoverageContentType;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataOptionKey;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.geotiff.GeoTiffStore;
 import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.storage.base.GridResourceWrapper;
@@ -111,7 +111,7 @@ final class Band extends GridResourceWrapper implements CoverageModifier {
     @Override
     protected GridCoverageResource createSource() throws DataStoreException {
         final StorageConnector connector = new StorageConnector(getDataPath());
-        connector.setOption(DataOptionKey.COVERAGE_MODIFIER, this);
+        connector.setOption(OptionKey.COVERAGE_MODIFIER, this);
         return new GeoTiffStore(parent, parent.getProvider(), connector, true).components().get(0);
     }
 

@@ -17,9 +17,9 @@
 package org.apache.sis.storage.sql.feature;
 
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.io.stream.InternalOptionKey;
-import org.apache.sis.setup.OptionKey;
 
 // Specific to the main branch:
 import org.apache.sis.feature.DefaultFeatureType;
@@ -69,7 +69,7 @@ public interface SchemaModifier {
      * The option for declaring a schema modifier at {@link org.apache.sis.storage.sql.SQLStore} creation time.
      *
      * @todo if we move this key in public API in the future, then it would be a
-     *       value in existing {@link org.apache.sis.storage.DataOptionKey} class.
+     *       value in existing {@link org.apache.sis.storage.OptionKey} class.
      */
     OptionKey<SchemaModifier> OPTION_KEY = new InternalOptionKey<>("SCHEMA_MODIFIER", SchemaModifier.class);
 }

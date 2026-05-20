@@ -54,6 +54,6 @@ public final class Movie extends ContainerBox {
      * @throws DataStoreException if the stream contains inconsistent or unsupported data.
      */
     public Movie(final Reader reader) throws IOException, DataStoreException {
-        super(reader, null, false);
+        super(reader, false);
     }
 }

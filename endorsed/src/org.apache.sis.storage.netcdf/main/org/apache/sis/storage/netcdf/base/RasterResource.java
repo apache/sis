@@ -35,7 +35,7 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.internal.shared.Strings;

@@ -45,13 +45,13 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.storage.isobmff.Box;
 import org.apache.sis.storage.isobmff.base.ItemInfoEntry;
 import org.apache.sis.storage.isobmff.base.ItemProperties;
-import org.apache.sis.storage.isobmff.gimi.ModelTransformation;
-import org.apache.sis.storage.isobmff.gimi.ModelCRS;
+import org.apache.sis.storage.isobmff.geo.ModelTransformation;
+import org.apache.sis.storage.isobmff.geo.ModelCRS;
 import org.apache.sis.storage.isobmff.mpeg.Component;
 import org.apache.sis.storage.isobmff.mpeg.ComponentType;
 import org.apache.sis.storage.isobmff.mpeg.ComponentPalette;
@@ -71,9 +71,6 @@ import org.apache.sis.pending.jdk.JDK18;
 /**
  * Helper class for building the grid geometry and sample dimensions of a grid coverage.
  * Also opportunistically builds the coverage metadata associated to the resource.
- *
- * <p>The call to {@link #buildAndFreeze()} shall be last because metadata are completed
- * as side-effect of other method calls (for building name, grid geometry, <i>etc</i>).</p>
  *
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)

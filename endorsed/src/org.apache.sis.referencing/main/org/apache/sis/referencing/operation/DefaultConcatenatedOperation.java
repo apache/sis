@@ -213,8 +213,8 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      *   <li>Set the {@link #coordinateOperationAccuracy} field, but only if {@code setAccuracy} is {@code true}.</li>
      * </ul>
      *
-     * This method invokes itself recursively if there is nested {@code ConcatenatedOperation} instances
-     * in the given list. This should not happen according ISO 19111 standard, but we try to be safe.
+     * This method invokes itself recursively if there are nested {@code ConcatenatedOperation} instances
+     * in the given list. This should not happen according <abbr>ISO</abbr> 19111 standard, but we try to be safe.
      *
      * <h4>How coordinate operation accuracy is determined</h4>
      * If {@code setAccuracy} is {@code true}, then this method copies accuracy information found in the single

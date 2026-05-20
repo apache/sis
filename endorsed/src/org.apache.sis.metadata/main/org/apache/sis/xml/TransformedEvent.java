@@ -114,7 +114,7 @@ abstract class TransformedEvent<E extends XMLEvent> implements XMLEvent {
      */
     @Override
     public final String toString() {
-        final StringBuilder out = new StringBuilder();
+        final var out = new StringBuilder();
         try {
             write(out);
         } catch (IOException e) {       // Should never happen since we write to a StringBuilder.

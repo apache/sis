@@ -286,6 +286,9 @@ public class ShapefileStoreTest {
 
             Object[] result = store.features(false).toArray();
             assertEquals(1, result.length);
+
+            //because of incremental id, feature2 will now have sis:identifer=0
+            feature2.setPropertyValue(AttributeConvention.IDENTIFIER, "test.1");
             assertEquals(feature2, result[0]);
         }
     }
@@ -323,6 +326,32 @@ public class ShapefileStoreTest {
         }
     }
 
+    /**
+     * Test incremental id creation.
+     */
+    @Test
+    public void testGeneratedId() throws DataStoreException, IOException, URISyntaxException {
+        final URL url = ShapefileStoreTest.class.getResource("/org/apache/sis/storage/shapefile/noid.shp");
+        try (final ShapefileStore store = new ShapefileStore(Paths.get(url.toURI()))) {
+
+            final DefaultFeatureType type = store.getType();
+            final var generatedID = type.getProperty(AttributeConvention.IDENTIFIER);
+            assertTrue(generatedID instanceof DefaultAttributeType);
+            assertEquals(5, type.getProperties(true).size());
+
+            try (Stream<AbstractFeature> stream = store.features(false)) {
+                Iterator<AbstractFeature> iterator = stream.iterator();
+                assertTrue(iterator.hasNext());
+                AbstractFeature feature1 = iterator.next();
+                assertEquals("noid.1", feature1.getPropertyValue(AttributeConvention.IDENTIFIER));
+                assertEquals("some text", feature1.getPropertyValue("text"));
+
+                assertFalse(iterator.hasNext());
+            }
+        }
+
+    }
+
     private static DefaultFeatureType createType() {
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
         ftb.setName("test");
@@ -338,6 +367,7 @@ public class ShapefileStoreTest {
     private static AbstractFeature createFeature1(DefaultFeatureType type) {
         AbstractFeature feature = type.newInstance();
         feature.setPropertyValue("geometry", GF.createPoint(new Coordinate(10,20)));
+        feature.setPropertyValue(AttributeConvention.IDENTIFIER, "test.1");
         feature.setPropertyValue("id", 1);
         feature.setPropertyValue("text", "some text 1");
         feature.setPropertyValue("integer", 123);
@@ -349,6 +379,7 @@ public class ShapefileStoreTest {
     private static AbstractFeature createFeature2(DefaultFeatureType type) {
         AbstractFeature feature = type.newInstance();
         feature.setPropertyValue("geometry", GF.createPoint(new Coordinate(30,40)));
+        feature.setPropertyValue(AttributeConvention.IDENTIFIER, "test.2");;
         feature.setPropertyValue("id", 2);
         feature.setPropertyValue("text", "some text 2");
         feature.setPropertyValue("integer", 456);

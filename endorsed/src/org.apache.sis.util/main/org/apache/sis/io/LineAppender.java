@@ -218,7 +218,9 @@ public class LineAppender extends Appender implements Flushable {
     }
 
     /**
-     * (@return the length of the current line, in units of Unicode code points}.
+     * Returns the length of the current line, in units of Unicode code points.
+     *
+     * @return number of code points in the current line.
      *
      * @since 1.5
      */
@@ -233,7 +235,7 @@ public class LineAppender extends Appender implements Flushable {
      * the output specified to the constructor was not initially empty, or when the output
      * content is modified outside this {@code LineAppender} instance.
      *
-     * @param  lengh  the new length of the current line, in units of Unicode code points.
+     * @param  length  the new length of the current line, in units of Unicode code points.
      *
      * @since 1.5
      */

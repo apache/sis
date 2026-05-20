@@ -133,7 +133,7 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
      *
      * @see #getContextualParameters()
      */
-    private final Map<String,Boolean> contextualParameters;
+    private final Map<String, Boolean> contextualParameters;
 
     /**
      * Whether the user-specified parameters have been completed with the contextual parameters.
@@ -400,7 +400,7 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
      * @return names of parameters inferred from context.
      */
     @Override
-    public Map<String,Boolean> getContextualParameters() {
+    public Map<String, Boolean> getContextualParameters() {
         return Collections.unmodifiableMap(contextualParameters);
     }
 

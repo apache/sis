@@ -64,7 +64,7 @@ import static org.apache.sis.util.internal.shared.Constants.UTC;
 /**
  * Base class of {@link Format} implementations which delegate part of their work to other
  * {@code Format} instances. {@code CompoundFormat} subclasses typically work on relatively
- * large blocks of data, for example a metadata tree or a <i>Well Known Text</i> (WKT).
+ * large blocks of data, for example a metadata tree or a <i>Well Known Text</i> (<abbr>WKT</abbr>).
  * Those blocks of data usually contain smaller elements like numbers and dates, whose parsing
  * and formatting can be delegated to {@link NumberFormat} and {@link DateFormat} respectively.
  * Subclasses can obtain instances of those formats by call to {@link #getFormat(Class)} where
@@ -84,10 +84,9 @@ import static org.apache.sis.util.internal.shared.Constants.UTC;
  * </table>
  *
  * <h2>Sources and destinations</h2>
- * Since {@code CompoundFormat} may work on larger texts than the usual {@code Format} classes,
- * it defines {@code parse} and {@code format} methods working with arbitrary {@link CharSequence}
- * and {@link Appendable} instances. The standard {@code Format} methods redirect to the above-cited
- * methods.
+ * Since {@code CompoundFormat} may work on texts larger than the texts expected by the standard {@code Format} classes,
+ * it defines {@code parse} and {@code format} methods working with {@link CharSequence} and {@link Appendable} types.
+ * The standard {@code Format} methods redirect to the above-cited methods.
  *
  * <h2>Sub-classing</h2>
  * The abstract methods to be defined by subclasses are:
@@ -97,7 +96,7 @@ import static org.apache.sis.util.internal.shared.Constants.UTC;
  *   <li>{@link #parse(CharSequence, ParsePosition)}</li>
  * </ul>
  *
- * <h2>Comparison with other API</h2>
+ * <h2>Comparison with other <abbr>API</abbr></h2>
  * In the standard {@link Format} class, the {@code parse} methods either accept a {@link ParsePosition} argument
  * and returns {@code null} on error, or does not take position argument and throws a {@link ParseException} on error.
  * In this {@code CompoundFormat} class, the {@code parse} method both takes a {@code ParsePosition} argument and
@@ -105,7 +104,7 @@ import static org.apache.sis.util.internal.shared.Constants.UTC;
  * in case of error.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.6
+ * @version 1.7
  *
  * @param <T>  the base type of objects parsed and formatted by this class.
  *
@@ -118,15 +117,15 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     private static final long serialVersionUID = -689151528653024968L;
 
     /**
-     * The locale given at construction time, or {@link Locale#ROOT} (never {@code null}) for
-     * unlocalized format. See {@link #getLocale()} for more information on {@code ROOT} locale.
+     * The locale given at construction time, or {@link Locale#ROOT} (never {@code null}) for unlocalized format.
+     * See {@link #getLocale()} for more information on {@code ROOT} locale.
      *
      * @see #getLocale()
      */
     private final Locale locale;
 
     /**
-     * The timezone given at construction time, or {@code null} for UTC.
+     * The timezone given at construction time, or {@code null} for <abbr>UTC</abbr>.
      *
      * @see #getTimeZone()
      */
@@ -144,7 +143,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * See {@link #getLocale()} for more information about the {@code ROOT} locale.
      *
      * @param  locale    the locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
-     * @param  timezone  the timezone, or {@code null} for UTC.
+     * @param  timezone  the timezone, or {@code null} for <abbr>UTC</abbr>.
      */
     protected CompoundFormat(final Locale locale, final TimeZone timezone) {
         this.locale   = (locale != null) ? locale : Locale.ROOT;
@@ -181,10 +180,10 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * For subclasses that do not override this method, the default implementation returns {@link #getLocale()}.
      *
      * <h4>Example</h4>
-     * The ISO 19162 (<cite>Well Known Text</cite>) standard requires a number format similar to the one defined by
-     * {@code Locale.ROOT} while it allows informative texts (remarks, <i>etc.</i>) to be formatted according the
-     * user's locale. Consequently, {@code WKTFormat} fixes (usually) the locale for {@code Category.FORMAT} to
-     * {@code Locale.ROOT} and let {@code Category.DISPLAY} be any locale.
+     * The <abbr>ISO</abbr> 19162 (<cite>Well Known Text</cite>) standard requires a number format similar to the
+     * one defined by {@code Locale.ROOT} while it allows informative texts (remarks, <i>etc.</i>) to be formatted
+     * according the user's locale. Therefore, {@code WKTFormat} fixes (usually) the locale for {@code Category.FORMAT}
+     * to {@code Locale.ROOT} and let {@code Category.DISPLAY} be any locale.
      *
      * @param  category  the category for which a locale is desired.
      * @return the locale for the given category (never {@code null}).
@@ -199,7 +198,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     /**
      * Returns the timezone used by this format.
      *
-     * @return the timezone used for this format, or UTC for unlocalized format.
+     * @return the timezone used for this format, or <abbr>UTC</abbr> for unlocalized format.
      */
     public TimeZone getTimeZone() {
         return (timezone != null) ? (TimeZone) timezone.clone() : TimeZone.getTimeZone(UTC);
@@ -308,13 +307,14 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * The default implementation delegates to {@link #parse(CharSequence, ParsePosition)}
      * and ensures that the given string has been fully used, ignoring trailing
      * {@linkplain Character#isSpaceChar(int) spaces} and
-     * {@linkplain Character#isISOControl(int) ISO control characters}.
+     * {@linkplain Character#isISOControl(int) <abbr>ISO</abbr> control characters}.
      *
      * <h4>Whitespaces</h4>
-     * The usual SIS policy, as documented in the {@link org.apache.sis.util.CharSequences} class, is to test for
-     * whitespaces using the {@code Character.isWhitespace(…)} method. The combination of {@code isSpaceChar(…)}
-     * and {@code isISOControl(…)} done in this {@code parseObject(…)} method is more permissive since it encompasses
-     * all whitespace characters, plus non-breaking spaces and non-white ISO controls.
+     * The usual <abbr>SIS</abbr> policy, as documented in the {@link org.apache.sis.util.CharSequences} class,
+     * is to test for whitespaces using the {@code Character.isWhitespace(…)} method.
+     * The combination of {@code isSpaceChar(…)} and {@code isISOControl(…)} done in this {@code parseObject(…)}
+     * method is more permissive since it encompasses all whitespace characters,
+     * plus non-breaking spaces and non-white <abbr>ISO</abbr> controls.
      *
      * @param  text  the string representation of the object to parse.
      * @return the parsed object.
@@ -337,6 +337,30 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
             pos.setErrorIndex(i);
         }
         throw new LocalizedParseException(getLocale(Locale.Category.DISPLAY), getValueType(), text, pos);
+    }
+
+    /**
+     * Writes a textual representation of an object of arbitrary class in the given stream or buffer.
+     * This method verifies that the given object is an instance of the expected the type returned by
+     * {@link #getValueType()}, then delegates to {@link #format(Object, Appendable)}.
+     *
+     * @param  object      the object to format.
+     * @param  toAppendTo  where to format the object.
+     * @throws IllegalArgumentException if the given object is not an instance
+     *         of the expected {@linkplain #getValueType() value type}.
+     * @throws IOException if an error occurred while writing to the given appendable.
+     *
+     * @since 1.7
+     */
+    public void formatObject(final Object object, final Appendable toAppendTo) throws IOException {
+        final T value;
+        final Class<? extends T> valueType = getValueType();
+        try {
+            value = valueType.cast(object);
+        } catch (ClassCastException e) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalClass_2, valueType, Classes.getClass(object)), e);
+        }
+        format(value, toAppendTo);
     }
 
     /**
@@ -370,7 +394,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
 
     /**
      * Writes a textual representation of the specified object in the given buffer.
-     * This method delegates the work to {@link #format(Object, Appendable)}.
+     * This method delegates the work to {@link #formatObject(Object, Appendable)}.
      * If an {@link IOException} occurs (for example, because {@code format(…)} performs
      * some I/O operations on other objects than the given {@link StringBuffer}),
      * the exception is wrapped in {@link UncheckedIOException}.
@@ -379,14 +403,13 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * @param  toAppendTo  where to format the object.
      * @param  pos         ignored in current implementation.
      * @return the given buffer, returned for convenience.
+     * @throws IllegalArgumentException if the given object is not an instance
+     *         of the expected {@linkplain #getValueType() value type}.
      */
     @Override
     public StringBuffer format(final Object object, final StringBuffer toAppendTo, final FieldPosition pos) {
-        final Class<? extends T> valueType = getValueType();
         try {
-            format(valueType.cast(object), toAppendTo);
-        } catch (ClassCastException e) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalClass_2, valueType, Classes.getClass(object)), e);
+            formatObject(object, toAppendTo);
         } catch (IOException e) {
             /*
              * Should never happen when writing into a StringBuffer, unless the error
@@ -594,7 +617,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     @Override
     public CompoundFormat<T> clone() {
         @SuppressWarnings("unchecked")
-        final CompoundFormat<T> clone = (CompoundFormat<T>) super.clone();
+        final var clone = (CompoundFormat<T>) super.clone();
         if (clone.formats != null) {
             clone.formats = new IdentityHashMap<>(clone.formats);
             for (final Map.Entry<Class<?>,Format> entry : clone.formats.entrySet()) {

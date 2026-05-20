@@ -24,7 +24,7 @@ import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataOptionKey;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.FeatureSet;
@@ -183,8 +183,8 @@ public final class StoreProvider extends URIDataStoreProvider {
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
         final StorageConnector connector = connector(this, parameters);
         final Parameters pg = Parameters.castOrWrap(parameters);
-        connector.setOption(DataOptionKey.ENCODING, pg.getValue(ENCODING));
-        connector.setOption(DataOptionKey.FOLIATION_REPRESENTATION, pg.getValue(FOLIATION));
+        connector.setOption(OptionKey.ENCODING, pg.getValue(ENCODING));
+        connector.setOption(OptionKey.FOLIATION_REPRESENTATION, pg.getValue(FOLIATION));
         return new Store(this, connector);
     }
 

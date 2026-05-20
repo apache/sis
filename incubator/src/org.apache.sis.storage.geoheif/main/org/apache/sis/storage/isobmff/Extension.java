@@ -18,7 +18,6 @@ package org.apache.sis.storage.isobmff;
 
 import java.util.UUID;
 import org.apache.sis.util.collection.TreeTable;
-import org.apache.sis.util.collection.TableColumn;
 
 
 /**
@@ -69,21 +68,12 @@ public abstract class Extension extends Box {
      * Appends properties other than the ones defined by public fields.
      * Those properties will be shown first in the tree.
      *
-     * @param  context  the tree being formatted. Can be used for fetching contextual information.
-     * @param  target   the node where to add properties.
-     * @param  after    {@code false} for the first nodes, or {@code true} for the last nodes.
+     * @param  tree    builder of the tree to format.
+     * @param  target  the node where to add properties.
      */
     @Override
-    protected void appendTreeNodes(final Tree context, final TreeTable.Node target, final boolean after) {
-        super.appendTreeNodes(context, target, after);
-        if (!after) {
-            final UUID value = extendedType();
-            if (value != null) {
-                final TreeTable.Node child = target.newChild();
-                child.setValue(TableColumn.NAME, "extendedType");
-                child.setValue(TableColumn.VALUE, value);
-                child.setValue(TableColumn.VALUE_AS_TEXT, value.toString());
-            }
-        }
+    protected void prependTreeNodes(final TreeBuilder tree, final TreeTable.Node target) {
+        super.prependTreeNodes(tree, target);
+        tree.addNode(target, "extended type", extendedType());
     }
 }

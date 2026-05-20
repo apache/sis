@@ -29,7 +29,6 @@ import javafx.scene.layout.Region;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.DefaultProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
@@ -275,8 +274,8 @@ public class FeatureTable extends TableView<AbstractFeature> {
      */
     private void createColumns() {
         final Collection<? extends AbstractIdentifiedType> properties = featureType.getProperties(true);
-        final List<TableColumn<AbstractFeature,?>> columns = new ArrayList<>(properties.size());
-        final List<String> multiValued = new ArrayList<>(columns.size());
+        final var columns = new ArrayList<TableColumn<AbstractFeature, ?>>(properties.size());
+        final var multiValued = new ArrayList<String>(columns.size());
         for (final AbstractIdentifiedType pt : properties) {
             /*
              * Get localized text to show in column header. Also remember
@@ -308,7 +307,7 @@ public class FeatureTable extends TableView<AbstractFeature> {
              * gives the whole collection. Fetching a particular element in that collection will
              * be ElementCell's work.
              */
-            final TableColumn<AbstractFeature,Object> column = new TableColumn<>(title);
+            final var column = new TableColumn<AbstractFeature, Object>(title);
             column.setCellValueFactory(new ValueGetter(name));
             column.setCellFactory(isMultiValued ? ElementCell::new : ValueCell::new);
             if (AttributeConvention.contains(qualifiedName)) {
@@ -325,7 +324,7 @@ public class FeatureTable extends TableView<AbstractFeature> {
         } else {
             final ExpandableList list = getExpandableList();
             list.setMultivaluedColumns(multiValued);
-            final TableColumn<AbstractFeature,AbstractFeature> column = new TableColumn<>("▤");
+            final var column = new TableColumn<AbstractFeature, AbstractFeature>("▤");
             column.setCellValueFactory(IdentityValueFactory.instance());
             column.setCellFactory(list);
             column.setReorderable(false);
@@ -348,7 +347,7 @@ public class FeatureTable extends TableView<AbstractFeature> {
      * easy way to know the current row number. Fetching a particular element in that collection will be done by
      * {@link ExpandedFeature}.
      */
-    private static final class ValueGetter implements Callback<TableColumn.CellDataFeatures<AbstractFeature,Object>, ObservableValue<Object>> {
+    private static final class ValueGetter implements Callback<TableColumn.CellDataFeatures<AbstractFeature, Object>, ObservableValue<Object>> {
         /**
          * The name of the feature property for which to fetch values.
          */
@@ -374,7 +373,7 @@ public class FeatureTable extends TableView<AbstractFeature> {
             if (feature != null) {
                 value = feature.getPropertyValue(name);
             }
-            return new ReadOnlyObjectWrapper<>(value);
+            return new SimpleObjectProperty<>(value);
         }
     }
 
@@ -382,13 +381,13 @@ public class FeatureTable extends TableView<AbstractFeature> {
      * A cell displaying a value in {@link FeatureTable}. This base class expects single values.
      * If the property values are collections, then {@link ElementCell} should be used instead.
      */
-    private static class ValueCell extends TableCell<AbstractFeature,Object> {
+    private static class ValueCell extends TableCell<AbstractFeature, Object> {
         /**
          * Creates a new cell for feature property value.
          *
          * @param  column  the column where the cell will be shown.
          */
-        ValueCell(final TableColumn<AbstractFeature,Object> column) {
+        ValueCell(final TableColumn<AbstractFeature, Object> column) {
             // Column not used at this time, but we need it in method signature.
         }
 
@@ -430,7 +429,7 @@ public class FeatureTable extends TableView<AbstractFeature> {
          *
          * @param  column  the column where the cell will be shown.
          */
-        ElementCell(final TableColumn<AbstractFeature,Object> column) {
+        ElementCell(final TableColumn<AbstractFeature, Object> column) {
             super(column);
         }
 

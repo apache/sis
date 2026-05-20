@@ -22,4 +22,4 @@
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */
-package org.apache.sis.storage.isobmff.gimi;
+package org.apache.sis.storage.isobmff.geo;

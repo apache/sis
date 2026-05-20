@@ -95,19 +95,16 @@ public final class ItemInfo extends FullBox {
 
     /**
      * Collects information about all items in this box.
-     * It will be used by {@link ItemInfo} for more human-readable output.
+     * It will be used by {@link TreeBuilder} for more human-readable output.
      *
-     * @param  context  the tree being formatted. Can be used for fetching contextual information.
-     * @param  target   the node where to add properties.
-     * @param  after    {@code false} for the first nodes, or {@code true} for the last nodes.
+     * @param  tree    builder of the tree to format.
+     * @param  target  the node where to add properties.
      */
     @Override
-    protected void appendTreeNodes(final Tree context, final TreeTable.Node target, final boolean after) {
-        super.appendTreeNodes(context, target, after);
-        if (!after) {
-            for (ItemInfoEntry entry : entries) {
-                context.names.put(entry.itemID, entry);       // In case of conflict, keep the most recent item.
-            }
+    protected void prependTreeNodes(final TreeBuilder tree, final TreeTable.Node target) {
+        super.prependTreeNodes(tree, target);
+        for (ItemInfoEntry entry : entries) {
+            tree.addItemName(entry);
         }
     }
 }

@@ -29,6 +29,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.referencing.internal.shared.WKTUtilities;
+import org.apache.sis.referencing.factory.InternalFactoryException;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 
@@ -151,7 +152,7 @@ public final class Geographic3Dto2D extends AbstractProvider {
         if (inverse) try {
             tr = tr.inverse();
         } catch (NoninvertibleTransformException e) {
-            throw new FactoryException(e);                      // Should never happen.
+            throw new InternalFactoryException(e);              // Should never happen.
         }
         return tr;
     }

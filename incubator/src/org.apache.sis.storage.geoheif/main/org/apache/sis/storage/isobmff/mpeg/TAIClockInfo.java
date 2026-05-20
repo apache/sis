@@ -20,14 +20,15 @@ import java.io.IOException;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
+import org.apache.sis.storage.isobmff.Incomplete;
 import org.apache.sis.storage.isobmff.UnsupportedVersionException;
 
 
 /**
  * From ISO/IEC 23001-17:2024 amendment 1.
- *
- * @todo Find box structure, it seems to have a variable size. Document.
  * The specification was not yet published at the time of writing this class.
+ * Therefore, the box structure needs to be verified and may change.
+ * Note that the box structure seems to have a variable size.
  *
  * <h4>Container</h4>
  * The container can be a {@link ItemPropertyContainer} box.
@@ -35,6 +36,7 @@ import org.apache.sis.storage.isobmff.UnsupportedVersionException;
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */
+@Incomplete
 public final class TAIClockInfo extends FullBox {
     /**
      * Numerical representation of the {@code "taic"} box type.

@@ -31,6 +31,7 @@ import java.text.Format;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
 import org.apache.sis.measure.UnitFormat;
@@ -43,7 +44,6 @@ import org.apache.sis.math.NumberType;
 import org.apache.sis.util.internal.Acyclic;
 import org.apache.sis.util.internal.shared.PropertyFormat;
 import org.apache.sis.util.internal.shared.LocalizedParseException;
-import org.apache.sis.util.internal.shared.TreeFormatCustomization;
 import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
 
 
@@ -92,7 +92,7 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  * than the user object of a parent node <var>A</var>, then the children of the <var>C</var> node will not be formatted.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.7
  * @since   0.3
  */
 public class TreeTableFormat extends TabularFormat<TreeTable> {
@@ -325,11 +325,16 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
 
     /**
      * Sets a filter specifying whether a node should be formatted or ignored.
-     * Filters are tested at formatting time for all children of the root node (but not for the root node itself).
+     * Filters are tested at formatting time for all children of the root node, but not for the root node itself.
      * Filters are ignored at parsing time.
+     *
+     * <p>This method can be used for the same purpose as overriding the {@link TreeTable.Node#isVisible()} method,
+     * except that this {@code setNodeFilter(…)} method does not require control over the {@code TreeTable.Node}
+     * implementation.</p>
      *
      * @param  filter  filter for specifying whether a node should be formatted, or {@code null} for no filtering.
      *
+     * @see TreeTable.Node#isVisible()
      * @since 1.0
      */
     public void setNodeFilter(final Predicate<TreeTable.Node> filter) {
@@ -626,12 +631,6 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      */
     private final class Writer extends PropertyFormat {
         /**
-         * Combination of {@link #nodeFilter} with other filter that may be specified by the tree table to format.
-         * The {@code TreeTable}-specific filter is specified by {@link TreeFormatCustomization}.
-         */
-        private final Predicate<TreeTable.Node> filter;
-
-        /**
          * The columns to write.
          */
         private final TableColumn<?>[] columns;
@@ -640,6 +639,12 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
          * The format to use for each column.
          */
         private final Format[] formats;
+
+        /**
+         * The format for the column in process of being written. This is a format to use for the column as a whole.
+         * This field is updated for every new column to write. May be {@code null} if the format is unspecified.
+         */
+        private transient Format columnFormat;
 
         /**
          * The node values to format.
@@ -666,9 +671,9 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         /**
          * Creates a new instance which will write to the given appendable.
          *
-         * @param  out               where to format the tree.
-         * @param  tree              the tree table to format.
-         * @param  columns           the columns of the tree table to format.
+         * @param  out             where to format the tree.
+         * @param  tree            the tree table to format.
+         * @param  columns         the columns of the tree table to format.
          * @param  recursionGuard  an initially empty set.
          */
         Writer(final Appendable out, final TreeTable tree, final TableColumn<?>[] columns,
@@ -681,17 +686,6 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             this.values  = new Object[columns.length];
             this.isLast  = new boolean[8];
             this.recursionGuard = recursionGuard;
-
-            @SuppressWarnings("LocalVariableHidesMemberVariable")   // To be stored in the field if successful.
-            Predicate<TreeTable.Node> filter = nodeFilter;
-            if (tree instanceof TreeFormatCustomization) {
-                final var custom = (TreeFormatCustomization) tree;
-                final Predicate<TreeTable.Node> more = custom.filter();
-                if (more != null) {
-                    filter = (filter != null) ? more.and(filter) : more;
-                }
-            }
-            this.filter = filter;
             setTabulationExpanded(true);
             setLineSeparator(multiLineCells ? TreeTableFormat.this.getLineSeparator() : " ¶ ");
         }
@@ -703,6 +697,26 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         @Override
         public Locale getLocale() {
             return TreeTableFormat.this.getLocale();
+        }
+
+        /**
+         * Appends a textual representation of the given value.
+         *
+         * @param  value  the value to format (may be {@code null}).
+         * @throws IOException if an error occurred while writing the value.
+         */
+        @Override
+        public final void appendValue(final Object value) throws IOException {
+            if (value != null && columnFormat != null) {
+                if (columnFormat instanceof CompoundFormat<?>) {
+                    final var format = (CompoundFormat<?>) columnFormat;
+                    format.formatObject(value, this);
+                } else {
+                    append(columnFormat.format(value));
+                }
+            } else {
+                super.appendValue(value);
+            }
         }
 
         /**
@@ -841,13 +855,14 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
 
         /**
          * Returns the next filtered element from the given iterator, or {@code null} if none.
-         * The filter applied by this method combines {@link #getNodeFilter()} with the filter
-         * returned by {@link TreeFormatCustomization#filter()}.
+         * The filter applied by this method combines {@link #getNodeFilter()} with the value
+         * returned by {@link TreeTable.Node#isVisible()}.
          */
         private TreeTable.Node next(final Iterator<? extends TreeTable.Node> it) {
+            final Predicate<TreeTable.Node> filter = nodeFilter;
             while (it.hasNext()) {
                 final TreeTable.Node next = it.next();
-                if (next != null) {
+                if (next != null && next.isVisible()) {
                     if (filter == null || filter.test(next)) {
                         return next;
                     }

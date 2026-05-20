@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.isobmff.gimi;
+package org.apache.sis.storage.isobmff.geo;
 
 import java.util.UUID;
 
@@ -37,7 +37,7 @@ public final class ExtensionTest {
 
     /**
      * Verifies the <abbr>UUID</abbr> declared in extensions.
-     * Some identifiers were defined in previous <abbr>GIMI</abbr> versions
+     * Some identifiers were defined in previous GeoHEIF specification drafts
      * and are supported by <abbr>SIS</abbr> for compatibility reasons.
      */
     @Test

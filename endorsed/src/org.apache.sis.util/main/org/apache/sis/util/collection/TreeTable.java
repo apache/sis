@@ -18,6 +18,7 @@ package org.apache.sis.util.collection;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Predicate;
 
 
 /**
@@ -119,7 +120,7 @@ public interface TreeTable {
      * The methods providing a default implementations are suitable for unmodifiable tree nodes.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @version 1.5
+     * @version 1.7
      * @since   0.3
      */
     public interface Node {
@@ -225,6 +226,21 @@ public interface TreeTable {
          */
         default boolean isEditable(TableColumn<?> column) {
             return false;
+        }
+
+        /**
+         * Determines whether this node should be shown in a string or <abbr>GUI</abbr> representation of the tree.
+         * Overriding this method produces the same effect as specifying a {@linkplain TreeTableFormat#setNodeFilter
+         * node filter at formatting time}, but this method is more convenient when the decision to show the node or
+         * not depends on the {@code Node} implementation.
+         *
+         * @return whether this node should be shown.
+         *
+         * @see TreeTableFormat#setNodeFilter(Predicate)
+         * @since 1.7
+         */
+        default boolean isVisible() {
+            return true;
         }
 
         /**

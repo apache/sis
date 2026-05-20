@@ -959,6 +959,11 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short Offset = 149;
 
         /**
+         * Omitted
+         */
+        public static final short Omitted = 288;
+
+        /**
          * Operating system
          */
         public static final short OperatingSystem = 150;
@@ -1402,6 +1407,11 @@ public class Vocabulary extends IndexedResourceBundle {
          * Unspecified datum change
          */
         public static final short UnspecifiedDatumChange = 73;
+
+        /**
+         * Unsupported properties
+         */
+        public static final short UnsupportedProperties = 289;
 
         /**
          * Untitled

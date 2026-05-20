@@ -36,7 +36,7 @@ public abstract class SingleItemTypeReference extends Box {
     /**
      * The {@code itemID} of the item that refers to other items.
      */
-    @Interpretation(Type.IDENTIFIER)
+    @Interpretation(value=Type.IDENTIFIER, summary=true)
     public final int fromItemID;
 
     /**

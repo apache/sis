@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Filter;
+import java.util.function.Supplier;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +28,6 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.charset.Charset;
-import javax.xml.XMLConstants;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLReporter;
 import javax.xml.stream.XMLInputFactory;
@@ -36,7 +36,8 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.XMLStreamException;
 import org.apache.sis.xml.XML;
-import org.apache.sis.setup.OptionKey;
+import org.apache.sis.xml.internal.shared.InputFactory;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
@@ -177,11 +178,12 @@ public abstract class StaxDataStore extends URIDataStore {
      */
     protected StaxDataStore(final StaxDataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
-        final Integer indent;
+        final Supplier<XMLInputFactory> supplier = connector.getOption(OptionKey.XML_INPUT_FACTORY);
+        if (supplier != null) {
+            inputFactory = supplier.get();
+        }
         storage         = connector.getStorage();
-        indent          = connector.getOption(OptionKey.INDENTATION);
-        indentation     = (indent == null) ? Constants.DEFAULT_INDENTATION
-                                           : (byte) Math.max(WKTFormat.SINGLE_LINE, Math.min(120, indent));
+        indentation     = indentation(connector.getOption(OptionKey.INDENTATION));
         configuration   = new Config();
         storageToWriter = OutputType.forType(storage.getClass());
         storageToReader = InputType.forType(storage.getClass());
@@ -216,6 +218,18 @@ public abstract class StaxDataStore extends URIDataStore {
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
+    }
+
+    /**
+     * Returns a valid indentation value from the given property value.
+     * Value -1 means to format everything on a single line.
+     *
+     * @param  indentation  value associated to {@link OptionKey#INDENTATION}.
+     * @return indentation to use, or -1 for formatting on a single line.
+     */
+    private static byte indentation(final Integer indentation) {
+        if (indentation == null) return Constants.DEFAULT_INDENTATION;
+        return (byte) Math.max(WKTFormat.SINGLE_LINE, Math.min(120, indentation));
     }
 
     /**
@@ -255,7 +269,7 @@ public abstract class StaxDataStore extends URIDataStore {
      * Holds information that can be used for (un)marshallers configuration, and opportunistically
      * implement various listeners used by JAXB (actually the SIS wrappers) or StAX.
      */
-    private final class Config extends AbstractMap<String,Object> implements XMLReporter, Filter {
+    private final class Config extends AbstractMap<String, Object> implements XMLReporter, Filter {
         /**
          * Fetches configuration information from the given object.
          */
@@ -376,22 +390,13 @@ public abstract class StaxDataStore extends URIDataStore {
      *
      * <h4>Security</h4>
      * Unless the user has configured the {@code javax.xml.accessExternalDTD} property to something else
-     * than {@code "all"}, this class disallows external DTDs referenced by the {@code "file"} protocols.
-     * Allowed protocols are <abbr>HTTP</abbr> and <abbr>HTTPS</abbr> (list may be expanded if needed).
-     *
-     * @see org.apache.sis.xml.internal.shared.InputFactory#FACTORY
+     * than {@code "all"}, this class disallows external <abbr>DTD</abbr>s.
      */
     final XMLInputFactory inputFactory() {
         assert Thread.holdsLock(this);
         XMLInputFactory factory = inputFactory;
         if (factory == null) {
-            factory = XMLInputFactory.newInstance();
-            if (factory.isPropertySupported(XMLConstants.FEATURE_SECURE_PROCESSING)) {
-                factory.setProperty(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);
-            }
-            if ("all".equals(factory.getProperty(XMLConstants.ACCESS_EXTERNAL_DTD))) {
-                factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-            }
+            factory = InputFactory.newSecureFactory();
             factory.setXMLReporter(configuration);
             inputFactory = factory;     // Set only on success.
         }

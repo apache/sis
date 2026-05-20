@@ -23,7 +23,7 @@ import org.apache.sis.util.internal.shared.PropertyFormat;
 
 
 /**
- * Creates string representation of property values of unknown type.
+ * Creates string representation of property values of unknown types.
  * Tabulations are replaced by spaces and line feeds are replaced by the Pilcrow character.
  *
  * @author  Martin Desruisseaux (Geomatys)

@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.isobmff.Box;
 import org.apache.sis.storage.isobmff.Reader;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 
 
 /**
@@ -39,7 +39,7 @@ public final class FDItemInfoExtension extends Box {
     /**
      * Identifies the extension fields of version 1 with respect to version 0 of the item information entry.
      */
-    @Interpretation(Type.FOURCC)
+    @Interpretation(value=Type.FOURCC, summary=true)
     public final int extensionType;
 
     /**

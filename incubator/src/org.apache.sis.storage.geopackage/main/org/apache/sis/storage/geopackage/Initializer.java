@@ -30,7 +30,7 @@ import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteDataSource;
 import org.apache.sis.io.stream.InternalOptionKey;
 import org.apache.sis.io.stream.IOUtilities;
-import org.apache.sis.setup.OptionKey;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.util.ArraysExt;

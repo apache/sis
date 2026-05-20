@@ -22,7 +22,7 @@ import java.util.OptionalInt;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.GenericName;
 import org.apache.sis.image.DataType;
-import org.apache.sis.storage.DataOptionKey;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
@@ -46,7 +46,7 @@ import org.apache.sis.util.internal.shared.Strings;
  * {@snippet lang="java" :
  * StorageConnector storage = ...;
  * CoverageModifier modifier = ...;
- * storage.setOption(DataOptionKey.COVERAGE_MODIFIER, modifier);
+ * storage.setOption(OptionKey.COVERAGE_MODIFIER, modifier);
  * try (DataStore store = DataStores.open(connector)) {
  *     // Modified resources will be returned.
  * }
@@ -60,21 +60,21 @@ import org.apache.sis.util.internal.shared.Strings;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
  *
- * @see DataOptionKey#COVERAGE_MODIFIER
+ * @see OptionKey#COVERAGE_MODIFIER
  *
  * @since 1.5
  */
 public interface CoverageModifier {
     /**
      * Returns modifier specified in the options of the given storage connector.
-     * This convenience method fetches the value associated to {@link DataOptionKey#COVERAGE_MODIFIER}.
+     * This convenience method fetches the value associated to {@link OptionKey#COVERAGE_MODIFIER}.
      * If there is no such value, then this method returns the {@link #DEFAULT} instance.
      *
      * @param  connector  the storage connector from which to get the modifier.
      * @return the modifier to use, never {@code null}.
      */
     public static CoverageModifier getOrDefault(StorageConnector connector) {
-        final CoverageModifier customizer = connector.getOption(DataOptionKey.COVERAGE_MODIFIER);
+        final CoverageModifier customizer = connector.getOption(OptionKey.COVERAGE_MODIFIER);
         return (customizer != null) ? customizer : Source.DEFAULT;
     }
 

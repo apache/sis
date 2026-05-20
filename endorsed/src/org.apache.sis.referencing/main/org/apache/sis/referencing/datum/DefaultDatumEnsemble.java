@@ -81,7 +81,7 @@ import org.opengis.metadata.extent.Extent;
  * For getting a single object which may be a datum or an ensemble, see the {@link DatumOrEnsemble} static methods.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @param <D> the type of datum members contained in this ensemble.
  *
@@ -439,24 +439,23 @@ check:  if (it.hasNext()) {
      * @hidden because nothing new to said.
      */
     @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
-        if (!super.equals(object, mode)) {
-            return false;
-        }
-        switch (mode) {
-            case STRICT: {
-                final var that = (DefaultDatumEnsemble<?>) object;
-                return members.equals(that.members) && ensembleAccuracy.equals(that.ensembleAccuracy);
-            }
-            default: {
-                if (!(object instanceof DefaultDatumEnsemble<?>)) {
-                    return false;
+    public boolean equals(final Object object, ComparisonMode mode) {
+        if (super.equals(object, mode)) {
+            switch (mode) {
+                case STRICT: {
+                    final var that = (DefaultDatumEnsemble<?>) object;
+                    return members.equals(that.members) && ensembleAccuracy.equals(that.ensembleAccuracy);
                 }
-                final var that = (DefaultDatumEnsemble<?>) object;
-                return Utilities.deepEquals(getMembers(), that.getMembers(), mode) &&
-                       Utilities.deepEquals(getEnsembleAccuracy(), that.getEnsembleAccuracy(), mode);
+                default: {
+                    final var that = (DefaultDatumEnsemble<?>) object;
+                    if (Utilities.deepEquals(getEnsembleAccuracy(), that.getEnsembleAccuracy(), mode)) {
+                        if (mode == ComparisonMode.IGNORE_METADATA) mode = ComparisonMode.COMPATIBILITY;
+                        return Utilities.deepEquals(getMembers(), that.getMembers(), mode);
+                    }
+                }
             }
         }
+        return false;
     }
 
     /**

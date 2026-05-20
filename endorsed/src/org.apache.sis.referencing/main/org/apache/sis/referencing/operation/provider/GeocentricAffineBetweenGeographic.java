@@ -27,6 +27,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransform;
+import org.apache.sis.referencing.factory.InternalFactoryException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
@@ -237,7 +238,7 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
         try {
             toGeographic = toGeographic.inverse();
         } catch (NoninvertibleTransformException e) {
-            throw new FactoryException(e);                  // Should never happen with SIS implementation.
+            throw new InternalFactoryException(e);          // Should never happen with SIS implementation.
         }
         /*
          * The  Geocentric → Affine → Geographic  chain.

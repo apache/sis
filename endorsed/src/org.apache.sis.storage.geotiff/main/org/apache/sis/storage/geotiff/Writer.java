@@ -46,7 +46,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.IncompatibleResourceException;
 import org.apache.sis.storage.ReadOnlyStorageException;
-import org.apache.sis.storage.base.MetadataFetcher;
+import org.apache.sis.storage.metadata.MetadataFetcher;
 import org.apache.sis.storage.geotiff.writer.TagValue;
 import org.apache.sis.storage.geotiff.writer.TileMatrix;
 import org.apache.sis.storage.geotiff.writer.GeoEncoder;

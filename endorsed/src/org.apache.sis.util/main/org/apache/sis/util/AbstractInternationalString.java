@@ -34,7 +34,7 @@ import org.apache.sis.util.internal.shared.Strings;
  * The {@linkplain Comparable natural ordering} is defined by the value returned by {@link #toString()}.</p>
  *
  * <h2>Substituting a free text by a code list</h2>
- * The ISO standard allows to substitute some character strings in the <q>free text</q> domain
+ * The <abbr>ISO</abbr> standard allows to substitute some character strings in the <q>free text</q> domain
  * by a {@link org.opengis.util.CodeList} value. This can be done with:
  *
  * <ul>
@@ -56,8 +56,7 @@ public abstract class AbstractInternationalString implements InternationalString
      *
      * <h4>Thread safety</h4>
      * For thread safety this field shall either be read and written in a synchronized block,
-     * or be fixed at construction time and never changed after than point. All other usages
-     * are prohibited.
+     * or be fixed at construction time and never changed after than point.
      *
      * <h4>Serialization</h4>
      * This field is not serialized because serialization is often used for data transmission
@@ -73,7 +72,7 @@ public abstract class AbstractInternationalString implements InternationalString
     }
 
     /**
-     * Returns the length of the string in the {@linkplain Locale#getDefault() default locale}.
+     * Returns the length of the string in the default locale.
      * This is the length of the string returned by {@link #toString()}.
      *
      * @return length of the string in the default locale.
@@ -84,8 +83,8 @@ public abstract class AbstractInternationalString implements InternationalString
     }
 
     /**
-     * Returns the character of the string in the {@linkplain Locale#getDefault() default locale}
-     * at the specified index. This is a character of the string returned by {@link #toString()}.
+     * Returns the character of the string in the default locale at the specified index.
+     * This is a character of the string returned by {@link #toString()}.
      *
      * @param  index  the index of the character.
      * @return the character at the specified index.
@@ -97,7 +96,7 @@ public abstract class AbstractInternationalString implements InternationalString
     }
 
     /**
-     * Returns a subsequence of the string in the {@linkplain Locale#getDefault() default locale}.
+     * Returns a subsequence of the string in the default locale.
      * The subsequence is a {@link String} object starting with the character value at the specified
      * index and ending with the character value at index {@code end - 1}.
      *
@@ -116,14 +115,14 @@ public abstract class AbstractInternationalString implements InternationalString
      * then some fallback locale is used. The fallback locale is implementation-dependent, and
      * is not necessarily the same as the default locale used by the {@link #toString()} method.
      *
-     * <h4>Handling of <code>Locale.ROOT</code> argument value</h4>
+     * <h4>Handling of {@code Locale.ROOT} argument value</h4>
      * {@link Locale#ROOT} can be given to this method for requesting a "unlocalized" string,
      * typically some programmatic values like enumerations or identifiers. While identifiers
      * often look like English words, {@code Locale.ROOT} is not considered synonymous to
      * {@link Locale#ENGLISH} because the values may differ in the way numbers and dates are
      * formatted (e.g. using the ISO 8601 standard for dates instead of English conventions).
      *
-     * <h4>Handling of <code>null</code> argument value</h4>
+     * <h4>Handling of {@code null} argument value</h4>
      * The {@code Locale.ROOT} constant is new in Java 6. Some other libraries designed for Java 5
      * use the {@code null} value for "unlocalized" strings. Apache SIS accepts {@code null} value
      * for inter-operability with those libraries. However, the behavior is implementation dependent:
@@ -183,9 +182,8 @@ public abstract class AbstractInternationalString implements InternationalString
     }
 
     /**
-     * Compares this string with the specified object for order. This method compares
-     * the string in the {@linkplain Locale#getDefault() default locale}, as returned
-     * by {@link #toString()}.
+     * Compares this string with the specified object for order.
+     * This method compares the strings in the default locale, as returned by {@link #toString()}.
      *
      * @param  object  the string to compare with this string.
      * @return a negative number if this string is before the given string,

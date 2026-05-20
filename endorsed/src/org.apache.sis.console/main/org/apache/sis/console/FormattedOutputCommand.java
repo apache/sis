@@ -38,6 +38,7 @@ import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.base.CodeType;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Version;
@@ -47,7 +48,6 @@ import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.X364;
 import org.apache.sis.measure.Range;
-import org.apache.sis.setup.OptionKey;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.XML;
 

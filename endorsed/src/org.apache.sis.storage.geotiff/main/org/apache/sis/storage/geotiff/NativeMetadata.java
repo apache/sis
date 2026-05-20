@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.function.IntFunction;
 import java.io.IOException;
@@ -28,6 +29,7 @@ import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 import org.apache.sis.math.Vector;
 import org.apache.sis.math.NumberType;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
@@ -108,7 +110,7 @@ final class NativeMetadata extends GeoKeysLoader {
         input     = reader.input;
         isClassic = reader.intSizeExpansion == 0;
         final int offsetSize = Integer.BYTES << reader.intSizeExpansion;
-        final DefaultTreeTable table = new DefaultTreeTable(CODE, NAME, VALUE);
+        final var table = new DefaultTreeTable(CODE, NAME, VALUE);
         final TreeTable.Node root = table.getRoot();
         root.setValue(NAME, "TIFF");
         input.mark();
@@ -196,12 +198,87 @@ final class NativeMetadata extends GeoKeysLoader {
                                 }
                                 /*
                                  * Replace a few numerical values by a more readable string when available.
-                                 * We currently perform this replacement only for tags for which we defined
-                                 * an enumeration.
+                                 * The first items are public enumerations. Other items are tag values that
+                                 * we continue to handle as integers for now.
                                  */
                                 switch (tag) {
-                                    case TAG_COMPRESSION: value = toString(value, Compression::valueOf, Compression.UNKNOWN); break;
-                                    case TAG_PREDICTOR:   value = toString(value,   Predictor::valueOf,   Predictor.UNKNOWN); break;
+                                    case TAG_COMPRESSION: value = toName(value, Compression::valueOf); break;
+                                    case TAG_PREDICTOR:   value = toName(value,   Predictor::valueOf); break;
+                                    case TAG_PLANAR_CONFIGURATION: {
+                                        value = toString(value, (code) -> {
+                                            switch (code) {
+                                                case PLANAR_CONFIGURATION_CHUNKY: return "Chunky";
+                                                case PLANAR_CONFIGURATION_PLANAR: return "Planar";
+                                                default: return "Unknown";
+                                            }
+                                        });
+                                        break;
+                                    }
+                                    case TAG_FILL_ORDER: {
+                                        value = toString(value, (code) -> {
+                                            switch (code) {
+                                                case FILL_ORDER_LEFT_TO_RIGHT: return "Left to right";
+                                                case FILL_ORDER_RIGHT_TO_LEFT: return "Right to left";
+                                                default: return "Unknown";
+                                            }
+                                        });
+                                        break;
+                                    }
+                                    case TAG_SAMPLE_FORMAT: {
+                                        value = toString(value, (code) -> {
+                                            switch (code) {
+                                                case SAMPLE_FORMAT_UNSIGNED_INTEGER: return "Unsigned integer";
+                                                case SAMPLE_FORMAT_SIGNED_INTEGER:   return "Signed integer";
+                                                case SAMPLE_FORMAT_FLOATING_POINT:   return "Floating point";
+                                                case SAMPLE_FORMAT_UNDEFINED:        return "Undefined";
+                                                default: return "Unknown";
+                                            }
+                                        });
+                                        break;
+                                    }
+                                    case TAG_PHOTOMETRIC_INTERPRETATION: {
+                                        value = toString(value, (code) -> {
+                                            switch (code) {
+                                                case PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO:     return "Black is zero";
+                                                case PHOTOMETRIC_INTERPRETATION_WHITE_IS_ZERO:     return "White is zero";
+                                                case PHOTOMETRIC_INTERPRETATION_PALETTE_COLOR:     return "Palette color";
+                                                case PHOTOMETRIC_INTERPRETATION_RGB:               return "RGB";
+                                                case PHOTOMETRIC_INTERPRETATION_CMYK:              return "CMYK";
+                                                case PHOTOMETRIC_INTERPRETATION_CIELAB:            return "CIELAB";
+                                                case PHOTOMETRIC_INTERPRETATION_ICCLAB:            return "ICCLAT";
+                                                case PHOTOMETRIC_INTERPRETATION_Y_CB_CR:           return "YCbCr";
+                                                case PHOTOMETRIC_INTERPRETATION_TRANSPARENCY_MASK: return "Transparency";
+                                                default: return "Unknown";
+                                            }
+                                        });
+                                        break;
+                                    }
+                                    case TAG_SUBFILE_TYPE: {
+                                        value = toString(value, (code) -> {
+                                            switch (code) {
+                                                case SUBFILE_TYPE_FULL_RESOLUTION:    return "Full resolution";
+                                                case SUBFILE_TYPE_REDUCED_RESOLUTION: return "Reduced resolution";
+                                                case SUBFILE_TYPE_SINGLE_PAGE:        return "Single page";
+                                                default: return "Unknown";
+                                            }
+                                        });
+                                        break;
+                                    }
+                                    case TAG_NEW_SUBFILE_TYPE: {
+                                        value = toString(value, (code) -> {
+                                            final var items = new ArrayList<String>();
+                                            while (code != 0) {
+                                                final int bit = Integer.lowestOneBit(code);
+                                                switch (bit) {
+                                                    case NEW_SUBFILE_TYPE_REDUCED_RESOLUTION: items.add("Reduced resolution"); break;
+                                                    case NEW_SUBFILE_TYPE_SINGLE_PAGE:        items.add("Single page"); break;
+                                                    case NEW_SUBFILE_TYPE_TRANSPARENCY:       items.add("Transparency"); break;
+                                                }
+                                                code &= ~bit;
+                                            }
+                                            return String.join(", ", items);
+                                        });
+                                    }
                                 }
                             }
                         }
@@ -251,12 +328,19 @@ final class NativeMetadata extends GeoKeysLoader {
     }
 
     /**
-     * Replaces an integer code by its enumeration value if that value is different than {@code unknown}.
+     * Completes an integer code with a string representation of the corresponding enumeration name.
      */
-    private static Object toString(final Object value, final IntFunction<Enum<?>> valueOf, final Enum<?> unknown) {
+    private static Object toName(final Object value, final IntFunction<Enum<?>> valueOf) {
+        return toString(value, (code) -> CharSequences.upperCaseToSentence(valueOf.apply(code).name()));
+    }
+
+    /**
+     * Completes an integer code with a string representation provided by the given function.
+     */
+    private static Object toString(final Object value, final IntFunction<CharSequence> valueOf) {
         if (value != null && NumberType.isInteger(value.getClass())) {
-            final Enum<?> c = valueOf.apply(((Number) value).intValue());
-            if (c != unknown) return c.name();
+            final int code = ((Number) value).intValue();
+            return valueOf.apply(code) + " (#" + code + ')';
         }
         return value;
     }
@@ -266,9 +350,9 @@ final class NativeMetadata extends GeoKeysLoader {
      */
     private void writeGeoKeys() {
         if (geoNode != null) {
-            final Map<Short,Object> geoKeys = new LinkedHashMap<>(32);
+            final var geoKeys = new LinkedHashMap<Short ,Object>(32);
             load(geoKeys);
-            for (final Map.Entry<Short,Object> entry : geoKeys.entrySet()) {
+            for (final Map.Entry<Short, Object> entry : geoKeys.entrySet()) {
                 final TreeTable.Node node = geoNode.newChild();
                 final short code = entry.getKey();
                 node.setValue(CODE,  Short.toUnsignedInt(code));

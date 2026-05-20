@@ -21,12 +21,12 @@ import java.io.IOException;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.isobmff.Reader;
+import org.apache.sis.storage.isobmff.Incomplete;
 
 
 /**
  * Overall information relevant to the entire presentation considered as a whole.
- *
- * @todo Not yet implemented. This is currently an almost empty box.
+ * <b>Not yet implemented.</b>
  *
  * <h4>Container</h4>
  * The container can be a {@link Movie} box.
@@ -34,6 +34,7 @@ import org.apache.sis.storage.isobmff.Reader;
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */
+@Incomplete
 public final class MovieHeader extends HeaderBox {
     /**
      * Numerical representation of the {@code "mvhd"} box type.

@@ -446,7 +446,7 @@ next:   for (SingleCRS component : CRS.getSingleComponents(targetCRS)) {
         /*
          * Undocumented (for now) feature: if the `transform` argument is null but parameters are
          * found in the given properties, create the MathTransform instance from those parameters.
-         * This is needed for WKT parsing of CoordinateOperation[…] among others.
+         * This is needed for WKT parsing of "CoordinateOperation[…]" among other user cases.
          */
         if (transform == null) {
             final ParameterValueGroup parameters = Containers.property(properties,
@@ -647,16 +647,19 @@ next:   for (SingleCRS component : CRS.getSingleComponents(targetCRS)) {
              * cause the lost of the original CRS with the desired longitude range.
              */
             if (single instanceof SingleOperation) {
-                final Map<String,Object> merge = new HashMap<>(
+                final var modifiedProperties = new HashMap<String, Object>(
                         IdentifiedObjects.getProperties(single, CoordinateOperation.IDENTIFIERS_KEY));
-                merge.put(CoordinateOperations.PARAMETERS_KEY, ((SingleOperation) single).getParameterValues());
+                modifiedProperties.put(CoordinateOperations.PARAMETERS_KEY, ((SingleOperation) single).getParameterValues());
                 if (single instanceof AbstractIdentifiedObject) {
-                    merge.put(CoordinateOperations.OPERATION_TYPE_KEY, ((AbstractIdentifiedObject) single).getInterface());
+                    modifiedProperties.put(CoordinateOperations.OPERATION_TYPE_KEY, ((AbstractIdentifiedObject) single).getInterface());
                 }
-                merge.putAll(properties);
-                return createSingleOperation(merge, op.getSourceCRS(), op.getTargetCRS(),
-                        op.getInterpolationCRS().orElse(null),
-                        ((SingleOperation) single).getMethod(), op.getMathTransform());
+                modifiedProperties.putAll(properties);
+                return createSingleOperation(modifiedProperties,
+                                             op.getSourceCRS(),
+                                             op.getTargetCRS(),
+                                             op.getInterpolationCRS().orElse(null),
+                                             ((SingleOperation) single).getMethod(),
+                                             op.getMathTransform());
             }
         }
         return single;

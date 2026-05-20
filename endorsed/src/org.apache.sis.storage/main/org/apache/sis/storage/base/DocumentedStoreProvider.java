@@ -27,7 +27,7 @@ import org.apache.sis.system.Modules;
 
 
 /**
- * Base class of data store providers having an entry in the metadata SQL database.
+ * Base class of data store providers having an entry in the metadata <abbr>SQL</abbr> database.
  * The primary key in the {@code MD_Format} table must be the name given at construction time.
  *
  * @author  Martin Desruisseaux (Geomatys)

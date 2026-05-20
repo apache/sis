@@ -46,6 +46,7 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class TreeTableFormatTest extends TestCase {
     /**
      * The formatter to use.
@@ -64,7 +65,7 @@ public final class TreeTableFormatTest extends TestCase {
      * Creates a band for the given minimum and maximum wavelengths, in centimetres.
      */
     private static DefaultBand createBand(final double min, final double max) {
-        final DefaultBand band = new DefaultBand();
+        final var band = new DefaultBand();
         band.setMinValue(min);
         band.setMaxValue(max);
         band.setUnits(Units.CENTIMETRE);
@@ -106,13 +107,13 @@ public final class TreeTableFormatTest extends TestCase {
      */
     @Test
     public void testProcessing() {
-        final DefaultCitation   titled = new DefaultCitation("Some specification");
-        final DefaultCitation    coded = new DefaultCitation();
-        final DefaultCitation untitled = new DefaultCitation();
+        final var titled   = new DefaultCitation("Some specification");
+        final var coded    = new DefaultCitation();
+        final var untitled = new DefaultCitation();
         titled  .setPresentationForms(Set.of(PresentationForm.DOCUMENT_HARDCOPY));
         coded   .setPresentationForms(Set.of(PresentationForm.IMAGE_HARDCOPY));
         untitled.setCitedResponsibleParties(Set.of(new DefaultResponsibleParty(Role.AUTHOR)));
-        final DefaultProcessing processing = new DefaultProcessing();
+        final var processing = new DefaultProcessing();
         processing.setDocumentations(List.of(titled, coded, untitled));
         final String text = format.format(processing.asTreeTable());
         assertMultilinesEquals(
@@ -131,7 +132,7 @@ public final class TreeTableFormatTest extends TestCase {
      */
     @Test
     public void testImageDescription() {
-        final DefaultImageDescription image = new DefaultImageDescription();
+        final var image = new DefaultImageDescription();
         image.setAttributeGroups(List.of(
             new DefaultAttributeGroup(null, createBand(0.25, 0.26)),
             new DefaultAttributeGroup(null, createBand(0.28, 0.29))
@@ -156,7 +157,7 @@ public final class TreeTableFormatTest extends TestCase {
      */
     @Test
     public void testTreeWithCustomElements() {
-        final DefaultCitation citation = new DefaultCitation();
+        final var citation = new DefaultCitation();
         citation.setAlternateTitles(List.of(
                 new SimpleInternationalString("Apple"),
                 new SimpleInternationalString("Orange"),

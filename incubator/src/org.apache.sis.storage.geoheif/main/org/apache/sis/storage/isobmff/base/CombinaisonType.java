@@ -48,7 +48,7 @@ public final class CombinaisonType extends Box {
     /**
      * List of compatible brands.
      */
-    @Interpretation(Type.FOURCC)
+    @Interpretation(value=Type.FOURCC, summary=true)
     public final int[] compatibleBrands;
 
     /**

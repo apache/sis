@@ -23,9 +23,11 @@ import java.text.ParseException;
 import java.time.ZoneId;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.parameter.DefaultParameterValue;
@@ -85,6 +87,21 @@ public final class WKTFormatTest extends TestCase {
 
         GeodeticObjectParserTest.assertNameAndIdentifierEqual("Gravity-related height", 0, crs);
         GeodeticObjectParserTest.assertNameAndIdentifierEqual("Mean Sea Level", 0, crs.getDatum());
+    }
+
+    /**
+     * Ensures that formatting {@code CRS:84} and parsing it produces an equivalent object.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    public void testRoundtrip() throws ParseException {
+        format = parser = new WKTFormat();
+        format.setConvention(Convention.WKT2);
+        final GeographicCRS crs = CommonCRS.WGS84.normalizedGeographic();
+        final String wkt = format.format(crs);
+        var parsed = assertInstanceOf(GeographicCRS.class, parser.parseObject(wkt));
+        assertEqualsIgnoreMetadata(crs, parsed);
     }
 
     /**
@@ -242,7 +259,7 @@ public final class WKTFormatTest extends TestCase {
      */
     @Test
     public void testConsistencyOfGeogTran() throws ParseException {
-        final Symbols symbols = new Symbols(Symbols.SQUARE_BRACKETS);
+        final var symbols = new Symbols(Symbols.SQUARE_BRACKETS);
         symbols.setPairedQuotes("“”", "\"\"");
         format = new WKTFormat();
         format.setConvention(Convention.WKT1_IGNORE_AXES);
@@ -268,7 +285,7 @@ public final class WKTFormatTest extends TestCase {
     }
 
     /**
-     * Implementation of {@link #testConsistency()} for a single WKT.
+     * Implementation of {@link #testConsistency()} for a single <abbr>WKT</abbr>.
      *
      * @param  strict  whether to require strict equality of WKT strings.
      * @param  wkt     the Well-Known Text to parse and reformat.

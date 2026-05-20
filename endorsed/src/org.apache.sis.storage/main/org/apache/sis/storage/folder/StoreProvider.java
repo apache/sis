@@ -34,6 +34,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
@@ -42,13 +43,12 @@ import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.GridCoverageResource;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.base.StoreUtilities;
-import org.apache.sis.setup.OptionKey;
+import org.apache.sis.util.logging.Logging;
 
 // Specific to the main branch:
 import org.apache.sis.parameter.DefaultParameterDescriptor;

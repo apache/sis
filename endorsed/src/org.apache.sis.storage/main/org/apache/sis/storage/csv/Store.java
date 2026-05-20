@@ -55,13 +55,13 @@ import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.temporal.LenientDateFormat;
-import org.apache.sis.storage.DataOptionKey;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.storage.internal.RewindableLineReader;
 import org.apache.sis.storage.internal.Resources;
@@ -72,7 +72,6 @@ import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.setup.OptionKey;
 import org.apache.sis.measure.Units;
 
 // Specific to the main branch:
@@ -214,7 +213,7 @@ final class Store extends URIDataStore implements FeatureSet {
      * Creates a new CSV store from the given file, URL or stream.
      *
      * <p>If the CSV file is known to be a Moving Feature file, then the given connector should
-     * have an {@link org.apache.sis.setup.OptionKey#ENCODING} value set to UTF-8.</p>
+     * have an {@link OptionKey#ENCODING} value set to UTF-8.</p>
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
@@ -225,7 +224,7 @@ final class Store extends URIDataStore implements FeatureSet {
         final Reader r = connector.commit(Reader.class, StoreProvider.NAME);
         source     = (r instanceof BufferedReader) ? (BufferedReader) r : new LineNumberReader(r);
         geometries = Geometries.factory(connector.getOption(OptionKey.GEOMETRY_LIBRARY));
-        dissociate = connector.getOption(DataOptionKey.FOLIATION_REPRESENTATION) == FoliationRepresentation.FRAGMENTED;
+        dissociate = connector.getOption(OptionKey.FOLIATION_REPRESENTATION) == FoliationRepresentation.FRAGMENTED;
         @SuppressWarnings("LocalVariableHidesMemberVariable") GeneralEnvelope envelope    = null;
         @SuppressWarnings("LocalVariableHidesMemberVariable") DefaultFeatureType featureType = null;
         @SuppressWarnings("LocalVariableHidesMemberVariable") Foliation       foliation   = null;

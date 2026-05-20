@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.base;
+package org.apache.sis.storage.metadata;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,9 +55,9 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
 
 /**
  * Helper methods for fetching metadata to be written by {@code DataStore} implementations.
- * This is not a general-purpose builder suitable for public API, because the methods provided
- * in this class are tailored for Apache SIS data store needs.
- * API of this class may change in any future SIS versions.
+ * This is not a general-purpose builder suitable for public <abbr>API</abbr>,
+ * because the methods provided in this class are tailored for Apache <abbr>SIS</abbr> data store needs.
+ * <abbr>API</abbr> of this class may change in any future <abbr>SIS</abbr> versions.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

@@ -44,7 +44,7 @@ import org.apache.sis.storage.WritableAggregate;
 import org.apache.sis.storage.coveragejson.binding.Coverage;
 import org.apache.sis.storage.coveragejson.binding.CoverageCollection;
 import org.apache.sis.storage.coveragejson.binding.CoverageJsonObject;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.io.stream.IOUtilities;
 

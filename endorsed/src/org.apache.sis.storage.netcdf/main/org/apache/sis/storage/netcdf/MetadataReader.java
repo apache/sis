@@ -51,7 +51,7 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.citation.*;
 import org.apache.sis.metadata.iso.identification.*;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.netcdf.base.Axis;
 import org.apache.sis.storage.netcdf.base.Decoder;

@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.base.WarningAdapter;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.base.WarningEvent;

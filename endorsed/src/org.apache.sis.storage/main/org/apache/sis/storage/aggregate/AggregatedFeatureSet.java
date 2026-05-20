@@ -30,7 +30,7 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.AbstractFeatureSet;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 
 // Specific to the main branch:
 import org.apache.sis.feature.DefaultFeatureType;

@@ -64,7 +64,7 @@ import org.apache.sis.referencing.internal.shared.GeodeticObjectBuilder;
 import org.apache.sis.referencing.internal.shared.ReferencingFactoryContainer;
 import org.apache.sis.referencing.operation.provider.PolarStereographicB;
 import org.apache.sis.referencing.operation.provider.TransverseMercator;
-import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.storage.metadata.MetadataBuilder;
 
 // Specific to the main branch:
 import org.apache.sis.referencing.internal.shared.CoordinateOperations;
