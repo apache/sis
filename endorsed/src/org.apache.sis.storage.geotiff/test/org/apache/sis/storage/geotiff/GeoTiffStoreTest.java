@@ -17,14 +17,16 @@
 package org.apache.sis.storage.geotiff;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
+import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.util.Utilities;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.Envelopes;
@@ -45,9 +47,11 @@ import org.apache.sis.referencing.operation.matrix.Matrix4;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.feature.Assertions.assertGridToCornerEquals;
+import static org.apache.sis.feature.Assertions.assertPixelsEqual;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
@@ -138,7 +142,7 @@ public final class GeoTiffStoreTest extends TestCase {
      */
     @Test
     public void testWriteUntiled() throws Exception {
-        testWrite(UNTILED, new Rectangle(32, 16), null, 1054);
+        testWrite(new Rectangle(32, 16), null);
     }
 
     /**
@@ -149,19 +153,17 @@ public final class GeoTiffStoreTest extends TestCase {
     @Test
     public void testWriteTiled() throws Exception {
         final var tileSize = new Dimension(16, 16);     // TIFF tile size must be multiple of 16.
-        testWrite(TILED, new Rectangle(tileSize.width * 3, tileSize.height * 2), tileSize, 2334);
+        testWrite(new Rectangle(tileSize.width * 3, tileSize.height * 2), tileSize);
     }
 
     /**
      * Implementation of {@link #testWriteUntiled()} and {@link #testWriteTiled()}.
      *
-     * @param  filename  name of the file which contain the expected image.
      * @param  bounds    bounds of the image to create.
      * @param  tileSize  size of the tiles, or {@code null} for the image size.
-     * @param  length    expected length in bytes.
      */
-    private static void testWrite(final String filename, final Rectangle bounds, final Dimension tileSize, final int length)
-            throws TransformException, DataStoreException, IOException
+    private static void testWrite(final Rectangle bounds, final Dimension tileSize)
+            throws TransformException, DataStoreException
     {
         /*
          * We need a CRS which has no EPSG code for ensuring that the test write the same GeoTIFF keys
@@ -177,17 +179,43 @@ public final class GeoTiffStoreTest extends TestCase {
                 .flipGridAxis(1)
                 .build();
 
-        final var buffer = new ByteArrayOutputStream(length);
+        final var buffer = new ByteArrayOutputStream();
         try (DataStore ds = DataStores.openWritable(buffer, "geotiff")) {
             assertInstanceOf(GeoTiffStore.class, ds).append(coverage, null);
         }
+
         final byte[] actual = buffer.toByteArray();
-        final byte[] expected;
-        try (InputStream in = GeoTiffStoreTest.class.getResourceAsStream(filename)) {
-            assertNotNull(in, filename);
-            expected = in.readAllBytes();
+        try (var store = new GeoTiffStore(new GeoTiffStoreProvider(), new StorageConnector(ByteBuffer.wrap(actual)))) {
+            var coverageToValidate = store.components().get(0).read(null);
+            final var expectedGridGeom = coverage.getGridGeometry();
+            final var actualGridGeom = coverageToValidate.getGridGeometry();
+            assertTrue(
+                    Utilities.equalsApproximately(expectedGridGeom, actualGridGeom),
+                    () -> String.format(
+                            "Written grid geometry differs from original one.%nOriginal:%n%s%nWritten:%n%s%n",
+                            expectedGridGeom, actualGridGeom
+                    )
+            );
+
+            assertTrue(
+                    Utilities.equalsApproximately(expectedGridGeom, actualGridGeom),
+                    () -> String.format(
+                            "Written grid geometry differs from original one.%nOriginal:%n%s%nWritten:%n%s%n",
+                            expectedGridGeom, actualGridGeom
+                    )
+            );
+
+            final var expectedSampleDims = coverage.getSampleDimensions();
+            final var actualSampleDims = coverageToValidate.getSampleDimensions();
+            assertTrue(
+                    Utilities.equalsApproximately(expectedSampleDims, actualSampleDims),
+                    () -> String.format(
+                            "Written Sample dimensions differ from original one.%nOriginal:%n%s%nWritten:%n%s%n",
+                            expectedSampleDims, actualSampleDims
+                    )
+            );
+
+            assertPixelsEqual(coverage.render(null), null, coverageToValidate.render(null), null);
         }
-        assertArrayEquals(expected, actual);
-        assertEquals(length, actual.length);
     }
 }
