@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.geotiff;
 
-import java.io.IOException;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
@@ -46,6 +45,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 
 // Test dependencies
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -157,6 +157,20 @@ public final class GeoTiffStoreTest extends TestCase {
     }
 
     /**
+     * Writes an image and compare with the {@code "tiled.tiff"} file.
+     * This test differs from {@link #testWriteTiled()} because it requests a tile size that is not accepted as is by
+     * geotiff.
+     * </br>
+     * The aim of this test is to ensure that Geotiff writer will adapt tile size according to the Tiff standard.
+     * It requests tiles of size 19, and expect the Geotiff writer to adapt request to write tiles of size 16 or 32.
+     */
+    @Test
+    public void testWriteTiledAdapted() throws Exception {
+        final var tileSize = new Dimension(7, 7);
+        testWrite(new Rectangle(64, 64), tileSize);
+    }
+
+    /**
      * Implementation of {@link #testWriteUntiled()} and {@link #testWriteTiled()}.
      *
      * @param  bounds    bounds of the image to create.
@@ -215,7 +229,63 @@ public final class GeoTiffStoreTest extends TestCase {
                     )
             );
 
-            assertPixelsEqual(coverage.render(null), null, coverageToValidate.render(null), null);
+            final var actualRendering = coverageToValidate.render(null);
+            assertPixelsEqual(coverage.render(null), null, actualRendering, null);
+            // If user requested a tiled dataset, we must ensure the written Geotiff file has been tiled
+            if (tileSize != null && (tileSize.getWidth() < bounds.getWidth() || tileSize.getHeight() < bounds.getHeight())) {
+                assertTiling(actualRendering, tileSize, 16);
+            }
+        }
+    }
+
+    /**
+     * Represent the side of the tile being evaluated. Either width (X) or height (Y).
+     */
+    private enum TileAxis { width, height }
+
+    /**
+     * Verify that given image tiling respects user tiling request, modulo a given restriction.
+     * The restriction maps Tiff standard requirement for tile size to be multiple of a given factor.
+     * </br>
+     * It means that if user requests a tile size of 3, but the restriction factor is 2,
+     * then we expect the image to use a tile size of either 2 or 4,
+     * which are the nearest enclosing multiples of 2 for request 3.
+     *
+     * @param actualRendering The image to control tiling on.
+     * @param tileSize The tile size requested by user.
+     * @param tileSizeMultiple A factor to use to adapted requested tile size.
+     */
+    private static void assertTiling(RenderedImage actualRendering, Dimension tileSize, int tileSizeMultiple) {
+        assertTileSize(TileAxis.width, actualRendering.getWidth(), actualRendering.getTileWidth(), tileSize.width, tileSizeMultiple);
+        assertTileSize(TileAxis.height, actualRendering.getHeight(), actualRendering.getTileHeight(), tileSize.height, tileSizeMultiple);
+    }
+
+    /**
+     * Test a specific tile side according to requirements expressed by {@link #assertTiling(RenderedImage, Dimension, int)}.
+     *
+     * @param axis Which side of the tiling is being tested. Used for assertion error message formatting.
+     * @param imgSize The image actual size along tested side (its {@link RenderedImage#getWidth() width} or {@link RenderedImage#getHeight() height}).
+     * @param imgActualTileSize The image actual tile size along tested side (its {@link RenderedImage#getTileWidth() tile width} or {@link RenderedImage#getTileHeight() tile height}).
+     * @param requestedTileSize User request tile size along the side to test.
+     * @param tileSizeMultiple The restriction factor: actual tile size must be a multiple of this value, independently of the user request.
+     */
+    private static void assertTileSize(TileAxis axis, int imgSize, int imgActualTileSize, int requestedTileSize, int tileSizeMultiple) {
+        if (imgSize > requestedTileSize) {
+            final int modulo = requestedTileSize % tileSizeMultiple;
+            if (modulo == 0) {
+                assertEquals(requestedTileSize, imgActualTileSize, () -> "Tile " + axis);
+            } else if (requestedTileSize < tileSizeMultiple) {
+                assertEquals(tileSizeMultiple, imgActualTileSize, () -> "Tile " + axis);
+            } else {
+                final var minTileSize = requestedTileSize - modulo;
+                final var maxTileSize = requestedTileSize + (tileSizeMultiple - modulo);
+                assertTrue(imgActualTileSize == minTileSize || imgActualTileSize == maxTileSize,
+                        () -> String.format(
+                                "Tile %s should be either %d or %d (because it must be a multiple of %d), but it is %d",
+                                axis, minTileSize, maxTileSize, tileSizeMultiple, imgActualTileSize
+                        )
+                );
+            }
         }
     }
 }
