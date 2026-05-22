@@ -90,7 +90,7 @@ public final class HardCodedDatum {
      */
     public static final DefaultGeodeticDatum WGS72 = new DefaultGeodeticDatum(
             properties("World Geodetic System 1972", "6322", getScope(WGS84)),
-            new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid()), GREENWICH);
+            new DefaultEllipsoid(GeodeticDatumMock.WGS72.getEllipsoid()), GREENWICH);
 
     /**
      * Nouvelle Triangulation Française datum (EPSG:6807). Prime meridian is Paris.

@@ -43,6 +43,7 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.internal.ParameterizedType;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.referencing.internal.shared.WKTUtilities;
@@ -315,7 +316,12 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
      */
     @Override
     public Type getStandardType() {
-        return DatumEnsemble.class;
+        return new ParameterizedType(DatumEnsemble.class) {
+            @Override protected Class<?> getActualTypeArgument() {
+                Class<? extends Datum>[] types = Classes.getLeafInterfaces(DefaultDatumEnsemble.this.getClass(), Datum.class);
+                return (types.length != 0) ? types[0] : Datum.class;
+            }
+        };
     }
 
     /*

@@ -18,7 +18,6 @@ package org.apache.sis.parameter;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
-import java.lang.reflect.ParameterizedType;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -918,14 +917,12 @@ convert:            if (componentType != null) {
      * Returns the GeoAPI interface that defines the contract of this implementation class.
      * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
-     * @todo We could return {@link ParameterizedType} here.
-     *
      * @return {@code ParameterValue.class} or a user-defined sub-interface.
-     * @hidden
+     * @since 1.7
      */
     @Override
     public Type getStandardType() {
-        return ParameterValue.class;
+        return new ParameterizedType(ParameterValue.class, descriptor);
     }
 
     /**
