@@ -124,7 +124,8 @@ public interface LenientComparable {
      * @return the type that defines the public properties of this instance.
      *
      * @see ComparisonMode#BY_CONTRACT
-     * @see Classes#getStandardClass(Object)
+     * @see Classes#getRawClass(Type)
+     * @see Classes#getStandardClass(Object, Class)
      *
      * @since 1.7
      */

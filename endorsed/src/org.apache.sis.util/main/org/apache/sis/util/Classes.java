@@ -293,11 +293,9 @@ public final class Classes {
                  * Then replace (for example) `ParameterDescriptor<?>` by `ParameterDescriptor`
                  * in order to get an instance of `Class` instead of other kind of `Type`.
                  */
-                if (type instanceof ParameterizedType) {
-                    type = ((ParameterizedType) type).getRawType();
-                }
-                if (type instanceof Class<?>) {
-                    return changeArrayDimension((Class<?>) type, dimension);
+                final Class<?> element = getRawClass(type);
+                if (element != null) {
+                    return changeArrayDimension(element, dimension);
                 }
             }
         }
@@ -320,6 +318,27 @@ public final class Classes {
             case 1:  return 0;
             case 2:  return (rawType instanceof Class<?> && Map.class.isAssignableFrom((Class<?>) rawType)) ? 0 : -1;
         }
+    }
+
+    /**
+     * Returns the raw class for the given generic type, or {@code null} if the type is not recognized.
+     * The current implementation recognizes instance of {@link Class} and {@link ParameterizedType}.
+     *
+     * <p><b>Purpose:</b> this method can be used for fetching the {@link Class} part
+     * from the value returned by {@link LenientComparable#getStandardType()}.</p>
+     *
+     * @param  type  type for which to get the raw type, or {@code null}.
+     * @return the raw class of the given type, or {@code null} if unknown.
+     *
+     * @see ParameterizedType#getRawType()
+     * @see LenientComparable#getStandardType()
+     * @since 1.7
+     */
+    public static Class<?> getRawClass(Type type) {
+        if (type instanceof ParameterizedType) {
+            type = ((ParameterizedType) type).getRawType();
+        }
+        return (type instanceof Class<?>) ? (Class<?>) type : null;
     }
 
     /**
@@ -372,12 +391,9 @@ public final class Classes {
      */
     public static <T> Class<? extends T> getStandardClass(final T object, final Class<T> baseType) {
         if (object instanceof LenientComparable) {
-            Type type = ((LenientComparable) object).getStandardType();
-            if (type instanceof ParameterizedType) {
-                type = ((ParameterizedType) type).getRawType();
-            }
-            if (type instanceof Class<?>) {
-                return ((Class<?>) type).asSubclass(baseType);
+            final Class<?> type = getRawClass(((LenientComparable) object).getStandardType());
+            if (type != null) {
+                return type.asSubclass(baseType);
             }
         }
         Class<?> type = getClass(object);
@@ -599,12 +615,12 @@ next:       for (final Class<?> candidate : candidates) {
 
     /**
      * Returns the interfaces which are implemented by the two given classes. The returned set
-     * does not include the parent interfaces. For example if the two given objects implement the
+     * does not include the parent interfaces. For example, if the two given types extend the
      * {@link Collection} interface, then the returned set will contain the {@code Collection}
      * type but not the {@link Iterable} type, since it is implied by the collection type.
      *
-     * @param  c1  the first class.
-     * @param  c2  the second class.
+     * @param  c1  the first class, or {@code null}.
+     * @param  c2  the second class, or {@code null}.
      * @return the interfaces common to both classes, or an empty set if none.
      *         Callers can freely modify the returned set.
      */

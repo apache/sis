@@ -209,8 +209,8 @@ class TreeNode implements Node {
 
     /**
      * Returns the key to use for calls to {@link MetadataStandard} methods.
-     * This key is used only for some default method implementations in the root node;
-     * children will use the class of their node value instead.
+     * This key is used only for some default method implementations in the root node.
+     * Children will use the class of their node value instead.
      */
     private CacheKey key() {
         return new CacheKey(metadata.getClass(), baseType);
@@ -236,7 +236,7 @@ class TreeNode implements Node {
      * order to return the property identifier instead.
      */
     String getIdentifier() {
-        final Class<?> type = table.standard.getInterface(key());
+        final Class<?> type = table.standard.getInterface(key(), null);
         final String id = Types.getStandardName(type);
         return (id != null) ? id : Classes.getShortName(type);
     }
@@ -259,7 +259,7 @@ class TreeNode implements Node {
      */
     CharSequence getName() {
         return CharSequences.camelCaseToSentence(Classes.getShortName(
-                table.standard.getInterface(key()))).toString();
+                table.standard.getInterface(key(), null))).toString();
     }
 
     /**
@@ -890,7 +890,7 @@ class TreeNode implements Node {
              * exists otherwise the call to `isLeaf()` above would have returned `true`.
              */
             if (children == null || ((TreeNodeChildren) children).metadata != value) {
-                PropertyAccessor accessor = table.standard.getAccessor(new CacheKey(value.getClass(), baseType), true);
+                PropertyAccessor accessor = table.standard.getInstanceAccessor(value, baseType, true);
                 children = new TreeNodeChildren(this, value, accessor);
             }
         }

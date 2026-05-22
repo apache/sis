@@ -77,15 +77,19 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
     /**
      * Language(s) used for documenting metadata.
      * Also the language(s) used within the data.
+     *
+     * @return empty map.
      */
     @Override
-    public Map<Locale,Charset> getLocalesAndCharsets() {
+    public Map<Locale, Charset> getLocalesAndCharsets() {
         return Collections.emptyMap();
     }
 
     /**
      * The scope or type of resource for which metadata is provided.
      * This method returns {@code this} for allowing call to {@link #getResourceScope()}.
+     *
+     * @return empty collection.
      *
      * @see #getResourceScope()
      * @see #getName()
@@ -99,6 +103,8 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      * Code for the metadata scope, fixed to {@link ScopeCode#DATASET} by default. This is part of the information
      * provided by {@link #getMetadataScopes()}. The {@code DATASET} default value is consistent with the fact that
      * {@code SimpleMetadata} implements {@link DataIdentification}.
+     *
+     * @return {@code DATASET}.
      */
     @Override
     public ScopeCode getResourceScope() {
@@ -107,6 +113,8 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
 
     /**
      * Parties responsible for the metadata information.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<Responsibility> getContacts() {
@@ -115,6 +123,8 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
 
     /**
      * Date(s) associated with the metadata.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<CitationDate> getDateInfo() {
@@ -123,8 +133,9 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
 
     /**
      * Basic information about the resource(s) to which the metadata applies.
-     * This method returns {@code this} for allowing call to {@link #getCitation()}.
-     * and other methods.
+     * This method returns {@code this} for allowing call to {@link #getCitation()} and other methods.
+     *
+     * @return empty collection.
      *
      * @see #getCitation()
      * @see #getAbstract()
@@ -151,6 +162,8 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      * Citation for the resource.
      * This is part of the information returned by {@link #getIdentificationInfo()}.
      * This method returns {@code this} for allowing call to {@link #getTitle()} and other methods.
+     *
+     * @return citation for the resource.
      */
     @Override
     public Citation getCitation() {
@@ -160,6 +173,8 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
     /**
      * Brief narrative summary of the resource.
      * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return null.
      */
     @Override
     public InternationalString getAbstract() {
@@ -171,6 +186,8 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      * This is part of the information returned by {@link #getIdentificationInfo()}.
      * Default implementation returns {@link SpatialRepresentationType#VECTOR}.
      * Subclasses should override this method if they represent gridded data instead of vector data.
+     *
+     * @return {@code VECTOR}.
      */
     @Override
     public Collection<SpatialRepresentationType> getSpatialRepresentationTypes() {
@@ -182,6 +199,8 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      * This is part of the information returned by {@link #getIdentificationInfo()}.
      * Default implementation returns {@link TopicCategory#LOCATION}.
      * Subclasses should override this method if they represent other kind of data.
+     *
+     * @return {@code LOCATION}.
      */
     @Override
     public Collection<TopicCategory> getTopicCategories() {
@@ -191,6 +210,8 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
     /**
      * Spatial and temporal extent of the resource.
      * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<Extent> getExtents() {
@@ -205,6 +226,8 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
     /**
      * Name by which the cited resource is known.
      * This is part of the information returned by {@link #getCitation()}.
+     *
+     * @return null.
      */
     @Override
     public InternationalString getTitle() {
@@ -216,6 +239,8 @@ public class SimpleMetadata implements Metadata, MetadataScope, DataIdentificati
      * This is part of the information returned by {@link #getCitation()}.
      * Default implementation returns {@link PresentationForm#TABLE_DIGITAL}.
      * Subclasses should override this method if they represent other kind of data.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<PresentationForm> getPresentationForms() {

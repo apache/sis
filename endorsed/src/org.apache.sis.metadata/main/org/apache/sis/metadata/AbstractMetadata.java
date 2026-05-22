@@ -160,14 +160,9 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * @return the standard interface implemented by this class.
      * @deprecated Renamed {@link #getStandardType()} for integration with {@link LenientComparable}.
      */
-    // TODO: make package private with modification: return null instead of ClassCastException.
     @Deprecated(since="1.7", forRemoval=true)
     public final Class<?> getInterface() {
-        Type type = getStandardType();
-        if (type instanceof ParameterizedType) {
-            type = ((ParameterizedType) type).getRawType();
-        }
-        return (Class<?>) type;
+        return org.apache.sis.util.Classes.getRawClass(getStandardType());
     }
 
     /**
@@ -353,14 +348,16 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
     }
 
     /**
-     * Compares this metadata with the specified object for equality. The default
-     * implementation uses Java reflection. Subclasses may override this method
-     * for better performances, or for comparing "hidden" properties not specified
-     * by the GeoAPI (or other standard) interface.
+     * Compares this metadata with the specified object for equality.
+     * The default implementation uses Java reflection using {@link MetadataStandard} methods.
+     * Subclasses may override this method for comparing properties that are not specified by
+     * the GeoAPI (or other standard) interface.
      *
      * @param  object  the object to compare with this metadata.
      * @param  mode    the strictness level of the comparison.
      * @return {@code true} if the given object is equal to this metadata.
+     *
+     * @see MetadataStandard#equals(Object, Object, ComparisonMode)
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {

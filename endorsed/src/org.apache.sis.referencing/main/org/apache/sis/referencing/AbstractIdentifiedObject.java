@@ -540,11 +540,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     @Deprecated(since="1.7", forRemoval=true)
     // TODO: make package private.
     public final Class<? extends IdentifiedObject> getInterface() {
-        Type type = getStandardType();
-        if (type instanceof ParameterizedType) {
-            type = ((ParameterizedType) type).getRawType();
-        }
-        return (type instanceof Class<?>) ? (Class<? extends IdentifiedObject>) type : IdentifiedObject.class;
+        return Classes.getRawClass(getStandardType()).asSubclass(IdentifiedObject.class);
     }
 
     /**
@@ -828,16 +824,11 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         /*
          * Fallback for non-SIS implementations.
          */
-        if (type instanceof ParameterizedType) {
-            type = ((ParameterizedType) type).getRawType();
-        }
-        if (type instanceof Class<?>) {
-            final Class<?> c = (Class<?>) type;
-            if (c.isInstance(object)) {
-                final Class<?>[] t = Classes.getLeafInterfaces(object.getClass(), c);
-                if (t.length == 1 && t[0] == type) {
-                    return true;
-                }
+        final Class<?> c = Classes.getRawClass(type);
+        if (c != null && c.isInstance(object)) {
+            final Class<?>[] t = Classes.getLeafInterfaces(object.getClass(), c);
+            if (t.length == 1 && t[0] == type) {
+                return true;
             }
         }
         return false;
@@ -1090,7 +1081,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
             final Identifier id = identifier.getIdentifier();
             if (id != null) {
                 identifiers = Collections.singleton(id);
-                ScopedIdentifier<IdentifiedObject> key = new ScopedIdentifier<>(getInterface(), identifier.toString());
+                Class<? extends IdentifiedObject> type = Classes.getStandardClass(this, IdentifiedObject.class);
+                ScopedIdentifier<IdentifiedObject> key = new ScopedIdentifier<>(type, identifier.toString());
                 key.store(IdentifiedObject.class, this, AbstractIdentifiedObject.class, "setIdentifier");
                 if (key != (key = key.rename(identifier.code))) {
                     key.store(IdentifiedObject.class, this, null, null);        // Shorter form without codespace.

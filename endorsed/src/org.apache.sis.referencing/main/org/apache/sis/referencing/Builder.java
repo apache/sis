@@ -236,7 +236,7 @@ public abstract class Builder<B extends Builder<B>> {
         for (Class<?> c = expected; c != null; c = c.getSuperclass()) {
             Type type = c.getGenericSuperclass();
             if (type instanceof ParameterizedType) {
-                final ParameterizedType p = (ParameterizedType) type;
+                final var p = (ParameterizedType) type;
                 if (p.getRawType() == Builder.class) {
                     type = p.getActualTypeArguments()[0];
                     if (type == expected) return true;
@@ -273,8 +273,8 @@ public abstract class Builder<B extends Builder<B>> {
         this();
         if (object != null) {
             properties.putAll(IdentifiedObjects.getProperties(object));
-            final GenericName[] valueAlias = (GenericName[]) properties.remove(IdentifiedObject.ALIAS_KEY);
-            final Identifier[]  valueIds   = (Identifier[])  properties.remove(IdentifiedObject.IDENTIFIERS_KEY);
+            final var valueAlias = (GenericName[]) properties.remove(IdentifiedObject.ALIAS_KEY);
+            final var  valueIds  = (Identifier[])  properties.remove(IdentifiedObject.IDENTIFIERS_KEY);
             if (valueAlias != null) Collections.addAll(aliases, valueAlias);
             if (valueIds   != null) Collections.addAll(identifiers, valueIds);
         }

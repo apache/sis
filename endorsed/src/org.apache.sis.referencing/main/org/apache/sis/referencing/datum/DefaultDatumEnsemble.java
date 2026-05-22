@@ -48,7 +48,6 @@ import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.referencing.internal.shared.WKTUtilities;
 import org.apache.sis.metadata.internal.shared.NameToIdentifier;
-import org.apache.sis.metadata.internal.shared.SecondaryTrait;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
@@ -90,7 +89,6 @@ import org.opengis.referencing.datum.RealizationMethod;
  *
  * @since 1.5
  */
-@SecondaryTrait(Datum.class)
 public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObject implements DatumEnsemble<D>, Datum {
     /**
      * Serial number for inter-operability with different versions.

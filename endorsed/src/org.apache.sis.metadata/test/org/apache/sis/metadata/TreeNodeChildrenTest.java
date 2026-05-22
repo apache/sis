@@ -151,7 +151,7 @@ public final class TreeNodeChildrenTest extends TestCase {
         final MetadataStandard standard = MetadataStandard.ISO_19115;
         final TreeTableView    table    = new TreeTableView(standard, citation, Citation.class, valuePolicy);
         final TreeNode         node     = (TreeNode) table.getRoot();
-        final PropertyAccessor accessor = standard.getAccessor(new CacheKey(citation.getClass()), true);
+        final PropertyAccessor accessor = standard.getTypeAccessor(citation.getClass(), true);
         return new TreeNodeChildren(node, citation, accessor);
     }
 

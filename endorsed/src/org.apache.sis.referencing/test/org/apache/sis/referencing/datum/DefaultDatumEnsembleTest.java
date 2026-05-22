@@ -18,15 +18,22 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Map;
 import java.util.List;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.GeodeticDatum;
-import org.apache.sis.metadata.iso.quality.DefaultAbsoluteExternalPositionalAccuracy;
 import org.apache.sis.referencing.GeodeticException;
+import org.apache.sis.metadata.KeyNamePolicy;
+import org.apache.sis.metadata.MetadataStandard;
+import org.apache.sis.metadata.ValueExistencePolicy;
+import org.apache.sis.metadata.iso.quality.DefaultAbsoluteExternalPositionalAccuracy;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.TestCase;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.DatumEnsemble;
 
 
 /**
@@ -43,16 +50,23 @@ public class DefaultDatumEnsembleTest extends TestCase {
     }
 
     /**
+     * Creates a dummy ensemble with <abbr>WGS</abbr> datum.
+     */
+    private static DefaultDatumEnsemble<GeodeticDatum> WGS() {
+        return DefaultDatumEnsemble.create(
+                Map.of(DefaultDatumEnsemble.NAME_KEY, "Various WGS"),
+                GeodeticDatum.class,
+                List.of(HardCodedDatum.WGS84, HardCodedDatum.WGS72),
+                new DefaultAbsoluteExternalPositionalAccuracy());
+    }
+
+    /**
      * Tests the creation of a datum ensemble with some arbitrary geodetic datum.
      */
     @Test
     public void testGeodetic() {
-        final DefaultDatumEnsemble<GeodeticDatum> ensemble = DefaultDatumEnsemble.create(
-                Map.of(DefaultDatumEnsemble.NAME_KEY, "Any WGS"),
-                GeodeticDatum.class,
-                List.of(HardCodedDatum.WGS84, HardCodedDatum.WGS72),
-                new DefaultAbsoluteExternalPositionalAccuracy());
-
+        final DefaultDatumEnsemble<GeodeticDatum> ensemble = WGS();
+        assertEquals("Various WGS", ensemble.getName().getCode());
         assertTrue(ensemble.getMembers().contains(HardCodedDatum.WGS84));
         assertTrue(ensemble.getMembers().contains(HardCodedDatum.WGS72));
         final GeodeticDatum geodetic = assertInstanceOf(GeodeticDatum.class, ensemble);
@@ -60,5 +74,26 @@ public class DefaultDatumEnsembleTest extends TestCase {
         assertEquals(0, geodetic.getPrimeMeridian().getGreenwichLongitude());
         GeodeticException e = assertThrows(GeodeticException.class, () -> geodetic.getEllipsoid());
         assertMessageContains(e, "WGS");
+    }
+
+    /**
+     * Tests the view as a map. This test depends on {@link DefaultDatumEnsemble#getStandardType()},
+     * which is invoked by the metadata module for determining which interface is the main one.
+     */
+    @Test
+    public void testValueMap() {
+        final Map<String, Object> values = MetadataStandard.ISO_19111.asValueMap(
+                WGS(), null, KeyNamePolicy.UML_IDENTIFIER, ValueExistencePolicy.ALL);
+        assertEquals("Various WGS", assertInstanceOf(Identifier.class, values.get("name")).getCode());
+    }
+
+    /**
+     * Tests another view as a map where the object is specified as a class instead of as an instance.
+     */
+    @Test
+    public void testNameMap() {
+        final Map<String, String> names = MetadataStandard.ISO_19111.asNameMap(
+                DatumEnsemble.class, KeyNamePolicy.UML_IDENTIFIER, KeyNamePolicy.SENTENCE);
+        assertEquals("Name", names.get("name"));
     }
 }
