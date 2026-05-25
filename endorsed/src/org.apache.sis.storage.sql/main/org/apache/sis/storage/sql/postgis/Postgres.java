@@ -150,6 +150,22 @@ public final class Postgres<G> extends Database<G> {
     }
 
     /**
+     * Return the type of the column.
+     * 
+     * @param metadata the result of {@code DatabaseMetaData.getColumns(…)}.
+     * @param typeName name of the sql type.
+     * @return A java.sql.Types constant.
+     * @throws SQLException 
+     */
+    @Override
+    protected int getColumnDatatype(ResultSet metadata, String typeName) throws SQLException {
+        if ("timestamptz".equalsIgnoreCase(typeName)) {
+            return Types.TIMESTAMP_WITH_TIMEZONE;
+        }
+        return super.getColumnDatatype(metadata, typeName);
+    }
+
+    /**
      * Returns the mapping for {@link Object} or unrecognized types.
      */
     @Override

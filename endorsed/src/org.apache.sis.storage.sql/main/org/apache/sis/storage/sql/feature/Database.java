@@ -767,6 +767,18 @@ public class Database<G> extends Syntax {
     protected JDBCType getArrayComponentType(final Column columnDefinition) {
         return JDBCType.OTHER;
     }
+    
+    /**
+     * Return the type of the column.
+     * 
+     * @param metadata the result of {@code DatabaseMetaData.getColumns(…)}.
+     * @param typeName name of the sql type.
+     * @return A java.sql.Types constant.
+     * @throws SQLException 
+     */
+    protected int getColumnDatatype(final ResultSet metadata, String typeName) throws SQLException {
+        return metadata.getInt(Reflection.DATA_TYPE);
+    }
 
     /**
      * Returns an identifier of the way binary data are encoded by the <abbr>JDBC</abbr> driver.
