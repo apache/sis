@@ -47,7 +47,7 @@ public final class StoreProviderTest extends TestCase {
     public void testKeywordsMap() {
         int min = Integer.MAX_VALUE;
         int max = Integer.MIN_VALUE;
-        for (final String keyword : StoreProvider.Peek.INSTANCE.keywords()) {
+        for (final String keyword : StoreProvider.Peek.INSTANCE.keywords) {
             final int length = keyword.length();
             if (length < min) min = length;
             if (length > max) max = length;
@@ -63,7 +63,7 @@ public final class StoreProviderTest extends TestCase {
      */
     @Test
     public void testProbeContentFromReader() throws DataStoreException {
-        final StoreProvider p = new StoreProvider();
+        final var p = new StoreProvider();
         testProbeContentFromReader(true,  1, p, StoreTest.WKT);
         testProbeContentFromReader(true,  2, p, "GeodeticCRS[…]");
         testProbeContentFromReader(true,  2, p, "GeodeticCRS(…)");
@@ -80,7 +80,7 @@ public final class StoreProviderTest extends TestCase {
     private static void testProbeContentFromReader(final boolean isSupported, final int version,
             final StoreProvider p, final String wkt) throws DataStoreException
     {
-        final StorageConnector c = new StorageConnector(new StringReader(wkt));
+        final var c = new StorageConnector(new StringReader(wkt));
         final ProbeResult r = p.probeContent(c);
         c.closeAllExcept(null);
         assertEquals(isSupported, r.isSupported());

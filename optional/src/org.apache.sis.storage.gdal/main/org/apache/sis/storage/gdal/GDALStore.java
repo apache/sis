@@ -48,7 +48,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.metadata.MetadataBuilder;
-import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.URIDataStoreOption;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.iso.DefaultNameFactory;
@@ -264,7 +264,7 @@ public class GDALStore extends DataStore implements Aggregate {
      */
     @Override
     public Optional<ParameterValueGroup> getOpenParameters() {
-        final Parameters param = Parameters.castOrWrap(URIDataStore.parameters(provider, location));
+        final Parameters param = Parameters.castOrWrap(URIDataStoreOption.createWithLocationOnly(provider, location));
         if (param != null) try {
             param.getOrCreate(GDALStoreProvider.DRIVERS_PARAM).setValue(new String[] {
                 getDriver().getIdentifier()}

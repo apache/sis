@@ -36,7 +36,7 @@ import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.base.Capability;
-import org.apache.sis.storage.base.URIDataStoreProvider;
+import org.apache.sis.storage.base.URIDataStoreOption;
 import org.apache.sis.storage.panama.LibraryStatus;
 import org.apache.sis.storage.panama.Resources;
 import org.apache.sis.io.stream.InternalOptionKey;
@@ -101,7 +101,8 @@ public class GDALStoreProvider extends DataStoreProvider {
         DRIVERS_PARAM = builder.addName("drivers")
                 .setDescription(Resources.formatInternational(Resources.Keys.AllowedDrivers_1, Constants.GDAL))
                 .create(String[].class, null);
-        OPEN_DESCRIPTOR = builder.addName(Constants.GDAL).createGroup(URIDataStoreProvider.LOCATION_PARAM, DRIVERS_PARAM);
+        OPEN_DESCRIPTOR = builder.addName(Constants.GDAL).createGroup(
+                URIDataStoreOption.LOCATION.getParameterDescriptor(), DRIVERS_PARAM);
     }
 
     /**
@@ -377,7 +378,7 @@ public class GDALStoreProvider extends DataStoreProvider {
     @Override
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
         final var p = Parameters.castOrWrap(parameters);
-        final var connector = new StorageConnector(p.getValue(URIDataStoreProvider.LOCATION_PARAM));
+        final var connector = URIDataStoreOption.connector(this, p, null, null);
         final String[] drivers = p.getValue(DRIVERS_PARAM);
         if (drivers != null) {
             connector.setOption(DRIVERS_OPTION_KEY, drivers);

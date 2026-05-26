@@ -19,7 +19,6 @@ package org.apache.sis.storage.coveragejson;
 import java.net.URI;
 import java.util.logging.Logger;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreProvider;
@@ -29,7 +28,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.WritableAggregate;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
-import org.apache.sis.storage.base.URIDataStoreProvider;
+import org.apache.sis.storage.base.URIDataStoreOption;
 import org.apache.sis.util.Version;
 
 
@@ -66,7 +65,7 @@ public class CoverageJsonStoreProvider extends DataStoreProvider {
     /**
      * The parameter descriptor to be returned by {@link #getOpenParameters()}.
      */
-    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR = URIDataStoreProvider.descriptor(NAME);
+    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR = URIDataStoreOption.createForLocationOnly(NAME);
 
     public CoverageJsonStoreProvider() {
     }

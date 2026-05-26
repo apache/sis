@@ -104,9 +104,9 @@ final class WritableStore extends Store implements WritableAggregate {
          * Create new store/resource for write access, provided that no store already exist for the path.
          * We use the CREATE_NEW option in order to intentionally fail if the resource already exists.
          */
-        final Path path = location.resolve(filename);
+        final Path path = locationAsPath.resolve(filename);
         if (!children.containsKey(path)) {
-            final StorageConnector connector = new StorageConnector(configuration, path);
+            final var connector = new StorageConnector(configuration, path);
             connector.setOption(OptionKey.OPEN_OPTIONS, new StandardOpenOption[] {
                 StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE
             });
@@ -150,8 +150,8 @@ final class WritableStore extends Store implements WritableAggregate {
     public synchronized void remove(final Resource resource) throws DataStoreException {
         if (resource instanceof DataStore) try {
             if (resource instanceof Store) {
-                final Path path = ((Store) resource).location;
-                if (Files.isSameFile(path.getParent(), location)) {
+                final Path path = ((Store) resource).location();
+                if (Files.isSameFile(path.getParent(), locationAsPath)) {
                     ((Store) resource).close();
                     deleteRecursively(path, true);
                     children.remove(path);
@@ -162,7 +162,7 @@ final class WritableStore extends Store implements WritableAggregate {
                 if (fileset != null) {
                     for (Path root : fileset.getPaths()) {
                         root = root.getParent();
-                        if (root != null && Files.isSameFile(root, location)) {
+                        if (root != null && Files.isSameFile(root, locationAsPath)) {
                             /*
                              * If we enter in this block, we have determined that the main file is located in the
                              * directory managed by this store - NOT in a subdirectory because they could be managed

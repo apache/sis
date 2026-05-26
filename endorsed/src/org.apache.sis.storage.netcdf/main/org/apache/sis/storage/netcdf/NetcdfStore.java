@@ -39,7 +39,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.URIDataStoreOption;
 import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.base.RasterResource;
 import org.apache.sis.storage.event.StoreEvent;
@@ -148,7 +148,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
      */
     @Override
     public Optional<ParameterValueGroup> getOpenParameters() {
-        return Optional.ofNullable(URIDataStore.parameters(provider, location));
+        return Optional.ofNullable(URIDataStoreOption.createWithLocationOnly(provider, location));
     }
 
     /**

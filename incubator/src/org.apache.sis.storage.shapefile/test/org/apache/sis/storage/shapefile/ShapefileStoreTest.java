@@ -39,6 +39,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
+import org.apache.sis.storage.StorageConnector;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -62,10 +63,18 @@ public class ShapefileStoreTest {
 
     private static final GeometryFactory GF = new GeometryFactory();
 
+    private static ShapefileStore create(final URL resource) throws URISyntaxException, DataStoreException {
+        return create(Paths.get(resource.toURI()));
+    }
+
+    private static ShapefileStore create(final Path temp) throws DataStoreException {
+        return new ShapefileStore(null, new StorageConnector(temp));
+    }
+
     @Test
     public void testStream() throws URISyntaxException, DataStoreException {
         final URL url = ShapefileStoreTest.class.getResource("/org/apache/sis/storage/shapefile/point.shp");
-        try (final ShapefileStore store = new ShapefileStore(Paths.get(url.toURI()))) {
+        try (final ShapefileStore store = create(url)) {
 
             //check feature type
             final FeatureType type = store.getType();
@@ -120,7 +129,7 @@ public class ShapefileStoreTest {
     @Test
     public void testEnvelopeFilter() throws URISyntaxException, DataStoreException {
         final URL url = ShapefileStoreTest.class.getResource("/org/apache/sis/storage/shapefile/point.shp");
-        try (final ShapefileStore store = new ShapefileStore(Paths.get(url.toURI()))) {
+        try (final ShapefileStore store = create(url)) {
 
             final FilterFactory<Feature, Object, Object> ff = DefaultFilterFactory.forFeatures();
 
@@ -157,7 +166,7 @@ public class ShapefileStoreTest {
     @Test
     public void testFieldFilter() throws URISyntaxException, DataStoreException {
         final URL url = ShapefileStoreTest.class.getResource("/org/apache/sis/storage/shapefile/point.shp");
-        try (final ShapefileStore store = new ShapefileStore(Paths.get(url.toURI()))) {
+        try (final ShapefileStore store = create(url)) {
             final FeatureQuery query = new FeatureQuery();
             query.setProjection("text", "float");
             FeatureSet featureset = store.subset(query);
@@ -184,7 +193,7 @@ public class ShapefileStoreTest {
     @Test
     public void testFiles() throws URISyntaxException, DataStoreException {
         final URL url = ShapefileStoreTest.class.getResource("/org/apache/sis/storage/shapefile/point.shp");
-        try (final ShapefileStore store = new ShapefileStore(Paths.get(url.toURI()))) {
+        try (final ShapefileStore store = create(url)) {
             Iterator<Path> componentFiles = store.getFileSet().orElseThrow().getPaths().iterator();
             assertTrue(componentFiles.next().toString().endsWith("point.shp"));
             assertTrue(componentFiles.next().toString().endsWith("point.shx"));
@@ -202,7 +211,7 @@ public class ShapefileStoreTest {
     public void testCreate(@TempDir final Path folder) throws URISyntaxException, DataStoreException, IOException {
         final Path temp = folder.resolve("test.shp");
         final String name = temp.getFileName().toString().split("\\.")[0];
-        try (final ShapefileStore store = new ShapefileStore(temp)) {
+        try (final ShapefileStore store = new ShapefileStore(null, new StorageConnector(temp))) {
             assertTrue(store.getFileSet().orElseThrow().getPaths().isEmpty());
 
             {//create type
@@ -251,7 +260,7 @@ public class ShapefileStoreTest {
     @Test
     public void testAddFeatures(@TempDir final Path folder) throws URISyntaxException, DataStoreException, IOException {
         final Path temp = folder.resolve("test.shp");
-        try (final ShapefileStore store = new ShapefileStore(temp)) {
+        try (final ShapefileStore store = create(temp)) {
             FeatureType type = createType();
             store.updateType(type);
             type = store.getType();
@@ -273,7 +282,7 @@ public class ShapefileStoreTest {
     @Test
     public void testRemoveFeatures(@TempDir final Path folder) throws DataStoreException, IOException {
         final Path temp = folder.resolve("test.shp");
-        try (final ShapefileStore store = new ShapefileStore(temp)) {
+        try (final ShapefileStore store = create(temp)) {
             FeatureType type = createType();
             store.updateType(type);
             type = store.getType();
@@ -301,7 +310,7 @@ public class ShapefileStoreTest {
     @Test
     public void testReplaceFeatures(@TempDir final Path folder) throws DataStoreException, IOException {
         final Path temp = folder.resolve("test.shp");
-        try (final ShapefileStore store = new ShapefileStore(temp)) {
+        try (final ShapefileStore store = create(temp)) {
             FeatureType type = createType();
             store.updateType(type);
             type = store.getType();
@@ -334,7 +343,7 @@ public class ShapefileStoreTest {
     @Test
     public void testGeneratedId() throws DataStoreException, IOException, URISyntaxException {
         final URL url = ShapefileStoreTest.class.getResource("/org/apache/sis/storage/shapefile/noid.shp");
-        try (final ShapefileStore store = new ShapefileStore(Paths.get(url.toURI()))) {
+        try (final ShapefileStore store = create(url)) {
 
             final FeatureType type = store.getType();
             final PropertyType generatedID = type.getProperty(AttributeConvention.IDENTIFIER);

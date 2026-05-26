@@ -39,11 +39,11 @@ import org.apache.sis.util.CharSequences;
 
 
 /**
- * A data store which creates data objects from a WKT definition.
+ * A data store which creates data objects from a <abbr>WKT</abbr> definition.
  *
  * <h4>Design note</h4>
- * this class differs from {@link org.apache.sis.storage.base.PRJDataStore} in that
- * the file containing WKT definition is the main file, not an auxiliary file.
+ * This class differs from {@link org.apache.sis.storage.base.PRJDataStore} in that the
+ * file containing <abbr>WKT</abbr> definition is the main file, not an auxiliary file.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -124,8 +124,8 @@ final class Store extends URIDataStore {
              * one WKT definitions, but this DataStore nevertheless allows an arbitrary number of consecutive
              * definitions.
              */
-            final ParsePosition pos = new ParsePosition(0);
-            final StoreFormat parser = new StoreFormat(dataLocale, timezone, library, listeners);
+            final var pos = new ParsePosition(0);
+            final var parser = new StoreFormat(dataLocale, timezone, library, listeners);
             do {
                 final Object obj = parser.parse(wkt, pos);
                 objects.add(obj);

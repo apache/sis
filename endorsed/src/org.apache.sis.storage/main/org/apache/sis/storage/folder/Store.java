@@ -20,14 +20,11 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.concurrent.ConcurrentHashMap;
-import java.time.ZoneId;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.DirectoryStream;
@@ -52,6 +49,8 @@ import org.apache.sis.storage.aggregate.CoverageAggregator;
 import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.base.StoreResource;
+import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.URIDataStoreOption;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.collection.Containers;
@@ -77,17 +76,12 @@ import org.apache.sis.util.collection.BackingStoreException;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-class Store extends DataStore implements StoreResource, UnstructuredAggregate, DirectoryStream.Filter<Path> {
+class Store extends URIDataStore implements StoreResource, UnstructuredAggregate, DirectoryStream.Filter<Path> {
     /**
      * The data store for the root directory specified by the user.
      * May be {@code this} if this store instance is for the root directory.
      */
     private final Store originator;
-
-    /**
-     * The {@link StoreProvider#LOCATION} parameter value.
-     */
-    protected final Path location;
 
     /**
      * An identifier for this folder, or {@code null} if not yet created. Only the root folder specified by
@@ -108,7 +102,7 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
      * All data stores (including sub-folders) found in the directory structure, including the root directory.
      * This is used for avoiding never-ending loop with symbolic links.
      */
-    final Map<Path,DataStore> children;
+    final Map<Path, DataStore> children;
 
     /**
      * Information about the data store as a whole, created when first needed.
@@ -132,7 +126,7 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
     protected final DataStoreProvider componentProvider;
 
     /**
-     * {@code true} if {@link #sharedRepository(Path)} has already been invoked for {@link #location} path.
+     * {@code true} if {@link #sharedRepository(Path)} has already been invoked for {@link #locationAsPath}.
      * This is used for avoiding to report the same message many times.
      */
     private transient boolean sharedRepositoryReported;
@@ -159,13 +153,13 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
      * @throws DataStoreException if an error occurred while fetching the directory {@link Path}.
      * @throws IOException if an error occurred while using the directory {@code Path}.
      */
+    @SuppressWarnings("LeakingThisInConstructor")
     Store(final DataStoreProvider provider, final StorageConnector connector, final Path path, final DataStoreProvider format)
             throws DataStoreException, IOException
     {
         super(provider, connector);
         configuration = connector;
         originator    = this;
-        location      = path;
         children      = new ConcurrentHashMap<>();
         children.put(path.toRealPath(), this);
         componentProvider = format;
@@ -182,7 +176,6 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
         super(parent, parent.getProvider(), connector, false);
         configuration     = parent.configuration;
         originator        = parent;
-        location          = connector.commit(Path.class, StoreProvider.NAME);
         children          = parent.children;
         componentProvider = parent.componentProvider;
         identifier        = nameFactory.createLocalName(parent.identifier(nameFactory).scope(), super.getDisplayName());
@@ -197,21 +190,20 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
     }
 
     /**
+     * For access to protected member from other instances.
+     */
+    final Path location() {
+        return locationAsPath;
+    }
+
+    /**
      * Returns the parameters used to open this data store.
      */
     @Override
     public Optional<ParameterValueGroup> getOpenParameters() {
-        final String format = StoreUtilities.getFormatName(componentProvider);
-        final ParameterValueGroup pg = (provider != null ? provider.getOpenParameters() : StoreProvider.PARAMETERS).createValue();
-        pg.parameter(DataStoreProvider.LOCATION).setValue(location);
-        Locale  locale   = configuration.getOption(OptionKey.LOCALE);
-        ZoneId  timezone = configuration.getOption(OptionKey.TIMEZONE);
-        Charset encoding = configuration.getOption(OptionKey.ENCODING);
-        if (locale   != null) pg.parameter("locale"  ).setValue(locale  );
-        if (timezone != null) pg.parameter("timezone").setValue(timezone);
-        if (encoding != null) pg.parameter("encoding").setValue(encoding);
-        if (format   != null) pg.parameter("format"  ).setValue(format);
-        return Optional.of(pg);
+        final Optional<ParameterValueGroup> parameters = super.getOpenParameters();
+        parameters.ifPresent((pg) -> URIDataStoreOption.FORMAT.setValueOf(pg, StoreUtilities.getFormatName(componentProvider)));
+        return parameters;
     }
 
     /**
@@ -293,7 +285,7 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
         if (components == null) {
             final var resources = new ArrayList<DataStore>();
             final var nameFactory = DefaultNameFactory.provider();
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(location, this)) {
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(locationAsPath, this)) {
                 for (final Path candidate : stream) {
                     /*
                      * The candidate path may be a symbolic link to a file that we have previously read.

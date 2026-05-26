@@ -96,7 +96,7 @@ public final class StoreTest extends TestCaseWithLogs {
     public void testSearchProviderParameter() throws URISyntaxException, DataStoreException, IOException {
         final StoreProvider provider = new StoreProvider();
         final Set<String> identifiers = new HashSet<>(List.of("Sample 1", "Sample 2", "Sample 3", "data4"));
-        final ParameterValueGroup params = StoreProvider.PARAMETERS.createValue();
+        final ParameterValueGroup params = StoreProvider.provider().getOpenParameters().createValue();
         params.parameter("location").setValue(testDirectory());
         params.parameter("format").setValue("XML");
         try (Store store = (Store) provider.open(params)) {

@@ -45,7 +45,7 @@ import org.apache.sis.storage.coveragejson.binding.Coverage;
 import org.apache.sis.storage.coveragejson.binding.CoverageCollection;
 import org.apache.sis.storage.coveragejson.binding.CoverageJsonObject;
 import org.apache.sis.storage.metadata.MetadataBuilder;
-import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.URIDataStoreOption;
 import org.apache.sis.io.stream.IOUtilities;
 
 
@@ -81,7 +81,7 @@ public class CoverageJsonStore extends DataStore implements WritableAggregate {
 
     @Override
     public Optional<ParameterValueGroup> getOpenParameters() {
-        return Optional.ofNullable(URIDataStore.parameters(provider, location));
+        return Optional.ofNullable(URIDataStoreOption.createWithLocationOnly(provider, location));
     }
 
     @Override

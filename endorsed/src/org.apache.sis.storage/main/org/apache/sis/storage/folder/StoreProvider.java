@@ -17,11 +17,8 @@
 package org.apache.sis.storage.folder;
 
 import java.util.EnumSet;
-import java.util.Locale;
 import java.util.logging.Logger;
-import java.time.ZoneId;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.FileAlreadyExistsException;
@@ -30,11 +27,8 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.StandardOpenOption;
 import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
-import org.apache.sis.parameter.Parameters;
-import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
@@ -48,6 +42,7 @@ import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.base.StoreUtilities;
+import org.apache.sis.storage.base.URIDataStoreOption;
 import org.apache.sis.util.logging.Logging;
 
 
@@ -63,7 +58,7 @@ import org.apache.sis.util.logging.Logging;
                capabilities  = {Capability.READ, Capability.WRITE},
                resourceTypes = {Aggregate.class, FeatureSet.class, GridCoverageResource.class},
                yieldPriority = true)
-public final class StoreProvider extends DataStoreProvider {
+public final class StoreProvider extends URIDataStoreProvider {
     /**
      * A short name or abbreviation for the data format.
      */
@@ -77,53 +72,29 @@ public final class StoreProvider extends DataStoreProvider {
     private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.folder");
 
     /**
-     * Description of the parameter for formatting conventions of dates and numbers.
+     * The default provider instance.
      */
-    private static final ParameterDescriptor<Locale> LOCALE;
+    private static final StoreProvider INSTANCE = new StoreProvider();
 
     /**
-     * Description of the parameter for timezone of dates in the data store.
+     * Returns the default provider instance.
+     * This method is invoked by Java service loader.
+     *
+     * @return the default provider instance.
      */
-    private static final ParameterDescriptor<ZoneId> TIMEZONE;
-
-    /**
-     * Description of the parameter for character encoding used by the data store.
-     */
-    private static final ParameterDescriptor<Charset> ENCODING;
-
-    /**
-     * Description of the parameter for name of format or {@code DataStoreProvider}
-     * to use for reading or writing the directory content.
-     */
-    private static final ParameterDescriptor<String> FORMAT;
-
-    /**
-     * The group of parameter descriptors to be returned by {@link #getOpenParameters()}.
-     */
-    static final ParameterDescriptorGroup PARAMETERS;
-    static {
-        final ParameterDescriptor<Path> location;
-        final ParameterBuilder builder = new ParameterBuilder();
-        final InternationalString remark = Resources.formatInternational(Resources.Keys.UsedOnlyIfNotEncoded);
-        ENCODING   = annotate(builder, URIDataStoreProvider.ENCODING, remark);
-        LOCALE     = builder.addName("locale"  ).setDescription(Resources.formatInternational(Resources.Keys.DataStoreLocale  )).setRemarks(remark).create(Locale.class,   null);
-        TIMEZONE   = builder.addName("timezone").setDescription(Resources.formatInternational(Resources.Keys.DataStoreTimeZone)).setRemarks(remark).create(ZoneId.class, null);
-        FORMAT     = builder.addName("format"  ).setDescription(Resources.formatInternational(Resources.Keys.DirectoryContentFormatName)).create(String.class, null);
-        location   = new ParameterBuilder(URIDataStoreProvider.LOCATION_PARAM).create(Path.class, null);
-        PARAMETERS = builder.addName(NAME).createGroup(location, LOCALE, TIMEZONE, ENCODING, FORMAT, URIDataStoreProvider.CREATE_PARAM);
-    }
-
-    /**
-     * Creates a parameter descriptor equals to the given one except for the remarks which are set to the given value.
-     */
-    private static <T> ParameterDescriptor<T> annotate(ParameterBuilder builder, ParameterDescriptor<T> e, InternationalString remark) {
-        return builder.addName(e.getName()).setDescription(e.getDescription().orElse(null)).setRemarks(remark).create(e.getValueClass(), null);
+    public static StoreProvider provider() {
+        return INSTANCE;
     }
 
     /**
      * Creates a new provider.
      */
     public StoreProvider() {
+        supportedOptions.add(URIDataStoreOption.CREATE);
+        supportedOptions.add(URIDataStoreOption.FORMAT);
+        supportedOptions.add(URIDataStoreOption.LOCALE);
+        supportedOptions.add(URIDataStoreOption.ENCODING);
+        supportedOptions.add(URIDataStoreOption.TIMEZONE);
     }
 
     /**
@@ -137,13 +108,22 @@ public final class StoreProvider extends DataStoreProvider {
     }
 
     /**
-     * Returns a description of all parameters accepted by this provider for opening a data store.
+     * Invoked by {@link #getOpenParameters()} the first time that a parameter descriptor needs to be created.
      *
-     * @return description of the parameters for opening a {@link DataStore}.
+     * @param  builder  the builder to use for creating parameter descriptor. The group name is already set.
+     * @return the parameters descriptor created from the given builder.
      */
     @Override
-    public ParameterDescriptorGroup getOpenParameters() {
-        return PARAMETERS;
+    protected ParameterDescriptorGroup createOpenParameters(final ParameterBuilder builder) {
+        final InternationalString remark = Resources.formatInternational(Resources.Keys.UsedOnlyIfNotEncoded);
+        final var p = new ParameterBuilder();
+        return builder.createGroup(
+                URIDataStoreOption.LOCATION.deriveParameterDescriptor(p, Path.class, null),
+                URIDataStoreOption.ENCODING.deriveParameterDescriptor(p, null, remark),
+                URIDataStoreOption.TIMEZONE.deriveParameterDescriptor(p, null, remark),
+                URIDataStoreOption.LOCALE  .deriveParameterDescriptor(p, null, remark),
+                URIDataStoreOption.FORMAT.getParameterDescriptor(),
+                URIDataStoreOption.CREATE.getParameterDescriptor());
     }
 
     /**
@@ -274,16 +254,10 @@ public final class StoreProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
-        final StorageConnector connector = URIDataStoreProvider.connector(this, parameters);
-        final Parameters pg = Parameters.castOrWrap(parameters);
-        connector.setOption(OptionKey.LOCALE,   pg.getValue(LOCALE));
-        connector.setOption(OptionKey.TIMEZONE, pg.getValue(TIMEZONE));
-        connector.setOption(OptionKey.ENCODING, pg.getValue(ENCODING));
-        final EnumSet<StandardOpenOption> options = EnumSet.of(StandardOpenOption.WRITE);
-        if (Boolean.TRUE.equals(pg.getValue(URIDataStoreProvider.CREATE_PARAM))) {
-            options.add(StandardOpenOption.CREATE);
-        }
-        return open(connector, pg.getValue(FORMAT), options);
+        final EnumSet<StandardOpenOption> openOptions = EnumSet.noneOf(StandardOpenOption.class);
+        final StorageConnector connector = connector(parameters, openOptions);
+        final Object format = parameters.parameter(FORMAT).getValue();
+        return open(connector, (format != null) ? format.toString() : null, openOptions);
     }
 
     /**

@@ -20,6 +20,7 @@ import java.awt.Desktop;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 import java.io.File;
 import java.nio.file.Path;
 import java.net.URL;
@@ -30,11 +31,16 @@ import javafx.event.EventHandler;
 import javafx.scene.control.TreeCell;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.io.stream.IOUtilities;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreProvider;
+import org.apache.sis.util.logging.Logging;
+import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
 
 /**
@@ -87,7 +93,7 @@ final class PathAction implements EventHandler<ActionEvent> {
         final Resource resource = cell.getItem();
         final Object path;
         try {
-            path = URIDataStoreProvider.location(resource);
+            path = location(resource);
         } catch (DataStoreException e) {
             ExceptionReporter.show(cell, null, null, e);
             return;
@@ -173,5 +179,38 @@ final class PathAction implements EventHandler<ActionEvent> {
         if (files != null) content.putFiles(files);
         if (uri   != null) content.putUrl(uri.toString());
         Clipboard.getSystemClipboard().setContent(content);
+    }
+
+    /**
+     * Returns the location (path, <abbr>URL</abbr>, <abbr>URI</abbr>, <i>etc.</i>) of the given resource.
+     * The type of the returned object can be any of the types documented in {@link DataStoreProvider#LOCATION}.
+     *
+     * @param  resource  the resource for which to get the location, or {@code null}.
+     * @return location of the given resource, or {@code null} if none.
+     * @throws DataStoreException if an error on the file system prevent the creation of the path.
+     */
+    static Object location(final Resource resource) throws DataStoreException {
+        if (resource == null) {
+            return null;
+        }
+        if (resource instanceof DataStore) {
+            final Optional<ParameterValueGroup> p = ((DataStore) resource).getOpenParameters();
+            if (p.isPresent()) try {
+                return p.get().parameter(DataStoreProvider.LOCATION).getValue();
+            } catch (ParameterNotFoundException e) {
+                /*
+                 * This exception should not happen often since the "location" parameter is recommended.
+                 * Note that it does not mean the same thing as "parameter provided but value is null".
+                 * In that later case we want to return the null value as specified in the parameters.
+                 */
+                Logging.ignorableException(LOGGER, PathAction.class, "location", e);
+            }
+        }
+        /*
+         * This fallback should not happen with `URIDataStore` implementation because the "location" parameter
+         * is always present even if null. This fallback is for resources implementated by different classes.
+         * The first path is presumed the main file.
+         */
+        return resource.getFileSet().flatMap((files) -> files.getPaths().stream().findFirst()).orElse(null);
     }
 }

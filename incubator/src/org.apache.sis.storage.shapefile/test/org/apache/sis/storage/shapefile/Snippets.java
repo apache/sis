@@ -17,7 +17,7 @@
 package org.apache.sis.storage.shapefile;
 
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
 import org.locationtech.jts.geom.Coordinate;
@@ -29,6 +29,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureQuery;
+import org.apache.sis.storage.StorageConnector;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
@@ -46,7 +47,7 @@ final class Snippets {
     public void read() throws IllegalArgumentException, DataStoreException, IOException{
         // @start region="read"
         //open datastore
-        try (ShapefileStore store = new ShapefileStore(Paths.get("/path/to/file.shp"))) {
+        try (ShapefileStore store = new ShapefileStore(null, new StorageConnector(Path.of("/path/to/file.shp")))) {
 
             //print feature type
             System.out.println(store.getType());
@@ -80,7 +81,7 @@ final class Snippets {
     public void write() throws IllegalArgumentException, DataStoreException, IOException{
         // @start region="write"
         //open a channel
-        try (ShapefileStore store = new ShapefileStore(Paths.get("/path/to/file.shp"))) {
+        try (ShapefileStore store = new ShapefileStore(null, new StorageConnector(Path.of("/path/to/file.shp")))) {
 
             //define the feature type
             FeatureTypeBuilder ftb = new FeatureTypeBuilder();

@@ -16,16 +16,13 @@
  */
 package org.apache.sis.storage.shapefile;
 
-import java.net.URI;
 import java.nio.file.Path;
-import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.base.URIDataStoreOption;
+import org.apache.sis.storage.base.URIDataStoreProvider;
 
 
 /**
@@ -34,8 +31,7 @@ import org.apache.sis.storage.StorageConnector;
  * @author Johann Sorel (Geomatys)
  * @see <a href="http://www.esri.com/library/whitepapers/pdfs/shapefile.pdf">ESRI Shapefile Specification</a>
  */
-public final class ShapefileProvider extends DataStoreProvider {
-
+public final class ShapefileProvider extends URIDataStoreProvider {
     /**
      * Format name.
      */
@@ -45,29 +41,6 @@ public final class ShapefileProvider extends DataStoreProvider {
      * Format mime type.
      */
     public static final String MIME_TYPE = "application/x-shapefile";
-
-    /**
-     * URI to the shp file.
-     */
-    public static final ParameterDescriptor<URI> PATH = new ParameterBuilder()
-            .addName(LOCATION)
-            .setRequired(true)
-            .create(URI.class, null);
-
-    /**
-     * Timezone of the dbf date fields.
-     */
-    public static final ParameterDescriptor<String> ZONEID = new ParameterBuilder()
-            .addName(TIMEZONE)
-            .setRequired(false)
-            .create(String.class, null);
-
-    /**
-     * Shapefile store creation parameters.
-     */
-    public static final ParameterDescriptorGroup PARAMETERS_DESCRIPTOR =
-            new ParameterBuilder().addName(NAME).addName("EsriShapefileParameters").createGroup(
-                PATH, ZONEID);
 
     private static ShapefileProvider INSTANCE;
 
@@ -90,6 +63,8 @@ public final class ShapefileProvider extends DataStoreProvider {
      * Default constructor.
      */
     public ShapefileProvider() {
+        supportedOptions.add(URIDataStoreOption.TIMEZONE);
+        supportedOptions.add(URIDataStoreOption.ENCODING);
     }
 
     /**
@@ -98,14 +73,6 @@ public final class ShapefileProvider extends DataStoreProvider {
     @Override
     public String getShortName() {
         return NAME;
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public ParameterDescriptorGroup getOpenParameters() {
-        return PARAMETERS_DESCRIPTOR;
     }
 
     /**
@@ -125,6 +92,6 @@ public final class ShapefileProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(StorageConnector connector) throws DataStoreException {
-        return new ShapefileStore(connector);
+        return new ShapefileStore(this, connector);
     }
 }

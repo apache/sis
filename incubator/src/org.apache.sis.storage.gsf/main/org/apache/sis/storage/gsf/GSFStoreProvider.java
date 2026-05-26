@@ -21,17 +21,14 @@ import java.util.Optional;
 import java.util.logging.Logger;
 import java.nio.file.Path;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.base.Capability;
-import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.storage.gsf.panama.LibraryStatus;
-import org.apache.sis.parameter.ParameterBuilder;
-import org.apache.sis.parameter.Parameters;
+import org.apache.sis.storage.base.URIDataStoreOption;
 import org.apache.sis.system.Cleaners;
 
 
@@ -67,11 +64,7 @@ public class GSFStoreProvider extends DataStoreProvider {
     /**
      * The parameter descriptor to be returned by {@link #getOpenParameters()}.
      */
-    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR;
-    static {
-        final var builder = new ParameterBuilder();
-        OPEN_DESCRIPTOR = builder.addName(NAME).createGroup(URIDataStoreProvider.LOCATION_PARAM);
-    }
+    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR = URIDataStoreOption.createForLocationOnly(NAME);
 
     /**
      * Handles to <abbr>GSF</abbr> native functions, or {@code null} for global.
@@ -186,20 +179,6 @@ public class GSFStoreProvider extends DataStoreProvider {
     @Override
     public GSFStore open(final StorageConnector connector) throws DataStoreException {
         return new GSFStore(this, connector);
-    }
-
-    /**
-     * Creates a {@code GSFStore} instance from the given parameters.
-     *
-     * @param  parameters  opening parameters as defined by {@link #getOpenParameters()}.
-     * @return a data store instance associated with this provider for the given parameters.
-     * @throws DataStoreException if an error occurred while creating the data store instance.
-     */
-    @Override
-    public GSFStore open(final ParameterValueGroup parameters) throws DataStoreException {
-        final var p = Parameters.castOrWrap(parameters);
-        final var connector = new StorageConnector(p.getValue(URIDataStoreProvider.LOCATION_PARAM));
-        return open(connector);
     }
 
     /**

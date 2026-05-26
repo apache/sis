@@ -16,8 +16,9 @@
  */
 package org.apache.sis.storage.base;
 
-import java.util.HashMap;
 import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -40,6 +41,9 @@ import javax.xml.transform.Source;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.GeneralParameterDescriptor;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.DataStore;
@@ -60,9 +64,9 @@ import org.apache.sis.xml.internal.shared.ExceptionSimplifier;
 
 /**
  * A data store for a storage that may be represented by a {@link URI}.
- * The URI is stored in {@link #location} field and is used for populating some default metadata.
- * It is also use for resolving the path to auxiliary files, for example the CRS definition in PRJ file.
- * The URI can be null if the only available storage is a {@link java.nio.channels.ReadableByteChannel},
+ * The <abbr>URI</abbr> is stored in {@link #location} field and is used for populating some default metadata.
+ * It is also used for resolving the path to auxiliary files, for example the <abbr>CRS</abbr> definition in PRJ file.
+ * The <abbr>URI</abbr> can be null if the only available storage is a {@link java.nio.channels.ReadableByteChannel},
  * {@link InputStream} or {@link java.io.Reader}.
  *
  * @author  Johann Sorel (Geomatys)
@@ -90,7 +94,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource {
     private final Path metadataPath;
 
     /**
-     * User-specified character encoding, or {@code null} for the JVM default (usually UTF-8).
+     * User-specified character encoding, or {@code null} for the <abbr>JVM</abbr> default (usually <abbr>UTF</abbr>-8).
      * Subclasses may replace this value by a value read from the data file.
      */
     protected Charset encoding;
@@ -104,10 +108,21 @@ public abstract class URIDataStore extends DataStore implements StoreResource {
     protected Locale dataLocale;
 
     /**
-     * User-specified timezone for dates, or {@code null} for UTC.
+     * User-specified timezone for dates, or {@code null} for <abbr>UTC</abbr>.
      * Subclasses may replace this value by a value read from the data file.
      */
     protected ZoneId timezone;
+
+    /**
+     * Creates a new data store with no parent.
+     *
+     * @param  provider   the factory that created this {@code URIDataStore} instance, or {@code null} if unspecified.
+     * @param  connector  information about the storage (URL, stream, reader instance, <i>etc</i>).
+     * @throws DataStoreException if an error occurred while creating the data store for the given storage.
+     */
+    protected URIDataStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
+        this(null, provider, connector, false);
+    }
 
     /**
      * Creates a new data store. This constructor does not open the file,
@@ -115,12 +130,18 @@ public abstract class URIDataStore extends DataStore implements StoreResource {
      * It is caller's responsibility to ensure that the {@link java.nio.file.OpenOption}
      * are compatible with the capabilities (read-only or read/write) of this data store.
      *
+     * @param  parent     the parent that contains this new {@code URIDataStore} component, or {@code null} if none.
      * @param  provider   the factory that created this {@code URIDataStore} instance, or {@code null} if unspecified.
-     * @param  connector  information about the storage (URL, stream, reader instance, <i>etc</i>).
+     * @param  connector  information about the storage (<abbr>URL</abbr>, stream, reader instance, <i>etc</i>).
+     * @param  hidden     {@code true} if this store will not be directly accessible from the parent.
+     *                    It is the case if this store is an {@link Aggregate} and the parent store will
+     *                    expose only some components of the aggregate instead of the aggregate itself.
      * @throws DataStoreException if an error occurred while creating the data store for the given storage.
      */
-    protected URIDataStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
-        super(provider, connector);
+    protected URIDataStore(final DataStore parent, final DataStoreProvider provider, final StorageConnector connector,
+                           final boolean hidden) throws DataStoreException
+    {
+        super(parent, provider, connector, hidden);
         location       = connector.getStorageAs(URI.class);
         locationAsPath = connector.getStorageAs(Path.class);
         if (locationAsPath != null || location != null) {
@@ -139,7 +160,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource {
      * @return {@code this}.
      */
     @Override
-    public final DataStore getOriginator() {
+    public DataStore getOriginator() {
         return this;
     }
 
@@ -205,29 +226,50 @@ public abstract class URIDataStore extends DataStore implements StoreResource {
     }
 
     /**
+     * Returns the supported options as declared by the provider.
+     * This method returns directly the internal map — do not modify.
+     * If this information is not provided, returns the mandatory parameters.
+     */
+    private EnumSet<URIDataStoreOption> getSupportedOptions() {
+        if (provider instanceof URIDataStoreProvider) {
+            return ((URIDataStoreProvider) provider).supportedOptions;
+        } else {
+            return EnumSet.of(URIDataStoreOption.LOCATION);
+        }
+    }
+
+    /**
      * Returns the parameters used to open this data store.
      *
      * @return parameters used for opening this {@code DataStore}.
      */
     @Override
     public Optional<ParameterValueGroup> getOpenParameters() {
-        return Optional.ofNullable(parameters(provider, location));
-    }
-
-    /**
-     * Creates parameter value group for the current location, if non-null.
-     * This convenience method is used for {@link DataStore#getOpenParameters()} implementations in public
-     * {@code DataStore} that cannot extend {@code URIDataStore} directly, because this class is internal.
-     *
-     * @param  provider  the provider of the data store for which to get open parameters.
-     * @param  location  file opened by the data store.
-     * @return parameters to be returned by {@link DataStore#getOpenParameters()}, or {@code null} if unknown.
-     */
-    public static ParameterValueGroup parameters(final DataStoreProvider provider, final URI location) {
-        if (location == null || provider == null) return null;
-        final ParameterValueGroup pg = provider.getOpenParameters().createValue();
-        pg.parameter(DataStoreProvider.LOCATION).setValue(location);
-        return pg;
+        if (provider != null) {
+            final ParameterDescriptorGroup descriptor = provider.getOpenParameters();
+            if (descriptor != null) {
+                final ParameterValueGroup pg = descriptor.createValue();
+                for (final URIDataStoreOption option : getSupportedOptions()) {
+                    final Object value;
+                    switch (option) {
+                        default: continue;
+                        case LOCATION: {
+                            final GeneralParameterDescriptor gp = descriptor.descriptor(option.parameterName);
+                            final boolean isPath = (gp instanceof ParameterDescriptor<?>) &&
+                                    Path.class.isAssignableFrom(((ParameterDescriptor<?>) gp).getValueClass());
+                            value = isPath ? locationAsPath : location; break;
+                        }
+                        case METADATA: value = metadataPath; break;
+                        case ENCODING: value = encoding;     break;
+                        case LOCALE:   value = dataLocale;   break;
+                        case TIMEZONE: value = timezone;     break;
+                    }
+                    option.setValueOf(pg, value);
+                }
+                return Optional.of(pg);
+            }
+        }
+        return Optional.empty();
     }
 
 
