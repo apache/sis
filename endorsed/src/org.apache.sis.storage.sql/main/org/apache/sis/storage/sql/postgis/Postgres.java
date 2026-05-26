@@ -41,6 +41,7 @@ import org.apache.sis.storage.sql.feature.SelectionClauseWriter;
 import org.apache.sis.storage.sql.feature.SpatialSchema;
 import org.apache.sis.metadata.sql.internal.shared.Dialect;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.Version;
 
 
@@ -53,6 +54,7 @@ import org.apache.sis.util.Version;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Guilhem Legal (Geomatys)
  */
 public final class Postgres<G> extends Database<G> {
     /**
@@ -147,6 +149,27 @@ public final class Postgres<G> extends Database<G> {
             // Unknown type. Ignore and fallback on `Types.OTHER`.
         }
         return super.getArrayComponentType(columnDefinition);
+    }
+
+    /**
+     * Returns the type of the column with a workaround for {@code TIMESTAMP} with time zone.
+     * This is a workaround for a bug in PostgreSQL <abbr>JDBC</abbr> driver which returns
+     * {@link Types#TIMESTAMP} when it should return {@link Types#TIMESTAMP_WITH_TIMEZONE}.
+     *
+     * @param  metadata  the result of {@code DatabaseMetaData.getColumns(…)}.
+     * @param  typeName  the value of the {@code "TYPE_NAME"} metadata column.
+     * @return a {@link java.sql.Types} constant.
+     * @throws SQLException if an error occurred while fetching the type.
+     *
+     * @see <a href="https://github.com/pgjdbc/pgjdbc/pull/2715">PostgreSQL JDBC Driver issue #2715</a>
+     */
+    @Override
+    @Workaround(library = "pgjdbc", version = "42.7.7")
+    protected int getColumnDatatype(ResultSet metadata, String typeName) throws SQLException {
+        if ("timestamptz".equalsIgnoreCase(typeName)) {
+            return Types.TIMESTAMP_WITH_TIMEZONE;
+        }
+        return super.getColumnDatatype(metadata, typeName);
     }
 
     /**

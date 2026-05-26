@@ -108,6 +108,7 @@ import org.opengis.filter.ValueReference;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
+ * @author  Guilhem Legal (Geomatys)
  */
 public class Database<G> extends Syntax {
     /**
@@ -766,6 +767,26 @@ public class Database<G> extends Syntax {
      */
     protected JDBCType getArrayComponentType(final Column columnDefinition) {
         return JDBCType.OTHER;
+    }
+
+    /**
+     * Returns the type of values in the column described by the given metadata.
+     * The {@code metadata} cursor is positioned on the row of the column for which to get the type,
+     * and the {@code metadata} columns are as defined in {@link DatabaseMetaData#getColumns(String,
+     * String, String, String)}. The value of the {@code "TYPE_NAME"} metadata column is given in
+     * argument for convenience.
+     *
+     * <p>The default implementation returns {@code metadata.getInt(Reflection.DATA_TYPE}.
+     * Some database drivers are known to return the wrong type, in which case this method
+     * is overridden for working around these bugs.</p>
+     *
+     * @param  metadata  the result of {@code DatabaseMetaData.getColumns(…)}.
+     * @param  typeName  the value of the {@code "TYPE_NAME"} metadata column.
+     * @return a {@link java.sql.Types} constant.
+     * @throws SQLException if an error occurred while fetching the type.
+     */
+    protected int getColumnDatatype(final ResultSet metadata, String typeName) throws SQLException {
+        return metadata.getInt(Reflection.DATA_TYPE);
     }
 
     /**
