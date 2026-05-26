@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.Buffer;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
@@ -46,6 +47,9 @@ import org.apache.sis.util.ArraysExt;
  * Provider for {@link URIDataStore} instances.
  * All implementations <em>shall</em> supports the {@value #LOCATION} parameter.
  * All other parameters are optional.
+ *
+ * <p>This class contains also a few static methods for data stores which read from an <abbr>URI</abbr>,
+ * not necessarily data stores extending {@link URIDataStore}.</p>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -160,6 +164,8 @@ public abstract class URIDataStoreProvider extends DataStoreProvider {
      * @param  ifNew  whether to return {@code true} only if a new file would be created.
      * @return whether the specified connector should open a writable data store.
      * @throws DataStoreException if the storage object has already been used and cannot be reused.
+     *
+     * @see StoreUtilities#canWrite(Class)
      */
     public static boolean isWritable(final StorageConnector connector, final boolean ifNew) throws DataStoreException {
         final Object storage = connector.getStorage();
@@ -204,4 +210,18 @@ public abstract class URIDataStoreProvider extends DataStoreProvider {
         }
         return output;
     }
+
+    /**
+     * Returns {@code true} if a sequence of bytes in the given encoding can be decoded as if they were ASCII,
+     * ignoring values greater than 127. In case of doubt, this method conservatively returns {@code false}.
+     *
+     * @param  encoding  the encoding.
+     * @return whether bytes less than 128 can be interpreted as ASCII.
+     */
+    public static boolean basedOnASCII(final Charset encoding) {
+        return ArraysExt.containsIgnoreCase(basedOnASCII, encoding.name());
+    }
+
+    /** Names of encoding where bytes less than 128 can be interpreted as <abbr>ASCII</abbr>. */
+    private static final String[] basedOnASCII = {"US-ASCII", "ISO-8859-1", "UTF-8"};
 }

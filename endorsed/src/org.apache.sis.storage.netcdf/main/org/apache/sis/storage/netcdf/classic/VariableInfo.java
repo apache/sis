@@ -43,7 +43,7 @@ import org.apache.sis.storage.netcdf.base.Grid;
 import org.apache.sis.storage.netcdf.base.Variable;
 import org.apache.sis.storage.netcdf.base.GridAdjustment;
 import org.apache.sis.storage.netcdf.internal.Resources;
-import org.apache.sis.storage.base.StoreUtilities;
+import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.HyperRectangleReader;
 import org.apache.sis.io.stream.Region;
@@ -786,7 +786,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         final String[] strings = new String[count];
         int lower = 0;
         String previous = "";                       // For sharing same `String` instances when same value is repeated.
-        if (StoreUtilities.basedOnASCII(encoding)) {
+        if (URIDataStoreProvider.basedOnASCII(encoding)) {
             int plo = 0, phi = 0;                   // Index range of bytes used for building the previous string.
             for (int i=0; i<count; i++) {
                 String element = "";

@@ -16,7 +16,7 @@
  */
 package org.apache.sis.storage.base;
 
-import org.apache.sis.storage.UnsupportedStorageException;
+import java.nio.charset.StandardCharsets;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -25,24 +25,27 @@ import org.apache.sis.test.TestCase;
 
 
 /**
- * Tests {@link StoreUtilities}.
+ * Tests {@link URIDataStoreProvider}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class StoreUtilitiesTest extends TestCase {
+public final class URIDataStoreProviderTest extends TestCase {
     /**
      * Creates a new test case.
      */
-    public StoreUtilitiesTest() {
+    public URIDataStoreProviderTest() {
     }
 
     /**
-     * Tests {@link StoreUtilities#providerByFormatName(String)}.
-     *
-     * @throws UnsupportedStorageException if no provider is found for the specified format.
+     * Tests {@link URIDataStoreProvider#basedOnASCII(Charset)}.
      */
     @Test
-    public void testProviderByFormatName() throws UnsupportedStorageException {
-        assertInstanceOf(org.apache.sis.storage.csv.StoreProvider.class, StoreUtilities.providerByFormatName("CSV"));
+    public void testBasedOnASCII() {
+        assertTrue (URIDataStoreProvider.basedOnASCII(StandardCharsets.US_ASCII));
+        assertTrue (URIDataStoreProvider.basedOnASCII(StandardCharsets.ISO_8859_1));
+        assertTrue (URIDataStoreProvider.basedOnASCII(StandardCharsets.UTF_8));
+        assertFalse(URIDataStoreProvider.basedOnASCII(StandardCharsets.UTF_16));
+        assertFalse(URIDataStoreProvider.basedOnASCII(StandardCharsets.UTF_16BE));
+        assertFalse(URIDataStoreProvider.basedOnASCII(StandardCharsets.UTF_16LE));
     }
 }
