@@ -254,7 +254,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource {
                     switch (option) {
                         default: continue;
                         case LOCATION: {
-                            final GeneralParameterDescriptor gp = descriptor.descriptor(option.parameterName);
+                            final GeneralParameterDescriptor gp = descriptor.descriptor(URIDataStoreProvider.LOCATION);
                             final boolean isPath = (gp instanceof ParameterDescriptor<?>) &&
                                     Path.class.isAssignableFrom(((ParameterDescriptor<?>) gp).getValueClass());
                             value = isPath ? locationAsPath : location; break;

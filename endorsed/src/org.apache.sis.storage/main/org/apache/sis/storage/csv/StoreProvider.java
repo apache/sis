@@ -22,8 +22,6 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.feature.FoliationRepresentation;
-import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.base.URIDataStoreOption;
@@ -110,18 +108,6 @@ public final class StoreProvider extends URIDataStoreProvider {
             }
             return ProbeResult.UNSUPPORTED_STORAGE;
         }
-    }
-
-    /*
-     * Creates the description of the optional parameter for specifying whether the reader should assemble
-     * distinct <abbr>CSV</abbr> lines into a single {@code Feature} instance forming a foliation.
-     * This is ignored if the <abbr>CSV</abbr> file does not seem to contain moving features.
-     */
-    static {
-        URIDataStoreOption.FOLIATION.initializeParameterDescriptor(
-                FoliationRepresentation.class,
-                FoliationRepresentation.ASSEMBLED,
-                Resources.Keys.FoliationRepresentation);
     }
 
     /**

@@ -17,18 +17,13 @@
 package org.apache.sis.storage.base;
 
 import java.net.URI;
-import java.nio.file.Path;
-import java.nio.charset.Charset;
 import java.nio.file.StandardOpenOption;
-import java.time.ZoneId;
-import java.util.Locale;
 import java.util.EnumSet;
 import java.util.Collection;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.OptionKey;
@@ -70,14 +65,14 @@ public enum URIDataStoreOption {
      * @see URIDataStoreProvider#LOCATION
      * @see #createForLocationOnly(String)
      */
-    LOCATION(null, URIDataStoreProvider.LOCATION, Resources.Keys.DataStoreLocation, URI.class),
+    LOCATION(URIDataStoreProvider.LOCATION, Resources.Keys.DataStoreLocation, URI.class),
 
     /**
      * Description of the optional {@value URIDataStoreProvider#FORMAT} parameter.
      *
      * @see URIDataStoreProvider#FORMAT
      */
-    FORMAT(null, URIDataStoreProvider.FORMAT, Resources.Keys.DirectoryContentFormatName, String.class),
+    FORMAT(URIDataStoreProvider.FORMAT, Resources.Keys.DirectoryContentFormatName, String.class),
 
     /**
      * Description of the optional {@value URIDataStoreProvider#CREATE} parameter of writable data stores.
@@ -85,7 +80,7 @@ public enum URIDataStoreOption {
      * @see URIDataStoreProvider#CREATE
      * @see OptionKey#OPEN_OPTIONS
      */
-    CREATE(null, URIDataStoreProvider.CREATE, Resources.Keys.DataStoreCreate, Boolean.class),
+    CREATE(URIDataStoreProvider.CREATE, Resources.Keys.DataStoreCreate, Boolean.class),
 
     /**
      * Description of the optional parameter for character encoding used by the data store.
@@ -93,7 +88,7 @@ public enum URIDataStoreOption {
      *
      * @see OptionKey#ENCODING
      */
-    ENCODING(OptionKey.ENCODING, "encoding", Resources.Keys.DataStoreEncoding, Charset.class),
+    ENCODING(OptionKey.ENCODING),
 
     /**
      * Description of the parameter for formatting conventions of dates and numbers.
@@ -101,7 +96,7 @@ public enum URIDataStoreOption {
      *
      * @see OptionKey#LOCALE
      */
-    LOCALE(OptionKey.LOCALE, "locale", Resources.Keys.DataStoreLocale, Locale.class),
+    LOCALE(OptionKey.LOCALE),
 
     /**
      * Description of the optional parameter for the time zone used by the data store.
@@ -109,7 +104,7 @@ public enum URIDataStoreOption {
      *
      * @see OptionKey#TIMEZONE
      */
-    TIMEZONE(OptionKey.TIMEZONE, "timezone", Resources.Keys.DataStoreTimeZone, ZoneId.class),
+    TIMEZONE(OptionKey.TIMEZONE),
 
     /**
      * Description of the optional parameter for the default coordinate reference system.
@@ -118,93 +113,57 @@ public enum URIDataStoreOption {
      * @see OptionKey#DEFAULT_CRS
      * @todo Use {@link CodeType} when parsing from text.
      */
-    DEFAULT_CRS(OptionKey.DEFAULT_CRS, "defaultCRS", Resources.Keys.DefaultCRS, CoordinateReferenceSystem.class),
+    DEFAULT_CRS(OptionKey.DEFAULT_CRS),
 
     /**
      * Description of the optional "metadata" parameter.
      *
      * @see OptionKey#METADATA_PATH
      */
-    METADATA(OptionKey.METADATA_PATH, "metadata", Resources.Keys.MetadataLocation, Path.class),
+    METADATA(OptionKey.METADATA_PATH),
 
     /**
      * Description of the optional parameter for specifying whether to assemble
      * distinct lines into a single {@code Feature} instance forming a foliation.
      */
-    FOLIATION(OptionKey.FOLIATION_REPRESENTATION, "foliation");
+    FOLIATION(OptionKey.FOLIATION_REPRESENTATION);
 
     /**
-     * The parameter name. This is similar but not identical to the enumeration name.
+     * The option key for storing the parameter value in a storage connector,
+     * or {@code null} if none.
      */
-    final String parameterName;
+    private final OptionKey<?> option;
 
     /**
      * The parameter descriptor for this option, or {@code null} if not yet constructed.
      *
      * @see #getParameterDescriptor()
-     * @see #initializeParameterDescriptor(Class, Object, short)
      */
     private volatile ParameterDescriptor<?> parameter;
 
     /**
-     * The option key for storing the parameter value in a storage connector.
-     */
-    private final OptionKey<?> option;
-
-    /**
      * Creates a new enumeration value with deferred construction of the parameter descriptor.
      *
-     * @param option  associated option in {@link StorageConnector}, or {@code null} if none.
-     * @param name    name of the parameter to create.
+     * @param option  associated option in {@link StorageConnector}.
      */
-    private URIDataStoreOption(final OptionKey<?> option, final String name) {
+    private URIDataStoreOption(final OptionKey<?> option) {
         this.option = option;
-        parameterName = name;
     }
 
     /**
      * Creates a new enumeration value with immediate construction of the parameter descriptor.
      *
-     * @param <V>          for compile-time consistency check between {@code valueClass} and {@code option}.
-     * @param option       associated option in {@link StorageConnector}, or {@code null} if none.
-     * @param name         name of the parameter to create.
-     * @param description  constant from {@link Resources} keys for the localized description.
-     * @param valueClass   value of the parameter.
+     * @param parameterName  name of the parameter to create.
+     * @param description    constant from {@link Resources} keys for the localized description.
+     * @param valueClass     type of value of the parameter.
      */
-    private <V> URIDataStoreOption(final OptionKey<V> option,
-                                   final String       name,
-                                   final short        description,
-                                   final Class<V>     valueClass)
-    {
-        this(option, name);
-        initializeParameterDescriptor(valueClass, null, description);
-    }
-
-    /**
-     * Creates the parameter descriptor of this enumeration value.
-     *
-     * @param  <V>           for compile-time consistency check between {@code valueClass} and {@code option}.
-     * @param  valueClass    value of the parameter.
-     * @param  defaultValue  default value, or {@code null} if none.
-     * @param  description   constant from {@link Resources} keys for the localized description.
-     * @return the parameter descriptor.
-     * @throws IllegalStateException if this parameter descriptor is already initialized.
-     */
-    public final <V> ParameterDescriptor<V> initializeParameterDescriptor(
-            final Class<V> valueClass,
-            final V        defaultValue,
-            final short    description)
-    {
-        if (parameter != null) {
-            throw new IllegalStateException(name());
-        }
-        final ParameterDescriptor<V> descriptor = new ParameterBuilder()
+    private <V> URIDataStoreOption(final String parameterName, final short description, final Class<V> valueClass) {
+        option = null;
+        parameter = new ParameterBuilder()
                 .addName(parameterName)
                 .setDescription(Resources.formatInternational(description))
                 .setRequired(ordinal() == 0)
-                .create(valueClass, defaultValue);
-        parameter = descriptor;
-        return descriptor;
+                .create(valueClass, null);
     }
 
     /**
@@ -214,11 +173,18 @@ public enum URIDataStoreOption {
      * @throws IllegalStateException if the parameter has not yet been initialized.
      */
     public final ParameterDescriptor<?> getParameterDescriptor() {
-        final ParameterDescriptor<?> p = parameter;
-        if (p != null) {
-            return p;
+        ParameterDescriptor<?> p = parameter;
+        if (p == null) {
+            p = option.asOpenParameter().orElseThrow(() -> new IllegalStateException(name()));
         }
-        throw new IllegalStateException(name());
+        return p;
+    }
+
+    /**
+     * Returns the parameter name.
+     */
+    private String parameterName() {
+        return getParameterDescriptor().getName().getCode();
     }
 
     /**
@@ -269,7 +235,7 @@ public enum URIDataStoreOption {
             final ParameterDescriptorGroup descriptor = provider.getOpenParameters();
             if (descriptor != null) {
                 final ParameterValueGroup pg = descriptor.createValue();
-                pg.parameter(LOCATION.parameterName).setValue(location);
+                pg.parameter(URIDataStoreProvider.LOCATION).setValue(location);
                 return pg;
             }
         }
@@ -284,7 +250,7 @@ public enum URIDataStoreOption {
      */
     public final void setValueOf(final ParameterValueGroup parameters, final Object value) {
         if (value != null) {
-            parameters.parameter(parameterName).setValue(value);
+            parameters.parameter(parameterName()).setValue(value);
         }
     }
 
@@ -321,7 +287,7 @@ public enum URIDataStoreOption {
                 if (option.option == null) continue;
                 final Object value;
                 try {
-                    value = parameters.parameter(option.parameterName).getValue();
+                    value = parameters.parameter(option.parameterName()).getValue();
                 } catch (ParameterNotFoundException e) {
                     Logging.ignorableException(provider.getLogger(), URIDataStoreOption.class, "connector", e);
                     continue;
@@ -350,7 +316,7 @@ public enum URIDataStoreOption {
                     }
                 } catch (UnconvertibleObjectException e) {
                     throw new IllegalOpenParameterException(Errors.format(
-                            Errors.Keys.IllegalOptionValue_2, option.parameterName, value), e);
+                            Errors.Keys.IllegalOptionValue_2, option.parameterName(), value), e);
                 }
             }
         }

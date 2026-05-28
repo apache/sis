@@ -17,6 +17,7 @@
 package org.apache.sis.storage;
 
 import java.util.Locale;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.function.Supplier;
 import java.time.ZoneId;
@@ -28,12 +29,16 @@ import java.nio.file.StandardOpenOption;
 import java.io.ObjectStreamException;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLInputFactory;
+import org.opengis.parameter.ParameterValue;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.setup.GeometryLibrary;
+import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.feature.FoliationRepresentation;
+import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.system.Modules;
 
 
@@ -85,7 +90,8 @@ public class OptionKey<T> extends org.apache.sis.setup.OptionKey<T> {
      * @see org.apache.sis.xml.XML#LOCALE
      * @see DataStore#setLocale(Locale)
      */
-    public static final OptionKey<Locale> LOCALE = new OptionKey<>("LOCALE", Locale.class);
+    public static final OptionKey<Locale> LOCALE =
+            new Parameter<>("LOCALE", Locale.class, "locale", Resources.Keys.DataStoreLocale);
 
     /**
      * The timezone to use when parsing or formatting dates and times without explicit timezone.
@@ -94,7 +100,8 @@ public class OptionKey<T> extends org.apache.sis.setup.OptionKey<T> {
      *
      * @see org.apache.sis.xml.XML#TIMEZONE
      */
-    public static final OptionKey<ZoneId> TIMEZONE = new OptionKey<>("TIMEZONE", ZoneId.class);
+    public static final OptionKey<ZoneId> TIMEZONE =
+            new Parameter<>("TIMEZONE", ZoneId.class, "timezone", Resources.Keys.DataStoreTimeZone);
 
     /**
      * The number of spaces to use for indentation when formatting texts in <abbr>WKT</abbr> or <abbr>XML</abbr>.
@@ -121,7 +128,8 @@ public class OptionKey<T> extends org.apache.sis.setup.OptionKey<T> {
      *
      * @see jakarta.xml.bind.Marshaller#JAXB_ENCODING
      */
-    public static final OptionKey<Charset> ENCODING = new OptionKey<>("ENCODING", Charset.class);
+    public static final OptionKey<Charset> ENCODING =
+            new Parameter<>("ENCODING", Charset.class, "encoding", Resources.Keys.DataStoreEncoding);
 
     /**
      * The encoding of a <abbr>URL</abbr> (<em>not</em> the encoding of the document content).
@@ -204,7 +212,8 @@ public class OptionKey<T> extends org.apache.sis.setup.OptionKey<T> {
      * main file without its extension. For example if the main file is {@code "city-center.tiff"},
      * then {@code "*.xml"} will become {@code "city-center.xml"}.
      */
-    public static final OptionKey<Path> METADATA_PATH = new OptionKey<>("METADATA_PATH", Path.class);
+    public static final OptionKey<Path> METADATA_PATH =
+            new Parameter<>("METADATA_PATH", Path.class, "metadata", Resources.Keys.MetadataLocation);
 
     /**
      * The coordinate reference system (<abbr>CRS</abbr>) of data to use if not explicitly defined.
@@ -214,14 +223,14 @@ public class OptionKey<T> extends org.apache.sis.setup.OptionKey<T> {
      * file giving the <abbr>CRS</abbr>.
      */
     public static final OptionKey<CoordinateReferenceSystem> DEFAULT_CRS =
-            new OptionKey<>("DEFAULT_CRS", CoordinateReferenceSystem.class);
+            new Parameter<>("DEFAULT_CRS", CoordinateReferenceSystem.class, "defaultCRS", Resources.Keys.DefaultCRS);
 
     /**
      * Whether to assemble trajectory fragments (distinct <abbr>CSV</abbr> lines) into a single {@code Feature}
      * instance forming a foliation. This is ignored if the file does not seem to contain moving features.
      */
     public static final OptionKey<FoliationRepresentation> FOLIATION_REPRESENTATION =
-            new OptionKey<>("FOLIATION_REPRESENTATION", FoliationRepresentation.class);
+            new Parameter<>("FOLIATION_REPRESENTATION", FoliationRepresentation.class, "foliation", Resources.Keys.FoliationRepresentation);
 
     /**
      * The library to use for creating geometric objects at reading time. Some available libraries are
@@ -280,7 +289,7 @@ public class OptionKey<T> extends org.apache.sis.setup.OptionKey<T> {
      * @return the unique {@code OptionKey} instance.
      * @throws ObjectStreamException required by specification but should never be thrown.
      */
-    private Object readResolve() throws ObjectStreamException {
+    final Object readResolve() throws ObjectStreamException {
         try {
             return OptionKey.class.getField(super.getName()).get(null);
         } catch (ReflectiveOperationException e) {
@@ -292,6 +301,82 @@ public class OptionKey<T> extends org.apache.sis.setup.OptionKey<T> {
              */
             Logging.recoverableException(Logger.getLogger(Modules.STORAGE), OptionKey.class, "readResolve", e);
             return this;
+        }
+    }
+
+    /**
+     * Returns this option as a parameter descriptor.
+     * Storing option values as {@link ParameterValue} instances is sometime convenient
+     * when the options need to be serialized, for example, in a text file or a database.
+     * While values are stored as Java objects of type {@code <T>},
+     * the {@link ParameterValue#setValue(Object)} method is capable
+     * to convert text representations to the expected object type.
+     *
+     * <p>Parameter descriptors are available only for a subset of the options.
+     * This method may return a non-empty value only if the values of this option
+     * have a text representation.</p>
+     *
+     * @return a parameter descriptor for this option.
+     *
+     * @see DataStoreProvider#getOpenParameters()
+     */
+    public Optional<ParameterDescriptor<T>> asOpenParameter() {
+        return Optional.empty();
+    }
+
+    /**
+     * An option which can be used as an open parameter.
+     *
+     * @param <T>  the type of option values.
+     */
+    private static final class Parameter<T> extends OptionKey<T> {
+        /**
+         * The parameter name. This is similar but not identical to the option name.
+         */
+        final String parameterName;
+
+        /**
+         * The resource key for the localized description of the parameter, or 0 if none.
+         * This is 0 on deserialization because this number does not need to be consistent
+         * between different <abbr>SIS</abbr> releases.
+         */
+        private final transient short description;
+
+        /**
+         * The parameter descriptor for this option, or {@code null} if not yet constructed.
+         */
+        private transient ParameterDescriptor<T> parameter;
+
+        /**
+         * Creates a new key of the given name for values of the given type.
+         *
+         * @param name  the key name.
+         * @param type  the type of values.
+         */
+        Parameter(final String name, final Class<T> type, final String parameterName, final short description) {
+            super(name, type);
+            this.parameterName = parameterName;
+            this.description   = description;
+        }
+
+        /**
+         * Returns this option as a parameter descriptor.
+         */
+        @Override
+        public synchronized Optional<ParameterDescriptor<T>> asOpenParameter() {
+            ParameterDescriptor<T> p = parameter;
+            if (p == null) {
+                Object defaultValue = null;
+                if (this == FOLIATION_REPRESENTATION) {
+                    defaultValue = FoliationRepresentation.ASSEMBLED;
+                }
+                final Class<T> valueClass = getElementType();
+                p = new ParameterBuilder()
+                        .addName(parameterName)
+                        .setDescription(Resources.formatInternational(description))
+                        .create(valueClass, valueClass.cast(defaultValue));
+            }
+            return Optional.of(p);
         }
     }
 }
