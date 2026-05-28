@@ -30,6 +30,7 @@ import org.opengis.metadata.acquisition.Objective;
 import org.opengis.metadata.acquisition.PlatformPass;
 import org.opengis.metadata.acquisition.Sequence;
 import org.opengis.metadata.acquisition.Trigger;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.temporal.TemporalDate;
 
@@ -57,9 +58,10 @@ import org.apache.sis.temporal.TemporalDate;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   0.3
  */
+@TitleProperty(name = "identifier")
 @XmlType(name = "MI_Event_Type", propOrder = {
     "identifier",
     "trigger",

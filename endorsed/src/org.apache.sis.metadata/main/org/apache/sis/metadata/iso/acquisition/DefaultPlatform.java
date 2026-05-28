@@ -25,6 +25,7 @@ import org.opengis.metadata.acquisition.Instrument;
 import org.opengis.metadata.acquisition.Platform;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.util.InternationalString;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
 // Specific to the geoapi-4.0 branch:
@@ -54,9 +55,10 @@ import org.opengis.metadata.citation.Responsibility;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   0.3
  */
+@TitleProperty(name = "citation")
 @XmlType(name = "MI_Platform_Type", propOrder = {
     "citation",
     "identifier",

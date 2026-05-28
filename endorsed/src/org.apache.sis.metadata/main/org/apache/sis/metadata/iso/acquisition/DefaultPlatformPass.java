@@ -24,6 +24,7 @@ import org.opengis.geometry.Geometry;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.acquisition.Event;
 import org.opengis.metadata.acquisition.PlatformPass;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
 
@@ -46,9 +47,10 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   0.3
  */
+@TitleProperty(name = "identifier")
 @XmlType(name = "MI_PlatformPass_Type", propOrder = {
     "identifier",
     "extent",

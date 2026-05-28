@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.lang.reflect.Method;
 import org.opengis.util.CodeList;
+import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
 import org.apache.sis.math.NumberType;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.CheckedContainer;
@@ -334,9 +336,11 @@ public abstract class PropertyConsistencyCheck extends AnnotationConsistencyChec
                     final int index = accessor.indexOf(name, false);
                     assertTrue(index >= 0, message);
 
-                    // Property cannot be a metadata.
+                    // Property cannot be a metadata other than the hard-coded list of exceptions.
                     final Class<?> elementType = accessor.type(index, TypeValuePolicy.ELEMENT_TYPE);
-                    assertFalse(standard.isMetadata(elementType), message);
+                    if (elementType != Identifier.class && elementType != Citation.class) {
+                        assertFalse(standard.isMetadata(elementType), message);
+                    }
 
                     // Property shall be a singleton.
                     assertSame(elementType, accessor.type(index, TypeValuePolicy.PROPERTY_TYPE), message);

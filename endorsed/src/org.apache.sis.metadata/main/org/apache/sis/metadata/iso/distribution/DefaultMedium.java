@@ -34,6 +34,7 @@ import org.apache.sis.xml.bind.gco.GO_Real;
 import org.apache.sis.xml.bind.metadata.CI_Citation;
 import org.apache.sis.xml.bind.metadata.MD_Identifier;
 import org.apache.sis.xml.internal.shared.LegacyNamespaces;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.util.collection.Containers;
@@ -68,9 +69,10 @@ import org.apache.sis.metadata.iso.legacy.MediumName;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.7
  * @since   0.3
  */
+@TitleProperty(name = "name")
 @XmlType(name = "MD_Medium_Type", propOrder = {
     "identifier",           // New in ISO 19115-3
     "name",

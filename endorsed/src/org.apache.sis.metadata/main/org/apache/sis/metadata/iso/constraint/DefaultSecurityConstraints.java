@@ -22,6 +22,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.constraint.Classification;
 import org.opengis.metadata.constraint.SecurityConstraints;
+import org.apache.sis.metadata.TitleProperty;
 
 
 /**
@@ -43,9 +44,10 @@ import org.opengis.metadata.constraint.SecurityConstraints;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   0.3
  */
+@TitleProperty(name = "classification")
 @XmlType(name = "MD_SecurityConstraints_Type", propOrder = {
     "classification",
     "userNote",

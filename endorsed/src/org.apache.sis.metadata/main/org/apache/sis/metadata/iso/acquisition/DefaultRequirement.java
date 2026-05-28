@@ -27,6 +27,7 @@ import org.opengis.metadata.acquisition.Priority;
 import org.opengis.metadata.acquisition.RequestedDate;
 import org.opengis.metadata.acquisition.Requirement;
 import org.opengis.metadata.citation.Citation;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
 // Specific to the geoapi-4.0 branch:
@@ -66,6 +67,7 @@ import org.opengis.metadata.citation.Responsibility;
  * @version 2.0
  * @since   0.3
  */
+@TitleProperty(name = "identifier")
 @XmlType(name = "MI_Requirement_Type", propOrder = {
     "citation",
     "identifier",

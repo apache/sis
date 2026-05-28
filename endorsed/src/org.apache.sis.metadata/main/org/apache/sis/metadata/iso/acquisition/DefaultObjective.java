@@ -28,8 +28,8 @@ import org.opengis.metadata.acquisition.ObjectiveType;
 import org.opengis.metadata.acquisition.PlatformPass;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.util.InternationalString;
-import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.bind.NonMarshalledAuthority;
 
 

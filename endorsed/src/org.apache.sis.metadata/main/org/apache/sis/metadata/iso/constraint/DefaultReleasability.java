@@ -22,6 +22,7 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.constraint.Restriction;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -42,9 +43,10 @@ import org.opengis.metadata.citation.Responsibility;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   0.5
  */
+@TitleProperty(name = "statement")
 @XmlType(name = "MD_Releasability_Type", propOrder = {
     "addressees",
     "statement",
