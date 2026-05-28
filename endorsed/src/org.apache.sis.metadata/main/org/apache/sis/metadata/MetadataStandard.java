@@ -20,8 +20,10 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.io.IOException;
@@ -359,9 +361,7 @@ public class MetadataStandard implements Serializable {
 
     /**
      * Returns the accessor for the specified metadata instance.
-     * The {@code propertyType.isInstance(metadata)} condition should always be {@code true},
-     * but this is not verified by this constructor. Instead, the validity can be verified
-     * after constructor with {@link CacheKey#isValid()}.
+     * The {@code propertyType.isInstance(metadata)} condition should always be {@code true}.
      *
      * <p>A null value for {@code propertyType} is not equivalent to {@code Object.class}.
      * If the value is null, this constructor tries to detect the interface automatically.
@@ -720,27 +720,83 @@ public class MetadataStandard implements Serializable {
     }
 
     /**
-     * Returns a value of the "title" property of the given metadata object.
-     * The title property is defined by {@link TitleProperty} annotation on the implementation class.
+     * Returns the value of the property that summarizes the given metadata object.
+     * The property is specified by the {@link TitleProperty} annotation on the implementation class.
+     * This method first searches for {@code TitleProperty} in the implementation class of the given
+     * {@code metadata}. If the implementation class is not annotated, then this method searches in
+     * the {@linkplain #getImplementation(Class) implementation class managed by this standard}.
+     *
+     * <p>If the property value is itself another metadata annotated with {@code TitleProperty},
+     * then the search for a title continues recursively in the other metadata.
+     * If a cyclic graph is detected, this method returns the last value before the cycle.</p>
      *
      * @param  metadata  the metadata for which to get the title property, or {@code null}.
-     * @return the title property value of the given metadata, or {@code null} if none.
+     * @return the title property value of the given metadata, or empty if none.
      *
      * @see TitleProperty
      * @see ValueExistencePolicy#TITLED
+     *
+     * @since 1.7
      */
-    final Object getTitle(final Object metadata) {
-        if (metadata != null) {
-            final Class<?> type = metadata.getClass();
-            final PropertyAccessor accessor = getTypeAccessor(type, false);
-            if (accessor != null) {
-                TitleProperty an = type.getAnnotation(TitleProperty.class);
-                if (an != null || (an = accessor.implementation.getAnnotation(TitleProperty.class)) != null) {
-                    return accessor.get(accessor.indexOf(an.name(), false), metadata);
+    public Optional<Object> getTitle(final Object metadata) {
+        return Optional.ofNullable(getTitle(metadata, null, false, false, false));
+    }
+
+    /**
+     * Implementation of {@link #getTitle(Object)} with the possibility to specify the base interface.
+     * The {@code metadata} argument should be an instance of {@code propertyType}.
+     *
+     * <p>Note that a return value of {@code null} may be either because the metadata has no
+     * {@link TitleProperty} property, or because the property exists but has a {@code null} value.
+     * The {@code isStarted} parameter is required for callers that need to distinguish these two cases.</p>
+     *
+     * @param  metadata      the metadata for which to get the title property, or {@code null}.
+     * @param  propertyType  the interface which should be implemented to the metadata.
+     * @param  isTypeOnly    {@code false} if {@code metadata} is an instance, or {@code true} if a {@code Class}.
+     * @param  wantTypeOnly  whether to return the property type (as a {@link Class}) rather than the value.
+     * @param  isStarted     if this method is invoked for a search that already started on the first annotated property.
+     * @return the title property value or type of the given metadata, or {@code null} if none.
+     */
+    final Object getTitle(Object   metadata,
+                          Class<?> propertyType,
+                          boolean  isTypeOnly,
+                          final boolean wantTypeOnly,
+                          final boolean isStarted)
+    {
+        final var done = new IdentityHashMap<Object, Boolean>();
+        while (metadata != null) {
+            final Class<?> type;
+            final PropertyAccessor accessor;
+            if (isTypeOnly) {
+                type     = (Class<?>) metadata;
+                accessor = getTypeAccessor(type, false);
+            } else {
+                type     = metadata.getClass();
+                accessor = getInstanceAccessor(metadata, propertyType, false);
+            }
+            if (accessor == null) break;    // Not a metadata.
+            TitleProperty a = type.getAnnotation(TitleProperty.class);
+            if (a == null) {
+                if (accessor.implementation == type) break;
+                a = accessor.implementation.getAnnotation(TitleProperty.class);
+                if (a == null) break;       // No `TitleProperty` annotation.
+            }
+            final int index = accessor.indexOf(a.name(), false);
+            if (index < 0 || accessor.isCollectionOrMap(index)) break;      // Illegal property in the annotation.
+            if (done.put(metadata, Boolean.TRUE) != null) break;            // Safety against never-ending loop.
+            propertyType = accessor.type(index, TypeValuePolicy.ELEMENT_TYPE);
+            if (isTypeOnly) {
+                metadata = propertyType;
+            } else {
+                metadata = accessor.get(index, metadata);
+                if (metadata == null && wantTypeOnly) {
+                    metadata = propertyType;
+                    isTypeOnly = true;
                 }
             }
+            // Check recursively if the property value is another metadata.
         }
-        return null;
+        return (!isStarted && done.isEmpty()) ? null : wantTypeOnly ? propertyType : metadata;
     }
 
     /**
@@ -790,7 +846,7 @@ public class MetadataStandard implements Serializable {
      * the following code prints the {@link org.opengis.util.InternationalString} class name:
      *
      * {@snippet lang="java" :
-     *     MetadataStandard  standard = MetadataStandard.ISO_19115;
+     *     MetadataStandard standard = MetadataStandard.ISO_19115;
      *     Map<String, Class<?>> types = standard.asTypeMap(Citation.class, UML_IDENTIFIER, ELEMENT_TYPE);
      *     Class<?> value = types.get("alternateTitle");
      *     System.out.println(value);                       // class org.opengis.util.InternationalString

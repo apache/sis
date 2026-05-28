@@ -371,7 +371,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *
      * @since 1.0
      */
-    protected void checkWritePermission(Object current) throws UnmodifiableMetadataException {
+    protected void checkWritePermission(final Object current) throws UnmodifiableMetadataException {
         if (state != COMPLETABLE) {
             if (state == FINAL) {
                 throw new UnmodifiableMetadataException(Resources.format(Resources.Keys.UnmodifiableMetadata));
@@ -383,9 +383,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
             } else {
                 standard = getStandard();
             }
-            final Object c = standard.getTitle(current);
-            if (c != null) current = c;
-            throw new UnmodifiableMetadataException(Resources.format(Resources.Keys.ElementAlreadyInitialized_1, current));
+            throw new UnmodifiableMetadataException(Resources.format(
+                    Resources.Keys.ElementAlreadyInitialized_1,
+                    standard.getTitle(current).orElse(current)));
         }
     }
 

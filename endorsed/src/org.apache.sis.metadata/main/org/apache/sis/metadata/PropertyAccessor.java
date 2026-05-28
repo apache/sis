@@ -621,7 +621,7 @@ class PropertyAccessor {
     }
 
     /**
-     * Returns {@code true} if the type at the given index is {@link Collection} or {@link Map}.
+     * Returns {@code true} if the type at the given index is assignable to {@link Collection} or {@link Map}.
      */
     final boolean isCollectionOrMap(final int index) {
         if (index >= 0 && index < allCount) {
