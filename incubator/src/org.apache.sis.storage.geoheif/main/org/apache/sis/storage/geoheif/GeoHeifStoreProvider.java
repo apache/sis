@@ -18,7 +18,6 @@ package org.apache.sis.storage.geoheif;
 
 import java.nio.ByteBuffer;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -28,7 +27,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
-import org.apache.sis.storage.base.URIDataStoreProvider;
+import org.apache.sis.storage.base.URIDataStoreOption;
 import org.apache.sis.storage.tiling.TiledResource;
 import org.apache.sis.storage.isobmff.base.FileType;
 
@@ -58,11 +57,7 @@ public class GeoHeifStoreProvider extends DataStoreProvider {
     /**
      * The parameter descriptor to be returned by {@link #getOpenParameters()}.
      */
-    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR;
-    static {
-        final var builder = new ParameterBuilder();
-        OPEN_DESCRIPTOR   = builder.addName(NAME).createGroup(URIDataStoreProvider.LOCATION_PARAM);
-    }
+    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR = URIDataStoreOption.createForLocationOnly(NAME);
 
     /**
      * Creates a new provider.

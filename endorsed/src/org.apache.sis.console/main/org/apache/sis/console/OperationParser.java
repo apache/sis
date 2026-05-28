@@ -25,7 +25,7 @@ import org.apache.sis.storage.base.PRJDataStore;
 
 
 /**
- * Reads a coordinate operation in GML or WKT format.
+ * Reads a coordinate operation in <abbr>GML</abbr> or <abbr>WKT</abbr> format.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.HashMap;
 import java.util.logging.Logger;
+import java.lang.reflect.Type;
 import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.Quantity;
 import javax.measure.IncommensurableException;
@@ -64,7 +65,7 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
  * without synchronization.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  *
  * @see ModifiableLocationType
  * @see AbstractLocation
@@ -196,13 +197,15 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      * The default implementation returns {@code ReferenceSystemUsingIdentifiers.class}.
      *
      * @return the GeoAPI interface implemented by this class.
+     * @since 1.7
      */
     @Override
-    public Class<? extends ReferenceSystemUsingIdentifiers> getInterface() {
+    public Type getStandardType() {
         return ReferenceSystemUsingIdentifiers.class;
     }
 

@@ -18,6 +18,7 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Map;
 import java.util.Objects;
+import java.lang.reflect.Type;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -84,7 +85,7 @@ import org.opengis.metadata.Identifier;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.4
+ * @version 1.7
  *
  * @see org.apache.sis.referencing.CommonCRS#primeMeridian()
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createPrimeMeridian(String)
@@ -194,18 +195,14 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code PrimeMeridian.class}.
-     *
-     * <h4>Note for implementers</h4>
-     * Subclasses usually do not need to override this method since GeoAPI does not define {@code PrimeMeridian}
-     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
-     * own set of interfaces.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code PrimeMeridian.class} or a user-defined sub-interface.
+     * @since 1.7
      */
     @Override
-    public Class<? extends PrimeMeridian> getInterface() {
+    public Type getStandardType() {
         return PrimeMeridian.class;
     }
 

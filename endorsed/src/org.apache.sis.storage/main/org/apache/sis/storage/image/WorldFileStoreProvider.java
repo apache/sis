@@ -28,7 +28,8 @@ import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
-import org.apache.sis.storage.base.PRJDataStore;
+import org.apache.sis.storage.base.URIDataStoreOption;
+import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.util.ArraysExt;
 
@@ -42,7 +43,7 @@ import org.apache.sis.util.ArraysExt;
                fileSuffixes  = {"jpeg", "jpg", "png", "gif", "bmp"},    // Non-exhaustive list, intentionally excluding TIFF.
                capabilities  = {Capability.READ, Capability.WRITE, Capability.CREATE},
                resourceTypes = {Aggregate.class, GridCoverageResource.class})
-public final class WorldFileStoreProvider extends PRJDataStore.Provider {
+public final class WorldFileStoreProvider extends URIDataStoreProvider {
     /**
      * The format name.
      */
@@ -77,7 +78,7 @@ public final class WorldFileStoreProvider extends PRJDataStore.Provider {
      * Creates a new provider.
      */
     public WorldFileStoreProvider() {
-        allowSingleton = true;
+        this(true);
     }
 
     /**
@@ -90,6 +91,8 @@ public final class WorldFileStoreProvider extends PRJDataStore.Provider {
      *        instead of {@code Aggregate} instances.
      */
     public WorldFileStoreProvider(final boolean allowSingleton) {
+        supportedOptions.add(URIDataStoreOption.DEFAULT_CRS);
+        supportedOptions.add(URIDataStoreOption.METADATA);
         this.allowSingleton = allowSingleton;
     }
 

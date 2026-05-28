@@ -19,6 +19,7 @@ package org.apache.sis.referencing;
 import java.util.Objects;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
+import java.lang.reflect.Type;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.ComparisonMode;
@@ -49,7 +50,7 @@ import org.opengis.referencing.ObjectDomain;
  * given to the constructor are also immutable.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   1.4
  */
 public class DefaultObjectDomain extends FormattableObject implements ObjectDomain, LenientComparable, Serializable {
@@ -219,6 +220,18 @@ public class DefaultObjectDomain extends FormattableObject implements ObjectDoma
     @Override
     public Extent getDomainOfValidity() {
         return (domainOfValidity != null) ? domainOfValidity : UnknownExtent.INSTANCE;
+    }
+
+    /**
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
+     *
+     * @return {@code ObjectDomain.class} or a user-defined sub-interface.
+     * @since 1.7
+     */
+    @Override
+    public Type getStandardType() {
+        return ObjectDomain.class;
     }
 
     /**

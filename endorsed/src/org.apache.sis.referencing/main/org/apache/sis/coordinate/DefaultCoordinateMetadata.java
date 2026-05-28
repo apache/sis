@@ -19,6 +19,7 @@ package org.apache.sis.coordinate;
 import java.util.Objects;
 import java.util.Optional;
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.time.temporal.Temporal;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -44,7 +45,7 @@ import org.opengis.coordinate.CoordinateMetadata;
  * It is immutable and serializable if the CRS and epoch are also serializable.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   1.5
  */
 public class DefaultCoordinateMetadata extends FormattableObject
@@ -187,6 +188,18 @@ public class DefaultCoordinateMetadata extends FormattableObject
             }
         }
         return false;
+    }
+
+    /**
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
+     *
+     * @return {@code CoordinateMetadata.class} or a user-defined sub-interface.
+     * @since 1.7
+     */
+    @Override
+    public Type getStandardType() {
+        return CoordinateMetadata.class;
     }
 
     /**

@@ -165,6 +165,15 @@ public final class ClassesTest extends TestCase {
     }
 
     /**
+     * Tests {@link Classes#getStandardClass(Class, Class)}.
+     */
+    @Test
+    public void testGetStandardClass() {
+        assertEquals(String.class,              Classes.getStandardClass("", Object.class));
+        assertEquals(InternationalString.class, Classes.getStandardClass(new SimpleInternationalString(""), Object.class));
+    }
+
+    /**
      * Tests {@link Classes#findCommonInterfaces(Class, Class)}.
      */
     @Test

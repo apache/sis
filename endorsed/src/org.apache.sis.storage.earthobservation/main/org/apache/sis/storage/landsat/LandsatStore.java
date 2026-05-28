@@ -48,7 +48,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
-import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.URIDataStoreOption;
 import org.apache.sis.storage.folder.ConcurrentCloser;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.collection.Containers;
@@ -194,7 +194,7 @@ public class LandsatStore extends DataStore implements Aggregate {
      */
     @Override
     public Optional<ParameterValueGroup> getOpenParameters() {
-        return Optional.ofNullable(URIDataStore.parameters(provider, location));
+        return Optional.ofNullable(URIDataStoreOption.createWithLocationOnly(provider, location));
     }
 
     /**

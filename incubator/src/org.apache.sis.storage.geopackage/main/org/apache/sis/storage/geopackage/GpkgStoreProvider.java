@@ -17,7 +17,6 @@
 package org.apache.sis.storage.geopackage;
 
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.logging.Logger;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
@@ -43,7 +42,7 @@ import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
-import org.apache.sis.storage.base.URIDataStoreProvider;
+import org.apache.sis.storage.base.URIDataStoreOption;
 import org.apache.sis.metadata.sql.internal.shared.SQLUtilities;
 import org.apache.sis.metadata.sql.internal.shared.Reflection;
 import org.apache.sis.io.stream.InternalOptionKey;
@@ -136,7 +135,7 @@ public class GpkgStoreProvider extends DataStoreProvider {
                 .setDescription("PRAGMA statements encoded as \"name=value;name=value\".")
                 .setRemarks("See https://www.sqlite.org/pragma.html for a list of PRAGMAs.")
                 .create(CharSequence.class, null);
-        OPEN_DESCRIPTOR = builder.addName(NAME).createGroup(URIDataStoreProvider.LOCATION_PARAM, PRAGMAS_PARAM);
+        OPEN_DESCRIPTOR = builder.addName(NAME).createGroup(URIDataStoreOption.LOCATION.getParameterDescriptor(), PRAGMAS_PARAM);
     }
 
     /**
@@ -256,7 +255,7 @@ public class GpkgStoreProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
-        final StorageConnector connector = URIDataStoreProvider.connector(this, Objects.requireNonNull(parameters));
+        final StorageConnector connector = URIDataStoreOption.connector(this, parameters, null, null);
         final CharSequence pragmas = Parameters.castOrWrap(parameters).getValue(PRAGMAS_PARAM);
         if (pragmas != null) {
             final var map = new HashMap<String,String>();

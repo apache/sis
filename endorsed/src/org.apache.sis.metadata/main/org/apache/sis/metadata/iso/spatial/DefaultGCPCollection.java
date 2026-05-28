@@ -29,7 +29,7 @@ import org.apache.sis.xml.bind.gco.GO_Integer;
 
 
 /**
- * Information about a control point collection.
+ * Information about a control point (<abbr>GCP</abbr>) collection.
  * The following properties are mandatory in a well-formed metadata according ISO 19115:
  *
  * <div class="preformat">{@code MI_GCPCollection}
@@ -71,12 +71,12 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
     private static final long serialVersionUID = -2757911443659529373L;
 
     /**
-     * Identifier of the GCP collection.
+     * Identifier of the <abbr>GCP</abbr> collection.
      */
     private Integer collectionIdentification;
 
     /**
-     * Name of the GCP collection.
+     * Name of the <abbr>GCP</abbr> collection.
      */
     @SuppressWarnings("serial")
     private InternationalString collectionName;
@@ -144,7 +144,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
     }
 
     /**
-     * Returns the identifier of the GCP collection.
+     * Returns the identifier of the <abbr>GCP</abbr> collection.
      *
      * @return the identifier, or {@code null}.
      */
@@ -154,7 +154,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
     }
 
     /**
-     * Sets the identifier of the GCP collection.
+     * Sets the identifier of the <abbr>GCP</abbr> collection.
      *
      * @param  newValue  the new collection identifier value.
      */
@@ -164,9 +164,9 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
     }
 
     /**
-     * Returns the name of the GCP collection.
+     * Returns the name of the <abbr>GCP</abbr> collection.
      *
-     * @return name of the GCP collection, or {@code null}.
+     * @return name of the <abbr>GCP</abbr> collection, or {@code null}.
      */
     @Override
     @XmlElement(name = "collectionName", required = true)
@@ -175,7 +175,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
     }
 
     /**
-     * Sets the name of the GCP collection.
+     * Sets the name of the <abbr>GCP</abbr> collection.
      *
      * @param  newValue  the new collection name.
      */

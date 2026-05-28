@@ -46,13 +46,13 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Data store implementation for ESRI ASCII grid format.
+ * Data store implementation for <abbr>ESRI</abbr> <abbr>ASCII</abbr> grid format.
  * This is a very simple format for reading and writing single-banded raster data.
  * As the "ASCII" name implies, files are text files in US-ASCII character encoding
  * no matter what the {@link OptionKey#ENCODING} value is, and numbers are parsed or
  * formatted according the US locale no matter what the {@link OptionKey#LOCALE} value is.
  *
- * <p>ASCII grid files contains a header before the actual data.
+ * <p><abbr>ASCII</abbr> grid files contains a header before the actual data.
  * The header contains (<var>key</var> <var>value</var>) pairs,
  * one pair per line and using spaces as separator between keys and values.
  * The valid keys are listed in the table below
@@ -240,6 +240,7 @@ class AsciiGridStore extends RasterStore {
      * <p>Note: we don't do this initialization in the constructor
      * for giving a chance for users to register listeners first.</p>
      */
+    @SuppressWarnings("UseSpecificCatch")
     private void readHeader() throws DataStoreException {
         if (gridGeometry == null) try {
             final Map<String,String> header = input().readHeader();
@@ -417,6 +418,7 @@ cellsize:       if (value != null) {
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
      */
     @Override
+    @SuppressWarnings("UseSpecificCatch")
     public synchronized GridCoverage read(final GridGeometry domain, final int... ranges) throws DataStoreException {
         final RangeArgument bands = RangeArgument.validate(1, ranges, listeners);
         if (coverage == null) try {
@@ -554,6 +556,7 @@ cellsize:       if (value != null) {
      * Closes this data store after an unrecoverable error occurred.
      * The caller is expected to throw the given exception after this method call.
      */
+    @SuppressWarnings("UseSpecificCatch")
     final void closeOnError(final Throwable e) {
         try {
             close();

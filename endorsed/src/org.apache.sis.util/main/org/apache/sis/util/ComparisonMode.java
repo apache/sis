@@ -89,6 +89,9 @@ public enum ComparisonMode {
      *   <li>The objects being compared need to implement the same GeoAPI interfaces.</li>
      *   <li>Public getter methods are used (no direct access to private fields).</li>
      * </ul>
+     *
+     * @see LenientComparable#getStandardType()
+     * @see Classes#getStandardClass(Object)
      */
     BY_CONTRACT,
 

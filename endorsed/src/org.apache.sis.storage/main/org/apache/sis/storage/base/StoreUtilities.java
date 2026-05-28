@@ -16,21 +16,14 @@
  */
 package org.apache.sis.storage.base;
 
-import java.util.Set;
-import java.util.EnumSet;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.logging.Filter;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
-import java.nio.file.OpenOption;
-import java.nio.file.StandardOpenOption;
-import java.nio.charset.Charset;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
-import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.identification.DataIdentification;
@@ -49,6 +42,7 @@ import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.metadata.internal.shared.Identifiers;
+import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.resources.Errors;
@@ -59,8 +53,11 @@ import org.opengis.feature.Feature;
 
 /**
  * Utility methods related to {@link DataStore}s, {@link DataStoreProvider}s and {@link Resource}s.
- * This is not a committed API; any method in this class may change in any future Apache SIS version.
- * Some methods may also move in public API if we feel confident enough.
+ * This is not a committed <abbr>API</abbr>: any method in this class may change in any future version.
+ * Some methods may also move in public <abbr>API</abbr> if we feel confident enough.
+ *
+ * <p>This class contains methods applicable to any data stores, including <abbr>SQL</abbr>-based data stores.
+ * For utility methods more specifically for data stores that open a file, see {@link URIDataStoreProvider}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -90,16 +87,27 @@ public final class StoreUtilities {
     public static final Logger LOGGER = Logger.getLogger(Modules.STORAGE);
 
     /**
-     * Names of encoding where bytes less than 128 can be interpreted as ASCII.
-     *
-     * @see #basedOnASCII(Charset)
-     */
-    private static final Set<String> basedOnASCII = Set.of("US-ASCII", "ISO-8859-1", "UTF-8");
-
-    /**
      * Do not allow instantiation of this class.
      */
     private StoreUtilities() {
+    }
+
+    /**
+     * Returns a provider for the given format name.
+     *
+     * @param  format  name of the format for which to get a provider.
+     * @return first provider found for the given format name.
+     * @throws UnsupportedStorageException if no provider is found for the specified format.
+     *
+     * @see StoreMetadata#formatName()
+     */
+    public static DataStoreProvider providerByFormatName(final String format) throws UnsupportedStorageException {
+        for (DataStoreProvider provider : DataStores.providers()) {
+            if (format.equalsIgnoreCase(getFormatName(provider))) {
+                return provider;
+            }
+        }
+        throw new UnsupportedStorageException(Errors.format(Errors.Keys.UnsupportedFormat_1, format));
     }
 
     /**
@@ -185,7 +193,8 @@ public final class StoreUtilities {
 
     /**
      * Returns the spatiotemporal envelope of the given metadata.
-     * This method computes the union of all {@link GeographicBoundingBox} in the metadata, assuming the
+     * This method computes the union of all {@link GeographicBoundingBox} instances
+     * in the given metadata and returns the result as an envelope in the
      * {@linkplain org.apache.sis.referencing.CommonCRS#defaultGeographic() default geographic CRS}
      * (usually WGS 84).
      *
@@ -193,24 +202,8 @@ public final class StoreUtilities {
      * @return the spatiotemporal extent, or {@code null} if none.
      */
     public static Envelope getEnvelope(final Metadata metadata) {
-        GeneralEnvelope bounds = null;
-        if (metadata != null) {
-            for (final Identification identification : metadata.getIdentificationInfo()) {
-                for (final Extent extent : identification.getExtents()) {
-                    for (final GeographicExtent ge : extent.getGeographicElements()) {
-                        if (ge instanceof GeographicBoundingBox) {
-                            final GeneralEnvelope env = new GeneralEnvelope((GeographicBoundingBox) ge);
-                            if (bounds == null) {
-                                bounds = env;
-                            } else {
-                                bounds.add(env);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return bounds;
+        final GeographicBoundingBox bbox = Extents.getGeographicBoundingBox(metadata);
+        return (bbox != null) ? new GeneralEnvelope(bbox) : null;
     }
 
     /**
@@ -223,7 +216,7 @@ public final class StoreUtilities {
     public static Class<? extends Resource> getInterface(final Class<? extends Resource> implementation) {
         final Class<? extends Resource>[] types = Classes.getLeafInterfaces(implementation, Resource.class);
         Class<? extends Resource> type = null;
-        for (int i=types.length; --i >= 0;) {
+        for (int i = types.length; --i >= 0;) {
             type = types[i];
             if (FeatureSet.class.isAssignableFrom(type)) break;              // Arbitrary precedence rule.
         }
@@ -255,6 +248,7 @@ public final class StoreUtilities {
      * @return whether the data store has write capability, or {@code null} if it cannot be determined.
      *
      * @see StoreMetadata#capabilities()
+     * @see URIDataStoreProvider#isWritable(StorageConnector, boolean)
      */
     public static Boolean canWrite(final Class<? extends DataStoreProvider> provider) {
         if (provider != null) {
@@ -264,97 +258,6 @@ public final class StoreUtilities {
             }
         }
         return null;
-    }
-
-    /**
-     * Converts the given sequence of options into a simplified set of standard options.
-     * The returned set can contain combinations of
-     * {@link StandardOpenOption#WRITE},
-     * {@link StandardOpenOption#CREATE CREATE},
-     * {@link StandardOpenOption#CREATE_NEW CREATE_NEW} and
-     * {@link StandardOpenOption#TRUNCATE_EXISTING TRUNCATE_EXISTING}.
-     * If the set is empty, then the data store should be read-only.
-     * If both {@code TRUNCATE_EXISTING} and {@code CREATE_NEW} are specified,
-     * then {@code CREATE_NEW} has precedence.
-     * More specifically:
-     *
-     * <p>{@link StandardOpenOption#WRITE}<br>
-     * means that the {@link DataStore} should be opened as writable resource.</p>
-     *
-     * <p>{@link StandardOpenOption#CREATE}<br>
-     * means that the {@link DataStore} is allowed to create new files.
-     * If this option is present, then {@code WRITE} is also present.
-     * If this option is absent, then writable data stores should not create any new file.
-     * This flag can be tested as below (this cover both the read-only case and the writable
-     * case where the files must exist):</p>
-     *
-     * {@snippet lang="java" :
-     *     if (!options.contains(StandardOpenOption.CREATE)) {
-     *         // Throw an exception if the file does not exist.
-     *     }
-     *     }
-     *
-     * <p>{@link StandardOpenOption#CREATE_NEW}<br>
-     * means that the {@link DataStore} should fail to open if the file already exists.
-     * This mode is used when creating new writable resources, for making sure that we
-     * do not modify existing resources.
-     * If this option is present, then {@code WRITE} and {@code CREATE} are also present.</p>
-     *
-     * <p>{@link StandardOpenOption#TRUNCATE_EXISTING}<br>
-     * means that the {@link DataStore} should overwrite the content of any pre-existing resources.
-     * If this option is present, then {@code WRITE} and {@code CREATE} are also present.</p>
-     *
-     * @param  options  the open options, or {@code null}.
-     * @return the open options as a bitmask.
-     */
-    @SuppressWarnings("fallthrough")
-    public static EnumSet<StandardOpenOption> toStandardOptions(final OpenOption[] options) {
-        final EnumSet<StandardOpenOption> set = EnumSet.noneOf(StandardOpenOption.class);
-        if (options != null) {
-            for (final OpenOption op : options) {
-                if (op instanceof StandardOpenOption) {
-                    switch ((StandardOpenOption) op) {  // Fallthrough in every cases.
-                        case CREATE_NEW:         set.add(StandardOpenOption.CREATE_NEW);
-                        case TRUNCATE_EXISTING:  set.add(StandardOpenOption.TRUNCATE_EXISTING);
-                        case CREATE:             set.add(StandardOpenOption.CREATE);
-                        case APPEND: case WRITE: set.add(StandardOpenOption.WRITE);
-                    }
-                }
-            }
-            if (set.contains(StandardOpenOption.CREATE_NEW)) {
-                set.remove(StandardOpenOption.TRUNCATE_EXISTING);
-            }
-        }
-        return set;
-    }
-
-    /**
-     * Returns {@code true} if a sequence of bytes in the given encoding can be decoded as if they were ASCII,
-     * ignoring values greater than 127. In case of doubt, this method conservatively returns {@code false}.
-     *
-     * @param  encoding  the encoding.
-     * @return whether bytes less than 128 can be interpreted as ASCII.
-     */
-    public static boolean basedOnASCII(final Charset encoding) {
-        return basedOnASCII.contains(encoding.name());
-    }
-
-    /**
-     * Returns a provider for the given format name.
-     *
-     * @param  format  name of the format for which to get a provider.
-     * @return first provider found for the given format name.
-     * @throws UnsupportedStorageException if no provider is found for the specified format.
-     *
-     * @see StoreMetadata#formatName()
-     */
-    public static DataStoreProvider providerByFormatName(final String format) throws UnsupportedStorageException {
-        for (DataStoreProvider provider : DataStores.providers()) {
-            if (format.equalsIgnoreCase(getFormatName(provider))) {
-                return provider;
-            }
-        }
-        throw new UnsupportedStorageException(Errors.format(Errors.Keys.UnsupportedFormat_1, format));
     }
 
     /**

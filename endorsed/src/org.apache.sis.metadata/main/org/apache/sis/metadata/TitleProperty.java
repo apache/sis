@@ -32,7 +32,7 @@ import java.lang.annotation.Documented;
  * especially when there is redundant node names.
  *
  * <h2>Example</h2>
- * the {@code Citation} type contains a {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getDates() date}
+ * The {@code Citation} type contains a {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getDates() date}
  * property which itself contains another {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitationDate#getDate()
  * date} property. They form a tree like below:
  *
@@ -45,7 +45,7 @@ import java.lang.annotation.Documented;
  *
  * With <code>&#64;TitleProperty(name="title")</code> on {@code DefaultCitation} implementation class and
  * <code>&#64;TitleProperty(name="date")</code> on {@code DefaultCitationDate} class,
- * Apache SIS can produce a more compact tree table view should be as below:
+ * Apache <abbr>SIS</abbr> can produce a more compact tree table view should be as below:
  *
  * <pre class="text">
  *   Citation……………………… My document
@@ -53,15 +53,16 @@ import java.lang.annotation.Documented;
  *       └─Date type…… Creation</pre>
  *
  * <h2>Condition</h2>
- * The property referenced by this annotation should be the main property if possible, but not necessarily
- * since it may be only a label. However, the property shall be a singleton ([0…1] or [1…1] multiplicity)
- * and cannot be another metadata object.
+ * The property referenced by this annotation should be a title, a label or a property which is considered
+ * as the main property of the metadata object. The property shall be a singleton ([0…1] or [1…1] multiplicity).
+ * If the property is another metadata object, then that other object shall itself have this annotation.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
  *
  * @see ValueExistencePolicy#TITLED
+ * @see MetadataStandard#getTitle(Object)
  */
 @Documented
 @Inherited

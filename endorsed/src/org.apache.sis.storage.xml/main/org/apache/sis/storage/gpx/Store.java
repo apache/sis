@@ -45,7 +45,7 @@ import org.opengis.feature.FeatureType;
 
 
 /**
- * A data store backed by GPX files.
+ * A data store backed by <abbr>GPX</abbr> files.
  * This store does not cache the feature instances.
  * Any new {@linkplain #features(boolean) request for features} will re-read from the file.
  *

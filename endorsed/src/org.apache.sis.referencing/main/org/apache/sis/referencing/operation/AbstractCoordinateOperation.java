@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Collection;
 import java.util.logging.Logger;
+import java.lang.reflect.Type;
 import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
@@ -480,14 +481,15 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
      * The default implementation returns {@code CoordinateOperation.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
      * @return the coordinate operation interface implemented by this class.
+     * @since 1.7
      */
     @Override
-    public Class<? extends CoordinateOperation> getInterface() {
+    public Type getStandardType() {
         return CoordinateOperation.class;
     }
 

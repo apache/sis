@@ -49,7 +49,7 @@ public final class StoreProvider extends StaxDataStoreProvider {
     public static final String NAME = "GPX";
 
     /**
-     * The logger used by GPX stores.
+     * The logger used by <abbr>GPX</abbr> stores.
      *
      * @see #getLogger()
      */
@@ -71,20 +71,22 @@ public final class StoreProvider extends StaxDataStoreProvider {
     private static final Range<Version> VERSIONS = new Range<>(Version.class, V1_0, true, V1_1, true);
 
     /**
-     * The default factory instance.
+     * The default provider instance.
      */
     private static final StoreProvider INSTANCE = new StoreProvider();
 
     /**
      * Returns the default provider instance.
      * This method is invoked by Java service loader.
+     *
+     * @return the default provider instance.
      */
     public static StoreProvider provider() {
         return INSTANCE;
     }
 
     /**
-     * Creates a new GPX store provider.
+     * Creates a new <abbr>GPX</abbr> store provider.
      */
     public StoreProvider() {
         super("GPX",
@@ -104,9 +106,9 @@ public final class StoreProvider extends StaxDataStoreProvider {
     }
 
     /**
-     * Returns a GPX {@link Store} implementation associated with this provider.
+     * Returns a <abbr>GPX</abbr> {@link Store} implementation associated with this provider.
      *
-     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
+     * @param  connector  information about the storage (<abbr>URL</abbr>, stream, <i>etc</i>).
      * @return a data store implementation associated with this provider for the given storage.
      * @throws DataStoreException if an error occurred while creating the data store instance.
      */
@@ -120,9 +122,9 @@ public final class StoreProvider extends StaxDataStoreProvider {
     }
 
     /**
-     * Returns the JAXB context for the data store. This method is invoked at most once.
+     * Returns the <abbr>JAXB</abbr> context for the data store. This method is invoked at most once.
      *
-     * @return the JAXB context.
+     * @return the <abbr>JAXB</abbr> context.
      * @throws JAXBException if an error occurred while creating the JAXB context.
      */
     @Override

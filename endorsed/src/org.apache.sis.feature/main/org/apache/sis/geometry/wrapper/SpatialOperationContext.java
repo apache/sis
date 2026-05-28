@@ -41,6 +41,7 @@ import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.DefiningConversion;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.measure.Units;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -392,7 +393,7 @@ select: if (commonCRS == null) {
             }
             if (!(geometryCRS instanceof GeographicCRS)) {
                 throw new FactoryException(Errors.format(Errors.Keys.IllegalCRSType_1,
-                        ReferencingUtilities.getInterface(CoordinateReferenceSystem.class, geometryCRS)));
+                        Classes.getStandardClass(geometryCRS, CoordinateReferenceSystem.class)));
             }
             /*
              * Get the latitude and longitude values in degrees, applying unit conversions if needed.

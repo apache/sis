@@ -41,15 +41,15 @@ import org.apache.sis.storage.netcdf.base.Decoder;
 import org.apache.sis.storage.netcdf.internal.Resources;
 import org.apache.sis.storage.netcdf.classic.ChannelDecoder;
 import org.apache.sis.storage.netcdf.ucar.DecoderWrapper;
-import org.apache.sis.io.stream.ChannelDataInput;
-import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.base.Capability;
-import org.apache.sis.storage.base.URIDataStoreProvider;
+import org.apache.sis.storage.base.URIDataStoreOption;
+import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.system.SystemListener;
 import org.apache.sis.system.Modules;
 import org.apache.sis.setup.GeometryLibrary;
-import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.internal.shared.Constants;
@@ -94,7 +94,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     /**
      * The parameter descriptor to be returned by {@link #getOpenParameters()}.
      */
-    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR = URIDataStoreProvider.descriptor(Constants.NETCDF);
+    private static final ParameterDescriptorGroup OPEN_DESCRIPTOR = URIDataStoreOption.createForLocationOnly(Constants.NETCDF);
 
     /**
      * The name of the {@link ucar.nc2.NetcdfFile} class, which is {@value}.

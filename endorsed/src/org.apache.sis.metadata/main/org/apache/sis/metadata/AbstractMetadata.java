@@ -18,6 +18,8 @@ package org.apache.sis.metadata;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.lang.reflect.Type;
+import java.lang.reflect.ParameterizedType;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.util.Emptiable;
@@ -71,7 +73,7 @@ import org.apache.sis.util.collection.TreeTable;
  * use a single lock for the whole metadata tree (including children).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see MetadataStandard
  *
@@ -140,13 +142,27 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
     /**
      * Returns the metadata interface implemented by this class. It should be one of the interfaces
      * defined in the {@linkplain #getStandard() metadata standard} implemented by this class.
+     * The returned value is usually a {@link Class}, but it may also be a {@link ParameterizedType}.
      *
-     * @return the standard interface implemented by this implementation class.
+     * @return the standard interface implemented by this class.
      *
      * @see MetadataStandard#getInterface(Class)
+     * @since 1.7
      */
-    public Class<?> getInterface() {
+    @Override
+    public Type getStandardType() {
         return getStandard().getInterface(getClass());
+    }
+
+    /**
+     * Returns the metadata interface implemented by this class.
+     *
+     * @return the standard interface implemented by this class.
+     * @deprecated Renamed {@link #getStandardType()} for integration with {@link LenientComparable}.
+     */
+    @Deprecated(since="1.7", forRemoval=true)
+    public final Class<?> getInterface() {
+        return org.apache.sis.util.Classes.getRawClass(getStandardType());
     }
 
     /**
@@ -332,14 +348,16 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
     }
 
     /**
-     * Compares this metadata with the specified object for equality. The default
-     * implementation uses Java reflection. Subclasses may override this method
-     * for better performances, or for comparing "hidden" properties not specified
-     * by the GeoAPI (or other standard) interface.
+     * Compares this metadata with the specified object for equality.
+     * The default implementation uses Java reflection using {@link MetadataStandard} methods.
+     * Subclasses may override this method for comparing properties that are not specified by
+     * the GeoAPI (or other standard) interface.
      *
      * @param  object  the object to compare with this metadata.
      * @param  mode    the strictness level of the comparison.
      * @return {@code true} if the given object is equal to this metadata.
+     *
+     * @see MetadataStandard#equals(Object, Object, ComparisonMode)
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
@@ -379,6 +397,8 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * for tracking changes in children properties. If this metadata is known to be immutable,
      * then subclasses may consider caching the hash code value if performance is important.
      *
+     * @return a hash code value.
+     *
      * @see MetadataStandard#hashCode(Object)
      */
     @Override
@@ -396,6 +416,8 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      *
      * Note that this make extensive use of Unicode characters
      * and is better rendered with a monospaced font.
+     *
+     * @return a string representation of this metadata.
      */
     @Override
     public String toString() {

@@ -49,7 +49,7 @@ import org.apache.sis.util.Workaround;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   0.4
  */
 @XmlTransient

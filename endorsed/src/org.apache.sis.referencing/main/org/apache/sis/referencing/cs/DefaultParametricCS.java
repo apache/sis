@@ -45,7 +45,7 @@ import org.opengis.referencing.cs.ParametricCS;
  * constants.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see org.apache.sis.referencing.crs.DefaultParametricCRS
  * @see org.apache.sis.referencing.datum.DefaultParametricDatum
@@ -141,18 +141,14 @@ public class DefaultParametricCS extends AbstractCS implements ParametricCS {
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code ParametricCS.class}.
-     *
-     * <h4>Note for implementers</h4>
-     * Subclasses usually do not need to override this method since GeoAPI does not define {@code ParametricCS}
-     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with
-     * their own set of interfaces.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code ParametricCS.class} or a user-defined sub-interface.
+     * @since 1.7
      */
     @Override
-    public Class<? extends ParametricCS> getInterface() {
+    public Class<? extends ParametricCS> getStandardType() {
         return ParametricCS.class;
     }
 

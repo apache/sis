@@ -72,7 +72,7 @@ final class StandardImplementation extends MetadataStandard {
      * But maybe the most interesting property is that it allocates less objects since {@code IdentityHashMap}
      * implementation doesn't need the chain of objects created by {@code HashMap}.
      */
-    private transient Map<Class<?>,Class<?>> implementations;
+    private transient Map<Class<?>, Class<?>> implementations;
 
     /**
      * Creates a new instance working on implementation of interfaces defined in the specified package.
@@ -82,7 +82,7 @@ final class StandardImplementation extends MetadataStandard {
      * @param interfacePackage       the root package for metadata interfaces, with a trailing {@code '.'}.
      * @param implementationPackage  the root package for metadata implementations. with a trailing {@code '.'}.
      * @param acronyms               an array of (full text, acronyms) pairs. This array is not cloned.
-     * @param dependencies           the dependencies to other metadata standards, or {@code null} if none.
+     * @param dependencies           the dependencies to other metadata standards.
      */
     StandardImplementation(final String citation, final String interfacePackage, final String implementationPackage,
             final String[] acronyms, final MetadataStandard... dependencies)
@@ -141,7 +141,7 @@ final class StandardImplementation extends MetadataStandard {
                      * package has been replaced by the implementation package, and some text
                      * have been replaced by their acronym (if any).
                      */
-                    final StringBuilder buffer = new StringBuilder(implementationPackage)
+                    final var buffer = new StringBuilder(implementationPackage)
                             .append(classname, interfacePackage.length(), classname.length());
                     if (acronyms != null) {
                         for (int i=0; i<acronyms.length; i+=2) {

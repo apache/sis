@@ -108,7 +108,7 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
         if (shift == 0 && numerator == divisor) {
             return IdentityConverter.INSTANCE;
         }
-        final LinearConverter c = new LinearConverter(numerator, shift, divisor);
+        final var c = new LinearConverter(numerator, shift, divisor);
         if (scale  instanceof BigDecimal) c.scale10  = (BigDecimal) scale;
         if (offset instanceof BigDecimal) c.offset10 = (BigDecimal) offset;
         return c;
@@ -154,7 +154,7 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
     static LinearConverter pow(final UnitConverter converter, final int n, final boolean root) {
         double numerator, denominator;
         if (converter instanceof LinearConverter) {
-            final LinearConverter lc = (LinearConverter) converter;
+            final var lc = (LinearConverter) converter;
             numerator   = lc.scale;
             denominator = lc.divisor;
         } else {
@@ -350,7 +350,7 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
         }
         double otherScale, otherOffset, otherDivisor;
         if (converter instanceof LinearConverter) {
-            final LinearConverter lc = (LinearConverter) converter;
+            final var lc = (LinearConverter) converter;
             otherScale   = lc.scale;
             otherOffset  = lc.offset;
             otherDivisor = lc.divisor;
@@ -406,7 +406,7 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
     @Override
     public boolean equals(final Object other) {
         if (other instanceof LinearConverter) {
-            final LinearConverter o = (LinearConverter) other;
+            final var o = (LinearConverter) other;
             return Numerics.equals(scale,   o.scale)  &&
                    Numerics.equals(offset,  o.offset) &&
                    Numerics.equals(divisor, o.divisor);

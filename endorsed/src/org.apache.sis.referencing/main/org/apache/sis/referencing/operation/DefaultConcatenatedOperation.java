@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Locale;
+import java.lang.reflect.Type;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -405,18 +406,13 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code ConcatenatedOperation.class}.
-     *
-     * <h4>Note for implementers</h4>
-     * Subclasses usually do not need to override this method since GeoAPI does not define {@code ConcatenatedOperation}
-     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
-     * own set of interfaces.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code ConcatenatedOperation.class} or a user-defined sub-interface.
      */
     @Override
-    public Class<? extends ConcatenatedOperation> getInterface() {
+    public Type getStandardType() {
         return ConcatenatedOperation.class;
     }
 

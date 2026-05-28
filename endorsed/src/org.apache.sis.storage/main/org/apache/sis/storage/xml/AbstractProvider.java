@@ -30,9 +30,9 @@ import org.apache.sis.storage.base.DocumentedStoreProvider;
 
 
 /**
- * Base class for providers of {@link DataStore} implementations for XML files.
+ * Base class for providers of {@link DataStore} implementations for <abbr>XML</abbr> files.
  * This base class does not assume that the data store will use any particular framework
- * (JAXB, StAX, <i>etc</i>).
+ * (<abbr>JAXB</abbr>, <abbr>StAX</abbr>, <i>etc</i>).
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -65,7 +65,7 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
      *   <tr><td>http://www.opengis.net/cat/csw/2.0.2</td> <td>application/vnd.ogc.csw_xml</td></tr>
      * </table>
      */
-    protected final Map<String,String> mimeForNameSpaces;
+    protected final Map<String, String> mimeForNameSpaces;
 
     /**
      * The mapping from root elements to MIME types. Used only if the root element is in
@@ -77,7 +77,7 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
      *   <tr><td>MD_Metadata</td> <td>application/vnd.iso.19139+xml</td></tr>
      * </table>
      */
-    protected final Map<String,String> mimeForRootElements;
+    protected final Map<String, String> mimeForRootElements;
 
     /**
      * Creates a new provider.
@@ -86,7 +86,10 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
      * @param  mimeForNameSpaces    the mapping from XML namespaces to MIME type.
      * @param  mimeForRootElements  the mapping from root elements to MIME types, used only as a fallback.
      */
-    protected AbstractProvider(final String name, final Map<String,String> mimeForNameSpaces, final Map<String,String> mimeForRootElements) {
+    protected AbstractProvider(final String name,
+                               final Map<String, String> mimeForNameSpaces,
+                               final Map<String, String> mimeForRootElements)
+    {
         super(name);
         this.mimeForNameSpaces   = mimeForNameSpaces;
         this.mimeForRootElements = mimeForRootElements;

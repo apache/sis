@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Function;
+import java.lang.reflect.Type;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
@@ -42,11 +43,11 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.internal.ParameterizedType;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.referencing.internal.shared.WKTUtilities;
 import org.apache.sis.metadata.internal.shared.NameToIdentifier;
-import org.apache.sis.metadata.internal.shared.SecondaryTrait;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
@@ -92,7 +93,6 @@ import org.opengis.referencing.datum.RealizationMethod;
  *
  * @since 1.5
  */
-@SecondaryTrait(Datum.class)
 public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObject implements DatumEnsemble<D>, Datum {
     /**
      * Serial number for inter-operability with different versions.
@@ -310,20 +310,20 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code DatumEnsemble.class}.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
-     * <h4>Note for implementers</h4>
-     * Subclasses usually do not need to override this method since GeoAPI does not define {@code DatumEnsemble}
-     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
-     * own set of interfaces.
-     *
-     * @return the datum interface implemented by this class.
+     * @return {@code DatumEnsemble.class} or a user-defined sub-interface.
+     * @since 1.7
      */
     @Override
-    @SuppressWarnings("unchecked")
-    public Class<? extends DatumEnsemble<D>> getInterface() {
-        return (Class) DatumEnsemble.class;
+    public Type getStandardType() {
+        return new ParameterizedType(DatumEnsemble.class) {
+            @Override protected Class<?> getActualTypeArgument() {
+                Class<? extends Datum>[] types = Classes.getLeafInterfaces(DefaultDatumEnsemble.this.getClass(), Datum.class);
+                return (types.length != 0) ? types[0] : Datum.class;
+            }
+        };
     }
 
     /*

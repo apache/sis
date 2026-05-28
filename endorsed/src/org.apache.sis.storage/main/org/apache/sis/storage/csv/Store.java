@@ -41,6 +41,7 @@ import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.TemporalCRS;
+import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.FoliationRepresentation;
@@ -63,6 +64,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.URIDataStoreOption;
 import org.apache.sis.storage.internal.RewindableLineReader;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.InvalidSeekException;
@@ -82,7 +84,8 @@ import org.opengis.feature.AttributeType;
 
 
 /**
- * A data store which creates feature instances from a CSV file using the OGC Moving Features specification.
+ * A data store which creates feature instances from a <abbr>CSV</abbr>
+ * file using the <abbr>OGC</abbr> Moving Features specification.
  * See package javadoc for more information on the syntax.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -212,10 +215,9 @@ final class Store extends URIDataStore implements FeatureSet {
     private transient List<Feature> movingFeatures;
 
     /**
-     * Creates a new CSV store from the given file, URL or stream.
-     *
-     * <p>If the CSV file is known to be a Moving Feature file, then the given connector should
-     * have an {@link OptionKey#ENCODING} value set to UTF-8.</p>
+     * Creates a new <abbr>CSV</abbr> store from the given file, <abbr>URL</abbr> or stream.
+     * If the <abbr>CSV</abbr> file is known to be a Moving Feature file, then the given
+     * connector should have an {@link OptionKey#ENCODING} value set to <abbr>UTF</abbr>-8.
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
@@ -604,6 +606,21 @@ final class Store extends URIDataStore implements FeatureSet {
             return Foliation.valueOf(elements.get(1).toUpperCase(Locale.US));
         }
         return Foliation.TIME;      // Default value.
+    }
+
+    /**
+     * Returns the parameters used to open this data store.
+     *
+     * @return parameters used for opening this {@code DataStore}.
+     */
+    @Override
+    public Optional<ParameterValueGroup> getOpenParameters() {
+        final Optional<ParameterValueGroup> pg = super.getOpenParameters();
+        pg.ifPresent((p) -> {
+            var foliation = dissociate ? FoliationRepresentation.FRAGMENTED : FoliationRepresentation.ASSEMBLED;
+            URIDataStoreOption.FOLIATION.setValueOf(p, foliation);
+        });
+        return pg;
     }
 
     /**

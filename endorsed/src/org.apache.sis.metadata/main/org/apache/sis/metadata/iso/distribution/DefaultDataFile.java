@@ -25,11 +25,12 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.distribution.DataFile;
 import org.opengis.util.InternationalString;
-import org.apache.sis.xml.Namespaces;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.xml.bind.gcx.MimeFileTypeAdapter;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.util.LocalName;
@@ -56,9 +57,10 @@ import org.opengis.util.LocalName;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.7
  * @since   0.3
  */
+@TitleProperty(name = "fileName")
 @XmlType(name = "MX_DataFile_Type", namespace = Namespaces.MDT, propOrder = {
     "fileName",
     "fileDescription",

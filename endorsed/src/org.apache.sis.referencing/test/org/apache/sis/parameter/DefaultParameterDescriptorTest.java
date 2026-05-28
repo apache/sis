@@ -183,15 +183,16 @@ public final class DefaultParameterDescriptorTest extends TestCase {
     @Test
     public void testOptionalInteger() {
         final var descriptor = createSimpleOptional("Simple param", Integer.class);
-        assertEquals("Simple param", descriptor.getName().getCode());
-        assertEquals("Integer",      descriptor.getValueType().toString());
-        assertEquals(Integer.class,  descriptor.getValueClass());
-        assertNull  (                descriptor.getValidValues());
-        assertNull  (                descriptor.getDefaultValue());
-        assertNull  (                descriptor.getMinimumValue());
-        assertNull  (                descriptor.getMaximumValue());
-        assertEquals(0,              descriptor.getMinimumOccurs());
-        assertEquals(1,              descriptor.getMaximumOccurs());
+        assertEquals("Simple param",                 descriptor.getName().getCode());
+        assertEquals("Integer",                      descriptor.getValueType().toString());
+        assertEquals(Integer.class,                  descriptor.getValueClass());
+        assertEquals("ParameterDescriptor<Integer>", descriptor.getStandardType().getTypeName());
+        assertNull  (                                descriptor.getValidValues());
+        assertNull  (                                descriptor.getDefaultValue());
+        assertNull  (                                descriptor.getMinimumValue());
+        assertNull  (                                descriptor.getMaximumValue());
+        assertEquals(0,                              descriptor.getMinimumOccurs());
+        assertEquals(1,                              descriptor.getMaximumOccurs());
     }
 
     /**
@@ -205,15 +206,16 @@ public final class DefaultParameterDescriptorTest extends TestCase {
         assertMessageContains(e, "Range [20 … 4] is not valid.");
 
         final var descriptor = create("Test range", 4, 20, 12);
-        assertEquals("Test range",        descriptor.getName().getCode());
-        assertEquals("Integer",           descriptor.getValueType().toString());
-        assertEquals(Integer.class,       descriptor.getValueClass());
-        assertNull  (                     descriptor.getValidValues());
-        assertEquals(Integer.valueOf(12), descriptor.getDefaultValue());
-        assertEquals(Integer.valueOf( 4), descriptor.getMinimumValue());
-        assertEquals(Integer.valueOf(20), descriptor.getMaximumValue());
-        assertEquals(1,                   descriptor.getMinimumOccurs());
-        assertEquals(1,                   descriptor.getMaximumOccurs());
+        assertEquals("Test range",                   descriptor.getName().getCode());
+        assertEquals("Integer",                      descriptor.getValueType().toString());
+        assertEquals(Integer.class,                  descriptor.getValueClass());
+        assertEquals("ParameterDescriptor<Integer>", descriptor.getStandardType().getTypeName());
+        assertNull  (                                descriptor.getValidValues());
+        assertEquals(Integer.valueOf(12),            descriptor.getDefaultValue());
+        assertEquals(Integer.valueOf( 4),            descriptor.getMinimumValue());
+        assertEquals(Integer.valueOf(20),            descriptor.getMaximumValue());
+        assertEquals(1,                              descriptor.getMinimumOccurs());
+        assertEquals(1,                              descriptor.getMaximumOccurs());
     }
 
     /**
@@ -236,13 +238,14 @@ public final class DefaultParameterDescriptorTest extends TestCase {
     @SuppressWarnings("UnnecessaryBoxing")
     public void testDoubleType() {
         final var descriptor = create("Length measure", 4, 20, 12, Units.METRE);
-        assertEquals("Length measure",   descriptor.getName().getCode());
-        assertEquals("Real",             descriptor.getValueType().toString());
-        assertEquals(Double.class,       descriptor.getValueClass());
-        assertEquals(Double.valueOf(12), descriptor.getDefaultValue());
-        assertEquals(Double.valueOf( 4), descriptor.getMinimumValue());
-        assertEquals(Double.valueOf(20), descriptor.getMaximumValue());
-        assertEquals(Units.METRE,        descriptor.getUnit());
+        assertEquals("Length measure",              descriptor.getName().getCode());
+        assertEquals("Real",                        descriptor.getValueType().toString());
+        assertEquals("ParameterDescriptor<Double>", descriptor.getStandardType().getTypeName());
+        assertEquals(Double.class,                  descriptor.getValueClass());
+        assertEquals(Double.valueOf(12),            descriptor.getDefaultValue());
+        assertEquals(Double.valueOf( 4),            descriptor.getMinimumValue());
+        assertEquals(Double.valueOf(20),            descriptor.getMaximumValue());
+        assertEquals(Units.METRE,                   descriptor.getUnit());
         validate(descriptor);
     }
 
@@ -255,17 +258,18 @@ public final class DefaultParameterDescriptorTest extends TestCase {
         final var descriptor  = new DefaultParameterDescriptor<>(properties("String param"),
                 0, 1, String.class, valueDomain, null, "ABC");
 
-        assertEquals("String param",    descriptor.getName().getCode());
-        assertEquals("CharacterString", descriptor.getValueType().toString());
-        assertEquals(String.class,      descriptor.getValueClass());
-        assertNull  (                   descriptor.getValidValues());
-        assertSame  (valueDomain,       descriptor.getValueDomain());
-        assertEquals("ABC",             descriptor.getDefaultValue());
-        assertEquals("AAA",             descriptor.getMinimumValue());
-        assertEquals("BBB",             descriptor.getMaximumValue());
-        assertEquals(0,                 descriptor.getMinimumOccurs());
-        assertEquals(1,                 descriptor.getMaximumOccurs());
-        assertNull  (                   descriptor.getUnit());
+        assertEquals("String param",                descriptor.getName().getCode());
+        assertEquals("CharacterString",             descriptor.getValueType().toString());
+        assertEquals(String.class,                  descriptor.getValueClass());
+        assertEquals("ParameterDescriptor<String>", descriptor.getStandardType().getTypeName());
+        assertNull  (                               descriptor.getValidValues());
+        assertSame  (valueDomain,                   descriptor.getValueDomain());
+        assertEquals("ABC",                         descriptor.getDefaultValue());
+        assertEquals("AAA",                         descriptor.getMinimumValue());
+        assertEquals("BBB",                         descriptor.getMaximumValue());
+        assertEquals(0,                             descriptor.getMinimumOccurs());
+        assertEquals(1,                             descriptor.getMaximumOccurs());
+        assertNull  (                               descriptor.getUnit());
     }
 
     /**
@@ -276,17 +280,17 @@ public final class DefaultParameterDescriptorTest extends TestCase {
     public void testEnumeration() {
         final String[] enumeration = {"Apple", "Orange", "りんご"};
         final var descriptor = create("Enumeration param", String.class, enumeration, "Apple");
-
-        assertEquals     ("Enumeration param", descriptor.getName().getCode());
-        assertEquals     ("CharacterString",   descriptor.getValueType().toString());
-        assertEquals     (String.class,        descriptor.getValueClass());
-        assertArrayEquals(enumeration,         descriptor.getValidValues().toArray());
-        assertEquals     ("Apple",             descriptor.getDefaultValue());
-        assertNull       (                     descriptor.getMinimumValue());
-        assertNull       (                     descriptor.getMaximumValue());
-        assertEquals     (1,                   descriptor.getMinimumOccurs());
-        assertEquals     (1,                   descriptor.getMaximumOccurs());
-        assertNull       (                     descriptor.getUnit());
+        assertEquals("Enumeration param",           descriptor.getName().getCode());
+        assertEquals("CharacterString",             descriptor.getValueType().toString());
+        assertEquals(String.class,                  descriptor.getValueClass());
+        assertEquals("ParameterDescriptor<String>", descriptor.getStandardType().getTypeName());
+        assertArrayEquals(enumeration,              descriptor.getValidValues().toArray());
+        assertEquals("Apple",                       descriptor.getDefaultValue());
+        assertNull  (                               descriptor.getMinimumValue());
+        assertNull  (                               descriptor.getMaximumValue());
+        assertEquals(1,                             descriptor.getMinimumOccurs());
+        assertEquals(1,                             descriptor.getMaximumOccurs());
+        assertNull  (                               descriptor.getUnit());
         /*
          * Invalid operation: element not in the list of valid elements.
          */
@@ -302,16 +306,17 @@ public final class DefaultParameterDescriptorTest extends TestCase {
     @SuppressWarnings("UnnecessaryBoxing")
     public void testArrayType() {
         final var descriptor = createForArray("Array param", 4, 9, Units.METRE);
-        assertEquals("Array param",  descriptor.getName().getCode());
-        assertEquals("Real",         descriptor.getValueType().toString());
-        assertEquals(double[].class, descriptor.getValueClass());
-        assertEquals(Units.METRE,    descriptor.getUnit());
-        assertNull  (                descriptor.getValidValues());
-        assertNull  (                descriptor.getDefaultValue());
-        assertNull  (                descriptor.getMinimumValue());
-        assertNull  (                descriptor.getMaximumValue());
-        assertEquals(1,              descriptor.getMinimumOccurs());
-        assertEquals(1,              descriptor.getMaximumOccurs());
+        assertEquals("Array param",                   descriptor.getName().getCode());
+        assertEquals("Real",                          descriptor.getValueType().toString());
+        assertEquals(double[].class,                  descriptor.getValueClass());
+        assertEquals("ParameterDescriptor<double[]>", descriptor.getStandardType().getTypeName());
+        assertEquals(Units.METRE,                     descriptor.getUnit());
+        assertNull  (                                 descriptor.getValidValues());
+        assertNull  (                                 descriptor.getDefaultValue());
+        assertNull  (                                 descriptor.getMinimumValue());
+        assertNull  (                                 descriptor.getMaximumValue());
+        assertEquals(1,                               descriptor.getMinimumOccurs());
+        assertEquals(1,                               descriptor.getMaximumOccurs());
 
         final Range<?> valueDomain = descriptor.getValueDomain();
         assertNotNull(valueDomain);

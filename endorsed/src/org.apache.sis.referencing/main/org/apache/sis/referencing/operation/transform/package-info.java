@@ -61,7 +61,7 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Adrian Custer (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   0.5
  */
 package org.apache.sis.referencing.operation.transform;

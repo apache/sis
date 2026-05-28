@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
+import java.lang.reflect.Type;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -67,7 +68,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createProjectedCRS(String)
  *
@@ -207,18 +208,14 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code ProjectedCRS.class}.
-     *
-     * <h4>Note for implementers</h4>
-     * Subclasses usually do not need to override this method since GeoAPI does not define {@code ProjectedCRS}
-     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with
-     * their own set of interfaces.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code ProjectedCRS.class} or a user-defined sub-interface.
+     * @since 1.7
      */
     @Override
-    public Class<? extends ProjectedCRS> getInterface() {
+    public Type getStandardType() {
         return ProjectedCRS.class;
     }
 

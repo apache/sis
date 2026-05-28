@@ -81,7 +81,7 @@ final class Pruner extends MetadataVisitor<Boolean> {
         final Pruner visitor = VISITORS.get();
         final boolean p = visitor.prune;
         visitor.prune = prune;
-        final Boolean r = visitor.walk(metadata.getStandard(), metadata.getInterface(), metadata, false);
+        final Boolean r = visitor.walk(metadata.getStandard(), Object.class, metadata, false);
         visitor.prune = p;
         return (r != null) && r;        // If there is a cycle (r == null), then the metadata is non-empty.
     }

@@ -146,8 +146,11 @@ public class MetadataWriter extends MetadataSource {
      * @param  schema      the database schema were metadata tables are stored, or {@code null} if none.
      * @param  properties  additional options, or {@code null} if none. See class javadoc for a description.
      */
-    public MetadataWriter(final MetadataStandard standard, final DataSource dataSource, final String schema,
-            final Map<String,?> properties)
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
+    public MetadataWriter(final MetadataStandard standard,
+                          final DataSource       dataSource,
+                          final String           schema,
+                          final Map<String, ?>   properties)
     {
         super(standard, dataSource, schema, properties);
         Integer maximumIdentifierLength           = Containers.property(properties, "maximumIdentifierLength", Integer.class);
@@ -235,8 +238,11 @@ public class MetadataWriter extends MetadataSource {
      * @throws ClassCastException if the metadata object does not implement a metadata interface
      *         of the expected package.
      */
-    private String add(final Statement stmt, final Object metadata, final Map<Object,String> done,
-            final String parent) throws ClassCastException, SQLException, FactoryException
+    private String add(final Statement stmt,
+                       final Object metadata,
+                       final Map<Object, String> done,
+                       final String parent)
+            throws ClassCastException, SQLException, FactoryException
     {
         final SQLBuilder helper = helper();
         /*
@@ -244,8 +250,8 @@ public class MetadataWriter extends MetadataSource {
          * concurrent changes in the metadata object. This protection is needed because we need to
          * perform multiple passes on the same metadata.
          */
-        final Map<String,Object> asValueMap = asValueMap(metadata);
-        final Map<String,Object> asSingletons = new LinkedHashMap<>();
+        final Map<String, Object> asValueMap = asValueMap(metadata);
+        final Map<String, Object> asSingletons = new LinkedHashMap<>();
         for (final Map.Entry<String,Object> entry : asValueMap.entrySet()) {
             asSingletons.put(entry.getKey(), extractFromCollection(entry.getValue()));
         }
@@ -288,8 +294,8 @@ public class MetadataWriter extends MetadataSource {
          * this process but will not create the constraints now because the foreigner tables may not exist yet.
          * They will be created later by recursive calls to this method a little bit below.
          */
-        Map<String,Class<?>> colTypes = null, colTables = null;
-        final Map<String,FKey> foreigners = new LinkedHashMap<>();
+        Map<String, Class<?>> colTypes = null, colTables = null;
+        final var foreigners = new LinkedHashMap<String, FKey>();
         for (final String column : asSingletons.keySet()) {
             if (!columns.contains(column)) {
                 if (colTypes == null) {
@@ -401,8 +407,8 @@ public class MetadataWriter extends MetadataSource {
          * Once a dependency has been added to the database, the corresponding value in
          * the `asMap` HashMap is replaced by the identifier of the dependency we just added.
          */
-        Map<String,FKey> referencedTables = null;
-        for (final Map.Entry<String,Object> entry : asSingletons.entrySet()) {
+        Map<String, FKey> referencedTables = null;
+        for (final Map.Entry<String, Object> entry : asSingletons.entrySet()) {
             Object value = entry.getValue();
             final Class<?> type = value.getClass();
             if (ControlledVocabulary.class.isAssignableFrom(type)) {
@@ -689,7 +695,7 @@ public class MetadataWriter extends MetadataSource {
      * @return the proposed identifier, or {@code null} if this method does not have any suggestion.
      * @throws SQLException if an access to the database was desired but failed.
      */
-    protected String suggestIdentifier(final Object metadata, final Map<String,Object> asValueMap) throws SQLException {
+    protected String suggestIdentifier(final Object metadata, final Map<String, Object> asValueMap) throws SQLException {
         String identifier = null;
         final Collection<? extends Identifier> identifiers;
         if (metadata instanceof Identifier) {
@@ -717,7 +723,7 @@ public class MetadataWriter extends MetadataSource {
             if (tp != null) {
                 final Object value = asValueMap.get(Strings.trimOrNull(tp.name()));
                 if (value != null) {
-                    identifier = Strings.trimOrNull(value.toString());
+                    identifier = Strings.trimOrNull(standard.getTitle(value).orElse(value).toString());
                 }
             }
         }

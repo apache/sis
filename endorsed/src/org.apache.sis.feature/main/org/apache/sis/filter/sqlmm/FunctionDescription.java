@@ -252,6 +252,18 @@ final class FunctionDescription extends Record implements AvailableFunction, Ser
         }
 
         /**
+         * Returns the standard interface expected by {@code equals(…)} methods.
+         * Note that {@code equals(…)} actually require a stricter class,
+         * but we declare only the public interface here.
+         *
+         * @return {@code ParameterDescriptor.class}.
+         */
+        @Override
+        public Type getStandardType() {
+            return ParameterDescriptor.class;
+        }
+
+        /**
          * Tests whether the given object is equal to this argument description.
          *
          * @param  obj   the object to test for equality.

@@ -32,7 +32,6 @@ import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.io.wkt.Transliterator;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Locales;
@@ -52,7 +51,7 @@ import org.opengis.referencing.ObjectDomain;
  *
  * @author  Richard Deplanque (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   0.8
  */
 @SuppressWarnings("UseSpecificCatch")
@@ -312,12 +311,8 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
                         } else if (object instanceof CoordinateSystem) {
                             cs = (CoordinateSystem) object;
                         } else {
-                            final Class<?> actual;
-                            if (object instanceof AbstractIdentifiedObject) {
-                                actual = ((AbstractIdentifiedObject) object).getInterface();
-                            } else {
-                                actual = Classes.getClass(object);
-                            }
+                            Class<?> actual = Classes.getStandardClass(object, Object.class);
+                            if (actual == Object.class) actual = object.getClass();
                             return Errors.forLocale(getJavaLocale()).getString(Errors.Keys.UnexpectedTypeForReference_3,
                                     codeOrPath, CoordinateReferenceSystem.class, actual);
                         }

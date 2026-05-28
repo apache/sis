@@ -632,6 +632,7 @@ public class StorageConnector implements Serializable {
      * The object can be of any type, but the class javadoc lists the most typical ones.
      *
      * @param storage  the input/output object as a <abbr>URL</abbr>, file, image input stream, <i>etc.</i>.
+     * @throws NullPointerException if {@code storage} is null.
      */
     public StorageConnector(final Object storage) {
         this.storage = Objects.requireNonNull(storage);

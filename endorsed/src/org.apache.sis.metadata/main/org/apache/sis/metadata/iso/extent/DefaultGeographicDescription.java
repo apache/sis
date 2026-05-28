@@ -22,6 +22,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.GeographicDescription;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 
 
@@ -54,9 +55,10 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   0.3
  */
+@TitleProperty(name = "geographicIdentifier")
 @XmlType(name = "EX_GeographicDescription_Type")
 @XmlRootElement(name = "EX_GeographicDescription")
 public class DefaultGeographicDescription extends AbstractGeographicExtent implements GeographicDescription {

@@ -38,6 +38,7 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ModifiableMetadataTest extends TestCase {
     /**
      * An arbitrary metadata on which to perform the tests.

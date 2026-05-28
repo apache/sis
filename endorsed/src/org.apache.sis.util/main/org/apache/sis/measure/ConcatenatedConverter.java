@@ -96,7 +96,7 @@ final class ConcatenatedConverter extends AbstractConverter implements LenientCo
     }
 
     /**
-     * Applies the linear conversion on the given IEEE 754 floating-point value.
+     * Applies the linear conversion on the given <abbr>IEEE</abbr> 754 floating-point value.
      */
     @Override
     public double convert(final double value) {
@@ -139,7 +139,7 @@ final class ConcatenatedConverter extends AbstractConverter implements LenientCo
      */
     @Override
     public List<UnitConverter> getConversionSteps() {
-        final List<UnitConverter> converters = new ArrayList<>();
+        final var converters = new ArrayList<UnitConverter>();
         converters.addAll(c1.getConversionSteps());
         converters.addAll(c2.getConversionSteps());
         return converters;
@@ -159,7 +159,7 @@ final class ConcatenatedConverter extends AbstractConverter implements LenientCo
     @Override
     public boolean equals(final Object other) {
         if (other instanceof ConcatenatedConverter) {
-            final ConcatenatedConverter o = (ConcatenatedConverter) other;
+            final var o = (ConcatenatedConverter) other;
             return c1.equals(o.c1) && c2.equals(o.c2);
         }
         return false;
@@ -171,7 +171,7 @@ final class ConcatenatedConverter extends AbstractConverter implements LenientCo
     @Override
     public boolean equals(final Object other, final ComparisonMode mode) {
         if (other instanceof ConcatenatedConverter) {
-            final ConcatenatedConverter o = (ConcatenatedConverter) other;
+            final var o = (ConcatenatedConverter) other;
             return Utilities.deepEquals(c1, o.c1, mode) &&
                    Utilities.deepEquals(c2, o.c2, mode);
         }

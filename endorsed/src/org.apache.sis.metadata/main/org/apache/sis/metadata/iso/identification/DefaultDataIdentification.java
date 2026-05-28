@@ -103,7 +103,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * Language(s) and character set(s) used within the dataset.
      */
     @SuppressWarnings("serial")
-    private Map<Locale,Charset> locales;
+    private Map<Locale, Charset> locales;
 
     /**
      * Description of the dataset in the producer's processing environment, including items
@@ -197,7 +197,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      */
     @Override
     // @XmlElement at the end of this class.
-    public Map<Locale,Charset> getLocalesAndCharsets() {
+    public Map<Locale, Charset> getLocalesAndCharsets() {
         return locales = nonNullMap(locales, Locale.class);
     }
 

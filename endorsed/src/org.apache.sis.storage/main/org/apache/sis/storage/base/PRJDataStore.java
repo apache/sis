@@ -25,12 +25,9 @@ import java.nio.file.Path;
 import java.nio.file.NoSuchFileException;
 import java.text.ParseException;
 import java.text.ParsePosition;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.ArrayList;
 import jakarta.xml.bind.JAXBException;
-import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.storage.OptionKey;
@@ -42,23 +39,34 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.wkt.StoreFormat;
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.parameter.ParameterBuilder;
-import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.xml.internal.shared.ExceptionSimplifier;
 
 
 /**
- * A data store for a file or URI accompanied by an auxiliary file of the same name with {@code .prj} extension.
- * If the auxiliary file is absent, {@link OptionKey#DEFAULT_CRS} is used as a fallback.
+ * A data store for a file or <abbr>URI</abbr> accompanied by an auxiliary file of the same name
+ * with {@code .prj} extension. If the auxiliary file is absent, {@link OptionKey#DEFAULT_CRS} is used as a fallback.
  * The default WKT 1 variant used for parsing the {@code "*.prj"} file is the variant used by "World Files" and GDAL.
  * This is not the standard specified by OGC 01-009 (they differ in there interpretation of units of measurement).
  * This implementation accepts also WKT 2 (in which case the WKT 1 convention is ignored) and GML.
  *
- * <p>The URI can be null if the only available storage is a {@link java.nio.channels.ReadableByteChannel},
- * {@link java.io.InputStream} or {@link java.io.Reader}. In such case, the CRS should be specified by the
+ * <p>The <abbr>URI</abbr> can be null if the only available storage is a {@link java.nio.channels.ReadableByteChannel},
+ * {@link java.io.InputStream} or {@link java.io.Reader}. In such case, the <abbr>CRS</abbr> should be specified by the
  * {@link OptionKey#DEFAULT_CRS}.</p>
+ *
+ * <h2>Provider</h2>
+ * Data store providers should extend {@link URIDataStoreProvider} like below.
+ * The addition of {@code METADATA} should be omitted if this data store does not intend
+ * to invoke {@link #mergeAuxiliaryMetadata mergeAuxiliaryMetadata(…)}.
+ *
+ * {@snippet lang="java" :
+ *     public final class MyProvider extends URIDataStoreProvider {
+ *         public MyProvider() {
+ *             supportedOptions.add(URIDataStoreOption.DEFAULT_CRS);
+ *             supportedOptions.add(URIDataStoreOption.METADATA);
+ *         }
+ *     }
+ *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -71,8 +79,9 @@ public abstract class PRJDataStore extends URIDataStore {
     protected static final String PRJ = "prj";
 
     /**
-     * The coordinate reference system. This is initialized on the value provided by {@link OptionKey#DEFAULT_CRS}
-     * at construction time, and is modified later if a {@code "*.prj"} file is found.
+     * The coordinate reference system.
+     * This is initialized at construction time to the value provided by {@link OptionKey#DEFAULT_CRS},
+     * and is modified later if a {@code "*.prj"} file is found.
      */
     protected CoordinateReferenceSystem crs;
 
@@ -126,9 +135,11 @@ public abstract class PRJDataStore extends URIDataStore {
     }
 
     /**
-     * Reads an auxiliary file in WKT or GML format. Standard PRJ files use WKT only,
-     * but the GML format is also accepted by this method as an extension specific to Apache SIS.
+     * Reads an auxiliary file in <abbr>WKT</abbr> or <abbr>GML</abbr> format.
+     * Standard <abbr>PRJ</abbr> files use <abbr>WKT</abbr> only, but the <abbr>GML</abbr> format
+     * is also accepted by this method as an extension specific to Apache <abbr>SIS</abbr>.
      *
+     * @param  <T>        base class or interface of the object to read.
      * @param  caller     the class to report as the warning source if a log record is created.
      * @param  method     the method to report as the warning source if a log record is created.
      * @param  type       base class or interface of the object to read.
@@ -188,7 +199,7 @@ public abstract class PRJDataStore extends URIDataStore {
      * Writes the {@code "*.prj"} auxiliary file if {@link #crs} is non-null.
      * If {@link #crs} is null and the auxiliary file exists, it is deleted.
      *
-     * <h4>WKT version used</h4>
+     * <h4><abbr>WKT</abbr> version used</h4>
      * Current version writes the CRS in WKT 2 format. This is not the common practice, which uses WKT 1.
      * But the WKT 1 variant used by the common practice is not the standard format defined by OGC 01-009.
      * It is more like {@link Convention#WKT1_IGNORE_AXES}, which has many ambiguity problems. The WKT 2
@@ -265,64 +276,7 @@ public abstract class PRJDataStore extends URIDataStore {
     @Override
     public Optional<ParameterValueGroup> getOpenParameters() {
         final Optional<ParameterValueGroup> op = super.getOpenParameters();
-        op.ifPresent((pg) -> pg.parameter(Provider.CRS_NAME).setValue(crs));
+        op.ifPresent((pg) -> URIDataStoreOption.DEFAULT_CRS.setValueOf(pg, crs));
         return op;
-    }
-
-    /**
-     * Provider for {@link PRJDataStore} instances.
-     *
-     * @author  Martin Desruisseaux (Geomatys)
-     */
-    public abstract static class Provider extends URIDataStoreProvider {
-        /**
-         * Name of the {@link #DEFAULT_CRS} parameter.
-         */
-        static final String CRS_NAME = "defaultCRS";
-
-        /**
-         * Description of the optional parameter for the default coordinate reference system.
-         */
-        public static final ParameterDescriptor<CoordinateReferenceSystem> DEFAULT_CRS;
-        static {
-            final ParameterBuilder builder = new ParameterBuilder();
-            DEFAULT_CRS = builder.addName(CRS_NAME)
-                    .setDescription(Vocabulary.formatInternational(Vocabulary.Keys.CoordinateRefSys))
-                    .create(CoordinateReferenceSystem.class, null);
-        }
-
-        /**
-         * Creates a new provider.
-         */
-        protected Provider() {
-        }
-
-        /**
-         * Invoked by {@link #getOpenParameters()} the first time that a parameter descriptor needs to be created.
-         * When invoked, the parameter group name is set to a name derived from the {@link #getShortName()} value.
-         * The default implementation creates a group containing {@link #LOCATION_PARAM} and {@link #DEFAULT_CRS}.
-         * Subclasses can override if they need to create a group with more parameters.
-         *
-         * @param  builder  the builder to use for creating parameter descriptor. The group name is already set.
-         * @return the parameters descriptor created from the given builder.
-         */
-        @Override
-        protected ParameterDescriptorGroup build(final ParameterBuilder builder) {
-            return builder.createGroup(LOCATION_PARAM, METADATA_PARAM, DEFAULT_CRS);
-        }
-
-        /**
-         * Returns a data store implementation from the given parameters.
-         *
-         * @return a data store implementation associated with this provider for the given parameters.
-         * @throws DataStoreException if an error occurred while creating the data store instance.
-         */
-        @Override
-        public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
-            final StorageConnector connector = connector(this, Objects.requireNonNull(parameters));
-            final Parameters pg = Parameters.castOrWrap(parameters);
-            connector.setOption(OptionKey.DEFAULT_CRS, pg.getValue(DEFAULT_CRS));
-            return open(connector);
-        }
     }
 }

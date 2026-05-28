@@ -58,6 +58,7 @@ import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterValue;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Longitude;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.resources.Errors;
@@ -73,7 +74,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.referencing.internal.shared.CoordinateOperations;
-import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
@@ -1046,7 +1046,9 @@ public final class GeoEncoder {
      * @param  object  object that cannot be encoded.
      */
     private IncompatibleResourceException unsupportedType(final IdentifiedObject object) {
-        String message = resources().getString(Resources.Keys.CanNotEncodeObjectType_1, ReferencingUtilities.getInterface(object));
+        String message = resources().getString(
+                Resources.Keys.CanNotEncodeObjectType_1,
+                Classes.getStandardClass(object, IdentifiedObject.class));
         return new IncompatibleResourceException(message).addAspect("crs");
     }
 

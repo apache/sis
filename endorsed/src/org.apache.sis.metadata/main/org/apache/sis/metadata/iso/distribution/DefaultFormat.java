@@ -35,6 +35,7 @@ import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.xml.bind.metadata.MD_Medium;
 import org.apache.sis.xml.bind.metadata.CI_Citation;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 
 
@@ -82,9 +83,10 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.7
  * @since   0.3
  */
+@TitleProperty(name = "formatSpecificationCitation")
 @XmlType(name = "MD_Format_Type", propOrder = {
     // ISO 19115:2003 (legacy)
     "name",

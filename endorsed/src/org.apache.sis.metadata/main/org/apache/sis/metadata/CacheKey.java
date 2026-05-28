@@ -33,9 +33,11 @@ final class CacheKey {
     final Class<?> type;
 
     /**
-     * If the {@link #type} is an implementation class of a property, then the type declared in the signature for
-     * that property. This information allows to handle classes that implement more than one metadata interfaces
-     * for their convenience. Some examples are found in the {@link org.apache.sis.metadata.simple} package.
+     * If the {@link #type} is the type of the value of a property, the type declared in the property signature.
+     * This information allows to resolve ambiguities when a class implements more than one metadata interface.
+     * Some examples are found in the {@link org.apache.sis.metadata.simple} package.
+     *
+     * <p><b>Invariant:</b> {@code propertyType.isAssignableFrom(type)}</p>
      *
      * <p>This field shall never be null. If there is no property type information,
      * then this field shall be set to {@code Object.class}.</p>
@@ -43,24 +45,21 @@ final class CacheKey {
     final Class<?> propertyType;
 
     /**
-     * Creates a new key without information on the property type.
-     */
-    CacheKey(final Class<?> type) {
-        this.type = type;
-        propertyType = Object.class;
-    }
-
-    /**
      * Creates a new key to use in the cache.
+     * The {@code propertyType.isInstance(metadata)} condition should always be {@code true},
+     * but this is not verified by this constructor. Instead, the validity can be verified
+     * after constructor with {@link #isValid()}.
+     *
+     * @param  type          the metadata class, or {@code null}.
+     * @param  propertyType  base class of the metadata object.
      */
     CacheKey(final Class<?> type, final Class<?> propertyType) {
         this.type = type;
-        this.propertyType = (propertyType != null) ? propertyType : Object.class;
+        this.propertyType = propertyType;
     }
 
     /**
-     * Returns {@code true} if the {@link #type} can possibly be a value of a property of type
-     * {@link #propertyType}.
+     * Returns whether instances of {@link #type} can can be values of a property of type {@link #propertyType}.
      */
     final boolean isValid() {
         return (type != null) && propertyType.isAssignableFrom(type);
@@ -82,7 +81,7 @@ final class CacheKey {
     @Override
     public boolean equals(final Object obj) {
         if (obj instanceof CacheKey) {
-            final CacheKey other = (CacheKey) obj;
+            final var other = (CacheKey) obj;
             return (type == other.type) && (propertyType == other.propertyType);
         }
         return false;

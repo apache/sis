@@ -147,18 +147,13 @@ public final class DefaultUserDefinedCS extends AbstractCS implements UserDefine
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code UserDefinedCS.class}.
-     *
-     * <h4>Note for implementers</h4>
-     * Subclasses usually do not need to override this method since GeoAPI does not define {@code UserDefinedCS}
-     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
-     * own set of interfaces.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code UserDefinedCS.class} or a user-defined sub-interface.
      */
     @Override
-    public Class<? extends UserDefinedCS> getInterface() {
+    public Class<? extends UserDefinedCS> getStandardType() {
         return UserDefinedCS.class;
     }
 

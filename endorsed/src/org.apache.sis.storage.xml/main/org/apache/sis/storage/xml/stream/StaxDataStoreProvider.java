@@ -49,12 +49,12 @@ public abstract class StaxDataStoreProvider extends AbstractProvider {
     }
 
     /**
-     * Returns the JAXB context for the data store, or {@code null} if the data stores
-     * {@linkplain #open created} by this provided do not use JAXB.
+     * Returns the <abbr>JAXB</abbr> context for the data store, or {@code null} if the data stores
+     * {@linkplain #open created} by this provided do not use <abbr>JAXB</abbr>.
      *
      * <p>The default implementation returns {@code null}.</p>
      *
-     * @return the JAXB context, or {@code null} if none.
+     * @return the <abbr>JAXB</abbr> context, or {@code null} if none.
      * @throws JAXBException if an error occurred while creating the JAXB context.
      */
     protected JAXBContext getJAXBContext() throws JAXBException {
@@ -63,7 +63,7 @@ public abstract class StaxDataStoreProvider extends AbstractProvider {
 
     /**
      * Returns the (un)marshaller pool, creating it when first needed.
-     * If the subclass does not define a JAXB context, then this method returns {@code null}.
+     * If the subclass does not define a <abbr>JAXB</abbr> context, then this method returns {@code null}.
      */
     final MarshallerPool getMarshallerPool() throws JAXBException {
         MarshallerPool pool = jaxb;

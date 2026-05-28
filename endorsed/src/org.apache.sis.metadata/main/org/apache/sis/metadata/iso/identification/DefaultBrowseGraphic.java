@@ -26,6 +26,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.constraint.Constraints;
 import org.opengis.metadata.identification.BrowseGraphic;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.bind.FilterByVersion;
@@ -53,9 +54,10 @@ import org.apache.sis.xml.bind.gcx.MimeFileTypeAdapter;
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.7
  * @since   0.3
  */
+@TitleProperty(name = "fileName")
 @XmlType(name = "MD_BrowseGraphic_Type", namespace = Namespaces.MCC, propOrder = {
     "fileName",
     "fileDescription",

@@ -21,6 +21,7 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
+import org.apache.sis.metadata.TitleProperty;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.quality.StandaloneQualityReportInformation;
@@ -46,9 +47,10 @@ import org.opengis.metadata.quality.StandaloneQualityReportInformation;
  *
  * @author  Alexis Gaillard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   1.3
  */
+@TitleProperty(name = "reportReference")
 @XmlType(name = "DQ_StandaloneQualityReportInformation_Type", propOrder = {
     "reportReference",
     "abstract"

@@ -50,7 +50,7 @@ import org.apache.sis.storage.IncompatibleResourceException;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;
-import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.URIDataStoreOption;
 import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.storage.base.GridResourceWrapper;
 import org.apache.sis.storage.event.StoreEvent;
@@ -320,7 +320,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      */
     @Override
     public Optional<ParameterValueGroup> getOpenParameters() {
-        final ParameterValueGroup param = URIDataStore.parameters(provider, location);
+        final ParameterValueGroup param = URIDataStoreOption.createWithLocationOnly(provider, location);
         if (param != null) {
             final Writer w = writer;
             if (w != null) {
@@ -337,7 +337,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Returns the modifiers (BigTIFF, COG…) of this data store.
+     * Returns the modifiers (BigTIFF, <abbr>COG</abbr>…) of this data store.
      *
      * @return format modifiers of this data store.
      *

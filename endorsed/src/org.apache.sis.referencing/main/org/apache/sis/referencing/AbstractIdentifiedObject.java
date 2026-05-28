@@ -28,6 +28,8 @@ import java.util.Optional;
 import java.util.Formattable;
 import java.util.FormattableFlags;
 import java.util.function.Function;
+import java.lang.reflect.Type;
+import java.lang.reflect.ParameterizedType;
 import java.io.Serializable;
 import jakarta.xml.bind.annotation.XmlID;
 import jakarta.xml.bind.annotation.XmlType;
@@ -122,7 +124,7 @@ import org.opengis.referencing.ObjectDomain;
  * objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   0.4
  */
 @XmlType(name = "IdentifiedObjectType", propOrder = {
@@ -508,8 +510,10 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
      * This information is part of the data compared by {@link #equals(Object, ComparisonMode)}.
+     * The returned value is usually a {@link Class}, but it may also be a {@link ParameterizedType}
+     * such as {@code DatumEnsemble<TemporalDatum>}.
      *
      * <p>The default implementation returns {@code IdentifiedObject.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.</p>
@@ -517,17 +521,31 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * <h4>Invariants</h4>
      * The following invariants must hold for all {@code AbstractIdentifiedObject} instances:
      * <ul>
-     *   <li><code>getInterface().{@linkplain Class#isInstance(Object) isInstance}(this)</code>
+     *   <li><code>getStandardType().{@linkplain Class#isInstance(Object) isInstance}(this)</code>
      *       shall return {@code true}.</li>
      *   <li>If {@code A.getClass() == B.getClass()} is {@code true}, then
-     *       {@code A.getInterface() == B.getInterface()} shall be {@code true}.
+     *       {@code A.getStandardType() == B.getStandardType()} shall be {@code true}.
      *       Note that the converse does not need to hold.</li>
      * </ul>
      *
      * @return the GeoAPI interface implemented by this class.
+     * @since 1.7
      */
-    public Class<? extends IdentifiedObject> getInterface() {
+    @Override
+    public Type getStandardType() {
         return IdentifiedObject.class;
+    }
+
+    /**
+     * Returns the GeoAPI interface implemented by this class.
+     *
+     * @return the GeoAPI interface implemented by this class.
+     * @deprecated Renamed {@link #getStandardType()} for integration with {@link LenientComparable}.
+     */
+    @Deprecated(since="1.7", forRemoval=true)
+    // TODO: make package private.
+    public final Class<? extends IdentifiedObject> getInterface() {
+        return Classes.getRawClass(getStandardType()).asSubclass(IdentifiedObject.class);
     }
 
     /**
@@ -703,7 +721,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *        <td>Verifies if the two objects are of the same {@linkplain #getClass() class}
      *            and compares all public properties, including SIS-specific (non standard) properties.</td></tr>
      *   <tr><td>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}:</td>
-     *       <td>Verifies if the two objects implement the same {@linkplain #getInterface() GeoAPI interface}
+     *       <td>Verifies if the two objects implement the same {@linkplain #getStandardType() GeoAPI interface}
      *           and compares all properties defined by that interface ({@linkplain #getName() name},
      *           {@linkplain #getIdentifiers() identifiers}, {@linkplain #getRemarks() remarks}, <i>etc</i>).
      *           The two objects do not need to be instances of the same implementation class
@@ -801,25 +819,31 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
+     * Returns the type of the given object, ignoring the deprecated {@link Projection} class.
+     * Allows the code to hehave as of the deprecated interface didn't existed.
+     */
+    private static Type getStandardType(final LenientComparable object) {
+        Type type = object.getStandardType();
+        if ((type instanceof Class<?>) && Projection.class.isAssignableFrom((Class<?>) type)) {
+            type = Conversion.class;
+        }
+        return type;
+    }
+
+    /**
      * Returns {@code true} if the given object implements the same GeoAPI interface as this object.
      */
     private boolean implementsSameInterface(final Object object) {
-        Class<? extends IdentifiedObject> type = getInterface();
-        if (Projection.class.isAssignableFrom(type)) {  // Deprecated interface, behave as if it does not exist.
-            type = Conversion.class;
-        }
-        if (object instanceof AbstractIdentifiedObject) {
-            Class<?> other = ((AbstractIdentifiedObject) object).getInterface();
-            if (Projection.class.isAssignableFrom(other)) {
-                other = Conversion.class;
-            }
-            return other == type;
+        Type type = getStandardType(this);
+        if (object instanceof LenientComparable) {
+            return type.equals(getStandardType((LenientComparable) object));
         }
         /*
          * Fallback for non-SIS implementations.
          */
-        if (type.isInstance(object)) {
-            final Class<? extends IdentifiedObject>[] t = Classes.getLeafInterfaces(object.getClass(), type);
+        final Class<?> c = Classes.getRawClass(type);
+        if (c != null && c.isInstance(object)) {
+            final Class<?>[] t = Classes.getLeafInterfaces(object.getClass(), c);
             if (t.length == 1 && t[0] == type) {
                 return true;
             }
@@ -899,7 +923,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      */
     protected long computeHashCode() {
         return Objects.hash(name, nonNull(alias), nonNull(identifiers), nonNull(domains), deprecated, remarks)
-                ^ getInterface().hashCode();
+                ^ getStandardType().hashCode();
     }
 
     /**
@@ -1074,7 +1098,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
             final ReferenceIdentifier id = identifier.getIdentifier();
             if (id != null) {
                 identifiers = Collections.singleton(id);
-                ScopedIdentifier<IdentifiedObject> key = new ScopedIdentifier<>(getInterface(), identifier.toString());
+                Class<? extends IdentifiedObject> type = Classes.getStandardClass(this, IdentifiedObject.class);
+                ScopedIdentifier<IdentifiedObject> key = new ScopedIdentifier<>(type, identifier.toString());
                 key.store(IdentifiedObject.class, this, AbstractIdentifiedObject.class, "setIdentifier");
                 if (key != (key = key.rename(identifier.code))) {
                     key.store(IdentifiedObject.class, this, null, null);        // Shorter form without codespace.

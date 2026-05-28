@@ -40,6 +40,7 @@ import org.opengis.metadata.quality.EvaluationMethodType;
 import org.opengis.util.InternationalString;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.gco.InternationalStringAdapter;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.legacy.DateToTemporal;
 import org.apache.sis.metadata.iso.legacy.TemporalToDate;
 import org.apache.sis.metadata.internal.Dependencies;
@@ -74,9 +75,10 @@ import org.opengis.metadata.quality.Metaquality;
  * @author  Touraïvane (IRD)
  * @author  Guilhem Legal (Geomatys)
  * @author  Alexis Gaillard (Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   0.3
  */
+@TitleProperty(name = "standaloneQualityReportDetails")
 @XmlType(name = "AbstractDQ_Element_Type", propOrder = {
     "standaloneQualityReportDetails",
     "measureReference",

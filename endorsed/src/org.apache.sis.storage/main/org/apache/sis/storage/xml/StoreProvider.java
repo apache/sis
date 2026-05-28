@@ -43,7 +43,7 @@ public final class StoreProvider extends AbstractProvider {
     public static final String NAME = "XML";
 
     /**
-     * The logger used by XML stores.
+     * The logger used by <abbr>XML</abbr> stores.
      *
      * @see #getLogger()
      */

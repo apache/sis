@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
+import java.lang.reflect.Type;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CartesianCS;
@@ -77,7 +78,7 @@ import org.opengis.referencing.datum.DatumEnsemble;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.6
+ * @version 1.7
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeodeticCRS(String)
  *
@@ -221,13 +222,14 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code GeocentricCRS.class}.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code GeocentricCRS.class} or a user-defined sub-interface.
+     * @since 1.7
      */
     @Override
-    public Class<? extends GeocentricCRS> getInterface() {
+    public Type getStandardType() {
         return GeocentricCRS.class;
     }
 

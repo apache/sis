@@ -23,7 +23,6 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.internal.shared.Strings;
@@ -90,7 +89,7 @@ final class CRSPair extends org.apache.sis.pending.jdk.Record {
             return null;
         }
         String suffix;
-        String label = Classes.getShortName(ReferencingUtilities.getInterface(IdentifiedObject.class, object));
+        String label = Classes.getShortName(Classes.getStandardClass(object, IdentifiedObject.class));
         if (label.endsWith((suffix = "CRS")) || label.endsWith(suffix = "CS")) {
             Object cs = object;
             if (object instanceof CoordinateReferenceSystem) {

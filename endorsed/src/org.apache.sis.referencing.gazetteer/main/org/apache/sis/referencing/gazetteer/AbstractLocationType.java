@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.lang.reflect.Type;
 import org.apache.sis.referencing.gazetteer.internal.Resources;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
@@ -95,6 +96,17 @@ abstract class AbstractLocationType implements LocationType, LenientComparable {
      */
     final void checkForCycles() {
         checkForCycles(this, new IdentityHashMap<>());
+    }
+
+    /**
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
+     *
+     * @return {@code LocationType.class}.
+     */
+    @Override
+    public final Type getStandardType() {
+        return LocationType.class;
     }
 
     /**
