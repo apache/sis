@@ -16,10 +16,11 @@
  */
 
 /**
- * Java NIO wrappers for Amazon Simple Storage Service (S3).
+ * Java <abbr>NIO</abbr> wrappers for Amazon Simple Storage Service (S3).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @author  Quentin Bialota (Geomatys)
+ * @version 1.7
  * @since   1.2
  */
 module org.apache.sis.cloud.aws {
