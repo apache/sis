@@ -85,7 +85,8 @@ public final class StoreTest extends TestCase {
     }
 
     /**
-     * Opens a CSV store on the test data for reading the lines as-is, without assembling them in a single trajectory.
+     * Opens a <abbr>CSV</abbr> store on the test data for reading the lines as-is,
+     * without assembling them in a single trajectory.
      */
     private static Store open(final boolean fragmented) throws DataStoreException {
         final var connector = new StorageConnector(testData());

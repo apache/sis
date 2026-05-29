@@ -104,7 +104,7 @@ final class DefaultProjection extends DefaultConversion implements Projection {
      * @return the conversion interface implemented by this class.
      */
     @Override
-    public Class<? extends Projection> getInterface() {
+    public Class<? extends Projection> getStandardType() {
         return Projection.class;
     }
 }

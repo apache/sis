@@ -16,6 +16,7 @@
  */
 package org.apache.sis.temporal;
 
+import java.lang.reflect.Type;
 import java.util.Date;
 import java.time.DateTimeException;
 import java.time.Instant;
@@ -261,6 +262,18 @@ public final class TemporalDate extends Date implements LenientComparable {     
             }
         }
         return equals(other);
+    }
+
+    /**
+     * Returns the standard class that defines the contract of this class.
+     * This is the base type required by all {@code equals(…)} methods
+     * for returning a potentially {@code true} value.
+     *
+     * @return {@code Date.class}.
+     */
+    @Override
+    public final Type getStandardType() {
+        return Date.class;
     }
 
     /**

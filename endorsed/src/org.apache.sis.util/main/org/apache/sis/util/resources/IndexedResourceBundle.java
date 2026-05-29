@@ -33,6 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import javax.measure.Unit;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
@@ -413,6 +414,8 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
                 replacement = ((URI) element).getSchemeSpecificPart();      // For decoding encoded characters.
             } else if (element instanceof Class<?>) {
                 replacement = Classes.getShortName(getPublicType((Class<?>) element));
+            } else if (element instanceof Type) {
+                replacement = ((Type) element).getTypeName();
             } else if (element instanceof CodeList<?>) {
                 replacement = MetadataServices.getInstance().getCodeTitle((CodeList<?>) element, getLocale());
             } else if (element instanceof Range<?>) {

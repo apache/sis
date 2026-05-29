@@ -47,6 +47,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Guilhem Legal (Geomatys)
  *
  * @see ResultSet#getMetaData()
  * @see DatabaseMetaData#getColumns(String, String, String, String)
@@ -168,8 +169,8 @@ public class Column implements Cloneable {
      */
     Column(final Analyzer analyzer, final ResultSet metadata, final String quote) throws SQLException {
         label = name = analyzer.getUniqueString(metadata, Reflection.COLUMN_NAME);
-        type         = metadata.getInt(Reflection.DATA_TYPE);
         typeName     = localPart(metadata.getString(Reflection.TYPE_NAME), quote);
+        type         = analyzer.database.getColumnDatatype(metadata, typeName);
         precision    = metadata.getInt(Reflection.COLUMN_SIZE);
         isNullable   = Boolean.TRUE.equals(SQLUtilities.parseBoolean(metadata.getString(Reflection.IS_NULLABLE)));
         propertyName = label;

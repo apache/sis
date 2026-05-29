@@ -28,7 +28,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -61,7 +60,6 @@ import org.locationtech.jts.geom.Polygon;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.Identifier;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
@@ -70,7 +68,6 @@ import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.feature.builder.AttributeRole;
-import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.filter.DefaultFilterFactory;
@@ -84,21 +81,19 @@ import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.AbstractFeatureSet;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Query;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.UnsupportedQueryException;
 import org.apache.sis.storage.WritableFeatureSet;
+import org.apache.sis.storage.DataStoreProvider;
+import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.storage.shapefile.cpg.CpgFiles;
 import org.apache.sis.storage.shapefile.dbf.DBFField;
 import org.apache.sis.storage.shapefile.dbf.DBFHeader;
@@ -137,15 +132,12 @@ import org.apache.sis.pending.geoapi.filter.ValueReference;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class ShapefileStore extends DataStore implements WritableFeatureSet {
+public final class ShapefileStore extends URIDataStore implements WritableFeatureSet {
 
     private static final String GEOMETRY_NAME = "geometry";
     private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.shapefile");
 
-    private final Path shpPath;
     private final ShpFiles files;
-    private final Charset userDefinedCharSet;
-    private final ZoneId timezone;
 
     /**
      * Internal class to inherit AbstractFeatureSet.
@@ -158,39 +150,16 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     /**
-     * Construct store from given path.
-     *
-     * @param path path to .shp file
-     */
-    public ShapefileStore(Path path) {
-        this.shpPath = path;
-        this.userDefinedCharSet = null;
-        this.timezone = null;
-        this.files = new ShpFiles(shpPath);
-    }
-
-    /**
      * Construct store from given connector.
      *
-     * @param cnx not null
+     * @param  provider   the factory that created this {@code ShapefileStore} instance, or {@code null} if unspecified.
+     * @param  connector  information about the storage (URL, stream, reader instance, <i>etc</i>).
      * @throws IllegalArgumentException if connector could not provide a valid Path instance
      * @throws DataStoreException if connector could not provide a valid Path instance
      */
-    public ShapefileStore(StorageConnector cnx) throws IllegalArgumentException, DataStoreException {
-        this.shpPath = cnx.getStorageAs(Path.class);
-        this.userDefinedCharSet = cnx.getOption(OptionKey.ENCODING);
-        this.timezone = cnx.getOption(OptionKey.TIMEZONE);
-        this.files = new ShpFiles(shpPath);
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    public Optional<ParameterValueGroup> getOpenParameters() {
-        final Parameters parameters = Parameters.castOrWrap(ShapefileProvider.PARAMETERS_DESCRIPTOR.createValue());
-        parameters.parameter(ShapefileProvider.LOCATION).setValue(shpPath.toUri());
-        return Optional.of(parameters);
+    public ShapefileStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
+        super(provider, connector);
+        this.files = new ShpFiles(locationAsPath);
     }
 
     /**
@@ -352,17 +321,16 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
         @Override
         public synchronized DefaultFeatureType getType() throws DataStoreException {
             if (type == null) {
-                if (!Files.isRegularFile(shpPath)) {
+                if (!Files.isRegularFile(locationAsPath)) {
                     throw new DataStoreException("Shape files do not exist. Update FeatureType first to initialize this empty datastore");
                 }
-
                 final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
                 ftb.setName(files.baseName);
 
                 if (readShp) {
                     //read shp header to obtain geometry type
                     final Class geometryClass;
-                    try (final ShapeReader reader = new ShapeReader(ShpFiles.openReadChannel(shpPath), filter)) {
+                    try (final ShapeReader reader = new ShapeReader(ShpFiles.openReadChannel(locationAsPath), filter)) {
                         final ShapeHeader header = reader.getHeader();
                         this.shpHeader = header;
                         geometryClass = ShapeGeometryEncoder.getEncoder(header.shapeType).getValueClass();
@@ -714,10 +682,9 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
         public synchronized void updateType(DefaultFeatureType newType) throws DataStoreException {
 
             if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
-            if (Files.exists(shpPath)) {
+            if (Files.exists(locationAsPath)) {
                 throw new DataStoreException("Update type is possible only when files do not exist. It can be used to create a new shapefile but not to update one.");
             }
-
             final Class<?>[] supportedDateTypes;    // All types other than the one at index 0 will lost information.
             if (timezone == null) {
                 supportedDateTypes = new Class<?>[] {
@@ -736,7 +703,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                 final DBFHeader dbfHeader = new DBFHeader();
                 dbfHeader.lastUpdate = LocalDate.now();
                 dbfHeader.fields = new DBFField[0];
-                final Charset charset = userDefinedCharSet == null ? StandardCharsets.UTF_8 : userDefinedCharSet;
+                final Charset charset = (encoding == null) ? StandardCharsets.UTF_8 : encoding;
                 CoordinateReferenceSystem crs = CommonCRS.WGS84.normalizedGeographic();
 
                 for (AbstractIdentifiedType pt : newType.getProperties(true)) {
@@ -860,8 +827,9 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
         @Override
         public void add(Iterator<? extends AbstractFeature> features) throws DataStoreException {
             if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
-            if (!Files.exists(shpPath)) throw new DataStoreException("FeatureType do not exist, use updateType before modifying features.");
-
+            if (!Files.exists(locationAsPath)) {
+                throw new DataStoreException("FeatureType do not exist, use updateType before modifying features.");
+            }
             final Writer writer = new Writer(charset);
             try {
                 //write existing features
@@ -891,8 +859,9 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
         @Override
         public void removeIf(Predicate<? super AbstractFeature> filter) throws DataStoreException {
             if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
-            if (!Files.exists(shpPath)) throw new DataStoreException("FeatureType do not exist, use updateType before modifying features.");
-
+            if (!Files.exists(locationAsPath)) {
+                throw new DataStoreException("FeatureType do not exist, use updateType before modifying features.");
+            }
             final Writer writer = new Writer(charset);
             try {
                 //write existing features not matching filter
@@ -916,8 +885,9 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
         @Override
         public void replaceIf(Predicate<? super AbstractFeature> filter, UnaryOperator<AbstractFeature> updater) throws DataStoreException {
             if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
-            if (!Files.exists(shpPath)) throw new DataStoreException("FeatureType do not exist, use updateType before modifying features.");
-
+            if (!Files.exists(locationAsPath)) {
+                throw new DataStoreException("FeatureType do not exist, use updateType before modifying features.");
+            }
             final Writer writer = new Writer(charset);
             try {
                 //write existing features applying modifications

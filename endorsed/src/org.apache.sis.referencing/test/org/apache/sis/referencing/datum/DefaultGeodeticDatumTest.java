@@ -79,7 +79,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
      */
     @Test
     public void testCreateAndSerialize() {
-        final var properties = new HashMap<String,Object>();
+        final var properties = new HashMap<String, Object>();
         assertNull(properties.put(DefaultEllipsoid.NAME_KEY, "Asteroid"));
         final var ellipsoid = DefaultEllipsoid.createEllipsoid(properties, 1200, 1000, Units.METRE);
 
@@ -142,7 +142,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
      */
     @Test
     public void testGetPositionVectorTransformation() {
-        final var properties = new HashMap<String,Object>();
+        final var properties = new HashMap<String, Object>();
         assertNull(properties.put(DefaultGeodeticDatum.NAME_KEY, "Invalid dummy datum"));
         /*
          * Associate two BursaWolfParameters, one valid only in a local area and the other one
@@ -207,7 +207,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
      */
     @Test
     public void testIndirectTransformation() {
-        final var properties = new HashMap<String,Object>();
+        final var properties = new HashMap<String, Object>();
         assertNull(properties.put(DefaultGeodeticDatum.NAME_KEY, "Invalid dummy datum"));
         assertNull(properties.put(DefaultGeodeticDatum.BURSA_WOLF_KEY, BursaWolfParametersTest.createWGS72_to_WGS84()));
         final var global = new DefaultGeodeticDatum(properties,

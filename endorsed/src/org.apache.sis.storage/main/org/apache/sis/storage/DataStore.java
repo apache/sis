@@ -127,21 +127,13 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * The {@code connector} argument is mandatory.
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
-     * @param  connector  information about the storage (URL, stream, reader instance, <i>etc</i>).
+     * @param  connector  information about the storage (<abbr>URL</abbr>, stream, reader instance, <i>etc</i>).
      * @throws DataStoreException if an error occurred while creating the data store for the given storage.
      *
      * @since 0.8
      */
-    @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph. Should not be accessible before completion.
     protected DataStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
-        this.provider    = provider;
-        this.displayName = connector.getDisplayName();
-        this.locale      = Locale.getDefault(Locale.Category.DISPLAY);
-        this.listeners   = new StoreListeners(connector.getOption(OptionKey.PARENT_LISTENERS), this);
-        /*
-         * Above locale is NOT OptionKey.LOCALE because we are not talking about the same locale.
-         * The one in this DataStore is for warning and exception messages, not for parsing data.
-         */
+        this(null, provider, connector, false);
     }
 
     /**
@@ -152,7 +144,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      *
      * @param  parent     the parent that contains this new {@code DataStore} component, or {@code null} if none.
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
-     * @param  connector  information about the storage (URL, stream, reader instance, <i>etc</i>).
+     * @param  connector  information about the storage (<abbr>URL</abbr>, stream, reader instance, <i>etc</i>).
      * @param  hidden     {@code true} if this store will not be directly accessible from the parent.
      *                    It is the case if this store is an {@link Aggregate} and the parent store will
      *                    expose only some components of the aggregate instead of the aggregate itself.
@@ -161,8 +153,11 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * @since 1.1
      */
     @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph. Should not be accessible before completion.
-    protected DataStore(final DataStore parent, final DataStoreProvider provider, final StorageConnector connector,
-                        final boolean hidden) throws DataStoreException
+    protected DataStore(final DataStore         parent,
+                        final DataStoreProvider provider,
+                        final StorageConnector  connector,
+                        final boolean           hidden)
+            throws DataStoreException
     {
         this.provider = provider;
         displayName = connector.getDisplayName();
@@ -175,8 +170,12 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
             }
             forwardTo = parent.listeners;
         } else {
+            /*
+             * Below locale is NOT OptionKey.LOCALE because we are not talking about the same locale.
+             * The one in this DataStore is for warning and exception messages, not for parsing data.
+             */
             locale    = Locale.getDefault(Locale.Category.DISPLAY);
-            forwardTo = null;
+            forwardTo = connector.getOption(OptionKey.PARENT_LISTENERS);
         }
         listeners = new StoreListeners(forwardTo, this);
     }

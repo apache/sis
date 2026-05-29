@@ -41,6 +41,7 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DefaultParameterDescriptorGroupTest extends TestCase {
     /**
      * The default value used by the parameters in the {@link #M1_M1_O1_O2} descriptor.
@@ -56,7 +57,7 @@ public final class DefaultParameterDescriptorGroupTest extends TestCase {
     public static final DefaultParameterDescriptorGroup M1_M1_O1_O2;
     static {
         final Class<Integer> type = Integer.class;
-        final Map<String,Object> properties = new HashMap<>(4);
+        final var properties = new HashMap<String, Object>(4);
         M1_M1_O1_O2 = new DefaultParameterDescriptorGroup(Map.of(NAME_KEY, "Test group"), 0, 1,
             new DefaultParameterDescriptor<>(name(properties, "Mandatory 1", "Ambiguity"), 1, 1, type, null, null, DEFAULT_VALUE),
             new DefaultParameterDescriptor<>(name(properties, "Mandatory 2", "Alias 2"),   1, 1, type, null, null, DEFAULT_VALUE),
@@ -68,7 +69,7 @@ public final class DefaultParameterDescriptorGroupTest extends TestCase {
     /**
      * Returns a map with {@code "name"}=<var>name</var> and {@code "alias"}=<var>alias</var> entries.
      */
-    private static Map<String,Object> name(final Map<String,Object> properties, final String name, final String alias) {
+    private static Map<String, Object> name(final Map<String, Object> properties, final String name, final String alias) {
         properties.put(NAME_KEY, name);
         properties.put(ALIAS_KEY, alias);
         return properties;
@@ -84,15 +85,12 @@ public final class DefaultParameterDescriptorGroupTest extends TestCase {
      * Ensures that the constructor detects duplicated names.
      */
     @Test
-    @SuppressWarnings("ResultOfObjectAllocationIgnored")
-    public void testConstruction() {
-        final Class<Integer> type = Integer.class;
-        final Map<String,Object> properties = new HashMap<>(4);
-        final DefaultParameterDescriptor<Integer> p1, p2;
-        p1 = new DefaultParameterDescriptor<>(name(properties,   "Name",  null), 1, 1, type, null, null, null);
-        p2 = new DefaultParameterDescriptor<>(name(properties, "  NAME ", null), 1, 1, type, null, null, null);
-
-        var e = assertThrows(IllegalArgumentException.class,
+    public void testDuplicateNameDetection() {
+        Class<Integer> type = Integer.class;
+        var properties = new HashMap<String, Object>(4);
+        var p1 = new DefaultParameterDescriptor<>(name(properties,   "Name",  null), 1, 1, type, null, null, null);
+        var p2 = new DefaultParameterDescriptor<>(name(properties, "  NAME ", null), 1, 1, type, null, null, null);
+        var e  = assertThrows(IllegalArgumentException.class,
                 () -> new DefaultParameterDescriptorGroup(Map.of(NAME_KEY, "Test group"), 0, 1, p1, p2));
         assertMessageContains(e, "Name", "NAME");
     }

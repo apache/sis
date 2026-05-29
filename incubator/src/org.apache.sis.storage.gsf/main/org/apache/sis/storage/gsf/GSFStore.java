@@ -21,12 +21,11 @@ import java.nio.file.Path;
 import java.util.Optional;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.parameter.Parameters;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.metadata.MetadataBuilder;
-import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.URIDataStoreOption;
 
 
 /**
@@ -72,8 +71,7 @@ public final class GSFStore extends DataStore {
 
     @Override
     public Optional<ParameterValueGroup> getOpenParameters() {
-        final Parameters param = Parameters.castOrWrap(URIDataStore.parameters(provider, location));
-        return Optional.ofNullable(param);
+        return Optional.ofNullable(URIDataStoreOption.createWithLocationOnly(provider, location));
     }
 
     @Override

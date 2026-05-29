@@ -95,7 +95,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * Language(s) and character set(s) used within the catalogue.
      */
     @SuppressWarnings("serial")
-    private Map<Locale,Charset> locales;
+    private Map<Locale, Charset> locales;
 
     /**
      * Whether or not the feature catalogue is included with the resource.
@@ -200,7 +200,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      */
     @UML(identifier="locale", obligation=CONDITIONAL, specification=ISO_19115)
     // @XmlElement at the end of this class.
-    public Map<Locale,Charset> getLocalesAndCharsets() {
+    public Map<Locale, Charset> getLocalesAndCharsets() {
         return locales = nonNullMap(locales, Locale.class);
     }
 

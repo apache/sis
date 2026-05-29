@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.matrix;
 import java.util.Arrays;
 import java.util.Objects;
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.awt.geom.AffineTransform;                       // For javadoc
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.internal.Arithmetic;
@@ -56,7 +57,7 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see Matrices
  *
@@ -376,7 +377,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     public MatrixSIS normalizeColumns() {
         final int numRow = getNumRow();
         final int numCol = getNumCol();
-        final MatrixSIS magnitudes = new NonSquareMatrix(1, numCol, false);
+        final var magnitudes = new NonSquareMatrix(1, numCol, false);
         for (int i=0; i<numCol; i++) {
             Number sum = null;
             for (int j=0; j<numRow; j++) {
@@ -702,7 +703,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
         if (object != null && object.getClass() == getClass()) {
             final int numRow = getNumRow();
             final int numCol = getNumCol();
-            final MatrixSIS that = (MatrixSIS) object;
+            final var that = (MatrixSIS) object;
             if (that.getNumRow() == numRow && that.getNumCol() == numCol) {
                 for (int j=numRow; --j >= 0;) {
                     for (int i=numCol; --i >= 0;) {
@@ -783,9 +784,22 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
+     *
+     * @return {@code Matrix.class} or a user-defined sub-interface.
+     * @since 1.7
+     */
+    @Override
+    public final Type getStandardType() {
+        return Matrix.class;
+    }
+
+    /**
      * Returns a unlocalized string representation of this matrix.
      * For each column, the numbers are aligned on the decimal separator.
      *
+     * @return a string representation of this matrix.
      * @see Matrices#toString(Matrix)
      */
     @Override

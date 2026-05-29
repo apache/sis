@@ -77,10 +77,10 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
 
     /**
      * The accessor to use for accessing the property names, types and values of the {@link #metadata} object.
-     * This is given at construction time and shall be the same as the following code:
+     * This is given at construction time and shall be the equivalent to the following code:
      *
      * {@snippet lang="java" :
-     *     accessor = parent.table.standard.getAccessor(metadata.getClass(), true);
+     *     accessor = parent.table.standard.getTypeAccessor(metadata.getClass());
      *     }
      */
     final PropertyAccessor accessor;
@@ -146,23 +146,31 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
         /*
          * Search for something that looks like the main property, to be associated with the parent node
          * instead of provided as a child. The intent is to make trees more compact and easier to read.
-         * That property shall be a singleton for a simple value (not another metadata object).
+         * That property shall be a singleton for a simple value.
          */
-        if (parent.table.valuePolicy.isTitled()) {
+        final TreeTableView table = parent.table;
+        if (table.valuePolicy.isTitled()) {
             TitleProperty an = accessor.implementation.getAnnotation(TitleProperty.class);
             if (an == null) {
-                Class<?> implementation = parent.table.standard.getImplementation(accessor.type);
-                if (implementation != null) {
+                Class<?> implementation = table.standard.getImplementation(accessor.type);
+                if (implementation != null && accessor.implementation != implementation) {
                     an = implementation.getAnnotation(TitleProperty.class);
                 }
             }
             if (an != null) {
                 final int index = accessor.indexOf(an.name(), false);
                 final Class<?> type = accessor.type(index, TypeValuePolicy.ELEMENT_TYPE);
-                if (type != null && !parent.isMetadata(type) && type == accessor.type(index, TypeValuePolicy.PROPERTY_TYPE)) {
-                    hiddenProperty = (parent.table.valuePolicy == ValueExistencePolicy.COMPACT) ? index : -1;
-                    titleProperty = index;
-                    return;
+                if (type != null && type == accessor.type(index, TypeValuePolicy.PROPERTY_TYPE)) {
+                    /*
+                     * In compact mode, do not use metadata object as title (with recursive search of title)
+                     * because we don't want to hide the whole metadata object from the tree.
+                     */
+                    final boolean isCompact = (table.valuePolicy == ValueExistencePolicy.COMPACT);
+                    if (!(isCompact && parent.isMetadata(type))) {
+                        hiddenProperty = isCompact ? index : -1;
+                        titleProperty  = index;
+                        return;
+                    }
                 }
             }
         }
@@ -178,19 +186,34 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
     }
 
     /**
-     * If a simple value should be associated to the parent node, returns the type of that value.
-     * Otherwise returns {@code null}.
+     * If a simple value should be associated to the parent node, returns that value or the type of that value.
+     * Otherwise returns {@code null}. The title is identified by {@link TitleProperty} annotation on the class.
+     * If {@code wantTypeOnly} is {@code true}, then the returned object can be safety cast to {@link Class}.
+     *
+     * @param  wantTypeOnly  whether to return the property type (as a {@link Class}) instead of the value.
+     * @return the value or type of the title property of the given metadata, or {@code null} if none.
      */
-    final Class<?> getParentType() {
-        return (titleProperty >= 0) ? accessor.type(titleProperty, TypeValuePolicy.ELEMENT_TYPE) : null;
-    }
-
-    /**
-     * If a simple value should be associated to the parent node, returns that value.
-     * Otherwise returns {@code null}.
-     */
-    final Object getParentTitle() {
-        return (titleProperty >= 0) ? valueAt(titleProperty) : null;
+    final Object getParentTitle(final boolean wantTypeOnly) {
+        if (isNodeTitle()) {
+            final boolean isCompact = (hiddenProperty >= 0);
+            if (isCompact && !wantTypeOnly) {
+                return valueAt(titleProperty);          // Skip the recursive search in metadata objects.
+            }
+            final Class<?> type = accessor.type(titleProperty, TypeValuePolicy.ELEMENT_TYPE);
+            if (isCompact) {
+                return type;                            // Skip the recursive search in metadata objects.
+            }
+            final Object value = valueAt(titleProperty);
+            if (value != null || wantTypeOnly) {
+                return parent.table.standard.getTitle(
+                        (value != null) ? value : type, // Value or type to check for `TitleProperty` annotation.
+                        type,                           // For disambiguation if `value` implements many interfaces.
+                        value == null,                  // Whether the first argument is a class rather than instance.
+                        wantTypeOnly,                   // Whether the caller wants only a `Class`.
+                        true);                          // Tells that the first argument is already a title.
+            }
+        }
+        return null;
     }
 
     /**
@@ -198,11 +221,12 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * The returned Boolean tells whether the value has been written.
      */
     final boolean setParentTitle(final Object value) {
-        if (titleProperty < 0) {
-            return false;
+        if (hiddenProperty >= 0) {
+            // Accept only the hidden property because it requires no recursive search of title.
+            accessor.set(hiddenProperty, metadata, value, PropertyAccessor.RETURN_NULL);
+            return true;
         }
-        accessor.set(titleProperty, metadata, value, PropertyAccessor.RETURN_NULL);
-        return true;
+        return false;
     }
 
     /**
@@ -273,7 +297,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * @param  index     the index in the accessor (<em>not</em> the index in this collection).
      * @param  subIndex  if the property at {@code index} is a collection, the index in that
      *         collection (<em>not</em> the index in <em>this</em> collection). Otherwise -1.
-     * @return the node to be returned by public API.
+     * @return the node to be returned by public <abbr>API</abbr>.
      */
     final TreeNode.Element childAt(final int index, final int subIndex) {
         TreeNode.Element node = children[index];

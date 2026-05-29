@@ -17,28 +17,21 @@
 package org.apache.sis.storage.csv;
 
 import java.util.logging.Logger;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.parameter.ParameterBuilder;
-import org.apache.sis.parameter.Parameters;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.feature.FoliationRepresentation;
-import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
+import org.apache.sis.storage.base.URIDataStoreOption;
 import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.storage.wkt.FirstKeywordPeek;
 
 
 /**
  * The provider of {@link Store} instances. Given a {@link StorageConnector} input,
- * this class tries to instantiate a CSV {@code Store}.
+ * this class tries to instantiate a <abbr>CSV</abbr> {@code Store}.
  *
  * <h2>Thread safety</h2>
  * The same {@code StoreProvider} instance can be safely used by many threads without synchronization on
@@ -57,7 +50,7 @@ public final class StoreProvider extends URIDataStoreProvider {
     static final String NAME = "CSV", MOVING = "CSV-MF";
 
     /**
-     * The logger used by CSV stores.
+     * The logger used by <abbr>CSV</abbr> stores.
      *
      * @see #getLogger()
      */
@@ -118,22 +111,12 @@ public final class StoreProvider extends URIDataStoreProvider {
     }
 
     /**
-     * Description of the optional parameter for specifying whether the reader should assemble distinct CSV lines
-     * into a single {@code Feature} instance forming a foliation. This is ignored if the CSV file does not seem
-     * to contain moving features.
-     */
-    private static final ParameterDescriptor<FoliationRepresentation> FOLIATION;
-    static {
-        final ParameterBuilder builder = new ParameterBuilder();
-        FOLIATION = builder.addName("foliation")
-                .setDescription(Resources.formatInternational(Resources.Keys.FoliationRepresentation))
-                .create(FoliationRepresentation.class, FoliationRepresentation.ASSEMBLED);
-    }
-
-    /**
      * Creates a new provider.
      */
     public StoreProvider() {
+        supportedOptions.add(URIDataStoreOption.METADATA);
+        supportedOptions.add(URIDataStoreOption.ENCODING);
+        supportedOptions.add(URIDataStoreOption.FOLIATION);
     }
 
     /**
@@ -147,13 +130,12 @@ public final class StoreProvider extends URIDataStoreProvider {
     }
 
     /**
-     * Returns the MIME type if the given storage appears to be supported by CSV {@link Store}.
-     * A {@linkplain ProbeResult#isSupported() supported} status does not guarantee that reading
-     * or writing will succeed, only that there appears to be a reasonable chance of success
-     * based on a brief inspection of the file header.
+     * Returns the <abbr>MIME</abbr> type if the given storage appears to be supported by <abbr>CSV</abbr> store.
+     * A {@linkplain ProbeResult#isSupported() supported} status does not guarantee that reading will succeed,
+     * only that there appears to be a reasonable chance of success based on a brief inspection of the file header.
      *
-     * @return a {@linkplain ProbeResult#isSupported() supported} status with the MIME type
-     *         if the given storage seems to be readable as a CSV file.
+     * @return a {@linkplain ProbeResult#isSupported() supported} status with the <abbr>MIME</abbr> type
+     *         if the given storage seems to be readable as a <abbr>CSV</abbr> file.
      * @throws DataStoreException if an I/O error occurred.
      */
     @Override
@@ -162,7 +144,7 @@ public final class StoreProvider extends URIDataStoreProvider {
     }
 
     /**
-     * Returns a CSV {@link Store} implementation associated with this provider.
+     * Returns a <abbr>CSV</abbr> {@link Store} implementation associated with this provider.
      *
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @return a data store implementation associated with this provider for the given storage.
@@ -171,31 +153,6 @@ public final class StoreProvider extends URIDataStoreProvider {
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
         return new Store(this, connector);
-    }
-
-    /**
-     * Returns a CSV {@link Store} implementation from the given parameters.
-     *
-     * @return a data store implementation associated with this provider for the given parameters.
-     * @throws DataStoreException if an error occurred while creating the data store instance.
-     */
-    @Override
-    public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
-        final StorageConnector connector = connector(this, parameters);
-        final Parameters pg = Parameters.castOrWrap(parameters);
-        connector.setOption(OptionKey.ENCODING, pg.getValue(ENCODING));
-        connector.setOption(OptionKey.FOLIATION_REPRESENTATION, pg.getValue(FOLIATION));
-        return new Store(this, connector);
-    }
-
-    /**
-     * Invoked by {@link #getOpenParameters()} the first time that a parameter descriptor needs to be created.
-     *
-     * @return the parameters descriptor for CSV files.
-     */
-    @Override
-    protected ParameterDescriptorGroup build(final ParameterBuilder builder) {
-        return builder.createGroup(LOCATION_PARAM, METADATA_PARAM, ENCODING, FOLIATION);
     }
 
     /**

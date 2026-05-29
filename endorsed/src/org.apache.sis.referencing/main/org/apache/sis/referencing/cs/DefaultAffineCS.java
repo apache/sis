@@ -48,7 +48,7 @@ import org.apache.sis.measure.Units;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   0.4
  */
 @XmlType(name = "AffineCSType")
@@ -190,14 +190,15 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
      * The default implementation returns {@code AffineCS.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
      * @return the affine coordinate system interface implemented by this class.
+     * @since 1.7
      */
     @Override
-    public Class<? extends AffineCS> getInterface() {
+    public Class<? extends AffineCS> getStandardType() {
         return AffineCS.class;
     }
 

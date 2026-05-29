@@ -45,8 +45,10 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
+import org.apache.sis.metadata.iso.DefaultIdentifier;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -54,8 +56,6 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.internal.shared.Strings;
-import org.apache.sis.metadata.iso.DefaultIdentifier;
-import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.FrequencySortedSet;
@@ -909,7 +909,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     @Override
     public Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) throws FactoryException {
         if (!type.isInterface()) {
-            type = ReferencingUtilities.getInterface(IdentifiedObject.class, type);
+            type = Classes.getStandardType(type).asSubclass(IdentifiedObject.class);
         }
         Set<String> codes;
         lock.readLock().lock();

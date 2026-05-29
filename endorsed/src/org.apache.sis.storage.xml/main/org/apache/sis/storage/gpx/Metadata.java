@@ -41,9 +41,9 @@ import org.opengis.metadata.distribution.Format;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.util.InternationalString;
 import org.apache.sis.io.TableAppender;
-import org.apache.sis.metadata.simple.SimpleMetadata;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.metadata.simple.SimpleMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import org.apache.sis.metadata.iso.extent.Extents;
@@ -58,8 +58,8 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 
 
 /**
- * Information about the GPX file, author, and copyright restrictions.
- * This is the root of the {@code <metadata>} element in a GPX file.
+ * Information about the <abbr>GPX</abbr> file, author, and copyright restrictions.
+ * This is the root of the {@code <metadata>} element in a <abbr>GPX</abbr> file.
  * At most one such element may appear in the document.
  * The XML content is like below:
  *

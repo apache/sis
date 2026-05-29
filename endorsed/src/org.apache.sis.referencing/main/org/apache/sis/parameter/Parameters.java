@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.io.Serializable;
 import jakarta.xml.bind.annotation.XmlTransient;
@@ -107,7 +108,7 @@ import org.apache.sis.util.resources.Errors;
  * overriding one method has no impact on other methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   0.4
  */
 @XmlTransient
@@ -523,6 +524,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      * Note that the source file is not necessarily the same for all parameters in a group, because a GML
      * document could define parameters in files referenced by different {@code xlink:href} attribute values.
      *
+     * @param  parameter  the parameter to search.
      * @return the <abbr>URI</abbr> of the document from which the parameter values are read.
      *
      * @see DefaultParameterValue#getSourceFile()
@@ -859,6 +861,18 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
     }
 
     /**
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This method is defined for the convenience of subclasses that implement the
+     * {@link org.apache.sis.util.LenientComparable} interface.
+     *
+     * @return {@code ParameterValueGroup.class} or a user-defined sub-interface.
+     * @since 1.7
+     */
+    public Type getStandardType() {
+        return ParameterValueGroup.class;
+    }
+
+    /**
      * Returns a copy of this group of parameter values.
      * The default implementation performs a <em>shallow</em> copy,
      * but subclasses are encouraged to perform a <em>deep</em> copy.
@@ -990,6 +1004,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      *
      * <p>This method is for information purpose only and may change in future SIS version.</p>
      *
+     * @return a string representation of this group.
      * @since 0.7
      */
     @Override

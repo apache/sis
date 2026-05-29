@@ -28,7 +28,7 @@ import org.apache.sis.metadata.simple.SimpleFormat;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import org.apache.sis.io.stream.Markable;
-import org.apache.sis.storage.base.URIDataStoreProvider;
+import org.apache.sis.storage.base.URIDataStoreOption;
 import org.apache.sis.storage.internal.RewindableLineReader;
 import org.apache.sis.measure.Range;
 import org.apache.sis.util.Version;
@@ -61,7 +61,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   0.3
  */
 public abstract class DataStoreProvider {
@@ -72,28 +72,15 @@ public abstract class DataStoreProvider {
      *
      * <p>Implementers are encouraged to define a parameter with this name
      * to ensure a common and consistent definition among providers.
-     * The parameter should be defined as mandatory and typed with a well-known Java class such as
-     * {@link java.net.URI}, {@link java.nio.file.Path}, JDBC {@linkplain javax.sql.DataSource}, <i>etc</i>.
-     * The type should have a compact textual representation, for serialization in XML or configuration files.
-     * Consequently, {@link java.io.InputStream} and {@link java.nio.channels.Channel} should be avoided.</p>
+     * The parameter should be defined as mandatory and typed with a well-known Java class such as {@link java.net.URI},
+     * {@link java.nio.file.Path}, <abbr>JDBC</abbr> {@linkplain javax.sql.DataSource}, <i>etc</i>.
+     * The type should have a compact textual representation for serialization in <abbr>XML</abbr> or configuration files.
+     * Therefore, {@link java.io.InputStream} and {@link java.nio.channels.Channel} should be avoided.</p>
      *
      * @see #CREATE
      * @see #getOpenParameters()
      */
     public static final String LOCATION = "location";
-
-    /**
-     * Name of the parameter that specifies the data store time zone.
-     * A parameter named {@value} should be included in the group of parameters returned by {@link #getOpenParameters()}.
-     * The parameter value is often a {@link String} or a {@link ZoneId}, other types should not be allowed.
-     *
-     * <p>Implementers are encouraged to define a parameter with this name
-     * to ensure a common and consistent definition among providers.</p>
-     *
-     * @see #CREATE
-     * @see #getOpenParameters()
-     */
-    public static final String TIMEZONE = "timezone";
 
     /**
      * Name of the parameter that specifies whether to allow creation of a new {@code DataStore} if none exist
@@ -119,6 +106,7 @@ public abstract class DataStoreProvider {
      * are incompatible with this usage.
      *
      * @see #LOCATION
+     * @see OptionKey#OPEN_OPTIONS
      * @see #getOpenParameters()
      */
     public static final String CREATE = "create";
@@ -447,6 +435,7 @@ public abstract class DataStoreProvider {
                  * `InputStream` supports at most one mark. So we keep it for ourselves
                  * and wrap the stream in an object that prevent users from using marks.
                  */
+                @SuppressWarnings("ConvertToTryWithResources")
                 final var stream = new ProbeInputStream(connector, (InputStream) input);
                 result = prober.test(type.cast(stream));
                 stream.close();     // No "try with resource". See `ProbeInputStream.close()` contract.
@@ -461,6 +450,7 @@ public abstract class DataStoreProvider {
                 result = prober.test(input);
                 r.protectedReset();
             } else if (input instanceof Reader) {
+                @SuppressWarnings("ConvertToTryWithResources")
                 final var stream = new ProbeReader(connector, (Reader) input);
                 result = prober.test(type.cast(stream));
                 stream.close();     // No "try with resource". See `ProbeReader.close()` contract.
@@ -609,7 +599,7 @@ public abstract class DataStoreProvider {
      *
      * <h4>Implementation note</h4>
      * The default implementation gets the value of a parameter named {@value #LOCATION}.
-     * That value (typically a path or URL) is given to {@link StorageConnector} constructor,
+     * That value (typically a path or <abbr>URL</abbr>) is given to the {@link StorageConnector} constructor,
      * which is then passed to {@link #open(StorageConnector)}.
      *
      * @param  parameters  opening parameters as defined by {@link #getOpenParameters()}.
@@ -624,7 +614,7 @@ public abstract class DataStoreProvider {
      */
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
         // IllegalOpenParameterException thrown if `parameters` is null.
-        return open(URIDataStoreProvider.connector(this, parameters));
+        return open(URIDataStoreOption.connector(this, parameters, null, null));
     }
 
     /**

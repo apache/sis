@@ -56,7 +56,7 @@ import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
 
 
 /**
- * Data store implementation for BIL, BIP, and BSQ raster files.
+ * Data store implementation for <abbr>BIL</abbr>, <abbr>BIP</abbr>, and <abbr>BSQ</abbr> raster files.
  * Sample values are provided in a raw binary files, without compression.
  * Information about image layout is provided in a separated text files.
  *

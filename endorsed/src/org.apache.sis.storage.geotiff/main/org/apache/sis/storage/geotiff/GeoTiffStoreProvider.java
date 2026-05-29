@@ -32,6 +32,7 @@ import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.base.Capability;
+import org.apache.sis.storage.base.URIDataStoreOption;
 import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.resources.Vocabulary;
@@ -44,7 +45,7 @@ import org.apache.sis.parameter.Parameters;
  * Given a {@link StorageConnector} input, this class tries to instantiate a {@link GeoTiffStore}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see GeoTiffStore
  *
@@ -56,12 +57,12 @@ import org.apache.sis.parameter.Parameters;
                resourceTypes = {Aggregate.class, GridCoverageResource.class})
 public class GeoTiffStoreProvider extends DataStoreProvider {
     /**
-     * The MIME type for GeoTIFF files.
+     * The <abbr>MIME</abbr> type for GeoTIFF files.
      */
     private static final String MIME_TYPE = "image/tiff";
 
     /**
-     * The TIFF version.
+     * The <abbr>TIFF</abbr> version.
      */
     private static final Version VERSION = new Version("6.0");
 
@@ -73,7 +74,7 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
     private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.geotiff");
 
     /**
-     * Name of the parameter for specifying the format modifiers (BigTIFF, COG…).
+     * Name of the parameter for specifying the format modifiers (BigTIFF, <abbr>COG</abbr>…).
      */
     static final String MODIFIERS = "modifiers";
 
@@ -100,7 +101,7 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
         final var builder = new ParameterBuilder();
         MODIFIERS_PARAM   = builder.addName(MODIFIERS).setDescription(Vocabulary.formatInternational(Vocabulary.Keys.Options)).create(FormatModifier[].class, null);
         COMPRESSION_PARAM = builder.addName(COMPRESSION).setDescription(Vocabulary.formatInternational(Vocabulary.Keys.Compression)).create(Compression.class, null);
-        OPEN_DESCRIPTOR   = builder.addName(Constants.GEOTIFF).createGroup(URIDataStoreProvider.LOCATION_PARAM, MODIFIERS_PARAM, COMPRESSION_PARAM);
+        OPEN_DESCRIPTOR   = builder.addName(Constants.GEOTIFF).createGroup(URIDataStoreOption.LOCATION.getParameterDescriptor(), MODIFIERS_PARAM, COMPRESSION_PARAM);
     }
 
     /**
@@ -194,7 +195,7 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
     @Override
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
         final var p = Parameters.castOrWrap(parameters);
-        final var connector = new StorageConnector(p.getValue(URIDataStoreProvider.LOCATION_PARAM));
+        final var connector = URIDataStoreOption.connector(this, parameters, null, null);
         final FormatModifier[] modifiers = p.getValue(MODIFIERS_PARAM);
         if (modifiers != null) {
             connector.setOption(FormatModifier.OPTION_KEY, modifiers);

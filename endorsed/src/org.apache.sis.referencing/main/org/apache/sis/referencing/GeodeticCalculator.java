@@ -51,6 +51,7 @@ import org.apache.sis.referencing.internal.Bezier;
 import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.referencing.internal.shared.ShapeUtilities;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.internal.shared.Numerics;
@@ -276,7 +277,7 @@ public class GeodeticCalculator {
         final GeographicCRS geographic = ReferencingUtilities.toNormalizedGeographicCRS(crs, true, true);
         if (geographic == null) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCRSType_1,
-                    ReferencingUtilities.getInterface(CoordinateReferenceSystem.class, crs)));
+                        Classes.getStandardClass(crs, CoordinateReferenceSystem.class)));
         }
         this.ellipsoid = ellipsoid;
         semiMajorAxis  = ellipsoid.getSemiMajorAxis();
@@ -295,7 +296,7 @@ public class GeodeticCalculator {
     public static GeodeticCalculator create(final CoordinateReferenceSystem crs) {
         final Ellipsoid ellipsoid = DatumOrEnsemble.getEllipsoid(Objects.requireNonNull(crs))
                 .orElseThrow(() -> new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCRSType_1,
-                                ReferencingUtilities.getInterface(CoordinateReferenceSystem.class, crs))));
+                                    Classes.getStandardClass(crs, CoordinateReferenceSystem.class))));
         if (ellipsoid.isSphere()) {
             return new GeodeticCalculator(crs, ellipsoid);
         } else {

@@ -214,9 +214,14 @@ public class Resources extends IndexedResourceBundle {
         public static final short DataStoreLocation = 31;
 
         /**
-         * Timezone of dates in the data store.
+         * Timezone of local times in the data store.
          */
         public static final short DataStoreTimeZone = 32;
+
+        /**
+         * Default coordinate reference system.
+         */
+        public static final short DefaultCRS = 88;
 
         /**
          * Name of the format to use for reading or writing the directory content.

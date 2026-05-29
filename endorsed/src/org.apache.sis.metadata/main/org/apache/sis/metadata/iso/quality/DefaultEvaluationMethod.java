@@ -29,6 +29,7 @@ import jakarta.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.EvaluationMethodType;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.internal.shared.CloneAccess;
@@ -57,9 +58,10 @@ import static org.opengis.annotation.Specification.UNSPECIFIED;
  *
  * @author  Alexis Gaillard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   1.3
  */
+@TitleProperty(name = "evaluationMethodDescription")
 @XmlType(name = "DQ_EvaluationMethod_Type", propOrder = {
     "evaluationMethodType",
     "evaluationMethodDescription",

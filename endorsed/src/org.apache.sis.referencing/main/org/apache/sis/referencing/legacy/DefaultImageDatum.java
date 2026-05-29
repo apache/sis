@@ -18,6 +18,7 @@ package org.apache.sis.referencing.legacy;
 
 import java.util.Map;
 import java.util.Objects;
+import java.lang.reflect.Type;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -154,18 +155,13 @@ public final class DefaultImageDatum extends AbstractDatum implements ImageDatum
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code ImageDatum.class}.
-     *
-     * <h4>Note for implementers</h4>
-     * Subclasses usually do not need to override this method since GeoAPI does not define {@code ImageDatum}
-     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with
-     * their own set of interfaces.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code ImageDatum.class} or a user-defined sub-interface.
      */
     @Override
-    public Class<? extends ImageDatum> getInterface() {
+    public Type getStandardType() {
         return ImageDatum.class;
     }
 

@@ -23,6 +23,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.ConformanceResult;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.xml.bind.gco.GO_Boolean;
 
 
@@ -49,9 +50,10 @@ import org.apache.sis.xml.bind.gco.GO_Boolean;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   0.3
  */
+@TitleProperty(name = "specification")
 @XmlType(name = "DQ_ConformanceResult_Type", propOrder = {
     "specification",
     "explanation",

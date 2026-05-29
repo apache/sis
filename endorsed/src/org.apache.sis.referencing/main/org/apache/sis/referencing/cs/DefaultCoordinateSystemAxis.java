@@ -19,6 +19,7 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import java.util.Locale;
 import java.util.Objects;
+import java.lang.reflect.Type;
 import static java.lang.Double.doubleToLongBits;
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Double.POSITIVE_INFINITY;
@@ -87,7 +88,7 @@ import static org.apache.sis.referencing.internal.shared.NilReferencingObject.UN
  * components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.7
  *
  * @see AbstractCS
  * @see Unit
@@ -378,18 +379,14 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code CoordinateSystemAxis.class}.
-     *
-     * <h4>Note for implementers</h4>
-     * Subclasses usually do not need to override this method since GeoAPI does not define {@code CoordinateSystemAxis}
-     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their own
-     * set of interfaces.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code CoordinateSystemAxis.class} or a user-defined sub-interface.
+     * @since 1.7
      */
     @Override
-    public Class<? extends CoordinateSystemAxis> getInterface() {
+    public Type getStandardType() {
         return CoordinateSystemAxis.class;
     }
 

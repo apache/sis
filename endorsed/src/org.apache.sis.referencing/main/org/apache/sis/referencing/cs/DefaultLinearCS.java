@@ -49,7 +49,7 @@ import org.apache.sis.measure.Units;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   0.4
  */
 @XmlType(name = "LinearCSType")
@@ -159,18 +159,14 @@ public class DefaultLinearCS extends AbstractCS implements LinearCS {
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code LinearCS.class}.
-     *
-     * <h4>Note for implementers</h4>
-     * Subclasses usually do not need to override this method since GeoAPI does not define {@code LinearCS}
-     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with
-     * their own set of interfaces.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code LinearCS.class} or a user-defined sub-interface.
+     * @since 1.7
      */
     @Override
-    public Class<? extends LinearCS> getInterface() {
+    public Class<? extends LinearCS> getStandardType() {
         return LinearCS.class;
     }
 

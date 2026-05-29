@@ -141,6 +141,7 @@ public enum ValueExistencePolicy {
      * See {@link #COMPACT} Javadoc for an example.</p>
      *
      * @see TitleProperty
+     * @see MetadataStandard#getTitle(Object)
      *
      * @since 1.7
      */

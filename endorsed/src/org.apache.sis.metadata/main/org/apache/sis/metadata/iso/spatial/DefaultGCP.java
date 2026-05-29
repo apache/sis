@@ -28,7 +28,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 
 /**
  * Information on ground control point.
- * Ground control points (GCP) are large marked targets on the ground,
+ * Ground control points (<abbr>GCP</abbr>) are large marked targets on the ground,
  * not to be confused with <i>localization grid</i> points embedded in some file formats like GeoTIFF or netCDF.
  * The following property is mandatory in a well-formed metadata according ISO 19115:
  *

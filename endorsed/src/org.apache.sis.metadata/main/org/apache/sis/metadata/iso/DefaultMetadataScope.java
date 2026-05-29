@@ -21,6 +21,7 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.maintenance.ScopeCode;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
 
 // Specific to the main branch:
@@ -56,9 +57,10 @@ import static org.opengis.annotation.Specification.ISO_19115;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   0.5
  */
+@TitleProperty(name = "resourceScope")
 @XmlType(name = "MD_MetadataScope_Type", propOrder = {
     "resourceScope",
     "name"

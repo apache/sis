@@ -31,7 +31,6 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
-import org.apache.sis.util.Utilities;
 
 
 /**
@@ -44,7 +43,7 @@ import org.apache.sis.util.Utilities;
  * This class is expected to implement a {@code CoordinateMetadata} interface after the next GeoAPI release.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   1.5
  */
 public class DefaultCoordinateMetadata extends FormattableObject

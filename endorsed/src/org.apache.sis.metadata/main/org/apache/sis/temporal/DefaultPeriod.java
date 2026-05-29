@@ -17,6 +17,7 @@
 package org.apache.sis.temporal;
 
 import java.util.Map;
+import java.lang.reflect.Type;
 import java.time.DateTimeException;
 import java.time.temporal.TemporalAmount;
 import org.opengis.temporal.TemporalPrimitive;
@@ -148,6 +149,18 @@ final class DefaultPeriod extends TemporalObject implements Period {
                     TemporalOperatorName.AFTER,  TemporalOperatorName.MET_BY),
             TemporalOperatorName.AFTER, Map.of(
                     TemporalOperatorName.AFTER,  TemporalOperatorName.AFTER));
+
+    /**
+     * Returns the standard interface that defines the contract of this class.
+     * This is the base type required by all {@code equals(…)} methods
+     * for returning a potentially {@code true} value.
+     *
+     * @return {@code Period.class}.
+     */
+    @Override
+    public final Type getStandardType() {
+        return Period.class;
+    }
 
     /**
      * Returns a string representation in ISO 8601 format.

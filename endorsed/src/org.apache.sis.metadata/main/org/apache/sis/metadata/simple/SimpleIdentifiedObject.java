@@ -18,6 +18,7 @@ package org.apache.sis.metadata.simple;
 
 import java.util.Objects;
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -169,7 +170,21 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
     }
 
     /**
+     * Returns the standard interface that defines the contract of this class.
+     * This is the base type required by all {@code equals(…)} methods
+     * for returning a potentially {@code true} value.
+     *
+     * @return {@code IdentifiedObject.class} or a subtype.
+     */
+    @Override
+    public Type getStandardType() {
+        return IdentifiedObject.class;
+    }
+
+    /**
      * Returns a hash code value for this object.
+     *
+     * @return an arbitrary hash code value.
      */
     @Override
     public int hashCode() {
@@ -213,7 +228,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
                 if (mode.isIgnoringMetadata()) {
                     return true;
                 }
-                final IdentifiedObject that = (IdentifiedObject) object;
+                final var that = (IdentifiedObject) object;
                 return Objects.equals(getName(), that.getName()) &&
                         isNullOrEmpty(that.getIdentifiers()) &&
                         isNullOrEmpty(that.getAlias()) &&
@@ -235,7 +250,9 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
     }
 
     /**
-     * Returns a pseudo-WKT representation for debugging purpose.
+     * Returns a pseudo-<abbr>WKT</abbr> representation for debugging purposes.
+     *
+     * @return a string representation for debugging purposes.
      */
     @Override
     public String toString() {
@@ -252,7 +269,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
             codespace = null;
             authority = null;
         }
-        final StringBuilder buffer = new StringBuilder("IdentifiedObject[\"");
+        final var buffer = new StringBuilder("IdentifiedObject[\"");
         if (codespace != null) {
             buffer.append(codespace).append(Constants.DEFAULT_SEPARATOR);
         }

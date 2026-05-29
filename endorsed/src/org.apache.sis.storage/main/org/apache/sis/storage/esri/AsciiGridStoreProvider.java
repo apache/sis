@@ -27,7 +27,8 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
-import org.apache.sis.storage.base.PRJDataStore;
+import org.apache.sis.storage.base.URIDataStoreOption;
+import org.apache.sis.storage.base.URIDataStoreProvider;
 
 
 /**
@@ -44,7 +45,7 @@ import org.apache.sis.storage.base.PRJDataStore;
                fileSuffixes  = {"asc", "grd", "agr", "aig"},
                capabilities  = {Capability.READ, Capability.WRITE, Capability.CREATE},
                resourceTypes = GridCoverageResource.class)
-public final class AsciiGridStoreProvider extends PRJDataStore.Provider {
+public final class AsciiGridStoreProvider extends URIDataStoreProvider {
     /**
      * The format names for ESRI ASCII grid files.
      */
@@ -61,6 +62,8 @@ public final class AsciiGridStoreProvider extends PRJDataStore.Provider {
      * Creates a new provider.
      */
     public AsciiGridStoreProvider() {
+        supportedOptions.add(URIDataStoreOption.DEFAULT_CRS);
+        supportedOptions.add(URIDataStoreOption.METADATA);
     }
 
     /**

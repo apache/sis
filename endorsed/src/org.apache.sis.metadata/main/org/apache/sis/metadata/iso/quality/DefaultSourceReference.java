@@ -20,6 +20,7 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.Citation;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.xml.Namespaces;
 
 // Specific to the main branch:
@@ -46,9 +47,10 @@ import static org.opengis.annotation.Specification.UNSPECIFIED;
  *
  * @author  Alexis Gaillard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   1.3
  */
+@TitleProperty(name = "citation")
 @XmlType(name = "DQM_SourceReference_Type", namespace = Namespaces.DQM)
 @XmlRootElement(name = "DQM_SourceReference", namespace = Namespaces.DQM)
 @UML(identifier="DQM_SourceReference", specification=UNSPECIFIED)

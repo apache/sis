@@ -147,15 +147,15 @@ public final class MetadataStandardTest extends TestCase {
      * Returns the interface type declared by the accessor for the given class.
      */
     private Class<?> getAccessor(final Class<?> type, final boolean mandatory) {
-        final PropertyAccessor accessor = standard.getAccessor(new CacheKey(type), mandatory);
+        final PropertyAccessor accessor = standard.getTypeAccessor(type, mandatory);
         return (accessor != null) ? accessor.type : null;
     }
 
     /**
-     * Tests {@link MetadataStandard#getAccessor(CacheKey, boolean)}.
+     * Tests {@link MetadataStandard#getTypeAccessor(Class, boolean)}.
      */
     @Test
-    public void testGetAccessor() {
+    public void testGetTypeAccessor() {
         standard = MetadataStandard.ISO_19115;
         assertEquals(Citation.class,         getAccessor(DefaultCitation.class, true));
         assertEquals(Completeness.class,     getAccessor(AbstractCompleteness.class, true));
@@ -176,7 +176,7 @@ public final class MetadataStandardTest extends TestCase {
      */
     @Test
     public void testGetWrongInterface() {
-        standard = new MetadataStandard("SIS", "org.apache.sis.dummy.", (MetadataStandard[]) null);
+        standard = new MetadataStandard("SIS", "org.apache.sis.dummy.");
         var e = assertThrows(ClassCastException.class, () -> getInterface(DefaultCitation.class));
         assertMessageContains(e, "DefaultCitation");
     }

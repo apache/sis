@@ -55,7 +55,7 @@ import org.apache.sis.math.Statistics;
 
 
 /**
- * Base class for the implementation of ASCII Grid or raw binary store.
+ * Base class for the implementation of <abbr>ASCII</abbr> Grid or raw binary store.
  * This base class manages the reading of following auxiliary files:
  *
  * <ul>
@@ -277,7 +277,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
     private Statistics[] readStatistics(final String name, final SampleModel sm)
             throws DataStoreException, URISyntaxException, IOException
     {
-        final Statistics[] stats = new Statistics[sm.getNumBands()];
+        final var stats = new Statistics[sm.getNumBands()];
         for (final CharSequence line : CharSequences.splitOnEOL(readAuxiliaryFile(STX, false))) {
             final int end   = CharSequences.skipTrailingWhitespaces(line, 0, line.length());
             final int start = CharSequences.skipLeadingWhitespaces(line, 0, end);
@@ -323,7 +323,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
      * @throws DataStoreException if an error occurred while loading an auxiliary file.
      */
     final void loadBandDescriptions(String name, final SampleModel sm, Statistics... stats) throws DataStoreException {
-        final SampleDimension[] bands = new SampleDimension[sm.getNumBands()];
+        final var bands = new SampleDimension[sm.getNumBands()];
         /*
          * If the "*.stx" file is found, the statistics read from that file will replace the specified one.
          * Otherwise the `stats` parameter will be left unchanged. We read statistics even if a color map

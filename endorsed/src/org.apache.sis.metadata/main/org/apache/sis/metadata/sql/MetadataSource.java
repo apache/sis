@@ -367,8 +367,10 @@ public class MetadataSource implements AutoCloseable {
      * @param  schema      the database schema were metadata tables are stored, or {@code null} if none.
      * @param  properties  additional options, or {@code null} if none. See class javadoc for a description.
      */
-    public MetadataSource(final MetadataStandard standard, final DataSource dataSource,
-            final String schema, final Map<String,?> properties)
+    public MetadataSource(final MetadataStandard standard,
+                          final DataSource       dataSource,
+                          final String           schema,
+                          final Map<String, ?>   properties)
     {
         ArgumentChecks.ensureNonNull("standard",   standard);
         ArgumentChecks.ensureNonNull("dataSource", dataSource);
@@ -935,10 +937,10 @@ public class MetadataSource implements AutoCloseable {
                 final Dispatcher toSearch = new Dispatcher(identifier, this);
                 try {
                     value = subType.getConstructor().newInstance();
-                    final LookupInfo info            = getLookupInfo(subType);
-                    final Map<String,Object> map     = asValueMap(value);
-                    final Map<String,String> methods = standard.asNameMap(subType, NAME_POLICY, KeyNamePolicy.METHOD_NAME);
-                    for (final Map.Entry<String,Object> entry : map.entrySet()) {
+                    final LookupInfo info             = getLookupInfo(subType);
+                    final Map<String, Object> map     = asValueMap(value);
+                    final Map<String, String> methods = standard.asNameMap(subType, NAME_POLICY, KeyNamePolicy.METHOD_NAME);
+                    for (final Map.Entry<String, Object> entry : map.entrySet()) {
                         method = subType.getMethod(methods.get(entry.getKey()));
                         info.setMetadataType(subType);
                         final Object p = readColumn(info, method, toSearch);

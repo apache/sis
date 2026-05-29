@@ -41,7 +41,6 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -145,54 +144,6 @@ public final class ReferencingUtilities {
     }
 
     /**
-     * Returns the GeoAPI interface implemented by the given object, or the implementation class
-     * if the interface is unknown. This method can be used when the base type (CRS, CS, Datum…)
-     * is unknown, for example when preparing an error message. If the base type is known, then
-     * the method expecting a {@code baseType} argument should be preferred.
-     *
-     * @param  object    the object for which to get the GeoAPI interface, or {@code null}.
-     * @return GeoAPI interface or implementation class of the given object, or {@code null} if the given object is null.
-     */
-    @SuppressWarnings("unchecked")
-    public static Class<?> getInterface(final Object object) {
-        if (object instanceof AbstractIdentifiedObject) {
-            return ((AbstractIdentifiedObject) object).getInterface();
-        } else {
-            return getInterface(IdentifiedObject.class, (Class) Classes.getClass(object));
-        }
-    }
-
-    /**
-     * Returns the GeoAPI interface implemented by the given object, or the implementation class
-     * if the interface is unknown.
-     *
-     * @param  <T>       compile-time value of {@code baseType}.
-     * @param  baseType  parent interface of the desired type.
-     * @param  object    the object for which to get the GeoAPI interface, or {@code null}.
-     * @return GeoAPI interface or implementation class of the given object, or {@code null} if the given object is null.
-     */
-    public static <T extends IdentifiedObject> Class<? extends T> getInterface(final Class<T> baseType, final T object) {
-        if (object instanceof AbstractIdentifiedObject) {
-            return ((AbstractIdentifiedObject) object).getInterface().asSubclass(baseType);
-        } else {
-            return getInterface(baseType, Classes.getClass(object));
-        }
-    }
-
-    /**
-     * Returns the GeoAPI interface implemented by the given class, or the class itself if the interface is unknown.
-     *
-     * @param  <T>       compile-time value of {@code baseType}.
-     * @param  baseType  parent interface of the desired type.
-     * @param  type      type of object for which to get the GeoAPI interface, or {@code null}.
-     * @return GeoAPI interface or implementation class, or {@code null} if the given type is null.
-     */
-    public static <T extends IdentifiedObject> Class<? extends T> getInterface(final Class<T> baseType, final Class<? extends T> type) {
-        final Class<? extends T>[] types = Classes.getLeafInterfaces(type, baseType);
-        return (types.length != 0) ? types[0] : type;
-    }
-
-    /**
      * Copies all {@link SingleCRS} components from the given source to the given collection.
      * For each {@link CompoundCRS} element found in the iteration, this method replaces the
      * {@code CompoundCRS} by its {@linkplain CompoundCRS#getComponents() components}, which
@@ -229,7 +180,7 @@ public final class ReferencingUtilities {
                     message = Errors.format(Errors.Keys.NilObject_1, Identifiers.getNilReason((NilObject) candidate));
                     throw new NoSuchElementException(message);
                 } else {
-                    message = Errors.format(Errors.Keys.NestedElementNotAllowed_1, getInterface(candidate));
+                    message = Errors.format(Errors.Keys.NestedElementNotAllowed_1, Classes.getStandardType(candidate.getClass()));
                     throw new ClassCastException(message);
                 }
             }

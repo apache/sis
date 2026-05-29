@@ -34,7 +34,6 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.apache.sis.util.Classes;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.util.Utilities;
 
 // Specific to the main branch:
@@ -103,7 +102,7 @@ final class FilterByDatum implements Predicate<ReferenceSystem> {
      * @param instances  where to add the datum instance if not a duplicate.
      */
     private static void add(final Datum datum, final Set<Class<? extends Datum>> types, final List<EngineeringDatum> instances) {
-        types.add(ReferencingUtilities.getInterface(Datum.class, datum));
+        types.add(Classes.getStandardClass(datum, Datum.class));
         if (datum instanceof EngineeringDatum) {
             for (int i = instances.size(); --i >= 0;) {
                 if (Utilities.equalsIgnoreMetadata(datum, instances.get(i))) {

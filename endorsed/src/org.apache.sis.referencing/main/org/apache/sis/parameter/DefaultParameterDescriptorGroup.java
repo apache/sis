@@ -19,6 +19,7 @@ package org.apache.sis.parameter;
 import java.util.Map;
 import java.util.List;
 import java.util.Collections;
+import java.lang.reflect.Type;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -80,7 +81,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
+ * @version 1.7
  *
  * @see DefaultParameterValueGroup
  * @see DefaultParameterDescriptor
@@ -264,18 +265,14 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code ParameterDescriptorGroup.class}.
-     *
-     * <h4>Note for implementers</h4>
-     * Subclasses usually do not need to override this method since GeoAPI does not define {@code ParameterDescriptorGroup}
-     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their own
-     * set of interfaces.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code ParameterDescriptorGroup.class} or a user-defined sub-interface.
+     * @since 1.7
      */
     @Override
-    public Class<? extends ParameterDescriptorGroup> getInterface() {
+    public Type getStandardType() {
         return ParameterDescriptorGroup.class;
     }
 

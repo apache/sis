@@ -362,7 +362,7 @@ public final class FeatureOperations {
      * of a previous call to {@link #expression expression(…)}, then invoking this method is equivalent
      * to invoking {@code expression(…)} again with the same arguments except for {@code expression}.
      *
-     * @param  operation   the operation to evaluate in a different way.
+     * @param  property    the operation to evaluate in a different way.
      * @param  expression  the new expression to use for evaluating the operation.
      * @return the new operation. May be the given operation if the expression is the same.
      * @throws IllegalArgumentException if the {@linkplain AbstractOperation#getResult() result type}
@@ -399,7 +399,7 @@ public final class FeatureOperations {
      */
     private static IllegalArgumentException illegalResultType(final short key, final Object... arguments) {
         final int last = arguments.length - 1;
-        arguments[last] = Classes.getStandardType(Classes.getClass(arguments[last]));
+        arguments[last] = Classes.getStandardClass(arguments[last], Object.class);
         return new IllegalArgumentException(Errors.format(key, arguments));
     }
 

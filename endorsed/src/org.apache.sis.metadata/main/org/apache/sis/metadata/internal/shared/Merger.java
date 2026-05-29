@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.function.BiFunction;
+import java.lang.reflect.Type;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.AbstractMetadata;
 import org.apache.sis.metadata.InvalidMetadataException;
@@ -99,7 +100,9 @@ public class Merger {
      * This is used for formatting error messages.
      */
     private static String name(final ModifiableMetadata target, final String propertyName) {
-        return Classes.getShortName(target.getInterface()) + '.' + propertyName;
+        final Type type = target.getStandardType();
+        final String name = (type instanceof Class<?>) ? Classes.getShortName((Class<?>) type) : type.getTypeName();
+        return name + '.' + propertyName;
     }
 
     /**
@@ -163,8 +166,8 @@ public class Merger {
          * Get views of metadata as maps. Those maps are live: write operations
          * on those maps will be reflected on the metadata objects and conversely.
          */
-        final Map<String,Object> targetMap = target.asMap();
-        final Map<String,Object> sourceMap;
+        final Map<String, Object> targetMap = target.asMap();
+        final Map<String, Object> sourceMap;
         if (source instanceof AbstractMetadata) {
             sourceMap = ((AbstractMetadata) source).asMap();          // Gives to subclasses a chance to override.
         } else {
@@ -175,7 +178,7 @@ public class Merger {
          * If the value does not exist in the target map, then it can be copied directly.
          */
         boolean success = true;
-        for (final Map.Entry<String,Object> entry : sourceMap.entrySet()) {
+        for (final Map.Entry<String, Object> entry : sourceMap.entrySet()) {
             final String propertyName = entry.getKey();
             final Object sourceValue  = entry.getValue();
             final Object targetValue  = dryRun ? targetMap.get(propertyName)
@@ -194,7 +197,7 @@ public class Merger {
                          */
                         if (dryRun) break;
                         throw new InvalidMetadataException(errors().getString(Errors.Keys.IllegalPropertyValueClass_3,
-                                    name(target, propertyName), md.getInterface(), Classes.getClass(sourceValue)));
+                                    name(target, propertyName), md.getStandardType(), Classes.getClass(sourceValue)));
                     }
                 } else if (targetValue instanceof Collection<?>) {
                     /*
@@ -209,8 +212,8 @@ public class Merger {
                      * a ClassCastException is conform to this method contract). The loop tries to merge the
                      * source elements to target elements that are specialized enough.
                      */
-                    final Collection<?> targetList = (Collection<?>) targetValue;
-                    final Collection<?> sourceList = new LinkedList<>((Collection<?>) sourceValue);
+                    final var targetList = (Collection<?>) targetValue;
+                    final var sourceList = new LinkedList<>((Collection<?>) sourceValue);
                     for (final Object element : targetList) {
                         if (element instanceof ModifiableMetadata) {
                             final Iterator<?> it = sourceList.iterator();

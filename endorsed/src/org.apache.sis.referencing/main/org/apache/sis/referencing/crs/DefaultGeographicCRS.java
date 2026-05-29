@@ -19,6 +19,7 @@ package org.apache.sis.referencing.crs;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
+import java.lang.reflect.Type;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
@@ -90,7 +91,7 @@ import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.6
+ * @version 1.7
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeographicCRS(String)
  *
@@ -225,17 +226,13 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
 
     /**
      * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code GeographicCRS.class}.
-     *
-     * <h4>Note for implementers</h4>
-     * Subclasses usually do not need to override this method since GeoAPI does not define {@code GeographicCRS}
-     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
-     * own set of interfaces.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code GeographicCRS.class} or a user-defined sub-interface.
+     * @since 1.7
      */
     @Override
-    public Class<? extends GeographicCRS> getInterface() {
+    public Type getStandardType() {
         return GeographicCRS.class;
     }
 

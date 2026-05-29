@@ -30,6 +30,7 @@ import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.xml.bind.gco.StringAdapter;
 import org.apache.sis.xml.bind.metadata.code.CI_TelephoneTypeCode;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.internal.Dependencies;
 
 // Specific to the main branch:
@@ -75,12 +76,13 @@ import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.7
  *
  * @see DefaultContact#getPhones()
  *
  * @since 0.5
  */
+@TitleProperty(name = "number")
 @XmlType(name = "CI_Telephone_Type", propOrder = {
     "number",           // New in ISO 19115:2014
     "numberType",       // Ibid.

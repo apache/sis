@@ -46,6 +46,7 @@ import java.io.Serializable;
 import java.awt.geom.Point2D;
 import javax.print.attribute.standard.PrinterStateReason;
 import javax.print.attribute.standard.PrinterStateReasons;
+import org.opengis.util.InternationalString;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.cs.EllipsoidalCS;
@@ -155,6 +156,15 @@ public final class ClassesTest extends TestCase {
         assertEquals(Transformation.class, Classes.getStandardType(T3.class));
         assertEquals(String.class,         Classes.getStandardType(String.class));
         assertEquals(CharSequence.class,   Classes.getStandardType(CharSequence.class));
+    }
+
+    /**
+     * Tests {@link Classes#getStandardClass(Class, Class)}.
+     */
+    @Test
+    public void testGetStandardClass() {
+        assertEquals(String.class,              Classes.getStandardClass("", Object.class));
+        assertEquals(InternationalString.class, Classes.getStandardClass(new SimpleInternationalString(""), Object.class));
     }
 
     /**

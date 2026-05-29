@@ -19,6 +19,7 @@ package org.apache.sis.referencing.datum;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.Objects;
+import java.lang.reflect.Type;
 import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -126,7 +127,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.6
+ * @version 1.7
  *
  * @see DefaultEllipsoid
  * @see DefaultPrimeMeridian
@@ -323,18 +324,14 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code GeodeticDatum.class}.
-     *
-     * <h4>Note for implementers</h4>
-     * Subclasses usually do not need to override this method since GeoAPI does not define {@code GeodeticDatum}
-     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
-     * own set of interfaces.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code GeodeticDatum.class} or a user-defined sub-interface.
+     * @since 1.7
      */
     @Override
-    public Class<? extends GeodeticDatum> getInterface() {
+    public Type getStandardType() {
         return GeodeticDatum.class;
     }
 

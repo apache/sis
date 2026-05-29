@@ -28,6 +28,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.AggregateInformation;
 import org.opengis.metadata.identification.AssociationType;
 import org.opengis.metadata.identification.InitiativeType;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.xml.internal.shared.LegacyNamespaces;
@@ -68,9 +69,13 @@ import org.apache.sis.xml.bind.metadata.code.DS_InitiativeTypeCode;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.7
  * @since   0.3
+ *
+ * @deprecated As of ISO 19115:2014, replaced by {@link DefaultAssociatedResource}.
  */
+@Deprecated(since="1.0")
+@TitleProperty(name = "aggregateDataSetName")
 @XmlType(name = "MD_AggregateInformation_Type", namespace = LegacyNamespaces.GMD, propOrder = {
     "aggregateDataSetName",
     "aggregateDataSetIdentifier",

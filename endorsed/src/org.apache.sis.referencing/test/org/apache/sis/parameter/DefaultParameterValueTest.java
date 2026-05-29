@@ -127,17 +127,18 @@ public final class DefaultParameterValueTest extends TestCase {
         final ParameterDescriptor<Integer> descriptor = parameter.getDescriptor();
         validate(parameter);
 
-        assertEquals("Integer param", descriptor.getName().getCode());
-        assertEquals(Integer.class,   descriptor.getValueClass());
-        assertNull  (                 descriptor.getUnit());
-        assertNull  (                 parameter .getUnit());
-        assertNull  (                 descriptor.getDefaultValue());
-        assertEquals((Integer) 14,    parameter .getValue());
-        assertEquals(14,              parameter .intValue());
-        assertEquals(14,              parameter .doubleValue());
-        assertNull  (                 descriptor.getMinimumValue());
-        assertNull  (                 descriptor.getMaximumValue());
-        assertNull  (                 descriptor.getValidValues());
+        assertEquals("Integer param",           descriptor.getName().getCode());
+        assertEquals(Integer.class,             descriptor.getValueClass());
+        assertEquals("ParameterValue<Integer>", parameter.getStandardType().getTypeName());
+        assertNull  (                           descriptor.getUnit());
+        assertNull  (                           parameter .getUnit());
+        assertNull  (                           descriptor.getDefaultValue());
+        assertEquals((Integer) 14,              parameter .getValue());
+        assertEquals(14,                        parameter .intValue());
+        assertEquals(14,                        parameter .doubleValue());
+        assertNull  (                           descriptor.getMinimumValue());
+        assertNull  (                           descriptor.getMaximumValue());
+        assertNull  (                           descriptor.getValidValues());
         /*
          * Invalid operation: this parameter does not have unit of measurement.
          */
@@ -230,17 +231,18 @@ public final class DefaultParameterValueTest extends TestCase {
         final ParameterDescriptor<Double> descriptor = parameter.getDescriptor();
         validate(parameter);
 
-        assertEquals("Numerical param", descriptor.getName().getCode());
-        assertEquals(Units.METRE,       descriptor.getUnit());
-        assertEquals(Units.METRE,       parameter .getUnit());
-        assertNull  (                   descriptor.getDefaultValue());
-        assertEquals(Double.valueOf(3), parameter .getValue());
-        assertEquals(  3,               parameter .intValue());
-        assertEquals(  3,               parameter .doubleValue());
-        assertEquals(300,               parameter .doubleValue(Units.CENTIMETRE));
-        assertNull  (                   descriptor.getMinimumValue());
-        assertNull  (                   descriptor.getMaximumValue());
-        assertNull  (                   descriptor.getValidValues());
+        assertEquals("Numerical param",        descriptor.getName().getCode());
+        assertEquals("ParameterValue<Double>", parameter.getStandardType().getTypeName());
+        assertEquals(Units.METRE,              descriptor.getUnit());
+        assertEquals(Units.METRE,              parameter .getUnit());
+        assertNull  (                          descriptor.getDefaultValue());
+        assertEquals(Double.valueOf(3),        parameter .getValue());
+        assertEquals(  3,                      parameter .intValue());
+        assertEquals(  3,                      parameter .doubleValue());
+        assertEquals(300,                      parameter .doubleValue(Units.CENTIMETRE));
+        assertNull  (                          descriptor.getMinimumValue());
+        assertNull  (                          descriptor.getMaximumValue());
+        assertNull  (                          descriptor.getValidValues());
         /*
          * Invalid operation: this parameter is a real number, not a string.
          * While we could convert the number to a string, in the context of

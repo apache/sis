@@ -88,6 +88,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
 
     /**
      * Unique identifier for this metadata record.
+     *
+     * @return {@code null}.
      */
     @Override
     public String getFileIdentifier() {
@@ -97,6 +99,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Language(s) used for documenting metadata.
      * Also the language(s) used within the data.
+     *
+     * @return empty map.
      */
     @Override
     public Collection<Locale> getLanguages() {
@@ -106,6 +110,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Language(s) used for documenting metadata.
      * Also the language(s) used within the data.
+     *
+     * @return empty map.
      */
     @Override
     public Locale getLanguage() {
@@ -115,6 +121,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Language(s) used for documenting metadata.
      * Also the language(s) used within the data.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<Locale> getLocales() {
@@ -124,6 +132,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * The character coding standard used for the metadata set.
      * Also the character coding standard(s) used for the dataset.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<CharacterSet> getCharacterSets() {
@@ -133,6 +143,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * The character coding standard used for the metadata set.
      * Also the character coding standard(s) used for the dataset.
+     *
+     * @return {@code null}.
      */
     @Override
     public CharacterSet getCharacterSet() {
@@ -141,6 +153,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
 
     /**
      * Identification of the parent metadata record.
+     *
+     * @return {@code null}.
      */
     @Override
     public String getParentIdentifier() {
@@ -151,6 +165,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
      * Code for the metadata scope, fixed to {@link ScopeCode#DATASET} by default.
      * The {@code DATASET} default value is consistent with the fact that
      * {@code SimpleMetadata} implements {@link DataIdentification}.
+     *
+     * @return {@code DATASET}.
      */
     @Override
     public Collection<ScopeCode> getHierarchyLevels() {
@@ -159,6 +175,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
 
     /**
      * Description of the metadata scope.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<String> getHierarchyLevelNames() {
@@ -167,6 +185,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
 
     /**
      * Parties responsible for the metadata information.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<ResponsibleParty> getContacts() {
@@ -175,6 +195,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
 
     /**
      * Date(s) associated with the metadata.
+     *
+     * @return empty collection.
      */
     @Override
     public Date getDateStamp() {
@@ -183,6 +205,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
 
     /**
      * Citation(s) for the standard(s) to which the metadata conform.
+     *
+     * @return {@code null}.
      */
     @Override
     public String getMetadataStandardName() {
@@ -192,6 +216,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * As of ISO 19115:2014, replaced by {@code getMetadataStandards()}
      * followed by {@link Citation#getEdition()}.
+     *
+     * @return {@code null}.
      */
     @Override
     public String getMetadataStandardVersion() {
@@ -200,6 +226,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
 
     /**
      * Online location(s) where the metadata is available.
+     *
+     * @return {@code null}.
      */
     @Override
     public String getDataSetUri() {
@@ -208,6 +236,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
 
     /**
      * Digital representation of spatial information in the dataset.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<SpatialRepresentation> getSpatialRepresentationInfo() {
@@ -216,6 +246,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
 
     /**
      * Description of the spatial and temporal reference systems used in the dataset.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<ReferenceSystem> getReferenceSystemInfo() {
@@ -224,6 +256,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
 
     /**
      * Information describing metadata extensions.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<MetadataExtensionInformation> getMetadataExtensionInfo() {
@@ -232,8 +266,9 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
 
     /**
      * Basic information about the resource(s) to which the metadata applies.
-     * This method returns {@code this} for allowing call to {@link #getCitation()}.
-     * and other methods.
+     * This method returns {@code this} for allowing call to {@link #getCitation()} and other methods.
+     *
+     * @return empty collection.
      *
      * @see #getCitation()
      * @see #getAbstract()
@@ -252,6 +287,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
 
     /**
      * Information about the feature and coverage characteristics.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<ContentInformation> getContentInfo() {
@@ -260,6 +297,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
 
     /**
      * Information about the distributor of and options for obtaining the resource(s).
+     *
+     * @return {@code null}.
      */
     @Override
     public Distribution getDistributionInfo() {
@@ -268,6 +307,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
 
     /**
      * Overall assessment of quality of a resource(s).
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<DataQuality> getDataQualityInfo() {
@@ -276,6 +317,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
 
     /**
      * Information about the catalogue of rules defined for the portrayal of a resource(s).
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<PortrayalCatalogueReference> getPortrayalCatalogueInfo() {
@@ -284,6 +327,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
 
     /**
      * Restrictions on the access and use of metadata.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<Constraints> getMetadataConstraints() {
@@ -292,6 +337,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
 
     /**
      * Information about the conceptual schema of a dataset.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<ApplicationSchemaInformation> getApplicationSchemaInfo() {
@@ -300,6 +347,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
 
     /**
      * Information about the acquisition of the data.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<AcquisitionInformation> getAcquisitionInformation() {
@@ -308,6 +357,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
 
     /**
      * Information about the frequency of metadata updates, and the scope of those updates.
+     *
+     * @return {@code null}.
      */
     @Override
     public MaintenanceInformation getMetadataMaintenance() {
@@ -323,6 +374,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
      * Citation for the resource.
      * This is part of the information returned by {@link #getIdentificationInfo()}.
      * This method returns {@code this} for allowing call to {@link #getTitle()} and other methods.
+     *
+     * @return citation for the resource.
      */
     @Override
     public Citation getCitation() {
@@ -332,6 +385,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Brief narrative summary of the resource.
      * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return {@code null}.
      */
     @Override
     public InternationalString getAbstract() {
@@ -341,6 +396,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Summary of the intentions with which the resource was developed.
      * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return {@code null}.
      */
     @Override
     public InternationalString getPurpose() {
@@ -350,6 +407,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Recognition of those who contributed to the resource.
      * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<String> getCredits() {
@@ -359,6 +418,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Status of the resource.
      * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<Progress> getStatus() {
@@ -368,6 +429,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Identification of, and means of communication with, person(s) and organisations associated with the resource(s).
      * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<ResponsibleParty> getPointOfContacts() {
@@ -379,6 +442,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
      * This is part of the information returned by {@link #getIdentificationInfo()}.
      * Default implementation returns {@link SpatialRepresentationType#VECTOR}.
      * Subclasses should override this method if they represent gridded data instead of vector data.
+     *
+     * @return {@code VECTOR}.
      */
     @Override
     public Collection<SpatialRepresentationType> getSpatialRepresentationTypes() {
@@ -388,6 +453,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Factor which provides a general understanding of the density of spatial data in the resource.
      * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<Resolution> getSpatialResolutions() {
@@ -399,6 +466,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
      * This is part of the information returned by {@link #getIdentificationInfo()}.
      * Default implementation returns {@link TopicCategory#LOCATION}.
      * Subclasses should override this method if they represent other kind of data.
+     *
+     * @return {@code LOCATION}.
      */
     @Override
     public Collection<TopicCategory> getTopicCategories() {
@@ -408,6 +477,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Spatial and temporal extent of the resource.
      * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<Extent> getExtents() {
@@ -417,6 +488,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Information about the frequency of resource updates, and the scope of those updates.
      * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<MaintenanceInformation> getResourceMaintenances() {
@@ -426,6 +499,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Graphic that illustrates the resource(s) (should include a legend for the graphic).
      * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<BrowseGraphic> getGraphicOverviews() {
@@ -435,6 +510,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Description of the format of the resource(s).
      * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<Format> getResourceFormats() {
@@ -444,6 +521,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Category keywords, their type, and reference source.
      * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<Keywords> getDescriptiveKeywords() {
@@ -454,6 +533,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
      * Basic information about specific application(s) for which the resource(s)
      * has/have been or is being used by different users.
      * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<Usage> getResourceSpecificUsages() {
@@ -463,6 +544,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Information about constraints which apply to the resource(s).
      * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<Constraints> getResourceConstraints() {
@@ -471,6 +554,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
 
     /**
      * @deprecated As of ISO 19115:2014, replaced by {@code getAssociatedResources()}.
+     *
+     * @return empty collection.
      */
     @Override
     @Deprecated
@@ -482,6 +567,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
      * Description of the resource in the producer's processing environment, including items
      * such as the software, the computer operating system, file name, and the dataset size.
      * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return {@code null}.
      */
     @Override
     public InternationalString getEnvironmentDescription() {
@@ -491,6 +578,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Any other descriptive information about the resource.
      * This is part of the information returned by {@link #getIdentificationInfo()}.
+     *
+     * @return {@code null}.
      */
     @Override
     public InternationalString getSupplementalInformation() {
@@ -505,6 +594,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Name by which the cited resource is known.
      * This is part of the information returned by {@link #getCitation()}.
+     *
+     * @return {@code null}.
      */
     @Override
     public InternationalString getTitle() {
@@ -514,6 +605,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Short names or other language names by which the cited information is known.
      * This is part of the information returned by {@link #getCitation()}.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<InternationalString> getAlternateTitles() {
@@ -523,6 +616,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Reference dates for the cited resource.
      * This is part of the information returned by {@link #getCitation()}.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<CitationDate> getDates() {
@@ -532,6 +627,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Version of the cited resource.
      * This is part of the information returned by {@link #getCitation()}.
+     *
+     * @return {@code null}.
      */
     @Override
     public InternationalString getEdition() {
@@ -541,6 +638,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Date of the edition.
      * This is part of the information returned by {@link #getCitation()}.
+     *
+     * @return {@code null}.
      */
     @Override
     public Date getEditionDate() {
@@ -550,6 +649,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Unique identifier for the resource.
      * This is part of the information returned by {@link #getCitation()}.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<Identifier> getIdentifiers() {
@@ -560,6 +661,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
      * Role, name, contact and position information for individuals or organisations
      * that are responsible for the resource.
      * This is part of the information returned by {@link #getCitation()}.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<ResponsibleParty> getCitedResponsibleParties() {
@@ -571,6 +674,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
      * This is part of the information returned by {@link #getCitation()}.
      * Default implementation returns {@link PresentationForm#TABLE_DIGITAL}.
      * Subclasses should override this method if they represent other kind of data.
+     *
+     * @return empty collection.
      */
     @Override
     public Collection<PresentationForm> getPresentationForms() {
@@ -580,6 +685,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Information about the series, or aggregate dataset, of which the dataset is a part.
      * This is part of the information returned by {@link #getCitation()}.
+     *
+     * @return {@code null}.
      */
     @Override
     public Series getSeries() {
@@ -589,6 +696,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * Other information required to complete the citation that is not recorded elsewhere.
      * This is part of the information returned by {@link #getCitation()}.
+     *
+     * @return {@code null}.
      */
     @Override
     public InternationalString getOtherCitationDetails() {
@@ -597,6 +706,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
 
     /**
      * @deprecated Removed as of ISO 19115:2014.
+     *
+     * @return {@code null}.
      */
     @Override
     @Deprecated
@@ -607,6 +718,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * International Standard Book Number.
      * This is part of the information returned by {@link #getCitation()}.
+     *
+     * @return {@code null}.
      */
     @Override
     public String getISBN() {
@@ -616,6 +729,8 @@ public class SimpleMetadata implements Metadata, DataIdentification, Citation {
     /**
      * International Standard Serial Number.
      * This is part of the information returned by {@link #getCitation()}.
+     *
+     * @return {@code null}.
      */
     @Override
     public String getISSN() {

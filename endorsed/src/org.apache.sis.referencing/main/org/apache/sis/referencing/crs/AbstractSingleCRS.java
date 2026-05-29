@@ -18,6 +18,7 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import java.util.Objects;
+import java.lang.reflect.Type;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -177,14 +178,14 @@ class AbstractSingleCRS<D extends Datum> extends AbstractCRS implements SingleCR
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
      * The default implementation returns {@code SingleCRS.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
      * @return the coordinate reference system interface implemented by this class.
      */
     @Override
-    public Class<? extends SingleCRS> getInterface() {
+    public Type getStandardType() {
         return SingleCRS.class;
     }
 

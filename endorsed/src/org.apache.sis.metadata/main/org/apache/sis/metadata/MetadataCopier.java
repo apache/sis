@@ -23,8 +23,10 @@ import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Collection;
+import java.lang.reflect.Type;
 import java.lang.reflect.Constructor;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CodeListSet;
@@ -59,7 +61,7 @@ import org.apache.sis.metadata.internal.Resources;
  * In multi-threads environment, each thread should use its own {@code MetadataCopier} instance.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.7
  * @since   0.8
 */
 public class MetadataCopier extends MetadataVisitor<Object> {
@@ -151,9 +153,9 @@ public class MetadataCopier extends MetadataVisitor<Object> {
      */
     public <T> T copy(final Class<T> type, final T metadata) {
         ArgumentChecks.ensureNonNull("type", type);
-        if (metadata instanceof AbstractMetadata) {
-            final Class<?> interfaceType = ((AbstractMetadata) metadata).getInterface();
-            if (!type.isAssignableFrom(interfaceType)) {
+        if (metadata instanceof LenientComparable) {
+            final Type interfaceType = ((LenientComparable) metadata).getStandardType();
+            if (interfaceType instanceof Class<?> && !type.isAssignableFrom((Class<?>) interfaceType)) {
                 /*
                  * In case the user specified an implementation despite the documentation warning.
                  * We could replace `type` by `interfaceType` and it would work most of the time,

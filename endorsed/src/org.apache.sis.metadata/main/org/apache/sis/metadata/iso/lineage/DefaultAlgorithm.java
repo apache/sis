@@ -22,6 +22,7 @@ import jakarta.xml.bind.annotation.XmlType;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.lineage.Algorithm;
 import org.opengis.util.InternationalString;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
 
@@ -47,9 +48,10 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   0.3
  */
+@TitleProperty(name = "citation")
 @XmlType(name = "LE_Algorithm_Type", propOrder = {
     "citation",
     "description"

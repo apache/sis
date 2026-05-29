@@ -27,6 +27,7 @@ import org.opengis.metadata.lineage.Source;
 import org.opengis.metadata.lineage.Lineage;
 import org.opengis.metadata.lineage.ProcessStep;
 import org.opengis.metadata.maintenance.ScopeCode;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 import org.apache.sis.xml.bind.FilterByVersion;
@@ -78,9 +79,10 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.7
  * @since   0.3
  */
+@TitleProperty(name = "statement")
 @XmlType(name = "LI_Lineage_Type", propOrder = {
     "statement",
     "scope",                    // New in ISO 19115:2014

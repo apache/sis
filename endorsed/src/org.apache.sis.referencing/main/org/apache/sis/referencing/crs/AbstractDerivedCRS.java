@@ -338,7 +338,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
                 ImplementationHelper.propertyAlreadySet(AbstractDerivedCRS.class, "setBaseCRS", name);
             }
         } else {
-            throw new IllegalStateException(Errors.format(Errors.Keys.MissingComponentInElement_2, getInterface(), "conversion"));
+            throw new IllegalStateException(Errors.format(Errors.Keys.MissingComponentInElement_2, getStandardType(), "conversion"));
         }
     }
 

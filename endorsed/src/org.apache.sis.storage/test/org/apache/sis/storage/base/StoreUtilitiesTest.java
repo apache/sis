@@ -16,7 +16,7 @@
  */
 package org.apache.sis.storage.base;
 
-import java.nio.charset.StandardCharsets;
+import org.apache.sis.storage.UnsupportedStorageException;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -37,15 +37,12 @@ public final class StoreUtilitiesTest extends TestCase {
     }
 
     /**
-     * Tests {@link StoreUtilities#basedOnASCII(Charset)}.
+     * Tests {@link StoreUtilities#providerByFormatName(String)}.
+     *
+     * @throws UnsupportedStorageException if no provider is found for the specified format.
      */
     @Test
-    public void testBasedOnASCII() {
-        assertTrue (StoreUtilities.basedOnASCII(StandardCharsets.US_ASCII));
-        assertTrue (StoreUtilities.basedOnASCII(StandardCharsets.ISO_8859_1));
-        assertTrue (StoreUtilities.basedOnASCII(StandardCharsets.UTF_8));
-        assertFalse(StoreUtilities.basedOnASCII(StandardCharsets.UTF_16));
-        assertFalse(StoreUtilities.basedOnASCII(StandardCharsets.UTF_16BE));
-        assertFalse(StoreUtilities.basedOnASCII(StandardCharsets.UTF_16LE));
+    public void testProviderByFormatName() throws UnsupportedStorageException {
+        assertInstanceOf(org.apache.sis.storage.csv.StoreProvider.class, StoreUtilities.providerByFormatName("CSV"));
     }
 }

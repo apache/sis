@@ -26,7 +26,6 @@ import javafx.scene.control.TreeView;
 import javafx.scene.paint.Color;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.Resources;
@@ -134,7 +133,7 @@ final class ResourceCell extends TreeCell<Resource> {
             final boolean aggregatable = isRootResource && item.isViewSelectable(resource, TreeViewType.AGGREGATION);
             Object path;
             try {
-                path = URIDataStoreProvider.location(resource);
+                path = PathAction.location(resource);
             } catch (DataStoreException e) {
                 path = null;
                 ResourceTree.unexpectedException("updateItem", e);

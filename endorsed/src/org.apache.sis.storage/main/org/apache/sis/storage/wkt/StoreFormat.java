@@ -104,7 +104,7 @@ public final class StoreFormat extends WKTFormat {
      */
     public CoordinateReferenceSystem parseCRS(final String... wkt) {
         try {
-            final CoordinateReferenceSystem[] components = new CoordinateReferenceSystem[wkt.length];
+            final var components = new CoordinateReferenceSystem[wkt.length];
             int n = 0;
             for (final String ct : wkt) {
                 if (ct != null) {

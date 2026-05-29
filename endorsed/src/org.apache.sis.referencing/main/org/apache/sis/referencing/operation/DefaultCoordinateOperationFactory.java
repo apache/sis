@@ -34,7 +34,6 @@ import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.cs.CSFactory;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
@@ -48,6 +47,7 @@ import org.apache.sis.referencing.internal.shared.ReferencingFactoryContainer;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.collection.Containers;
@@ -650,8 +650,8 @@ next:   for (SingleCRS component : CRS.getSingleComponents(targetCRS)) {
                 final var modifiedProperties = new HashMap<String, Object>(
                         IdentifiedObjects.getProperties(single, CoordinateOperation.IDENTIFIERS_KEY));
                 modifiedProperties.put(CoordinateOperations.PARAMETERS_KEY, ((SingleOperation) single).getParameterValues());
-                if (single instanceof AbstractIdentifiedObject) {
-                    modifiedProperties.put(CoordinateOperations.OPERATION_TYPE_KEY, ((AbstractIdentifiedObject) single).getInterface());
+                if (single instanceof LenientComparable) {
+                    modifiedProperties.put(CoordinateOperations.OPERATION_TYPE_KEY, ((LenientComparable) single).getStandardType());
                 }
                 modifiedProperties.putAll(properties);
                 return createSingleOperation(modifiedProperties,

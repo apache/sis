@@ -26,6 +26,7 @@ import org.opengis.metadata.acquisition.Plan;
 import org.opengis.metadata.acquisition.Requirement;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.Progress;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
 
@@ -50,9 +51,10 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   0.3
  */
+@TitleProperty(name = "citation")
 @XmlType(name = "MI_Plan_Type", propOrder = {
     "type",
     "status",

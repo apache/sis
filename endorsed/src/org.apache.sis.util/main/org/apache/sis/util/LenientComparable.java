@@ -16,6 +16,9 @@
  */
 package org.apache.sis.util;
 
+import java.lang.reflect.Type;
+import java.lang.reflect.ParameterizedType;
+
 
 /**
  * Interfaces of classes for which instances can be compared for equality using different levels of strictness.
@@ -99,16 +102,43 @@ package org.apache.sis.util;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.7
  * @since   0.3
  */
 public interface LenientComparable {
+    /**
+     * Returns the interface or base class that defines the public properties of this instance.
+     * The returned type defines the meaning of "contract" in {@link ComparisonMode#BY_CONTRACT}.
+     * The value returned by this method should be a GeoAPI interface when such interface exists.
+     * Otherwise, it should be the most generic class which contains the properties to compare.
+     *
+     * <p>All {@code equals(…)} methods should return {@code false} when they receive in argument
+     * an object which is not an instance of this type.
+     * Note that {@code equals(…)} implementations are free to require a more specific type.
+     * For example, {@link ComparisonMode#STRICT} requires the exact same class.</p>
+     *
+     * <p>The returned value is usually a {@link Class},
+     * but it may also be a {@link ParameterizedType} such as {@code DatumEnsemble<TemporalDatum>}.
+     * For a {@code Class} return value, {@code standardType.isInstance(this)} shall always be true.</p>
+     *
+     * @return the type that defines the public properties of this instance.
+     *
+     * @see ComparisonMode#BY_CONTRACT
+     * @see Classes#getRawClass(Type)
+     * @see Classes#getStandardClass(Object, Class)
+     *
+     * @since 1.7
+     */
+    default Type getStandardType() {
+        return getClass();
+    }
+
     /**
      * Compares this object with the given object for equality.
      * The strictness level is controlled by the second argument,
      * from stricter to more permissive values:
      *
-     * <table class="compact">
+     * <table class="sis">
      *   <caption>Description of comparison modes</caption>
      *   <tr><td>{@link ComparisonMode#STRICT STRICT}:</td>
      *        <td>All attributes of the compared objects shall be strictly equal.</td></tr>
@@ -167,9 +197,8 @@ public interface LenientComparable {
      *   <li>{@code A.equals(B)} implies {@code A.hashCode() == B.hashCode()};</li>
      * </ul>
      *
-     * This method is declared {@code final} in most SIS implementations for ensuring that
-     * subclasses override the above {@link #equals(Object, ComparisonMode)} method instead
-     * than this one.
+     * This method is declared {@code final} in most <abbr>SIS</abbr> implementations for ensuring that
+     * subclasses override the above {@link #equals(Object, ComparisonMode)} method instead of this one.
      *
      * @param  other  the object to compare to {@code this}.
      * @return {@code true} if both objects are strictly equal.

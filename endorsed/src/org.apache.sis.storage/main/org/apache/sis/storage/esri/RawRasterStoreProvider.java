@@ -27,7 +27,8 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
-import org.apache.sis.storage.base.PRJDataStore;
+import org.apache.sis.storage.base.URIDataStoreOption;
+import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.io.stream.IOUtilities;
 
 
@@ -46,7 +47,7 @@ import org.apache.sis.io.stream.IOUtilities;
                fileSuffixes  = {"bil", "bip", "bsq"},
                capabilities  = Capability.READ,
                resourceTypes = GridCoverageResource.class)
-public final class RawRasterStoreProvider extends PRJDataStore.Provider {
+public final class RawRasterStoreProvider extends URIDataStoreProvider {
     /**
      * The format names for raw binary raster files.
      */
@@ -68,6 +69,8 @@ public final class RawRasterStoreProvider extends PRJDataStore.Provider {
      * Creates a new provider.
      */
     public RawRasterStoreProvider() {
+        supportedOptions.add(URIDataStoreOption.DEFAULT_CRS);
+        supportedOptions.add(URIDataStoreOption.METADATA);
     }
 
     /**

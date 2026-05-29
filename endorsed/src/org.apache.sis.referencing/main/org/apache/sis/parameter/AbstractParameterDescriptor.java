@@ -17,6 +17,7 @@
 package org.apache.sis.parameter;
 
 import java.util.Map;
+import java.lang.reflect.Type;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
@@ -84,7 +85,7 @@ import static org.apache.sis.xml.bind.referencing.CC_GeneralOperationParameter.D
  * </table>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  * @since   0.5
  */
 @XmlType(name = "AbstractGeneralOperationParameterType", propOrder = {
@@ -207,14 +208,15 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
      * The default implementation returns {@code GeneralParameterDescriptor.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
      * @return the parameter descriptor interface implemented by this class.
+     * @since 1.7
      */
     @Override
-    public Class<? extends GeneralParameterDescriptor> getInterface() {
+    public Type getStandardType() {
         return GeneralParameterDescriptor.class;
     }
 

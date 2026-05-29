@@ -26,6 +26,7 @@ import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
 import org.apache.sis.xml.bind.gco.StringAdapter;
 import org.apache.sis.xml.bind.gco.URIAdapter;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
 // Specific to the main branch:
@@ -55,9 +56,10 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.7
  * @since   0.3
  */
+@TitleProperty(name = "name")
 @XmlType(name = "CI_OnlineResource_Type", propOrder = {
     "linkage",
     "protocol",

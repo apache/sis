@@ -16,8 +16,6 @@
  */
 package org.apache.sis.storage.wkt;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.apache.sis.storage.DataStore;
@@ -26,13 +24,14 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
+import org.apache.sis.storage.base.URIDataStoreOption;
 import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.util.Version;
 
 
 /**
- * The provider of WKT {@link Store} instances.
+ * The provider of <abbr>WKT</abbr> {@link Store} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -68,45 +67,38 @@ public final class StoreProvider extends URIDataStoreProvider {
         static final int MIN_LENGTH = 6;
 
         /**
-         * The set of WKT keywords for CRS definitions.
-         * This set does not include the WKT keywords for coordinate operations,
-         * because the WKT store can only return metadata and metadata can only store the CRS.
+         * The set of <abbr>WKT</abbr> keywords for <abbr>CRS</abbr> definitions.
+         * This set does not include the <abbr>WKT</abbr> keywords for coordinate operations,
+         * because the <abbr>WKT</abbr> store can only return metadata and metadata can only
+         * store the <abbr>CRS</abbr>s.
          */
-        private final Set<String> keywords;
+        final Set<String> keywords;
 
         /**
          * Creates the unique instance.
          */
         private Peek() {
             super(14);
-            final Set<String> s = new HashSet<>(22);
-            s.add(WKTKeywords.GeodeticCRS);
-            s.add(WKTKeywords.GeodCRS);
-            s.add(WKTKeywords.GeogCS);
-            s.add(WKTKeywords.GeocCS);
-            s.add(WKTKeywords.VerticalCRS);
-            s.add(WKTKeywords.VertCRS);
-            s.add(WKTKeywords.Vert_CS);
-            s.add(WKTKeywords.TimeCRS);
-            s.add(WKTKeywords.ImageCRS);
-            s.add(WKTKeywords.EngineeringCRS);
-            s.add(WKTKeywords.EngCRS);
-            s.add(WKTKeywords.Local_CS);
-            s.add(WKTKeywords.CompoundCRS);
-            s.add(WKTKeywords.Compd_CS);
-            s.add(WKTKeywords.ProjectedCRS);
-            s.add(WKTKeywords.ProjCRS);
-            s.add(WKTKeywords.ProjCS);
-            s.add(WKTKeywords.Fitted_CS);
-            s.add(WKTKeywords.BoundCRS);
-            keywords = s;
-        }
-
-        /**
-         * Returns the keywords for test purpose.
-         */
-        final Set<String> keywords() {
-            return Collections.unmodifiableSet(keywords);
+            keywords = Set.of(
+                    WKTKeywords.GeodeticCRS,
+                    WKTKeywords.GeodCRS,
+                    WKTKeywords.GeogCS,
+                    WKTKeywords.GeocCS,
+                    WKTKeywords.VerticalCRS,
+                    WKTKeywords.VertCRS,
+                    WKTKeywords.Vert_CS,
+                    WKTKeywords.TimeCRS,
+                    WKTKeywords.ImageCRS,
+                    WKTKeywords.EngineeringCRS,
+                    WKTKeywords.EngCRS,
+                    WKTKeywords.Local_CS,
+                    WKTKeywords.CompoundCRS,
+                    WKTKeywords.Compd_CS,
+                    WKTKeywords.ProjectedCRS,
+                    WKTKeywords.ProjCRS,
+                    WKTKeywords.ProjCS,
+                    WKTKeywords.Fitted_CS,
+                    WKTKeywords.BoundCRS);
         }
 
         /**
@@ -152,6 +144,7 @@ public final class StoreProvider extends URIDataStoreProvider {
      * Creates a new provider.
      */
     public StoreProvider() {
+        supportedOptions.add(URIDataStoreOption.METADATA);
     }
 
     /**

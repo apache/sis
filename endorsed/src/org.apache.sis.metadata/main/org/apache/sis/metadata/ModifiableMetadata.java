@@ -29,6 +29,7 @@ import java.nio.charset.Charset;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.CodeList;
 import org.opengis.metadata.Metadata;               // For javadoc
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.metadata.internal.Resources;
 import org.apache.sis.system.Semaphores;
@@ -351,7 +352,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
         } else {
             copier = new MetadataCopier(getStandard());
         }
-        final ModifiableMetadata md = (ModifiableMetadata) copier.copyRecursively(getInterface(), this);
+        final var md = (ModifiableMetadata) copier.copyRecursively(Classes.getRawClass(getStandardType()), this);
         if (target.code > EDITABLE) {
             md.transitionTo(target);
         }
@@ -370,7 +371,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *
      * @since 1.0
      */
-    protected void checkWritePermission(Object current) throws UnmodifiableMetadataException {
+    protected void checkWritePermission(final Object current) throws UnmodifiableMetadataException {
         if (state != COMPLETABLE) {
             if (state == FINAL) {
                 throw new UnmodifiableMetadataException(Resources.format(Resources.Keys.UnmodifiableMetadata));
@@ -382,9 +383,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
             } else {
                 standard = getStandard();
             }
-            final Object c = standard.getTitle(current);
-            if (c != null) current = c;
-            throw new UnmodifiableMetadataException(Resources.format(Resources.Keys.ElementAlreadyInitialized_1, current));
+            throw new UnmodifiableMetadataException(Resources.format(
+                    Resources.Keys.ElementAlreadyInitialized_1,
+                    standard.getTitle(current).orElse(current)));
         }
     }
 

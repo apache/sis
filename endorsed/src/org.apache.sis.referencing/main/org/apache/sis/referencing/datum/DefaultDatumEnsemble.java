@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Function;
+import java.lang.reflect.Type;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
@@ -42,11 +43,11 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.internal.ParameterizedType;
 import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.referencing.internal.shared.WKTUtilities;
 import org.apache.sis.metadata.internal.shared.NameToIdentifier;
-import org.apache.sis.metadata.internal.shared.SecondaryTrait;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
@@ -59,6 +60,8 @@ import java.util.Date;
 import org.opengis.referencing.datum.VerticalDatumType;
 
 // Specific to the main branch:
+import org.opengis.annotation.UML;
+import static org.opengis.annotation.Specification.ISO_19111;
 import org.opengis.metadata.extent.Extent;
 
 
@@ -87,7 +90,7 @@ import org.opengis.metadata.extent.Extent;
  *
  * @since 1.5
  */
-@SecondaryTrait(Datum.class)
+@UML(identifier="DatumEnsemble", specification=ISO_19111)
 public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObject implements Datum {
     /**
      * Serial number for inter-operability with different versions.
@@ -272,6 +275,23 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
             ensemble = Factory.forMemberType(memberType, ensemble, null, ensemble.members, ensemble.ensembleAccuracy);
         }
         return ensemble;
+    }
+
+    /**
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
+     *
+     * @return {@code DatumEnsemble.class} or a user-defined sub-interface.
+     * @since 1.7
+     */
+    @Override
+    public Type getStandardType() {
+        return new ParameterizedType(DefaultDatumEnsemble.class) {
+            @Override protected Class<?> getActualTypeArgument() {
+                Class<? extends Datum>[] types = Classes.getLeafInterfaces(DefaultDatumEnsemble.this.getClass(), Datum.class);
+                return (types.length != 0) ? types[0] : Datum.class;
+            }
+        };
     }
 
     /*

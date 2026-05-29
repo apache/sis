@@ -212,6 +212,7 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem {
         properties.put(OVERALL_OWNER_KEY, party);
         return properties;
     }
+
     /**
      * Property used to characterize the spatial reference system.
      *

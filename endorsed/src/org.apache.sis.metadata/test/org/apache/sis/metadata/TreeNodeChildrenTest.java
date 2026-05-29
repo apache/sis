@@ -38,9 +38,6 @@ import static org.apache.sis.test.Assertions.assertSingleton;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 
-// Specific to the main branch:
-import java.util.Date;
-
 
 /**
  * Tests the {@link TreeNodeChildren} class.
@@ -151,7 +148,7 @@ public final class TreeNodeChildrenTest extends TestCase {
         final MetadataStandard standard = MetadataStandard.ISO_19115;
         final TreeTableView    table    = new TreeTableView(standard, citation, Citation.class, valuePolicy);
         final TreeNode         node     = (TreeNode) table.getRoot();
-        final PropertyAccessor accessor = standard.getAccessor(new CacheKey(citation.getClass()), true);
+        final PropertyAccessor accessor = standard.getTypeAccessor(citation.getClass(), true);
         return new TreeNodeChildren(node, citation, accessor);
     }
 

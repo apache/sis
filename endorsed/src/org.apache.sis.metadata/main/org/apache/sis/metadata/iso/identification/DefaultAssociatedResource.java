@@ -26,6 +26,7 @@ import org.opengis.metadata.identification.InitiativeType;
 import org.apache.sis.xml.bind.metadata.CI_Citation;
 import org.apache.sis.xml.bind.metadata.code.DS_AssociationTypeCode;
 import org.apache.sis.xml.bind.metadata.code.DS_InitiativeTypeCode;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
 // Specific to the main branch:
@@ -64,9 +65,10 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.7
  * @since   0.5
  */
+@TitleProperty(name = "name")
 @XmlType(name = "MD_AssociatedResource_Type", propOrder = {
     "name",
     "associationType",

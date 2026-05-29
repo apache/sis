@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
+import java.lang.reflect.Type;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -41,6 +42,7 @@ import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.referencing.internal.shared.WKTUtilities;
 import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
@@ -130,18 +132,18 @@ class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements Geo
      */
     static IllegalArgumentException illegalCoordinateSystemType(final CoordinateSystem cs) {
         return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCoordinateSystem_1,
-                ReferencingUtilities.getInterface(CoordinateSystem.class, cs)));
+                    Classes.getStandardClass(cs, CoordinateSystem.class)));
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code GeodeticCRS.class}.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * The default implementation returns {@code GeodeticCRS.class}.
      * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
      * @return the coordinate reference system interface implemented by this class.
      */
     @Override
-    public Class<? extends GeodeticCRS> getInterface() {
+    public Type getStandardType() {
         return GeodeticCRS.class;
     }
 

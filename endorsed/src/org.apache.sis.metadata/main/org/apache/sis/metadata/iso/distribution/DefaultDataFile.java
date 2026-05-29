@@ -22,17 +22,23 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.opengis.util.InternationalString;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.distribution.DataFile;
-import org.apache.sis.xml.Namespaces;
+import org.opengis.util.InternationalString;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.xml.bind.gcx.MimeFileTypeAdapter;
+import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.util.LocalName;
+
+// Specific to the main branch:
+import org.opengis.annotation.UML;
+import static org.opengis.annotation.Obligation.MANDATORY;
+import static org.opengis.annotation.Specification.ISO_19115;
 
 
 /**
@@ -56,9 +62,10 @@ import org.opengis.util.LocalName;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.7
  * @since   0.3
  */
+@TitleProperty(name = "fileName")
 @XmlType(name = "MX_DataFile_Type", namespace = Namespaces.MDT, propOrder = {
     "fileName",
     "fileDescription",
@@ -170,6 +177,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @see org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic#getFileName()
      * @since 1.0
      */
+    @UML(identifier="fileName", obligation=MANDATORY, specification=ISO_19115)  // Actually ISO_19115_3
     @XmlElement(name = "fileName", required = true)
     public URI getFileName() {
         return fileName;

@@ -48,7 +48,7 @@ import org.apache.sis.measure.Units;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see DefaultPolarCS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCylindricalCS(String)
@@ -168,18 +168,14 @@ public class DefaultCylindricalCS extends AbstractCS implements CylindricalCS {
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code CylindricalCS.class}.
-     *
-     * <h4>Note for implementers</h4>
-     * Subclasses usually do not need to override this method since GeoAPI does not define {@code CylindricalCS}
-     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
-     * own set of interfaces.
+     * Returns the GeoAPI interface that defines the contract of this implementation class.
+     * This is the base type required by {@code equals(…)} methods for returning a potentially {@code true} value.
      *
      * @return {@code CylindricalCS.class} or a user-defined sub-interface.
+     * @since 1.7
      */
     @Override
-    public Class<? extends CylindricalCS> getInterface() {
+    public Class<? extends CylindricalCS> getStandardType() {
         return CylindricalCS.class;
     }
 

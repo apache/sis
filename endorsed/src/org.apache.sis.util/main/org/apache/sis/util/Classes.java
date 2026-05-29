@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.lang.reflect.Type;
 import java.lang.reflect.Field;
@@ -34,7 +35,9 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Modifier;
 import org.opengis.annotation.UML;
 import org.apache.sis.pending.jdk.JDK12;
-import org.apache.sis.pending.jdk.JDK19;
+
+// Specific to the main branch:
+import org.opengis.util.InternationalString;
 
 
 /**
@@ -117,7 +120,7 @@ public final class Classes {
                 while (element!=null && ++change != 0);
             } else if (element != Void.TYPE) {
                 // TODO: use Class.arrayType() with JDK12.
-                final StringBuilder buffer = new StringBuilder();
+                final var buffer = new StringBuilder();
                 do buffer.insert(0, '[');
                 while (--change != 0);
                 if (element.isPrimitive()) {
@@ -269,7 +272,7 @@ public final class Classes {
             typeOrMethod = ((Class<?>) typeOrMethod).getGenericSuperclass();
         }
         if (typeOrMethod instanceof ParameterizedType) {
-            final ParameterizedType p = (ParameterizedType) typeOrMethod;
+            final var p = (ParameterizedType) typeOrMethod;
             final Type[] parameters = p.getActualTypeArguments();
             final int i = chooseSingleType(p.getRawType(), parameters.length);
             if (i >= 0) {
@@ -293,11 +296,9 @@ public final class Classes {
                  * Then replace (for example) `ParameterDescriptor<?>` by `ParameterDescriptor`
                  * in order to get an instance of `Class` instead of other kind of `Type`.
                  */
-                if (type instanceof ParameterizedType) {
-                    type = ((ParameterizedType) type).getRawType();
-                }
-                if (type instanceof Class<?>) {
-                    return changeArrayDimension((Class<?>) type, dimension);
+                final Class<?> element = getRawClass(type);
+                if (element != null) {
+                    return changeArrayDimension(element, dimension);
                 }
             }
         }
@@ -316,11 +317,31 @@ public final class Classes {
     @SuppressWarnings("fallthrough")
     private static int chooseSingleType(final Object rawType, final int count) {
         switch (count) {
-            case 2: if (!(rawType instanceof Class<?>) && Map.class.isAssignableFrom((Class<?>) rawType)) break;
-                    // Else fallthrough.
-            case 1: return 0;
+            default: return -1;
+            case 1:  return 0;
+            case 2:  return (rawType instanceof Class<?> && Map.class.isAssignableFrom((Class<?>) rawType)) ? 0 : -1;
         }
-        return -1;
+    }
+
+    /**
+     * Returns the raw class for the given generic type, or {@code null} if the type is not recognized.
+     * The current implementation recognizes instance of {@link Class} and {@link ParameterizedType}.
+     *
+     * <p><b>Purpose:</b> this method can be used for fetching the {@link Class} part
+     * from the value returned by {@link LenientComparable#getStandardType()}.</p>
+     *
+     * @param  type  type for which to get the raw type, or {@code null}.
+     * @return the raw class of the given type, or {@code null} if unknown.
+     *
+     * @see ParameterizedType#getRawType()
+     * @see LenientComparable#getStandardType()
+     * @since 1.7
+     */
+    public static Class<?> getRawClass(Type type) {
+        if (type instanceof ParameterizedType) {
+            type = ((ParameterizedType) type).getRawType();
+        }
+        return (type instanceof Class<?>) ? (Class<?>) type : null;
     }
 
     /**
@@ -346,21 +367,75 @@ public final class Classes {
     }
 
     /**
-     * Returns the first type or super-type (including interface) considered "standard" in Apache SIS sense.
-     * This method applies the following heuristic rules, in that order:
+     * Returns the "standard" (in Apache <abbr>SIS</abbr> sense) interface or class of the given object.
+     * The {@code baseType} argument narrows the search for handling the case where many standard interfaces are
+     * implemented by the same class (e.g., <abbr>CRS</abbr> and <abbr>CS</abbr> may be implemented together).
+     * This method applies the following heuristic rules, in that order and ignoring rules that do not apply:
      *
      * <ul>
-     *   <li>If the given type implements at least one interface having the {@link UML} annotation,
-     *       then the first annotated interface is returned.</li>
-     *   <li>Otherwise the first public class or parent class is returned.</li>
+     *   <li>The class or raw-type declared by {@link LenientComparable#getStandardType()}.</li>
+     *   <li>Otherwise, the first interface assignable to {@code baseType} which has the {@link UML} annotation.</li>
+     *   <li>Otherwise, {@link Object#getClass()} if that class {@linkplain #isPublic(Class) is public}.</li>
+     *   <li>Otherwise, the first public parent class assignable to {@code baseType}.</li>
+     *   <li>Otherwise, {@code baseType}.</li>
      * </ul>
      *
-     * Those heuristic rules may be adjusted in any future Apache SIS version.
+     * Those heuristic rules may be adjusted in any future Apache <abbr>SIS</abbr> version.
+     *
+     * @param  <T>       the compile-time value of the {@code baseType} argument.
+     * @param  object    the object for which to get the standard interface or class, or {@code null}.
+     * @param  baseType  the base type of the desired type (e.g., {@code CoordinateReferenceSystem.class}).
+     * @return the standard type implemented by {@code object}, or {@code null} if {@code object} is null.
+     * @throws NullPointerException if {@code baseType} is null.
+     * @throws ClassCastException if the condition documented in {@link LenientComparable#getStandardType()} is violated,
+     *         or if {@code object} is not an instance of {@code baseType} (violation of this method parameterized type).
+     *
+     * @since 1.7
+     */
+    public static <T> Class<? extends T> getStandardClass(final T object, final Class<T> baseType) {
+        if (object instanceof LenientComparable) {
+            final Class<?> type = getRawClass(((LenientComparable) object).getStandardType());
+            if (type != null) {
+                return type.asSubclass(baseType);
+            }
+        }
+        Class<?> type = getClass(object);
+        if (baseType.isInterface() || baseType == Object.class) {
+            for (final Class<?> candidate : getInterfaceSet(type, baseType)) {
+                if (candidate.isAnnotationPresent(UML.class)
+                        // special cases for UML annotation not present in GeoAPI 3.0.
+                        || InternationalString.class.isAssignableFrom(candidate))
+                {
+                    return candidate.asSubclass(baseType);
+                }
+            }
+        }
+        while (type != null) {
+            if (isPublic(type)) {
+                return type.asSubclass(baseType);
+            }
+            type = type.getSuperclass();
+            if (!baseType.isAssignableFrom(type)) break;
+        }
+        return baseType;
+    }
+
+    /**
+     * Returns the "standard" (in Apache <abbr>SIS</abbr> sense) interface or class of the given implementation class.
+     * This method applies the following heuristic rules, in that order and ignoring rules that do not apply:
+     *
+     * <ul>
+     *   <li>The first interface extended or implemented by {@code type} which has the {@link UML} annotation.</li>
+     *   <li>Otherwise, {@code type} if that class {@linkplain #isPublic(Class) is public}.</li>
+     *   <li>Otherwise, the first public parent class.</li>
+     *   <li>Otherwise, {@code type}.</li>
+     * </ul>
+     *
+     * Those heuristic rules may be adjusted in any future Apache <abbr>SIS</abbr> version.
      *
      * @param  <T>   the compile-time type argument.
-     * @param  type  the type for which to get the standard interface or class. May be {@code null}.
-     * @return a standard interface implemented by {@code type}, or otherwise the most specific public class.
-     *         Is {@code null} if the given {@code type} argument was null.
+     * @param  type  the type for which to get the standard interface or class, or {@code null}.
+     * @return the standard type assignable from {@code type}, or {@code type} (possibly null) if none.
      *
      * @since 1.0
      */
@@ -381,7 +456,7 @@ public final class Classes {
     /**
      * Returns every interfaces implemented, directly or indirectly, by the given class or interface.
      * This is similar to {@link Class#getInterfaces()} except that this method searches recursively
-     * in the super-interfaces. For example if the given type is {@link java.util.ArrayList}, then
+     * in the super-interfaces. For example, if the given type is {@link java.util.ArrayList}, then
      * the returned set will contain {@link java.util.List} (which is implemented directly)
      * together with its parent interfaces {@link Collection} and {@link Iterable}.
      *
@@ -390,22 +465,21 @@ public final class Classes {
      * in the {@code implements} or {@code extends} clause. Parent interfaces are next.
      *
      * @param  <T>   the compile-time type of the {@code Class} argument.
-     * @param  type  the class or interface for which to get all implemented interfaces.
+     * @param  type  the class or interface for which to get all implemented interfaces, or {@code null}.
      * @return all implemented interfaces (not including the given {@code type} if it was an interface),
-     *         or an empty array if none.
+     *         or an empty array if none or if {@code type} is null.
      *
      * @see Class#getInterfaces()
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     public static <T> Class<? super T>[] getAllInterfaces(final Class<T> type) {
-        final Set<Class<?>> interfaces = getInterfaceSet(type);
-        return (interfaces != null) ? interfaces.toArray(Class[]::new) : EMPTY_ARRAY;
+        return getInterfaceSet(type, Object.class).toArray(Class[]::new);
     }
 
     /**
      * Implementation of {@link #getAllInterfaces(Class)} returning a {@link Set}.
-     * The public API exposes the method returning an array instead of a set for
-     * the following reasons:
+     * The public <abbr>API</abbr> exposes the method returning an array instead
+     * of a set for the following reasons:
      *
      * <ul>
      *   <li>Consistency with other methods ({@link #getLeafInterfaces(Class, Class)},
@@ -415,16 +489,17 @@ public final class Classes {
      *       while they cannot cast {@code Set<Class<? super T>>} to {@code Set<Class<?>>}.</li>
      * </ul>
      *
-     * See {@link #getInterfaceSet(Class, Set)} javadoc for a note about elements order.
+     * See {@link #getInterfaceSet(Class, Class, Set)} javadoc for a note about elements order.
      *
-     * @param  type  the class or interface for which to get all implemented interfaces.
-     * @return all implemented interfaces (not including the given {@code type} if it was an interface),
-     *         or {@code null} if none. Callers can freely modify the returned set.
+     * @param  type      the class or interface for which to get all implemented interfaces.
+     * @param  baseType  the base type of the interfaces to examine.
+     * @return all implemented interfaces (not including the given {@code type} if it was an interface).
+     *         Callers can freely modify the returned set.
      */
-    private static Set<Class<?>> getInterfaceSet(Class<?> type) {
-        Set<Class<?>> interfaces = null;
+    private static Set<Class<?>> getInterfaceSet(Class<?> type, final Class<?> baseType) {
+        final var interfaces = new LinkedHashSet<Class<?>>();
         while (type != null) {
-            interfaces = getInterfaceSet(type, interfaces);
+            getInterfaceSet(type, baseType, interfaces);
             type = type.getSuperclass();
         }
         return interfaces;
@@ -443,44 +518,41 @@ public final class Classes {
      * But if instead we add all directly implemented interfaces before to add parents,
      * then we get {A, B, C} order, which is better.
      *
-     * @param  type   the type for which to add the interfaces in the given set.
-     * @param  addTo  the set where to add interfaces, or {@code null} if not yet created.
-     * @return the given set (may be {@code null}), or a new set if the given set was null
-     *         and at least one interface has been found.
+     * @param  type      the type for which to add the interfaces in the given set.
+     * @param  baseType  the base type of the interfaces to examine.
+     * @param  addTo     the set where to add interfaces.
      */
-    private static Set<Class<?>> getInterfaceSet(final Class<?> type, Set<Class<?>> addTo) {
+    private static void getInterfaceSet(final Class<?> type, final Class<?> baseType, final Set<Class<?>> addTo) {
         final Class<?>[] interfaces = type.getInterfaces();
         for (int i=0; i<interfaces.length; i++) {
-            if (addTo == null) {
-                addTo = JDK19.newLinkedHashSet(interfaces.length);
-            }
-            if (!addTo.add(interfaces[i])) {
-                interfaces[i] = null;           // Remember that this interface is already present.
+            final Class<?> candidate = interfaces[i];
+            if (!(baseType.isAssignableFrom(candidate) && addTo.add(candidate))) {
+                interfaces[i] = null;    // Remember that this interface is discarded or already present.
             }
         }
         for (final Class<?> candidate : interfaces) {
             if (candidate != null) {
-                getInterfaceSet(candidate, addTo);
+                getInterfaceSet(candidate, baseType, addTo);
             }
         }
-        return addTo;
     }
 
     /**
-     * Returns the interfaces implemented by the given class and assignable to the given base
-     * interface, or an empty array if none. If more than one interface extends the given base,
-     * then the most specialized interfaces are returned. For example if the given class
-     * implements both the {@link Set} and {@link Collection} interfaces, then the returned
-     * array contains only the {@code Set} interface.
+     * Returns the public interfaces implemented by the given class and assignable to the given base interface.
+     * If many interface extends the given base interface, then the most specialized interfaces are returned.
+     * For example, if the given class implements both the {@link List} and {@link Collection} interfaces,
+     * then the returned array contains only the {@code List} interface.
      *
-     * <h4>Example</h4>
+     * <p><b>Example:</b>
      * {@code getLeafInterfaces(ArrayList.class, Collection.class)} returns an array of length 1
-     * containing {@code List.class}.
+     * containing {@code List.class}.</p>
+     *
+     * This method returns only {@linkplain #isPublic(Class) public} interfaces.
      *
      * @param  <T>   the type of the {@code baseInterface} class argument.
      * @param  type  a class for which the implemented interfaces are desired, or {@code null}.
      * @param  baseInterface  the base type of the interfaces to search.
-     * @return the leaf interfaces matching the given criterion, or an empty array if none.
+     * @return the leaf public interfaces that are assignable to the given base, or an empty array if none.
      */
     @SuppressWarnings("unchecked")
     public static <T> Class<? extends T>[] getLeafInterfaces(Class<?> type, final Class<T> baseInterface) {
@@ -489,7 +561,7 @@ public final class Classes {
         while (type != null) {
             final Class<?>[] candidates = type.getInterfaces();
 next:       for (final Class<?> candidate : candidates) {
-                if (baseInterface == null || baseInterface.isAssignableFrom(candidate)) {
+                if (isPublic(candidate) && baseInterface.isAssignableFrom(candidate)) {
                     /*
                      * At this point, we have an interface to be included in the returned array.
                      * If a more specialized interface existed before 'candidate', forget the
@@ -517,26 +589,6 @@ next:       for (final Class<?> candidate : candidates) {
             type = type.getSuperclass();
         }
         return (Class[]) ArraysExt.resize(types, count);
-    }
-
-    /**
-     * Returns the most specific class which is a common parent of all the specified classes.
-     * This method is not public in order to make sure that it contains only classes, not
-     * interfaces, since our implementation is not designed for multi-inheritances.
-     *
-     * @param  types  the collection where to search for a common parent.
-     * @return the common parent, or {@code null} if the given collection is empty.
-     */
-    private static Class<?> common(final Set<Class<?>> types) {
-        final Iterator<Class<?>> it = types.iterator();
-        if (!it.hasNext()) {
-            return null;
-        }
-        Class<?> type = it.next();
-        while (it.hasNext()) {
-            type = findCommonClass(type, it.next());
-        }
-        return type;
     }
 
     /**
@@ -569,18 +621,19 @@ next:       for (final Class<?> candidate : candidates) {
 
     /**
      * Returns the interfaces which are implemented by the two given classes. The returned set
-     * does not include the parent interfaces. For example if the two given objects implement the
+     * does not include the parent interfaces. For example, if the two given types extend the
      * {@link Collection} interface, then the returned set will contain the {@code Collection}
      * type but not the {@link Iterable} type, since it is implied by the collection type.
      *
-     * @param  c1  the first class.
-     * @param  c2  the second class.
+     * @param  c1  the first class, or {@code null}.
+     * @param  c2  the second class, or {@code null}.
      * @return the interfaces common to both classes, or an empty set if none.
      *         Callers can freely modify the returned set.
      */
     public static Set<Class<?>> findCommonInterfaces(final Class<?> c1, final Class<?> c2) {
-        final Set<Class<?>> interfaces = getInterfaceSet(c1);
-        final Set<Class<?>> buffer     = getInterfaceSet(c2);               // To be recycled.
+        final Class<?> baseType = Object.class;     // Not configurable for now, but could be an argument.
+        final Set<Class<?>> interfaces = getInterfaceSet(c1, baseType);
+        final Set<Class<?>> buffer     = getInterfaceSet(c2, baseType);     // To be recycled.
         if (interfaces == null || buffer == null) {
             return Collections.emptySet();
         }
@@ -588,7 +641,7 @@ next:       for (final Class<?> candidate : candidates) {
         for (Iterator<Class<?>> it = interfaces.iterator(); it.hasNext();) {
             final Class<?> candidate = it.next();
             buffer.clear();     // Safe because the buffer cannot be Collections.EMPTY_SET at this point.
-            getInterfaceSet(candidate, buffer);
+            getInterfaceSet(candidate, baseType, buffer);
             if (interfaces.removeAll(buffer)) {
                 it = interfaces.iterator();
             }

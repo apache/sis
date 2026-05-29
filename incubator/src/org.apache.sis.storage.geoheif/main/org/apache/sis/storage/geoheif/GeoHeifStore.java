@@ -42,7 +42,7 @@ import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.metadata.MetadataBuilder;
-import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.URIDataStoreOption;
 import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.isobmff.Root;
@@ -165,7 +165,7 @@ public class GeoHeifStore extends DataStore implements Aggregate {
      */
     @Override
     public Optional<ParameterValueGroup> getOpenParameters() {
-        return Optional.ofNullable(URIDataStore.parameters(provider, location));
+        return Optional.ofNullable(URIDataStoreOption.createWithLocationOnly(provider, location));
     }
 
     /**
