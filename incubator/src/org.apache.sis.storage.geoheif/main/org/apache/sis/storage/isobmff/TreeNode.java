@@ -219,14 +219,14 @@ public abstract class TreeNode {
      */
     @Override
     public final String toString() {
-        return toTree(null, getClass().getSimpleName(), false).toString();
+        return toTree(Locale.getDefault(), getClass().getSimpleName(), false).toString();
     }
 
     /**
      * Returns <abbr>HEIF</abbr> boxes and their fields as a tree.
      * Used for showing native metadata or for debugging purposes.
      *
-     * @param  locale       the locale to use, or {@code null} for the default.
+     * @param  locale       the locale to use.
      * @param  rootName     name of the root node.
      * @param  withSummary  whether to put a summary text in container nodes.
      * @return fields contained in this node, together with child boxes.

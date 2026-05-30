@@ -221,7 +221,7 @@ final class CoverageBuilder implements Emptiable {
             final Box property = properties.get(i);
             switch (property.type()) {
                 /*
-                 * We should have only one instance of `ImageSpatialExtents`. If nevertheless there is many,
+                 * We should have only one instance of `ImageSpatialExtents`. If nevertheless there are many,
                  * the use of the maximum values increases the chances that we detect inconsistency because
                  * it may result in a length larger than the size of the box which contains the pixels.
                  */
@@ -234,7 +234,7 @@ final class CoverageBuilder implements Emptiable {
                 }
                 /*
                  * We should have one instance of `ComponentDefinition` and `PixelInformation`. If nevertheless
-                 * there is many, maybe a broken writer puts one element per box. If this assumption is wrong,
+                 * there are many, maybe a broken writer puts one element per box. If this assumption is wrong,
                  * the total length should be greater than the pixels box size, thus allowing error detection.
                  */
                 case ComponentDefinition.BOXTYPE: {
@@ -340,12 +340,17 @@ final class CoverageBuilder implements Emptiable {
      * the metadata information collected by the tile builder to this builder, otherwise they will be lost.
      * This method needs to be invoked before {@link #gridGeometry()} and {@link #sampleDimensions()}.</p>
      *
-     * @param  tile  the builder used for the tiles.
+     * <p>If this method is invoked many times with a non-null {@code firstBuilder} argument, only the first
+     * occurrence is retained. It does not necessarily cause a lost of data because the caller already saved
+     * the image in the {@link ResourceBuilder#resources} list, and the builder is used for fetching
+     * information that should be the same for every tiles.</p>
+     *
+     * @param  firstBuilder  the builder used for building the first tile, or {@code null} if none.
      */
-    final void setTileBuilder(final CoverageBuilder tile) {
-        if (tile != null && tileBuilder == null) {
-            tileBuilder = tile;
-            metadata = tile.metadata();
+    final void setTileBuilder(final CoverageBuilder firstBuilder) {
+        if (firstBuilder != null && tileBuilder == null) {
+            tileBuilder = firstBuilder;
+            metadata = firstBuilder.metadata();
         }
     }
 
@@ -520,7 +525,7 @@ final class CoverageBuilder implements Emptiable {
             }
             return;
         }
-        final int[] bitsPerSample = new int[numBands];
+        final var bitsPerSample = new int[numBands];
         final var sd = full ? new SampleDimension[numBands] : null;
         final var sb = full ? new SampleDimension.Builder() : null;
         int numBits=0, redMask=0, greenMask=0, blueMask=0, alphaMask=0;

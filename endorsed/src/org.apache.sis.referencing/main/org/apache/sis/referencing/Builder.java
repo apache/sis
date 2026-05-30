@@ -274,7 +274,7 @@ public abstract class Builder<B extends Builder<B>> {
         if (object != null) {
             properties.putAll(IdentifiedObjects.getProperties(object));
             final var valueAlias = (GenericName[]) properties.remove(IdentifiedObject.ALIAS_KEY);
-            final var  valueIds  = (Identifier[])  properties.remove(IdentifiedObject.IDENTIFIERS_KEY);
+            final var valueIds   = (Identifier[])  properties.remove(IdentifiedObject.IDENTIFIERS_KEY);
             if (valueAlias != null) Collections.addAll(aliases, valueAlias);
             if (valueIds   != null) Collections.addAll(identifiers, valueIds);
         }
