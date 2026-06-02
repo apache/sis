@@ -78,13 +78,20 @@ final class MainBoxRegistry extends BoxRegistry {
     @Override
     public Box create(final Reader reader, final int fourCC) throws IOException, DataStoreException {
         switch (fourCC) {
+            case AuxiliaryImageReference.BOXTYPE:       return new AuxiliaryImageReference(reader);
+            case BaseImageReference.BOXTYPE:            return new BaseImageReference(reader);
             case ChromaLocation.BOXTYPE:                return new ChromaLocation(reader);
+            case CleanAperture.BOXTYPE:                 return new CleanAperture(reader);
             case ColourInformation.BOXTYPE:             return new ColourInformation(reader);
             case CombinaisonType.BOXTYPE:               return new CombinaisonType(reader);
             case ComponentDefinition.BOXTYPE:           return reader.componentDefinition = new ComponentDefinition(reader);
             case ComponentPalette.BOXTYPE:              return new ComponentPalette(reader, reader.componentDefinition);
             case ComponentPatternDefinition.BOXTYPE:    return new ComponentPatternDefinition(reader, reader.componentDefinition);
             case ComponentReferenceLevel.BOXTYPE:       return new ComponentReferenceLevel(reader);
+            case CompressedUnitsItemInfo.BOXTYPE:       return new CompressedUnitsItemInfo(reader);
+            case CompressionAV1.BOXTYPE:                return new CompressionAV1(reader);
+            case CompressionConfiguration.BOXTYPE:      return new CompressionConfiguration(reader);
+            case CompressionJP2K.BOXTYPE:               return new CompressionJP2K(reader);
             case ContentDescribes.BOXTYPE:              return new ContentDescribes(reader);
             case Copyright.BOXTYPE:                     return new Copyright(reader);
             case CreationTime.BOXTYPE:                  return new CreationTime(reader);
@@ -101,6 +108,7 @@ final class MainBoxRegistry extends BoxRegistry {
             case FreeSpace.BOXTYPE:                     return new FreeSpace();
             case GroupList.BOXTYPE:                     return new GroupList(reader);
             case HandlerReference.BOXTYPE:              return new HandlerReference(reader);
+            case HevcConfigurationItem.BOXTYPE:         return new HevcConfigurationItem(reader);
             case IdentifiedMediaData.BOXTYPE:           return new IdentifiedMediaData(reader);
             case ImagePyramid.BOXTYPE:                  return new ImagePyramid(reader);
             case ImageSpatialExtents.BOXTYPE:           return new ImageSpatialExtents(reader);
@@ -123,12 +131,14 @@ final class MainBoxRegistry extends BoxRegistry {
             case OriginalFileType.BOXTYPE:              return new OriginalFileType(reader);
             case PixelInformation.BOXTYPE:              return new PixelInformation(reader);
             case PolarizationPatternDefinition.BOXTYPE: return new PolarizationPatternDefinition(reader);
+            case PremultipliedImageReference.BOXTYPE:   return new PremultipliedImageReference(reader);
             case PrimaryItem.BOXTYPE:                   return new PrimaryItem(reader);
             case ProgressiveDownloadInfo.BOXTYPE:       return new ProgressiveDownloadInfo(reader);
             case SensorBadPixelsMap.BOXTYPE:            return new SensorBadPixelsMap(reader);
             case SensorNonUniformityCorrection.BOXTYPE: return new SensorNonUniformityCorrection(reader);
             case TAIClockInfo.BOXTYPE:                  return new TAIClockInfo(reader);
             case TAITimeStamp.BOXTYPE:                  return new TAITimeStamp(reader);
+            case ThumbnailReference.BOXTYPE:            return new ThumbnailReference(reader);
             case TiledImageConfiguration.BOXTYPE:       return new TiledImageConfiguration(reader);
             case Track.BOXTYPE:                         return new Track(reader);
             case TrackHeader.BOXTYPE:                   return new TrackHeader(reader, reader.movieHeader);

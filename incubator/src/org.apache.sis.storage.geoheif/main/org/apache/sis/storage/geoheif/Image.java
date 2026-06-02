@@ -28,7 +28,7 @@ import org.apache.sis.storage.isobmff.ByteRanges;
 
 
 /**
- * A single image ({@code 'unci'} item type) from the HEIF file.
+ * A single image ({@code 'unci'} item type) from the <abbr>HEIF</abbr> file.
  * An image may be used as a tile in a larger image ({@code 'grid'} item type).
  * In the uncompressed case, the image may be implicitly tiled if {@link #numXTiles} is greater than 1.
  *

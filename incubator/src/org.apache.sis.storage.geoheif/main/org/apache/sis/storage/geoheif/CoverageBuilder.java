@@ -45,6 +45,8 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.UnsupportedEncodingException;
 import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.storage.isobmff.Box;
@@ -56,7 +58,10 @@ import org.apache.sis.storage.isobmff.mpeg.Component;
 import org.apache.sis.storage.isobmff.mpeg.ComponentType;
 import org.apache.sis.storage.isobmff.mpeg.ComponentPalette;
 import org.apache.sis.storage.isobmff.mpeg.ComponentDefinition;
+import org.apache.sis.storage.isobmff.mpeg.CompressedUnitsItemInfo;
+import org.apache.sis.storage.isobmff.mpeg.CompressionConfiguration;
 import org.apache.sis.storage.isobmff.mpeg.UncompressedFrameConfig;
+import org.apache.sis.storage.isobmff.mpeg.UnitType;
 import org.apache.sis.storage.isobmff.mpeg.InterleavingMode;
 import org.apache.sis.storage.isobmff.image.ImageSpatialExtents;
 import org.apache.sis.storage.isobmff.image.PixelInformation;
@@ -117,6 +122,24 @@ final class CoverageBuilder implements Emptiable {
     private ModelCRS crsDefinition;
 
     /**
+     * Identification of the compression algorithm.
+     */
+    private CompressionConfiguration compression;
+
+    /**
+     * Locations in the file where to find compressed data.
+     */
+    private CompressedUnitsItemInfo compressedUnits;
+
+    /**
+     * Information about the sample model (data type, <i>etc.</i>).
+     * May be {@code null} if no such information was found.
+     * This is actually a mandatory information according ISO/IEC 23001-17:2024,
+     * but this class is nevertheless tolerant to its absence.
+     */
+    private UncompressedFrameConfig model;
+
+    /**
      * How pixel data should be displayed.
      * Values are instance of {@link ComponentType}, {@link URI} or {@link Integer}, in preference order.
      * In the latter case, the integer value is the user-defined component type.
@@ -130,14 +153,6 @@ final class CoverageBuilder implements Emptiable {
      * May be {@code null} if no such information was found.
      */
     private byte[] bitsPerChannel;
-
-    /**
-     * Information about the sample model (data type, <i>etc.</i>).
-     * May be {@code null} if no such information was found.
-     * This is actually a mandatory information according ISO/IEC 23001-17:2024,
-     * but this class is nevertheless tolerant to its absence.
-     */
-    private UncompressedFrameConfig model;
 
     /**
      * The color palette of an indexed color model.
@@ -264,6 +279,18 @@ final class CoverageBuilder implements Emptiable {
                     if (!duplicated) crsDefinition = c;
                     break;
                 }
+                case CompressionConfiguration.BOXTYPE: {
+                    var c = (CompressionConfiguration) property;
+                    duplicated = (compression != null);
+                    if (!duplicated) compression = c;
+                    break;
+                }
+                case CompressedUnitsItemInfo.BOXTYPE: {
+                    var c = (CompressedUnitsItemInfo) property;
+                    duplicated = (compressedUnits != null);
+                    if (!duplicated) compressedUnits = c;
+                    break;
+                }
                 case UncompressedFrameConfig.BOXTYPE: {
                     var c = (UncompressedFrameConfig) property;
                     duplicated = (model != null);
@@ -288,6 +315,33 @@ final class CoverageBuilder implements Emptiable {
                 }
             }
         }
+    }
+
+    /**
+     * Returns the compression units which contains all image data, or {@code null} if the image is uncompressed.
+     * This method requires that the compression unit is {@link UnitType#IMAGE_TILE}.
+     *
+     * @return the compression units for the whole image, or {@code null}.
+     * @throws UnsupportedEncodingException if the compression configuration is unsupported.
+     * @throws DataStoreContentException if the compression cannot be decoded for another reason.
+     */
+    final CompressedUnitsItemInfo.Unit getCompressedImageUnit() throws DataStoreContentException {
+        if (compression == null) {
+            return null;
+        }
+        if (compression.unitType == UnitType.IMAGE_TILE) {
+            if (compressedUnits == null) {
+                throw new DataStoreContentException("Missing compressed unit.");
+            }
+            final CompressedUnitsItemInfo.Unit[] units = compressedUnits.units;
+            if (units.length == 1) {
+                // Current implementation supports only ZLIB, we may add more in the future.
+                if (compression.compressionType == CompressionConfiguration.COMPRESSION_ZLIB) {
+                    return units[0];
+                }
+            }
+        }
+        throw new UnsupportedEncodingException("Unsupported compression.");
     }
 
     /**

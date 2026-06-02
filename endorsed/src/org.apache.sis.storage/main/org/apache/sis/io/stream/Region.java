@@ -267,7 +267,7 @@ public final class Region {
     /**
      * Compares this region with the given object for equality.
      *
-     * @return the object to compare with this region.
+     * @param  obj  the object to compare with this region.
      * @return whether this region and the given object are equal.
      */
     @Override

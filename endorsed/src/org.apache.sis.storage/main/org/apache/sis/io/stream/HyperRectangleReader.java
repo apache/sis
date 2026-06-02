@@ -51,7 +51,6 @@ public class HyperRectangleReader {
 
     /**
      * The {@code input} position of the first sample (ignoring sub-area and subsampling).
-     * This is initially the {@code origin} argument given to the constructor, copied verbatim.
      *
      * @see #getOrigin()
      */

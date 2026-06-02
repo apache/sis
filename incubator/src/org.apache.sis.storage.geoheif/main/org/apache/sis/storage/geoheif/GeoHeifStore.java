@@ -70,12 +70,12 @@ public class GeoHeifStore extends DataStore implements Aggregate {
 
     /**
      * Same value as {@link #location} but as a path, or {@code null} if none.
-     * Stored separately because conversion from path to URI then back to path
-     * is not looseness (relative paths become absolutes).
+     * Stored separately because conversion from path to <abbr>URI</abbr> then
+     * back to path is not looseness (relative paths become absolutes).
      *
      * @see #getFileSet()
      */
-    private final Path path;
+    private final Path locationAsPath;
 
     /**
      * The data store identifier created from the filename, or {@code null} if none.
@@ -141,11 +141,11 @@ public class GeoHeifStore extends DataStore implements Aggregate {
      */
     public GeoHeifStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
-        location    = connector.getStorageAs(URI.class);
-        path        = connector.getStorageAs(Path.class);
-        input       = connector.commit(ChannelImageInputStream.class, GeoHeifStoreProvider.NAME);
-        customizer  = CoverageModifier.getOrDefault(connector);
-        nameFactory = DefaultNameFactory.provider();
+        location       = connector.getStorageAs(URI.class);
+        locationAsPath = connector.getStorageAs(Path.class);
+        input          = connector.commit(ChannelImageInputStream.class, GeoHeifStoreProvider.NAME);
+        customizer     = CoverageModifier.getOrDefault(connector);
+        nameFactory    = DefaultNameFactory.provider();
         if (location != null) {
             String filename = IOUtilities.filenameWithoutExtension(input.filename);
             namespace = nameFactory.createNameSpace(nameFactory.createLocalName(null, filename), null);
@@ -176,8 +176,8 @@ public class GeoHeifStore extends DataStore implements Aggregate {
      */
     @Override
     public Optional<FileSet> getFileSet() throws DataStoreException {
-        if (path != null) {
-            return Optional.of(new FileSet(path));
+        if (locationAsPath != null) {
+            return Optional.of(new FileSet(locationAsPath));
         }
         return Optional.empty();
     }

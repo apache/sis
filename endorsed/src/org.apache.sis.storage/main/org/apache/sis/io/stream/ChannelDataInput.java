@@ -1155,11 +1155,24 @@ loop:   while (hasRemaining()) {
     /**
      * Skips over and discards exactly <var>n</var> bytes of data from this input stream.
      *
-     * @param  n  number of bytes to skip. Can be negative.
+     * @param  n  number of bytes to skip. Can be negative for moving backward.
      * @throws IOException if an error occurred while reading.
      */
     public final void skipNBytes(int n) throws IOException {
         n -= skipBytes(n);
+        if (n != 0) {
+            seek(Math.addExact(position(), n));
+        }
+    }
+
+    /**
+     * Skips over and discards exactly <var>n</var> bytes of data from this input stream.
+     *
+     * @param  n  number of bytes to skip. Can be negative for moving backward.
+     * @throws IOException if an error occurred while reading.
+     */
+    public final void skipNBytes(long n) throws IOException {
+        n -= skipBytes((int) Math.min(n, Integer.MAX_VALUE));
         if (n != 0) {
             seek(Math.addExact(position(), n));
         }

@@ -17,6 +17,8 @@
 package org.apache.sis.storage.geoheif;
 
 import java.util.Arrays;
+import java.util.zip.InflaterInputStream;
+import java.io.ByteArrayInputStream;
 import static java.lang.Math.addExact;
 import static java.lang.Math.multiplyExact;
 import java.awt.image.DataBuffer;
@@ -30,13 +32,19 @@ import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.HyperRectangleReader;
 import org.apache.sis.io.stream.Region;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.isobmff.ByteRanges;
+import org.apache.sis.storage.isobmff.mpeg.CompressedUnitsItemInfo;
 
 
 /**
  * A single image ({@code 'unci'} item type) from the <abbr>HEIF</abbr> file.
  * An image may be used as a tile in a larger image ({@code 'grid'} item type).
  * The image may be implicitly tiled if {@link #numXTiles} is greater than 1.
+ *
+ * <p>This class is named "uncompressed" image because the <abbr>HEIF</abbr> format uses that name.
+ * Nevertheless, the data may be composed of compressed units. A compressed unit may be the whole
+ * image or only part of it (tile, row or pixel).</p>
  *
  * <h4>Requirement</h4>
  * This class requires that {@link CoverageBuilder#sampleModel()} can build a sample model.
@@ -59,6 +67,11 @@ final class UncompressedImage extends Image {
     private final SampleModel sampleModel;
 
     /**
+     * The compression units which contains all image data, or {@code null} if the image is uncompressed.
+     */
+    private final CompressedUnitsItemInfo.Unit compressedImageUnit;
+
+    /**
      * Creates a new tile.
      *
      * @param  builder  helper class for building the grid geometry and sample dimensions.
@@ -72,6 +85,7 @@ final class UncompressedImage extends Image {
         super(builder, locator, name);
         sampleModel = builder.sampleModel();
         dataType    = builder.dataType();     // Shall be after `sampleModel()`.
+        compressedImageUnit = builder.getCompressedImageUnit();
     }
 
     /**
@@ -122,7 +136,16 @@ final class UncompressedImage extends Image {
         final long tileIndex = addExact(multiplyExact(context.subTileY, numXTiles), context.subTileX);
         final long offset    = addExact(multiplyExact(tileIndex, tileSize), skipBytes);
         locator.resolve(offset, tileSize - skipBytes, context);
-        return (final ChannelDataInput input) -> {
+        return (ChannelDataInput input) -> {
+            long origin = context.offset() - skipBytes;
+            final CompressedUnitsItemInfo.Unit unit = compressedImageUnit;
+            if (unit != null) {
+                input.skipNBytes(unit.offset);
+                final byte[] compressedChunk = input.readBytes((int) unit.size);
+                InflaterInputStream iis = new InflaterInputStream(new ByteArrayInputStream(compressedChunk));
+                input = new StorageConnector(iis).getStorageAs(ChannelDataInput.class);
+                origin = 0;
+            }
             /*
              * Now read all banks and store the values in the image buffer.
              * If there is many banks (`InterleavingMode.COMPONENT`), these
@@ -130,7 +153,7 @@ final class UncompressedImage extends Image {
              */
             input.buffer.order(byteOrder);
             final var hr = new HyperRectangleReader(ImageUtilities.toNumberEnum(dataType), input);
-            hr.setOrigin(context.offset() - skipBytes);
+            hr.setOrigin(origin);
             final WritableRaster raster       = context.createRaster();
             final long[]         rasterSize   = size(raster.getSampleModel());
             final Region         rasterRegion = Arrays.equals(sourceSize, rasterSize) ? region : region(sourceSize, rasterSize);
