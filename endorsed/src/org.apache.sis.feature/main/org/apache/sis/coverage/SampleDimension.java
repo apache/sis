@@ -82,7 +82,7 @@ import org.opengis.feature.IdentifiedType;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see org.opengis.metadata.content.SampleDimension
  *
@@ -490,27 +490,29 @@ public class SampleDimension implements IdentifiedType, LenientComparable, Seria
      * @return {@code true} if the given object is equal to this sample dimension.
      */
     @Override
-    public boolean equals(final Object object) {
-        if (object == this) {
-            return true;
-        }
-        if (object instanceof SampleDimension) {
-            final SampleDimension that = (SampleDimension) object;
-            return name.equals(that.name) && Objects.equals(background, that.background) && categories.equals(that.categories);
-        }
-        return false;
+    public final boolean equals(final Object object) {
+        return equals(object, ComparisonMode.STRICT);
     }
 
     @Override
     public boolean equals(Object other, ComparisonMode mode) {
         if (other == this) return true;
-        if (mode.isApproximate() && other instanceof SampleDimension) {
-            final var otherDim = (SampleDimension) other;
-            return Utilities.deepEquals(this.transferFunction, otherDim.transferFunction, mode)
-                    && Utilities.deepEquals(this.categories, otherDim.categories, mode)
-                    && Utilities.deepEquals(this.background, otherDim.background, mode);
+        if (!(other instanceof SampleDimension)) return false;
+
+        switch (mode) {
+            case STRICT: {
+                if (other.getClass() == getClass()) {
+                    final SampleDimension that = (SampleDimension) other;
+                    return name.equals(that.name) && Objects.equals(background, that.background) && categories.equals(that.categories);
+                }
+            }
+            default: {
+                final var otherDim = (SampleDimension) other;
+                return Utilities.deepEquals(this.transferFunction, otherDim.transferFunction, mode)
+                        && Utilities.deepEquals(this.categories, otherDim.categories, mode)
+                        && Utilities.deepEquals(this.background, otherDim.background, mode);
+            }
         }
-        return equals(other);
     }
 
     /**
