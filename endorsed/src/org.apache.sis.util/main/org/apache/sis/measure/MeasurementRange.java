@@ -21,7 +21,9 @@ import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
 import org.apache.sis.math.NumberType;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -479,8 +481,9 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * @return {@inheritDoc}
      */
     @Override
-    public boolean equals(final Object object) {
-        return super.equals(object) && Objects.equals(unit, ((MeasurementRange<?>) object).unit);
+    public boolean equals(final Object object, ComparisonMode mode) {
+        return super.equals(object, mode)
+                && Utilities.deepEquals(unit, ((MeasurementRange<?>) object).unit, mode);
     }
 
     /**

@@ -32,6 +32,8 @@ import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.LenientComparable;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.MathFunctions;
 
@@ -69,7 +71,7 @@ import org.apache.sis.math.MathFunctions;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-final class CategoryList extends AbstractList<Category> implements MathTransform1D, Serializable {
+final class CategoryList extends AbstractList<Category> implements MathTransform1D, LenientComparable, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -825,16 +827,34 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      * Compares the specified object with this category list for equality.
      */
     @Override
-    public boolean equals(final Object object) {
+    public final boolean equals(final Object object) {
         if (object instanceof CategoryList) {
-            final CategoryList that = (CategoryList) object;
-            if (Arrays.equals(categories, that.categories)) {
-                assert Arrays.equals(minimums, that.minimums);
-            } else {
+            return equals(object, ComparisonMode.STRICT);
+        }
+        return super.equals(object);
+    }
+
+    /**
+     * Compares this category list with the given object for equality at the given level of strictness.
+     * The comparison is performed element-wise using {@link Category#equals(Object, ComparisonMode)}.
+     *
+     * @param  object  the object to compare with.
+     * @param  mode    the comparison strictness level.
+     * @return {@code true} if both lists are equal according the given comparison mode.
+     */
+    @Override
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        if (object == this) return true;
+        if (!(object instanceof CategoryList)) return false;
+        final CategoryList that = (CategoryList) object;
+        final int count = categories.length;
+        if (that.categories.length != count) return false;
+        for (int i = 0; i < count; i++) {
+            if (!categories[i].equals(that.categories[i], mode)) {
                 return false;
             }
         }
-        return super.equals(object);
+        return true;
     }
 
     /**

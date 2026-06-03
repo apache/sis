@@ -23,6 +23,9 @@ import java.util.function.DoubleToIntFunction;
 import java.io.Serializable;
 import static java.lang.Double.doubleToRawLongBits;
 import javax.measure.Unit;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.LenientComparable;
+import org.apache.sis.util.Utilities;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
@@ -71,7 +74,7 @@ import org.apache.sis.util.iso.Types;
  * @version 1.1
  * @since   1.0
  */
-public class Category implements Serializable {
+public class Category implements LenientComparable, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -507,29 +510,41 @@ public class Category implements Serializable {
      * @param  object the object to compare with.
      * @return {@code true} if the given object is equal to this category.
      */
+    public final boolean equals(final Object object) {
+        return equals(object, ComparisonMode.STRICT);
+    }
+
+    /**
+     * Compares this category with the given object for equality at the given level of strictness.
+     *
+     * <ul>
+     *   <li>{@link ComparisonMode#STRICT}: same implementation class, same name, exact range and transfer function.</li>
+     *   <li>{@link ComparisonMode#BY_CONTRACT}: same name, exact range and transfer function; class may differ.</li>
+     *   <li>{@link ComparisonMode#IGNORE_METADATA} and more lenient: range and transfer function only (name is ignored).</li>
+     *   <li>{@link ComparisonMode#APPROXIMATE}: range and transfer function approximately equal.</li>
+     * </ul>
+     *
+     * @param  object  the object to compare with.
+     * @param  mode    the comparison strictness level.
+     * @return {@code true} if both objects are equal according the given comparison mode.
+     */
     @Override
-    public boolean equals(final Object object) {
-        if (object == this) {
-            // Slight optimization
-            return true;
-        }
-        if (object != null && getClass().equals(object.getClass())) {
-            final Category that = (Category) object;
-            if (name.equals(that.name)) {
-                final NumberRange<?> other = that.range;
-                /*
-                 * The NumberRange.equals(Object) comparison is not sufficient because it considers all NaN values as equal.
-                 * For the purpose of Category, we need to distinguish the different NaN values.
-                 */
-                if (range == other || (range.equals(other)
-                        && doubleToRawLongBits(range.getMinDouble()) == doubleToRawLongBits(other.getMinDouble())
-                        && doubleToRawLongBits(range.getMaxDouble()) == doubleToRawLongBits(other.getMaxDouble())))
-                {
-                    return toConverse.equals(that.toConverse);
-                }
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        if (object == this) return true;
+        if (!(object instanceof Category)) return false;
+        final Category that = (Category) object;
+
+        switch (mode) {
+            case STRICT: {
+                if (!getClass().equals(that.getClass())) return false;
             }
+            case BY_CONTRACT: {
+                if (!name.equals(that.name)) return false;
+            }
+            default:
+                return Utilities.deepEquals(range, that.range, mode)
+                        && Utilities.deepEquals(toConverse, that.toConverse, mode);
         }
-        return false;
     }
 
     /**

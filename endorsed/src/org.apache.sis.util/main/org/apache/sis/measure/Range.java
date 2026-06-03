@@ -25,7 +25,10 @@ import javax.measure.Unit;
 import org.apache.sis.math.NumberType;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArgumentCheckByAssertion;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Emptiable;
+import org.apache.sis.util.LenientComparable;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.collection.CheckedContainer;
 
@@ -90,7 +93,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  *
  * @since 0.3
  */
-public class Range<E extends Comparable<? super E>> implements CheckedContainer<E>, Formattable, Emptiable, Serializable {
+public class Range<E extends Comparable<? super E>> implements CheckedContainer<E>, Formattable, Emptiable, LenientComparable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -639,23 +642,8 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * @return {@code true} if the given object is equal to this range.
      */
     @Override
-    public boolean equals(final Object object) {
-        if (object == this) {
-            return true;
-        }
-        if (object != null && object.getClass() == getClass()) {
-            final Range<?> other = (Range<?>) object;
-            if (Objects.equals(elementType, other.elementType)) {
-                if (isEmpty()) {
-                    return other.isEmpty();
-                }
-                return Objects.equals(minValue, other.minValue) &&
-                       Objects.equals(maxValue, other.maxValue) &&
-                       isMinIncluded == other.isMinIncluded &&
-                       isMaxIncluded == other.isMaxIncluded;
-            }
-        }
-        return false;
+    public final boolean equals(final Object object) {
+        return equals(object, ComparisonMode.STRICT);
     }
 
     /**
@@ -671,6 +659,41 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
             hash += isMaxIncluded ? 1231 : 1237;
         }
         return hash ^ (int) serialVersionUID;
+    }
+
+
+    @Override
+    public boolean equals(Object object, ComparisonMode mode) {
+        if (object == this) {
+            return true;
+        }
+        if (!(object instanceof Range)) return false;
+        final Range<?> other = (Range<?>) object;
+        switch (mode) {
+            case STRICT:
+            case BY_CONTRACT:
+            case IGNORE_METADATA: {
+                if (other.getClass() != getClass()) return false;
+                if (!Objects.equals(elementType, other.elementType)) return false;
+                if (isEmpty()) return other.isEmpty();
+                return Objects.equals(minValue, other.minValue)
+                        && Objects.equals(maxValue, other.maxValue)
+                        && isMinIncluded == other.isMinIncluded
+                        && isMaxIncluded == other.isMaxIncluded;
+            }
+            default: {
+                return Utilities.deepEquals(minValue, other.minValue, mode)
+                        && Utilities.deepEquals(maxValue, other.maxValue, mode)
+                        /* TODO: we might want to improve this in the future to allow mixing different boundary types.
+                         * For example, (0..256) is equivalent to [1..255] in the case of a discrete integer space,
+                         * but not in continuous real number space.
+                         * As it is difficult for now to properly manage such corner cases, we start strict,
+                         * so we can improve this step by step in the future.
+                         */
+                        && isMinIncluded == other.isMinIncluded
+                        && isMaxIncluded == other.isMaxIncluded;
+            }
+        }
     }
 
     /**
