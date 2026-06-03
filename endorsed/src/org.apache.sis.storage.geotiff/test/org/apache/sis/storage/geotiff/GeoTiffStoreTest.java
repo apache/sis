@@ -158,11 +158,11 @@ public final class GeoTiffStoreTest extends TestCase {
 
     /**
      * Writes an image and compare with the {@code "tiled.tiff"} file.
-     * This test differs from {@link #testWriteTiled()} because it requests a tile size that is not accepted as is by
-     * geotiff.
-     * </br>
+     * <p>
+     * This test differs from {@link #testWriteTiled()} because it requests a tile size not accepted as is by geotiff.
      * The aim of this test is to ensure that Geotiff writer will adapt tile size according to the Tiff standard.
      * It requests tiles of size 19, and expect the Geotiff writer to adapt request to write tiles of size 16 or 32.
+     * </p>
      */
     @Test
     public void testWriteTiledAdapted() throws Exception {
