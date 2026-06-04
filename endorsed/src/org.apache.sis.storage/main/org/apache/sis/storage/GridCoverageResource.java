@@ -151,6 +151,7 @@ public interface GridCoverageResource extends DataSet {
      * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
      *
      * @see GridGeometry#getResolution(boolean)
+     * @see AbstractGridCoverageResource#convertResolutionOf(GridGeometry)
      * @see org.apache.sis.storage.tiling.TileMatrixSet#getTileMatrices()
      *
      * @since 1.7

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.base;
+package org.apache.sis.storage.aggregate;
 
 import java.util.Locale;
 import org.opengis.metadata.Metadata;
@@ -30,7 +30,7 @@ import org.apache.sis.util.Localized;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class PseudoResource extends AbstractResource implements Localized {
+final class PseudoResource extends AbstractResource implements Localized {
     /**
      * Creates a new instance wrapping the given listeners.
      *

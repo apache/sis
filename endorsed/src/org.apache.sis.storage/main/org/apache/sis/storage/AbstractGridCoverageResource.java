@@ -153,6 +153,7 @@ public abstract class AbstractGridCoverageResource extends AbstractResource impl
      * @throws DataStoreException if an error occurred while converting the {@code domain} resolution.
      *
      * @see #read(GridGeometry, int...)
+     * @see GridGeometry#getResolution(boolean)
      *
      * @since 1.7
      */

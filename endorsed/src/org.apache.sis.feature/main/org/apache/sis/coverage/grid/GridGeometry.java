@@ -1338,6 +1338,9 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @return an <em>estimation</em> of the grid resolution (never {@code null}).
      * @throws IncompleteGridGeometryException if this grid geometry has no resolution —
      *         i.e. <code>{@linkplain #isDefined(int) isDefined}({@linkplain #RESOLUTION})</code> returned {@code false}.
+     *
+     * @see org.apache.sis.storage.GridCoverageResource#getAvailableResolutions()
+     * @see org.apache.sis.storage.AbstractGridCoverageResource#convertResolutionOf(GridGeometry)
      */
     public double[] getResolution(final boolean allowEstimates) {
         if (resolution != null) {
