@@ -17,6 +17,7 @@
 package org.apache.sis.cloud.aws.s3;
 
 import java.util.Locale;
+import java.net.URISyntaxException;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class KeyPathMatcherTest extends TestCase {
     /**
      * Creates a new test case.
@@ -38,11 +40,13 @@ public final class KeyPathMatcherTest extends TestCase {
 
     /**
      * Tests a pattern using "glob" syntax.
+     *
+     * @throws URISyntaxException if an error occurred while creating the <abbr>URI</abbr> for the self-hosted S3.
      */
     @Test
-    public void testGlob() {
-        final KeyPathMatcher matcher = new KeyPathMatcher("glob:bar*foo/fuu/**/f?i", ClientFileSystem.DEFAULT_SEPARATOR);
-        final ClientFileSystem fs = ClientFileSystemTest.create();
+    public void testGlob() throws URISyntaxException {
+        final var matcher = new KeyPathMatcher("glob:bar*foo/fuu/**/f?i", ClientFileSystem.DEFAULT_SEPARATOR);
+        final ClientFileSystem fs = ClientFileSystemTest.create(false);
         assertTrue (matcher.matches(new KeyPath(fs, "bar_skip_foo/fuu/d1/d2/d3/f_i", false)));
         assertFalse(matcher.matches(new KeyPath(fs, "bar_sk/p_foo/fuu/d1/d2/d3/f_i", false)));
     }

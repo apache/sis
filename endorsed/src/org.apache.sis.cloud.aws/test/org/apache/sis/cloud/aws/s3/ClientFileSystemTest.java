@@ -16,6 +16,8 @@
  */
 package org.apache.sis.cloud.aws.s3;
 
+import java.net.URISyntaxException;
+
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,32 +28,39 @@ import org.apache.sis.test.TestCase;
  * Tests {@link ClientFileSystem}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Quentin Bialota (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ClientFileSystemTest extends TestCase {
-    /**
-     * The instance to use for testing purposes.
-     */
-    private final ClientFileSystem fs;
-
-    /**
-     * Returns the file system to use for testing purpose.
-     */
-    static ClientFileSystem create() {
-        return new ClientFileSystem(new FileService(), null);
-    }
-
     /**
      * Creates a new test case.
      */
     public ClientFileSystemTest() {
-        fs = create();
+    }
+
+    /**
+     * Returns the file system to use for testing purpose.
+     *
+     * @param  selfHosted  whether the service should be self hosted.
+     * @throws URISyntaxException if an error occurred while creating the <abbr>URI</abbr> for the self-hosted S3.
+     */
+    static ClientFileSystem create(final boolean selfHosted) throws URISyntaxException {
+        final var fs = new FileService();
+        if (selfHosted) {
+            return new ClientFileSystem(fs, null, new Server(null, "testhost", 8581, true, null), null, null);
+        } else {
+            return new ClientFileSystem(fs, new Server(null));
+        }
     }
 
     /**
      * Tests {@link ClientFileSystem#getSeparator()}.
+     *
+     * @throws URISyntaxException if an error occurred while creating the <abbr>URI</abbr> for the self-hosted S3.
      */
     @Test
-    public void testGetSeparator() {
-        assertEquals("/", fs.getSeparator());
+    public void testGetSeparator() throws URISyntaxException {
+        assertEquals("/", create(false).getSeparator());
+        assertEquals("/", create(true).getSeparator());
     }
 }

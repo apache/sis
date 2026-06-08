@@ -47,6 +47,7 @@ import org.apache.sis.util.resources.Errors;
  * The interpretation of {@link ClientFileSystem#separator} as a path separator is done by this class.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Quentin Bialota (Geomatys)
  */
 final class KeyPath implements Path {
     /**
@@ -57,7 +58,7 @@ final class KeyPath implements Path {
     /**
      * Separator between {@value #SCHEME} and the bucket name.
      */
-    private static final String SCHEME_SEPARATOR = "://";
+    static final String SCHEME_SEPARATOR = "://";
 
     /**
      * Length of the {@code "S3://"} header.
@@ -676,7 +677,7 @@ search:     if (key != null) {
     @Override
     public Path relativize(final Path other) {
         if (other instanceof KeyPath) {
-            final KeyPath kp = (KeyPath) other;
+            final var kp = (KeyPath) other;
             if (kp.startsWith(this) && key != null) {
                 final String suffix = kp.key.substring(key.length() + fs.separator.length());
                 if (!suffix.isEmpty()) {
@@ -688,7 +689,8 @@ search:     if (key != null) {
     }
 
     /**
-     * Returns an URI with the {@value #SCHEME} scheme if the path is absolute, or a relative URI otherwise.
+     * Returns an <abbr>URI</abbr> with the {@value #SCHEME} scheme if the path is absolute,
+     * or a relative <abbr>URI</abbr> otherwise.
      *
      * <p>Note: {@link Path#toUri()} specification mandate an absolute URI.
      * But we cannot provide an absolute URI if this path is not already absolute.</p>
@@ -699,12 +701,39 @@ search:     if (key != null) {
     public URI toUri() {
         String path = key;
         if (path != null) {
-            final StringBuilder sb = new StringBuilder(path.length() + 2).append('/').append(path);
+            final var sb = new StringBuilder(path.length() + 2).append('/').append(path);
             if (isDirectory) sb.append('/');
             path = sb.toString();
+        } else {
+            path = "";
+        }
+        if (fs == null) {
+            throw new IllegalStateException(Resources.format(Resources.Keys.MissingFileSystem_1, path));
+        }
+        /*
+         * We can address two different URI formats,
+         * depending on whether the file system is self-hosted or not:
+         *
+         *   - Self-Hosted path:  s3://accessKey@host:port/bucket/key
+         *   - AWS path:          s3://accessKey@bucket/key
+         *
+         * The `ClientFileSytem` constructor verified that either `host`
+         * and `port` are both specified, or neither of them is specifed.
+         * We also verify bucket presence to allow relative paths URIs.
+         */
+        final Server server = fs.server;
+        final String host;
+        final int port;
+        if (server.host != null && bucket != null) {
+            host = server.host;
+            port = server.port;
+            path = "/" + bucket + path;
+        } else {
+            host = bucket;
+            port = Server.NO_PORT;
         }
         try {
-            return new URI(SCHEME, fs.accessKey, bucket, -1, path, null, null);
+            return new URI(SCHEME, server.accessKey, host, port, path, null, null);
         } catch (URISyntaxException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -718,14 +747,7 @@ search:     if (key != null) {
         if (bucket == null && !isDirectory) {
             return key;
         }
-        final StringBuilder sb = new StringBuilder();
-        if (bucket != null) {
-            sb.append(SCHEME).append(SCHEME_SEPARATOR);
-            if (fs.accessKey != null) {
-                sb.append(fs.accessKey).append('@');
-            }
-            sb.append(bucket);
-        }
+        final var sb = fs.server.toString(bucket);
         if (key != null) {
             if (bucket != null) {
                 sb.append(fs.separator);
