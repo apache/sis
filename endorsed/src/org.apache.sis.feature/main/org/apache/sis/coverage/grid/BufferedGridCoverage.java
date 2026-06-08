@@ -123,7 +123,7 @@ public class BufferedGridCoverage extends GridCoverage {
      *     }
      * }
      */
-    private final Cache<GridExtent,RenderedImage> cachedRenderings;
+    private final Cache<GridExtent, RenderedImage> cachedRenderings;
 
     /**
      * Constructs a grid coverage using the specified grid geometry, sample dimensions and data buffer.

@@ -284,7 +284,7 @@ public class ImageRenderer {
      * @see #addProperty(String, Object)
      */
     @SuppressWarnings("UseOfObsoleteCollectionType")
-    private Hashtable<String,Object> properties;
+    private Hashtable<String, Object> properties;
 
     /**
      * The factory to use for {@link org.opengis.referencing.operation.MathTransform} creations,

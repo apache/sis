@@ -65,7 +65,7 @@ final class Raster extends BufferedGridCoverage {
      * The colors to use for each category, or {@code null} for default.
      * The function may return {@code null}, which means transparent.
      */
-    private final Function<Category,Color[]> colors;
+    private final Function<Category, Color[]> colors;
 
     /**
      * Creates a new raster from the given resource.
@@ -84,7 +84,7 @@ final class Raster extends BufferedGridCoverage {
            final int pixelStride,
            final int[] bandOffsets,
            final int visibleBand,
-           final Function<Category,Color[]> colors)
+           final Function<Category, Color[]> colors)
     {
         super(domain, range, data);
         this.colors      = colors;

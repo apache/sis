@@ -16,7 +16,7 @@
  */
 package org.apache.sis.storage.tiling;
 
-import java.util.Map;
+import java.util.HashMap;
 import java.util.Optional;
 import java.nio.file.Path;
 import java.awt.Point;
@@ -40,6 +40,7 @@ import org.opengis.util.GenericName;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.DisjointExtentException;
+import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.internal.shared.DeferredProperty;
 import org.apache.sis.image.internal.shared.TiledImage;
 import org.apache.sis.storage.event.StoreListeners;
@@ -575,6 +576,10 @@ public abstract class TiledGridCoverage extends GridCoverage {
             // TODO
             throw new UnsupportedOperationException("Slices in arbitrary dimensions not yet implemented.");
         }
+        GenericName name = getIdentifier();
+        if (name != null) {
+            name = name.toFullyQualifiedName();
+        }
         final RenderedImage image;
         try {
             final int[] tileLower = new int[dimension];         // Indices of first tile to read, inclusive.
@@ -617,7 +622,11 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 // Leave `eventContext` to null: no event will be fired.
             }
             final var iterator = new TileIterator(tileLower, tileUpper, offsetAOI, dimension, xDimension, yDimension, eventContext);
-            final Map<String, Object> properties = DeferredProperty.forGridGeometry(gridGeometry, selectedDimensions);
+            final var properties = new HashMap<String, Object>(4);
+            properties.put(PlanarImage.GRID_GEOMETRY_KEY, DeferredProperty.forGridGeometry(gridGeometry, selectedDimensions));
+            if (name != null) {
+                properties.put(PlanarImage.SOURCE_NAME_KEY, name.toFullyQualifiedName());
+            }
             if (deferredTileReading) {
                 image = new TiledDeferredImage(imageSize, tileLower, properties, iterator);
             } else {
@@ -633,8 +642,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
         } catch (DisjointExtentException | CannotEvaluateException e) {
             throw e;
         } catch (Exception e) {     // Too many exception types for listing them all.
-            throw new CannotEvaluateException(Resources.forLocale(listeners.getLocale()).getString(
-                    Resources.Keys.CanNotRenderImage_1, getIdentifier().toFullyQualifiedName()), e);
+            throw new CannotEvaluateException(Resources.forLocale(listeners.getLocale())
+                        .getString(Resources.Keys.CanNotRenderImage_1, name), e);
         }
         return image;
     }

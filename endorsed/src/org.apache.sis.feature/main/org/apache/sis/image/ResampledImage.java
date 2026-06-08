@@ -495,6 +495,7 @@ public class ResampledImage extends ComputedImage {
      * (more properties may be added to this list in any future Apache SIS versions):
      *
      * <ul>
+     *   <li>{@value #SOURCE_NAME_KEY}</li>
      *   <li>{@value #POSITIONAL_ACCURACY_KEY}</li>
      *   <li>{@value #POSITIONAL_CONSISTENCY_KEY}</li>
      *   <li>{@value #SAMPLE_DIMENSIONS_KEY}  (forwarded to the source image)</li>
@@ -510,6 +511,7 @@ public class ResampledImage extends ComputedImage {
     @Override
     public Object getProperty(final String key) {
         switch (key) {
+            case SOURCE_NAME_KEY:
             case SAMPLE_DIMENSIONS_KEY:
             case SAMPLE_RESOLUTIONS_KEY: {
                 return getSource().getProperty(key);
@@ -542,6 +544,7 @@ public class ResampledImage extends ComputedImage {
     public String[] getPropertyNames() {
         final String[] inherited = getSource().getPropertyNames();
         final String[] names = {
+            SOURCE_NAME_KEY,
             SAMPLE_DIMENSIONS_KEY,
             SAMPLE_RESOLUTIONS_KEY,
             POSITIONAL_ACCURACY_KEY,
