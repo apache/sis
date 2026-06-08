@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.geoheif;
 
+import java.util.Arrays;
 import static java.lang.Math.addExact;
 import static java.lang.Math.multiplyExact;
 import java.awt.image.DataBuffer;
@@ -74,24 +75,47 @@ final class UncompressedImage extends Image {
     }
 
     /**
+     * Returns (width × number of samples per pixel) and the height, in that order.
+     *
+     * <p><b>Limitation:</b> current implementation ignores {@link java.awt.image.MultiPixelPackedSampleModel},
+     * but that model does not seem to be used by <abbr>HEIF</abbr>.</p>
+     *
+     * @param  sampleModel  the sample model for which to get the size.
+     * @return the scanline stride and raster height, in that order.
+     */
+    private static long[] size(final SampleModel sampleModel) {
+        return new long[] {
+            sampleModel.getWidth() * (long) sampleModel.getNumDataElements(),
+            sampleModel.getHeight()
+        };
+    }
+
+    /**
+     * Creates a two-dimensional region without subsampling.
+     *
+     * @param  sourceSize   the number of elements along each dimension.
+     * @param  regionUpper  indices after the last value to read along each dimension.
+     */
+    private static Region region(final long[] sourceSize, final long[] regionUpper) {
+        return new Region(sourceSize, new long[2], regionUpper, new long[] {1, 1});
+    }
+
+    /**
      * Computes the range of bytes that will be needed for reading a single tile of this image.
      *
      * @param  context  where to store the ranges of bytes.
+     * @return the function to invoke later for reading the tile.
      * @throws DataStoreException if an error occurred while computing the range of bytes.
      */
     @Override
     protected Reader computeByteRanges(final ImageResource.Coverage.ReadContext context) throws DataStoreException {
-        final long[] sourceSize = {
-            // Note: the following ignores `MultiPixelPackedSampleModel`, but that model does not seem used by HEIF.
-            sampleModel.getWidth() * (long) sampleModel.getNumDataElements(),
-            sampleModel.getHeight()
-        };
+        final long[] sourceSize = size(sampleModel);
         /*
          * In the current implementation, we read the whole tile. If a future implementation allows
          * to read a sub-region of the tile, we would need to make `HyperRectangleReader` accepts a
          * `Buffer` with an arbitrary position in argument.
          */
-        final var  region    = new Region(sourceSize, new long[2], sourceSize, new long[] {1, 1});
+        final var  region    = region(sourceSize, sourceSize);
         final int  dataSize  = dataType.bytes();
         final long tileSize  = multiplyExact(region.length, dataSize);
         final long skipBytes = region.getStartByteOffset(dataSize);
@@ -107,15 +131,17 @@ final class UncompressedImage extends Image {
             input.buffer.order(byteOrder);
             final var hr = new HyperRectangleReader(ImageUtilities.toNumberEnum(dataType), input);
             hr.setOrigin(context.offset() - skipBytes);
-            final WritableRaster raster = context.createRaster();
-            final DataBuffer data = raster.getDataBuffer();
-            final int numBanks = data.getNumBanks();
+            final WritableRaster raster       = context.createRaster();
+            final long[]         rasterSize   = size(raster.getSampleModel());
+            final Region         rasterRegion = Arrays.equals(sourceSize, rasterSize) ? region : region(sourceSize, rasterSize);
+            final DataBuffer     data         = raster.getDataBuffer();
+            final int            numBanks     = data.getNumBanks();
             for (int b=0; b<numBanks; b++) {
                 if (b != 0) {
                     hr.setOrigin(addExact(hr.getOrigin(), tileSize));
                 }
                 hr.setDestination(RasterFactory.wrapAsBuffer(data, b));
-                hr.readAsBuffer(region, 0);
+                hr.readAsBuffer(rasterRegion, 0);
             }
             return raster;
         };

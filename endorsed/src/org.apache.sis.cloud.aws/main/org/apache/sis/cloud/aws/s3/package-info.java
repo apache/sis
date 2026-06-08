@@ -17,8 +17,8 @@
 
 
 /**
- * Java NIO wrappers for Amazon Simple Storage Service (S3).
- * The wrapped framework is AWS SDK version 2.
+ * Java <abbr>NIO</abbr> wrappers for Amazon Simple Storage Service (S3).
+ * The wrapped framework is <abbr>AWS</abbr> <abbr>SDK</abbr> version 2.
  *
  * <h2><abbr>URL</abbr> syntax</h2>
  * The S3 storage mechanism is similar to a {@code java.util.Map}:
@@ -54,7 +54,8 @@
  * All classes provided by this package are safe of usage in multi-threading environment.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @author  Quentin Bialota (Geomatys)
+ * @version 1.7
  *
  * @see <a href="https://sdk.amazonaws.com/java/api/latest/index.html">AWS SDK for Java</a>
  *

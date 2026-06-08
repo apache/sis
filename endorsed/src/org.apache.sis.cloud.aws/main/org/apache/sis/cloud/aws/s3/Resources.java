@@ -71,12 +71,17 @@ class Resources extends IndexedResourceBundle {
         public static final short CanNotChangeToAbsolutePath = 1;
 
         /**
+         * Cannot connect to “{0}”.
+         */
+        public static final short CannotConnectTo_1 = 12;
+
+        /**
          * Empty path.
          */
         public static final short EmptyPath = 3;
 
         /**
-         * File system {0,choice,0#not|1#already} initialized for the “{1}” access key.
+         * File system {0,choice,0#not|1#already} initialized for the “{1}” server or access key.
          */
         public static final short FileSystemInitialized_2 = 4;
 
@@ -89,6 +94,21 @@ class Resources extends IndexedResourceBundle {
          * Missing {0,choice,0#public|1#secret} access key in “{1}” URI.
          */
         public static final short MissingAccessKey_2 = 5;
+
+        /**
+         * No file system associated with the “{0}” path.
+         */
+        public static final short MissingFileSystem_1 = 9;
+
+        /**
+         * Port number {0} specified, but no host name.
+         */
+        public static final short MissingHostName_1 = 10;
+
+        /**
+         * Self-hosted file system “{0}” shall have a port number.
+         */
+        public static final short MissingPortNumber_1 = 11;
 
         /**
          * Specified path must be an absolute S3 path.

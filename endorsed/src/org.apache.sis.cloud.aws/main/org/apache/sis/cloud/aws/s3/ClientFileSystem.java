@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.Collections;
 import java.util.regex.PatternSyntaxException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
@@ -33,6 +34,7 @@ import java.nio.file.spi.FileSystemProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3ClientBuilder;
+import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -46,6 +48,7 @@ import org.apache.sis.util.internal.shared.Strings;
  * which is kept ready-to-use until the file system is {@linkplain #close closed}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Quentin Bialota (Geomatys)
  */
 final class ClientFileSystem extends FileSystem {
     /**
@@ -54,19 +57,18 @@ final class ClientFileSystem extends FileSystem {
     static final String DEFAULT_SEPARATOR = "/";
 
     /**
-     * The AWS S3 access key, or {@code null} if none.
-     * Also used as key of this file system in the {@link FileService#fileSystems} map.
-     */
-    final String accessKey;
-
-    /**
      * The provider of this file system.
      */
     private final FileService provider;
 
     /**
+     * Information about the server: protocol, host, port, access key.
+     */
+    final Server server;
+
+    /**
      * The service client for accessing Amazon S3, or {@code null} if this file system is closed.
-     * Note that AWS SDK objects are thread-safe.
+     * Note that <abbr>AWS</abbr> <abbr>SDK</abbr> objects are thread-safe.
      */
     private volatile S3Client client;
 
@@ -83,11 +85,13 @@ final class ClientFileSystem extends FileSystem {
 
     /**
      * Creates a file system with default credential and default separator.
+     * This constructor assumes that the given {@code server} argument has no host and no port.
+     * That argument should have been created with {@link Server#Server(String)} constructor.
      */
-    ClientFileSystem(final FileService provider, final S3Client client) {
+    ClientFileSystem(final FileService provider, final Server server) {
         this.provider  = provider;
-        this.client    = client;
-        this.accessKey = null;
+        this.server    = server;
+        this.client    = S3Client.create();
         this.separator = DEFAULT_SEPARATOR;
         duplicatedSeparator = DEFAULT_SEPARATOR + DEFAULT_SEPARATOR;
     }
@@ -95,29 +99,52 @@ final class ClientFileSystem extends FileSystem {
     /**
      * Creates a new file system with the specified credential.
      *
-     * @param provider    the provider creating this file system.
-     * @param region      the AWS region, or {@code null} for default.
-     * @param accessKey   the AWS S3 access key for this file system.
-     * @param secret      the password.
-     * @param separator   the separator in paths, or {@code null} for the default value.
+     * @param  provider   the provider creating this file system.
+     * @param  region     the AWS region, or {@code null} for default.
+     * @param  server     the host, port, access key and whether the protocol is secure.
+     * @param  secret     the password, or {@code null} if none.
+     * @param  separator  the separator in paths, or {@code null} for the default value.
+     * @throws URISyntaxException if the server is self-hosted by the <abbr>URI</abbr> is invalid.
      */
-    ClientFileSystem(final FileService provider, final Region region, final String accessKey, final String secret,
-                     String separator)
+    ClientFileSystem(final FileService provider, final Region region, final Server server,
+                     final String secret, String separator) throws URISyntaxException
     {
+        // Verify argument validity before to start building the S3 client.
+        final boolean selfHosted = (server.host != null);
+        if (selfHosted != server.port >= 0) {
+            final short  msg;
+            final Object arg;
+            if (selfHosted) {
+                msg = Resources.Keys.MissingPortNumber_1;
+                arg = server.host;
+            } else {
+                msg = Resources.Keys.MissingHostName_1;
+                arg = server.port;
+            }
+            throw new IllegalStateException(Resources.format(msg, arg));
+        }
         if (separator == null) {
             separator = DEFAULT_SEPARATOR;
+        } else {
+            ArgumentChecks.ensureNonEmpty("separator", separator);
         }
-        ArgumentChecks.ensureNonEmpty("separator", separator);
         this.provider  = provider;
-        this.accessKey = accessKey;
-        S3ClientBuilder builder = S3Client.builder().credentialsProvider(
-                StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secret)));
+        this.server    = server;
+        this.separator = separator;
+        duplicatedSeparator = separator.concat(separator);
+        S3ClientBuilder builder = S3Client.builder();
+        if (secret != null) {
+            AwsBasicCredentials credential = AwsBasicCredentials.create(server.accessKey, secret);
+            builder = builder.credentialsProvider(StaticCredentialsProvider.create(credential));
+        }
         if (region != null) {
             builder = builder.region(region);
         }
+        if (selfHosted) {
+            S3Configuration.Builder config = S3Configuration.builder().pathStyleAccessEnabled(true);
+            builder = builder.endpointOverride(server.toURI()).serviceConfiguration(config.build());
+        }
         client = builder.build();
-        this.separator = separator;
-        duplicatedSeparator = separator.concat(separator);
     }
 
     /**
@@ -148,7 +175,7 @@ final class ClientFileSystem extends FileSystem {
         final S3Client c = client;
         client = null;
         if (c != null) try {
-            provider.dispose(accessKey);
+            provider.dispose(server);
             c.close();
         } catch (SdkException e) {
             throw new IOException(e);
@@ -265,6 +292,6 @@ final class ClientFileSystem extends FileSystem {
      */
     @Override
     public String toString() {
-        return Strings.toString(getClass(), "accessKey", accessKey);
+        return Strings.toString(getClass(), "server", server);
     }
 }
