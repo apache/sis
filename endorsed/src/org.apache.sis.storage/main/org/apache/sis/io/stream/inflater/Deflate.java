@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.geotiff.inflater;
+package org.apache.sis.io.stream.inflater;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -31,7 +31,7 @@ import org.apache.sis.io.stream.ChannelDataInput;
  * @author  Rémi Marechal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class Deflate extends CompressionChannel {
+public final class Deflate extends InflaterChannel {
     /**
      * Access to the ZLIB compression library.
      * Must be released by call to {@link Inflater#end()} after decompression is completed.
@@ -45,9 +45,6 @@ final class Deflate extends CompressionChannel {
      *
      * @param  input      the source of data to decompress.
      * @param  listeners  object where to report warnings.
-     * @param  start      stream position where to start reading.
-     * @param  byteCount  number of bytes to read from the input.
-     * @throws IOException if the stream cannot be seek to the given start position.
      */
     public Deflate(final ChannelDataInput input, final StoreListeners listeners) {
         super(input, listeners);
@@ -55,7 +52,7 @@ final class Deflate extends CompressionChannel {
     }
 
     /**
-     * Prepares this inflater for reading a new tile or a new band of a tile.
+     * Prepares this channel for reading a new block of data.
      *
      * @param  start      stream position where to start reading.
      * @param  byteCount  number of bytes to read from the input.

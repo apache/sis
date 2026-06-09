@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.pending.jdk.JDK13;
+import org.apache.sis.io.stream.inflater.ComputedByteChannel;
+import org.apache.sis.io.stream.inflater.InflaterChannel;
 
 
 /**
@@ -29,11 +31,11 @@ import org.apache.sis.pending.jdk.JDK13;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-abstract class PredictorChannel extends PixelChannel {
+abstract class PredictorChannel extends ComputedByteChannel {
     /**
      * The channel from which to read data.
      */
-    private final CompressionChannel input;
+    private final InflaterChannel input;
 
     /**
      * If {@link #read(ByteBuffer)} could not process some trailing bytes,
@@ -52,7 +54,7 @@ abstract class PredictorChannel extends PixelChannel {
      *
      * @param  input  the channel that decompress data.
      */
-    protected PredictorChannel(final CompressionChannel input) {
+    protected PredictorChannel(final InflaterChannel input) {
         this.input = input;
         deferred = ArraysExt.EMPTY_BYTE;
     }

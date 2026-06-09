@@ -22,6 +22,7 @@ import java.io.EOFException;
 import java.nio.ByteBuffer;
 import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.io.stream.inflater.InflaterChannel;
 import org.apache.sis.storage.event.StoreListeners;
 
 
@@ -36,7 +37,7 @@ import org.apache.sis.storage.event.StoreListeners;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  */
-final class LZW extends CompressionChannel {
+final class LZW extends InflaterChannel {
     /**
      * A 12 bits code meaning that we have exhausted the 4093 available codes
      * and must reset the table to the initial set of 9 bits code.
@@ -469,6 +470,13 @@ final class LZW extends CompressionChannel {
         }
         this.previousCode = code;
         return target.position() - start;
+    }
+
+    /**
+     * Returns the resources for error messages.
+     */
+    private Resources resources() {
+        return Resources.forLocale(listeners.getLocale());
     }
 
     /**

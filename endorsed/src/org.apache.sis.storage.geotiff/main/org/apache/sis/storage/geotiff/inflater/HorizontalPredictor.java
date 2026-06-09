@@ -19,6 +19,7 @@ package org.apache.sis.storage.geotiff.inflater;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.apache.sis.image.DataType;
+import org.apache.sis.io.stream.inflater.InflaterChannel;
 import org.apache.sis.pending.jdk.JDK13;
 
 
@@ -82,7 +83,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
      * @param  width            number of pixels in the source image.
      * @param  sampleSize       number of bytes in a sample value.
      */
-    HorizontalPredictor(final CompressionChannel input, final int samplesPerPixel, final int width, final int sampleSize) {
+    HorizontalPredictor(final InflaterChannel input, final int samplesPerPixel, final int width, final int sampleSize) {
         super(input);
         sampleSizeM1   = sampleSize - Byte.BYTES;
         truncationMask = ~sampleSizeM1;
@@ -100,7 +101,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
      * @param  width        number of pixels in the source image.
      * @return the predictor, or {@code null} if the given type is unsupported.
      */
-    static HorizontalPredictor create(final CompressionChannel input, final DataType dataType,
+    static HorizontalPredictor create(final InflaterChannel input, final DataType dataType,
             final int pixelStride, final int width)
     {
         switch (dataType.toPrimitive()) {
@@ -247,7 +248,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
         /**
          * Creates a new predictor.
          */
-        Bytes(final CompressionChannel input, final int samplesPerPixel, final int width) {
+        Bytes(final InflaterChannel input, final int samplesPerPixel, final int width) {
             super(input, samplesPerPixel, width, Byte.BYTES);
             savedValues = new byte[samplesPerPixel];
         }
@@ -304,7 +305,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
         /**
          * Creates a new predictor.
          */
-        Shorts(final CompressionChannel input, final int samplesPerPixel, final int width) {
+        Shorts(final InflaterChannel input, final int samplesPerPixel, final int width) {
             super(input, samplesPerPixel, width, Short.BYTES);
             savedValues = new short[samplesPerPixel];
         }
@@ -368,7 +369,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
         /**
          * Creates a new predictor.
          */
-        Integers(final CompressionChannel input, final int samplesPerPixel, final int width) {
+        Integers(final InflaterChannel input, final int samplesPerPixel, final int width) {
             super(input, samplesPerPixel, width, Integer.BYTES);
             savedValues = new int[samplesPerPixel];
         }
@@ -432,7 +433,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
         /**
          * Creates a new predictor.
          */
-        Floats(final CompressionChannel input, final int samplesPerPixel, final int width) {
+        Floats(final InflaterChannel input, final int samplesPerPixel, final int width) {
             super(input, samplesPerPixel, width, Float.BYTES);
             savedValues = new float[samplesPerPixel];
         }
@@ -496,7 +497,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
         /**
          * Creates a new predictor.
          */
-        Doubles(final CompressionChannel input, final int samplesPerPixel, final int width) {
+        Doubles(final InflaterChannel input, final int samplesPerPixel, final int width) {
             super(input, samplesPerPixel, width, Double.BYTES);
             savedValues = new double[samplesPerPixel];
         }

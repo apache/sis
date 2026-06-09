@@ -372,8 +372,8 @@ class DataSubset extends TiledGridCoverage {
                      * Tile not yet loaded. Add to a queue of tiles to load later.
                      * Notify the input channel about the ranges of bytes to read.
                      * This notification is redundant with the same notification
-                     * done in `CompressionChannel.setInputRegion(…)`, but doing
-                     * all notifications in advance gives a chance to group ranges.
+                     * done in `InflaterChannel.setInputRegion(…)`, but doing all
+                     * notifications in advance gives a chance to group ranges.
                      */
                     final Tile missing = new Tile(iterator, tileOffsets, includedBanks, numTiles);
                     missings[numMissings++] = missing;

@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.geotiff.inflater;
+package org.apache.sis.io.stream.inflater;
 
 import java.util.Arrays;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.BufferOverflowException;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.pending.jdk.JDK18;
@@ -35,7 +35,7 @@ import org.apache.sis.pending.jdk.JDK18;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-abstract class CompressionChannel extends PixelChannel {
+public abstract class InflaterChannel extends ComputedByteChannel {
     /**
      * Desired size of the buffer where to temporarily copy decompressed data.
      * The actual buffer size may become larger (but not smaller)
@@ -66,13 +66,13 @@ abstract class CompressionChannel extends PixelChannel {
      * @param  input      the source of data to decompress.
      * @param  listeners  object where to report warnings.
      */
-    protected CompressionChannel(final ChannelDataInput input, final StoreListeners listeners) {
+    protected InflaterChannel(final ChannelDataInput input, final StoreListeners listeners) {
         this.input     = input;
         this.listeners = listeners;
     }
 
     /**
-     * Prepares this inflater for reading a new tile or a new band of a tile.
+     * Prepares this channel for reading a new block of data.
      *
      * @param  start      stream position where to start reading.
      * @param  byteCount  number of bytes to read from the input.
@@ -108,7 +108,7 @@ abstract class CompressionChannel extends PixelChannel {
      * @throws IOException if an error occurred while filling the buffer with initial data.
      * @return the data input for uncompressed data.
      */
-    final ChannelDataInput createDataInput(final PixelChannel channel, final int scanlineStride, final boolean directBuffer)
+    public final ChannelDataInput createDataInput(final ComputedByteChannel channel, final int scanlineStride, final boolean directBuffer)
             throws IOException
     {
         final int capacity;
@@ -127,9 +127,15 @@ abstract class CompressionChannel extends PixelChannel {
 
     /**
      * Copies the given byte <var>n</var> times in the given buffer.
+     * This is a convenience method for an operation frequently found in different compression algorithms.
+     *
+     * @param  target  where to append the bytes.
+     * @param  value   the byte to repeat.
+     * @param  count   number of time to repeat the given value.
+     * @throws BufferOverflowException if {@code count} is greater than the remaining space in the buffer.
      */
-    static void repeat(final ByteBuffer target, final byte b, int n) {
-        while (--n >= 0) target.put(b);
+    protected static void repeat(final ByteBuffer target, final byte value, int count) {
+        while (--count >= 0) target.put(value);
     }
 
     /**
@@ -148,12 +154,5 @@ abstract class CompressionChannel extends PixelChannel {
     @Override
     public void close() {
         // Do NOT close `input`.
-    }
-
-    /**
-     * Returns the resources for error messages.
-     */
-    final Resources resources() {
-        return Resources.forLocale(listeners.getLocale());
     }
 }

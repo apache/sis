@@ -14,18 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.geotiff.inflater;
+package org.apache.sis.io.stream.inflater;
 
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
 
 
 /**
- * A channel of pixel values after all steps have been completed.
- * The steps may be:
+ * Base class of channels providing values that are computed on-the-fly.
+ * The computation typically uses another channel as its source.
+ * Examples:
  *
  * <ul>
- *   <li>Decompression alone, in which case this class is a subtype of {@link CompressionChannel}.</li>
+ *   <li>Decompression alone, in which case this class is a subtype of {@link InflaterChannel}.</li>
  *   <li>Decompression followed by some mathematical operation applied on the data after decompression.
  *       In that case this class is a subtype of {@link PredictorChannel}.</li>
  * </ul>
@@ -34,15 +35,16 @@ import java.nio.channels.ReadableByteChannel;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-abstract class PixelChannel implements ReadableByteChannel {
+public abstract class ComputedByteChannel implements ReadableByteChannel {
     /**
      * Creates a new channel.
      */
-    protected PixelChannel() {
+    protected ComputedByteChannel() {
     }
 
     /**
-     * Prepares this channel for reading a new tile or a new band of a planar image.
+     * Prepares this channel for reading a new block of data.
+     * A block may be, for example, a tile or a band of a tile.
      *
      * @param  start      stream position where to start reading.
      * @param  byteCount  number of bytes to read from the input.
