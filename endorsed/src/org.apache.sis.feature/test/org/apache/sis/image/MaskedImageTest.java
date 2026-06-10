@@ -48,6 +48,7 @@ import static org.opengis.test.Assertions.assertSampleValuesEqual;
  *
  * @author  Alexis Manin (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class MaskedImageTest extends TestCase {
     /**
      * The image width and height in pixels.

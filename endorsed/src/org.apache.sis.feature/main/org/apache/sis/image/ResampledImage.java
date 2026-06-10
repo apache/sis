@@ -672,7 +672,7 @@ public class ResampledImage extends ComputedImage {
     }
 
     /**
-     * Invoked when a tile need to be computed or updated. This method fills all pixel values of the tile
+     * Invoked when a tile needs to be computed or updated. This method fills all pixel values of the tile
      * with values interpolated from the source image. It may be invoked concurrently in different threads.
      *
      * @param  tileX  the column index of the tile to compute.
