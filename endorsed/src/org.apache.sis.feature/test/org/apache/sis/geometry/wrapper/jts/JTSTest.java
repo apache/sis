@@ -161,8 +161,8 @@ public final class JTSTest extends TestCase {
         {   /*
              * Test 3D Envelope on a 3 dimensional geometry.
              *
-             * TODO: JTS does not set the Z values for geometry internal envelope.
-             *       Should we loop over all coordinates in the geometry?
+             * JTS does not set the Z values for geometry internal envelope.
+             * Our implementation loops on the coordinates to find it
              */
             final CoordinateReferenceSystem crs = CommonCRS.WGS84.geographic3D();
             final Geometry geometry = factory.createPoint(new Coordinate(5, 6, 7));
@@ -170,8 +170,8 @@ public final class JTSTest extends TestCase {
             wrapper.setCoordinateReferenceSystem(crs);
             final GeneralEnvelope envelope = wrapper.getEnvelope();
             assertEquals(crs, envelope.getCoordinateReferenceSystem());
-            assertArrayEquals(new double[] {5, 6, Double.NaN}, envelope.getLowerCorner().getCoordinates());
-            assertArrayEquals(new double[] {5, 6, Double.NaN}, envelope.getUpperCorner().getCoordinates());
+            assertArrayEquals(new double[] {5, 6, 7}, envelope.getLowerCorner().getCoordinates());
+            assertArrayEquals(new double[] {5, 6, 7}, envelope.getUpperCorner().getCoordinates());
         }
     }
 
