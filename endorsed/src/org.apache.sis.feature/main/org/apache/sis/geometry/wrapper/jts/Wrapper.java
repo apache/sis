@@ -26,7 +26,6 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.IntFunction;
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
@@ -68,7 +67,7 @@ import org.opengis.filter.DistanceOperatorName;
 
 
 /**
- * The wrapper of Java Topology Suite (JTS) geometries.
+ * The wrapper of Java Topology Suite (<abbr>JTS</abbr>) geometries.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -147,72 +146,13 @@ final class Wrapper extends GeometryWrapper {
      */
     @Override
     public int getCoordinateDimension() {
-        return getCoordinatesDimension(geometry, null);
-    }
-
-    /**
-     * Gets the number of dimensions of geometry vertex (sequence of coordinate tuples), which can be 2 or 3.
-     * Note that this is different than the {@linkplain Geometry#getDimension() geometry topological dimension},
-     * which can be 0, 1 or 2.
-     *
-     * @param geometry  the geometry for which to get <em>vertex</em> (not topological) dimension.
-     * @param bounds if defined, compute bounds, array must be of size 8 for [minX,minY,minZ,minM,maxX,maxY,maxZ,maxM]
-     * @return vertex dimension of the given geometry.
-     * @throws IllegalArgumentException if the type of the given geometry is not recognized.
-     */
-    private static int getCoordinatesDimension(final Geometry geometry, Double[] bounds) {
-        int dim = 0;
-        if (geometry instanceof Point) {
-            // Most efficient method (no allocation) in JTS 1.18.
-            dim = getCoordinatesDimension(dim, ((Point) geometry).getCoordinateSequence(), bounds);
-        } else if (geometry instanceof LineString) {
-            // Most efficient method (no allocation) in JTS 1.18.
-            dim = getCoordinatesDimension(dim, ((LineString) geometry).getCoordinateSequence(), bounds);
-        } else if (geometry instanceof Polygon) {
-            final Polygon polygon = (Polygon) geometry;
-            dim = getCoordinatesDimension(dim, ((LineString) polygon.getExteriorRing()).getCoordinateSequence(), bounds);
-            for (int i = 0, n = polygon.getNumInteriorRing(); i < n; i++) {
-                dim = getCoordinatesDimension(dim, ((LineString) polygon.getInteriorRingN(i)).getCoordinateSequence(), bounds);
-            }
-
-        } else if (geometry instanceof GeometryCollection) {
-            final GeometryCollection gc = (GeometryCollection) geometry;
-            final int n = gc.getNumGeometries();
-            if (n == 0) {
-                dim = Factory.TRIDIMENSIONAL;// Undefined coordinates, JTS assumes 3 for empty geometries.
-            }
-            for (int i = 0; i < n; i++) {
-                dim = Math.max(dim, getCoordinatesDimension(gc.getGeometryN(i), bounds));
-            }
-        } else {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownType_1, geometry.getGeometryType()));
+        int dimension = CRS.getDimensionOrZero(crs);
+        if (dimension == 0) {
+            final var walker = new GeometryWalker();
+            walker.scan(geometry);
+            dimension = walker.dimension();
         }
-        return dim;
-    }
-
-    /**
-     * Get dimension and bounds of coordinate sequence.
-     *
-     * @param dim previously computed dimension
-     * @param cs the coordinate sequence for which to get <em>vertex</em> (not topological) dimension and bounds
-     * @param bounds if defined, compute bounds, array must be of size 8 for [minX,minY,minZ,minM,maxX,maxY,maxZ,maxM]
-     * @return coordinate sequence dimension or previous dimension, returning the largest one.
-     */
-    private static int getCoordinatesDimension(int dim, CoordinateSequence cs, Double[] bounds) {
-        final int dimension = cs.getDimension();
-        if (bounds != null) {
-            for (int i = 0, d = 0, n = cs.size(); i < n; d++) {
-                if (d == dimension) {d = -1; i++; continue;}
-                final double val = cs.getOrdinate(i, d);
-                //check min
-                if (bounds[d] == null) bounds[d] = val;
-                else if (!bounds[d].isNaN()) bounds[d] = Double.min(bounds[d], val);
-                //check max
-                if (bounds[d+4] == null) bounds[d+4] = val;
-                else if (!bounds[d+4].isNaN()) bounds[d+4] = Double.max(bounds[d+4], val);
-            }
-        }
-        return Math.max(dim, dimension);
+        return dimension;
     }
 
     /**
@@ -223,29 +163,27 @@ final class Wrapper extends GeometryWrapper {
      */
     @Override
     public GeneralEnvelope getEnvelope() {
-        if (crs != null && crs.getCoordinateSystem().getDimension() == 2) {
-            //we can use JTS envelope internal
-            final Envelope bounds = geometry.getEnvelopeInternal();
-            final var env = new GeneralEnvelope(crs);
-            env.setToNaN();
-            if (!bounds.isNull()) {
-                env.setRange(0, bounds.getMinX(), bounds.getMaxX());
-                env.setRange(1, bounds.getMinY(), bounds.getMaxY());
+        final var walker = new GeometryWalker();
+        final GeneralEnvelope env;
+        if (crs != null) {
+            env = new GeneralEnvelope(crs);
+            if (env.getDimension() >= Factory.TRIDIMENSIONAL) {
+                walker.wantZM();
             }
-            return env;
+            walker.scan(geometry);
         } else {
-            //geometry has unknown or more then 2 dimensions
-            final Double[] bounds = new Double[8];
-            final int dim = getCoordinatesDimension(geometry, bounds);
-            final var env = (crs != null) ? new GeneralEnvelope(crs) : new GeneralEnvelope(dim);
-            env.setToNaN();
-            for (int i = 0, n = Math.min(dim, env.getDimension()); i < n; i++) {
-                if (bounds[i] != null){
-                    env.setRange(i, bounds[i], bounds[i+4]);
-                }
-            }
-            return env;
+            walker.wantZM();
+            walker.scan(geometry);
+            env = new GeneralEnvelope(walker.dimension());
         }
+        env.setToNaN();
+        final Envelope bounds = geometry.getEnvelopeInternal();
+        if (!bounds.isNull()) {
+            env.setRange(0, bounds.getMinX(), bounds.getMaxX());
+            env.setRange(1, bounds.getMinY(), bounds.getMaxY());
+        }
+        walker.setZM(env);
+        return env;
     }
 
     /**
