@@ -136,7 +136,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.6
+ * @version 1.7
  *
  * @see org.apache.sis.coverage.grid.GridCoverageProcessor
  *
@@ -1232,6 +1232,38 @@ public class ImageProcessor implements Cloneable {
          * then above call should return `resampled` unchanged.
          */
         return RecoloredImage.applySameColors(resampled, colored);
+    }
+
+    /**
+     * Creates an overview of the given image computed by the average of 4 pixels.
+     * NaN values are omitted from the average. If all values in a block of 4 pixels are NaN,
+     * then the first value (the upper-left corner of the 4 pixels block) is retained.
+     *
+     * <p>This overview is equivalent to the {@link #resample(RenderedImage, Rectangle, MathTransform) resample(…)}
+     * operation with a bilinear interpolation and the following transform, except that an overview can be created
+     * from the value of another overview, thus creating a pyramid. By contrast, the {@code resample(…)} operation
+     * may optimize with {@link MathTransform} concatenations, which is undesirable when creating a pyramid:</p>
+     *
+     * {@snippet lang="text" :
+     * ┌               ┐
+     * │ 2.0  0    0.5 │
+     * │ 0    2.0  0.5 │
+     * │ 0    0    1   │
+     * └               ┘
+     * }
+     *
+     * <h4>Result relationship with source</h4>
+     * Changes in the source image are reflected in the returned images
+     * if the source image notifies {@linkplain java.awt.image.TileObserver tile observers}.
+     *
+     * @param  source  the image for which to compute an overview.
+     * @return image overview.
+     *
+     * @since 1.7
+     */
+    public RenderedImage overview(final RenderedImage source) {
+        ArgumentChecks.ensureNonNull("source", source);
+        return unique(new OverviewImage(source));
     }
 
     /**

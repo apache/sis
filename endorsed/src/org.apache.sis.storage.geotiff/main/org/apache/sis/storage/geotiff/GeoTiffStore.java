@@ -82,6 +82,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Alexis Manin (Geomatys)
+ * @author  Estelle Idée (Geomatys)
  * @version 1.7
  * @since   0.8
  */
@@ -690,7 +691,8 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     /**
      * Encodes the given image in the GeoTIFF file.
      * The image is appended after any existing images in the GeoTIFF file.
-     * This method does not handle pyramids such as Cloud Optimized GeoTIFF (COG).
+     * If the {@link FormatModifier#PYRAMIDED} was given at construction time,
+     * then overviews are automatically written.
      *
      * @param  image     the image to encode.
      * @param  grid      mapping from pixel coordinates to "real world" coordinates, or {@code null} if none.
@@ -703,7 +705,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * @since 1.5
      */
     @SuppressWarnings("LocalVariableHidesMemberVariable")
-    public synchronized GridCoverageResource append(final RenderedImage image, final GridGeometry grid, final Metadata metadata)
+    public synchronized GridCoverageResource append(RenderedImage image, final GridGeometry grid, final Metadata metadata)
             throws DataStoreException
     {
         final int index;
@@ -711,9 +713,18 @@ public class GeoTiffStore extends DataStore implements Aggregate {
             final Reader reader = this.reader;
             final Writer writer = writer();
             writer.synchronize(reader, false);
-            final long offsetIFD;
+            long offsetIFD;
             try {
-                offsetIFD = writer.append(image, grid, metadata);
+                offsetIFD = writer.append(image, grid, metadata, false);
+                if (writer.isPyramided) {
+                    while (image.getWidth()  > Writer.OVERVIEW_SIZE ||
+                           image.getHeight() > Writer.OVERVIEW_SIZE)
+                    {
+                        image = writer.processor().overview(image);
+                        offsetIFD = writer.append(image, null, null, true);
+                        // Grid and metadata are null as we don't want to repeat metadata in overviews.
+                    }
+                }
             } finally {
                 writer.synchronize(reader, true);
             }
@@ -755,7 +766,8 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     /**
      * Adds a new grid coverage in the GeoTIFF file.
      * The coverage is appended after any existing images in the GeoTIFF file.
-     * This method does not handle pyramids such as Cloud Optimized GeoTIFF (COG).
+     * If the {@link FormatModifier#PYRAMIDED} was given at construction time,
+     * then overviews are automatically written.
      *
      * @param  coverage  the grid coverage to encode.
      * @param  metadata  title, author and other information, or {@code null} if none.

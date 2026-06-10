@@ -16,23 +16,31 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import java.util.Random;
+import java.util.Iterator;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.image.DataType;
+import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -48,7 +56,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.feature.Assertions.assertGridToCornerEquals;
+import org.apache.sis.image.OverviewImageTest;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 
@@ -61,6 +71,7 @@ import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
  * This class tests indirectly (via {@link GeoTiffStore}) the {@link Reader} and {@link Writer} classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Estelle Idée (Geomatys)
  */
 @SuppressWarnings("exports")
 public final class GeoTiffStoreTest extends TestCase {
@@ -189,5 +200,72 @@ public final class GeoTiffStoreTest extends TestCase {
         }
         assertArrayEquals(expected, actual);
         assertEquals(length, actual.length);
+    }
+
+    /**
+     * Tests writing a pyramided image.
+     *
+     * @throws Exception if an error occurred while preparing or running the test.
+     */
+    @Test
+    public void testPyramided() throws Exception {
+        final Random r   = TestUtilities.createRandomNumberGenerator();
+        final int width  = r.nextInt(2 * Writer.OVERVIEW_SIZE) + 3 * Writer.OVERVIEW_SIZE;
+        final int height = r.nextInt(2 * Writer.OVERVIEW_SIZE) + 3 * Writer.OVERVIEW_SIZE;
+        final var area   = new GeneralEnvelope(HardCodedCRS.WGS84);
+        area.setRange(0, 132, 145);   // Range of longitude values.
+        area.setRange(1,  30,  42);   // Range of latitude values.
+        final GridCoverage coverage = new GridCoverageBuilder()
+                .setDomain(Envelopes.transform(area, HardCodedCRS.WGS84))
+                .setValues(DataType.BYTE, new Rectangle(width, height), null, (x, y) -> 100 * y + x)
+                .flipGridAxis(1)
+                .build();
+
+        final Path path = Files.createTempFile("pyramided", ".tiff");
+        try {
+            final var connector = new StorageConnector(path);
+            connector.setOption(FormatModifier.OPTION_KEY, new FormatModifier[] {
+                FormatModifier.PYRAMIDED
+            });
+            connector.setOption(OptionKey.OPEN_OPTIONS, new StandardOpenOption[] {
+                StandardOpenOption.CREATE,
+                StandardOpenOption.WRITE
+            });
+            try (var store = new GeoTiffStore(null, connector)) {
+                assertNotNull(store.append(coverage, null));
+            }
+            /*
+             * Try to read the image using the standard TIFF reader, which is used as a reference implementation.
+             * We expect at least one implementation. If there is more implementations, test will all of them.
+             */
+            final Iterator<ImageReader> imageReaders = ImageIO.getImageReadersByFormatName("TIFF");
+            assertTrue(imageReaders.hasNext());
+            do {
+                final ImageReader reader = imageReaders.next();
+                try (ImageInputStream input = ImageIO.createImageInputStream(path.toFile())) {
+                    reader.setInput(input);
+                    RenderedImage image = reader.read(0);
+                    assertEquals(width,  image.getWidth());
+                    assertEquals(height, image.getHeight());
+                    int imageIndex = 1;
+                    while (image.getWidth() > Writer.OVERVIEW_SIZE || image.getHeight() > Writer.OVERVIEW_SIZE) {
+                        final RenderedImage overview = reader.read(imageIndex);
+                        OverviewImageTest.verify(image, overview, true);
+                        image = overview;
+                        imageIndex++;
+                    }
+                    try {
+                        reader.read(imageIndex);
+                        fail("Expected no more images.");
+                    } catch (IndexOutOfBoundsException e) {
+                        // Ignore expected exception.
+                    }
+                    assertTrue(imageIndex > 1);     // Expect at least one overview.
+                }
+                reader.dispose();
+            } while (imageReaders.hasNext());
+        } finally {
+            Files.delete(path);
+        }
     }
 }
