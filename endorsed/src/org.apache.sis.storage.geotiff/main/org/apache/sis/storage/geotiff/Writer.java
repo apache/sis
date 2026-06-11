@@ -49,6 +49,7 @@ import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.IncompatibleResourceException;
 import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.metadata.MetadataFetcher;
+import org.apache.sis.storage.base.OverviewIterator;
 import org.apache.sis.storage.geotiff.writer.TagValue;
 import org.apache.sis.storage.geotiff.writer.TileMatrix;
 import org.apache.sis.storage.geotiff.writer.GeoEncoder;
@@ -82,7 +83,7 @@ import org.opengis.coverage.CannotEvaluateException;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Estelle Idée (Geomatys)
  */
-final class Writer extends IOBase implements Flushable {
+final class Writer extends IOBase implements OverviewIterator, Flushable {
     /**
      * Maximal size of the highest overview.
      * Used as a criteria for deciding when to stop creating overviews in a pyramided file.
@@ -153,7 +154,7 @@ final class Writer extends IOBase implements Flushable {
      *
      * @see #getFormat()
      */
-    final boolean isPyramided;
+    private final boolean isPyramided;
 
     /**
      * Whether to disable the <abbr>TIFF</abbr> requirement that tile sizes are multiple of 16 pixels.
@@ -295,11 +296,28 @@ final class Writer extends IOBase implements Flushable {
      * Returns the processor to use for reformatting the image before to write it.
      * The processor is created only when this method is first invoked.
      */
-    final ImageProcessor processor() {
+    private ImageProcessor processor() {
         if (processor == null) {
             processor = new ImageProcessor();
         }
         return processor;
+    }
+
+    /**
+     * Returns the next overview level, from finest resolution to coarsest resolution.
+     *
+     * @param  previous  the image at finer resolution which has been written before this method call.
+     * @return the next overview level, or {@code null} if the iteration is finished.
+     * @throws DataStoreException if the resource cannot be read.
+     */
+    @Override
+    public final RenderedImage nextOverview(final RenderedImage previous) throws DataStoreException {
+        if (isPyramided) {
+            if (previous.getWidth() > OVERVIEW_SIZE || previous.getHeight() > OVERVIEW_SIZE) {
+                return processor().overview(previous);
+            }
+        }
+        return null;
     }
 
     /**

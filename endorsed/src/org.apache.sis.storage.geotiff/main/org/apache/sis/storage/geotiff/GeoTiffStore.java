@@ -50,6 +50,7 @@ import org.apache.sis.storage.IncompatibleResourceException;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;
+import org.apache.sis.storage.base.OverviewIterator;
 import org.apache.sis.storage.base.URIDataStoreOption;
 import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.storage.base.GridResourceWrapper;
@@ -77,12 +78,22 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * A data store backed by GeoTIFF files.
+ * Each <abbr>TIFF</abbr> file can contains an arbitrary number of images.
+ * Some of these images may be overviews of a full-resolution image, thus forming a
+ * pyramid as defined by the Cloud Optimized GeoTIFF (<abbr>COG</abbr>) convention.
+ * This store supports the big <abbr>TIFF</abbr> extension.
+ *
+ * <p>While it is possible to create instances of this class directly,
+ * the recommended way is to use {@link GeoTiffStoreProvider} because
+ * the latter may return instances that implement additional interfaces
+ * such as {@link org.apache.sis.storage.WritableAggregate}.</p>
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Alexis Manin (Geomatys)
  * @author  Estelle Idée (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.7
  * @since   0.8
  */
@@ -689,6 +700,16 @@ public class GeoTiffStore extends DataStore implements Aggregate {
     }
 
     /**
+     * Returns the source of overviews for the image which is currently in process of being written.
+     *
+     * @param  writer  the default source of overview.
+     * @return the source of overview to use.
+     */
+    OverviewIterator overviews(final OverviewIterator writer) {
+        return writer;
+    }
+
+    /**
      * Encodes the given image in the GeoTIFF file.
      * The image is appended after any existing images in the GeoTIFF file.
      * If the {@link FormatModifier#PYRAMIDED} was given at construction time,
@@ -713,23 +734,19 @@ public class GeoTiffStore extends DataStore implements Aggregate {
             final Reader reader = this.reader;
             final Writer writer = writer();
             writer.synchronize(reader, false);
-            long offsetIFD;
+            long offsetIFD = -1;
             try {
                 offsetIFD = writer.append(image, grid, metadata, false);
-                if (writer.isPyramided) {
-                    while (image.getWidth()  > Writer.OVERVIEW_SIZE ||
-                           image.getHeight() > Writer.OVERVIEW_SIZE)
-                    {
-                        image = writer.processor().overview(image);
-                        offsetIFD = writer.append(image, null, null, true);
-                        // Grid and metadata are null as we don't want to repeat metadata in overviews.
-                    }
+                final OverviewIterator it = overviews(writer);
+                while ((image = it.nextOverview(image)) != null) {
+                    offsetIFD = writer.append(image, null, null, true);
+                    // Grid and metadata are null as we don't want to repeat metadata in overviews.
                 }
             } finally {
                 writer.synchronize(reader, true);
-            }
-            if (reader != null) {
-                reader.offsetOfWrittenIFD(offsetIFD);
+                if (reader != null && offsetIFD >= 0) {
+                    reader.offsetOfWrittenIFD(offsetIFD);       // Last successfully written image.
+                }
             }
             index = writer.imageIndex++;
         } catch (RasterFormatException | ArithmeticException | IllegalArgumentException e) {

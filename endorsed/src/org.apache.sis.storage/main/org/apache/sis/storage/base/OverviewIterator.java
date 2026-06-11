@@ -14,27 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.storage.base;
+
+import java.awt.image.RenderedImage;
+import org.apache.sis.storage.DataStoreException;
+
 
 /**
- * A data store for reading and writing GeoTIFF files.
- * This module supports big <abbr>TIFF</abbr> and Cloud Optimized GeoTIFF (<abbr>COG</abbr>).
+ * Provider of overviews for writing a pyramided image.
+ * Overviews are returned from finest resolution to coarsest resolution.
+ * They may be computed on the fly or read from an existing source.
  *
- * @author  Rémi Maréchal (Geomatys)
- * @author  Thi Phuong Hao Nguyen (VNSC)
- * @author  Minh Chinh Vu (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
- * @author  Alexis Manin (Geomatys)
- * @author  Estelle Idée (Geomatys)
- * @author  Johann Sorel (Geomatys)
- * @version 1.7
- * @since   0.8
  */
-module org.apache.sis.storage.geotiff {
-    requires jakarta.xml.bind;
-    requires transitive org.apache.sis.storage;
-
-    provides org.apache.sis.storage.DataStoreProvider
-        with org.apache.sis.storage.geotiff.GeoTiffStoreProvider;
-
-    exports org.apache.sis.storage.geotiff;
+public interface OverviewIterator {
+    /**
+     * Returns the next overview level, from finest resolution to coarsest resolution.
+     *
+     * @param  previous  the image at finer resolution which can be used as a base for the next overview.
+     * @return the next overview level, or {@code null} if the iteration is finished.
+     * @throws DataStoreException if the source of overviews cannot be read.
+     */
+    RenderedImage nextOverview(RenderedImage previous) throws DataStoreException;
 }
