@@ -26,12 +26,12 @@ import org.apache.sis.storage.event.StoreListeners;
 
 
 /**
- * Inflater for values encoded with the LZW compression.
- * This compression is described in section 13 of TIFF 6 specification, "LZW Compression".
+ * Inflater for values encoded with the <abbr>LZW</abbr> compression.
+ * This compression is described in section 13 of <abbr>TIFF</abbr> 6 specification, "<abbr>LZW</abbr> Compression".
  * Each code is written using at least 9 bits and at most 12 bits.
  *
  * <h2>Legal note</h2>
- * Unisys's patent on the LZW algorithm expired in 2004.
+ * Unisys's patent on the <abbr>LZW</abbr> algorithm expired in 2004.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)

@@ -20,11 +20,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.apache.sis.image.DataType;
 import org.apache.sis.pending.jdk.JDK13;
-import org.apache.sis.storage.geotiff.base.Predictor;
 
 
 /**
- * Implementation of {@link Predictor#HORIZONTAL_DIFFERENCING}.
+ * Implementation of the horizontal differencing predictor.
  * Current implementation works only on 8, 16, 32 or 64-bits samples.
  * Values packed on 4, 2 or 1 bits are not yet supported.
  *

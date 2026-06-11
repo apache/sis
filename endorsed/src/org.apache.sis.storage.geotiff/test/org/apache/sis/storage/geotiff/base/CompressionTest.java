@@ -23,7 +23,7 @@ import org.apache.sis.test.TestCase;
 
 
 /**
- * Tests the {@link Compression} enumeration.
+ * Tests the {@link CompressionMethod} and {@link Predictor} enumerations.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -35,12 +35,22 @@ public final class CompressionTest extends TestCase {
     }
 
     /**
-     * Tests {@link Compression#valueOf(long)}.
+     * Tests {@link CompressionMethod#valueOf(int)}.
      */
     @Test
-    public void testValueOf() {
-        for (final Compression c : Compression.values()) {
-            assertSame(c, Compression.valueOf(c.code), c.name());
+    public void testMethodFromCode() {
+        for (final var c : CompressionMethod.values()) {
+            assertSame(c, CompressionMethod.valueOf(c.code), c.name());
+        }
+    }
+
+    /**
+     * Tests {@link Predictor#valueOf(int)}.
+     */
+    @Test
+    public void testPreductorFromCode() {
+        for (final var c : Predictor.values()) {
+            assertSame(c, Predictor.valueOf(c.code), c.name());
         }
     }
 }

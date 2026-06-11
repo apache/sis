@@ -102,7 +102,7 @@ abstract class CompressionChannel extends PixelChannel {
      * for performance reasons. A well adjusted buffer size reduces calls to {@link ByteBuffer#compact()},
      * which in turn reduces the number of copy operations between different regions of the buffer.</p>
      *
-     * @param  channel         the channel to wrap. This is {@code this} unless a {@link Predictor} is applied.
+     * @param  channel         the channel to wrap. This is {@code this} unless a predictor is applied.
      * @param  scanlineStride  the scanline stride of the image to read. Used for choosing a buffer size.
      * @param  directBuffer    whether the use of direct buffer is preferred to heap buffer.
      * @throws IOException if an error occurred while filling the buffer with initial data.

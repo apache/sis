@@ -31,7 +31,7 @@ import org.apache.sis.io.stream.ChannelDataInput;
  * @author  Rémi Marechal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class ZIP extends CompressionChannel {
+final class Deflate extends CompressionChannel {
     /**
      * Access to the ZLIB compression library.
      * Must be released by call to {@link Inflater#end()} after decompression is completed.
@@ -49,7 +49,7 @@ final class ZIP extends CompressionChannel {
      * @param  byteCount  number of bytes to read from the input.
      * @throws IOException if the stream cannot be seek to the given start position.
      */
-    public ZIP(final ChannelDataInput input, final StoreListeners listeners) {
+    public Deflate(final ChannelDataInput input, final StoreListeners listeners) {
         super(input, listeners);
         inflater = new Inflater();
     }
@@ -79,8 +79,7 @@ final class ZIP extends CompressionChannel {
         final int start = target.position();
         int required = 0;
         try {
-            int n;
-            while ((n = inflater.inflate(target)) == 0) {
+            while (inflater.inflate(target) == 0) {
                 if (inflater.needsInput()) {
                     if (++required >= input.buffer.capacity()) {
                         throw new BufferOverflowException();
@@ -103,6 +102,7 @@ final class ZIP extends CompressionChannel {
      * Releases resources used by the inflater.
      */
     @Override
+    @SuppressWarnings("ConvertToTryWithResources")
     public void close() {
         inflater.end();
         super.close();

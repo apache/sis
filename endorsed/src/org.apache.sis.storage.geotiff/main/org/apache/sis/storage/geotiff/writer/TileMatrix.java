@@ -38,9 +38,8 @@ import org.apache.sis.io.stream.ChannelDataOutput;
 import org.apache.sis.io.stream.HyperRectangleWriter;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.InternalDataStoreException;
-import org.apache.sis.storage.geotiff.base.Compression;
+import org.apache.sis.storage.geotiff.base.CompressionMethod;
 import org.apache.sis.storage.geotiff.base.Predictor;
-import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.pending.jdk.JDK18;
 
 
@@ -105,7 +104,7 @@ public final class TileMatrix {
     /**
      * The compression to use for writing tiles.
      */
-    private final Compression compression;
+    private final CompressionMethod compression;
 
     /**
      * The compression level, or -1 for default.
@@ -128,7 +127,7 @@ public final class TileMatrix {
      * @param predictor         the predictor to apply before to compress data.
      */
     public TileMatrix(final RenderedImage image, final int numPlanes, final int[] bitsPerSample,
-                      final Compression compression, final int compressionLevel, final Predictor predictor)
+                      final CompressionMethod compression, final int compressionLevel, final Predictor predictor)
     {
         final int pixelSize, numArrays;
         this.numPlanes        = numPlanes;
@@ -174,13 +173,6 @@ public final class TileMatrix {
                 break;
             }
         }
-    }
-
-    /**
-     * Creates an exception for an unsupported configuration.
-     */
-    private static DataStoreException unsupported(final short key, final Enum<?> value) {
-        return new DataStoreException(Resources.forLocale(null).getString(key, value));
     }
 
     /**
@@ -248,10 +240,10 @@ public final class TileMatrix {
                     final long length = Math.multiplyExact(builder.length(), type.bytes());
                     switch (compression) {
                         case DEFLATE: compressor = new ZIP(output, length, compressionLevel); break;
-                        default: throw unsupported(Resources.Keys.UnsupportedCompressionMethod_1, compression);
+                        default: throw new DataStoreException(compression.unsupported(null));
                     }
                     switch (predictor) {
-                        default: throw unsupported(Resources.Keys.UnsupportedPredictor_1, predictor);
+                        default: throw new DataStoreException(predictor.unsupported(null));
                         case NONE: break;
                         case HORIZONTAL_DIFFERENCING: {
                             compressor = HorizontalPredictor.create(compressor, type, builder.pixelStride(), builder.scanlineStride());

@@ -24,8 +24,9 @@ import org.apache.sis.io.stream.ChannelDataInput;
 
 /**
  * Inflater for values encoded with the CCITT Group 3, 1-Dimensional Modified Huffman run length encoding.
- * This compression is described in section 10 of TIFF 6 specification. "Run length" (consecutive black or
- * white pixels) are encoded with "words" having a variable number of bits. Example:
+ * This compression is described in section 10 of <abbr>TIFF</abbr> 6 specification. "Run length"
+ * (consecutive black or white pixels) are encoded with "words" having a variable number of bits.
+ * Example:
  *
  * <table class="sis">
  *   <caption>Run length encoding examples</caption>
@@ -151,7 +152,7 @@ final class CCITTRLE extends CompressionChannel {
      * @param  tree  {@link #WHITE_RUNLENGTH_TREE} or {@link #BLACK_RUNLENGTH_TREE}.
      */
     final int getRunLength(final short[] tree) throws IOException {
-        int runLength = 0, code;
+        int length = 0, code;
         do {
             int offset = 0;
             while ((code = tree[offset]) >= 0) {
@@ -177,9 +178,9 @@ final class CCITTRLE extends CompressionChannel {
                 offset = (input.readBit() != 0) ? code : offset + 1;
             }
             code = ~code;
-            runLength += code;
+            length += code;
         } while (code >= TERMINATING_LIMIT);
-        return runLength;
+        return length;
     }
 
     /**

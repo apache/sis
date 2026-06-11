@@ -35,7 +35,7 @@ import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.io.stream.ChannelDataInput;
-import org.apache.sis.storage.geotiff.base.Compression;
+import org.apache.sis.storage.geotiff.base.CompressionMethod;
 import org.apache.sis.storage.geotiff.base.Predictor;
 import org.apache.sis.storage.geotiff.base.GeoKeys;
 import org.apache.sis.storage.geotiff.base.Tags;
@@ -202,8 +202,8 @@ final class NativeMetadata extends GeoKeysLoader {
                                  * we continue to handle as integers for now.
                                  */
                                 switch (tag) {
-                                    case TAG_COMPRESSION: value = toName(value, Compression::valueOf); break;
-                                    case TAG_PREDICTOR:   value = toName(value,   Predictor::valueOf); break;
+                                    case TAG_COMPRESSION: value = toName(value, CompressionMethod::valueOf); break;
+                                    case TAG_PREDICTOR:   value = toName(value, Predictor::valueOf); break;
                                     case TAG_PLANAR_CONFIGURATION: {
                                         value = toString(value, (code) -> {
                                             switch (code) {

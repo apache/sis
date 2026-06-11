@@ -24,7 +24,7 @@ import org.apache.sis.image.DataType;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.storage.UnsupportedEncodingException;
-import org.apache.sis.storage.geotiff.base.Compression;
+import org.apache.sis.storage.geotiff.base.CompressionMethod;
 import org.apache.sis.storage.geotiff.base.Predictor;
 import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.io.stream.ChannelDataInput;
@@ -183,24 +183,24 @@ public abstract class Inflater implements Closeable {
      *       in a way that make them usable with other tiled formats than TIFF.
      */
     @SuppressWarnings("fallthrough")
-    public static Inflater create(final StoreListeners   listeners,
-                                  final ChannelDataInput input,
-                                  final Compression      compression,
-                                  final Predictor        predictor,
-                                  final int              sourcePixelStride,
-                                  final int              sourceWidth,
-                                  final int              chunksPerRow,
-                                  final int              samplesPerChunk,
-                                  final int[]            skipAfterChunks,
-                                  final int              pixelsPerElement,
-                                  final DataType         dataType)
+    public static Inflater create(final StoreListeners    listeners,
+                                  final ChannelDataInput  input,
+                                  final CompressionMethod compression,
+                                  final Predictor         predictor,
+                                  final int               sourcePixelStride,
+                                  final int               sourceWidth,
+                                  final int               chunksPerRow,
+                                  final int               samplesPerChunk,
+                                  final int[]             skipAfterChunks,
+                                  final int               pixelsPerElement,
+                                  final DataType          dataType)
             throws IOException, UnsupportedEncodingException
     {
         ArgumentChecks.ensureNonNull("input", input);
         final CompressionChannel inflater;
         switch (compression) {
             case LZW:      inflater = new LZW     (input, listeners); break;
-            case DEFLATE:  inflater = new ZIP     (input, listeners); break;
+            case DEFLATE:  inflater = new Deflate (input, listeners); break;
             case PACKBITS: inflater = new PackBits(input, listeners); break;
             case CCITTRLE: inflater = new CCITTRLE(input, listeners, sourceWidth); break;
             case NONE: {
