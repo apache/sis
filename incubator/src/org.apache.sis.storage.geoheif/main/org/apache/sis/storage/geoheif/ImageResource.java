@@ -27,7 +27,6 @@ import static java.lang.Math.addExact;
 import static java.lang.Math.multiplyExact;
 import java.awt.image.ColorModel;
 import java.awt.image.Raster;
-import java.awt.image.RasterFormatException;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import javax.imageio.ImageReader;
@@ -125,24 +124,21 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
      * @param  builder  helper class for building the grid geometry and sample dimensions.
      * @param  tiles    the images that constitute the tiles, or {@code null} if {@code reader} is provided.
      * @param  image    the single tile for the whole image, or {@code null} if {@code tiles} is provided.
-     * @throws RasterFormatException if the sample dimensions or sample model cannot be created.
-     * @throws DataStoreException if the "grid to <abbr>CRS</abbr>" transform cannot be created.
+     * @throws DataStoreException if the "grid to <abbr>CRS</abbr>" transform or the sample dimensions cannot be created.
      */
-    ImageResource(final CoverageBuilder builder, Image[] tiles, final Image.Supplier image) throws DataStoreException {
+    ImageResource(final CoverageBuilder builder, Image[] tiles, final Image image) throws DataStoreException {
         super(builder.store);
         this.store       = builder.store;
         identifier       = builder.name();
-        sampleDimensions = builder.sampleDimensions();
-        gridGeometry     = builder.gridGeometry();      // Should be after `sampleDimensions()`.
+        sampleDimensions = builder.imageModel().sampleDimensions(null);
+        gridGeometry     = builder.gridGeometry();
         if (tiles == null) {
             // Shall be after the call to `sampleDimensions()`.
-            tiles = new Image[] {
-                image.get()         // Actual I/O operations are deferred (not in this call).
-            };
+            tiles = new Image[] {image};
         }
         this.tiles  = tiles;
         sampleModel = builder.sampleModel();
-        colorModel  = builder.colorModel();
+        colorModel  = builder.imageModel().colorModel;
         metadata    = builder.metadata().build();     // Not `buildAndFreeze()` as the metadata may still be modified.
         tileMatrixRowStride = builder.numTiles(0);
     }
@@ -379,6 +375,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
              * @param  tileX   0-based column index of the tile to read, starting from image left.
              * @param  tileY   0-based row index of the tile to read, starting from image top.
              */
+            @SuppressWarnings("LeakingThisInConstructor")
             private ReadContext(final ReadContext parent, final ImageResource owner) throws DataStoreException {
                 this.iterator = new Snapshot(parent.iterator);
                 this.readers  = parent.readers;
@@ -420,15 +417,15 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
              * This method caches the first reader created by this method,
              * then returns the cached value in subsequent calls.
              *
-             * @param  spi  the provider of image reader.
+             * @param  provider  the provider of image reader.
              * @return an image reader instance created by the given provider.
              * @throws IOException if an error occurred while creating the image reader.
              */
-            public ImageReader getReader(final ImageReaderSpi spi) throws IOException {
+            public ImageReader getReader(final ImageReaderSpi provider) throws IOException {
                 try {
-                    return readers.computeIfAbsent(spi, (factory) -> {
+                    return readers.computeIfAbsent(provider, (spi) -> {
                         try {
-                            return factory.createReaderInstance();
+                            return spi.createReaderInstance();
                         } catch (IOException e) {
                             throw new UncheckedIOException(e);
                         }

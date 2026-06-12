@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.awt.image.RasterFormatException;
 import java.io.IOException;
 import javax.imageio.spi.ImageReaderSpi;
 import org.opengis.util.GenericName;
@@ -130,7 +129,8 @@ final class ResourceBuilder {
     private MediaData data;
 
     /**
-     * Provider of Image I/O readers for the JPEG format, or {@code null} if not yet fetched.
+     * Provider of Image I/O readers for the <abbr>JPEG</abbr> format,
+     * or {@code null} if not yet fetched.
      *
      * @see #readerJPEG()
      */
@@ -222,7 +222,7 @@ final class ResourceBuilder {
     }
 
     /**
-     * Returns the provider of JPEG readers.
+     * Returns the provider of <abbr>JPEG</abbr> readers.
      */
     private ImageReaderSpi readerJPEG() throws UnsupportedEncodingException {
         if (readerJPEG == null) {
@@ -307,7 +307,7 @@ final class ResourceBuilder {
      * @param  info    information about the item, normally as a singleton but other size are nevertheless accepted.
      * @param  addTo   a list where to add the image, or {@code null} for adding to {@link #resources} instead.
      * @return the builder used for building the image. If many images were created, returns the first builder.
-     * @throws RasterFormatException if the sample dimensions or sample model cannot be created.
+     * @throws DataStoreContentException if the "grid to <abbr>CRS</abbr>" transform or the sample dimensions cannot be created.
      * @throws DataStoreException if another error occurred while building the image or resource.
      */
     private CoverageBuilder createImage(final Integer itemID, final List<ItemInfoEntry> info, final List<Image> addTo)
@@ -335,8 +335,7 @@ final class ResourceBuilder {
             if (firstBuilder == null) {
                 firstBuilder = coverage;
             }
-            final ByteRanges.Reader locator;
-            final Image.Supplier image;
+            Image image = null;
             switch (entry.itemType) {
                 default: {
                     warning("Unsupported type " + Box.formatFourCC(entry.itemType) + " for the \"{0}\" resource.", name);
@@ -373,11 +372,12 @@ final class ResourceBuilder {
                  * the constructor will not ask for the sample model.
                  */
                 case ItemInfoEntry.JPEG: {
-                    final ImageReaderSpi reader = readerJPEG();
-                    locator = getLocationByIdentifier(itemID);
-                    final var prepared = new FromImageIO(coverage, locator, reader, name);
-                    if (locator != null) coverage.setImageLayout(prepared);
-                    image = () -> prepared;
+                    final ImageReaderSpi provider = readerJPEG();
+                    final ByteRanges.Reader locator = getLocationByIdentifier(itemID);
+                    if (locator != null) {
+                        image = new FromImageIO(coverage, locator, provider, name);
+                        coverage.setImageLayout(image);
+                    }
                     break;
                 }
                 /*
@@ -386,16 +386,18 @@ final class ResourceBuilder {
                  * actual reading is deferred.
                  */
                 case ItemInfoEntry.UNCI: {
-                    locator = getLocationByIdentifier(itemID);
-                    image = () -> new UncompressedImage(coverage, locator, name);
+                    final ByteRanges.Reader locator = getLocationByIdentifier(itemID);
+                    if (locator != null) {
+                        image = new UncompressedImage(coverage, locator, name);
+                    }
                     break;
                 }
             }
-            if (locator == null) {
+            if (image == null) {
                 warning("No data found for the \"{0}\" resource.", name);
             } else {
                 if (addTo != null) {
-                    addTo.add(image.get());
+                    addTo.add(image);
                 } else {
                     builders.remove(itemProperties);    // Builder cannot be reused after resource creation.
                     resources.add(coverage.build(name, image));
@@ -419,19 +421,14 @@ final class ResourceBuilder {
                 info = itemInfos.remove(0);     // `itemInfoEntry.itemID` = 0 means the primary item.
                 if (info == null) continue;
             }
-            try {
-                createImage(primary.itemID, info, null);
-            } catch (RasterFormatException e) {
-                // Considered fatal because it was the primary resource.
-                throw new DataStoreContentException("Unsupported image layout.", e);
-            }
+            createImage(primary.itemID, info, null);
         }
         // Iterate over a snapshot because elements may be removed by `createImage(…)`.
         for (final Integer itemID : itemInfos.keySet().toArray(Integer[]::new)) {
             final List<ItemInfoEntry> info = itemInfos.remove(itemID);
             if (info != null) try {
                 createImage(itemID, info, null);
-            } catch (RasterFormatException e) {
+            } catch (UnsupportedEncodingException e) {
                 store.listeners().warning("A resource uses an unsupported sample model.", e);
             }
         }

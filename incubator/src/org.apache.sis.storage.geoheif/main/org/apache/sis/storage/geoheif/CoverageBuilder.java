@@ -28,19 +28,10 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.io.IOException;
 import java.nio.ByteOrder;
-import java.awt.Dimension;
-import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
-import java.awt.image.RasterFormatException;
-import javax.imageio.ImageTypeSpecifier;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
-import org.apache.sis.image.DataType;
-import org.apache.sis.image.internal.shared.ColorModelBuilder;
-import org.apache.sis.image.internal.shared.ColorModelFactory;
-import org.apache.sis.image.internal.shared.SampleModelBuilder;
-import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
@@ -54,7 +45,6 @@ import org.apache.sis.storage.isobmff.base.ItemInfoEntry;
 import org.apache.sis.storage.isobmff.base.ItemProperties;
 import org.apache.sis.storage.isobmff.geo.ModelTransformation;
 import org.apache.sis.storage.isobmff.geo.ModelCRS;
-import org.apache.sis.storage.isobmff.mpeg.Component;
 import org.apache.sis.storage.isobmff.mpeg.ComponentType;
 import org.apache.sis.storage.isobmff.mpeg.ComponentPalette;
 import org.apache.sis.storage.isobmff.mpeg.ComponentDefinition;
@@ -62,13 +52,10 @@ import org.apache.sis.storage.isobmff.mpeg.CompressedUnitsItemInfo;
 import org.apache.sis.storage.isobmff.mpeg.CompressionConfiguration;
 import org.apache.sis.storage.isobmff.mpeg.UncompressedFrameConfig;
 import org.apache.sis.storage.isobmff.mpeg.UnitType;
-import org.apache.sis.storage.isobmff.mpeg.InterleavingMode;
 import org.apache.sis.storage.isobmff.image.ImageSpatialExtents;
 import org.apache.sis.storage.isobmff.image.PixelInformation;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Emptiable;
-import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.pending.jdk.JDK18;
 
@@ -90,7 +77,7 @@ final class CoverageBuilder implements Emptiable {
      * An index of the image to build, for information purpose only.
      * This is given to {@link CoverageModifier.Source} constructor.
      */
-    private final int imageIndex;
+    final int imageIndex;
 
     /**
      * Name or identifier of the resource. This is taken from {@link ItemInfoEntry#itemName}
@@ -105,7 +92,7 @@ final class CoverageBuilder implements Emptiable {
     private String name;
 
     /**
-     * The size of the reconstructed image in pixels.
+     * The size (in pixels) of the reconstructed image.
      */
     private int width, height;
 
@@ -169,35 +156,12 @@ final class CoverageBuilder implements Emptiable {
     private final Map<Object, Boolean> unknownBoxes;
 
     /**
-     * The type of sample values stored in the raster.
-     * Determined as a side effect of {@link #sampleDimensions()}.
+     * The color model, sample model and sample dimensions.
+     * This is created when first needed. The same instance may be shared by many tiles.
      *
-     * @see #dataType()
+     * @see #imageModel()
      */
-    private DataType dataType;
-
-    /**
-     * The color model, created as a side effect of {@link #sampleDimensions()}.
-     * May stay null if this builder does not have enough information.
-     *
-     * @see #colorModel()
-     */
-    private ColorModel colorModel;
-
-    /**
-     * The sample model, created as a side effect of {@link #sampleDimensions()}.
-     * May stay null if this builder does not have enough information.
-     *
-     * @see #sampleModel()
-     */
-    private SampleModel sampleModel;
-
-    /**
-     * The sample dimensions, created when first requested.
-     *
-     * @see #sampleDimensions()
-     */
-    private SampleDimension[] sampleDimensions;
+    private ImageModel imageModel;
 
     /**
      * The builder of metadata, created when first needed.
@@ -208,6 +172,8 @@ final class CoverageBuilder implements Emptiable {
 
     /**
      * The builder used for building tiles, or {@code null} if none.
+     *
+     * @see #setTileBuilder(CoverageBuilder)
      */
     private CoverageBuilder tileBuilder;
 
@@ -219,7 +185,11 @@ final class CoverageBuilder implements Emptiable {
      * @param  properties       source of coverage properties for this coverage item.
      * @param  duplicatedBoxes  names of boxes that were duplicated. Used for logging a warning only once per type of box.
      */
-    CoverageBuilder(final GeoHeifStore store, final int imageIndex, final ItemProperties.ForID properties, final Set<String> duplicatedBoxes) {
+    CoverageBuilder(final GeoHeifStore store,
+                    final int imageIndex,
+                    final ItemProperties.ForID properties,
+                    final Set<String> duplicatedBoxes)
+    {
         this.store = store;
         this.imageIndex = imageIndex;
         unknownBoxes = new LinkedHashMap<>();
@@ -415,10 +385,10 @@ final class CoverageBuilder implements Emptiable {
      * @param  name   name of the resource.
      * @param  image  the single tile of the image.
      * @return the resource.
-     * @throws RasterFormatException if the sample dimensions or sample model cannot be created.
-     * @throws DataStoreException if the "grid to <abbr>CRS</abbr>" transform cannot be created.
+     * @throws DataStoreContentException if the "grid to <abbr>CRS</abbr>" transform or the sample dimensions cannot be created.
+     * @throws DataStoreException if the construction failed for another reason.
      */
-    final ImageResource build(final String name, final Image.Supplier image) throws DataStoreException {
+    final ImageResource build(final String name, final Image image) throws DataStoreException {
         this.name = name;
         return new ImageResource(this, null, image);
     }
@@ -430,8 +400,8 @@ final class CoverageBuilder implements Emptiable {
      * @param  name   name of the resource.
      * @param  tiles  all tiles of the image.
      * @return the resource.
-     * @throws RasterFormatException if the sample dimensions or sample model cannot be created.
-     * @throws DataStoreException if the "grid to <abbr>CRS</abbr>" transform cannot be created.
+     * @throws DataStoreContentException if the "grid to <abbr>CRS</abbr>" transform or the sample dimensions cannot be created.
+     * @throws DataStoreException if the construction failed for another reason.
      */
     final ImageResource build(final String name, final List<Image> tiles) throws DataStoreException {
         this.name = name;
@@ -473,17 +443,22 @@ final class CoverageBuilder implements Emptiable {
      *
      * @param  dimension  the dimension: 0 or 1.
      * @return number of tiles in the requested dimension.
+     * @throws DataStoreContentException if the sample model cannot be created.
+     * @throws DataStoreException if the reading failed for another reason.
      */
-    public final int numTiles(final int dimension) {
+    public final int numTiles(final int dimension) throws DataStoreException {
         if (model != null) {
             switch (dimension) {
                 case 0: return model.numTileCols;
                 case 1: return model.numTileRows;
             }
-        } else if ((width | height) != 0 && sampleModel != null) {
-            switch (dimension) {
-                case 0: return JDK18.ceilDiv(width,  sampleModel.getWidth());
-                case 1: return JDK18.ceilDiv(height, sampleModel.getHeight());
+        } else if (!isEmpty()) {
+            final SampleModel sampleModel = imageModel().sampleModel;
+            if (sampleModel != null) {
+                switch (dimension) {
+                    case 0: return JDK18.ceilDiv(width,  sampleModel.getWidth());
+                    case 1: return JDK18.ceilDiv(height, sampleModel.getHeight());
+                }
             }
         }
         return 1;
@@ -498,8 +473,9 @@ final class CoverageBuilder implements Emptiable {
 
     /**
      * Fetches the color model and sample model from a sample tile (usually the first).
-     * This case happens when each tile is a JPEG image. In such case, the sample model
-     * is not declared in {@code UncompressedFrameConfig} and we have to get it from a tile.
+     * This case happens when each tile is a <abbr>JPEG</abbr> image.
+     * In such case, the sample model is not declared in {@code UncompressedFrameConfig}
+     * and we have to get it from a tile.
      *
      * <p>If this sample model has already been initialized, then this method does nothing.
      * This is desirable because this method is invoked in a loop for every tiles, while
@@ -510,222 +486,45 @@ final class CoverageBuilder implements Emptiable {
      * @throws IOException if an I/O error occurred.
      */
     final void setImageLayout(final Image image) throws DataStoreException, IOException {
-        if (sampleModel == null) {
-            ImageTypeSpecifier type = image.getImageType(store);
-            colorModel  = type.getColorModel();
-            sampleModel = type.getSampleModel();
-            dataType    = DataType.forDataBufferType(sampleModel.getDataType());
+        if (imageModel == null) {
+            imageModel = new ImageModel(image.getImageType(store));
         }
     }
 
     /**
-     * Returns the type of sample values stored in the raster.
-     * One of {@link #sampleModel()} or {@link #sampleDimensions()}
-     * methods must have been invoked before this method.
+     * Returns color model, sample model and sample dimensions computed from <abbr>HEIF</abbr> boxes.
+     *
+     * @throws DataStoreContentException if the sample model or sample dimensions cannot be created.
+     * @throws DataStoreException if the reading failed for another reason.
      */
-    public final DataType dataType() {
-        return dataType;
-    }
-
-    /**
-     * Returns the color model, or {@code null} if unknown.
-     * The {@link #sampleDimensions()} method must have been invoked before this method.
-     */
-    public final ColorModel colorModel() {
-        return colorModel;
+    final ImageModel imageModel() throws DataStoreException {
+        if (imageModel == null) {
+            imageModel = new ImageModel(width, height, model, componentTypes, bitsPerChannel, palette, this);
+            if (imageModel.sampleModel == null && tileBuilder != null) {
+                imageModel = tileBuilder.imageModel();
+            }
+        }
+        return imageModel;
     }
 
     /**
      * Returns the sample model with a size equals to the tile size.
      *
      * @return the sample model (never {@code null}).
-     * @throws RasterFormatException if the sample dimensions or sample model cannot be created.
-     * @throws DataStoreException if an error occurred in {@link CoverageModifier}.
+     * @throws DataStoreContentException if the sample model or sample dimensions cannot be created.
+     * @throws DataStoreException if the reading failed for another reason.
      */
     public final SampleModel sampleModel() throws DataStoreException {
-        if (sampleModel == null) {
-            sampleDimensions(false);
-            if (sampleModel == null) {
-                throw new RasterFormatException("Unspecified sample model.");
-            }
+        final SampleModel sampleModel = imageModel().sampleModel;
+        if (sampleModel != null) {
+            return sampleModel;
         }
-        return sampleModel;
-    }
-
-    /**
-     * Implementation of {@link #sampleDimensions()} and {@link #sampleModel()}.
-     *
-     * @todo Need to add information from the {@code CellPropertyTypeProperty} box.
-     *       These information include sample dimension name and unit of measurement.
-     *
-     * @param  full  {@code true} for creating all objects, or {@code false} for creating only the sample model.
-     * @throws RasterFormatException if the sample dimensions or sample model cannot be created.
-     * @throws DataStoreException if an error occurred in {@link CoverageModifier}.
-     */
-    private void sampleDimensions(final boolean full) throws DataStoreException {
-        final int nc = (model          == null) ? 0 : model.components.length;
-        final int nt = (componentTypes == null) ? 0 : componentTypes.length;
-        final int ns = (bitsPerChannel == null) ? 0 : bitsPerChannel.length;
-        final int numBands = Math.max(Math.max(nc, nt), ns);
-        if (numBands == 0) {
-            if (tileBuilder != null) {
-                if (tileBuilder.sampleDimensions == null) {
-                    tileBuilder.sampleDimensions(full);
-                }
-                sampleDimensions = tileBuilder.sampleDimensions;
-                sampleModel      = tileBuilder.sampleModel;
-                colorModel       = tileBuilder.colorModel;
-                dataType         = tileBuilder.dataType;
-            }
-            return;
-        }
-        final var bitsPerSample = new int[numBands];
-        final var sd = full ? new SampleDimension[numBands] : null;
-        final var sb = full ? new SampleDimension.Builder() : null;
-        int numBits=0, redMask=0, greenMask=0, blueMask=0, alphaMask=0;
-        int grayBand = -1, indexBand = -1, alphaBand = -1;    // Negative value means none.
-        for (int band=0; band<numBands; band++) {
-            /*
-             * `colorType` can be an enumeration value such as `RED`, `GREEN`, `BLUE`,
-             * or an URI, or an Integer value. The same value can appear in two boxes.
-             * `bitDepth` can also appear in two boxes. The ISO 23001-17:2024 standard
-             * said that when the component type information appears in the two boxes,
-             * `ComponentDefinitionBox` shall precede `UncompressedFrameConfigBox`.
-             */
-            var colorType = (band < nt) ? componentTypes[band] : null;  // From `ComponentDefinition`.
-            int bitDepth  = (band < ns) ? Byte.toUnsignedInt(bitsPerChannel[band]) : 0;
-            if (band < nc) {
-                final Component c = model.components[band];
-                if (colorType == null) colorType = c.type;              // From `UncompressedFrameConfig`
-                if (dataType == null) {
-                    dataType = c.getDataType();
-                } else if (dataType != c.getDataType()) {
-                    throw new RasterFormatException("All bands shall be of the same data type.");
-                }
-                bitDepth = Short.toUnsignedInt(c.bitDepth);
-                /*
-                 * Example: 10-bit unaligned RGB components followed by a 1-byte aligned 7-bit alpha component.
-                 * Stored as 30 consecutive bits containing R, G and B, followed by 2 pre-alignment padding bits
-                 * for byte alignment, followed by one alignment padding bit then followed by the 7-bit alpha value.
-                 */
-                final int alignSize = Byte.toUnsignedInt(c.alignSize) * Byte.SIZE;
-                if (alignSize != 0) {
-                    numBits = Numerics.snapToCeil(numBits,  alignSize)
-                            + Numerics.snapToCeil(bitDepth, alignSize) - bitDepth;
-                }
-            }
-            /*
-             * Create the sample dimension and derive metadata from it.
-             * TODO: parse CellPropertyTypeProperty and CellPropertyCategoriesProperty boxes.
-             */
-            if (full) {
-                if (colorType != null) {
-                    sb.setName(colorType.toString());
-                } else {
-                    sb.setName(band);
-                }
-                var source = new CoverageModifier.BandSource(store, imageIndex, band, numBands, dataType);
-                metadata().addNewBand(sd[band] = store.customizer.customize(source, sb));
-                sb.clear();
-            }
-            if (bitDepth == 0) {
-                bitDepth = Component.DEFAULT_BIT_DEPTH;
-            } else if (full) {
-                metadata().setBitPerSample(bitDepth);
-            }
-            /*
-             * Identify the bands that we can map to RGBA.
-             * Will be used for building the color model.
-             */
-            bitsPerSample[band] = bitDepth;
-            numBits += bitDepth;
-            if (full && colorType instanceof ComponentType ct) {
-                int mask = 0;
-                if (numBits < Integer.SIZE) {
-                    mask = ((1 << bitDepth) - 1) << (Integer.SIZE - numBits);
-                }
-                switch (ct) {
-                    case RED:        redMask   |= mask; break;
-                    case GREEN:      greenMask |= mask; break;
-                    case BLUE:       blueMask  |= mask; break;
-                    case ALPHA:      alphaMask |= mask; alphaBand = band; break;
-                    case MONOCHROME: grayBand   = band; break;
-                    case PALETTE:    indexBand  = band; break;
-                }
-            }
-        }
-        final boolean isRGB = (redMask | greenMask | blueMask) != 0;
-        if (isRGB && numBits < Integer.SIZE) {
-            final int n = Integer.SIZE - numBits;   // Number of unused bits.
-            redMask   >>>= n;
-            greenMask >>>= n;
-            blueMask  >>>= n;
-            alphaMask >>>= n;
-        }
-        /*
-         * Build a sample model. The `InterleavingMode.COMPONENT` default value is arbitrary,
-         * as the `UncompressedFrameConfig` box is mandatory according ISO/IEC 23001-17:2024.
-         */
-        if (sampleModel == null && dataType != null) {
-            InterleavingMode interleaveType = InterleavingMode.COMPONENT;
-            final var tileSize = new Dimension(width, height);
-            if (model != null) {
-                tileSize.width  /= model.numTileCols;
-                tileSize.height /= model.numTileRows;
-                interleaveType = model.interleaveType;
-            }
-            final boolean isBanded;
-            switch (interleaveType) {
-                case COMPONENT: isBanded = true;  break;    // Java2D: BandedSampleModel
-                case PIXEL:     isBanded = false; break;    // Java2D: PixelInterleavedSampleModel
-                default: throw new RasterFormatException("Unsupported interleave type: " + interleaveType);
-            }
-            sampleModel = new SampleModelBuilder(dataType, tileSize, bitsPerSample, isBanded).build();
-        }
-        /*
-         * Build a RGB(A) or indexed color model compatible with the sample model.
-         * The gray scale is used as a fallback for all unrecognized color models.
-         */
-        if (full) {
-            if (indexBand >= 0 && palette != null) {
-                colorModel = palette.toARGB(dataType, bitsPerSample[indexBand], numBands, indexBand);   // May be null.
-            }
-            if (colorModel == null && sampleModel != null) {
-                if (grayBand < 0 && (grayBand = indexBand) < 0) {
-                    grayBand = ColorModelFactory.DEFAULT_VISIBLE_BAND;
-                }
-                final var cb = new ColorModelBuilder(isRGB)
-                                .dataType(dataType)
-                                .bitsPerSample(bitsPerSample)
-                                .alphaBand(alphaBand)
-                                .visibleBand(grayBand, sd[grayBand].getSampleRange().orElse(null));
-                if (isRGB) {
-                    cb.componentMasks(redMask, greenMask, blueMask, alphaMask);
-                    // TODO: use another color space if not RGB.
-                }
-                colorModel = cb.createRGB(sampleModel);
-            }
-        }
-        sampleDimensions = sd;
-    }
-
-    /**
-     * Returns the sample dimensions for the bands and prepares metadata related to them.
-     *
-     * @return the sample dimensions for all bands.
-     * @throws RasterFormatException if the sample dimensions or sample model cannot be created.
-     * @throws DataStoreException if an error occurred in {@link CoverageModifier}.
-     */
-    public final List<SampleDimension> sampleDimensions() throws DataStoreException {
-        if (sampleDimensions == null) {
-            sampleDimensions(true);
-        }
-        return Containers.viewAsUnmodifiableList(sampleDimensions);
+        throw new DataStoreContentException("Unspecified sample model.");
     }
 
     /**
      * Creates the grid geometry and opportunistically prepares metadata related to it.
-     * This method should be invoked exactly once, preferably after {@link #sampleDimensions()}.
+     * This method should be invoked at most once.
      * It may be invoked not at all when this object is used for building a tile instead of an image.
      *
      * @todo Need to add information from the {@code ExtraDimensionProperty} box.
@@ -749,7 +548,7 @@ final class CoverageBuilder implements Emptiable {
         if (gridGeometry.isDefined(GridGeometry.ENVELOPE)) {
             metadata.addExtent(gridGeometry.getEnvelope(), store.listeners());
         }
-        var source = new CoverageModifier.Source(store, imageIndex, dataType);
+        var source = new CoverageModifier.Source(store, imageIndex, imageModel().dataType);
         return store.customizer.customize(source, gridGeometry);
     }
 }

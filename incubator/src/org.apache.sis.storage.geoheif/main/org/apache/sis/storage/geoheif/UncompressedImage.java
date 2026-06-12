@@ -17,24 +17,22 @@
 package org.apache.sis.storage.geoheif;
 
 import java.util.Arrays;
-import java.util.zip.InflaterInputStream;
-import java.io.ByteArrayInputStream;
 import static java.lang.Math.addExact;
 import static java.lang.Math.multiplyExact;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
-import java.awt.image.RasterFormatException;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.image.internal.shared.RasterFactory;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.HyperRectangleReader;
 import org.apache.sis.io.stream.Region;
+import org.apache.sis.io.stream.inflater.Deflate;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.isobmff.ByteRanges;
 import org.apache.sis.storage.isobmff.mpeg.CompressedUnitsItemInfo;
+import org.apache.sis.util.internal.shared.Numerics;
 
 
 /**
@@ -77,14 +75,14 @@ final class UncompressedImage extends Image {
      * @param  builder  helper class for building the grid geometry and sample dimensions.
      * @param  locator  the provider of bytes to read from the <abbr>ISOBMFF</abbr> box.
      * @param  name     a name that identifies this image, for debugging purpose.
-     * @throws RasterFormatException if the sample model cannot be created.
+     * @throws DataStoreContentException if the "grid to <abbr>CRS</abbr>" transform or the sample dimensions cannot be created.
      */
     UncompressedImage(final CoverageBuilder builder, final ByteRanges.Reader locator, final String name)
             throws DataStoreException
     {
         super(builder, locator, name);
         sampleModel = builder.sampleModel();
-        dataType    = builder.dataType();     // Shall be after `sampleModel()`.
+        dataType    = builder.imageModel().dataType;
         compressedImageUnit = builder.getCompressedImageUnit();
     }
 
@@ -132,18 +130,16 @@ final class UncompressedImage extends Image {
         final var  region    = region(sourceSize, sourceSize);
         final int  dataSize  = dataType.bytes();
         final long tileSize  = multiplyExact(region.length, dataSize);
-        final long skipBytes = region.getStartByteOffset(dataSize);
         final long tileIndex = addExact(multiplyExact(context.subTileY, numXTiles), context.subTileX);
-        final long offset    = addExact(multiplyExact(tileIndex, tileSize), skipBytes);
-        locator.resolve(offset, tileSize - skipBytes, context);
+        final long offset    = multiplyExact(tileIndex, tileSize);
+        locator.resolve(offset, tileSize, context);
         return (ChannelDataInput input) -> {
-            long origin = context.offset() - skipBytes;
+            long origin = context.offset();
             final CompressedUnitsItemInfo.Unit unit = compressedImageUnit;
             if (unit != null) {
-                input.skipNBytes(unit.offset);
-                final byte[] compressedChunk = input.readBytes((int) unit.size);
-                InflaterInputStream iis = new InflaterInputStream(new ByteArrayInputStream(compressedChunk));
-                input = new StorageConnector(iis).getStorageAs(ChannelDataInput.class);
+                final var inflater = new Deflate(input, listeners);
+                inflater.setInputRegion(addExact(origin, unit.offset), unit.size);
+                input = inflater.createDataInput(inflater, Numerics.clamp(sourceSize[0]), true);
                 origin = 0;
             }
             /*

@@ -18,9 +18,9 @@ package org.apache.sis.storage.isobmff.mpeg;
 
 import java.net.URI;
 import java.io.IOException;
-import java.awt.image.RasterFormatException;
 import org.apache.sis.image.DataType;
 import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.storage.UnsupportedEncodingException;
 import org.apache.sis.storage.isobmff.TreeNode;
 import org.apache.sis.util.resources.Errors;
 
@@ -126,16 +126,16 @@ public final class Component extends TreeNode {
     /**
      * Returns the Java2D data type for this component.
      *
-     * @throws RasterFormatException if the {@link #format} value is unsupported.
+     * @throws UnsupportedEncodingException if the {@link #format} value is unsupported.
      */
-    public DataType getDataType() {
+    public DataType getDataType() throws UnsupportedEncodingException {
+        boolean real   = false;
         boolean signed = false;
-        boolean real = false;
         switch (format) {
-            case 0: break;
-            case 1: real = true; break;
-            case 3: signed = true; break;
-            default: throw new RasterFormatException(Errors.format(Errors.Keys.UnsupportedFormat_1, format));
+            case 0:  break;
+            case 1:  real   = true; break;
+            case 3:  signed = true; break;
+            default: throw new UnsupportedEncodingException(Errors.format(Errors.Keys.UnsupportedFormat_1, format));
         }
         return DataType.forNumberOfBits(Short.toUnsignedInt(bitDepth), real, signed);
     }
