@@ -238,8 +238,8 @@ public abstract class Inflater implements Closeable {
             }
         }
         final int scanlineStride = Math.multiplyExact(sourceWidth, sourcePixelStride * dataType.bytes());
-        return CopyFromBytes.create(inflater.createDataInput(channel, scanlineStride, compression.useNativeLibrary()),
-                dataType, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement);
+        final ChannelDataInput inflated = channel.createDataInput(null, scanlineStride);
+        return CopyFromBytes.create(inflated, dataType, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement);
     }
 
     /**

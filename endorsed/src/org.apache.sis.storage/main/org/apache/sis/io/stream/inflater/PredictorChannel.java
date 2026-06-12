@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.geotiff.inflater;
+package org.apache.sis.io.stream.inflater;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.pending.jdk.JDK13;
-import org.apache.sis.io.stream.inflater.ComputedByteChannel;
-import org.apache.sis.io.stream.inflater.InflaterChannel;
+import org.apache.sis.io.stream.ChannelDataInput;
 
 
 /**
@@ -31,7 +30,7 @@ import org.apache.sis.io.stream.inflater.InflaterChannel;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-abstract class PredictorChannel extends ComputedByteChannel {
+public abstract class PredictorChannel extends ComputedByteChannel {
     /**
      * The channel from which to read data.
      */
@@ -57,6 +56,14 @@ abstract class PredictorChannel extends ComputedByteChannel {
     protected PredictorChannel(final InflaterChannel input) {
         this.input = input;
         deferred = ArraysExt.EMPTY_BYTE;
+    }
+
+    /**
+     * Returns the channel from which to read compressed data.
+     */
+    @Override
+    public final ChannelDataInput compressedInput() {
+        return input.compressedInput();
     }
 
     /**
@@ -91,7 +98,7 @@ abstract class PredictorChannel extends ComputedByteChannel {
      * @throws IOException if some other I/O error occurs.
      */
     @Override
-    public int read(final ByteBuffer target) throws IOException {
+    public final int read(final ByteBuffer target) throws IOException {
         final int start = target.position();
         if (deferredCount != 0) {
             /*
@@ -121,6 +128,14 @@ abstract class PredictorChannel extends ComputedByteChannel {
             deferredCount = length;
         }
         return end - start;
+    }
+
+    /**
+     * Returns whether the inflater or predictor algorithm prefers native byte buffer.
+     */
+    @Override
+    protected final boolean preferNativeBuffer() {
+        return input.preferNativeBuffer();
     }
 
     /**

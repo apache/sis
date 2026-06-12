@@ -52,6 +52,16 @@ public final class Deflate extends InflaterChannel {
     }
 
     /**
+     * Notifies that this inflater prefers native buffer.
+     *
+     * @return {@code true}.
+     */
+    @Override
+    protected boolean preferNativeBuffer() {
+        return true;
+    }
+
+    /**
      * Prepares this channel for reading a new block of data.
      *
      * @param  start      stream position where to start reading.

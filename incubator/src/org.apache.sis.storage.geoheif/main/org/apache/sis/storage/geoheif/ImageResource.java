@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+import java.nio.ByteBuffer;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import static java.lang.Math.addExact;
@@ -299,13 +301,15 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
             final var requests = new ReadContext[result.length];
             int count = 0;
             synchronized (getSynchronizationLock()) {
-                try (final var context = new ReadContext(iterator)) {
+                final var readers = new HashMap<ImageReaderSpi, ImageReader>();
+                final var buffer  = new AtomicReference<ByteBuffer>();
+                try {
                     do {
                         Raster raster = iterator.getCachedTile();
                         if (raster != null) {
                             result[iterator.getTileIndexInResultArray()] = raster;
                         } else {
-                            requests[count++] = new ReadContext(context, ImageResource.this);
+                            requests[count++] = new ReadContext(iterator, readers, buffer, ImageResource.this);
                         }
                     } while (iterator.next());
                     /*
@@ -324,6 +328,8 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
                     for (int i=0; i<count; i++) {
                         requests[i].readTile(input, result);        // Implementation may create an `input` view.
                     }
+                } finally {
+                    readers.values().forEach(ImageReader::dispose);
                 }
             }
             return result;
@@ -333,7 +339,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
          * Context about a {@code readTile(…)} operation. Contains the tile to create, or
          * the image reader to use in the case of read operations delegated to Image I/O.
          */
-        static final class ReadContext extends ByteRanges implements AutoCloseable {
+        static final class ReadContext extends ByteRanges {
             /**
              * Iterator over the tiles to read.
              */
@@ -356,29 +362,28 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
             final long subTileX, subTileY;
 
             /**
+             * Buffer to reuse for each tile.
+             */
+            private final AtomicReference<ByteBuffer> buffer;
+
+            /**
              * Creates a new read context.
              *
              * @param  iterator  iterator over the tiles to read.
-             */
-            private ReadContext(final AOI iterator) {
-                this.iterator = iterator;
-                this.readers  = new HashMap<>();
-                this.reader   = null;
-                this.subTileX = 0;
-                this.subTileY = 0;
-            }
-
-            /**
-             * Creates a context which is a snapshot of the given context at the current iterator position.
-             *
-             * @param  parent  the parent from which to create a snapshot.
-             * @param  tileX   0-based column index of the tile to read, starting from image left.
-             * @param  tileY   0-based row index of the tile to read, starting from image top.
+             * @param  readers   an initially empty map where to store image readers for reuse.
+             * @param  buffer    an initially empty reference to a buffer.
+             * @param  owner     the resource for which to read a tile.
              */
             @SuppressWarnings("LeakingThisInConstructor")
-            private ReadContext(final ReadContext parent, final ImageResource owner) throws DataStoreException {
-                this.iterator = new Snapshot(parent.iterator);
-                this.readers  = parent.readers;
+            private ReadContext(final AOI iterator,
+                                final Map<ImageReaderSpi, ImageReader> readers,
+                                final AtomicReference<ByteBuffer> buffer,
+                                final ImageResource owner)
+                    throws DataStoreException
+            {
+                this.iterator = new Snapshot(iterator);
+                this.readers  = readers;
+                this.buffer   = buffer;
                 final long[] tileCoord = iterator.getTileCoordinatesInResource();
                 final Image tile = owner.getTile(tileCoord[0], tileCoord[1]);
                 subTileX = tileCoord[0] % tile.numXTiles;
@@ -436,12 +441,21 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
             }
 
             /**
-             * Invoked after a sequence of tiles have been read.
-             * This method disposes the image readers.
+             * If a buffer has already been used in a previous read operation, returns that buffer.
+             *
+             * @return buffer that can be reused, or {@code null} if none.
              */
-            @Override
-            public void close() {
-                readers.values().forEach(ImageReader::dispose);
+            public ByteBuffer reuseBuffer() {
+                return buffer.getAndSet(null);
+            }
+
+            /**
+             * Saves the given buffer for reuse.
+             *
+             * @param  done  a buffer which is no longer needed.
+             */
+            public void saveForReuse(final ByteBuffer done) {
+                buffer.set(done);
             }
         }
     }

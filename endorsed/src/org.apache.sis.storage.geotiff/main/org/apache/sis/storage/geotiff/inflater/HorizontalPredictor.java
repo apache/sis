@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.apache.sis.image.DataType;
 import org.apache.sis.io.stream.inflater.InflaterChannel;
+import org.apache.sis.io.stream.inflater.PredictorChannel;
 import org.apache.sis.pending.jdk.JDK13;
 
 

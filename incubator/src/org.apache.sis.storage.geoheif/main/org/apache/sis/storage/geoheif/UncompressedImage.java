@@ -28,11 +28,11 @@ import org.apache.sis.image.internal.shared.RasterFactory;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.HyperRectangleReader;
 import org.apache.sis.io.stream.Region;
+import org.apache.sis.io.stream.inflater.ComputedByteChannel;
 import org.apache.sis.io.stream.inflater.Deflate;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.isobmff.ByteRanges;
 import org.apache.sis.storage.isobmff.mpeg.CompressedUnitsItemInfo;
-import org.apache.sis.util.internal.shared.Numerics;
 
 
 /**
@@ -135,12 +135,15 @@ final class UncompressedImage extends Image {
         locator.resolve(offset, tileSize, context);
         return (ChannelDataInput input) -> {
             long origin = context.offset();
+            final ComputedByteChannel inflater;
             final CompressedUnitsItemInfo.Unit unit = compressedImageUnit;
             if (unit != null) {
-                final var inflater = new Deflate(input, listeners);
+                inflater = new Deflate(input, listeners);
                 inflater.setInputRegion(addExact(origin, unit.offset), unit.size);
-                input = inflater.createDataInput(inflater, Numerics.clamp(sourceSize[0]), true);
+                input = inflater.createDataInput(context.reuseBuffer(), (int) sourceSize[0]);    // (int) cast okay even if inexact.
                 origin = 0;
+            } else {
+                inflater = null;
             }
             /*
              * Now read all banks and store the values in the image buffer.
@@ -161,6 +164,9 @@ final class UncompressedImage extends Image {
                 }
                 hr.setDestination(RasterFactory.wrapAsBuffer(data, b));
                 hr.readAsBuffer(rasterRegion, 0);
+            }
+            if (inflater != null) {
+                context.saveForReuse(inflater.compressedInput().buffer);
             }
             return raster;
         };
