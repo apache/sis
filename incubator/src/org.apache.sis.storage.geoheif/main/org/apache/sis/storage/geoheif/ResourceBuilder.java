@@ -17,12 +17,16 @@
 package org.apache.sis.storage.geoheif;
 
 import java.util.List;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.stream.Stream;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.io.IOException;
@@ -30,7 +34,6 @@ import javax.imageio.spi.ImageReaderSpi;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedEncodingException;
@@ -86,18 +89,42 @@ final class ResourceBuilder {
     private final Map<Integer, ItemProperties.ForID> properties;
 
     /**
-     * Information about all resources, in the order the were found in the file.
-     * Keys are resource identifiers, or 0 for the {@linkplain #primaryItem}.
-     * Keys are {@link ItemInfoEntry#itemID} values of the associated map value.
-     * Each list should contain only one item, but this class nevertheless accept many.
-     * Note that some items may be members of a group such as a pyramid.
+     * Information about all resources in the order they were found in the file.
+     * Keys are {@link ItemInfoEntry#itemID} values of the associated map values.
+     * Key 0 is a special value meaning that the value is the {@link #primaryItem}.
+     *
+     * <p>Values shall be instances of {@link ItemInfoEntry} or {@code ItemInfoEntry[]}.
+     * Each entry should contain only one item, but this class nevertheless accept many.
+     * Note that some items may be members of a group such as a pyramid.</p>
+     *
+     * @see #info(Object)
      */
-    private final Map<Integer, List<ItemInfoEntry>> itemInfos;
+    private final Map<Integer, Object> itemInfos;
+
+    /**
+     * Returns the given {@link #itemInfos} value as a list of {@link ItemInfoEntry} instances.
+     * The list should contain exactly one element, but may also be empty in case of missing value.
+     * List of more than one element are supported for avoiding to choose an arbitrary element.
+     */
+    private static List<ItemInfoEntry> info(final Object value) {
+        if (value == null) {
+            return Collections.emptyList();
+        } else if (value instanceof ItemInfoEntry) {
+            return Collections.singletonList((ItemInfoEntry) value);
+        } else {
+            return Arrays.asList((ItemInfoEntry[]) value);
+        }
+    }
 
     /**
      * References from the resources to other resources.
      * The main usage is for a tiled image referencing each tile as an individual image.
      * May be {@code null} if no such information was found.
+     *
+     * <p><b>Implementation note:</b>
+     * We perform linear search in this array for a specific value of {@link SingleItemTypeReference#fromItemID}.
+     * This is less efficient than using an hash map, but we assume that this array is short.
+     * Note that we also need to iterate over the array elements anyways.</p>
      */
     private SingleItemTypeReference[] references;
 
@@ -114,17 +141,18 @@ final class ResourceBuilder {
     private final Set<String> duplicatedBoxes;
 
     /**
-     * How to group the resources. If there is pyramids, they are declared here.
+     * How to group the resources. If this resource contains pyramids, these pyramids are declared here.
      */
     private final List<GroupList> groups;
 
     /**
-     * Resources built by this class.
+     * Resources built by this class, in the order they were found in the file.
+     * Keys are {@link ItemInfoEntry#itemID} values.
      */
-    private final List<Resource> resources;
+    private final Map<Integer, List<Resource>> itemResources;
 
     /**
-     * All data when no specific data where found in {@link #locations}.
+     * All data when no specific data where found in {@link #itemLocations}.
      */
     private MediaData data;
 
@@ -151,7 +179,7 @@ final class ResourceBuilder {
         builders        = new HashMap<>();
         duplicatedBoxes = new HashSet<>();
         groups          = new ArrayList<>();
-        resources       = new ArrayList<>();
+        itemResources   = new LinkedHashMap<>();
         for (final Box box : root.children) {
             switch (box.type()) {
                 case MediaData.BOXTYPE: {
@@ -178,7 +206,12 @@ final class ResourceBuilder {
             // Name, content type, etc.
             case ItemInfo.BOXTYPE: {
                 for (final ItemInfoEntry entry : ((ItemInfo) box).entries) {
-                    itemInfos.computeIfAbsent(entry.itemID, (itemID) -> new ArrayList<ItemInfoEntry>(3)).add(entry);
+                    itemInfos.merge(entry.itemID, entry, (current, value) -> {
+                        final var more = (ItemInfoEntry) value;
+                        return (current instanceof ItemInfoEntry)
+                                ? new ItemInfoEntry[] {(ItemInfoEntry) current, more}
+                                : ArraysExt.append((ItemInfoEntry[]) current, more);
+                    });
                 }
                 break;
             }
@@ -239,12 +272,9 @@ final class ResourceBuilder {
      * @return a non-null item name.
      */
     private String getResourceName(final int itemID) {
-        final List<ItemInfoEntry> info = itemInfos.get(itemID);
-        if (info != null) {
-            for (ItemInfoEntry entry : info) {
-                if (entry.itemName != null) {
-                    return entry.itemName;
-                }
+        for (ItemInfoEntry entry : info(itemInfos.get(itemID))) {
+            if (entry.itemName != null) {
+                return entry.itemName;
             }
         }
         return Integer.toUnsignedString(itemID);
@@ -284,10 +314,7 @@ final class ResourceBuilder {
             // Only one case for now, but more cases may be added in the future.
             case DerivedImageReference.BOXTYPE: {
                 for (final Integer toItem : items.toItemID) {
-                    final List<ItemInfoEntry> info = itemInfos.remove(toItem);
-                    if (info != null) {
-                        coverage.setTileBuilder(createImage(toItem, info, addTo));
-                    }
+                    coverage.setTileBuilder(createImage(toItem, info(itemInfos.remove(toItem)), addTo));
                 }
             }
             break;
@@ -295,9 +322,25 @@ final class ResourceBuilder {
     }
 
     /**
+     * Creates the image for the item specified by the given identifier if the image sample model is supported.
+     * The resource may be an untiled image (item type {@code unci}) or a tiled image (item type {@code grid}).
+     *
+     * @param  itemID  identifier of the item to build as a coverage.
+     * @throws IOException if an error occurred while reading bytes from the input stream.
+     * @throws DataStoreException if another error occurred while building the image or resource.
+     */
+    private void createOptionalImage(final Integer itemID) throws DataStoreException, IOException {
+        try {
+            createImage(itemID, info(itemInfos.remove(itemID)), null);
+        } catch (UnsupportedEncodingException e) {
+            store.listeners().warning("A resource uses an unsupported sample model.", e);
+        }
+    }
+
+    /**
      * Creates the image for the item specified by the given identifier.
      * The resource may be an untiled image (item type {@code unci}) or a tiled image (item type {@code grid}).
-     * If the {@code addTo} list is {@code null}, then the image is added to the {@linkplain #resources} list.
+     * If the {@code addTo} list is {@code null}, then the image is added to the {@link #itemResources} map.
      *
      * <p>The given {@code info} list should contain exactly one entry.
      * This method nevertheless tries to be robust to cases where two or more entries exist,
@@ -305,8 +348,9 @@ final class ResourceBuilder {
      *
      * @param  itemID  identifier of the item to build as a coverage.
      * @param  info    information about the item, normally as a singleton but other size are nevertheless accepted.
-     * @param  addTo   a list where to add the image, or {@code null} for adding to {@link #resources} instead.
-     * @return the builder used for building the image. If many images were created, returns the first builder.
+     * @param  addTo   a list where to add the image, or {@code null} for adding to {@link #itemResources} instead.
+     * @return the builder used for building the first image, or {@code null} if none.
+     * @throws IOException if an error occurred while reading bytes from the input stream.
      * @throws DataStoreContentException if the "grid to <abbr>CRS</abbr>" transform or the sample dimensions cannot be created.
      * @throws DataStoreException if another error occurred while building the image or resource.
      */
@@ -320,7 +364,13 @@ final class ResourceBuilder {
                 warning("The \"{0}\" resource is protected.", name);
                 continue;
             }
-            final int imageIndex = (addTo != null ? addTo : resources).size();
+            final int imageIndex;
+            if (addTo != null) {
+                imageIndex = addTo.size();
+            } else {
+                final List<Resource> resources = itemResources.get(entry.itemID);
+                imageIndex = (resources != null) ? resources.size() : 0;
+            }
             final ItemProperties.ForID itemProperties = properties.remove(itemID);
             final CoverageBuilder coverage = builders.computeIfAbsent(itemProperties,
                     (p) -> new CoverageBuilder(this, imageIndex, p, duplicatedBoxes));
@@ -350,7 +400,7 @@ final class ResourceBuilder {
                  */
                 case ItemInfoEntry.GRID: {
                     if (references != null) {
-                        List<Image> tiles = null;
+                        List<Image> tiles = null;   // Wait to know the number of items before to create.
                         for (final SingleItemTypeReference items : references) {
                             if (items.fromItemID == entry.itemID) {
                                 if (tiles == null && (tiles = addTo) == null) {
@@ -361,7 +411,7 @@ final class ResourceBuilder {
                         }
                         if (addTo == null && tiles != null && !tiles.isEmpty()) {
                             builders.remove(itemProperties);    // Builder cannot be reused after resource creation.
-                            resources.add(coverage.build(name, tiles));
+                            resources(entry.itemID).add(coverage.build(name, tiles));
                         }
                     }
                     continue;
@@ -400,7 +450,7 @@ final class ResourceBuilder {
                     addTo.add(image);
                 } else {
                     builders.remove(itemProperties);    // Builder cannot be reused after resource creation.
-                    resources.add(coverage.build(name, image));
+                    resources(entry.itemID).add(coverage.build(name, image));
                 }
             }
         }
@@ -416,21 +466,28 @@ final class ResourceBuilder {
      */
     final Resource[] build() throws DataStoreException, IOException {
         for (final PrimaryItem primary : primaryItem) {
-            List<ItemInfoEntry> info = itemInfos.remove(primary.itemID);
-            if (info == null) {
-                info = itemInfos.remove(0);     // `itemInfoEntry.itemID` = 0 means the primary item.
-                if (info == null) continue;
+            List<ItemInfoEntry> info = info(itemInfos.remove(primary.itemID));
+            if (info.isEmpty()) {
+                info = info(itemInfos.remove(0));     // `itemInfoEntry.itemID` = 0 means the primary item.
+                if (info.isEmpty()) continue;
             }
             createImage(primary.itemID, info, null);
         }
+        /*
+         * Create an image for all remaining items (items other than the primary item).
+         * We need to process first the items which contain references to other items,
+         * because they may be tiled images referencing their tiles.
+         */
+        if (references != null) {
+            for (final SingleItemTypeReference items : references) {
+                if (items.type() == DerivedImageReference.BOXTYPE) {
+                    createOptionalImage(items.fromItemID);
+                }
+            }
+        }
         // Iterate over a snapshot because elements may be removed by `createImage(…)`.
         for (final Integer itemID : itemInfos.keySet().toArray(Integer[]::new)) {
-            final List<ItemInfoEntry> info = itemInfos.remove(itemID);
-            if (info != null) try {
-                createImage(itemID, info, null);
-            } catch (UnsupportedEncodingException e) {
-                store.listeners().warning("A resource uses an unsupported sample model.", e);
-            }
+            createOptionalImage(itemID);
         }
         /*
          * At this point, all resources have either been created or discarded.
@@ -440,25 +497,49 @@ final class ResourceBuilder {
             for (Box child : box.children) {
                 if (child instanceof EntityToGroup group) {     // Should be the type of all children.
                     final GenericName name = store.createComponentName(getResourceName(group.groupID));
-                    var grids = new GridCoverageResource[group.entityID.length];
-                    int count = 0;
+                    final var components = new ArrayList<ImageResource>(group.entityID.length);
                     for (int entityID : group.entityID) {
-                        // TODO: wrong class
-                        var grid = (GridCoverageResource) itemInfos.remove(entityID);
-                        if (grid != null) grids[count++] = grid;
+                        final Iterator<Resource> it = itemResources.getOrDefault(entityID, List.of()).iterator();
+                        while (it.hasNext()) {
+                            final Resource grid = it.next();
+                            if (grid instanceof ImageResource) {
+                                components.add((ImageResource) grid);
+                                it.remove();
+                            }
+                        }
                     }
-                    grids = ArraysExt.resize(grids, count);
                     final Resource resource;
-                    if (child instanceof ImagePyramid pyramid) {
-                        new Pyramid(store, name, pyramid, grids); // TODO
-                        continue;
-                    } else {
-                        resource = new Group(store, name, grids);
+                    switch (components.size()) {
+                        case 0: continue;
+                        case 1: resource = components.get(0); break;
+                        default: {
+                            final var grids = components.toArray(ImageResource[]::new);
+                            if (child instanceof ImagePyramid pyramid) {
+                                resource = new Pyramid(store, name, pyramid, grids);
+                            } else {
+                                resource = new Group(store, name, grids);
+                            }
+                        }
                     }
-                    resources.add(resource);
+                    resources(group.groupID).add(resource);
                 }
             }
         }
-        return resources.toArray(Resource[]::new);
+        // Concatenate the collection of lists to a single list.
+        return itemResources.values().stream()
+                .map(List::stream)
+                .reduce(Stream::concat)
+                .orElse(Stream.empty())
+                .toArray(Resource[]::new);
+    }
+
+    /**
+     * Returns the resource for the given item identifier.
+     *
+     * @param  itemID  item identifier for which to get the resources.
+     * @return modifiable list of resources for the given identifier.
+     */
+    private List<Resource> resources(final int itemID) {
+        return itemResources.computeIfAbsent(itemID, (key) -> new ArrayList<>());
     }
 }
