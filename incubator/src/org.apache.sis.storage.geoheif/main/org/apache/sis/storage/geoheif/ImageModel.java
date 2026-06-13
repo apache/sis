@@ -76,17 +76,11 @@ final class ImageModel {
     private final SampleDimension[] sampleDimensions;
 
     /**
-     * Creates a new image model from the given Image I/O specifier.
-     *
-     * @param  type  the image specifier from the Image I/O <abbr>API</abbr>.
+     * index of the image which has been used for deriving the sample dimensions.
+     * This is used by {@link #sampleDimensions} for detecting if we can skip the
+     * reconstruction of sample dimensions.
      */
-    ImageModel(final ImageTypeSpecifier type) {
-        colorModel  = type.getColorModel();
-        sampleModel = type.getSampleModel();
-        dataType    = DataType.forDataBufferType(sampleModel.getDataType());
-        sampleDimensions = null;
-        defaultBandNames = null;
-    }
+    private final int imageIndex;
 
     /**
      * Computes date type, color model, sample model, and sample dimensions.
@@ -168,8 +162,9 @@ final class ImageModel {
                 sb.setName(band);
             }
             defaultBandNames[band] = sb.getName();
-            var source = new CoverageModifier.BandSource(builder.store, builder.imageIndex, band, numBands, dataType);
-            builder.metadata().addNewBand(sampleDimensions[band] = builder.store.customizer.customize(source, sb));
+            final GeoHeifStore store = builder.store();
+            var source = new CoverageModifier.BandSource(store, builder.imageIndex, band, numBands, dataType);
+            builder.metadata().addNewBand(sampleDimensions[band] = store.customizer.customize(source, sb));
             sb.clear();
             if (bitDepth == 0) {
                 bitDepth = Component.DEFAULT_BIT_DEPTH;
@@ -253,27 +248,44 @@ final class ImageModel {
             colorModel = cb.createRGB(sampleModel);
         }
         this.colorModel = colorModel;
+        imageIndex = builder.imageIndex;
+    }
+
+    /**
+     * Creates a new image model from the given Image I/O specifier.
+     *
+     * @param  builder  the builder which is creating a grid coverage.
+     * @param  type     the image specifier from the Image I/O <abbr>API</abbr>.
+     */
+    ImageModel(final ImageTypeSpecifier type, final CoverageBuilder builder) {
+        colorModel  = type.getColorModel();
+        sampleModel = type.getSampleModel();
+        dataType    = DataType.forDataBufferType(sampleModel.getDataType());
+        imageIndex  = builder.imageIndex;
+        sampleDimensions = null;
+        defaultBandNames = null;
     }
 
     /**
      * Returns the sample dimensions.
      * If the {@code coverage} argument is null, it is assumed the same as at construction time.
      *
-     * @param  builder  builder of the coverage for which to create sample dimensions, or {@code null}.
+     * @param  builder  builder of the coverage for which to create sample dimensions.
      * @return the sample dimensions.
      * @throws DataStoreContentException if the sample dimensions cannot be created.
      */
     final List<SampleDimension> sampleDimensions(final CoverageBuilder builder) throws DataStoreException {
         SampleDimension[] bands = sampleDimensions;
         boolean share = true;
-        if (builder != null) {
+        if (builder.imageIndex != imageIndex) {
             bands = bands.clone();
             final int numBands = bands.length;
+            final GeoHeifStore store = builder.store();
             final var sb = new SampleDimension.Builder();
             for (int band = 0; band < numBands; band++) {
                 sb.setName(defaultBandNames[band]);
-                var source = new CoverageModifier.BandSource(builder.store, builder.imageIndex, band, numBands, dataType);
-                final SampleDimension sd = builder.store.customizer.customize(source, sb);
+                var source = new CoverageModifier.BandSource(store, builder.imageIndex, band, numBands, dataType);
+                final SampleDimension sd = store.customizer.customize(source, sb);
                 if (!sd.equals(bands[band])) {
                     bands[band] = sd;
                     share = false;

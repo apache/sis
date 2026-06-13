@@ -129,10 +129,10 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
      * @throws DataStoreException if the "grid to <abbr>CRS</abbr>" transform or the sample dimensions cannot be created.
      */
     ImageResource(final CoverageBuilder builder, Image[] tiles, final Image image) throws DataStoreException {
-        super(builder.store);
-        this.store       = builder.store;
+        super(builder.store());
+        this.store       = builder.store();
         identifier       = builder.name();
-        sampleDimensions = builder.imageModel().sampleDimensions(null);
+        sampleDimensions = builder.imageModel().sampleDimensions(builder);
         gridGeometry     = builder.gridGeometry();
         if (tiles == null) {
             // Shall be after the call to `sampleDimensions()`.

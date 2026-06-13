@@ -69,9 +69,13 @@ import org.apache.sis.pending.jdk.JDK18;
  */
 final class CoverageBuilder implements Emptiable {
     /**
-     * The data store which is creating a grid coverage.
+     * The resource which is creating a grid coverage.
+     *
+     * @todo A future version could store a map of {@link ImageModel} in the resource builder
+     *       for the case where an image is tiled and each tile has the same image description.
+     *       It would avoid recreating the same color model and sample model many times.
      */
-    final GeoHeifStore store;
+    private final ResourceBuilder owner;
 
     /**
      * An index of the image to build, for information purpose only.
@@ -180,17 +184,17 @@ final class CoverageBuilder implements Emptiable {
     /**
      * Creates a new builder with the given properties.
      *
-     * @param  store            the data store which is creating a grid coverage.
+     * @param  owner            the resource which is creating a grid coverage.
      * @param  imageIndex       an index of the image, for information purpose only.
      * @param  properties       source of coverage properties for this coverage item.
      * @param  duplicatedBoxes  names of boxes that were duplicated. Used for logging a warning only once per type of box.
      */
-    CoverageBuilder(final GeoHeifStore store,
+    CoverageBuilder(final ResourceBuilder owner,
                     final int imageIndex,
                     final ItemProperties.ForID properties,
                     final Set<String> duplicatedBoxes)
     {
-        this.store = store;
+        this.owner = owner;
         this.imageIndex = imageIndex;
         unknownBoxes = new LinkedHashMap<>();
         if (properties == null) {
@@ -281,7 +285,7 @@ final class CoverageBuilder implements Emptiable {
             if (duplicated) {
                 final String type = Box.formatFourCC(property.type());
                 if (duplicatedBoxes.add(type)) {
-                    store.warning(Errors.Keys.DuplicatedElement_1, type);
+                    store().warning(Errors.Keys.DuplicatedElement_1, type);
                 }
             }
         }
@@ -350,7 +354,7 @@ final class CoverageBuilder implements Emptiable {
                 sj.add(id.toString());
             }
             final var record = new LogRecord(level, message.append(sj).append('.').toString());
-            store.warning(record);
+            store().warning(record);
         }
         return essential;
     }
@@ -409,11 +413,20 @@ final class CoverageBuilder implements Emptiable {
     }
 
     /**
+     * Returns the data store which is creating a grid coverage.
+     *
+     * @return the data store which is creating a grid coverage.
+     */
+    public final GeoHeifStore store() {
+        return owner.store;
+    }
+
+    /**
      * Returns a name for the resource to create and opportunistically adds it to the metadata.
      * This method should be invoked exactly once.
      */
     public final GenericName name() {
-        GenericName gn = store.createComponentName(name);
+        GenericName gn = store().createComponentName(name);
         metadata().addIdentifier(gn, MetadataBuilder.Scope.RESOURCE);
         return gn;
     }
@@ -487,7 +500,7 @@ final class CoverageBuilder implements Emptiable {
      */
     final void setImageLayout(final Image image) throws DataStoreException, IOException {
         if (imageModel == null) {
-            imageModel = new ImageModel(image.getImageType(store));
+            imageModel = new ImageModel(image.getImageType(store()), this);
         }
     }
 
@@ -534,6 +547,7 @@ final class CoverageBuilder implements Emptiable {
      * @throws DataStoreException if the "grid to <abbr>CRS</abbr>" transform cannot be created.
      */
     public final GridGeometry gridGeometry() throws DataStoreException {
+        final GeoHeifStore store = store();
         final var extent = new GridExtent(width, height);
         MathTransform gridToCRS = null;
         if (affine != null) {

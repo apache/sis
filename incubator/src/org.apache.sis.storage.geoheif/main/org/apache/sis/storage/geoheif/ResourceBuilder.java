@@ -64,7 +64,7 @@ final class ResourceBuilder {
     /**
      * The data store for which the resources are built.
      */
-    private final GeoHeifStore store;
+    final GeoHeifStore store;
 
     /**
      * Identifier of the primary item. Should contain at most one element, but we are paranoiac.
@@ -323,7 +323,7 @@ final class ResourceBuilder {
             final int imageIndex = (addTo != null ? addTo : resources).size();
             final ItemProperties.ForID itemProperties = properties.remove(itemID);
             final CoverageBuilder coverage = builders.computeIfAbsent(itemProperties,
-                    (p) -> new CoverageBuilder(store, imageIndex, p, duplicatedBoxes));
+                    (p) -> new CoverageBuilder(this, imageIndex, p, duplicatedBoxes));
             if (coverage.reportUnknownBoxes(name)) {
                 // Warning already logged by `reportUnknownBoxes(…)`.
                 continue;

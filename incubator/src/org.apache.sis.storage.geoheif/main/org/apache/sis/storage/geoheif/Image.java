@@ -79,7 +79,7 @@ abstract class Image {
         byteOrder    = builder.byteOrder();
         numXTiles    = builder.numTiles(0);
         numYTiles    = builder.numTiles(1);
-        listeners    = builder.store.listeners();
+        listeners    = builder.store().listeners();
         // Do NOT invoke `builder.sampleModel()`, because that information is not available for all types.
     }
 
