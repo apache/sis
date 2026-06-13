@@ -292,6 +292,14 @@ final class CoverageBuilder implements Emptiable {
     }
 
     /**
+     * Returns the compression method, or 0 if none.
+     * The returned value should be one of the {@code CompressionConfiguration.COMPRESSION_*} constants.
+     */
+    final int compressionType() {
+        return (compression != null) ? compression.compressionType : 0;
+    }
+
+    /**
      * Returns the compression units which contains all image data, or {@code null} if the image is uncompressed.
      * This method requires that the compression unit is {@link UnitType#IMAGE_TILE}.
      *
@@ -299,7 +307,7 @@ final class CoverageBuilder implements Emptiable {
      * @throws UnsupportedEncodingException if the compression configuration is unsupported.
      * @throws DataStoreContentException if the compression cannot be decoded for another reason.
      */
-    final CompressedUnitsItemInfo.Unit getCompressedImageUnit() throws DataStoreContentException {
+    final CompressedUnitsItemInfo.Unit compressedImageUnit() throws DataStoreContentException {
         if (compression == null) {
             return null;
         }
@@ -309,10 +317,7 @@ final class CoverageBuilder implements Emptiable {
             }
             final CompressedUnitsItemInfo.Unit[] units = compressedUnits.units;
             if (units.length == 1) {
-                // Current implementation supports only ZLIB, we may add more in the future.
-                if (compression.compressionType == CompressionConfiguration.COMPRESSION_ZLIB) {
-                    return units[0];
-                }
+                return units[0];
             }
         }
         throw new UnsupportedEncodingException("Unsupported compression.");

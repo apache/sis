@@ -2037,8 +2037,8 @@ final class ImageFileDirectory extends DataCube {
     }
 
     /**
-     * A list of Image File Directories (FID) where the first entry is the image at coarsest resolution
-     * and following entries are images at finer resolutions. The entry at finest resolution is the
+     * A list of Image File Directories (<abbr>FID</abbr>) where the first element is the image at the coarsest
+     * resolution and next elements are images at finer resolutions. The element at the finest resolution is the
      * enclosing {@link ImageFileDirectory}.
      */
     private final class Overviews implements Pyramid {

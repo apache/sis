@@ -43,12 +43,16 @@ public final class Deflate extends InflaterChannel {
      * The {@link #setInputRegion(long, long)} method must be invoked after construction
      * before a reading process can start.
      *
+     * <p>If the {@code nowrap} is {@code true} then the ZLIB header and checksum fields will not be used.
+     * See {@link Inflater#Inflater(boolean)} for more information.</p>
+     *
      * @param  input      the source of data to decompress.
      * @param  listeners  object where to report warnings.
+     * @param  nowrap     if {@code true} then support GZIP compatible compression.
      */
-    public Deflate(final ChannelDataInput input, final StoreListeners listeners) {
+    public Deflate(final ChannelDataInput input, final StoreListeners listeners, final boolean nowrap) {
         super(input, listeners);
-        inflater = new Inflater();
+        inflater = new Inflater(nowrap);
     }
 
     /**

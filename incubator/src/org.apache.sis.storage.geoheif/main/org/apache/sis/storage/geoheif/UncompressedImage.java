@@ -31,8 +31,10 @@ import org.apache.sis.io.stream.Region;
 import org.apache.sis.io.stream.inflater.ComputedByteChannel;
 import org.apache.sis.io.stream.inflater.Deflate;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.UnsupportedEncodingException;
 import org.apache.sis.storage.isobmff.ByteRanges;
 import org.apache.sis.storage.isobmff.mpeg.CompressedUnitsItemInfo;
+import org.apache.sis.storage.isobmff.mpeg.CompressionConfiguration;
 
 
 /**
@@ -65,6 +67,12 @@ final class UncompressedImage extends Image {
     private final SampleModel sampleModel;
 
     /**
+     * The type of compression, or 0 if none.
+     * Should be one of the {@code CompressionConfiguration.COMPRESSION_*} constants.
+     */
+    private final int compressionType;
+
+    /**
      * The compression units which contains all image data, or {@code null} if the image is uncompressed.
      */
     private final CompressedUnitsItemInfo.Unit compressedImageUnit;
@@ -81,9 +89,29 @@ final class UncompressedImage extends Image {
             throws DataStoreException
     {
         super(builder, locator, name);
-        sampleModel = builder.sampleModel();
-        dataType    = builder.imageModel().dataType;
-        compressedImageUnit = builder.getCompressedImageUnit();
+        sampleModel         = builder.sampleModel();
+        dataType            = builder.imageModel().dataType;
+        compressionType     = builder.compressionType();
+        compressedImageUnit = builder.compressedImageUnit();
+    }
+
+    /**
+     * Returns a channel which will decompress data on-the-fly.
+     * This method shall be invoked only if {@link #compressedImageUnit} is non-null.
+     * Callers shall invoke {@link ComputedByteChannel#setInputRegion(long, long)} on the returned object.
+     *
+     * @param  input  the channel of compressed data.
+     * @return the channel of uncompressed data.
+     * @throws UnsupportedEncodingException if the compression type is not supported.
+     */
+    private ComputedByteChannel inflater(final ChannelDataInput input) throws UnsupportedEncodingException {
+        switch (compressionType) {
+            case CompressionConfiguration.COMPRESSION_ZLIB:    return new Deflate(input, listeners, false);
+            case CompressionConfiguration.COMPRESSION_DEFLATE: return new Deflate(input, listeners, true);
+            default: throw new UnsupportedEncodingException("The \"" +
+                    CompressionConfiguration.formatFourCC(compressionType) + "\" compression is not supported.");
+
+        }
     }
 
     /**
@@ -138,7 +166,7 @@ final class UncompressedImage extends Image {
             final ComputedByteChannel inflater;
             final CompressedUnitsItemInfo.Unit unit = compressedImageUnit;
             if (unit != null) {
-                inflater = new Deflate(input, listeners);
+                inflater = inflater(input);
                 inflater.setInputRegion(addExact(origin, unit.offset), unit.size);
                 input = inflater.createDataInput(context.reuseBuffer(), (int) sourceSize[0]);    // (int) cast okay even if inexact.
                 origin = 0;

@@ -43,6 +43,11 @@ public final class CompressionConfiguration extends FullBox {
     public static final int COMPRESSION_ZLIB = ((((('z' << 8) | 'l') << 8) | 'i') << 8) | 'b';
 
     /**
+     * The {@code "defl"} value for {@link #compressionType}.
+     */
+    public static final int COMPRESSION_DEFLATE = ((((('d' << 8) | 'e') << 8) | 'f') << 8) | 'l';
+
+    /**
      * Returns the four-character type of this box.
      * This value is fixed to {@link #BOXTYPE}.
      */
@@ -55,6 +60,7 @@ public final class CompressionConfiguration extends FullBox {
      * Identifier of the compression.
      *
      * @see #COMPRESSION_ZLIB
+     * @see #COMPRESSION_DEFLATE
      */
     @Interpretation(Type.FOURCC)
     public final int compressionType;

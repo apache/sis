@@ -203,7 +203,7 @@ public abstract class Inflater implements Closeable {
         final InflaterChannel inflater;
         switch (compression) {
             case LZW:      inflater = new LZW     (input, listeners); break;
-            case DEFLATE:  inflater = new Deflate (input, listeners); break;
+            case DEFLATE:  inflater = new Deflate (input, listeners, false); break;
             case PACKBITS: inflater = new PackBits(input, listeners); break;
             case CCITTRLE: inflater = new CCITTRLE(input, listeners, sourceWidth); break;
             case NONE: {
