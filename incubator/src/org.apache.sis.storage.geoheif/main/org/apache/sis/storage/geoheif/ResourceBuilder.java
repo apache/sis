@@ -32,6 +32,7 @@ import java.util.logging.LogRecord;
 import java.io.IOException;
 import javax.imageio.spi.ImageReaderSpi;
 import org.opengis.util.GenericName;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStoreException;
@@ -462,9 +463,11 @@ final class ResourceBuilder {
      * The actual reading does not happen here.
      *
      * @return the resource.
+     * @throws IOException if an error occurred while reading bytes from the input stream.
      * @throws DataStoreException if another error occurred while building the image or resource.
+     * @throws TransformException if an error occurred while deriving a "grid to <abbr>CRS</abbr>" transform.
      */
-    final Resource[] build() throws DataStoreException, IOException {
+    final Resource[] build() throws DataStoreException, IOException, TransformException {
         for (final PrimaryItem primary : primaryItem) {
             List<ItemInfoEntry> info = info(itemInfos.remove(primary.itemID));
             if (info.isEmpty()) {

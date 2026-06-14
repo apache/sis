@@ -88,6 +88,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
+import static org.apache.sis.referencing.CRS.getDimensionOrZero;
 import static org.apache.sis.referencing.CRS.findOperation;
 import static org.apache.sis.referencing.CRS.SeparationMode;
 
@@ -1934,19 +1935,23 @@ public class GridGeometry implements LenientComparable, Serializable {
      * to the given <abbr>CRS</abbr>. The {@linkplain #getGeographicExtent() geographic bounding box} of this grid
      * geometry is used as the desired domain of validity.
      *
+     * <p>If this grid geometry has no <abbr>CRS</abbr> but the number of dimensions of the "real world" space is
+     * equal to the number of dimensions of the {@code target}, then this method returns an identity operation.</p>
+     *
      * @param  target  the target <abbr>CRS</abbr> of the desired operation.
      * @return coordinate operation from the <abbr>CRS</abbr> of this grid geometry to the given <abbr>CRS</abbr>.
-     * @throws IncompleteGridGeometryException if this grid geometry has no <abbr>CRS</abbr>.
-     * @throws TransformException if the coordinate operation cannot be found.
+     * @throws IncompleteGridGeometryException if this grid geometry does not have sufficient information.
+     * @throws FactoryException if the coordinate operation cannot be found.
      *
      * @since 1.7
      */
-    public CoordinateOperation createChangeOfCRS(final CoordinateReferenceSystem target) throws TransformException {
-        try {
-            return findOperation(getCoordinateReferenceSystem(), target, geographicBBox());
-        } catch (FactoryException e) {
-            throw new TransformException(e);
+    public CoordinateOperation createChangeOfCRS(final CoordinateReferenceSystem target) throws FactoryException {
+        ArgumentChecks.ensureNonNull("target", target);
+        CoordinateReferenceSystem crs = getCoordinateReferenceSystem(envelope);
+        if (crs == null) {
+            crs = (getDimensionOrZero(target) == getTargetDimension()) ? target : getCoordinateReferenceSystem();
         }
+        return findOperation(crs, target, geographicBBox());
     }
 
     /**

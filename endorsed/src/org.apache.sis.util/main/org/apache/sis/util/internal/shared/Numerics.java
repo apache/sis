@@ -316,6 +316,20 @@ public final class Numerics {
     }
 
     /**
+     * Returns the result of {@code numerator / denominator} but potentially more accurate.
+     * If any argument cannot be converted to {@code double} without accuracy lost but the
+     * integer part of the result of the division can be represented accurately, then this
+     * method provides a better result than {@code numerator / (double) denominator}.
+     *
+     * @param  numerator    numerator of the division.
+     * @param  denominator  denominator of the division.
+     * @return value of {@code numerator / denominator} but potentially more accurate.
+     */
+    public static double divide(long numerator, long denominator) {
+        return (numerator / denominator) + (numerator % denominator) / (double) denominator;
+    }
+
+    /**
      * Returns the given fraction as a {@link Fraction} instance if possible,
      * or as a {@link DoubleDouble} approximation otherwise.
      *

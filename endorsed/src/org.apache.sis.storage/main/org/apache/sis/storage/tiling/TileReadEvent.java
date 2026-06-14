@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.awt.Shape;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
@@ -46,7 +47,7 @@ import org.apache.sis.util.internal.shared.Strings;
  * @since   1.7
  * @version 1.7
  */
-public class TileReadEvent extends StoreEvent {
+public final class TileReadEvent extends StoreEvent {
     /**
      * For cross-version compatibility.
      */
@@ -125,13 +126,15 @@ public class TileReadEvent extends StoreEvent {
         final synchronized MathTransform2D imageToObjective(final CoordinateReferenceSystem crs) throws TransformException {
             @SuppressWarnings("LocalVariableHidesMemberVariable")
             CoordinateOperation crsToObjective = this.crsToObjective;
-            if (crsToObjective == null || !CRS.equivalent(crsToObjective.getTargetCRS(), crs)) {
+            if (crsToObjective == null || !CRS.equivalent(crsToObjective.getTargetCRS(), crs)) try {
                 crsToObjective = sliceGeometry.createChangeOfCRS(crs);
                 MathTransform tr = MathTransforms.translation(offsetX, offsetY);
                 tr = MathTransforms.concatenate(tr, sliceGeometry.getGridToCRS(PixelInCell.CELL_CORNER));
                 tr = MathTransforms.concatenate(tr, crsToObjective.getMathTransform());
                 imageToObjective = MathTransforms.bidimensional(tr);
                 this.crsToObjective = crsToObjective;   // Store only after the rest was successful.
+            } catch (FactoryException e) {
+                throw new TransformException(e);
             }
             return imageToObjective;
         }

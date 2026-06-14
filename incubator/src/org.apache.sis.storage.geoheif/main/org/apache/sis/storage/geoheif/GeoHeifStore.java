@@ -31,6 +31,7 @@ import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelImageInputStream;
 import org.apache.sis.io.stream.IOUtilities;
@@ -39,6 +40,7 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
+import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.metadata.MetadataBuilder;
@@ -91,7 +93,7 @@ public class GeoHeifStore extends DataStore implements Aggregate {
      *
      * @see #createComponentName(String)
      */
-    private final NameFactory nameFactory;
+    final NameFactory nameFactory;
 
     /**
      * The stream from which to read the data, or {@code null} if this store has been closed.
@@ -306,6 +308,8 @@ public class GeoHeifStore extends DataStore implements Aggregate {
             content = builder.build();
         } catch (IOException e) {
             throw new DataStoreException(e);
+        } catch (TransformException e) {
+            throw new DataStoreReferencingException(e);
         }
         return Containers.viewAsUnmodifiableList(content);
     }

@@ -35,7 +35,10 @@ import javax.imageio.ImageReader;
 import javax.imageio.spi.ImageReaderSpi;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.GenericName;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStore;
@@ -45,6 +48,7 @@ import org.apache.sis.storage.tiling.TiledGridCoverage;
 import org.apache.sis.storage.tiling.TiledGridCoverageResource;
 import org.apache.sis.storage.isobmff.ByteRanges;
 import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.util.internal.shared.Numerics;
 
 
 /**
@@ -59,7 +63,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
      *
      * @see #getOriginator()
      */
-    private final GeoHeifStore store;
+    final GeoHeifStore store;
 
     /**
      * Identifier of this resource.
@@ -83,7 +87,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
      *
      * @see #getGridGeometry()
      */
-    private final GridGeometry gridGeometry;
+    private GridGeometry gridGeometry;
 
     /**
      * Description of the bands.
@@ -172,6 +176,25 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
     @Override
     protected Metadata createMetadata() {
         return metadata;
+    }
+
+    /**
+     * Declares that this image is the pyramid level of the given base grid.
+     * This method does nothing if this image already has its own "grid to <abbr>CRS</abbr>" transform.
+     *
+     * @param  base  grid geometry of the pyramid level at the finest resolution.
+     * @throws TransformException if an error occurred while deriving the "grid to <abbr>CRS</abbr>" transform.
+     */
+    final void setPyramidLevelOf(final GridGeometry base) throws TransformException {
+        if (!gridGeometry.isDefined(GridGeometry.GRID_TO_CRS)) {
+            final GridExtent extent = gridGeometry.getExtent();
+            final GridExtent baseExtent = base.getExtent();
+            final var factors = new double[baseExtent.getDimension()];
+            for (int i = 0; i < factors.length; i++) {
+                factors[i] = Numerics.divide(baseExtent.getSize(i), extent.getSize(i));
+            }
+            gridGeometry = new GridGeometry(base, extent, MathTransforms.scale(factors));
+        }
     }
 
     /**
