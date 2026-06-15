@@ -443,6 +443,18 @@ final class ResourceBuilder {
                     }
                     break;
                 }
+                /*
+                 * Tiled image with offsets and lengths specified in a separated array.
+                 * This is an encoding more efficient than `GRID` because it avoids to
+                 * repeat the image color model and ample model for each tile.
+                 */
+                case ItemInfoEntry.TILI: {
+                    final ByteRanges.Reader locator = getLocationByIdentifier(itemID);
+                    if (locator != null) {
+                        image = new TiledImage(coverage, locator, name);
+                    }
+                    break;
+                }
             }
             if (image == null) {
                 warning("No data found for the \"{0}\" resource.", name);

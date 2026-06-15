@@ -90,6 +90,7 @@ final class ImageModel {
      *
      * @param  width           the width  (in pixels) of the reconstructed image.
      * @param  height          the height (in pixels) of the reconstructed image.
+     * @param  tileSize        the tile size if known, or {@code null} for computing from other information.
      * @param  model           information about the sample model (data type, <i>etc.</i>), or {@code null}.
      * @param  componentTypes  pixel data displaying as {@link ComponentType}, {@link URI} or {@link Integer}.
      * @param  bitsPerChannel  number of bits per channel in the reconstructed image, or {@code null}.
@@ -100,6 +101,7 @@ final class ImageModel {
      */
     ImageModel(final int width,
                final int height,
+               Dimension tileSize,
                final UncompressedFrameConfig model,
                final Object[] componentTypes,
                final byte[] bitsPerChannel,
@@ -206,12 +208,13 @@ final class ImageModel {
          */
         this.dataType = dataType;
         if (dataType != null) {
-            InterleavingMode interleaveType = InterleavingMode.COMPONENT;
-            final var tileSize = new Dimension(width, height);
-            if (model != null) {
-                tileSize.width  /= model.numTileCols;
-                tileSize.height /= model.numTileRows;
-                interleaveType = model.interleaveType;
+            final InterleavingMode interleaveType = (model != null) ? model.interleaveType : InterleavingMode.COMPONENT;
+            if (tileSize == null) {
+                tileSize = new Dimension(width, height);
+                if (model != null) {
+                    tileSize.width  /= model.numTileCols;
+                    tileSize.height /= model.numTileRows;
+                }
             }
             final boolean isBanded;
             switch (interleaveType) {

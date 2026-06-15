@@ -92,7 +92,7 @@ public final class CompressedUnitsItemInfo extends FullBox {
         public final long size;
 
         /** Creates a new unit with the given offset and size. */
-        Unit(final long offset, final long size) {
+        public Unit(final long offset, final long size) {
             this.offset = offset;
             this.size   = size;
         }

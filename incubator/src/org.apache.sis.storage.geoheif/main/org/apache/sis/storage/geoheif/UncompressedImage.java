@@ -30,6 +30,7 @@ import org.apache.sis.io.stream.HyperRectangleReader;
 import org.apache.sis.io.stream.Region;
 import org.apache.sis.io.stream.inflater.ComputedByteChannel;
 import org.apache.sis.io.stream.inflater.Deflate;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedEncodingException;
 import org.apache.sis.storage.isobmff.ByteRanges;
@@ -53,7 +54,7 @@ import org.apache.sis.storage.isobmff.mpeg.CompressionConfiguration;
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */
-final class UncompressedImage extends Image {
+class UncompressedImage extends Image {
     /**
      * The type of sample values in the raster.
      */
@@ -67,13 +68,15 @@ final class UncompressedImage extends Image {
     private final SampleModel sampleModel;
 
     /**
-     * The type of compression, or 0 if none.
+     * The type of compression, or 0 if the image is uncompressed.
      * Should be one of the {@code CompressionConfiguration.COMPRESSION_*} constants.
      */
     private final int compressionType;
 
     /**
-     * The compression units which contains all image data, or {@code null} if the image is uncompressed.
+     * The compression units which contains all image data, or {@code null} if none.
+     * A compressed image may have no compression unit if the location of data are
+     * specified by another type of box.
      */
     private final CompressedUnitsItemInfo.Unit compressedImageUnit;
 
@@ -97,15 +100,15 @@ final class UncompressedImage extends Image {
 
     /**
      * Returns a channel which will decompress data on-the-fly.
-     * This method shall be invoked only if {@link #compressedImageUnit} is non-null.
      * Callers shall invoke {@link ComputedByteChannel#setInputRegion(long, long)} on the returned object.
      *
      * @param  input  the channel of compressed data.
-     * @return the channel of uncompressed data.
+     * @return the channel of uncompressed data, or {@code null} if the data are uncompressed.
      * @throws UnsupportedEncodingException if the compression type is not supported.
      */
     private ComputedByteChannel inflater(final ChannelDataInput input) throws UnsupportedEncodingException {
         switch (compressionType) {
+            case 0: return null;
             case CompressionConfiguration.COMPRESSION_ZLIB:    return new Deflate(input, listeners, false);
             case CompressionConfiguration.COMPRESSION_DEFLATE: return new Deflate(input, listeners, true);
             default: throw new UnsupportedEncodingException("The \"" +
@@ -141,14 +144,46 @@ final class UncompressedImage extends Image {
     }
 
     /**
+     * Computes the range of bytes that will be needed for reading the tile at the specified index.
+     * The result is stored in the given {@code context} argument.
+     *
+     * @param  tileIndex  index of the tile for which to compute the range of bytes.
+     * @param  tileSize   number of bytes of uncompressed data in each tile.
+     * @param  context    where to add the ranges of bytes to read as offsets relatives to the beginning of the file.
+     * @throws DataStoreException if an error occurred with the data in the boxes.
+     * @throws ArithmeticException if an integer overflow occurred.
+     */
+    protected void computeByteRanges(final long tileIndex, final long tileSize, final ByteRanges context)
+            throws DataStoreException
+    {
+        locator.resolve(multiplyExact(tileIndex, tileSize), tileSize, context);
+    }
+
+    /**
+     * Returns the compression units which contains tile data.
+     *
+     * @param  tileIndex  index of the tile for which to get the compression unit.
+     * @return the compression unit for the tile at the given index.
+     * @throws DataStoreException if the compression unit cannot be obtained.
+     */
+    protected CompressedUnitsItemInfo.Unit compressedImageUnit(final long tileIndex) throws DataStoreException {
+        if (compressedImageUnit == null) {
+            throw new DataStoreContentException("Missing compressed unit.");
+        }
+        return compressedImageUnit;
+    }
+
+    /**
      * Computes the range of bytes that will be needed for reading a single tile of this image.
+     * This method is invoked in a code synchronized on {@link ImageResource#getSynchronizationLock()}.
      *
      * @param  context  where to store the ranges of bytes.
      * @return the function to invoke later for reading the tile.
      * @throws DataStoreException if an error occurred while computing the range of bytes.
+     * @throws ArithmeticException if an offset or index overflows the capacity of 32-bits integers.
      */
     @Override
-    protected Reader computeByteRanges(final ImageResource.Coverage.ReadContext context) throws DataStoreException {
+    protected final Reader computeByteRanges(final ImageResource.Coverage.ReadContext context) throws DataStoreException {
         final long[] sourceSize = size(sampleModel);
         /*
          * In the current implementation, we read the whole tile. If a future implementation allows
@@ -156,22 +191,18 @@ final class UncompressedImage extends Image {
          * `Buffer` with an arbitrary position in argument.
          */
         final var  region    = region(sourceSize, sourceSize);
-        final int  dataSize  = dataType.bytes();
-        final long tileSize  = multiplyExact(region.length, dataSize);
+        final long tileSize  = multiplyExact(region.length, dataType.bytes());
         final long tileIndex = addExact(multiplyExact(context.subTileY, numXTiles), context.subTileX);
-        final long offset    = multiplyExact(tileIndex, tileSize);
-        locator.resolve(offset, tileSize, context);
+        computeByteRanges(tileIndex, tileSize, context);
         return (ChannelDataInput input) -> {
             long origin = context.offset();
-            final ComputedByteChannel inflater;
-            final CompressedUnitsItemInfo.Unit unit = compressedImageUnit;
-            if (unit != null) {
-                inflater = inflater(input);
+            final ComputedByteChannel inflater = inflater(input);
+            if (inflater != null) {
+                final CompressedUnitsItemInfo.Unit unit = compressedImageUnit(tileIndex);
                 inflater.setInputRegion(addExact(origin, unit.offset), unit.size);
-                input = inflater.createDataInput(context.reuseBuffer(), (int) sourceSize[0]);    // (int) cast okay even if inexact.
+                // The following (int) cast is okay even if inexact because it is only a hint.
+                input = inflater.createDataInput(context.reuseBuffer(), (int) sourceSize[0]);
                 origin = 0;
-            } else {
-                inflater = null;
             }
             /*
              * Now read all banks and store the values in the image buffer.

@@ -72,7 +72,8 @@ public final class ItemInfoEntry extends FullBox {
                             URI  = ((((('u' << 8) | 'r') << 8) | 'i') << 8) | ' ',
                             UNCI = ((((('u' << 8) | 'n') << 8) | 'c') << 8) | 'i',
                             JPEG = ((((('j' << 8) | 'p') << 8) | 'e') << 8) | 'g',
-                            GRID = ((((('g' << 8) | 'r') << 8) | 'i') << 8) | 'd';
+                            GRID = ((((('g' << 8) | 'r') << 8) | 'i') << 8) | 'd',
+                            TILI = ((((('t' << 8) | 'i') << 8) | 'l') << 8) | 'i';
 
     /**
      * Item type indicator such as {@link #MIME} or {@link #URI}.

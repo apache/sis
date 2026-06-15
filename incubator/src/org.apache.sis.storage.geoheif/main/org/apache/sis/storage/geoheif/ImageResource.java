@@ -396,6 +396,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
              * @param  readers   an initially empty map where to store image readers for reuse.
              * @param  buffer    an initially empty reference to a buffer.
              * @param  owner     the resource for which to read a tile.
+             * @throws DataStoreException if an error occurred while computing the range of bytes.
              */
             @SuppressWarnings("LeakingThisInConstructor")
             private ReadContext(final AOI iterator,

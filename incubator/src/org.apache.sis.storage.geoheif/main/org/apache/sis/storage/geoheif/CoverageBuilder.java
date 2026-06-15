@@ -21,6 +21,7 @@ import java.util.UUID;
 import java.util.Set;
 import java.util.Map;
 import java.util.List;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Collection;
 import java.util.StringJoiner;
@@ -28,6 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.io.IOException;
 import java.nio.ByteOrder;
+import java.awt.Dimension;
 import java.awt.image.SampleModel;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -43,6 +45,7 @@ import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.storage.isobmff.Box;
 import org.apache.sis.storage.isobmff.base.ItemInfoEntry;
 import org.apache.sis.storage.isobmff.base.ItemProperties;
+import org.apache.sis.storage.isobmff.image.TiledImageConfiguration;
 import org.apache.sis.storage.isobmff.geo.ModelTransformation;
 import org.apache.sis.storage.isobmff.geo.ModelCRS;
 import org.apache.sis.storage.isobmff.mpeg.ComponentType;
@@ -99,6 +102,14 @@ final class CoverageBuilder implements Emptiable {
      * The size (in pixels) of the reconstructed image.
      */
     private int width, height;
+
+    /**
+     * Information about where to find the tiles when the image type is {@code "tili"}.
+     * May be {@code null} if no such information was found.
+     *
+     * @see #tiling()
+     */
+    private TiledImageConfiguration tiling;
 
     /**
      * Coefficients of the matrix that defines the "grid to <abbr>CRS</abbr>" coordinate conversion.
@@ -186,7 +197,7 @@ final class CoverageBuilder implements Emptiable {
      *
      * @param  owner            the resource which is creating a grid coverage.
      * @param  imageIndex       an index of the image, for information purpose only.
-     * @param  properties       source of coverage properties for this coverage item.
+     * @param  properties       source of coverage properties for this coverage item, or {@code null} if none.
      * @param  duplicatedBoxes  names of boxes that were duplicated. Used for logging a warning only once per type of box.
      */
     CoverageBuilder(final ResourceBuilder owner,
@@ -197,16 +208,26 @@ final class CoverageBuilder implements Emptiable {
         this.owner = owner;
         this.imageIndex = imageIndex;
         unknownBoxes = new LinkedHashMap<>();
-        if (properties == null) {
-            return;
+        if (properties != null) {
+            if (properties.missingItem) {
+                // Some boxes could not be handled, but we don't have their identifiers.
+                unknownBoxes.put(null, properties.missingEssential);
+            }
+            load(properties, duplicatedBoxes);
         }
-        if (properties.missingItem) {
-            // Some boxes could not be handled, but we don't have their identifiers.
-            unknownBoxes.put(null, properties.missingEssential);
-        }
+    }
+
+    /**
+     * Collects from the given boxes the data that this builder will need.
+     * This method may invoke itself recursively if a box is a container for other boxes.
+     *
+     * @param  properties       source of coverage properties for this coverage item.
+     * @param  duplicatedBoxes  names of boxes that were duplicated. Used for logging a warning only once per type of box.
+     */
+    private void load(final List<Box> properties, final Set<String> duplicatedBoxes) {
         final int count = properties.size();
         for (int i=0; i<count; i++) {
-            boolean duplicated;
+            final boolean duplicated;
             final Box property = properties.get(i);
             switch (property.type()) {
                 /*
@@ -277,8 +298,19 @@ final class CoverageBuilder implements Emptiable {
                     if (!duplicated) palette = c;
                     break;
                 }
+                case TiledImageConfiguration.BOXTYPE: {
+                    var c = (TiledImageConfiguration) property;
+                    duplicated = (tiling != null);
+                    if (!duplicated) {
+                        tiling = c;     // Before `load(…)` for safety against nested tiling.
+                        load(Arrays.asList(c.tileImageProperties), duplicatedBoxes);
+                    }
+                    break;
+                }
                 default: {
-                    unknownBoxes.merge(property.typeKey(), properties.essential(i), Boolean::logicalOr);
+                    boolean essential = (properties instanceof ItemProperties.ForID)
+                                && ((ItemProperties.ForID) properties).essential(i);
+                    unknownBoxes.merge(property.typeKey(), essential, Boolean::logicalOr);
                     continue;
                 }
             }
@@ -289,6 +321,14 @@ final class CoverageBuilder implements Emptiable {
                 }
             }
         }
+    }
+
+    /**
+     * Returns information about where to find the tiles when the image type is {@code "tili"}.
+     * This is used for reading the positions of tiles in the file and the number of bytes to read.
+     */
+    final TiledImageConfiguration tiling() {
+        return tiling;
     }
 
     /**
@@ -313,7 +353,7 @@ final class CoverageBuilder implements Emptiable {
         }
         if (compression.unitType == UnitType.IMAGE_TILE) {
             if (compressedUnits == null) {
-                throw new DataStoreContentException("Missing compressed unit.");
+                return null;
             }
             final CompressedUnitsItemInfo.Unit[] units = compressedUnits.units;
             if (units.length == 1) {
@@ -471,11 +511,18 @@ final class CoverageBuilder implements Emptiable {
                 case 1: return model.numTileRows;
             }
         } else if (!isEmpty()) {
-            final SampleModel sampleModel = imageModel().sampleModel;
-            if (sampleModel != null) {
+            if (tiling != null) {
                 switch (dimension) {
-                    case 0: return JDK18.ceilDiv(width,  sampleModel.getWidth());
-                    case 1: return JDK18.ceilDiv(height, sampleModel.getHeight());
+                    case 0: return JDK18.ceilDiv(width,  tiling.tileWidth);
+                    case 1: return JDK18.ceilDiv(height, tiling.tileHeight);
+                }
+            } else {
+                final SampleModel sampleModel = imageModel().sampleModel;
+                if (sampleModel != null) {
+                    switch (dimension) {
+                        case 0: return JDK18.ceilDiv(width,  sampleModel.getWidth());
+                        case 1: return JDK18.ceilDiv(height, sampleModel.getHeight());
+                    }
                 }
             }
         }
@@ -517,7 +564,11 @@ final class CoverageBuilder implements Emptiable {
      */
     final ImageModel imageModel() throws DataStoreException {
         if (imageModel == null) {
-            imageModel = new ImageModel(width, height, model, componentTypes, bitsPerChannel, palette, this);
+            Dimension tileSize = null;
+            if (tiling != null) {
+                tileSize = new Dimension(tiling.tileWidth, tiling.tileHeight);
+            }
+            imageModel = new ImageModel(width, height, tileSize, model, componentTypes, bitsPerChannel, palette, this);
             if (imageModel.sampleModel == null && tileBuilder != null) {
                 imageModel = tileBuilder.imageModel();
             }
