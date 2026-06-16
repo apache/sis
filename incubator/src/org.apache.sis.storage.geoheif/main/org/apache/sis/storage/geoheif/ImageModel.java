@@ -112,7 +112,7 @@ final class ImageModel {
         final int nc = (model          == null) ? 0 : model.components.length;
         final int nt = (componentTypes == null) ? 0 : componentTypes.length;
         final int ns = (bitsPerChannel == null) ? 0 : bitsPerChannel.length;
-        final int numBands = Math.max(Math.max(nc, nt), ns);
+        final int numBands = Math.max(nc, nt);  // Ignore `ns` as it is sometime too large (for an unknown reason).
         final var bitsPerSample = new int[numBands];
         final var sb = new SampleDimension.Builder();
         sampleDimensions = new SampleDimension[numBands];

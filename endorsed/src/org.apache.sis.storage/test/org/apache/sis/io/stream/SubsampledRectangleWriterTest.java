@@ -83,9 +83,7 @@ public final class SubsampledRectangleWriterTest extends TestCase {
         final int    width  = (random.nextInt(9) + 3) * bandOffsets.length;
         final int    height = (random.nextInt(5) + 1);
         final int    length = width * height;
-        final long[] lower  = new long[2];
         final long[] upper  = new long[] {width, height};
-        final long[] subsm  = new long[] {1,1};
         final A source = creator.apply(length);
         for (int i=0; i<length; i++) {
             Array.setByte(source, i, (byte) (BASE + i));
@@ -94,7 +92,7 @@ public final class SubsampledRectangleWriterTest extends TestCase {
         final var buffer = ByteBuffer.allocate((random.nextInt(4) + 1) + bandOffsets.length * dataSize);
         actual = ByteBuffer.wrap(target);
         output = new ChannelDataOutput("Test", new ByteArrayChannel(target, false), false, buffer);
-        writer = new SubsampledRectangleWriter(new Region(upper, lower, upper, subsm), bandOffsets, bandOffsets.length);
+        writer = new SubsampledRectangleWriter(new Region(upper, null, null, null), bandOffsets, bandOffsets.length);
         return source;
     }
 

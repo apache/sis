@@ -22,6 +22,7 @@ import static java.lang.Math.multiplyExact;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.awt.image.BandedSampleModel;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.image.internal.shared.RasterFactory;
@@ -118,49 +119,47 @@ class UncompressedImage extends Image {
     }
 
     /**
-     * Returns (width × number of samples per pixel) and the height, in that order.
+     * Returns [(width × number of samples per pixel), (height), (number of banks)], in that order.
+     * The banks are assumed to be consecutive.
      *
      * <p><b>Limitation:</b> current implementation ignores {@link java.awt.image.MultiPixelPackedSampleModel},
      * but that model does not seem to be used by <abbr>HEIF</abbr>.</p>
      *
      * @param  sampleModel  the sample model for which to get the size.
-     * @return the scanline stride and raster height, in that order.
+     * @return the scanline stride, raster height and number of banks, in that order.
      */
     private static long[] size(final SampleModel sampleModel) {
-        return new long[] {
-            sampleModel.getWidth() * (long) sampleModel.getNumDataElements(),
-            sampleModel.getHeight()
-        };
-    }
-
-    /**
-     * Creates a two-dimensional region without subsampling.
-     *
-     * @param  sourceSize   the number of elements along each dimension.
-     * @param  regionUpper  indices after the last value to read along each dimension.
-     */
-    private static Region region(final long[] sourceSize, final long[] regionUpper) {
-        return new Region(sourceSize, new long[2], regionUpper, new long[] {1, 1});
+        long width    = sampleModel.getWidth();
+        long numBanks = sampleModel.getNumDataElements();
+        if (!(sampleModel instanceof BandedSampleModel)) {
+            width *= numBanks;
+            numBanks = 1;
+        }
+        return new long[] {width, sampleModel.getHeight(), numBanks};
     }
 
     /**
      * Computes the range of bytes that will be needed for reading the tile at the specified index.
-     * The result is stored in the given {@code context} argument.
+     * The given region is converted to offsets relatives to the beginning of the <abbr>HEIF</abbr>
+     * file and the result is stored in the given {@code addTo} argument.
      *
      * @param  tileIndex  index of the tile for which to compute the range of bytes.
-     * @param  tileSize   number of bytes of uncompressed data in each tile.
-     * @param  context    where to add the ranges of bytes to read as offsets relatives to the beginning of the file.
+     * @param  region     relative indexes of the uncompressed data to read in each tile.
+     * @param  addTo      where to store the offsets relatives to the beginning of the file.
      * @throws DataStoreException if an error occurred with the data in the boxes.
      * @throws ArithmeticException if an integer overflow occurred.
      */
-    protected void computeByteRanges(final long tileIndex, final long tileSize, final ByteRanges context)
+    protected void computeByteRanges(final long tileIndex, final Region region, final ByteRanges addTo)
             throws DataStoreException
     {
-        locator.resolve(multiplyExact(tileIndex, tileSize), tileSize, context);
+        final long tileSize = multiplyExact(region.length, dataType.bytes());
+        locator.resolve(multiplyExact(tileIndex, tileSize), tileSize, addTo);
     }
 
     /**
      * Returns the compression units which contains tile data.
+     * The {@code Unit.offset} value shall be relative to the offset
+     * computed by {@link #computeByteRanges(long, long, ByteRanges)}.
      *
      * @param  tileIndex  index of the tile for which to get the compression unit.
      * @return the compression unit for the tile at the given index.
@@ -185,15 +184,9 @@ class UncompressedImage extends Image {
     @Override
     protected final Reader computeByteRanges(final ImageResource.Coverage.ReadContext context) throws DataStoreException {
         final long[] sourceSize = size(sampleModel);
-        /*
-         * In the current implementation, we read the whole tile. If a future implementation allows
-         * to read a sub-region of the tile, we would need to make `HyperRectangleReader` accepts a
-         * `Buffer` with an arbitrary position in argument.
-         */
-        final var  region    = region(sourceSize, sourceSize);
-        final long tileSize  = multiplyExact(region.length, dataType.bytes());
-        final long tileIndex = addExact(multiplyExact(context.subTileY, numXTiles), context.subTileX);
-        computeByteRanges(tileIndex, tileSize, context);
+        final var    region     = new Region(sourceSize, null, null, null);
+        final long   tileIndex  = addExact(multiplyExact(context.subTileY, numXTiles), context.subTileX);
+        computeByteRanges(tileIndex, region, context);
         return (ChannelDataInput input) -> {
             long origin = context.offset();
             final ComputedByteChannel inflater = inflater(input);
@@ -212,17 +205,20 @@ class UncompressedImage extends Image {
             input.buffer.order(byteOrder);
             final var hr = new HyperRectangleReader(ImageUtilities.toNumberEnum(dataType), input);
             hr.setOrigin(origin);
-            final WritableRaster raster       = context.createRaster();
-            final long[]         rasterSize   = size(raster.getSampleModel());
-            final Region         rasterRegion = Arrays.equals(sourceSize, rasterSize) ? region : region(sourceSize, rasterSize);
-            final DataBuffer     data         = raster.getDataBuffer();
-            final int            numBanks     = data.getNumBanks();
+            Region bank = region;
+            final WritableRaster raster   = context.createRaster();
+            final long[]         upper    = size(raster.getSampleModel());
+            final DataBuffer     target   = raster.getDataBuffer();
+            final int            numBanks = target.getNumBanks();
             for (int b=0; b<numBanks; b++) {
-                if (b != 0) {
-                    hr.setOrigin(addExact(hr.getOrigin(), tileSize));
+                upper[2] = b + 1;
+                if (b != 0 || !Arrays.equals(sourceSize, upper)) {
+                    final long[] lower = new long[upper.length];
+                    lower[2] = b;
+                    bank = new Region(sourceSize, lower, upper, null);
                 }
-                hr.setDestination(RasterFactory.wrapAsBuffer(data, b));
-                hr.readAsBuffer(rasterRegion, 0);
+                hr.setDestination(RasterFactory.wrapAsBuffer(target, b));
+                hr.readAsBuffer(bank, 0);
             }
             if (inflater != null) {
                 context.saveForReuse(inflater.compressedInput().buffer);

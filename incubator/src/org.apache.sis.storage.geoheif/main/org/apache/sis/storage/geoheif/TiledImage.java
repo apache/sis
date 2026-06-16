@@ -19,6 +19,7 @@ package org.apache.sis.storage.geoheif;
 import java.io.IOException;
 import java.awt.image.RasterFormatException;
 import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.io.stream.Region;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.isobmff.ByteRanges;
 import org.apache.sis.storage.isobmff.base.ItemLocation;
@@ -78,38 +79,43 @@ final class TiledImage extends UncompressedImage {
 
     /**
      * Computes the range of bytes that will be needed for reading the tile at the specified index.
-     * The result is stored in the given {@code context} argument.
+     * The given region is converted to offsets relatives to the beginning of the <abbr>HEIF</abbr>
+     * file and the result is stored in the given {@code addTo} argument.
      *
      * @param  tileIndex  index of the tile for which to compute the range of bytes.
-     * @param  tileSize   ignored (replaced by the tile size which is stored or computed from the offset).
-     * @param  context    where to add the ranges of bytes to read as offsets relatives to the beginning of the file.
+     * @param  region     ignored (replaced by the tile size which is stored or computed from the offset).
+     * @param  addTo      where to store the offsets relatives to the beginning of the file.
      * @throws DataStoreException if an error occurred with the data in the boxes.
      * @throws ArithmeticException if an integer overflow occurred.
      */
     @Override
-    protected void computeByteRanges(final long tileIndex, long tileSize, final ByteRanges context)
+    protected void computeByteRanges(final long tileIndex, Region region, final ByteRanges addTo)
             throws DataStoreException
     {
-        final int i = Math.toIntExact(tileIndex);
+        int i = Math.toIntExact(tileIndex);
         final long offset = tileOffsets[i];
+        final long tileSize;
         if (tileSizes != null) {
             tileSize = tileSizes[i];
+        } else if (i < tileOffsets.length - 1) {
+            tileSize = tileOffsets[i+1] - offset;
         } else {
-            long next = tileOffsets[Math.incrementExact(i)];     // TODO: handle the case of the last tile.
-            tileSize = next - offset;
+            tileSize = -1;      // Means to read all remaining bytes in the box.
         }
-        locator.resolve(offset, tileSize, context);
+        locator.resolve(offset, tileSize, addTo);
     }
 
     /**
      * Returns the compression units which contains tile data.
+     * The {@code Unit.offset} value is relative to the offset
+     * computed by {@link #computeByteRanges(long, long, ByteRanges)}.
      *
      * @param  tileIndex  index of the tile for which to get the compression unit.
      * @return the compression unit for the tile at the given index.
      */
     @Override
     protected CompressedUnitsItemInfo.Unit compressedImageUnit(final long tileIndex) {
-        final int i = Math.toIntExact(tileIndex);
-        return new CompressedUnitsItemInfo.Unit(tileOffsets[i], tileSizes[i]);
+        // Set the offset to 0 because it has already been added by `computeByteRanges(…)`
+        return new CompressedUnitsItemInfo.Unit(0, tileSizes[Math.toIntExact(tileIndex)]);
     }
 }

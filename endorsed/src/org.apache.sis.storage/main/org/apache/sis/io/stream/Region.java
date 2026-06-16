@@ -102,6 +102,10 @@ public final class Region {
      *   <li>The total length of data to read does not exceed {@link Integer#MAX_VALUE}.</li>
      * </ul>
      *
+     * For convenience, a null {@code regionLower} means 0 for all dimensions (i.e., no crop),
+     * a null {@code regionUpper} means the same values as {@code sourceSize} (i.e., no crop),
+     * and a null {@code subsampling} means 1 for all dimensions (i.e., no subsampling).
+     *
      * @param  sourceSize   the number of elements along each dimension.
      * @param  regionLower  indices of the first value to read or write along each dimension.
      * @param  regionUpper  indices after the last value to read or write along each dimension.
@@ -117,11 +121,11 @@ public final class Region {
         long stride   = 1;
         long skip     = 0;
         for (int i=0; i<dimension;) {
-            final long step  = subsampling[i];
-            final long lower = regionLower[i];
-            final long count = ceilDiv(subtractExact(regionUpper[i], lower), step);
-            final long upper = addExact(lower, incrementExact(multiplyExact(count-1, step)));
             final long span  = sourceSize[i];
+            final long step  = (subsampling != null) ? subsampling[i] : 1;
+            final long lower = (regionLower != null) ? regionLower[i] : 0;
+            final long count = ceilDiv(subtractExact(regionUpper != null ? regionUpper[i] : span, lower), step);
+            final long upper = addExact(lower, incrementExact(multiplyExact(count-1, step)));
             assert (count > 0) && (lower >= 0) && (upper > lower) && (upper <= span) : i;
 
             targetSize[i] = toIntExact(count);

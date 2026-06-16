@@ -700,7 +700,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @see #read()
      * @see #read(GridExtent, long[])
      */
-    private Object readArray(final GridExtent area, long[] subsampling) throws IOException, DataStoreException {
+    private Object readArray(final GridExtent area, final long[] subsampling) throws IOException, DataStoreException {
         if (reader == null) {
             throw new DataStoreContentException(unknownType());
         }
@@ -733,10 +733,6 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
                 lower[i] = area.getLow(i);
                 upper[i] = Math.incrementExact(area.getHigh(i));
             }
-        }
-        if (subsampling == null) {
-            subsampling = new long[dimension];
-            Arrays.fill(subsampling, 1);
         }
         final var region = new Region(size, lower, upper, subsampling);
         /*
