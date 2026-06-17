@@ -140,6 +140,13 @@ public class TileMatrixSetPane extends Widget {
     private final TableColumn<Row, String> tileSizeColumns;
 
     /**
+     * The columns for the image size in each dimension.
+     * The number of columns is the number of grid dimensions.
+     * Values are {@link Integer}s, for formatted as {@link String}s by {@link TileMatrixSetFormat}.
+     */
+    private final TableColumn<Row, String> imageSizeColumns;
+
+    /**
      * A row in the table of tile matrices shown by {@link #tileMatrices}.
      * The resolution, tile count and tile size are groups of columns.
      */
@@ -162,10 +169,16 @@ public class TileMatrixSetPane extends Widget {
         final StringProperty[] tileCount;
 
         /**
-         * Tile size along each grid dimension.
+         * Tile size along each grid dimension of the tiles at this level.
          * They are the values to show in the group {@link #tileSizeColumns}.
          */
         final StringProperty[] tileSize;
+
+        /**
+         * Tile size along each grid dimension of the image at this level.
+         * They are the values to show in the group {@link #imageSizeColumns}.
+         */
+        final StringProperty[] imageSize;
 
         /**
          * Creates a new row for the given properties at the specified row index.
@@ -175,21 +188,25 @@ public class TileMatrixSetPane extends Widget {
             final String[]   identifiers,
             final String[][] resolutions,
             final String[][] tileCounts,
-            final String[][] tileSizes)
+            final String[][] tileSizes,
+            final String[][] imageSizes)
         {
             identifier = new SimpleStringProperty(this, "identifier", identifiers == null ? null : identifiers[row]);
             resolution = new SimpleStringProperty[resolutions != null ? resolutions.length : 0];
             tileCount  = new SimpleStringProperty[tileCounts  != null ?  tileCounts.length : 0];
             tileSize   = new SimpleStringProperty[tileSizes   != null ?   tileSizes.length : 0];
+            imageSize  = new SimpleStringProperty[imageSizes  != null ?  imageSizes.length : 0];
             Arrays.setAll(resolution, (i) -> new SimpleStringProperty(this, "resolution", resolutions[i][row]));
             Arrays.setAll(tileCount,  (i) -> new SimpleStringProperty(this, "tileCount",  tileCounts [i][row]));
             Arrays.setAll(tileSize,   (i) -> new SimpleStringProperty(this, "tileSize",   tileSizes  [i][row]));
+            Arrays.setAll(imageSize,  (i) -> new SimpleStringProperty(this, "imageSize",  imageSizes [i][row]));
         }
 
         /**
          * Returns the group of columns identified by the given index.
+         * Value 0 is reserved for identifier (not accepted by this method).
          *
-         * @param  groupIndex  1 for resolution, 2 for tile count or 3 for tile size. 0 is reserved for identifier.
+         * @param  groupIndex  1 for resolution, 2 for tile count, 3 for tile size, 4 for image size.
          * @return group of columns at the given index.
          */
         @SuppressWarnings("ReturnOfCollectionOrArrayField")
@@ -198,6 +215,7 @@ public class TileMatrixSetPane extends Widget {
                 case 1: return resolution;
                 case 2: return tileCount;
                 case 3: return tileSize;
+                case 4: return imageSize;
                 default: throw new AssertionError(groupIndex);
             }
         }
@@ -290,12 +308,13 @@ public class TileMatrixSetPane extends Widget {
             tileResolutionColumns = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.Resolution));
             tileCountColumns      = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.TileCount));
             tileSizeColumns       = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.TileSize));
+            imageSizeColumns      = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.ImageSize));
             identifier.setCellValueFactory(Row.IDENTIFIER_GETTER);
 
             tileMatrices = new TableView<>();
             tileMatrices.setEditable(false);
             tileMatrices.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_SUBSEQUENT_COLUMNS);
-            tileMatrices.getColumns().setAll(List.of(identifier, tileResolutionColumns, tileCountColumns, tileSizeColumns));
+            tileMatrices.getColumns().setAll(List.of(identifier, tileResolutionColumns, tileCountColumns, tileSizeColumns, imageSizeColumns));
             GridPane.setHgrow(tileMatrices, Priority.ALWAYS);
             GridPane.setVgrow(tileMatrices, Priority.ALWAYS);
             GridPane.setColumnSpan(tileMatrices, 2);
@@ -456,9 +475,10 @@ public class TileMatrixSetPane extends Widget {
                     final var resolutions = (String[][]) properties.get("resolutions");
                     final var tileCounts  = (String[][]) properties.get("tileCounts");
                     final var tileSizes   = (String[][]) properties.get("tileSizes");
+                    final var imageSizes  = (String[][]) properties.get("imageSizes");
                     final var rows        = new Row[numRows];
-                    for (int i=0; i<rows.length; i++) {
-                        rows[i] = new Row(i, identifiers, resolutions, tileCounts, tileSizes);
+                    for (int i = 0; i < rows.length; i++) {
+                        rows[i] = new Row(i, identifiers, resolutions, tileCounts, tileSizes, imageSizes);
                     }
                     tileMatrices.getItems().setAll(rows);
                     final Row first = (rows.length != 0) ? rows[0] : null;
@@ -475,6 +495,7 @@ public class TileMatrixSetPane extends Widget {
                     };
                     addOrRemoveColumns(first, 2, tileCountColumns, headerText);
                     addOrRemoveColumns(first, 3, tileSizeColumns,  headerText);
+                    addOrRemoveColumns(first, 4, imageSizeColumns, headerText);
                     if (warning != null) {
                         reportError(warning);
                     }
