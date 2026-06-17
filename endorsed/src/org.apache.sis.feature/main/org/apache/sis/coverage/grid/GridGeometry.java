@@ -269,7 +269,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     protected final MathTransform cornerToCRS;
 
     /**
-     * An <em>estimation</em> of the grid resolution, in units of the CRS axes.
+     * An <em>estimation</em> of the grid resolution, in units of the <abbr>CRS</abbr> axes.
      * Computed from {@link #gridToCRS}, eventually together with {@link #extent}.
      * May be {@code null} if unknown. If non-null, the array length is equal to
      * the number of <abbr>CRS</abbr> dimensions.
@@ -280,7 +280,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     protected final double[] resolution;
 
     /**
-     * Whether the conversions from grid coordinates to the <abbr>CRS</abbr> are linear, for each target axis.
+     * Whether the conversions from grid coordinates to the <abbr>CRS</abbr> are non-linear, for each target axis.
      * The bit located at {@code 1L << dimension} is set to 1 when the conversion at that dimension is non-linear.
      * The dimension indices are those of the CRS, not the grid. The use of {@code long} type limits the capacity
      * to 64 dimensions. But actually {@code GridGeometry} can contain more dimensions provided that index of the
@@ -385,7 +385,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         final int dimension = other.getDimension();
         this.extent = extent;
         ensureDimensionMatches(dimension, extent);
-        if (toOther == null || toOther.isIdentity()) {
+        if (toOther == null || (toOther.isIdentity() && other.gridToCRS != null)) {
             gridToCRS   = other.gridToCRS;
             cornerToCRS = other.cornerToCRS;
             resolution  = other.resolution;
@@ -409,7 +409,12 @@ public class GridGeometry implements LenientComparable, Serializable {
                 cornerToCRS = null;
                 gridToCRS   = null;
                 resolution  = resolution(toOther, extent, PixelInCell.CELL_CENTER);     // Save resolution even if `gridToCRS` is null.
-                nonLinears  = findNonLinearTargets(toOther);
+                nonLinears  = findNonLinearTargets(toOther) | other.nonLinears;
+                if (other.resolution != null) {
+                    for (int i = Math.min(other.resolution.length, resolution.length); --i >= 0;) {
+                        resolution[i] *= other.resolution[i];
+                    }
+                }
             }
         }
         /*

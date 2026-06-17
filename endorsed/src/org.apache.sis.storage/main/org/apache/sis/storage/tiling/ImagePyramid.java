@@ -29,6 +29,7 @@ import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -72,6 +73,7 @@ final class ImagePyramid extends AbstractMap<GenericName, ImageTileMatrix>
 
     /**
      * First valid index value (inclusive) in {@link #matrices}.
+     * This is the matrix of tiles at the coarsest resolution.
      */
     private final int lowerMatrixIndex;
 
@@ -88,6 +90,11 @@ final class ImagePyramid extends AbstractMap<GenericName, ImageTileMatrix>
      * @see #getEnvelope()
      */
     private Envelope envelope;
+
+    /**
+     * Whether {@link #envelope} has been computed. The result may still be null.
+     */
+    private boolean isEnvelopeComputed;
 
     /**
      * The grid coverage processor to use when tiles use a subset of the bands.
@@ -298,28 +305,45 @@ final class ImagePyramid extends AbstractMap<GenericName, ImageTileMatrix>
 
     /**
      * Returns an envelope that encompasses all {@code TileMatrix} instances in this set.
+     * The envelope may be missing if the "grid to <abbr>CRS</abbr>" transform is missing.
      *
-     * @throws IncompleteGridGeometryException if a tiling scheme has no envelope. While not strictly mandatory,
-     *         for now we consider that missing extent or missing "grid to CRS" transform is probably an error.
+     * @throws IncompleteGridGeometryException if the envelope is defined at the coarsest level
+     *         but missing in some other levels (should never happen).
      */
     @Override
     public Optional<Envelope> getEnvelope() {
         synchronized (matrices) {
-            if (envelope == null) {
-                int i = lowerMatrixIndex;
-                Envelope mayReuse = getOrCreateLevel(i).getTilingScheme().getEnvelope();
-                final var union = new GeneralEnvelope(mayReuse);
+            if (!isEnvelopeComputed) {
+                GeneralEnvelope union = null;
+                Envelope mayReuse = null;
+                int level = lowerMatrixIndex;
                 ImageTileMatrix tm;
-                while ((tm = getOrCreateLevel(++i)) != null) {
-                    final Envelope e = tm.getTilingScheme().getEnvelope();
-                    union.add(e);
-                    if (union.equals(e, 0, false)) {
-                        mayReuse = e;
+                while ((tm = getOrCreateLevel(level)) != null) {
+                    final GridGeometry scheme = tm.getTilingScheme();
+                    if (union != null) {
+                        /*
+                         * Intentional `IncompleteGridGeometryException` if the envelope is missing.
+                         * If we found at least one envelope in previous levels, there is no reason
+                         * why the envelope wouldn't be defined for all levels. If one is missing,
+                         * this is probably a bug.
+                         */
+                        final Envelope e = scheme.getEnvelope();
+                        union.add(e);
+                        if (union.equals(e, 0, false)) {
+                            mayReuse = e;
+                        }
+                    } else if (scheme.isDefined(GridGeometry.ENVELOPE)) {
+                        mayReuse = scheme.getEnvelope();
+                        union = new GeneralEnvelope(mayReuse);
                     }
+                    level++;
                 }
-                envelope = (union == null || union.equals(mayReuse, 0, false)) ? mayReuse : new ImmutableEnvelope(union);
+                if (union != null) {
+                    envelope = union.equals(mayReuse, 0, false) ? mayReuse : new ImmutableEnvelope(union);
+                }
+                isEnvelopeComputed = true;
             }
-            return Optional.of(envelope);
+            return Optional.ofNullable(envelope);
         }
     }
 

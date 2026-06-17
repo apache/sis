@@ -75,11 +75,9 @@ final class Pyramid extends TiledGridCoverageResource implements TiledGridCovera
         tileSizeX = pyramid.tileSizeX;
         tileSizeY = pyramid.tileSizeY;
         this.levels = levels;
-        final GridGeometry base = levels[0].getGridGeometry();
-        if (base.isDefined(GridGeometry.GRID_TO_CRS)) {
-            for (int i = 1; i < levels.length; i++) {
-                levels[i].setPyramidLevelOf(base);
-            }
+        GridGeometry base = null;
+        for (ImageResource level : levels) {
+            base = level.setPyramidLevelOf(base);
         }
     }
 

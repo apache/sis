@@ -319,7 +319,8 @@ public final class Numerics {
      * Returns the result of {@code numerator / denominator} but potentially more accurate.
      * If any argument cannot be converted to {@code double} without accuracy lost but the
      * integer part of the result of the division can be represented accurately, then this
-     * method provides a better result than {@code numerator / (double) denominator}.
+     * method may provide a better result than {@code numerator / (double) denominator}.
+     * This method is useful only when {@code numerator} ≥ {@code denominator}.
      *
      * @param  numerator    numerator of the division.
      * @param  denominator  denominator of the division.
