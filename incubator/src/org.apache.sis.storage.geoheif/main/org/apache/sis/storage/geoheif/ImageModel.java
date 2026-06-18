@@ -85,8 +85,9 @@ final class ImageModel {
     /**
      * Computes date type, color model, sample model, and sample dimensions.
      *
-     * @todo Need to add information from the {@code CellPropertyTypeProperty} box.
+     * @todo Need to add information from the {@code CellPropertyTypeProperty} ("pcel") box.
      *       These information include sample dimension name and unit of measurement.
+     *       See https://docs.ogc.org/per/24-038r1.html
      *
      * @param  width           the width  (in pixels) of the reconstructed image.
      * @param  height          the height (in pixels) of the reconstructed image.
@@ -156,7 +157,8 @@ final class ImageModel {
             }
             /*
              * Create the sample dimension and derive metadata from it.
-             * TODO: parse CellPropertyTypeProperty and CellPropertyCategoriesProperty boxes.
+             * TODO: parse CellPropertyTypeProperty (pcel) and CellPropertyCategoriesProperty (pcat) boxes.
+             *       See https://docs.ogc.org/per/24-038r1.html
              */
             if (colorType != null) {
                 sb.setName(colorType.toString());

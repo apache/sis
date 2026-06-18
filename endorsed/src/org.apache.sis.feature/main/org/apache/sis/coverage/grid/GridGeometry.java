@@ -2460,8 +2460,8 @@ public class GridGeometry implements LenientComparable, Serializable {
                     final double lower = envelope.getLower(i);
                     final double upper = envelope.getUpper(i);
                     final double delta = (resolution != null) ? resolution[i] : Double.NaN;
-                    nf.setMinimumFractionDigits(Numerics.fractionDigitsForDelta(delta));
-                    nf.setMaximumFractionDigits(Numerics.suggestFractionDigits(lower, upper) - 1);    // The -1 is for rounding errors.
+                    nf.setMaximumFractionDigits(Numerics.fractionDigitsForRange(lower, upper) - 1);   // The -1 is for rounding errors.
+                    nf.setMinimumFractionDigits(Numerics.fractionDigitsForDelta(delta));              // May adjust above max value.
                     final CoordinateSystemAxis axis = (cs != null) ? cs.getAxis(i) : null;
                     final String name = (axis != null) ? axis.getName().getCode() : vocabulary.getString(Vocabulary.Keys.Dimension_1, i);
                     table.append(name).append(": ").nextColumn();
@@ -2633,7 +2633,7 @@ public class GridGeometry implements LenientComparable, Serializable {
             } else {
                 final NumberFormat nf = numberFormat();
                 final int n = Double.isNaN(delta)
-                        ? Numerics.suggestFractionDigits(value) / 2
+                        ? Numerics.fractionDigitsForDelta(value) / 2
                         : Numerics.fractionDigitsForDelta(delta);
                 nf.setMaximumFractionDigits(n + 1);
                 out.append(nf.format(value));

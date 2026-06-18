@@ -16,14 +16,10 @@
  */
 package org.apache.sis.util.internal.shared;
 
-import java.util.Arrays;
 import java.text.Format;
-import java.text.NumberFormat;
 import java.text.DecimalFormat;
-import java.text.FieldPosition;
 import java.math.BigInteger;
 import java.util.function.BiFunction;
-import java.util.function.IntToDoubleFunction;
 import static java.lang.Math.min;
 import static java.lang.Math.max;
 import static java.lang.Math.abs;
@@ -597,46 +593,20 @@ public final class Numerics {
     }
 
     /**
-     * Suggests a number of fraction digits for the given values, ignoring NaN and infinities.
+     * Suggests a number of fraction digits for the given range of values.
      * This method uses heuristic rules that may change in any future <abbr>SIS</abbr> version.
      * Current implementation returns a value which avoid printing "garbage" digits with highest numbers,
      * at the cost of loosing significant digits on smallest numbers. It may further reduce the number of
      * digits if this is sufficient for distinguishing the given values.
-     * An arbitrary limit is set to 16 digits, which is the number of digits for {@code Math.ulp(1.0)}}.
      *
-     * <p>This method modifies the given array in-place. Callers should not pass original data.</p>
-     *
-     * @param  values  the values for which to get suggested number of fraction digits.
+     * @param  minimum  the minimum value of the range.
+     * @param  maximum  the maximum value of the range.
      * @return suggested number of fraction digits for the given values. Always positive.
      */
-    public static int suggestFractionDigits(final double... values) {
-        switch (values.length) {
-            case 0: return 0;
-            case 1: return DecimalFunctions.fractionDigitsForValue(values[0]);
-        }
-        for (int i=0; i<values.length; i++) {
-            values[i] = abs(values[i]);
-        }
-        Arrays.sort(values);
-        double ulp = 0;
-        double delta = Double.POSITIVE_INFINITY;
-        for (int i = values.length; --i >= 0;) {
-            double value = values[i];
-            if (Double.isFinite(value)) {
-                ulp = ulp(value);
-                while (--i >= 0) {
-                    final double lower = values[i];
-                    final double diff = value - lower;
-                    if (diff > 0 && diff < delta) {
-                        delta = diff;
-                    }
-                    value = lower;
-                }
-                break;
-            }
-        }
-        // Arbitrarily add 6 digits the difference between values.
-        return min(fractionDigitsForDelta(ulp), fractionDigitsForDelta(delta) + 6);
+    public static int fractionDigitsForRange(final double minimum, final double maximum) {
+        final double ulp = max(ulp(minimum), ulp(maximum));
+        // Arbitrarily add 6 digits to the value computed from the difference between values.
+        return min(fractionDigitsForDelta(ulp), fractionDigitsForDelta(maximum - minimum) + 6);
     }
 
     /**
@@ -668,62 +638,6 @@ public final class Numerics {
             delta  = max(delta, max(ulp(minimum), ulp(maximum)));           // Not finer than 'double' accuracy.
         }
         return fractionDigitsForDelta(delta);
-    }
-
-    /**
-     * Gets the character used for zero.
-     * If the given format is not a {@link DecimalFormat}, arbitrarily returns the white space.
-     *
-     * @param  format  the format for which to get the zero digit.
-     * @return the zero digit, or {@code ' '} if the format is not decimal.
-     */
-    private static char getZeroDigit(final Format format) {
-        return (format instanceof DecimalFormat) ? ((DecimalFormat) format).getDecimalFormatSymbols().getZeroDigit() : ' ';
-    }
-
-    /**
-     * Formats values then removes the same number of trailing zeros in the fraction digits of all values.
-     * For this method to be useful, the given format should use a fixed number of fraction digits.
-     * NaN and infinite values are formatted as usual but ignored in the removal of trailing zeros.
-     *
-     * @param  format  the format to use.
-     * @param  count   number of values to format.
-     * @param  values  provider of values to format.
-     * @return an array of length {@code count} with the formatted values.
-     */
-    public static String[] formatAndTrimTrailingZeros(final NumberFormat format, final int count, final IntToDoubleFunction values) {
-        final var  formatted     = new String[count];
-        final var  buffer        = new StringBuffer();
-        final var  fractionEnd   = new int[count];
-        final var  fractionField = new FieldPosition(NumberFormat.Field.FRACTION);
-        final char zeroDigit     = getZeroDigit(format);
-        int numberOfTrailingZeros = Integer.MAX_VALUE;
-        for (int i=0; i<count; i++) {
-            final double value = values.applyAsDouble(i);
-            String text = format.format(value, buffer, fractionField).toString();
-            formatted[i] = text;
-            if (numberOfTrailingZeros != 0 && Double.isFinite(value)) {
-                final int end    = fractionField.getEndIndex();
-                fractionEnd[i]   = end;
-                int firstNonZero = end;
-                final int start  = Math.max(fractionField.getBeginIndex(), end - numberOfTrailingZeros);
-                while (--firstNonZero > start) {
-                    if (text.charAt(firstNonZero) != zeroDigit) break;
-                }
-                numberOfTrailingZeros = Math.min(numberOfTrailingZeros, end - (firstNonZero + 1));
-            }
-            buffer.setLength(0);
-        }
-        if (numberOfTrailingZeros != 0) {
-            for (int i=0; i<count; i++) {
-                final int end = fractionEnd[i];
-                if (end != 0) {
-                    formatted[i] = buffer.append(formatted[i]).delete(end - numberOfTrailingZeros, end).toString();
-                    buffer.setLength(0);
-                }
-            }
-        }
-        return formatted;
     }
 
     /**

@@ -39,11 +39,15 @@ public final class CompressionConfiguration extends FullBox {
 
     /**
      * The {@code "zlib"} value for {@link #compressionType}.
+     *
+     * @see <a href="https://www.ietf.org/rfc/rfc1950.pdf">IETF RFC 1950</a>
      */
     public static final int COMPRESSION_ZLIB = ((((('z' << 8) | 'l') << 8) | 'i') << 8) | 'b';
 
     /**
      * The {@code "defl"} value for {@link #compressionType}.
+     *
+     * @see <a href="https://www.ietf.org/rfc/rfc1951.pdf">IETF RFC 1951</a>
      */
     public static final int COMPRESSION_DEFLATE = ((((('d' << 8) | 'e') << 8) | 'f') << 8) | 'l';
 

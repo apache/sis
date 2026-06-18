@@ -596,8 +596,9 @@ final class CoverageBuilder implements Emptiable {
      * This method should be invoked at most once.
      * It may be invoked not at all when this object is used for building a tile instead of an image.
      *
-     * @todo Need to add information from the {@code ExtraDimensionProperty} box.
+     * @todo Need to add information from the {@code ExtraDimensionProperty} (edim) box.
      *       These information include name, minimum, maximum and resolution.
+     *       See https://docs.ogc.org/per/24-038r1.html
      *
      * @return the grid geometry.
      * @throws DataStoreException if the "grid to <abbr>CRS</abbr>" transform cannot be created.

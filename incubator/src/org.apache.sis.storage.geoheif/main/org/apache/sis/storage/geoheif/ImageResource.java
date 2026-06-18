@@ -182,18 +182,10 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
      * Declares that this image is the pyramid level of the given base grid.
      * This method does nothing if this image already has its own "grid to <abbr>CRS</abbr>" transform.
      *
-     * <p>If {@code base} is null, then the base is assumed to be the grid geometry of this level.
-     * Configuring a level relative to itself is useful when the grid geometry is incomplete,
-     * in which case the resolution of the base level is set to 1.
-     * This is needed because resolutions are mandatory in a grid.</p>
-     *
-     * @param  base  grid geometry of the pyramid level at the finest resolution, or {@code null} if this level.
-     * @return grid geometry of the pyramid level at the finest resolution ({@code base} if it was non-null).
+     * @param  base  grid geometry of the pyramid level at the finest resolution.
      * @throws TransformException if an error occurred while deriving the "grid to <abbr>CRS</abbr>" transform.
      */
-    final GridGeometry setPyramidLevelOf(GridGeometry base) throws TransformException {
-        final boolean self = (base == null);
-        if (self) base = gridGeometry;
+    final void setPyramidLevelOf(final GridGeometry base) throws TransformException {
         if (!gridGeometry.isDefined(GridGeometry.GRID_TO_CRS)) {
             final GridExtent levelExtent = gridGeometry.getExtent();
             final GridExtent baseExtent  = base.getExtent();
@@ -202,9 +194,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
                 factors[i] = 1 / Numerics.divide(levelExtent.getSize(i), baseExtent.getSize(i));
             }
             gridGeometry = new GridGeometry(base, levelExtent, MathTransforms.scale(factors));
-            if (self) base = gridGeometry;
         }
-        return base;
     }
 
     /**

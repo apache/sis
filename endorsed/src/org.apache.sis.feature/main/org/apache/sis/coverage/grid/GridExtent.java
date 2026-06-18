@@ -22,6 +22,7 @@ import java.util.SortedMap;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Objects;
+import java.util.Comparator;
 import java.util.Spliterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -919,6 +920,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @see #getLow(int)
      * @see #getHigh(int)
      * @see #resize(long...)
+     * @see #SIZES_COMPARATOR
      */
     @Override
     public long getSize(final int index) {
@@ -936,6 +938,8 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @param  index     the dimension for which to obtain the size.
      * @param  minusOne  {@code true} for returning <var>size</var>−1 instead of <var>size</var>.
      * @return the number of cells along the given dimension, optionally minus one.
+     *
+     * @see #SIZES_COMPARATOR
      */
     public double getSize(final int index, final boolean minusOne) {
         final int dimension = getDimension();
@@ -946,6 +950,40 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         }
         return Numerics.toUnsignedDouble(size);
     }
+
+    /**
+     * A comparator of grid extent sizes where each dimension is compared in increasing index order.
+     * For a given pair of {@code GridExtent} instances, the comparison begins with the
+     * {@linkplain #getSize(int) size} of each extent in the first dimension (index 0):
+     *
+     * <ul>
+     *   <li>If the first extent has a smaller size, a negative number is returned.</li>
+     *   <li>If the second extent has a smaller size, a positive number is returned.</li>
+     *   <li>Otherwise, the comparison is repeated with the next dimensions (1, 2, …,
+     *       {@linkplain #getDimension() dimension} - 1) until a dimension is found
+     *       where the sizes are not equal.
+     * </ul>
+     *
+     * If all dimensions have the same {@linkplain #getSize(int) size},
+     * then the extent with the smallest number of dimensions is considered before the other extent.
+     * Null values are considered after all non-null values.
+     *
+     * @since 1.7
+     */
+    public static final Comparator<GridExtent> SIZES_COMPARATOR = (e1, e2) -> {
+        if (e1 == e2)   return  0;
+        if (e1 == null) return +1;
+        if (e2 == null) return -1;
+        final int d1 = e1.getDimension();
+        final int d2 = e2.getDimension();
+        final int dim = Math.min(d1, d2);
+        for (int i=0; i<dim; i++) {
+            int c = Long.compareUnsigned(e1.coordinates[d1 + i] - e1.coordinates[i],
+                                         e2.coordinates[d2 + i] - e2.coordinates[i]);
+            if (c != 0) return c;
+        }
+        return d1 - d2;
+    };
 
     /**
      * Returns the low and high coordinates packaged in a single array.

@@ -16,6 +16,8 @@
  */
 package org.apache.sis.storage.geoheif;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -23,6 +25,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.isobmff.image.ImagePyramid;
@@ -59,12 +62,21 @@ final class Pyramid extends TiledGridCoverageResource implements TiledGridCovera
     private final ImageResource[] levels;
 
     /**
+     * A comparator of pyramid level based on the size of their grid extent.
+     * We use the grid extent because this is sometime the only information which is known.
+     * The "grid to <abbr>CRS</abbr>", and therefore the resolution, may not have been computed yet.
+     */
+    private static final Comparator<ImageResource> LEVEL_COMPARATOR =
+            Comparator.comparing((image) -> image.getGridGeometry().getExtent(),
+                                 GridExtent.SIZES_COMPARATOR.reversed());
+
+    /**
      * Creates a new pyramid.
      *
      * @param  store    the parent of this pyramid.
      * @param  name     the name of this pyramid, or {@code null} if none.
      * @param  pyramid  information about the pyramid.
-     * @param  levels   the child resources from finest resolution to coarsest resolution.
+     * @param  levels   the child resources in arbitrary order. This array will be sorted in-place.
      * @throws TransformException if an error occurred while deriving a "grid to <abbr>CRS</abbr>" transform.
      */
     Pyramid(final GeoHeifStore store, final GenericName name, final ImagePyramid pyramid, final ImageResource[] levels)
@@ -75,9 +87,33 @@ final class Pyramid extends TiledGridCoverageResource implements TiledGridCovera
         tileSizeX = pyramid.tileSizeX;
         tileSizeY = pyramid.tileSizeY;
         this.levels = levels;
+        Arrays.sort(levels, LEVEL_COMPARATOR);
+        /*
+         * Select the finest level for which the "grid to CRS" transform, and therefore the resolution,
+         * is defined. If none, select the very fist level, which should have the finest resolution.
+         */
         GridGeometry base = null;
+        boolean updateBase = true;
+        for (final ImageResource level : levels) {
+            final GridGeometry grid = level.getGridGeometry();
+            if (grid.isDefined(GridGeometry.GRID_TO_CRS)) {
+                updateBase = false;   // Base is already complete.
+                base = grid;
+                break;
+            } else if (base == null) {
+                base = grid;
+            }
+        }
+        /*
+         * Now compute the "grid to CRS" transform for each pyramid level.
+         * It may include the base level itself if the transform was not specified anywhere.
+         */
         for (ImageResource level : levels) {
-            base = level.setPyramidLevelOf(base);
+            level.setPyramidLevelOf(base);
+            if (updateBase) {
+                updateBase = false;
+                base = level.getGridGeometry();
+            }
         }
     }
 

@@ -43,7 +43,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -52,6 +51,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.io.TableAppender;
 
@@ -113,6 +113,8 @@ public class TileMatrixSetFormat extends CompoundFormat<TileMatrixSet> {
 
         /**
          * Creates one row in the table for the given matrix.
+         * This constructor prepares string representations of all values except resolutions.
+         * Resolutions must be formatted by a call to {@link #formatResolutions(List, NumberFormat)}.
          *
          * @param  matrix         the matrix for which to store information.
          * @param  integerFormat  a number format configured for integer values.
@@ -176,27 +178,34 @@ public class TileMatrixSetFormat extends CompoundFormat<TileMatrixSet> {
          *         This value should be equal to the number of dimensions in the <abbr>CRS</abbr>.
          */
         static int formatResolutions(final List<Row> rows, final NumberFormat format) {
-            final var values = new double[rows.size()];
-            for (int i=0; ; i++) {
-                int count = 0;
+            final int numRow = rows.size();
+            for (int column = 0; ; column++) {
+                boolean found = false;
+                double maximum = 0;
+                int n = 0;
                 for (final Row row : rows) {
-                    if (i < row.resolution.length) {
-                        values[count++] = row.resolution[i];
+                    if (column < row.resolution.length) {
+                        found = true;
+                        double value = Math.abs(row.resolution[column]);
+                        if (value > maximum) maximum = value;
+                        value -= Math.floor(value);
+                        if (value > 0) {
+                            n = Math.max(n, DecimalFunctions.fractionDigitsForDelta(value, true));
+                        }
                     }
                 }
-                if (count == 0) return i;
-                final int n = Numerics.suggestFractionDigits(ArraysExt.resize(values, count));
+                if (!found) return column;
+                if (n != 0) n++;    // TODO: should do a better work for finding the number of fraction digits.
+                n = Math.min(n, DecimalFunctions.fractionDigitsForValue(maximum));
                 format.setMinimumFractionDigits(n);
                 format.setMaximumFractionDigits(n);
-                final int column = i;   // Because lambda requires final values.
-                final String[] formatted = Numerics.formatAndTrimTrailingZeros(format, values.length, (j) -> {
-                    final double[] resolution = rows.get(j).resolution;
-                    return (column < resolution.length) ? resolution[column] : Double.NaN;
-                });
-                for (int j=0; j<values.length; j++) {
-                    final String[] resolution = rows.get(j).formattedResolution;
-                    if (i < resolution.length) {
-                        resolution[i] = formatted[j];
+                for (int i=0; i<numRow; i++) {
+                    final Row row = rows.get(i);
+                    final String[] target = row.formattedResolution;
+                    if (column < target.length) {
+                        final double[] resolution = row.resolution;
+                        final double value = (column < resolution.length) ? resolution[column] : Double.NaN;
+                        target[column] = format.format(value);
                     }
                 }
             }
