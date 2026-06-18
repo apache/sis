@@ -505,24 +505,23 @@ final class CoverageBuilder implements Emptiable {
      * @throws DataStoreException if the reading failed for another reason.
      */
     public final int numTiles(final int dimension) throws DataStoreException {
-        if (model != null) {
+        if (tiling != null && !isEmpty()) {
+            // Must have precedence over `model` because `model.numTile*` are 1.
+            switch (dimension) {
+                case 0: return JDK18.ceilDiv(width,  tiling.tileWidth);
+                case 1: return JDK18.ceilDiv(height, tiling.tileHeight);
+            }
+        } else if (model != null) {
             switch (dimension) {
                 case 0: return model.numTileCols;
                 case 1: return model.numTileRows;
             }
         } else if (!isEmpty()) {
-            if (tiling != null) {
+            final SampleModel sampleModel = imageModel().sampleModel;
+            if (sampleModel != null) {
                 switch (dimension) {
-                    case 0: return JDK18.ceilDiv(width,  tiling.tileWidth);
-                    case 1: return JDK18.ceilDiv(height, tiling.tileHeight);
-                }
-            } else {
-                final SampleModel sampleModel = imageModel().sampleModel;
-                if (sampleModel != null) {
-                    switch (dimension) {
-                        case 0: return JDK18.ceilDiv(width,  sampleModel.getWidth());
-                        case 1: return JDK18.ceilDiv(height, sampleModel.getHeight());
-                    }
+                    case 0: return JDK18.ceilDiv(width,  sampleModel.getWidth());
+                    case 1: return JDK18.ceilDiv(height, sampleModel.getHeight());
                 }
             }
         }

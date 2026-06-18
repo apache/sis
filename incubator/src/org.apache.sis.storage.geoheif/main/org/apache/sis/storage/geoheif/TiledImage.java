@@ -59,9 +59,7 @@ final class TiledImage extends UncompressedImage {
             throws DataStoreException, IOException
     {
         super(builder, locator, name);
-        final int numTileCols = builder.numTiles(0);
-        final int numTileRows = builder.numTiles(1);
-        final int numTiles = Math.multiplyExact(numTileCols, numTileRows);
+        final int numTiles = Math.multiplyExact(numXTiles, numYTiles);
         final TiledImageConfiguration tiling = builder.tiling();
         final int offsetFieldLength = tiling.offsetFieldLength();
         final int sizeFieldLength   = tiling.sizeFieldLength();
