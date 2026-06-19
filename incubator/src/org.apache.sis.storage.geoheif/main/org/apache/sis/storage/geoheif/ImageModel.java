@@ -37,6 +37,7 @@ import org.apache.sis.storage.isobmff.mpeg.ComponentType;
 import org.apache.sis.storage.isobmff.mpeg.ComponentPalette;
 import org.apache.sis.storage.isobmff.mpeg.InterleavingMode;
 import org.apache.sis.storage.isobmff.mpeg.UncompressedFrameConfig;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.shared.Numerics;
 
 
@@ -113,7 +114,7 @@ final class ImageModel {
         final int nc = (model          == null) ? 0 : model.components.length;
         final int nt = (componentTypes == null) ? 0 : componentTypes.length;
         final int ns = (bitsPerChannel == null) ? 0 : bitsPerChannel.length;
-        final int numBands = Math.max(nc, nt);  // Ignore `ns` as it is sometime too large (for an unknown reason).
+        final int numBands = (nc|nt) != 0 ? Math.max(nc, nt) : ns;  // For an unknown reason `ns` is sometime larger.
         final var bitsPerSample = new int[numBands];
         final var sb = new SampleDimension.Builder();
         sampleDimensions = new SampleDimension[numBands];
@@ -121,7 +122,7 @@ final class ImageModel {
 
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         DataType dataType = null;
-        int numBits=0, redMask=0, greenMask=0, blueMask=0, alphaMask=0;
+        int numBits=0, maxBits=0, redMask=0, greenMask=0, blueMask=0, alphaMask=0;
         int grayBand = -1, indexBand = -1, alphaBand = -1;    // Negative value means none.
         for (int band = 0; band < numBands; band++) {
             /*
@@ -181,6 +182,7 @@ final class ImageModel {
              */
             bitsPerSample[band] = bitDepth;
             numBits += bitDepth;
+            maxBits = Math.max(maxBits, bitDepth);
             if (colorType instanceof ComponentType ct) {
                 int mask = 0;
                 if (numBits < Integer.SIZE) {
@@ -196,7 +198,7 @@ final class ImageModel {
                 }
             }
         }
-        final boolean isRGB = (redMask | greenMask | blueMask) != 0;
+        boolean isRGB = (redMask | greenMask | blueMask) != 0;
         if (isRGB && numBits < Integer.SIZE) {
             final int n = Integer.SIZE - numBits;   // Number of unused bits.
             redMask   >>>= n;
@@ -205,12 +207,26 @@ final class ImageModel {
             alphaMask >>>= n;
         }
         /*
-         * Build a sample model. The `InterleavingMode.COMPONENT` default value is arbitrary,
+         * If there is no information about sample model except the number of bits per channel,
+         * default to component sample model with the smallest type capable to store the number
+         * of bits. Note: missing `UncompressedFrameConfig` box is illegal. We try to be robust,
+         * but we should also be a little bit conservative.
+         */
+        if (dataType == null && maxBits != 0) {
+            final var type = DataType.forNumberOfBits(maxBits, false, false);
+            if (ArraysExt.allEquals(bitsPerSample, type.size())) {
+                dataType = type;
+                isRGB = (numBands >= 3);
+            }
+        }
+        /*
+         * Build a sample model. The `InterleavingMode.PIXEL` default value is arbitrary,
          * as the `UncompressedFrameConfig` box is mandatory according ISO/IEC 23001-17:2024.
+         * However, it matches the behavior that we observed with some OGC Testbed-20 data.
          */
         this.dataType = dataType;
         if (dataType != null) {
-            final InterleavingMode interleaveType = (model != null) ? model.interleaveType : InterleavingMode.COMPONENT;
+            final InterleavingMode interleaveType = (model != null) ? model.interleaveType : InterleavingMode.PIXEL;
             if (tileSize == null) {
                 tileSize = new Dimension(width, height);
                 if (model != null) {

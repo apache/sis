@@ -202,8 +202,8 @@ class UncompressedImage extends Image {
             }
             /*
              * Now read all banks and store the values in the image buffer.
-             * If there is many banks (`InterleavingMode.COMPONENT`), these
-             * banks are assumed consecutive.
+             * If there are many banks (`InterleavingMode.COMPONENT`),
+             * these banks are assumed consecutive.
              */
             input.buffer.order(byteOrder);
             final var hr = new HyperRectangleReader(ImageUtilities.toNumberEnum(dataType), input);
