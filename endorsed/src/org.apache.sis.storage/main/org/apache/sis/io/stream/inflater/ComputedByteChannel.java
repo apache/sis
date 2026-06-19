@@ -91,12 +91,11 @@ public abstract class ComputedByteChannel implements ReadableByteChannel {
      * for performance reasons. A well adjusted buffer size reduces calls to {@link ByteBuffer#compact()},
      * which in turn reduces the number of copy operations between different regions of the buffer.</p>
      *
-     * @param  buffer          buffer to reuse if {@code null}. The content of this buffer will be discarded.
      * @param  scanlineStride  the scanline stride of the image to read. Used for choosing a buffer size.
      * @throws IOException if an error occurred while filling the buffer with initial data.
      * @return the data input for uncompressed data.
      */
-    public final ChannelDataInput createDataInput(ByteBuffer buffer, final int scanlineStride) throws IOException {
+    public final ChannelDataInput createDataInput(final int scanlineStride) throws IOException {
         final int capacity;
         if (scanlineStride > BUFFER_SIZE) {
             final int[] divisors = MathFunctions.divisors(scanlineStride);
@@ -109,9 +108,7 @@ public abstract class ComputedByteChannel implements ReadableByteChannel {
             capacity = BUFFER_SIZE;
         }
         final ChannelDataInput input = compressedInput();
-        if (buffer == null) {
-            buffer = preferNativeBuffer() ? ByteBuffer.allocateDirect(capacity) : ByteBuffer.allocate(capacity);
-        }
+        ByteBuffer buffer = preferNativeBuffer() ? ByteBuffer.allocateDirect(capacity) : ByteBuffer.allocate(capacity);
         buffer = buffer.order(input.buffer.order()).limit(0);
         return new ChannelDataInput(input.filename, this, buffer, true);
     }

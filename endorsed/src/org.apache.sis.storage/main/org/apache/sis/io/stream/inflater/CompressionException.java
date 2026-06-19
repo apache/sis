@@ -31,6 +31,12 @@ public class CompressionException extends IOException {
     private static final long serialVersionUID = -5493223452276185518L;
 
     /**
+     * Constructs a new exception with no detail message and no cause.
+     */
+    public CompressionException() {
+    }
+
+    /**
      * Constructs a new exception with the specified detail message and cause.
      *
      * @param message  the detail message, or {@code null} if none.

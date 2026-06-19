@@ -100,7 +100,7 @@ public final class Deflate extends InflaterChannel {
                 } else if (inflater.finished()) {
                     return -1;
                 } else {
-                    throw new IOException();
+                    throw new CompressionException();
                 }
             }
         } catch (DataFormatException e) {

@@ -189,12 +189,15 @@ class UncompressedImage extends Image {
         computeByteRanges(tileIndex, region, context);
         return (ChannelDataInput input) -> {
             long origin = context.offset();
-            final ComputedByteChannel inflater = inflater(input);
+            ComputedByteChannel inflater = context.reuseInflater();
+            if (inflater == null || inflater.compressedInput() != input) {
+                inflater = inflater(input);
+            }
             if (inflater != null) {
                 final CompressedUnitsItemInfo.Unit unit = compressedImageUnit(tileIndex);
                 inflater.setInputRegion(addExact(origin, unit.offset), unit.size);
                 // The following (int) cast is okay even if inexact because it is only a hint.
-                input = inflater.createDataInput(context.reuseBuffer(), (int) sourceSize[0]);
+                input = inflater.createDataInput((int) sourceSize[0]);
                 origin = 0;
             }
             /*
@@ -221,7 +224,7 @@ class UncompressedImage extends Image {
                 hr.readAsBuffer(bank, 0);
             }
             if (inflater != null) {
-                context.saveForReuse(inflater.compressedInput().buffer);
+                context.saveForReuse(inflater);
             }
             return raster;
         };
