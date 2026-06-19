@@ -263,6 +263,23 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
     }
 
     /**
+     * Sets random values to NaN. This method assumes that the image use floating points.
+     *
+     * @param  random  random number generator to use.
+     */
+    public synchronized void setRandomNaN(final Random random) {
+        final int numBands = sampleModel.getNumBands();
+        for (int i = random.nextInt(StrictMath.max(StrictMath.multiplyExact(width, height) / 8, 4)) + 5; --i >= 0;) {
+            final int ox = random.nextInt(width);
+            final int oy = random.nextInt(height);
+            final int b  = random.nextInt(numBands);
+            tile(StrictMath.floorDiv(ox, tileWidth)  + minTileX,
+                 StrictMath.floorDiv(oy, tileHeight) + minTileY, true)
+                    .setSample(ox + minX, oy + minY, b, Double.NaN);
+        }
+    }
+
+    /**
      * Sets a sample value at the given location in pixel coordinates.
      * This is a helper method for testing purpose on small images only,
      * since invoking this method in a loop is inefficient.

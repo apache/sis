@@ -43,14 +43,15 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.io.TableAppender;
 
@@ -58,11 +59,19 @@ import org.apache.sis.io.TableAppender;
 /**
  * Formats Tile Matrix Sets (<abbr>TMS</abbr>) in a tabular format.
  * This format assumes a monospaced font and a character encoding which supports the drawing of box characters,
- * such as <abbr>UTF</abbr>-8.
+ * such as <abbr>UTF</abbr>-8. The table contains one row for each Tile Matrix with the following columns:
+ *
+ * <ul>
+ *   <li>Tile matrix identifier</li>
+ *   <li>Resolution</li>
+ *   <li>Number of tiles</li>
+ *   <li>Tile size (if available)</li>
+ *   <li>Image size (if available)</li>
+ * </ul>
  *
  * <h2>Limitations</h2>
  * <ul>
- *   <li>The current implementation can only format tile matrices — parsing is supported.</li>
+ *   <li>The current implementation can only format tile matrices — parsing is unsupported.</li>
  *   <li>{@code TileMatrixSetFormat}, like most {@code java.text.Format} subclasses, is not thread-safe.</li>
  * </ul>
  *
@@ -96,19 +105,25 @@ public class TileMatrixSetFormat extends CompoundFormat<TileMatrixSet> {
         /** The tile sizes in pixels. */
         final String[] tileSize;
 
+        /** The image sizes in pixels, or {@code null} if this information is not available. */
+        final String[] imageSize;
+
         /** The extent of the tiling scheme. */
         private final GridExtent tilingScheme;
 
         /**
          * Creates one row in the table for the given matrix.
+         * This constructor prepares string representations of all values except resolutions.
+         * Resolutions must be formatted by a call to {@link #formatResolutions(List, NumberFormat)}.
          *
          * @param  matrix         the matrix for which to store information.
          * @param  integerFormat  a number format configured for integer values.
+         * @param  caller         the object to notify in case of recoverable errors.
          * @throws BackingStoreException if an error occurred while extracting information.
          * @throws IncompleteGridGeometryException if the tiling scheme has not extent or resolution.
          *         Tile matrices with such tiling scheme should not have been constructed in first place.
          */
-        Row(final TileMatrix matrix, final NumberFormat integerFormat) {
+        Row(final TileMatrix matrix, final NumberFormat integerFormat, final TileMatrixSetFormat caller) {
             final GenericName id = matrix.getIdentifier();
             identifier = (id != null) ? id.toString() : "";
             resolution = matrix.getResolution();
@@ -123,6 +138,18 @@ public class TileMatrixSetFormat extends CompoundFormat<TileMatrixSet> {
             for (int i=0; i<tileSize.length; i++) {
                 tileSize[i] = integerFormat.format(ts[i]);
             }
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
+            String[] imageSize = CharSequences.EMPTY_ARRAY;
+            if (matrix instanceof ImageTileMatrix) try {
+                final GridExtent extent = ((ImageTileMatrix) matrix).getResourceExtent();
+                imageSize = new String[extent.getDimension()];
+                for (int i=0; i<imageSize.length; i++) {
+                    imageSize[i] = integerFormat.format(extent.getSize(i));
+                }
+            } catch (DataStoreException | IncompleteGridGeometryException e) {
+                caller.addError(e);
+            }
+            this.imageSize = imageSize;
         }
 
         /**
@@ -154,27 +181,34 @@ public class TileMatrixSetFormat extends CompoundFormat<TileMatrixSet> {
          *         This value should be equal to the number of dimensions in the <abbr>CRS</abbr>.
          */
         static int formatResolutions(final List<Row> rows, final NumberFormat format) {
-            final var values = new double[rows.size()];
-            for (int i=0; ; i++) {
-                int count = 0;
+            final int numRow = rows.size();
+            for (int column = 0; ; column++) {
+                boolean found = false;
+                double maximum = 0;
+                int n = 0;
                 for (final Row row : rows) {
-                    if (i < row.resolution.length) {
-                        values[count++] = row.resolution[i];
+                    if (column < row.resolution.length) {
+                        found = true;
+                        double value = Math.abs(row.resolution[column]);
+                        if (value > maximum) maximum = value;
+                        value -= Math.floor(value);
+                        if (value > 0) {
+                            n = Math.max(n, DecimalFunctions.fractionDigitsForDelta(value, true));
+                        }
                     }
                 }
-                if (count == 0) return i;
-                final int n = Numerics.suggestFractionDigits(ArraysExt.resize(values, count));
+                if (!found) return column;
+                if (n != 0) n++;    // TODO: should do a better work for finding the number of fraction digits.
+                n = Math.min(n, DecimalFunctions.fractionDigitsForValue(maximum));
                 format.setMinimumFractionDigits(n);
                 format.setMaximumFractionDigits(n);
-                final int column = i;   // Because lambda requires final values.
-                final String[] formatted = Numerics.formatAndTrimTrailingZeros(format, values.length, (j) -> {
-                    final double[] resolution = rows.get(j).resolution;
-                    return (column < resolution.length) ? resolution[column] : Double.NaN;
-                });
-                for (int j=0; j<values.length; j++) {
-                    final String[] resolution = rows.get(j).formattedResolution;
-                    if (i < resolution.length) {
-                        resolution[i] = formatted[j];
+                for (int i=0; i<numRow; i++) {
+                    final Row row = rows.get(i);
+                    final String[] target = row.formattedResolution;
+                    if (column < target.length) {
+                        final double[] resolution = row.resolution;
+                        final double value = (column < resolution.length) ? resolution[column] : Double.NaN;
+                        target[column] = format.format(value);
                     }
                 }
             }
@@ -271,10 +305,11 @@ public class TileMatrixSetFormat extends CompoundFormat<TileMatrixSet> {
      *   <tr><td>{@code "resolutions"}</td> <td>{@code String[][]}</td> <td>Columns of the resolution of each Tile Matrix.</td></tr>
      *   <tr><td>{@code "tileCounts"}</td>  <td>{@code String[][]}</td> <td>Columns of the number of tiles of each Tile Matrix.</td></tr>
      *   <tr><td>{@code "tileSizes"}</td>   <td>{@code String[][]}</td> <td>Columns of the tile size of each Tile Matrix.</td></tr>
+     *   <tr><td>{@code "imageSizes"}</td>  <td>{@code String[][]}</td> <td>Columns of the image size (if available).</td></tr>
      *   <tr><td>{@code "gridAxes"}</td>    <td>{@code String[]}</td>   <td>Name of grid axes.</td></tr>
      * </table>
      *
-     * The {@code "tileSizes"} property may be absent if not applicable.
+     * The {@code "tileSizes"} and {@code "imageSizes"} properties may be absent if not applicable.
      * Implementations other than the default implementation may also choose to add or remove more properties.
      *
      * <p>This method returns the number of rows in the table to format.
@@ -291,12 +326,13 @@ public class TileMatrixSetFormat extends CompoundFormat<TileMatrixSet> {
      */
     public int formatTable(final Iterable<? extends TileMatrix> matrices, final Map<String, Object> addTo) {
         final var rows = new ArrayList<Row>();
-        int gridDimension = 0, sizeDimension = 0;
+        int gridDimension = 0, sizeDimension = 0, fullDimension = 0;
         final var integerFormat = (NumberFormat) getFormat(Long.class);
         for (final TileMatrix matrix : matrices) try {
-            final var row = new Row(matrix, integerFormat);
+            final var row = new Row(matrix, integerFormat, this);
             gridDimension = Math.max(gridDimension, row.tileCount.length);
-            sizeDimension = Math.max(sizeDimension, row.tileSize.length);
+            sizeDimension = Math.max(sizeDimension, row.tileSize .length);
+            fullDimension = Math.max(fullDimension, row.imageSize.length);
             rows.add(row);  // Add only on success.
         } catch (RuntimeException e) {
             addError(e);    // Skip the row. Next row will be tried.
@@ -307,6 +343,7 @@ public class TileMatrixSetFormat extends CompoundFormat<TileMatrixSet> {
         final var resolutions = new String[ crsDimension][numRows];
         final var tileCounts  = new String[gridDimension][numRows];
         final var tileSizes   = new String[sizeDimension][numRows];
+        final var imageSizes  = new String[fullDimension][numRows];
         final var gridAxes    = new String[gridDimension];
         for (int j=0; j<numRows; j++) {
             final Row row = rows.get(j);
@@ -321,11 +358,15 @@ public class TileMatrixSetFormat extends CompoundFormat<TileMatrixSet> {
             for (int i = Math.min(sizeDimension, row.tileSize.length); --i >= 0;) {
                 tileSizes[i][j] = row.tileSize[i];
             }
+            for (int i = Math.min(fullDimension, row.imageSize.length); --i >= 0;) {
+                imageSizes[i][j] = row.imageSize[i];
+            }
         }
-        if (numRows       != 0) addTo.put("identifiers", identifiers);
-        if (crsDimension  != 0) addTo.put("resolutions", resolutions);
-        if (gridDimension != 0) addTo.put("tileCounts",  tileCounts);
-        if (sizeDimension != 0) addTo.put("tileSizes",   tileSizes);
+        if (numRows       != 0) addTo.put("identifiers",  identifiers);
+        if (crsDimension  != 0) addTo.put("resolutions",  resolutions);
+        if (gridDimension != 0) addTo.put("tileCounts",   tileCounts);
+        if (sizeDimension != 0) addTo.put("tileSizes",    tileSizes);
+        if (fullDimension != 0) addTo.put("imageSizes",   imageSizes);
         for (int i=0; i<gridAxes.length; i++) {
             final String name = gridAxes[i];
             if (name != null && name.isBlank()) {
@@ -425,7 +466,8 @@ public class TileMatrixSetFormat extends CompoundFormat<TileMatrixSet> {
         final var resolutions = (String[][]) properties.get("resolutions");
         final var tileCounts  = (String[][]) properties.get("tileCounts");
         final var tileSizes   = (String[][]) properties.get("tileSizes");
-        String[][][] columnGroups = {resolutions, tileCounts, tileSizes};
+        final var imageSizes  = (String[][]) properties.get("imageSizes");
+        String[][][] columnGroups = {resolutions, tileCounts, tileSizes, imageSizes};
         columnGroups = ArraysExt.resize(columnGroups, ArraysExt.removeNulls(columnGroups));
         for (final String[][] columns : columnGroups) {
             for (final String[] column : columns) {
@@ -443,6 +485,7 @@ public class TileMatrixSetFormat extends CompoundFormat<TileMatrixSet> {
         if (resolutions != null) table.append(vocabulary.getString(Vocabulary.Keys.Resolution)).nextColumn();
         if (tileCounts  != null) table.append(vocabulary.getString(Vocabulary.Keys.TileCount)) .nextColumn();
         if (tileSizes   != null) table.append(vocabulary.getString(Vocabulary.Keys.TileSize))  .nextColumn();
+        if (imageSizes  != null) table.append(vocabulary.getString(Vocabulary.Keys.ImageSize)) .nextColumn();
         table.appendHorizontalSeparator();
         for (int j=0; j<numRows; j++) {
             if (identifiers != null) {

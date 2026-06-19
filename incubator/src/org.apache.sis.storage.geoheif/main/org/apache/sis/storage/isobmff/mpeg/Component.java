@@ -18,9 +18,9 @@ package org.apache.sis.storage.isobmff.mpeg;
 
 import java.net.URI;
 import java.io.IOException;
-import java.awt.image.RasterFormatException;
 import org.apache.sis.image.DataType;
 import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.storage.UnsupportedEncodingException;
 import org.apache.sis.storage.isobmff.TreeNode;
 import org.apache.sis.util.resources.Errors;
 
@@ -72,6 +72,7 @@ public final class Component extends TreeNode {
      *   <li>0: unsigned integer coded on {@link #bitDepth} bits.</li>
      *   <li>1: IEEE 754 floating point coded on {@link #bitDepth} bits: 16, 32, 64, 128 or 256.</li>
      *   <li>2: complex number where the real and imaginary parts are coded on {@link #bitDepth} bits each.</li>
+     *   <li>3: signed integer coded on {@link #bitDepth} bits. Added in ISO/IEC 23001-17:2024/Amd 2:2025.</li>
      * </ul>
      *
      * Other values are reserved by ISO/IEC for future definitions.
@@ -125,15 +126,17 @@ public final class Component extends TreeNode {
     /**
      * Returns the Java2D data type for this component.
      *
-     * @throws RasterFormatException if the {@link #format} value is unsupported.
+     * @throws UnsupportedEncodingException if the {@link #format} value is unsupported.
      */
-    public DataType getDataType() {
-        boolean real = false;
+    public DataType getDataType() throws UnsupportedEncodingException {
+        boolean real   = false;
+        boolean signed = false;
         switch (format) {
-            case 0: break;
-            case 1: real = true; break;
-            default: throw new RasterFormatException(Errors.format(Errors.Keys.UnsupportedFormat_1, format));
+            case 0:  break;
+            case 1:  real   = true; break;
+            case 3:  signed = true; break;
+            default: throw new UnsupportedEncodingException(Errors.format(Errors.Keys.UnsupportedFormat_1, format));
         }
-        return DataType.forNumberOfBits(Short.toUnsignedInt(bitDepth), real, false);
+        return DataType.forNumberOfBits(Short.toUnsignedInt(bitDepth), real, signed);
     }
 }

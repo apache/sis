@@ -1022,7 +1022,7 @@ public class Formatter implements Localized {
             final double max = range.getMaxDouble();
             int minimumFractionDigits = Numerics.fractionDigitsForDelta(max - min);
             int maximumFractionDigits = Math.min(Math.min(
-                    Numerics.suggestFractionDigits(min, max),
+                    Numerics.fractionDigitsForRange(min, max),
                     minimumFractionDigits + 2), VERTICAL_ACCURACY);             // Arbitrarily limit to 2 more digits.
             openElement(true, WKTKeywords.VerticalExtent);
             setColor(ElementKind.EXTENT);

@@ -16,28 +16,29 @@
  */
 package org.apache.sis.storage.geotiff.base;
 
+import java.util.Locale;
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 
 
 /**
- * Possible values for {@code BaselineTIFFTagSet.TAG_COMPRESSION}.
- * Data compression applies only to raster image data. All other TIFF fields are unaffected.
- *
- * <p>Except otherwise noted, field names in this class are upper-case variant of the names
- * used in Web Coverage Service (WCS) as specified in the following specification:</p>
+ * Possible values for compression methods supported by the <abbr>TIFF</abbr> reader.
+ * This enumeration identifies only the algorithm. It does not contain the parameters that
+ * are sometime associated with the algorithm, such as the predictor or compression level.
+ * Except otherwise noted, field names in this class are upper-case variant of the names used
+ * in the Web Coverage Service (<abbr>WCS</abbr>) as specified in the following specification:
  *
  * <blockquote>OGC 12-100: GML Application Schema - Coverages - GeoTIFF Coverage Encoding Profile</blockquote>
  *
- * The main exception is {@code CCITT}, which has different name in WCS query and response.
+ * The main exception is {@code CCITT}, which has different name in <abbr>WCS</abbr> query and response.
  *
- * <p>This enumeration contains a relatively large number of compressions in order to put a name
- * on the numerical codes that the reader may find. However the Apache SIS reader and writer do
- * not support all those compressions. This enumeration is not put in public API for that reason.</p>
+ * <p>This enumeration contains a relatively large number of compressions in order to put a name on the numerical codes
+ * that a reader may find. However, the Apache <abbr>SIS</abbr> reader and writer do not support all those compressions.
+ * This enumeration is not put in public <abbr>API</abbr> for that reason.</p>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-public enum Compression {
+public enum CompressionMethod {
     /**
      * No compression, but pack data into bytes as tightly as possible, leaving no unused bits except
      * potentially at the end of rows. The component values are stored as an array of type byte.
@@ -49,7 +50,7 @@ public enum Compression {
     NONE(COMPRESSION_NONE),
 
     /**
-     * CCITT Group 3, 1-Dimensional Modified Huffman run length encoding.
+     * <abbr>CCITT</abbr> Group 3, 1-Dimensional Modified Huffman run length encoding.
      * <ul>
      *   <li>Name in WCS query:    "Huffman"</li>
      *   <li>Name in WCS response: "CCITTRLE"</li>
@@ -69,7 +70,7 @@ public enum Compression {
     // ---- End of baseline GeoTIFF. Remaining are extensions cited by OGC standard ----
 
     /**
-     * LZW compression.
+     * <abbr>LZW</abbr> compression.
      * <ul>
      *   <li>Name in WCS query:    "LZW"</li>
      *   <li>Name in WCS response: "LZW"</li>
@@ -89,7 +90,7 @@ public enum Compression {
     DEFLATE(COMPRESSION_ZLIB),
 
     /**
-     * JPEG compression.
+     * <abbr>JPEG</abbr> compression.
      * <ul>
      *   <li>Name in WCS query:    "JPEG"</li>
      *   <li>Name in WCS response: "JPEG"</li>
@@ -123,24 +124,24 @@ public enum Compression {
     UNKNOWN(0);
 
     /**
-     * The TIFF code for this compression.
+     * The <abbr>TIFF</abbr> code for this compression.
      */
     public final int code;
 
     /**
      * Creates a new compression enumeration.
      */
-    private Compression(final int code) {
+    private CompressionMethod(final int code) {
         this.code = code;
     }
 
     /**
-     * Returns the compression method for the given GeoTIFF code, or {@code UNKNOWN} if none.
+     * Returns the compression method for the given <abbr>TIFF</abbr> code, or {@link #UNKNOWN} if none.
      *
-     * @param  code  the TIFF code for which to get a compression enumeration value.
-     * @return enumeration value for the given code, or {@link #UNKNOWN} if none.
+     * @param  code  the <abbr>TIFF</abbr> code for which to get a compression enumeration value.
+     * @return enumeration value for the given code, or {@code UNKNOWN} if none.
      */
-    public static Compression valueOf(final int code) {
+    public static CompressionMethod valueOf(final int code) {
         switch (code) {
             case COMPRESSION_DEFLATE:   // Fall through
             case COMPRESSION_ZLIB:      return DEFLATE;
@@ -152,7 +153,7 @@ public enum Compression {
             case COMPRESSION_NONE:      return NONE;
             default: {
                 // Fallback for uncommon formats.
-                for (final Compression c : values()) {
+                for (final var c : values()) {
                     if (c.code == code) return c;
                 }
                 break;
@@ -162,19 +163,21 @@ public enum Compression {
     }
 
     /**
-     * Whether the decompression uses native library.
-     * In such case, the use of direct buffer may be more efficient.
+     * Returns whether the compression can be configured with different levels.
      *
-     * @return whether the compression may use a native library.
+     * @return whether the compression can be configured with different levels.
      */
-    public final boolean useNativeLibrary() {
+    public final boolean supportLevels() {
         return this == DEFLATE;
     }
 
     /**
-     * Returns whether the compression can be configured with different levels.
+     * Returns an error message for saying that this compression is unsupported.
+     *
+     * @param  locale  the locale for the error message, or {@code null} for the default locale.
+     * @return error message for unsupported predictor.
      */
-    public final boolean supportLevels() {
-        return this == DEFLATE;
+    public final String unsupported(final Locale locale) {
+        return Resources.forLocale(locale).getString(Resources.Keys.UnsupportedCompressionMethod_1, this);
     }
 }

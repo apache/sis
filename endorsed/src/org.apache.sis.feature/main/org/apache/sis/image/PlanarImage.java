@@ -107,10 +107,25 @@ import org.apache.sis.pending.jdk.JDK18;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   1.1
  */
 public abstract class PlanarImage implements RenderedImage {
+    /**
+     * Key for a property storing the name of the source of the data rendered by this image.
+     * The name can be used as a label in a graphical user interface or for debugging purposes,
+     * but should not be used as identifier since the name is not guaranteed to be unique.
+     * For example, if the image is a subset of a large source, many subsets may exist with the same source name.
+     *
+     * <p>The property value can be any object for which the {@link Object#toString()} method returns the name.</p>
+     *
+     * @see org.apache.sis.storage.DataStore#getDisplayName()
+     * @see org.apache.sis.storage.Resource#getIdentifier()
+     *
+     * @since 1.7
+     */
+    public static final String SOURCE_NAME_KEY = "org.apache.sis.SourceName";
+
     /**
      * Key for a property identifying the grid dimensions that are represented as a two-dimensional image.
      * For an image which is the result of {@linkplain org.apache.sis.coverage.grid.GridCoverage#render
@@ -692,15 +707,19 @@ public abstract class PlanarImage implements RenderedImage {
 
     /**
      * Returns a string representation of this image for debugging purpose.
-     * This string representation may change in any future SIS version.
+     * This string representation may change in any future <abbr>SIS</abbr> version.
      *
      * @return a string representation of this image for debugging purpose only.
      */
     @Override
     public String toString() {
-        final var buffer = new StringBuilder(100).append(Classes.getShortClassName(this))
-                .append("[(").append(getWidth()).append(" × ").append(getHeight()).append(") pixels starting at ")
-                .append('(').append(getMinX()).append(", ").append(getMinY()).append(')');
+        final var buffer = new StringBuilder(100).append(Classes.getShortClassName(this)).append('[');
+        final Object name = getProperty(SOURCE_NAME_KEY);
+        if (name != null && name != Image.UndefinedProperty) {
+            buffer.append('“').append(name).append("”: ");
+        }
+        buffer.append('(').append(getWidth()).append(" × ").append(getHeight()).append(") pixels starting at ")
+              .append('(').append(getMinX()) .append(", ") .append(getMinY()).append(')');
         final SampleModel sm = getSampleModel();
         if (sm != null) {
             buffer.append(" in ").append(sm.getNumBands()).append(" bands");

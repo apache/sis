@@ -31,8 +31,8 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * A pseudo-inflater which copies values from a buffer of bytes to the destination image buffer.
- * When reading uncompressed TIFF images, the source buffer is the direct buffer used for I/O operations.
- * When reading compressed TIFF images, the source buffer is a temporary buffer where data segments are
+ * When reading uncompressed images, the source buffer is the direct buffer used for I/O operations.
+ * When reading compressed images, the source buffer is a temporary buffer where data segments are
  * uncompressed before to be copied to the destination image. This is useful when handling subsampling
  * on-the-fly at decompression time would be too difficult: implementers can decompress everything in
  * a temporary buffer and let this {@code CopyFromBytes} class do the subsampling.

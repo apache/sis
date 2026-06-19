@@ -14,27 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.geotiff.inflater;
+package org.apache.sis.io.stream.inflater;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.storage.geotiff.base.Predictor;
 import org.apache.sis.pending.jdk.JDK13;
+import org.apache.sis.io.stream.ChannelDataInput;
 
 
 /**
- * Implementation of a {@link Predictor} to be executed after decompression.
+ * Implementation of a predictor to be executed after decompression.
  * A predictor is a mathematical operator that is applied to the image data
  * before an encoding scheme is applied, in order to improve compression.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-abstract class PredictorChannel extends PixelChannel {
+public abstract class PredictorChannel extends ComputedByteChannel {
     /**
      * The channel from which to read data.
      */
-    private final CompressionChannel input;
+    private final InflaterChannel input;
 
     /**
      * If {@link #read(ByteBuffer)} could not process some trailing bytes,
@@ -48,15 +48,22 @@ abstract class PredictorChannel extends PixelChannel {
     private int deferredCount;
 
     /**
-     * Creates a predictor.
-     * The {@link #setInputRegion(long, long)} method must be invoked after construction
-     * before a reading process can start.
+     * Creates a predictor. The {@link #setInputRegion(long, long)} method
+     * must be invoked after construction before a reading process can start.
      *
      * @param  input  the channel that decompress data.
      */
-    protected PredictorChannel(final CompressionChannel input) {
+    protected PredictorChannel(final InflaterChannel input) {
         this.input = input;
         deferred = ArraysExt.EMPTY_BYTE;
+    }
+
+    /**
+     * Returns the channel from which to read compressed data.
+     */
+    @Override
+    public final ChannelDataInput compressedInput() {
+        return input.compressedInput();
     }
 
     /**
@@ -91,7 +98,7 @@ abstract class PredictorChannel extends PixelChannel {
      * @throws IOException if some other I/O error occurs.
      */
     @Override
-    public int read(final ByteBuffer target) throws IOException {
+    public final int read(final ByteBuffer target) throws IOException {
         final int start = target.position();
         if (deferredCount != 0) {
             /*
@@ -121,6 +128,14 @@ abstract class PredictorChannel extends PixelChannel {
             deferredCount = length;
         }
         return end - start;
+    }
+
+    /**
+     * Returns whether the inflater or predictor algorithm prefers native byte buffer.
+     */
+    @Override
+    protected final boolean preferNativeBuffer() {
+        return input.preferNativeBuffer();
     }
 
     /**

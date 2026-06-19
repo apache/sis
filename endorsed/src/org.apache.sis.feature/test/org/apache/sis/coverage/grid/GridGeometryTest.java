@@ -284,6 +284,44 @@ public final class GridGeometryTest extends TestCase {
     }
 
     /**
+     * Tests {@link GridGeometry#GridGeometry(GridGeometry, GridExtent, MathTransform)} constructor
+     * with missing "grid to <abbr>CRS</abbr>" transform. We expect the resolution to still be defined.
+     *
+     * @throws TransformException if an error occurred while using the "grid to CRS" transform.
+     */
+    @Test
+    public void testFromOtherWithMissingTransform() throws TransformException {
+        GridExtent extent = new GridExtent(1260, 1970);
+        GridGeometry grid = new GridGeometry(extent, PixelInCell.CELL_CENTER, null, null);
+        assertNull(grid.resolution);
+        assertNull(grid.gridToCRS);
+        assertNull(grid.envelope);
+        /*
+         * Deriving a grid geometry with an identity transform should result in resolutions set to 1.
+         * This is needed for ensuring the validity of the grid geometry of the base level of a pyramid.
+         */
+        GridGeometry withResolution = new GridGeometry(grid, extent, MathTransforms.identity(2));
+        assertArrayEquals(new double[] {1, 1}, withResolution.getResolution(false));
+        assertNull(withResolution.gridToCRS);
+        assertNull(withResolution.envelope);
+        /*
+         * Derive a new grid geometry for a pyramid level of resolution 10×10 larger than the base pyramid level.
+         * The resolution should be defined even if the "grid to CRS" and envelope are still missing.
+         */
+        extent = extent.resize(126, 197);
+        grid = new GridGeometry(grid, extent, MathTransforms.scale(10, 10));
+        assertArrayEquals(new double[] {10, 10}, grid.getResolution(false));
+        assertNull(grid.gridToCRS);
+        assertNull(grid.envelope);
+
+        // Same test, but starting from a resolution of 1. Should be equivalent.
+        grid = new GridGeometry(withResolution, extent, MathTransforms.scale(10, 10));
+        assertArrayEquals(new double[] {10, 10}, grid.getResolution(false));
+        assertNull(grid.gridToCRS);
+        assertNull(grid.envelope);
+    }
+
+    /**
      * Tests construction from a <i>grid to CRS</i> having a 0.5 pixel translation.
      * This translation happens in transform mapping <i>pixel center</i> when the
      * corresponding <i>pixel corner</i> transformation is identity.

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.image.internal.shared;
 
-import java.util.Map;
 import java.util.function.Function;
 import java.awt.image.RenderedImage;
 import org.apache.sis.image.PlanarImage;
@@ -79,8 +78,8 @@ public final class DeferredProperty {
      * @param  dimensions  the dimensions to keep from the coverage grid geometry.
      * @return a deferred property for computing the grid geometry of an image.
      */
-    public static Map<String,Object> forGridGeometry(final GridGeometry grid, final int[] dimensions) {
-        return Map.of(PlanarImage.GRID_GEOMETRY_KEY, new DeferredProperty(new ImageGeometry(grid, dimensions)));
+    public static DeferredProperty forGridGeometry(final GridGeometry grid, final int[] dimensions) {
+        return new DeferredProperty(new ImageGeometry(grid, dimensions));
     }
 
     /**

@@ -20,8 +20,8 @@
  *
  * <STRONG>Do not use!</STRONG>
  *
- * This package is for internal use by SIS only. Classes in this package
- * may change in incompatible ways in any future version without notice.
+ * This package is for internal use by <abbr>SIS</abbr> only.
+ * Classes in this package may change in incompatible ways in any future version without notice.
  * This package is currently in the GeoTIFF module but we may move it to
  * another module in the future for sharing with other raster formats.
  *
@@ -32,7 +32,7 @@
  *       For example, a pixel might have three samples storing the intensity of red, green and blue colors.</dd>
  *
  *   <dt>Sample</dt>
- *   <dd>The value of a pixel in one band. For example if an image has three bands for red, green and blue colors,
+ *   <dd>The value of a pixel in one band. For example, if an image has three bands for red, green and blue colors,
  *       then the first sample value of a pixel is the intensity of the red color.</dd>
  *
  *   <dt>Element</dt>

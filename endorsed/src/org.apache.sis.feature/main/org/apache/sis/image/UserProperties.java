@@ -41,7 +41,7 @@ final class UserProperties extends ImageAdapter {
      *
      * <p>This {@code UserProperties} class shall not modify the content of this map.</p>
      */
-    private final Map<String,Object> properties;
+    private final Map<String, Object> properties;
 
     /**
      * Creates a new wrapper for the given image.

@@ -71,7 +71,7 @@ public final class Tags {
     public static final short GDAL_NODATA = (short) 0xA481;               // 42113
 
     /**
-     * Supplier of TIFF tag sets, in preference order.
+     * Supplier of <abbr>TIFF</abbr> tag sets, in preference order.
      * The sets that are most likely to be used (for the kind of data handled by SIS) should be first.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})

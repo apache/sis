@@ -19,16 +19,16 @@ package org.apache.sis.storage.geoheif;
 import java.nio.ByteOrder;
 import java.io.IOException;
 import java.awt.image.Raster;
-import java.awt.image.RasterFormatException;
 import javax.imageio.ImageTypeSpecifier;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.isobmff.ByteRanges;
 
 
 /**
- * A single image ({@code 'unci'} item type) from the HEIF file.
+ * A single image ({@code 'unci'} item type) from the <abbr>HEIF</abbr> file.
  * An image may be used as a tile in a larger image ({@code 'grid'} item type).
  * In the uncompressed case, the image may be implicitly tiled if {@link #numXTiles} is greater than 1.
  *
@@ -59,28 +59,28 @@ abstract class Image {
     protected final ByteOrder byteOrder;
 
     /**
+     * Where to send the warning.
+     */
+    protected final StoreListeners listeners;
+
+    /**
      * Creates a new tile.
      *
      * @param  builder  helper class for building the grid geometry and sample dimensions.
      * @param  locator  the provider of bytes to read from the <abbr>ISOBMFF</abbr> box.
      * @param  name     a name that identifies this image, for debugging purpose.
-     * @throws RasterFormatException if the sample model cannot be created.
+     * @throws DataStoreException if an error occurred while decoding <abbr>HEIF</abbr> boxes.
      */
-    protected Image(final CoverageBuilder builder, final ByteRanges.Reader locator, final String name) {
+    protected Image(final CoverageBuilder builder, final ByteRanges.Reader locator, final String name)
+            throws DataStoreException
+    {
         this.locator = locator;
         this.name    = name;
         byteOrder    = builder.byteOrder();
         numXTiles    = builder.numTiles(0);
         numYTiles    = builder.numTiles(1);
+        listeners    = builder.store().listeners();
         // Do NOT invoke `builder.sampleModel()`, because that information is not available for all types.
-    }
-
-    /**
-     * A supplier of image, used for deferred computation.
-     */
-    @FunctionalInterface
-    interface Supplier {
-        Image get() throws DataStoreException;
     }
 
     /**

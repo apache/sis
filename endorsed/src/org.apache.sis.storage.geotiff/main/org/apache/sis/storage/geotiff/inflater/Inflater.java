@@ -24,10 +24,13 @@ import org.apache.sis.image.DataType;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.storage.UnsupportedEncodingException;
-import org.apache.sis.storage.geotiff.base.Compression;
+import org.apache.sis.storage.geotiff.base.CompressionMethod;
 import org.apache.sis.storage.geotiff.base.Predictor;
 import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.io.stream.inflater.ComputedByteChannel;
+import org.apache.sis.io.stream.inflater.InflaterChannel;
+import org.apache.sis.io.stream.inflater.Deflate;
 import org.apache.sis.storage.event.StoreListeners;
 import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
 
@@ -39,7 +42,7 @@ import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
  *
  * <p>If a decompression algorithm can handle all above-cited aspects directly,
  * it can extend this class directly. If it would be too complicated, an easier
- * approach is to extend {@link CompressionChannel} instead and wrap that inflater
+ * approach is to extend {@link InflaterChannel} instead and wrap that inflater
  * in a {@link CopyFromBytes} subclass for managing the sub-region, subsampling
  * and band subset.</p>
  *
@@ -183,24 +186,24 @@ public abstract class Inflater implements Closeable {
      *       in a way that make them usable with other tiled formats than TIFF.
      */
     @SuppressWarnings("fallthrough")
-    public static Inflater create(final StoreListeners   listeners,
-                                  final ChannelDataInput input,
-                                  final Compression      compression,
-                                  final Predictor        predictor,
-                                  final int              sourcePixelStride,
-                                  final int              sourceWidth,
-                                  final int              chunksPerRow,
-                                  final int              samplesPerChunk,
-                                  final int[]            skipAfterChunks,
-                                  final int              pixelsPerElement,
-                                  final DataType         dataType)
+    public static Inflater create(final StoreListeners    listeners,
+                                  final ChannelDataInput  input,
+                                  final CompressionMethod compression,
+                                  final Predictor         predictor,
+                                  final int               sourcePixelStride,
+                                  final int               sourceWidth,
+                                  final int               chunksPerRow,
+                                  final int               samplesPerChunk,
+                                  final int[]             skipAfterChunks,
+                                  final int               pixelsPerElement,
+                                  final DataType          dataType)
             throws IOException, UnsupportedEncodingException
     {
         ArgumentChecks.ensureNonNull("input", input);
-        final CompressionChannel inflater;
+        final InflaterChannel inflater;
         switch (compression) {
             case LZW:      inflater = new LZW     (input, listeners); break;
-            case DEFLATE:  inflater = new ZIP     (input, listeners); break;
+            case DEFLATE:  inflater = new Deflate (input, listeners, false); break;
             case PACKBITS: inflater = new PackBits(input, listeners); break;
             case CCITTRLE: inflater = new CCITTRLE(input, listeners, sourceWidth); break;
             case NONE: {
@@ -213,7 +216,7 @@ public abstract class Inflater implements Closeable {
                 throw unsupportedEncoding(listeners, Resources.Keys.UnsupportedCompressionMethod_1, compression);
             }
         }
-        final PixelChannel channel;
+        final ComputedByteChannel channel;
         switch (predictor) {
             case NONE: {
                 channel = inflater;
@@ -235,8 +238,8 @@ public abstract class Inflater implements Closeable {
             }
         }
         final int scanlineStride = Math.multiplyExact(sourceWidth, sourcePixelStride * dataType.bytes());
-        return CopyFromBytes.create(inflater.createDataInput(channel, scanlineStride, compression.useNativeLibrary()),
-                dataType, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement);
+        final ChannelDataInput inflated = channel.createDataInput(scanlineStride);
+        return CopyFromBytes.create(inflated, dataType, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement);
     }
 
     /**
@@ -261,8 +264,8 @@ public abstract class Inflater implements Closeable {
          * will perform a seek operation. As a consequence the buffer content become invalid and
          * must be emptied.
          */
-        if (input.channel instanceof PixelChannel) {
-            ((PixelChannel) input.channel).setInputRegion(start, byteCount);
+        if (input.channel instanceof ComputedByteChannel) {
+            ((ComputedByteChannel) input.channel).setInputRegion(start, byteCount);
             input.refresh(start);
         }
     }
@@ -311,7 +314,7 @@ public abstract class Inflater implements Closeable {
      */
     @Override
     public final void close() throws IOException {
-        if (input.channel instanceof PixelChannel) {
+        if (input.channel instanceof ComputedByteChannel) {
             input.channel.close();
         }
     }

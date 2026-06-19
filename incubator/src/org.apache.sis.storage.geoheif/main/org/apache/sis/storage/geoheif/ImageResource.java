@@ -21,20 +21,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import static java.lang.Math.addExact;
 import static java.lang.Math.multiplyExact;
 import java.awt.image.ColorModel;
 import java.awt.image.Raster;
-import java.awt.image.RasterFormatException;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import javax.imageio.ImageReader;
 import javax.imageio.spi.ImageReaderSpi;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.GenericName;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStore;
@@ -44,6 +47,8 @@ import org.apache.sis.storage.tiling.TiledGridCoverage;
 import org.apache.sis.storage.tiling.TiledGridCoverageResource;
 import org.apache.sis.storage.isobmff.ByteRanges;
 import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.io.stream.inflater.ComputedByteChannel;
+import org.apache.sis.util.internal.shared.Numerics;
 
 
 /**
@@ -58,7 +63,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
      *
      * @see #getOriginator()
      */
-    private final GeoHeifStore store;
+    final GeoHeifStore store;
 
     /**
      * Identifier of this resource.
@@ -82,7 +87,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
      *
      * @see #getGridGeometry()
      */
-    private final GridGeometry gridGeometry;
+    private GridGeometry gridGeometry;
 
     /**
      * Description of the bands.
@@ -125,24 +130,21 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
      * @param  builder  helper class for building the grid geometry and sample dimensions.
      * @param  tiles    the images that constitute the tiles, or {@code null} if {@code reader} is provided.
      * @param  image    the single tile for the whole image, or {@code null} if {@code tiles} is provided.
-     * @throws RasterFormatException if the sample dimensions or sample model cannot be created.
-     * @throws DataStoreException if the "grid to <abbr>CRS</abbr>" transform cannot be created.
+     * @throws DataStoreException if the "grid to <abbr>CRS</abbr>" transform or the sample dimensions cannot be created.
      */
-    ImageResource(final CoverageBuilder builder, Image[] tiles, final Image.Supplier image) throws DataStoreException {
-        super(builder.store);
-        this.store       = builder.store;
+    ImageResource(final CoverageBuilder builder, Image[] tiles, final Image image) throws DataStoreException {
+        super(builder.store());
+        this.store       = builder.store();
         identifier       = builder.name();
-        sampleDimensions = builder.sampleDimensions();
-        gridGeometry     = builder.gridGeometry();      // Should be after `sampleDimensions()`.
+        sampleDimensions = builder.imageModel().sampleDimensions(builder);
+        gridGeometry     = builder.gridGeometry();
         if (tiles == null) {
             // Shall be after the call to `sampleDimensions()`.
-            tiles = new Image[] {
-                image.get()         // Actual I/O operations are deferred (not in this call).
-            };
+            tiles = new Image[] {image};
         }
         this.tiles  = tiles;
         sampleModel = builder.sampleModel();
-        colorModel  = builder.colorModel();
+        colorModel  = builder.imageModel().colorModel;
         metadata    = builder.metadata().build();     // Not `buildAndFreeze()` as the metadata may still be modified.
         tileMatrixRowStride = builder.numTiles(0);
     }
@@ -174,6 +176,25 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
     @Override
     protected Metadata createMetadata() {
         return metadata;
+    }
+
+    /**
+     * Declares that this image is the pyramid level of the given base grid.
+     * This method does nothing if this image already has its own "grid to <abbr>CRS</abbr>" transform.
+     *
+     * @param  base  grid geometry of the pyramid level at the finest resolution.
+     * @throws TransformException if an error occurred while deriving the "grid to <abbr>CRS</abbr>" transform.
+     */
+    final void setPyramidLevelOf(final GridGeometry base) throws TransformException {
+        if (!gridGeometry.isDefined(GridGeometry.GRID_TO_CRS)) {
+            final GridExtent levelExtent = gridGeometry.getExtent();
+            final GridExtent baseExtent  = base.getExtent();
+            final var factors = new double[baseExtent.getDimension()];
+            for (int i = 0; i < factors.length; i++) {
+                factors[i] = 1 / Numerics.divide(levelExtent.getSize(i), baseExtent.getSize(i));
+            }
+            gridGeometry = new GridGeometry(base, levelExtent, MathTransforms.scale(factors));
+        }
     }
 
     /**
@@ -303,13 +324,15 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
             final var requests = new ReadContext[result.length];
             int count = 0;
             synchronized (getSynchronizationLock()) {
-                try (final var context = new ReadContext(iterator)) {
+                final var readers  = new HashMap<ImageReaderSpi, ImageReader>();
+                final var inflater = new AtomicReference<ComputedByteChannel>();
+                try {
                     do {
                         Raster raster = iterator.getCachedTile();
                         if (raster != null) {
                             result[iterator.getTileIndexInResultArray()] = raster;
                         } else {
-                            requests[count++] = new ReadContext(context, ImageResource.this);
+                            requests[count++] = new ReadContext(iterator, readers, inflater, ImageResource.this);
                         }
                     } while (iterator.next());
                     /*
@@ -328,6 +351,8 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
                     for (int i=0; i<count; i++) {
                         requests[i].readTile(input, result);        // Implementation may create an `input` view.
                     }
+                } finally {
+                    readers.values().forEach(ImageReader::dispose);
                 }
             }
             return result;
@@ -336,8 +361,10 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
         /**
          * Context about a {@code readTile(…)} operation. Contains the tile to create, or
          * the image reader to use in the case of read operations delegated to Image I/O.
+         * An instance of this class exist for each tile and is discarded after the tile
+         * has been read.
          */
-        static final class ReadContext extends ByteRanges implements AutoCloseable {
+        static final class ReadContext extends ByteRanges {
             /**
              * Iterator over the tiles to read.
              */
@@ -360,28 +387,29 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
             final long subTileX, subTileY;
 
             /**
+             * Inflater to reuse for each tile.
+             */
+            private final AtomicReference<ComputedByteChannel> inflater;
+
+            /**
              * Creates a new read context.
              *
              * @param  iterator  iterator over the tiles to read.
+             * @param  readers   an initially empty map where to store image readers for reuse.
+             * @param  inflater  an initially empty reference to an inflater to recycle.
+             * @param  owner     the resource for which to read a tile.
+             * @throws DataStoreException if an error occurred while computing the range of bytes.
              */
-            private ReadContext(final AOI iterator) {
-                this.iterator = iterator;
-                this.readers  = new HashMap<>();
-                this.reader   = null;
-                this.subTileX = 0;
-                this.subTileY = 0;
-            }
-
-            /**
-             * Creates a context which is a snapshot of the given context at the current iterator position.
-             *
-             * @param  parent  the parent from which to create a snapshot.
-             * @param  tileX   0-based column index of the tile to read, starting from image left.
-             * @param  tileY   0-based row index of the tile to read, starting from image top.
-             */
-            private ReadContext(final ReadContext parent, final ImageResource owner) throws DataStoreException {
-                this.iterator = new Snapshot(parent.iterator);
-                this.readers  = parent.readers;
+            @SuppressWarnings("LeakingThisInConstructor")
+            private ReadContext(final AOI iterator,
+                                final Map<ImageReaderSpi, ImageReader> readers,
+                                final AtomicReference<ComputedByteChannel> inflater,
+                                final ImageResource owner)
+                    throws DataStoreException
+            {
+                this.iterator = new Snapshot(iterator);
+                this.readers  = readers;
+                this.inflater = inflater;
                 final long[] tileCoord = iterator.getTileCoordinatesInResource();
                 final Image tile = owner.getTile(tileCoord[0], tileCoord[1]);
                 subTileX = tileCoord[0] % tile.numXTiles;
@@ -420,15 +448,15 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
              * This method caches the first reader created by this method,
              * then returns the cached value in subsequent calls.
              *
-             * @param  spi  the provider of image reader.
+             * @param  provider  the provider of image reader.
              * @return an image reader instance created by the given provider.
              * @throws IOException if an error occurred while creating the image reader.
              */
-            public ImageReader getReader(final ImageReaderSpi spi) throws IOException {
+            public ImageReader getReader(final ImageReaderSpi provider) throws IOException {
                 try {
-                    return readers.computeIfAbsent(spi, (factory) -> {
+                    return readers.computeIfAbsent(provider, (spi) -> {
                         try {
-                            return factory.createReaderInstance();
+                            return spi.createReaderInstance();
                         } catch (IOException e) {
                             throw new UncheckedIOException(e);
                         }
@@ -439,12 +467,21 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
             }
 
             /**
-             * Invoked after a sequence of tiles have been read.
-             * This method disposes the image readers.
+             * If a inflater has already been used in a previous read operation, returns that inflater.
+             *
+             * @return inflater that can be reused, or {@code null} if none.
              */
-            @Override
-            public void close() {
-                readers.values().forEach(ImageReader::dispose);
+            public ComputedByteChannel reuseInflater() {
+                return inflater.getAndSet(null);
+            }
+
+            /**
+             * Saves the given inflater for reuse.
+             *
+             * @param  done  a inflater which is no longer needed.
+             */
+            public void saveForReuse(final ComputedByteChannel done) {
+                inflater.set(done);
             }
         }
     }

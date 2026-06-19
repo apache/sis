@@ -51,6 +51,7 @@ final class MaskImage extends SourceAlignedImage {
         super(image, ColorModelFactory.createIndexColorModel(null, 0,
                 1, Math.max(0, ImageUtilities.getVisibleBand(image)), new int[] {0, -1}, true, 0));
 
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         MathTransform converter = null;
         if (image.interpolation instanceof Visualization.InterpConvert) try {
             converter = ((Visualization.InterpConvert) image.interpolation).converter.inverse();
@@ -103,12 +104,12 @@ final class MaskImage extends SourceAlignedImage {
         final int tileMaxY  = Math.addExact(tileMinY, tile.getHeight());
         final int tileWidth = tile.getWidth();
         final float[] row   = new float[Math.multiplyExact(tileWidth, numBands)];
-        for (int y=tileMinY; y<tileMaxY; y++) {
+        for (int y = tileMinY; y < tileMaxY; y++) {
             source.getPixels(tileMinX, y, tileWidth, 1, row);
             if (converter != null) {
                 converter.transform(row, 0, row, 0, tileWidth);
             }
-            for (int i=0; i<row.length; i++) {
+            for (int i = 0; i < row.length; i++) {
                 if (Float.isNaN(row[i])) {
                     final int x = i / numBands + tileMinX;
                     tile.setSample(x, y, 0, 1);
@@ -133,7 +134,7 @@ final class MaskImage extends SourceAlignedImage {
     @Override
     public boolean equals(final Object object) {
         if (super.equals(object)) {
-            final MaskImage other = (MaskImage) object;
+            final var other = (MaskImage) object;
             return Objects.equals(converter, other.converter);
         }
         return false;

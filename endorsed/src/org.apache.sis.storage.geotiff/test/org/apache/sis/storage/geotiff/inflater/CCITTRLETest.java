@@ -31,7 +31,8 @@ import org.apache.sis.test.TestCase;
 
 
 /**
- * Verifies the table of words for {@link CCITTRLE} implementation of TIFF Modified Huffman Compression.
+ * Verifies the table of words for {@link CCITTRLE} implementation
+ * of <abbr>TIFF</abbr> Modified Huffman Compression.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

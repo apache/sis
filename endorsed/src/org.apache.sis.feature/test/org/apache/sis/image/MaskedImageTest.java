@@ -45,6 +45,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Alexis Manin (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class MaskedImageTest extends TestCase {
     /**
      * The image width and height in pixels.

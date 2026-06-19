@@ -159,7 +159,7 @@ public class PixelIterator {
 
     /**
      * Maximal {@linkplain #x} and {@linkplain #y} coordinates (exclusive) that {@link Window} can use for
-     * fetching values in current tile. If some (x,y) coordinates inside the window are equal or greater,
+     * fetching values in current tile. If some (x, y) coordinates inside the window are equal or greater,
      * then the window will need to fetch some values on neighbor tiles (i.e. the window is overlapping
      * two or more tiles).
      *
@@ -699,7 +699,7 @@ public class PixelIterator {
         } else if (tileY >= tileUpperY) {
             message = Resources.Keys.IterationIsFinished;
         } else {
-            return new Point(x,y);
+            return new Point(x, y);
         }
         throw new IllegalStateException(Resources.format(message));
     }
@@ -829,7 +829,7 @@ public class PixelIterator {
     }
 
     /**
-     * Returns whether given position is on the same row and same tile as current (x,y) position.
+     * Returns whether given position is on the same row and same tile as current (x, y) position.
      * This method is provided as a complement to {@link #changedRowOrTile()}.
      */
     final boolean isSameRowAndTile(final int px, final int py) {

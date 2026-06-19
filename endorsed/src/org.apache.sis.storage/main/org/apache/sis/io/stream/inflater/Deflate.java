@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.geotiff.inflater;
+package org.apache.sis.io.stream.inflater;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -31,7 +31,7 @@ import org.apache.sis.io.stream.ChannelDataInput;
  * @author  Rémi Marechal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class ZIP extends CompressionChannel {
+public final class Deflate extends InflaterChannel {
     /**
      * Access to the ZLIB compression library.
      * Must be released by call to {@link Inflater#end()} after decompression is completed.
@@ -43,19 +43,30 @@ final class ZIP extends CompressionChannel {
      * The {@link #setInputRegion(long, long)} method must be invoked after construction
      * before a reading process can start.
      *
+     * <p>If the {@code nowrap} is {@code true} then the ZLIB header and checksum fields will not be used.
+     * See {@link Inflater#Inflater(boolean)} for more information.</p>
+     *
      * @param  input      the source of data to decompress.
      * @param  listeners  object where to report warnings.
-     * @param  start      stream position where to start reading.
-     * @param  byteCount  number of bytes to read from the input.
-     * @throws IOException if the stream cannot be seek to the given start position.
+     * @param  nowrap     if {@code true} then support GZIP compatible compression.
      */
-    public ZIP(final ChannelDataInput input, final StoreListeners listeners) {
+    public Deflate(final ChannelDataInput input, final StoreListeners listeners, final boolean nowrap) {
         super(input, listeners);
-        inflater = new Inflater();
+        inflater = new Inflater(nowrap);
     }
 
     /**
-     * Prepares this inflater for reading a new tile or a new band of a tile.
+     * Notifies that this inflater prefers native buffer.
+     *
+     * @return {@code true}.
+     */
+    @Override
+    protected boolean preferNativeBuffer() {
+        return true;
+    }
+
+    /**
+     * Prepares this channel for reading a new block of data.
      *
      * @param  start      stream position where to start reading.
      * @param  byteCount  number of bytes to read from the input.
@@ -79,8 +90,7 @@ final class ZIP extends CompressionChannel {
         final int start = target.position();
         int required = 0;
         try {
-            int n;
-            while ((n = inflater.inflate(target)) == 0) {
+            while (inflater.inflate(target) == 0) {
                 if (inflater.needsInput()) {
                     if (++required >= input.buffer.capacity()) {
                         throw new BufferOverflowException();
@@ -90,11 +100,11 @@ final class ZIP extends CompressionChannel {
                 } else if (inflater.finished()) {
                     return -1;
                 } else {
-                    throw new IOException();
+                    throw new CompressionException();
                 }
             }
         } catch (DataFormatException e) {
-            throw new IOException(e);
+            throw new CompressionException(e.getMessage(), e);
         }
         return target.position() - start;
     }
@@ -103,6 +113,7 @@ final class ZIP extends CompressionChannel {
      * Releases resources used by the inflater.
      */
     @Override
+    @SuppressWarnings("ConvertToTryWithResources")
     public void close() {
         inflater.end();
         super.close();

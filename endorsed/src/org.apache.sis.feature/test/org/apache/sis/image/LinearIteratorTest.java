@@ -34,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class LinearIteratorTest extends PixelIteratorTest {
     /**
      * Creates a new test case.

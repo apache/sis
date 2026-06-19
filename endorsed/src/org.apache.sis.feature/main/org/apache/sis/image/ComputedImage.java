@@ -555,7 +555,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     }
 
     /**
-     * Invoked when a tile need to be computed or updated. This method is invoked by {@link #getTile(int, int)}
+     * Invoked when a tile needs to be computed or updated. This method is invoked by {@link #getTile(int, int)}
      * when the requested tile is not in the cache, or when a writable source notified us that its data changed.
      * The returned tile will be automatically cached.
      *

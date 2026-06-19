@@ -214,7 +214,9 @@ public final class Reader implements Cloneable {
             }
         }
         endOfCurrentBox = end;      // May have been modified by recursive invocations.
-        assert (end < 0) || input.getStreamPosition() <= end : Box.formatFourCC(box.type());
+        if (end >= 0 && input.getStreamPosition() > end) {
+            throw new DataStoreContentException("The \"" + Box.formatFourCC(box.type()) + "\" box is longer than expected.");
+        }
         return box;
     }
 

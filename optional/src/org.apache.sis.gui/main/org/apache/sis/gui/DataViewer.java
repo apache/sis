@@ -20,6 +20,7 @@ import java.io.File;
 import java.net.URL;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -60,9 +61,9 @@ import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * Entry point for Apache SIS application.
+ * Entry point for Apache <abbr>SIS</abbr> application.
  * Current implementation shows a {@link ResourceExplorer} on which user can drop the files to open.
- * The content shown by this {@code Main} class may change in any future Apache SIS version.
+ * The content shown by this {@code Main} class may change in any future Apache <abbr>SIS</abbr> version.
  *
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
@@ -76,17 +77,27 @@ public class DataViewer extends Application {
     private static volatile DataViewer running;
 
     /**
-     * Starts the Apache SIS application.
+     * Starts the Apache <abbr>SIS</abbr> application.
+     * The following options are accepted:
      *
-     * @param args  ignored.
+     * <ul>
+     *   <li>{@code --locale}=en|fr — the application locale.</li>
+     * </ul>
+     *
+     * @param args  the command-line options.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static void main(final String[] args) {
+        if (args != null && args.length != 0) {
+            final var files = new ArrayList<>(Arrays.asList(args));
+            Option.parse(files.iterator());
+            // Remaining elements are files. TODO: open them.
+            if (!files.isEmpty()) {
+                System.err.println("Unexpected argument: " + files.get(0));
+                System.exit(1);
+            }
+        }
         LogHandler.register(true);
-        /*
-         * Following line seems necessary for enabling input method framework
-         * (tested on Java 14 and JavaFX 14).
-         */
-        java.awt.im.InputContext.getInstance();
         launch(DataViewer.class, args);
     }
 

@@ -89,6 +89,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
+import static org.apache.sis.referencing.CRS.getDimensionOrZero;
 import static org.apache.sis.referencing.CRS.findOperation;
 import static org.apache.sis.referencing.CRS.SeparationMode;
 
@@ -267,7 +268,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     protected final MathTransform cornerToCRS;
 
     /**
-     * An <em>estimation</em> of the grid resolution, in units of the CRS axes.
+     * An <em>estimation</em> of the grid resolution, in units of the <abbr>CRS</abbr> axes.
      * Computed from {@link #gridToCRS}, eventually together with {@link #extent}.
      * May be {@code null} if unknown. If non-null, the array length is equal to
      * the number of <abbr>CRS</abbr> dimensions.
@@ -278,7 +279,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     protected final double[] resolution;
 
     /**
-     * Whether the conversions from grid coordinates to the <abbr>CRS</abbr> are linear, for each target axis.
+     * Whether the conversions from grid coordinates to the <abbr>CRS</abbr> are non-linear, for each target axis.
      * The bit located at {@code 1L << dimension} is set to 1 when the conversion at that dimension is non-linear.
      * The dimension indices are those of the CRS, not the grid. The use of {@code long} type limits the capacity
      * to 64 dimensions. But actually {@code GridGeometry} can contain more dimensions provided that index of the
@@ -383,7 +384,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         final int dimension = other.getDimension();
         this.extent = extent;
         ensureDimensionMatches(dimension, extent);
-        if (toOther == null || toOther.isIdentity()) {
+        if (toOther == null || (toOther.isIdentity() && other.gridToCRS != null)) {
             gridToCRS   = other.gridToCRS;
             cornerToCRS = other.cornerToCRS;
             resolution  = other.resolution;
@@ -407,7 +408,12 @@ public class GridGeometry implements LenientComparable, Serializable {
                 cornerToCRS = null;
                 gridToCRS   = null;
                 resolution  = resolution(toOther, extent, PixelInCell.CELL_CENTER);     // Save resolution even if `gridToCRS` is null.
-                nonLinears  = findNonLinearTargets(toOther);
+                nonLinears  = findNonLinearTargets(toOther) | other.nonLinears;
+                if (other.resolution != null) {
+                    for (int i = Math.min(other.resolution.length, resolution.length); --i >= 0;) {
+                        resolution[i] *= other.resolution[i];
+                    }
+                }
             }
         }
         /*
@@ -1337,6 +1343,9 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @return an <em>estimation</em> of the grid resolution (never {@code null}).
      * @throws IncompleteGridGeometryException if this grid geometry has no resolution —
      *         i.e. <code>{@linkplain #isDefined(int) isDefined}({@linkplain #RESOLUTION})</code> returned {@code false}.
+     *
+     * @see org.apache.sis.storage.GridCoverageResource#getAvailableResolutions()
+     * @see org.apache.sis.storage.AbstractGridCoverageResource#convertResolutionOf(GridGeometry)
      */
     public double[] getResolution(final boolean allowEstimates) {
         if (resolution != null) {
@@ -1930,19 +1939,23 @@ public class GridGeometry implements LenientComparable, Serializable {
      * to the given <abbr>CRS</abbr>. The {@linkplain #getGeographicExtent() geographic bounding box} of this grid
      * geometry is used as the desired domain of validity.
      *
+     * <p>If this grid geometry has no <abbr>CRS</abbr> but the number of dimensions of the "real world" space is
+     * equal to the number of dimensions of the {@code target}, then this method returns an identity operation.</p>
+     *
      * @param  target  the target <abbr>CRS</abbr> of the desired operation.
      * @return coordinate operation from the <abbr>CRS</abbr> of this grid geometry to the given <abbr>CRS</abbr>.
-     * @throws IncompleteGridGeometryException if this grid geometry has no <abbr>CRS</abbr>.
-     * @throws TransformException if the coordinate operation cannot be found.
+     * @throws IncompleteGridGeometryException if this grid geometry does not have sufficient information.
+     * @throws FactoryException if the coordinate operation cannot be found.
      *
      * @since 1.7
      */
-    public CoordinateOperation createChangeOfCRS(final CoordinateReferenceSystem target) throws TransformException {
-        try {
-            return findOperation(getCoordinateReferenceSystem(), target, geographicBBox());
-        } catch (FactoryException e) {
-            throw new TransformException(e.getLocalizedMessage(), e);
+    public CoordinateOperation createChangeOfCRS(final CoordinateReferenceSystem target) throws FactoryException {
+        ArgumentChecks.ensureNonNull("target", target);
+        CoordinateReferenceSystem crs = getCoordinateReferenceSystem(envelope);
+        if (crs == null) {
+            crs = (getDimensionOrZero(target) == getTargetDimension()) ? target : getCoordinateReferenceSystem();
         }
+        return findOperation(crs, target, geographicBBox());
     }
 
     /**
@@ -2446,8 +2459,8 @@ public class GridGeometry implements LenientComparable, Serializable {
                     final double lower = envelope.getLower(i);
                     final double upper = envelope.getUpper(i);
                     final double delta = (resolution != null) ? resolution[i] : Double.NaN;
-                    nf.setMinimumFractionDigits(Numerics.fractionDigitsForDelta(delta));
-                    nf.setMaximumFractionDigits(Numerics.suggestFractionDigits(lower, upper) - 1);    // The -1 is for rounding errors.
+                    nf.setMaximumFractionDigits(Numerics.fractionDigitsForRange(lower, upper) - 1);   // The -1 is for rounding errors.
+                    nf.setMinimumFractionDigits(Numerics.fractionDigitsForDelta(delta));              // May adjust above max value.
                     final CoordinateSystemAxis axis = (cs != null) ? cs.getAxis(i) : null;
                     final String name = (axis != null) ? axis.getName().getCode() : vocabulary.getString(Vocabulary.Keys.Dimension_1, i);
                     table.append(name).append(": ").nextColumn();
@@ -2619,7 +2632,7 @@ public class GridGeometry implements LenientComparable, Serializable {
             } else {
                 final NumberFormat nf = numberFormat();
                 final int n = Double.isNaN(delta)
-                        ? Numerics.suggestFractionDigits(value) / 2
+                        ? Numerics.fractionDigitsForDelta(value) / 2
                         : Numerics.fractionDigitsForDelta(delta);
                 nf.setMaximumFractionDigits(n + 1);
                 out.append(nf.format(value));

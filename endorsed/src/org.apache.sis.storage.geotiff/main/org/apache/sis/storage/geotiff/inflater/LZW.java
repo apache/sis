@@ -22,21 +22,22 @@ import java.io.EOFException;
 import java.nio.ByteBuffer;
 import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.io.stream.inflater.InflaterChannel;
 import org.apache.sis.storage.event.StoreListeners;
 
 
 /**
- * Inflater for values encoded with the LZW compression.
- * This compression is described in section 13 of TIFF 6 specification, "LZW Compression".
+ * Inflater for values encoded with the <abbr>LZW</abbr> compression.
+ * This compression is described in section 13 of <abbr>TIFF</abbr> 6 specification, "<abbr>LZW</abbr> Compression".
  * Each code is written using at least 9 bits and at most 12 bits.
  *
  * <h2>Legal note</h2>
- * Unisys's patent on the LZW algorithm expired in 2004.
+ * Unisys's patent on the <abbr>LZW</abbr> algorithm expired in 2004.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  */
-final class LZW extends CompressionChannel {
+final class LZW extends InflaterChannel {
     /**
      * A 12 bits code meaning that we have exhausted the 4093 available codes
      * and must reset the table to the initial set of 9 bits code.
@@ -469,6 +470,13 @@ final class LZW extends CompressionChannel {
         }
         this.previousCode = code;
         return target.position() - start;
+    }
+
+    /**
+     * Returns the resources for error messages.
+     */
+    private Resources resources() {
+        return Resources.forLocale(listeners.getLocale());
     }
 
     /**

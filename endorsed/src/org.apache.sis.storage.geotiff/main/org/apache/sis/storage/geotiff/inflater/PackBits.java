@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.io.stream.inflater.InflaterChannel;
 
 
 /**
@@ -28,7 +29,7 @@ import org.apache.sis.io.stream.ChannelDataInput;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class PackBits extends CompressionChannel {
+final class PackBits extends InflaterChannel {
     /**
      * Number of bytes to copy literally from the input.
      * Only one of {@code literalCount} and {@link #duplicatedCount} can be non-zero.

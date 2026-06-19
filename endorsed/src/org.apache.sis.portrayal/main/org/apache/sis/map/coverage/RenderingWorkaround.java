@@ -25,6 +25,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.util.Vector;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.image.internal.shared.TilePlaceholder;
 
 
@@ -36,6 +37,7 @@ import org.apache.sis.image.internal.shared.TilePlaceholder;
  *
  * @see <a href="https://bugs.openjdk.java.net/browse/JDK-8275345">JDK-8275345</a>
  */
+@Workaround(library = "jdk", version = "11", fixed = "19")
 public final class RenderingWorkaround implements RenderedImage {
     /**
      * Applies workaround for JDK-8275345 if needed.

@@ -233,6 +233,16 @@ final class ImageTileMatrix implements TileMatrix {
     }
 
     /**
+     * Returns the extent of the resource.
+     *
+     * @return the grid extent.
+     * @throws DataStoreException if an error occurred while fecthing the grid geometry.
+     */
+    final GridExtent getResourceExtent() throws DataStoreException {
+        return resource.getGridGeometry().getExtent();
+    }
+
+    /**
      * Returns the coverage, which is read when first needed.
      * This coverage uses deferred reading of tiles.
      *

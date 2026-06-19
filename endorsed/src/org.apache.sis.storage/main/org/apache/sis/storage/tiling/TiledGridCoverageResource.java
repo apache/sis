@@ -534,7 +534,7 @@ check:  if (dataType.isInteger()) {
      * Instances of this class are temporary and used only for transferring information from {@link TiledGridCoverageResource}
      * to {@link TiledGridCoverage}. This class does not perform I/O operations.
      */
-    public final class Subset {
+    public class Subset {
         /**
          * The full size of the coverage in the enclosing {@link TiledGridCoverageResource}.
          * This is taken from {@link #getGridGeometry()} and does not take sub-sampling in account.
@@ -551,10 +551,15 @@ check:  if (dataType.isInteger()) {
         final GridExtent readExtent;
 
         /**
-         * The sub-region extent, CRS and conversion from cell indices to CRS.
-         * This is the domain of the grid coverage to create.
+         * The sub-region extent, <abbr>CRS</abbr> and conversion from cell indices to <abbr>CRS</abbr>.
+         * This is the domain of the grid coverage to create. The <abbr>CRS</abbr> of this domain is the
+         * <abbr>CRS</abbr> of the {@linkplain #getGridGeometry() base grid geometry}, or a subset of it.
+         *
+         * <p>This value is derived from the {@code domain} argument given to the constructor,
+         * but is not necessarily identical since it has been converted to the <abbr>CRS</abbr>
+         * of the base grid geometry.</p>
          */
-        final GridGeometry domain;
+        public final GridGeometry domain;
 
         /**
          * Sample dimensions for each image band. This is the range of the grid coverage to create.
@@ -637,6 +642,9 @@ check:  if (dataType.isInteger()) {
 
         /**
          * Creates parameters for the given domain and range.
+         * The arguments given to this constructor are the arguments
+         * given to the {@link #read(GridGeometry, int...)} method.
+         * This constructor should not need to be invoked directly, except by subclasses.
          *
          * @param  domain  the domain argument specified by user in a call to {@code GridCoverageResource.read(…)}.
          * @param  range   the range argument specified by user in a call to {@code GridCoverageResource.read(…)}.
@@ -647,7 +655,7 @@ check:  if (dataType.isInteger()) {
          * @throws IllegalArgumentException if an error occurred in an operation
          *         such as creating the {@code SampleModel} subset for selected bands.
          */
-        public Subset(GridGeometry domain, final int[] range) throws DataStoreException {
+        protected Subset(GridGeometry domain, final int[] range) throws DataStoreException {
             // Validate argument first, before more expensive computations.
             List<SampleDimension> bands = getSampleDimensions();
             final RangeArgument rangeIndices = RangeArgument.validate(bands.size(), range, listeners);
@@ -814,23 +822,27 @@ check:  if (dataType.isInteger()) {
          *
          * @return whether the values to read on a row are contiguous.
          */
-        public boolean isXContiguous() {
+        public final boolean isXContiguous() {
             return includedBands == null && subsampling[xDimension()] == 1;
         }
 
         /**
          * Returns dimension of the grid which is mapped to the <var>x</var> axis (column indexes) in rendered images.
          * This is usually 0.
+         *
+         * @return grid dimension mapped to image columns (usually 0).
          */
-        final int xDimension() {
+        public final int xDimension() {
             return xDimension;
         }
 
         /**
          * Returns dimension of the grid which is mapped to the <var>y</var> axis (row indexes) in rendered images.
          * This is usually 1.
+         *
+         * @return grid dimension mapped to image rows (usually 1).
          */
-        final int yDimension() {
+        public final int yDimension() {
             return yDimension;
         }
 
@@ -1186,7 +1198,7 @@ check:  if (dataType.isInteger()) {
      * @version 1.7
      * @since   1.7
      */
-    protected static interface Pyramid {
+    public static interface Pyramid {
         /**
          * Returns an identifier for this pyramid. The default implementation returns <abbr>TMS</abbr>
          * as the abbreviation of "Tile Matrix Set". This is often sufficient in the common case where

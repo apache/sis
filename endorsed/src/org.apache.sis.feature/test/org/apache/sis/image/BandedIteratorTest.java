@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class BandedIteratorTest extends PixelIteratorTest {
     /**
      * Creates a new test case.

@@ -16,12 +16,13 @@
  */
 package org.apache.sis.storage.geoheif;
 
+import java.util.Iterator;
 import java.io.IOException;
 import java.awt.image.SampleModel;
 import java.awt.image.BufferedImage;
-import java.awt.image.RasterFormatException;
 import javax.imageio.ImageReader;
 import javax.imageio.ImageTypeSpecifier;
+import javax.imageio.event.IIOReadWarningListener;
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageReaderSpi;
 import org.apache.sis.io.stream.ChannelDataInput;
@@ -40,7 +41,7 @@ import org.apache.sis.util.ArraysExt;
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */
-final class FromImageIO extends Image {
+final class FromImageIO extends Image implements IIOReadWarningListener {
     /**
      * Index of the image to read.
      */
@@ -58,31 +59,34 @@ final class FromImageIO extends Image {
      * @param  locator   the provider of bytes to read from the <abbr>ISOBMFF</abbr> box.
      * @param  provider  provider of image readers for decoding the payload.
      * @param  name      a name that identifies this image, for debugging purpose.
-     * @throws RasterFormatException if the sample model cannot be created.
+     * @throws DataStoreException if an error occurred while decoding <abbr>HEIF</abbr> boxes.
      */
-    FromImageIO(final CoverageBuilder builder, final ByteRanges.Reader locator, final ImageReaderSpi provider, final String name) {
+    FromImageIO(CoverageBuilder builder, ByteRanges.Reader locator, final ImageReaderSpi provider, String name)
+            throws DataStoreException
+    {
         super(builder, locator, name);
         this.provider = provider;
     }
 
     /**
-     * First an image reader provider by format name.
+     * Finds an image reader provider by format name.
+     * The search is case-insensitive.
      *
      * @param  format  name of the desired format.
      * @return image provider for the given format.
      * @throws UnsupportedEncodingException if no provider was found for the specified format.
+     *
+     * @see javax.imageio.ImageIO#getImageReadersByFormatName(String)
      */
     static ImageReaderSpi byFormatName(final String format) throws UnsupportedEncodingException {
-        var rg = IIORegistry.getDefaultInstance();
-        var it = rg.getServiceProviders(
-                ImageReaderSpi.class,
-                (spi) -> ArraysExt.containsIgnoreCase(((ImageReaderSpi) spi).getFormatNames(), format),
-                true);
-        if (it.hasNext()) {
-            return it.next();
-        } else {
-            throw new UnsupportedEncodingException("Could not find a JPEG reader.");
+        final Iterator<ImageReaderSpi> it = IIORegistry.getDefaultInstance().getServiceProviders(ImageReaderSpi.class, true);
+        while (it.hasNext()) {
+            final ImageReaderSpi provider = it.next();
+            if (ArraysExt.containsIgnoreCase(provider.getFormatNames(), format)) {
+                return provider;
+            }
         }
+        throw new UnsupportedEncodingException("Could not find a " + format + " reader.");
     }
 
     /**
@@ -110,6 +114,8 @@ final class FromImageIO extends Image {
      * Returns the sample model and color model of this image.
      * The size of the sample model is the tile size.
      *
+     * @todo Try to fetch the image reader from {@code ImageResource.Coverage.ReadContext.getReader(provider))}.
+     *
      * @param  store   the store that opened the <abbr>HEIF</abbr> file.
      * @throws DataStoreContentException if this image does not include information about the sample/color models.
      * @throws DataStoreException if the input cannot be set because of its type.
@@ -118,6 +124,7 @@ final class FromImageIO extends Image {
     @Override
     protected ImageTypeSpecifier getImageType(final GeoHeifStore store) throws DataStoreException, IOException {
         final ImageReader reader = provider.createReaderInstance();
+        reader.addIIOReadWarningListener(this);
         final var ranges = new ByteRanges();
         locator.resolve(0, -1, ranges);
         setReaderInput(reader, ranges.viewAsConsecutiveBytes(store.ensureOpen()), ranges);
@@ -125,15 +132,15 @@ final class FromImageIO extends Image {
         ImageTypeSpecifier specifier;
         if (it.hasNext()) {
             specifier = it.next();
+            final int width  = reader.getTileWidth (IMAGE_INDEX);
+            final int height = reader.getTileHeight(IMAGE_INDEX);
+            SampleModel sampleModel = specifier.getSampleModel();
+            if (sampleModel.getWidth() != width || sampleModel.getHeight() != height) {
+                sampleModel = specifier.getSampleModel(width, height);
+                specifier = new ImageTypeSpecifier(specifier.getColorModel(), sampleModel);
+            }
         } else {
-            return super.getImageType(store);
-        }
-        final int width  = reader.getTileWidth (IMAGE_INDEX);
-        final int height = reader.getTileHeight(IMAGE_INDEX);
-        SampleModel sampleModel = specifier.getSampleModel();
-        if (sampleModel.getWidth() != width || sampleModel.getHeight() != height) {
-            sampleModel = specifier.getSampleModel(width, height);
-            specifier = new ImageTypeSpecifier(specifier.getColorModel(), sampleModel);
+            specifier = super.getImageType(store);
         }
         reader.dispose();
         return specifier;
@@ -152,17 +159,30 @@ final class FromImageIO extends Image {
             final int tx = Math.toIntExact(context.subTileX);
             final int ty = Math.toIntExact(context.subTileY);
             final ImageReader reader = context.getReader(provider);
-            setReaderInput(reader, input, context);
             final BufferedImage image;
             try {
+                reader.addIIOReadWarningListener(this);
+                setReaderInput(reader, input, context);
                 if (reader.canReadRaster()) {
                     return reader.readTileRaster(IMAGE_INDEX, tx, ty);
                 }
                 image = reader.readTile(IMAGE_INDEX, tx, ty);
             } finally {
                 reader.setInput(null);
+                reader.removeIIOReadWarningListener(this);
             }
             return image.getRaster();
         };
+    }
+
+    /**
+     * Reports a non-fatal error during decoding.
+     *
+     * @param source   the reader calling this method.
+     * @param message  the warning.
+     */
+    @Override
+    public void warningOccurred(final ImageReader source, final String message) {
+        listeners.warning(message);
     }
 }
