@@ -33,6 +33,9 @@
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Minh Chinh Vu (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
+ * @author  Estelle Idée (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.7
  * @since   0.8
  */

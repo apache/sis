@@ -168,9 +168,11 @@ final class StatisticsCalculator extends AnnotatedImage {
      * Clones the given array and all values in the array.
      */
     static Statistics[] clone(Statistics[] result) {
-        result = result.clone();
-        for (int i=0; i<result.length; i++) {
-            result[i] = result[i].clone();
+        if (result != null) {
+            result = result.clone();
+            for (int i=0; i<result.length; i++) {
+                result[i] = result[i].clone();
+            }
         }
         return result;
     }

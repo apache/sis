@@ -16,10 +16,21 @@
  */
 package org.apache.sis.storage.geoheif;
 
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
 import org.opengis.util.GenericName;
-import org.apache.sis.storage.AbstractResource;
-import org.apache.sis.storage.GridCoverageResource;
+import org.opengis.util.NameFactory;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.isobmff.image.ImagePyramid;
+import org.apache.sis.storage.tiling.TiledGridCoverage;
+import org.apache.sis.storage.tiling.TiledGridCoverageResource;
 
 
 /**
@@ -27,26 +38,202 @@ import org.apache.sis.storage.isobmff.image.ImagePyramid;
  *
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
- *
- * @todo Not yet implemented. Not to integrate with {@code TiledGridCoverage}.
- *       It will require completion of the work for making {@code TiledGridCoverage}.
- *       an implementation of {@code TileMatrixSet}.
  */
-final class Pyramid extends AbstractResource {
+final class Pyramid extends TiledGridCoverageResource implements TiledGridCoverageResource.Pyramid {
     /**
-     * Name of this pyramid.
+     * Name of this pyramid, or {@code null} if none.
      */
     private final GenericName name;
 
     /**
+     * Tile width in pixels.
+     */
+    private final int tileSizeX;
+
+    /**
+     * Tile height in pixels.
+     */
+    private final int tileSizeY;
+
+    /**
+     * The layers in the order they were declared in the {@code pymd} box.
+     * This order should be from finest resolution (at index 0) to coarsest resolution.
+     */
+    private final ImageResource[] levels;
+
+    /**
+     * A comparator of pyramid level based on the size of their grid extent.
+     * We use the grid extent because this is sometime the only information which is known.
+     * The "grid to <abbr>CRS</abbr>", and therefore the resolution, may not have been computed yet.
+     */
+    private static final Comparator<ImageResource> LEVEL_COMPARATOR =
+            Comparator.comparing((image) -> image.getGridGeometry().getExtent(),
+                                 GridExtent.SIZES_COMPARATOR.reversed());
+
+    /**
      * Creates a new pyramid.
      *
-     * @param store       the parent of this pyramid.
-     * @param name        the name of this pyramid.
-     * @param components  the child resources.
+     * @param  store    the parent of this pyramid.
+     * @param  name     the name of this pyramid, or {@code null} if none.
+     * @param  pyramid  information about the pyramid.
+     * @param  levels   the child resources in arbitrary order. This array will be sorted in-place.
+     * @throws TransformException if an error occurred while deriving a "grid to <abbr>CRS</abbr>" transform.
      */
-    Pyramid(final GeoHeifStore store, final GenericName name, final ImagePyramid pyramid, final GridCoverageResource[] components) {
+    Pyramid(final GeoHeifStore store, final GenericName name, final ImagePyramid pyramid, final ImageResource[] levels)
+            throws TransformException
+    {
         super(store);
         this.name = name;
+        tileSizeX = pyramid.tileSizeX;
+        tileSizeY = pyramid.tileSizeY;
+        this.levels = levels;
+        Arrays.sort(levels, LEVEL_COMPARATOR);
+        /*
+         * Select the finest level for which the "grid to CRS" transform, and therefore the resolution,
+         * is defined. If none, select the very fist level, which should have the finest resolution.
+         */
+        GridGeometry base = null;
+        boolean updateBase = true;
+        for (final ImageResource level : levels) {
+            final GridGeometry grid = level.getGridGeometry();
+            if (grid.isDefined(GridGeometry.GRID_TO_CRS)) {
+                updateBase = false;   // Base is already complete.
+                base = grid;
+                break;
+            } else if (base == null) {
+                base = grid;
+            }
+        }
+        /*
+         * Now compute the "grid to CRS" transform for each pyramid level.
+         * It may include the base level itself if the transform was not specified anywhere.
+         */
+        for (ImageResource level : levels) {
+            level.setPyramidLevelOf(base);
+            if (updateBase) {
+                updateBase = false;
+                base = level.getGridGeometry();
+            }
+        }
+    }
+
+    /**
+     * Returns the name factory to use for creating identifiers of tiles and tile matrices.
+     */
+    @Override
+    public NameFactory nameFactory() {
+        return levels[0].store.nameFactory;
+    }
+
+    /**
+     * Returns the name of this pyramid.
+     */
+    @Override
+    public Optional<GenericName> getIdentifier() {
+        return Optional.ofNullable(name);
+    }
+
+    /**
+     * Returns the size of tiles in this resource.
+     * The length of the returned array is the number of dimensions,
+     */
+    @Override
+    protected int[] getTileSize() {
+        return new int[] {tileSizeX, tileSizeY};
+    }
+
+    /**
+     * Returns the grid geometry of the level with the finest resolution.
+     *
+     * @return grid geometry at finest resolution.
+     * @throws DataStoreException if an error occurred while fetching the grid geometry.
+     */
+    @Override
+    public GridGeometry getGridGeometry() throws DataStoreException {
+        return representative().getGridGeometry();
+    }
+
+    /**
+     * Returns the sample dimensions of this grid coverage.
+     * All levels should have the same sample dimensions.
+     * This method uses the finest level as representative.
+     *
+     * @return sample dimensions of this grid coverage.
+     * @throws DataStoreException if an error occurred while fetching the sample dimensions.
+     */
+    @Override
+    public List<SampleDimension> getSampleDimensions() throws DataStoreException {
+        return representative().getSampleDimensions();
+    }
+
+    /**
+     * Returns a resource which is representative of all pyramid levels except for the resolution.
+     * This method is invoked for fetching metadata such as the Coordinate Reference System
+     * when the resolution does not matter. For a <abbr>HEIF</abbr> file, this is the image
+     * with the finest resolution.
+     *
+     * @return a resource representative of all levels (ignoring resolution).
+     */
+    @Override
+    public TiledGridCoverageResource representative() {
+        return levels[0];
+    }
+
+    /**
+     * Returns information about the overviews which form the pyramid.
+     */
+    @Override
+    protected List<Pyramid> getPyramids() {
+        return List.of(this);
+    }
+
+    /**
+     * Returns the number of pyramid levels.
+     */
+    @Override
+    public OptionalInt numberOfLevels() {
+        return OptionalInt.of(levels.length);
+    }
+
+    /**
+     * Returns the image at the given pyramid level.
+     * Indices are in the reverse order of the images in the <abbr>HEIF</abbr> file,
+     * with 0 for the image at the coarsest resolution (the overview).
+     *
+     * @param  level  image index (level) in the pyramid, with 0 for coarsest resolution (the overview).
+     * @return image at the given pyramid level, or {@code null} if the given level is out of bounds.
+     */
+    @Override
+    public TiledGridCoverageResource forPyramidLevel(int level) {
+        if (level >= 0) {
+            level = (levels.length - 1) - level;    // Reverse order.
+            if (level >= 0) {
+                return levels[level];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Delegates to the pyramid level for the resolution of the given subset.
+     * This method should never be invoked because {@link #read(GridGeometry, int...)}
+     * should select itself the pyramid level on which to delegate the read operation.
+     * We nevertheless implement this method for safety.
+     *
+     * @param  subset  desired grid extent, resolution and sample dimensions to read.
+     * @return the grid coverage for the specified domain, resolution and ranges.
+     * @throws DataStoreException if the coverage cannot be created.
+     */
+    @Override
+    protected TiledGridCoverage read(final Subset subset) throws DataStoreException {
+        final double[] request = subset.domain.getResolution(false);
+        final int x = subset.xDimension();
+        final int y = subset.yDimension();
+        int level = levels.length;
+        while (--level >= 1) {
+            final double[] actual = levels[level].getGridGeometry().getResolution(false);
+            if (request[x] >= actual[x] && request[y] >= actual[y]) break;
+        }
+        return levels[level].read(subset);
     }
 }

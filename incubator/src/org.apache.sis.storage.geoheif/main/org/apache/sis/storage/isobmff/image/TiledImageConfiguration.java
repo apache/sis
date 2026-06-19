@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.isobmff.geo;
+package org.apache.sis.storage.isobmff.image;
 
 import java.io.IOException;
 import org.apache.sis.io.stream.ChannelDataInput;
@@ -132,6 +132,7 @@ public final class TiledImageConfiguration extends FullBox {
 
     /**
      * Returns the number of bits used to store the length of the image data of a specific tile.
+     * Value 0 means that size is not stored. Instead, it is computed from offsets.
      *
      * @return the number of bits for tile length.
      */

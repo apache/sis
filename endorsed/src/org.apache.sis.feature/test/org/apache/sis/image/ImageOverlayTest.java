@@ -41,6 +41,7 @@ import static org.apache.sis.feature.Assertions.assertValuesEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class ImageOverlayTest extends TestCase {
     /**

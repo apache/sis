@@ -23,7 +23,8 @@ import org.apache.sis.io.stream.InternalOptionKey;
 
 /**
  * Characteristics of the GeoTIFF file to write.
- * The modifiers can control, for example, the maximal size and number of images that can be stored in a TIFF file.
+ * The modifiers can control, for example, the maximal size and number of images
+ * that can be stored in a <abbr>TIFF</abbr> file.
  *
  * <p>The modifiers can be specified as an option when opening the data store.
  * For example for writing a BigTIFF file, the following code can be used:</p>
@@ -39,7 +40,8 @@ import org.apache.sis.io.stream.InternalOptionKey;
  *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @author  Estelle Idée (Geomatys)
+ * @version 1.7
  *
  * @see GeoTiffStore#getModifiers()
  *
@@ -47,13 +49,24 @@ import org.apache.sis.io.stream.InternalOptionKey;
  */
 public enum FormatModifier {
     /**
-     * The Big TIFF extension (non-standard).
+     * The Big <abbr>TIFF</abbr> extension (non-standard).
      * When this modifier is absent (which is the default), the standard TIFF format as defined by Adobe is used.
      * That standard uses the addressable space of 32-bits integers, which allows a maximal file size of about 4 GB.
      * When the {@code BIG_TIFF} modifier is present, the addressable space of 64-bits integers is used.
      * The BigTIFF format is non-standard and files written with this option may not be read by all TIFF readers.
      */
     BIG_TIFF,
+
+    /**
+     * A pyramided GeoTIFF format in which overviews are generated automatically from the base image.
+     * This is almost the Cloud Optimized GeoTIFF (<abbr>COG</abbr>) format, except that the overviews
+     * are written in unspecified order, not in the order mandated by the <abbr>COG</abbr> conventions.
+     * This flexibility makes possible to write the <abbr>TIFF</abbr> file directly,
+     * with no need to write in a temporary file and reorder the images at the end.
+     *
+     * @since 1.7
+     */
+    PYRAMIDED,
 
     // TODO: COG, SPARSE.
 

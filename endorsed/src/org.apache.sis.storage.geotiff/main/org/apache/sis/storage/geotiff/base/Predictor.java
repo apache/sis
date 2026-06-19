@@ -16,17 +16,16 @@
  */
 package org.apache.sis.storage.geotiff.base;
 
+import java.util.Locale;
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
  * Possible values for {@code BaselineTIFFTagSet.TAG_PREDICTOR}.
- * A predictor is a mathematical operator that is applied to the image data
- * before an encoding scheme is applied.
+ * A predictor is a mathematical operator that is applied to the image data before an encoding scheme is applied.
  *
- * <p>This enumeration contains more values than what the Apache SIS reader and writer can support.
- * This enumeration is not put in public API for that reason.</p>
+ * <p>This enumeration contains more values than what the Apache <abbr>SIS</abbr> reader and writer can support.
+ * This enumeration is not put in public <abbr>API</abbr> for that reason.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -52,7 +51,7 @@ public enum Predictor {
     UNKNOWN(0);
 
     /**
-     * The TIFF code for this predictor.
+     * The <abbr>TIFF</abbr> code for this predictor.
      */
     public final int code;
 
@@ -66,7 +65,7 @@ public enum Predictor {
     /**
      * Returns the predictor for the given code.
      *
-     * @param  code  value associated to TIFF "predictor" tag.
+     * @param  code  value associated to <abbr>TIFF</abbr> "predictor" tag.
      * @return predictor for the given code.
      */
     public static Predictor valueOf(final int code) {
@@ -79,17 +78,21 @@ public enum Predictor {
     }
 
     /**
-     * Returns the predictor for the given code if supported.
+     * Returns whether this predictor is supported by the writer.
      *
-     * @param  code  value associated to TIFF "predictor" tag.
-     * @return predictor for the given code.
-     * @throws IllegalArgumentException if the given code is unsupported.
+     * @return whether this predictor is supported.
      */
-    public static Predictor supported(final int code) {
-        final Predictor value = valueOf(code);
-        if (value.ordinal() <= HORIZONTAL_DIFFERENCING.ordinal()) {
-            return value;
-        }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedArgumentValue_1, code));
+    public boolean isSupported() {
+        return ordinal() <= HORIZONTAL_DIFFERENCING.ordinal();
+    }
+
+    /**
+     * Returns an error message for saying that this predictor is unsupported.
+     *
+     * @param  locale  the locale for the error message, or {@code null} for the default locale.
+     * @return error message for unsupported predictor.
+     */
+    public final String unsupported(final Locale locale) {
+        return Resources.forLocale(locale).getString(Resources.Keys.UnsupportedPredictor_1, this);
     }
 }

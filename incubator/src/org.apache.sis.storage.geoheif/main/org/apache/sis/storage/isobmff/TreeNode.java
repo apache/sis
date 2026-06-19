@@ -561,13 +561,13 @@ public abstract class TreeNode {
         }
 
         /**
-         * Returns the name of the given field with camel-case converted to a sentence of words.
+         * Returns the name of the given field with camel-case converted to a sentence.
          *
          * @param  field  the field for which to get the name.
          * @return field name as a sequence of words.
          */
         private static String camelCaseToWords(final Field field) {
-            return CharSequences.camelCaseToWords(field.getName(), false).toString();
+            return CharSequences.camelCaseToWords(field.getName(), true).toString();
         }
     }
 

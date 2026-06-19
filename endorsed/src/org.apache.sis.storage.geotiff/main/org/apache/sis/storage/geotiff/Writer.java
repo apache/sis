@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Deque;
 import java.util.Queue;
 import java.util.Set;
+import java.util.EnumSet;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
@@ -39,6 +40,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.ImageProcessor;
+import org.apache.sis.image.ImageLayout;
 import org.apache.sis.image.DataType;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
@@ -47,6 +49,7 @@ import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.IncompatibleResourceException;
 import org.apache.sis.storage.ReadOnlyStorageException;
 import org.apache.sis.storage.metadata.MetadataFetcher;
+import org.apache.sis.storage.base.OverviewIterator;
 import org.apache.sis.storage.geotiff.writer.TagValue;
 import org.apache.sis.storage.geotiff.writer.TileMatrix;
 import org.apache.sis.storage.geotiff.writer.GeoEncoder;
@@ -78,8 +81,15 @@ import org.opengis.coverage.CannotEvaluateException;
  *
  * @author  Erwan Roussel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Estelle Idée (Geomatys)
  */
-final class Writer extends IOBase implements Flushable {
+final class Writer extends IOBase implements OverviewIterator, Flushable {
+    /**
+     * Maximal size of the highest overview.
+     * Used as a criteria for deciding when to stop creating overviews in a pyramided file.
+     */
+    static final int OVERVIEW_SIZE = ImageLayout.DEFAULT_TILE_SIZE;
+
     /**
      * BigTIFF code for unsigned 64-bits integer type.
      *
@@ -139,6 +149,14 @@ final class Writer extends IOBase implements Flushable {
     private final boolean isBigTIFF;
 
     /**
+     * Whether to write a pyramid of overviews. This is one requirement of Cloud Optimized GeoTIFF <abbr>COG</abbr>,
+     * but not sufficient for claiming compliance because this option does not force <abbr>COG</abbr> image order.
+     *
+     * @see #getFormat()
+     */
+    private final boolean isPyramided;
+
+    /**
      * Whether to disable the <abbr>TIFF</abbr> requirement that tile sizes are multiple of 16 pixels.
      */
     private final boolean anyTileSize;
@@ -192,6 +210,7 @@ final class Writer extends IOBase implements Flushable {
         super(store);
         this.output = output;
         isBigTIFF   = ArraysExt.contains(options, FormatModifier.BIG_TIFF);
+        isPyramided = ArraysExt.contains(options, FormatModifier.PYRAMIDED);
         anyTileSize = ArraysExt.contains(options, FormatModifier.ANY_TILE_SIZE);
         /*
          * Write the TIFF file header before first IFD. Stream position matter and must start at zero.
@@ -223,6 +242,7 @@ final class Writer extends IOBase implements Flushable {
     Writer(final Reader reader) throws IOException, DataStoreException {
         super(reader.store);
         isBigTIFF = (reader.intSizeExpansion != 0);
+        isPyramided = false;
         anyTileSize = false;
         try {
             output = new ChannelDataOutput(reader.input);
@@ -266,7 +286,10 @@ final class Writer extends IOBase implements Flushable {
      */
     @Override
     public final Set<FormatModifier> getModifiers() {
-        return isBigTIFF ? Set.of(FormatModifier.BIG_TIFF) : Set.of();
+        final var modifiers = EnumSet.noneOf(FormatModifier.class);
+        if (isBigTIFF)   modifiers.add(FormatModifier.BIG_TIFF);
+        if (isPyramided) modifiers.add(FormatModifier.PYRAMIDED);
+        return modifiers;
     }
 
     /**
@@ -281,6 +304,23 @@ final class Writer extends IOBase implements Flushable {
     }
 
     /**
+     * Returns the next overview level, from finest resolution to coarsest resolution.
+     *
+     * @param  previous  the image at finer resolution which has been written before this method call.
+     * @return the next overview level, or {@code null} if the iteration is finished.
+     * @throws DataStoreException if the resource cannot be read.
+     */
+    @Override
+    public final RenderedImage nextOverview(final RenderedImage previous) throws DataStoreException {
+        if (isPyramided) {
+            if (previous.getWidth() > OVERVIEW_SIZE || previous.getHeight() > OVERVIEW_SIZE) {
+                return processor().overview(previous);
+            }
+        }
+        return null;
+    }
+
+    /**
      * Encodes the given image to the output stream given at construction time.
      * The image is appended after any previous images written before the given one.
      * This method does not handle pyramids such as Cloud Optimized GeoTIFF (COG).
@@ -289,6 +329,7 @@ final class Writer extends IOBase implements Flushable {
      * @param  image     the image to encode.
      * @param  grid      mapping from pixel coordinates to "real world" coordinates, or {@code null} if none.
      * @param  metadata  title, author and other information, or {@code null} if none.
+     * @param  overview  whether the image is an overview of another image.
      * @return offset in {@link #output} where the Image File Directory (IFD) starts.
      * @throws RasterFormatException if the raster uses an unsupported sample model.
      * @throws ArithmeticException if an integer overflow occurs.
@@ -297,7 +338,7 @@ final class Writer extends IOBase implements Flushable {
      *         which is not supported by TIFF specification or by this writer.
      */
     @SuppressWarnings("UseSpecificCatch")
-    public final long append(final RenderedImage image, final GridGeometry grid, final Metadata metadata)
+    public final long append(final RenderedImage image, final GridGeometry grid, final Metadata metadata, final boolean overview)
             throws IOException, DataStoreException
     {
         final var exportable = new ReformattedImage(image, this::processor, anyTileSize);
@@ -321,7 +362,7 @@ final class Writer extends IOBase implements Flushable {
         try {
             final TileMatrix tiles;
             try {
-                tiles = writeImageFileDirectory(exportable, grid, metadata, false);
+                tiles = writeImageFileDirectory(exportable, grid, metadata, overview);
             } finally {
                 largeTagData.clear();       // For making sure that there is no memory retention.
             }

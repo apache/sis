@@ -29,7 +29,7 @@ import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.geotiff.base.Tags;
 import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.storage.geotiff.base.Predictor;
-import org.apache.sis.storage.geotiff.base.Compression;
+import org.apache.sis.storage.geotiff.base.CompressionMethod;
 import org.apache.sis.storage.tiling.TiledGridCoverage;
 import org.apache.sis.storage.tiling.TiledGridCoverageResource;
 import org.apache.sis.storage.base.StoreResource;
@@ -159,7 +159,7 @@ abstract class DataCube extends TiledGridCoverageResource implements StoreResour
     /**
      * Returns the compression method, or {@code null} if unspecified.
      */
-    abstract Compression getCompression();
+    abstract CompressionMethod getCompression();
 
     /**
      * Returns the mathematical operator that is applied to the image data before an encoding scheme is applied.
@@ -246,7 +246,7 @@ abstract class DataCube extends TiledGridCoverageResource implements StoreResour
      */
     @Override
     protected final TiledGridCoverage read(final Subset subset) throws DataStoreException {
-        final Compression compression = getCompression();
+        final CompressionMethod compression = getCompression();
         if (compression == null) {
             throw new DataStoreContentException(reader.resources().getString(
                     Resources.Keys.MissingValue_2, Tags.name((short) TAG_COMPRESSION)));
@@ -256,7 +256,7 @@ abstract class DataCube extends TiledGridCoverageResource implements StoreResour
          * documented in the javadoc of its `readSlice(…)` method. If any precondition
          * is not met, we need to fallback on the less direct `CompressedSubset` class.
          */
-        if (compression == Compression.NONE && getPredictor() == Predictor.NONE && canReadDirect(subset)) {
+        if (compression == CompressionMethod.NONE && getPredictor() == Predictor.NONE && canReadDirect(subset)) {
             return new DataSubset(this, subset);
         } else {
             return new CompressedSubset(this, subset);

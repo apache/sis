@@ -16,12 +16,16 @@
  */
 
 /**
- * GeoTIFF store.
+ * A data store for reading and writing GeoTIFF files.
+ * This module supports big <abbr>TIFF</abbr> and Cloud Optimized GeoTIFF (<abbr>COG</abbr>).
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Minh Chinh Vu (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
+ * @author  Estelle Idée (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @version 1.7
  * @since   0.8
  */

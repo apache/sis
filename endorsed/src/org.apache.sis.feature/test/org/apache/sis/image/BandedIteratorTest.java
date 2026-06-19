@@ -34,6 +34,7 @@ import org.opengis.coverage.grid.SequenceType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class BandedIteratorTest extends PixelIteratorTest {
     /**
      * Creates a new test case.

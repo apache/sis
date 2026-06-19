@@ -48,7 +48,7 @@ import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.geotiff.base.Tags;
 import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.storage.geotiff.base.Predictor;
-import org.apache.sis.storage.geotiff.base.Compression;
+import org.apache.sis.storage.geotiff.base.CompressionMethod;
 import org.apache.sis.storage.geotiff.reader.Type;
 import org.apache.sis.storage.geotiff.reader.GridGeometryBuilder;
 import org.apache.sis.storage.geotiff.reader.ImageMetadataBuilder;
@@ -374,7 +374,7 @@ final class ImageFileDirectory extends DataCube {
      *
      * @see #getCompression()
      */
-    private Compression compression;
+    private CompressionMethod compression;
 
     /**
      * Mathematical operator that is applied to the image data before an encoding scheme is applied.
@@ -657,8 +657,8 @@ final class ImageFileDirectory extends DataCube {
              */
             case TAG_COMPRESSION: {
                 final int value = type.readAsInt(input(), count);
-                compression = Compression.valueOf(value);
-                if (compression == Compression.UNKNOWN) {
+                compression = CompressionMethod.valueOf(value);
+                if (compression == CompressionMethod.UNKNOWN) {
                     return value;                           // Cause a warning to be reported by the caller.
                 }
                 break;
@@ -1316,7 +1316,7 @@ final class ImageFileDirectory extends DataCube {
          * then we set a bit for preventing the `switch` block to perform a calculation but we let the code performs
          * the other checks in order to get an exception thrown with a better message.
          */
-        int missing = !isPlanar && compression.equals(Compression.NONE) ? 0 : 0b1000;
+        int missing = !isPlanar && compression.equals(CompressionMethod.NONE) ? 0 : 0b1000;
         if (tileWidth      < 0)     missing |= 0b0001;
         if (tileHeight     < 0)     missing |= 0b0010;
         if (tileByteCounts == null) missing |= 0b0100;
@@ -1933,7 +1933,7 @@ final class ImageFileDirectory extends DataCube {
      * Returns the compression method, or {@code null} if unspecified.
      */
     @Override
-    Compression getCompression() {
+    CompressionMethod getCompression() {
         return compression;
     }
 
@@ -2037,8 +2037,8 @@ final class ImageFileDirectory extends DataCube {
     }
 
     /**
-     * A list of Image File Directories (FID) where the first entry is the image at coarsest resolution
-     * and following entries are images at finer resolutions. The entry at finest resolution is the
+     * A list of Image File Directories (<abbr>FID</abbr>) where the first element is the image at the coarsest
+     * resolution and next elements are images at finer resolutions. The element at the finest resolution is the
      * enclosing {@link ImageFileDirectory}.
      */
     private final class Overviews implements Pyramid {

@@ -22,7 +22,12 @@ import org.apache.sis.storage.WritableAggregate;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.base.OverviewIterator;
 import org.apache.sis.storage.base.WritableAggregateSupport;
+import org.apache.sis.storage.base.WritableTiledResourceSupport;
+import org.apache.sis.storage.tiling.TileMatrixSet;
+import org.apache.sis.storage.tiling.TiledResource;
+import org.apache.sis.util.collection.Containers;
 
 
 /**
@@ -30,8 +35,14 @@ import org.apache.sis.storage.base.WritableAggregateSupport;
  *
  * @author  Erwan Roussel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  */
 final class WritableStore extends GeoTiffStore implements WritableAggregate {
+    /**
+     * Provider of overviews, or {@code null} if none.
+     */
+    private WritableTiledResourceSupport overviews;
+
     /**
      * Creates a new GeoTIFF store from the given file, URL or stream object.
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)},
@@ -54,13 +65,34 @@ final class WritableStore extends GeoTiffStore implements WritableAggregate {
      * @throws DataStoreException if the given resource cannot be stored in this {@code Aggregate}.
      */
     @Override
-    public Resource add(final Resource resource) throws DataStoreException {
+    public synchronized Resource add(final Resource resource) throws DataStoreException {
         final var helper = new WritableAggregateSupport(this);
         if (resource instanceof Aggregate) {
             return helper.writeComponents((Aggregate) resource);
         }
         final GridCoverageResource gr = helper.asGridCoverage(resource);
-        return append(gr.read(null, null), gr.getMetadata());
+        if (gr instanceof TiledResource) {
+            final TileMatrixSet tms = Containers.peekFirst(((TiledResource) gr).getTileMatrixSets());
+            if (tms != null) {
+                overviews = new WritableTiledResourceSupport(gr, tms);
+            }
+        }
+        try {
+            return append(gr.read(null, null), gr.getMetadata());
+        } finally {
+            overviews = null;
+        }
+    }
+
+    /**
+     * Returns the source of overviews for the image which is currently in process of being written.
+     *
+     * @param  writer  the default source of overview.
+     * @return the source of overview to use.
+     */
+    @Override
+    final OverviewIterator overviews(final OverviewIterator writer) {
+        return (overviews != null) ? overviews : writer;
     }
 
     /**

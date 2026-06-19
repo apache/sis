@@ -18,7 +18,7 @@ package org.apache.sis.storage.isobmff.base;
 
 import java.io.IOException;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.isobmff.ByteRanges;
 import org.apache.sis.storage.isobmff.Reader;
 import org.apache.sis.storage.isobmff.Box;
@@ -58,9 +58,8 @@ public class ItemData extends Box implements ByteRanges.Reader {
 
     /**
      * Number of bytes to read, or -1 for reading until the end of file.
-     * Note that -1 is also the maximal unsigned value.
+     * Note that -1 is also the maximal value when treated as unsigned integer.
      */
-    @Interpretation(Type.UNSIGNED)
     public final long size;
 
     /**
@@ -82,17 +81,18 @@ public class ItemData extends Box implements ByteRanges.Reader {
      * @param  offset  offset of the first byte to read relative to the data stored in this item.
      * @param  length  maximum number of bytes to read, starting at the offset, or a negative value for reading all.
      * @param  addTo   where to add the range of bytes to read as offsets relatives to the beginning of the file.
+     * @throws DataStoreContentException if the length is unspecified.
      * @throws ArithmeticException if an integer overflow occurred.
      */
     @Override
-    public void resolve(long offset, long length, ByteRanges addTo) throws DataStoreException {
+    public void resolve(long offset, long length, ByteRanges addTo) throws DataStoreContentException {
         if (size >= 0) {
             ArgumentChecks.ensureBetween("offset", 0, size - Math.max(0, length), offset);
             if (length > size || length < 0) {
                 length = size;
             }
         } else if (length < 0) {
-            throw new DataStoreException("Stream of unknown length.");
+            throw new DataStoreContentException("Stream of unknown length.");
         }
         offset = Math.addExact(payloadOffset, offset);
         addTo.addRange(offset, Math.addExact(offset, length));

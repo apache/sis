@@ -45,7 +45,6 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.MemoryGridCoverageResource;
-import org.apache.sis.storage.base.PseudoResource;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;

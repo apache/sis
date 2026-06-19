@@ -40,6 +40,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("exports")
 public abstract class ImageTestCase extends TestCase {
     /**
      * Small value for comparisons of sample values. Since most grid coverage implementations in

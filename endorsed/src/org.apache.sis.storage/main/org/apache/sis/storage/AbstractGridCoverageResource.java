@@ -17,6 +17,7 @@
 package org.apache.sis.storage;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,6 +47,7 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.io.stream.IOUtilities;
+import org.apache.sis.io.stream.inflater.CompressionException;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.internal.shared.Constants;
 
@@ -153,6 +155,7 @@ public abstract class AbstractGridCoverageResource extends AbstractResource impl
      * @throws DataStoreException if an error occurred while converting the {@code domain} resolution.
      *
      * @see #read(GridGeometry, int...)
+     * @see GridGeometry#getResolution(boolean)
      *
      * @since 1.7
      */
@@ -230,6 +233,12 @@ public abstract class AbstractGridCoverageResource extends AbstractResource impl
             }
         } else if (isReferencing(cause)) {
             type = REFERENCING;
+        } else if (cause instanceof CompressionException) {
+            type = CONTENT;
+            Throwable c = cause.getCause();
+            if (c != null && Objects.equals(c.getMessage(), cause.getMessage())) {
+                cause = c;
+            }
         }
         final String message = createExceptionMessage(filename, bounds);
         switch (type) {

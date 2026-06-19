@@ -38,6 +38,7 @@ import static org.apache.sis.feature.Assertions.assertValuesEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ComputedImageTest extends TestCase {
     /**
      * Size of tiles in this test. The width should be different than the height

@@ -250,7 +250,7 @@ public class HyperRectangleWriter {
                 regionLower[0] = Math.floorDiv(regionLower[0] * pixelBitStride, dataSize);
                 regionUpper[0] = JDK18.ceilDiv(regionUpper[0] * pixelBitStride, dataSize);
             }
-            final var subset = new Region(sourceSize, regionLower, regionUpper, new long[] {1,1});
+            final var subset = new Region(sourceSize, regionLower, regionUpper, null);
             length = subset.length;
             if (bandOffsets != null) {
                 final int numBands = bandOffsets.length;

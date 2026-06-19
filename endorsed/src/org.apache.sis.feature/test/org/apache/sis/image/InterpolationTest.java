@@ -37,6 +37,7 @@ import org.apache.sis.test.TestCase;
  * @author  Rémi Marechal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class InterpolationTest extends TestCase {
     /**
      * Minimal pixel X and Y coordinates used in this test, inclusive.

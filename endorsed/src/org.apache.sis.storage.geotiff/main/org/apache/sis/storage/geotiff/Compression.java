@@ -19,10 +19,12 @@ package org.apache.sis.storage.geotiff;
 import java.io.Serializable;
 import java.util.OptionalInt;
 import java.util.zip.Deflater;
+import javax.imageio.plugins.tiff.BaselineTIFFTagSet;   // For javadoc.
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.geotiff.base.CompressionMethod;
 import org.apache.sis.storage.geotiff.base.Predictor;
 import org.apache.sis.io.stream.InternalOptionKey;
 
@@ -47,7 +49,7 @@ import org.apache.sis.io.stream.InternalOptionKey;
  * If no compression is explicitly specified, Apache SIS uses by default the {@link #DEFLATE} compression.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   1.5
  */
 public final class Compression implements Serializable {
@@ -59,9 +61,7 @@ public final class Compression implements Serializable {
     /**
      * No compression, but pack data into bytes as tightly as possible.
      */
-    public static final Compression NONE = new Compression(
-            org.apache.sis.storage.geotiff.base.Compression.NONE,
-            0, Predictor.NONE);
+    public static final Compression NONE = new Compression(CompressionMethod.NONE, 0, Predictor.NONE);
 
     /**
      * Deflate compression (like ZIP format) with a default compression level and a default predictor.
@@ -88,8 +88,7 @@ public final class Compression implements Serializable {
      * @see #withPredictor(int)
      */
     public static final Compression DEFLATE = new Compression(
-            org.apache.sis.storage.geotiff.base.Compression.DEFLATE,
-            Deflater.DEFAULT_COMPRESSION, Predictor.NONE);
+            CompressionMethod.DEFLATE, Deflater.DEFAULT_COMPRESSION, Predictor.NONE);
 
     /**
      * The key for declaring the compression at store creation time.
@@ -102,7 +101,7 @@ public final class Compression implements Serializable {
     /**
      * The compression method.
      */
-    final org.apache.sis.storage.geotiff.base.Compression method;
+    final CompressionMethod method;
 
     /**
      * The compression level from 0 to 9 inclusive, or -1 for default.
@@ -121,7 +120,7 @@ public final class Compression implements Serializable {
      * @param  level      the compression level, or -1 for default.
      * @param  predictor  the predictor to apply before compression.
      */
-    private Compression(final org.apache.sis.storage.geotiff.base.Compression method, final int level, final Predictor predictor) {
+    private Compression(final CompressionMethod method, final int level, final Predictor predictor) {
         this.method    = method;
         this.level     = level;
         this.predictor = predictor;
@@ -180,8 +179,16 @@ public final class Compression implements Serializable {
      * @see BaselineTIFFTagSet#PREDICTOR_HORIZONTAL_DIFFERENCING
      */
     public Compression withPredictor(int value) {
-        // `NONE` is required by `TileMatrix.writeRasters(…)` assumption that `level == 0` implies no predictor.
-        final Predictor p = usePredictor() ? Predictor.supported(value) : Predictor.NONE;
+        final Predictor p;
+        if (usePredictor()) {
+            p = Predictor.valueOf(value);
+            if (!p.isSupported()) {
+                throw new IllegalArgumentException(p.unsupported(null));
+            }
+        } else {
+            // `NONE` is required by `TileMatrix.writeRasters(…)` assumption that `level == 0` implies no predictor.
+            p = Predictor.NONE;
+        }
         return p.equals(predictor) ? this : new Compression(method, level, p);
     }
 
