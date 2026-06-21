@@ -47,7 +47,7 @@ import org.apache.sis.util.internal.shared.Strings;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.6
+ * @version 1.7
  *
  * @see org.apache.sis.util.Numbers
  * @see org.apache.sis.image.DataType
@@ -402,13 +402,17 @@ public enum NumberType {
      * @param  types     the primitive types or {@link Number} classes for which to get a common enumeration value.
      * @return the enumeration value for the given types, or {@code null}.
      */
-    private static NumberType forClasses(final boolean optional, final Class<?>... types) {
-        NumberType widest = VOID;
+    private static NumberType forClasses(final boolean optional, final Class<?>[] types) {
+        NumberType widest = VOID;       // Value of size 0 bit (not the same as null value).
         boolean found = false;
         if (types != null) {
             for (final Class<?> type : types) {
-                final NumberType other = forClass(type).orElse(null);
-                if (other == null) {
+                final NumberType other = valueOrNull(type);
+                if (other == null) {    // Means unknown type (not null type).
+                    if (Number.class.isAssignableFrom(type)) {
+                        widest = NUMBER;
+                        continue;
+                    }
                     if (optional) return null;
                     throw new IllegalArgumentException(Errors.format(Errors.Keys.NotANumericalType_1, type));
                 }
@@ -549,9 +553,6 @@ public enum NumberType {
      * @return whether this type is considered narrower than the specified type.
      */
     public boolean isNarrowerThan(final NumberType other) {
-        if (other == CHARACTER) {
-            return other.isWiderThan(this);
-        }
         return other.ordinal() < NUMBER.ordinal()
                 && ordinal() < other.ordinal()
                 && category <= other.category;  // Integers considered narrower than floating-point types.
@@ -572,9 +573,6 @@ public enum NumberType {
      * @return whether this type is considered wider than the specified type.
      */
     public boolean isWiderThan(final NumberType other) {
-        if (other == CHARACTER) {
-            return other.isNarrowerThan(this);
-        }
         return ordinal() < NUMBER.ordinal()
                 && ordinal() > other.ordinal()
                 && category >= other.category;  // Floating-point types considered wider than integers.
@@ -686,6 +684,25 @@ public enum NumberType {
     }
 
     /**
+     * Returns whether the two given numbers are equal when compared as instances of this type.
+     * The comparison may be inexact if this type is not wide enough for the widest argument value.
+     *
+     * <p><b>Example:</b>
+     * {@link #INTEGER} compares the values returned by the {@link Number#intValue()} method.
+     * It means that if two {@link Long} instances are compared using {@link #INTEGER},
+     * then only the lowest {@value Integer#SIZE} bits are compared.</p>
+     *
+     * @param  v1  first value to compare, or {@code null}.
+     * @param  v2  second value to compare, or {@code null}.
+     * @return whether the two values are equal when compared as instances of this type.
+     *
+     * @since 1.7
+     */
+    public boolean equals(final Number v1, final Number v2) {
+        return Objects.equals(cast(v1), cast(v2));
+    }
+
+    /**
      * Casts a value to the specified type without checking whether is would cause precision lost.
      * This method makes the following choice:
      *
@@ -701,7 +718,7 @@ public enum NumberType {
      * If this type is not wide enough, then the behavior depends on the implementation of the corresponding
      * {@code Number.fooValue()} method - typically, the value is just rounded or truncated.
      *
-     * @param  number  the number to cast, or {@code null}.
+     * @param  value  the number to cast, or {@code null}.
      * @return the number cast to this type, or {@code null} if the given number was null.
      * @throws UnsupportedOperationException if this type cannot cast numbers.
      * @throws NullPointerException if {@code number} is null.
@@ -710,9 +727,9 @@ public enum NumberType {
      *
      * @see org.apache.sis.util.Numbers#cast(Number, Class)
      */
-    public Number cast(Number number) {
-        if (number == null) {
-            return number;
+    public Number cast(Number value) {
+        if (value == null || wrapper.isInstance(value)) {
+            return value;
         }
         throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnknownType_1, this));
     }

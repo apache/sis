@@ -65,7 +65,7 @@ public final class Numerics {
      * matrices as equal. This value has been determined empirically in order to allow
      * {@code org.apache.sis.referencing.operation.transform.ConcatenatedTransform} to
      * detect the cases where two {@link org.apache.sis.referencing.operation.transform.LinearTransform}
-     * are equal for practical purpose. This threshold can be used as below:</p>
+     * are equal for practical purposes. This threshold can be used as below:</p>
      *
      * {@snippet lang="java" :
      *     Matrix m1 = ...;
@@ -77,7 +77,7 @@ public final class Numerics {
      *
      * By extension, the same threshold value is used for comparing other floating point values.
      *
-     * <p>The current value is set to the smallest power of 10 which allow the
+     * <p>The current value is set to the smallest power of 10 which allows the
      * {@code org.apache.sis.test.integration.ConsistencyTest} to pass.</p>
      *
      * @see org.apache.sis.referencing.internal.shared.Formulas#LINEAR_TOLERANCE
@@ -385,6 +385,7 @@ public final class Numerics {
 
     /**
      * Returns {@code true} if the given values are approximately equal, up to the given comparison threshold.
+     * NaN values are considered equal to all other NaN values, even if the threshold is also NaN.
      *
      * @param  v1  the first value to compare.
      * @param  v2  the second value to compare.
@@ -411,6 +412,12 @@ public final class Numerics {
     public static boolean epsilonEqual(final double v1, final double v2, final ComparisonMode mode) {
         if (mode.isApproximate()) {
             final double mg = max(abs(v1), abs(v2));
+            /*
+             * Infinite magnitude gives infinite tolerance threshold, which causes all finite numbers
+             * to be considered equal to the infinite number. For preventing these false positives,
+             * we must avoid the use of `epsilonEqual(…)` with infinite numbers. Note that there is
+             * no need to check for NaN values because `epsilonEqual(…)` is already NaN-safe.
+             */
             if (mg != Double.POSITIVE_INFINITY) {
                 return epsilonEqual(v1, v2, COMPARISON_THRESHOLD * mg);
             }
