@@ -26,6 +26,7 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.internal.shared.Numerics;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.util.internal.shared.Numerics;
 
 
 /**

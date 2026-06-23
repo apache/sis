@@ -18,7 +18,6 @@ package org.apache.sis.referencing.legacy;
 
 import java.util.Map;
 import java.util.Objects;
-import java.lang.reflect.Type;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -32,6 +31,7 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
 
 // Specific to the main and geoapi-3.1 branches:
+import java.lang.reflect.Type;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.datum.ImageDatum;
 

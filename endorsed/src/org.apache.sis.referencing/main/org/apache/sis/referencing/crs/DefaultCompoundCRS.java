@@ -45,7 +45,6 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.referencing.internal.shared.WKTUtilities;
 import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
-import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
@@ -60,6 +59,7 @@ import org.apache.sis.io.wkt.Convention;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 import org.opengis.referencing.crs.ParametricCRS;
+import org.apache.sis.util.Classes;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.metadata.internal.shared.Identifiers;
 

@@ -19,7 +19,6 @@ package org.apache.sis.coordinate;
 import java.util.Objects;
 import java.util.Optional;
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.time.temporal.Temporal;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -32,10 +31,11 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
-import org.apache.sis.util.Utilities;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.lang.reflect.Type;
 import org.opengis.coordinate.CoordinateMetadata;
+import org.apache.sis.util.Utilities;
 
 
 /**

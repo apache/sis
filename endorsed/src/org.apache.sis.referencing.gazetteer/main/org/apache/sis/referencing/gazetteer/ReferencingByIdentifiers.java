@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.HashMap;
 import java.util.logging.Logger;
-import java.lang.reflect.Type;
 import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.Quantity;
 import javax.measure.IncommensurableException;
@@ -47,6 +46,7 @@ import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.resources.Vocabulary;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.lang.reflect.Type;
 import org.opengis.referencing.ObjectDomain;
 import org.opengis.metadata.citation.Party;
 import org.opengis.referencing.gazetteer.Location;

@@ -20,14 +20,14 @@ import java.awt.Point;
 import java.awt.image.RenderedImage;
 import java.util.Random;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.coverage.grid.SequenceType;
-
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.coverage.grid.SequenceType;
 
 
 /**

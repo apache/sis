@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import java.lang.reflect.Type;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;
@@ -28,6 +27,7 @@ import org.apache.sis.referencing.datum.DefaultParametricDatum;
 import org.apache.sis.io.wkt.Formatter;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.lang.reflect.Type;
 import org.opengis.referencing.cs.ParametricCS;
 import org.opengis.referencing.crs.ParametricCRS;
 import org.opengis.referencing.datum.ParametricDatum;

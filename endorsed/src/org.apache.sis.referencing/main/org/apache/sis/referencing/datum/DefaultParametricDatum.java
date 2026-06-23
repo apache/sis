@@ -17,13 +17,13 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
-import java.lang.reflect.Type;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.lang.reflect.Type;
 import org.opengis.referencing.datum.ParametricDatum;
 
 

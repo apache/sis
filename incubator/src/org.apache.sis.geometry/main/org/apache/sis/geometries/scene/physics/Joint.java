@@ -19,6 +19,7 @@ package org.apache.sis.geometries.scene.physics;
 import java.util.List;
 import org.apache.sis.geometries.scene.SceneNode;
 
+
 /**
  * Constrains the motion of this node relative to another.
  *

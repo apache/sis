@@ -33,8 +33,8 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.apache.sis.util.Classes;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.referencing.CRS;
 
 
 /**

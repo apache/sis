@@ -19,6 +19,7 @@ package org.apache.sis.geometries.scene.physics;
 import org.apache.sis.geometries.math.Quaternion;
 import org.apache.sis.geometries.math.Vector3D;
 
+
 /**
  * Allows the simulation to move this node, describing parameters for that motion.
  *

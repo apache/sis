@@ -18,6 +18,7 @@ package org.apache.sis.geometries.math;
 
 import java.util.function.DoubleUnaryOperator;
 
+
 /**
  * Interpolation methods. The next methods provide non linear interpolation
  * between zero and one. Such methods are often use for animations.
