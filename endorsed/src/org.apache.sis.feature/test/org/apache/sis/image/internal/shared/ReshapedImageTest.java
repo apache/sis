@@ -20,6 +20,7 @@ import java.util.Random;
 import java.awt.image.DataBuffer;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
+import java.awt.image.Raster;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.image.TiledImageMock;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.feature.Assertions.assertValuesEqual;
 
 
@@ -35,6 +37,7 @@ import static org.apache.sis.feature.Assertions.assertValuesEqual;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  */
 public final class ReshapedImageTest extends TestCase {
     /**
@@ -86,7 +89,7 @@ public final class ReshapedImageTest extends TestCase {
         numYTiles = 1;
         width     = TILE_WIDTH;
         height    = TILE_HEIGHT;
-        final BufferedImage data = new BufferedImage(TILE_WIDTH, TILE_HEIGHT, BufferedImage.TYPE_BYTE_GRAY);
+        final var data = new BufferedImage(TILE_WIDTH, TILE_HEIGHT, BufferedImage.TYPE_BYTE_GRAY);
         data.getRaster().setSamples(0, 0, TILE_WIDTH, TILE_HEIGHT, 0, new int[] {
             1, 2, 3,
             4, 7, 6
@@ -196,6 +199,26 @@ public final class ReshapedImageTest extends TestCase {
             { 710,  711,  712  ,   810,  811,  812  ,   910,  911,  912},
             {1200, 1201, 1202  ,  1300, 1301, 1302  ,  1400, 1401, 1402},
             {1210, 1211, 1212  ,  1310, 1311, 1312  ,  1410, 1411, 1412}
+        });
+    }
+
+    /**
+     * Verify a reshaped image created to expose a single tile from a source tiled image only serves the requested tile.
+     */
+    @Test
+    public void testExposeSingleTileFromTiledImage() {
+        var source  = new TiledImageMock(DataBuffer.TYPE_USHORT, 1, 0, 0, 4, 4, 2, 2, 0, 0, false);
+        source.validate();
+        source.initializeAllTiles(0);
+        RenderedImage lastTile = ReshapedImage.singleTile(source, 1, 1);
+        assertMessageContains(assertThrows(IndexOutOfBoundsException.class,
+                () -> lastTile.getTile(0, 0),
+                "Tile (0, 0) should not be available"), "tileX");
+
+        Raster exposedTile = lastTile.getTile(1, 1);
+        assertValuesEqual(exposedTile, 0, new int[][] {
+                { 400, 401 },
+                { 410, 411 }
         });
     }
 }

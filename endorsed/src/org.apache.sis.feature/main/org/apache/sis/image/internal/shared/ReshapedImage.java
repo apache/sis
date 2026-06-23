@@ -42,6 +42,7 @@ import org.apache.sis.image.PlanarImage;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  */
 public final class ReshapedImage extends PlanarImage {
     /**
@@ -128,7 +129,8 @@ public final class ReshapedImage extends PlanarImage {
                 0, 0,
                 tileWidth,
                 tileHeight,
-                0, 0);
+                tileX,
+                tileY);
         return image.isIdentity() ? image.source : image;
     }
 
@@ -295,9 +297,19 @@ public final class ReshapedImage extends PlanarImage {
      * @param  tileX  the <var>x</var> index of the requested tile in the tile array.
      * @param  tileY  the <var>y</var> index of the requested tile in the tile array.
      * @return the tile specified by the specified indices.
+     * @throws IndexOutOfBoundsException if a given tile index is out of bounds.
      */
     @Override
     public Raster getTile(final int tileX, final int tileY) {
+        /*
+         * Checking the tile index is not strictly necessary because `RenderedImage` does not specify
+         * any behavior for invalid tile index. In particular, the exception to throw is unspecified.
+         * In this method, skipping the check would not be a violation of the method contract: we may
+         * return more tiles that what `ReshapedImage` declares, but those tiles are not wrong.
+         * However, checking the image boundaries may help to catch user's mistake.
+         */
+        checkTileIndex("tileX", minTileX, getNumXTiles(), tileX);
+        checkTileIndex("tileY", minTileY, getNumYTiles(), tileY);
         return offset(source.getTile(tileX, tileY));
     }
 

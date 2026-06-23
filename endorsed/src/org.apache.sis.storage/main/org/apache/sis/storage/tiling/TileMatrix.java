@@ -228,6 +228,8 @@ public interface TileMatrix {
      * @return stream of tiles, excluding {@linkplain TileStatus#MISSING missing} tiles.
      *         Iteration order of the stream may vary from one implementation to another and from one call to another.
      * @throws DataStoreException if the tiles cannot be fetched in the given ranges of tile indexes.
+     * @throws ArithmeticException if some coordinates are too large.
+     *         This exception may also happen latter, during the execution of the returned stream.
      */
     Stream<Tile> getTiles(GridExtent indiceRanges, boolean parallel) throws DataStoreException;
 }
