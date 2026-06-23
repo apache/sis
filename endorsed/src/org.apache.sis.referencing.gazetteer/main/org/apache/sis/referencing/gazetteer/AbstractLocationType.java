@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.lang.reflect.Type;
 import org.apache.sis.referencing.gazetteer.internal.Resources;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
@@ -32,6 +31,7 @@ import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.lang.reflect.Type;
 import org.opengis.referencing.gazetteer.LocationType;
 import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
 

@@ -16,9 +16,10 @@
  */
 package org.apache.sis.geometries;
 
-import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+
 
 /**
  * A Frustum is a delimited space defined by one or many planes.

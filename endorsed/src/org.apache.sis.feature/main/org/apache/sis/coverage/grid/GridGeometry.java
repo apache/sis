@@ -39,6 +39,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.DerivedCRS;
+import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.math.MathFunctions;
@@ -95,7 +96,6 @@ import static org.apache.sis.referencing.CRS.SeparationMode;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coordinate.CoordinateMetadata;
 import org.opengis.coordinate.MismatchedDimensionException;
-import org.opengis.referencing.crs.EngineeringCRS;
 
 
 /**

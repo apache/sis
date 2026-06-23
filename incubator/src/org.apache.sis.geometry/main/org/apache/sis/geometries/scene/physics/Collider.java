@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.scene.physics;
 
+
 /**
  * Describes the physical representation of a node's shape for collision detection.
  *

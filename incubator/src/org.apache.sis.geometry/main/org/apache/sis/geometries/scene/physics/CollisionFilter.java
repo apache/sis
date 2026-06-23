@@ -18,6 +18,7 @@ package org.apache.sis.geometries.scene.physics;
 
 import java.util.Set;
 
+
 /**
  * Describes a filter which determines if this collider should perform collision detection
  * against another collider.
@@ -77,7 +78,7 @@ public final class CollisionFilter {
 
     /**
      * @param collideWithSystems the collideWithSystems to set
-     * @see #getCollideWithSystems() 
+     * @see #getCollideWithSystems()
      */
     public void setCollideWithSystems(Set<String> collideWithSystems) {
         this.collideWithSystems = collideWithSystems;

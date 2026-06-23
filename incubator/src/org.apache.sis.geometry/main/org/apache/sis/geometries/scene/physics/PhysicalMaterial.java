@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.scene.physics;
 
+
 /**
  * Describes how the collider should respond to collisions.
  *
@@ -120,7 +121,7 @@ public final class PhysicalMaterial {
 
     /**
      * @param restitutionCombine the restitutionCombine to set
-     * @see #getRestitutionCombine() 
+     * @see #getRestitutionCombine()
      */
     public void setRestitutionCombine(Combine restitutionCombine) {
         this.restitutionCombine = restitutionCombine;

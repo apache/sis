@@ -27,8 +27,8 @@ import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.base.Capability;
-import org.apache.sis.storage.gsf.panama.LibraryStatus;
 import org.apache.sis.storage.base.URIDataStoreOption;
+import org.apache.sis.storage.gsf.panama.LibraryStatus;
 import org.apache.sis.system.Cleaners;
 
 

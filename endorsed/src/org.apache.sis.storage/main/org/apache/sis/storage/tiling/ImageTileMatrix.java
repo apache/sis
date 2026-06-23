@@ -52,13 +52,15 @@ import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.image.ComputedImage;
 import org.apache.sis.image.internal.shared.ReshapedImage;
 import org.apache.sis.pending.jdk.JDK18;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.storage.internal.Resources;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**

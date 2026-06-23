@@ -23,7 +23,6 @@ import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.referencing.ObjectDomain;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.SingleCRS;
@@ -51,7 +50,6 @@ import org.apache.sis.util.ComparisonMode;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
@@ -62,6 +60,10 @@ import static org.apache.sis.referencing.Assertions.assertMatrixEquals;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 import static org.apache.sis.feature.Assertions.assertGridToCenterEquals;
 import static org.apache.sis.feature.Assertions.assertGridToCornerEquals;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.ObjectDomain;
+import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
 
 
 /**

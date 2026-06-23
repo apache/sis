@@ -19,6 +19,7 @@ package org.apache.sis.geometries.scene.physics;
 import java.util.List;
 import org.apache.sis.geometries.scene.SceneNode;
 
+
 /**
  * Describes a volume which can detect collisions, but does not generate a physical response.
  *

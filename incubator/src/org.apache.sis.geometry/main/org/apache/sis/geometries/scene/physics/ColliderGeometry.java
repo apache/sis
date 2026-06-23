@@ -18,6 +18,7 @@ package org.apache.sis.geometries.scene.physics;
 
 import org.apache.sis.geometries.Geometry;
 
+
 /**
  *
  * @author Johann Sorel
