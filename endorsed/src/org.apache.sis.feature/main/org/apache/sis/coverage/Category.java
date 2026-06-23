@@ -33,6 +33,9 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.LenientComparable;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.Types;
 
 
@@ -68,10 +71,11 @@ import org.apache.sis.util.iso.Types;
  * <p>All {@code Category} objects are immutable and thread-safe.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.7
  * @since   1.0
  */
-public class Category implements Serializable {
+public class Category implements LenientComparable, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -493,12 +497,13 @@ public class Category implements Serializable {
     }
 
     /**
-     * Returns a hash value for this category. This value needs not remain consistent between
-     * different implementations of the same class.
+     * Returns a hash value for this category.
+     *
+     * @return a hash value for this category.
      */
     @Override
     public int hashCode() {
-        return name.hashCode();
+        return name.hashCode() + range.hashCode();
     }
 
     /**
@@ -508,28 +513,72 @@ public class Category implements Serializable {
      * @return {@code true} if the given object is equal to this category.
      */
     @Override
-    public boolean equals(final Object object) {
+    public final boolean equals(final Object object) {
+        return equals(object, ComparisonMode.STRICT);
+    }
+
+    /**
+     * Compares this category with the given object for equality at the given level of strictness.
+     *
+     * <ul>
+     *   <li>{@link ComparisonMode#STRICT}: same implementation class, same name, exact range and transfer function.</li>
+     *   <li>{@link ComparisonMode#BY_CONTRACT}: same name, exact range and transfer function; class may differ.</li>
+     *   <li>{@link ComparisonMode#IGNORE_METADATA} and more lenient: range and transfer function only (name is ignored).</li>
+     *   <li>{@link ComparisonMode#APPROXIMATE}: range and transfer function approximately equal.</li>
+     * </ul>
+     *
+     * @param  object  the object to compare with.
+     * @param  mode    the comparison strictness level.
+     * @return {@code true} if both objects are equal according the given comparison mode.
+     *
+     * @since 1.7
+     */
+    @Override
+    public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
             // Slight optimization
             return true;
         }
-        if (object != null && getClass().equals(object.getClass())) {
+        if (object instanceof Category) {
             final Category that = (Category) object;
-            if (name.equals(that.name)) {
-                final NumberRange<?> other = that.range;
-                /*
-                 * The NumberRange.equals(Object) comparison is not sufficient because it considers all NaN values as equal.
-                 * For the purpose of Category, we need to distinguish the different NaN values.
-                 */
-                if (range == other || (range.equals(other)
-                        && doubleToRawLongBits(range.getMinDouble()) == doubleToRawLongBits(other.getMinDouble())
-                        && doubleToRawLongBits(range.getMaxDouble()) == doubleToRawLongBits(other.getMaxDouble())))
-                {
-                    return toConverse.equals(that.toConverse);
-                }
+            if (mode == ComparisonMode.STRICT) {
+                return object.getClass() == getClass()
+                        && name.equals(that.name)
+                        && equals(range, that.range, mode)
+                        && toConverse.equals(that.toConverse);
+            }
+            if (mode.isIgnoringMetadata() || getName().equals(that.getName())) {
+                return equals(getSampleRange(), that.getSampleRange(), mode)
+                        && Utilities.deepEquals(toConverse, that.toConverse, mode);
             }
         }
         return false;
+    }
+
+    /**
+     * Compares the given ranges with a distinction between the different NaN values.
+     * The {@link NumberRange#equals(Object, ComparisonMode)} method is not sufficient
+     * because it considers all NaN values as equal. For the purpose of {@link Category},
+     * we need to distinguish the different NaN values.
+     */
+    private static boolean equals(final NumberRange<?> range, final NumberRange<?> other, final ComparisonMode mode) {
+        if (range == other) {
+            return true;
+        }
+        return range.equals(other, mode)
+                && sameNaN(range.getMinDouble(), other.getMinDouble())
+                && sameNaN(range.getMaxDouble(), other.getMaxDouble());
+    }
+
+    /**
+     * If the given values are NaN, returns whether they have the same bit patterns.
+     * If the given values are non NaN, returns {@code true} if none of them are NaN.
+     * This method does not verify whether non-NaN values are equal because it depends
+     * on {@link ComparisonMode}.
+     */
+    private static boolean sameNaN(final double value, final double other) {
+        return doubleToRawLongBits(value) == doubleToRawLongBits(other)
+                || !(Double.isNaN(value) || Double.isNaN(other));
     }
 
     /**

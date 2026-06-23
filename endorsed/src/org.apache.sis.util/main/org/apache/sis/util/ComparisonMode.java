@@ -54,15 +54,15 @@ import org.opengis.referencing.operation.MathTransform;
  */
 public enum ComparisonMode {
     /**
-     * All attributes of the compared objects shall be strictly equal. This comparison mode
+     * All attributes of the compared objects shall be strictly equal. This criterion
      * is equivalent to the {@link Object#equals(Object)} method, and must be compliant with
-     * the contract documented in that method. In particular, this comparison mode shall be
-     * consistent with {@link Object#hashCode()} and be symmetric ({@code A.equals(B)} implies
-     * {@code B.equals(A)}).
+     * the contract documented in that method. In particular, the comparison algorithm shall
+     * be consistent with {@link Object#hashCode()} and be symmetric ({@code A.equals(B)}
+     * implies {@code B.equals(A)}).
      *
      * <h4>Implementation note</h4>
-     * In the <abbr>SIS</abbr> implementations, this comparison mode usually have the following
-     * characteristics (not always, this is only typical):
+     * In the <abbr>SIS</abbr> implementations, the comparison algorithm for this criterion
+     * usually has the following characteristics:
      *
      * <ul>
      *   <li>The objects being compared need to be the same implementation class.</li>
@@ -96,9 +96,9 @@ public enum ComparisonMode {
     BY_CONTRACT,
 
     /**
-     * Only the attributes relevant to the object functionality are compared. Attributes that
-     * are only informative can be ignored. This comparison mode is typically less strict than
-     * {@link #BY_CONTRACT}.
+     * Only the attributes relevant to the object functionality are compared.
+     * Attributes that are only informative can be ignored.
+     * This criterion is typically less strict than {@link #BY_CONTRACT}.
      *
      * <h4>Application to coordinate reference systems</h4>
      * If the objects being compared are {@link CoordinateReferenceSystem} instances,
@@ -189,6 +189,9 @@ public enum ComparisonMode {
      *       <b>Example:</b> two geographic <abbr>CRS</abbr>s with the same attributes but with
      *       (<var>latitude</var>, <var>longitude</var>) axes in one case and
      *       (<var>longitude</var>, <var>latitude</var>) axes in the other case.</li>
+     *   <li>Two ranges of integer values containing the same set of numbers,
+     *       but specified with different bound inclusiveness.
+     *       <b>Example:</b> {@code (0 … 256)} and {@code [1 … 255]}.</li>
      * </ul>
      *
      * @since 0.7

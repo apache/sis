@@ -24,6 +24,8 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Utilities;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -31,13 +33,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.util.internal.shared.Numerics;
 
 
 /**
  * Tests {@link CategoryList}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Alexis Manin (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class CategoryListTest extends TestCase {
     /**
      * Creates a new test case.
@@ -413,5 +418,117 @@ public final class CategoryListTest extends TestCase {
             assertSame(category, category.converse);
             assertTrue(category.toConverse.isIdentity());
         }
+    }
+
+    /**
+     * Tests {@link CategoryList#equals(Object, ComparisonMode)} for all comparison modes.
+     * Covers null/incompatible-type rejection, empty list, element-wise comparison,
+     * size mismatch, NaN-ordinal differences, name-only differences, and approximate
+     * transfer-function tolerance.
+     */
+    @Test
+    public void testLenientEquality() {
+        final CategoryList list1 = CategoryList.create(categories(), null);
+
+        // ------------------------------------------------------------------
+        // Null and incompatible type.
+        // ------------------------------------------------------------------
+        assertFalse(Utilities.deepEquals(list1, null,          ComparisonMode.STRICT),      "null/STRICT");
+        assertFalse(Utilities.deepEquals(list1, "not a list",  ComparisonMode.APPROXIMATE), "String/APPROXIMATE");
+
+        // ------------------------------------------------------------------
+        // Empty list: same reference → true.
+        // ------------------------------------------------------------------
+        assertTrue(Utilities.deepEquals(CategoryList.EMPTY, CategoryList.EMPTY, ComparisonMode.STRICT), "empty/STRICT");
+
+        // ------------------------------------------------------------------
+        // Two lists built from independent category arrays with the same
+        // configuration.  All modes must return true.
+        // ------------------------------------------------------------------
+        final CategoryList list2 = CategoryList.create(categories(), null);
+        assertTrue(Utilities.deepEquals(list1, list2, ComparisonMode.STRICT),          "same-cfg/STRICT");
+        assertTrue(Utilities.deepEquals(list1, list2, ComparisonMode.BY_CONTRACT),     "same-cfg/BY_CONTRACT");
+        assertTrue(Utilities.deepEquals(list1, list2, ComparisonMode.IGNORE_METADATA), "same-cfg/IGNORE_METADATA");
+        assertTrue(Utilities.deepEquals(list1, list2, ComparisonMode.APPROXIMATE),     "same-cfg/APPROXIMATE");
+
+        // ------------------------------------------------------------------
+        // Different size: list of 5 categories vs 3 categories.
+        // ------------------------------------------------------------------
+        final ToNaN toNaN = new ToNaN();
+        final Category[] fewer = {
+            new Category("No data",     NumberRange.create(  0, true,   0, true), null, null, toNaN),
+            new Category("Land",        NumberRange.create(  7, true,   7, true), null, null, toNaN),
+            new Category("Temperature", NumberRange.create( 10, true, 100, false),
+                    (MathTransform1D) MathTransforms.linear(0.1, 5), null, toNaN)
+        };
+        final CategoryList shortList = CategoryList.create(fewer, null);
+        assertFalse(Utilities.deepEquals(list1, shortList, ComparisonMode.STRICT),      "diff-size/STRICT");
+        assertFalse(Utilities.deepEquals(list1, shortList, ComparisonMode.APPROXIMATE), "diff-size/APPROXIMATE");
+
+        // ------------------------------------------------------------------
+        // Different NaN ordinal in a qualitative category.
+        // Replace sample value 0 with a category that forces ordinal 99.
+        // ------------------------------------------------------------------
+        final Category[] diffNaN = {
+            new Category("No data",     NumberRange.create(  0, true,   0, true), null, null, (v) -> 99),
+            new Category("Land",        NumberRange.create(  7, true,   7, true), null, null, toNaN),
+            new Category("Clouds",      NumberRange.create(  3, true,   3, true), null, null, toNaN),
+            new Category("Temperature", NumberRange.create( 10, true, 100, false),
+                    (MathTransform1D) MathTransforms.linear(0.1, 5), null, toNaN),
+            new Category("Foo",         NumberRange.create(100, true, 120, false),
+                    (MathTransform1D) MathTransforms.linear(-1, 3), null, toNaN)
+        };
+        final CategoryList listDiffNaN = CategoryList.create(diffNaN, null);
+        assertFalse(Utilities.deepEquals(list1, listDiffNaN, ComparisonMode.STRICT),      "diff-NaN/STRICT");
+        assertTrue (Utilities.deepEquals(list1, listDiffNaN, ComparisonMode.APPROXIMATE), "diff-NaN/APPROXIMATE");
+
+        // ------------------------------------------------------------------
+        // Different name only in the qualitative "No data" category.
+        // ------------------------------------------------------------------
+        final Category[] diffName = {
+            new Category("Renamed",     NumberRange.create(  0, true,   0, true), null, null, toNaN),
+            new Category("Land",        NumberRange.create(  7, true,   7, true), null, null, toNaN),
+            new Category("Clouds",      NumberRange.create(  3, true,   3, true), null, null, toNaN),
+            new Category("Temperature", NumberRange.create( 10, true, 100, false),
+                    (MathTransform1D) MathTransforms.linear(0.1, 5), null, toNaN),
+            new Category("Foo",         NumberRange.create(100, true, 120, false),
+                    (MathTransform1D) MathTransforms.linear(-1, 3), null, toNaN)
+        };
+        final CategoryList listDiffName = CategoryList.create(diffName, null);
+        assertFalse(Utilities.deepEquals(list1, listDiffName, ComparisonMode.STRICT),          "diff-name/STRICT");
+        assertTrue (Utilities.deepEquals(list1, listDiffName, ComparisonMode.IGNORE_METADATA), "diff-name/IGNORE_METADATA");
+
+        // ------------------------------------------------------------------
+        // Significantly different transfer function (scale 0.1 → 0.2).
+        // ------------------------------------------------------------------
+        final Category[] bigDiff = {
+            new Category("No data",     NumberRange.create(  0, true,   0, true), null, null, toNaN),
+            new Category("Land",        NumberRange.create(  7, true,   7, true), null, null, toNaN),
+            new Category("Clouds",      NumberRange.create(  3, true,   3, true), null, null, toNaN),
+            new Category("Temperature", NumberRange.create( 10, true, 100, false),
+                    (MathTransform1D) MathTransforms.linear(0.2, 5), null, toNaN),
+            new Category("Foo",         NumberRange.create(100, true, 120, false),
+                    (MathTransform1D) MathTransforms.linear(-1, 3), null, toNaN)
+        };
+        final CategoryList listBigDiff = CategoryList.create(bigDiff, null);
+        assertFalse(Utilities.deepEquals(list1, listBigDiff, ComparisonMode.STRICT),      "big-diff/STRICT");
+        assertFalse(Utilities.deepEquals(list1, listBigDiff, ComparisonMode.APPROXIMATE), "big-diff/APPROXIMATE");
+
+        // ------------------------------------------------------------------
+        // Tiny transfer function difference: offset 5.0 vs 5.0 - 1e-13.
+        // Relative threshold for offset ≈ 5 is 5E-13 > 1E-13, so within tolerance.
+        // ------------------------------------------------------------------
+        final Category[] tinyDiff = {
+            new Category("No data",     NumberRange.create(  0, true,   0, true), null, null, toNaN),
+            new Category("Land",        NumberRange.create(  7, true,   7, true), null, null, toNaN),
+            new Category("Clouds",      NumberRange.create(  3, true,   3, true), null, null, toNaN),
+            new Category("Temperature", NumberRange.create( 10, true, 100, false),
+                    (MathTransform1D) MathTransforms.linear(0.1, 5.0 - Numerics.COMPARISON_THRESHOLD), null, toNaN),
+            new Category("Foo",         NumberRange.create(100, true, 120, false),
+                    (MathTransform1D) MathTransforms.linear(-1, 3), null, toNaN)
+        };
+        final CategoryList listTinyDiff = CategoryList.create(tinyDiff, null);
+        assertFalse(Utilities.deepEquals(list1, listTinyDiff, ComparisonMode.STRICT),      "tiny-diff/STRICT");
+        assertTrue (Utilities.deepEquals(list1, listTinyDiff, ComparisonMode.APPROXIMATE), "tiny-diff/APPROXIMATE");
     }
 }

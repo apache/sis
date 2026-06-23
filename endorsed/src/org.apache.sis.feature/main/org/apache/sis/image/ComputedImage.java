@@ -443,21 +443,6 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     }
 
     /**
-     * Verifies that an index is inside the expected range of tile indices.
-     * If the index is out of bounds, then this method throws an {@code IndexOutOfBoundsException}
-     * for consistency with {@link java.awt.image.BufferedImage#getTile(int, int)} public contract.
-     *
-     * @throws IndexOutOfBoundsException if the given tile index is out of bounds.
-     */
-    private static void checkTileIndex(final String name, final int min, final int count, final int value) {
-        final int max = min + count;
-        if (value < min || value >= max) {
-            throw new IndexOutOfBoundsException(Errors.format(
-                    Errors.Keys.ValueOutOfRange_4, name, min, max - 1, value));
-        }
-    }
-
-    /**
      * Returns a tile of this image, computing it when needed.
      * This method performs the first of the following actions that apply:
      *

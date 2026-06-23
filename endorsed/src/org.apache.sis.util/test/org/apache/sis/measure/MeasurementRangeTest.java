@@ -30,6 +30,7 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (IRD)
  */
+@SuppressWarnings("exports")
 public final class MeasurementRangeTest extends TestCase {
     /**
      * Creates a new test case.

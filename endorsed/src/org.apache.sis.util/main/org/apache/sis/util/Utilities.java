@@ -113,13 +113,16 @@ public final class Utilities {
     }
 
     /**
-     * Convenience method for testing two objects for equality using the given level of strictness.
-     * If at least one of the given objects implement the {@link LenientComparable} interface, then
-     * the comparison is performed using the {@link LenientComparable#equals(Object, ComparisonMode)}
-     * method. Otherwise this method performs the same work as the
-     * {@link Objects#deepEquals(Object, Object)} convenience method.
+     * Tests two objects for equality using the given level of strictness.
+     * This method applies the following rules, in order:
      *
-     * <p>If both arguments are arrays or collections, then the elements are compared recursively.</p>
+     * <ul>
+     *   <li>If at least one of the given objects implement the {@link LenientComparable} interface, then the
+     *       comparison is delegated to the {@link LenientComparable#equals(Object, ComparisonMode)} method.</li>
+     *   <li>Otherwise, if both arguments are {@code Map} entries, {@link Map}s, {@link Collection}s or arrays,
+     *       then this method invoke {@code deepEquals(…)} for the elements of above-cited containers.</li>
+     *   <li>Otherwise, this method delegates to {@link Objects#deepEquals(Object, Object)}.</li>
+     * </ul>
      *
      * @param  object1  the first object to compare, or {@code null}.
      * @param  object2  the second object to compare, or {@code null}.

@@ -42,18 +42,18 @@ abstract class IterationDomain<T> {
     /**
      * Minimal column index of the region on which to iterate.
      */
-    private final int xmin;
+    private final int minTileX;
 
     /**
      * Minimal row index of the region on which to iterate.
      */
-    private final int ymin;
+    private final int minTileY;
 
     /**
      * Number of columns on which to iterate.
-     * This is {@code (xmax + 1) - xmin} where {@code xmax} is inclusive.
+     * This is {@code (maxTileX + 1) - minTileX} where {@code maxTileX} is inclusive.
      */
-    private final long width;
+    private final long numXTiles;
 
     /**
      * Maximum value (exclusive) of the indexes of the tiles on which to iterate.
@@ -64,16 +64,16 @@ abstract class IterationDomain<T> {
     /**
      * Creates a new request for tile iterators.
      *
-     * @param xmin  first column index of tiles, inclusive.
-     * @param xmin  first row index of tiles, inclusive.
-     * @param xmax  last column index of tiles, inclusive.
-     * @param ymax  last row index of tiles, inclusive.
+     * @param minTileX  first column index of tiles, inclusive.
+     * @param minTileY  first row index of tiles, inclusive.
+     * @param maxTileX  last column index of tiles, inclusive.
+     * @param maxTileY  last row index of tiles, inclusive.
      */
-    protected IterationDomain(final int xmin, final int ymin, final int xmax, final int ymax) {
-        this.xmin  = xmin;
-        this.ymin  = ymin;
-        this.width = (xmax + 1L) - xmin;
-        this.limit = Math.multiplyExact(width, (ymax + 1L) - ymin);
+    protected IterationDomain(final int minTileX, final int minTileY, final int maxTileX, final int maxTileY) {
+        this.minTileX  = minTileX;
+        this.minTileY  = minTileY;
+        this.numXTiles = (maxTileX + 1L) - minTileX;
+        this.limit     = Math.multiplyExact(numXTiles, (maxTileY + 1L) - minTileY);
     }
 
     /**
@@ -91,7 +91,7 @@ abstract class IterationDomain<T> {
      * Creates the first tile, or returns {@code null} if the tile is missing.
      */
     final T createFirstTile() {
-        return createTile(xmin, ymin);
+        return createTile(minTileX, minTileY);
     }
 
     /**
@@ -121,7 +121,7 @@ abstract class IterationDomain<T> {
          * Creates a new iterator which will initially traverse all tiles.
          */
         Iterator() {
-            index = Math.multiplyExact(width, ymin);
+            index = Math.multiplyExact(numXTiles, minTileY);
             increment = 1;
         }
 
@@ -188,8 +188,8 @@ abstract class IterationDomain<T> {
         @Override
         public boolean tryAdvance(final Consumer<? super T> action) {
             while (index < limit) {
-                final int tileY = Math.toIntExact(index / width);
-                final int tileX = Math.toIntExact(index % width + xmin);
+                final int tileY = Math.toIntExact(index / numXTiles);
+                final int tileX = Math.toIntExact(index % numXTiles + minTileX);
                 final T   tile  = createTile(tileX, tileY);
                 index += increment;
                 if (tile != null) {
@@ -208,8 +208,8 @@ abstract class IterationDomain<T> {
         @Override
         public void forEachRemaining(final Consumer<? super T> action) {
             while (index < limit) {
-                final int tileY = Math.toIntExact(index / width);
-                final int tileX = Math.toIntExact(index % width + xmin);
+                final int tileY = Math.toIntExact(index / numXTiles);
+                final int tileX = Math.toIntExact(index % numXTiles + minTileX);
                 final T   tile  = createTile(tileX, tileY);
                 index += increment;
                 if (tile != null) {

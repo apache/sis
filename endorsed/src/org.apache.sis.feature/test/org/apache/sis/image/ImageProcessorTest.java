@@ -21,6 +21,7 @@ import java.util.stream.IntStream;
 import java.awt.Shape;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
+import java.awt.image.SampleModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import org.opengis.referencing.operation.MathTransform;
@@ -31,12 +32,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.image.processing.isoline.IsolinesTest;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSingleton;
+import static org.apache.sis.feature.Assertions.assertPixelsEqual;
 
 
 /**
  * Tests {@link ImageProcessor}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  */
 @SuppressWarnings("exports")
 public final class ImageProcessorTest extends TestCase {
@@ -108,6 +111,48 @@ public final class ImageProcessorTest extends TestCase {
             final Map<Double,Shape> r = assertSingleton(processor.isolines(image, new double[][] {{0.5}}, null));
             assertEquals(0.5, assertSingleton(r.keySet()));
             IsolinesTest.verifyIsolineFromMultiCells(assertSingleton(r.values()));
+        } while ((parallel = !parallel) == true);
+    }
+
+    /**
+     * Tests {@link ImageProcessor#reformat(RenderedImage, SampleModel)} with a change of tile size.
+     * The reformat operation shall properly adapt tile size according to given parameters.
+     */
+    @Test
+    public void testReformatWithTileSizeChange() {
+        changeTileSize(12, 12,  4,  2);
+        changeTileSize(64, 64, 32, 32);
+        changeTileSize(50, 50,  5,  5);
+    }
+
+    /**
+     * Implementation of {@link #testReformatWithTileSizeChange()} with the given image and tile sizes.
+     */
+    private void changeTileSize(final int sourceImageWidth, final int sourceImageHeight,
+                                final int targetTileWidth,  final int targetTileHeight)
+    {
+        // Fill source image
+        final var image = new BufferedImage(sourceImageWidth, sourceImageHeight, BufferedImage.TYPE_BYTE_GRAY);
+        final var canvas = image.getRaster();
+        for (int y = image.getHeight(); --y >= 0;) {
+            for (int x = image.getWidth(); --x >= 0;) {
+                canvas.setSample(x, y, 0, x*y);
+            }
+        }
+
+        // Prepare target image layout
+        final var tileModel = image.getSampleModel().createCompatibleSampleModel(targetTileWidth, targetTileHeight);
+        processor.setImageLayout(ImageLayout.DEFAULT.withSampleModel(tileModel, true));
+
+        // Execute and verify twice: sequential then parallel
+        final var imageBounds = new Rectangle(image.getWidth(), image.getHeight());
+        boolean parallel = false;
+        do {
+            processor.setExecutionMode(parallel ? ImageProcessor.Mode.SEQUENTIAL : ImageProcessor.Mode.PARALLEL);
+            final RenderedImage reformatted = processor.reformat(image, null);
+            assertEquals(targetTileWidth,  reformatted.getTileWidth(),  "Reformatted image tile width");
+            assertEquals(targetTileHeight, reformatted.getTileHeight(), "Reformatted image tile height");
+            assertPixelsEqual(image, imageBounds, reformatted, imageBounds);
         } while ((parallel = !parallel) == true);
     }
 }

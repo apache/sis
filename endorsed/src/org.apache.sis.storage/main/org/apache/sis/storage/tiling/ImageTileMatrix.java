@@ -24,6 +24,15 @@ import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
 import java.nio.file.Path;
 import java.util.logging.Logger;
+import static java.lang.Math.addExact;
+import static java.lang.Math.subtractExact;
+import static java.lang.Math.multiplyExact;
+import static java.lang.Math.incrementExact;
+import static java.lang.Math.decrementExact;
+import static java.lang.Math.floorDiv;
+import static java.lang.Math.toIntExact;
+import static java.lang.Math.min;
+import static java.lang.Math.max;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -33,8 +42,8 @@ import org.apache.sis.storage.MemoryGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.NoSuchDataException;
 import org.apache.sis.storage.UnsupportedQueryException;
-import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.storage.Resource;
+import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage2D;
@@ -57,10 +66,14 @@ import org.apache.sis.storage.internal.Resources;
  * The tile size must be specified at construction time and must be equal to the size of
  * the tiles of the rendered image.
  *
+ * If the coverage has more than two dimensions, the current implementation requires
+ * a tile size of 1 in all dimensions other than <var>X</var> and <var>Y</var>.
+ *
  * <p>This class is needed only when the application needs details about the tiling scheme,
  * for example in order to implement a Web Map Tile Service (<abbr>WMTS</abbr>).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  */
 final class ImageTileMatrix implements TileMatrix {
     /**
@@ -109,6 +122,8 @@ final class ImageTileMatrix implements TileMatrix {
      * because some {@link TiledGridCoverage} implementations may use some metadata (typically the
      * image date) as a third grid dimension, but still manage all tiles as two-dimensional.
      * In such case, all extra dimensions are assumed to have a size of 1.
+     *
+     * @see TiledGridCoverageResource#getTileSize()
      */
     private final int[] tileSize;
 
@@ -129,8 +144,24 @@ final class ImageTileMatrix implements TileMatrix {
      * The image containing the tiles of the tile matrix. Computed when first needed, and may be
      * recomputed multiple times with different offsets if the tile indices are larger than the
      * capacity of 32-bits integers.
+     *
+     * <p>If the coverage has more than two dimensions, this image contains the tiles of only one slice.
+     * The current implementation does not cache more than one two-dimensional slice at a time, in order
+     * to avoid too large memory consumption.</p>
      */
     private RenderedImage image;
+
+    /**
+     * Indices in extra-dimensions (above two) of the tiles cached by {@link #image}.
+     * The length of this array shall be the number of dimensions of the {@linkplain #coverage}.
+     * The values at the <var>X</var> and <var>Y</var> dimensions will be ignored and <em>shall</em> be zero.
+     * The values in all other dimensions shall be the index of the slice rendered by {@linkplain #image}.
+     * The zeros in <var>X</var> and <var>Y</var> dimensions are important for making array comparisons simpler.
+     *
+     * <p>The content of this array shall not be modified.
+     * If new indices are needed, a new array shall be created.</p>
+     */
+    private long[] imageSliceIndices;
 
     /**
      * The grid coverage processor to use when tiles use a subset of the bands.
@@ -180,7 +211,7 @@ final class ImageTileMatrix implements TileMatrix {
              * using the minimum number needed for the largest index.
              */
             if (i != 0) pattern.append(',');
-            pattern.append("%0").append(DecimalFunctions.floorLog10(Math.max(tileCount[i] - 1, 1)) + 1).append('d');
+            pattern.append("%0").append(DecimalFunctions.floorLog10(max(tileCount[i] - 1, 1)) + 1).append('d');
         }
         tilingScheme = new GridGeometry(cellGrid, extent.reshape(null, tileCount, false), MathTransforms.linear(toCells));
         tileIndicesPattern = pattern.toString();
@@ -278,13 +309,13 @@ final class ImageTileMatrix implements TileMatrix {
                 imageToTileY = this.imageToTileY;
             }
             if (image != null) {
-                final long tileX = Math.subtractExact(indices[coverage.xDimension], imageToTileX);
+                final long tileX = subtractExact(indices[coverage.xDimension], imageToTileX);
                 final long x0 = image.getMinTileX();
                 if (tileX >= x0 && tileX < x0 + image.getNumXTiles()) {
-                    final long tileY = Math.subtractExact(indices[coverage.yDimension], imageToTileY);
+                    final long tileY = subtractExact(indices[coverage.yDimension], imageToTileY);
                     final long y0 = image.getMinTileY();
                     if (tileY >= y0 && tileY < y0 + image.getNumYTiles()) {
-                        return getTileStatus(image, Math.toIntExact(tileX), Math.toIntExact(tileY));
+                        return getTileStatus(image, toIntExact(tileX), toIntExact(tileY));
                     }
                 }
             }
@@ -331,7 +362,14 @@ final class ImageTileMatrix implements TileMatrix {
     public Optional<Tile> getTile(final long... indices) throws DataStoreException {
         final GridExtent extent = tilingScheme.getExtent();
         if (extent.contains(indices)) try {
-            final Tile tile = iterator(extent.reshape(indices, indices, true)).createFirstTile();
+            final int dimension = indices.length;
+            final long[] cellLow  = new long[dimension];
+            final long[] cellHigh = new long[dimension];
+            for (int i=0; i < dimension; i++) {
+                cellLow [i] = tileToCell(indices[i], i);
+                cellHigh[i] = addExact(cellLow[i], tileSize[i] - 1);    // Inclusive.
+            }
+            final Tile tile = builder(indices, indices, cellLow, cellHigh).createFirstTile();
             return (tile.getStatus() == TileStatus.MISSING) ? Optional.empty() : Optional.of(tile);
         } catch (ArithmeticException e) {
             throw new UnsupportedQueryException(e);
@@ -348,106 +386,224 @@ final class ImageTileMatrix implements TileMatrix {
      * <h4>Limitations</h4>
      * The current implementation limits the size of the given extent to {@link Integer#MAX_VALUE}
      * in each dimension. Note that this is a maximum size in tile indices, not in pixel coordinates.
+     * If the requested tile ranges exceed the capacity of the integer numbers used by this implementation,
+     * an {@link ArithmeticException} will be thrown either at the execution of this method,
+     * or during the execution of the returned stream.
      *
-     * @param  indiceRanges  ranges of tile indices in all dimensions, or {@code null} for all tiles.
+     * <p>Another limitation is that the tile size in all dimensions other than <var>X</var> and <var>Y</var>
+     * must be one, otherwise an {@link SubspaceNotSpecifiedException} will be thrown.</p>
+     *
+     * @param  tileRanges  ranges of tile indices in all dimensions, or {@code null} for all tiles.
      * @param  parallel  {@code true} for a parallel stream (if supported), or {@code false} for a sequential stream.
      * @return stream of tiles, excluding missing tiles.
      * @throws DataStoreException if the tiles cannot be fetched in the given ranges of tile indexes.
+     * @throws SubspaceNotSpecifiedException if tile size in dimensions other than X and Y is greater than 1.
+     * @throws ArithmeticException if some coordinates are too large.
+     *         This exception may also happen latter, during the execution of the returned stream.
      */
     @Override
-    public Stream<Tile> getTiles(GridExtent indiceRanges, final boolean parallel) throws DataStoreException {
-        ArgumentChecks.ensureDimensionMatches("indiceRanges", tilingScheme.getDimension(), indiceRanges);
-        if (indiceRanges == null) {
-            indiceRanges = tilingScheme.getExtent();
+    public Stream<Tile> getTiles(GridExtent tileRanges, final boolean parallel) throws DataStoreException {
+        /*
+         * Argument check: "indiceRanges" is the name used in public API, but we use `tileRanges` in this
+         * implementation for avoiding confusion with `cellRanges`. No need to expose this change to user.
+         */
+        ArgumentChecks.ensureDimensionMatches("indiceRanges", tilingScheme.getDimension(), tileRanges);
+        if (tileRanges == null) {
+            tileRanges = tilingScheme.getExtent();
         }
-        try {
-            return StreamSupport.stream(iterator(indiceRanges).iterator(), parallel);
-        } catch (ArithmeticException e) {
-            throw new UnsupportedQueryException(e);
+        /*
+         * Gets the bounds of the images to read. If deferred reading is supported,
+         * we can expand to the bounds of the whole coverage in order to perform a
+         * read operation (deferred) only once. The bounds are intersected with the
+         * coverage extent.
+         */
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final var coverage = coverage();
+        final int xDimension = coverage.xDimension;
+        final int yDimension = coverage.yDimension;
+        final GridExtent cellRanges = coverage.getGridGeometry().getExtent();
+        final int dimension = cellRanges.getDimension();
+        final var cellLow  = new long[dimension];
+        final var tileLow  = new long[dimension];
+        final var cellHigh = new long[dimension];
+        final var tileHigh = new long[dimension];
+        boolean is2D = true;
+        for (int i=0; i<dimension; i++) {
+            // Intersection between request and available data, in cell coordinates.
+            cellLow [i] = max(cellRanges.getLow (i), tileToCell(tileRanges.getLow(i), i));
+            cellHigh[i] = min(cellRanges.getHigh(i), decrementExact(tileToCell(incrementExact(tileRanges.getHigh(i)), i)));
+            final long span = cellHigh[i] - cellLow[i] + 1;
+            if (span < 0 || span > Integer.MAX_VALUE) {
+                throw new ArithmeticException(resource.errors().getString(Errors.Keys.IntegerOverflow_1, Integer.SIZE));
+            }
+            // Convert back to tile indices after intersection.
+            tileLow [i] = cellToTile(cellLow [i], i);
+            tileHigh[i] = cellToTile(cellHigh[i], i);
+            /*
+             * Special cases for (X,Y) dimensions: if deferred loading is enabled, expand the request
+             * to the maximum size that we can handle with 32-bits integers. This is okay because the
+             * actual loading will not happen at `read(…)` invocation time. Note that we do not expand
+             * `tileLow` and `tileHigh` because they should stay bounded to user's request.
+             */
+            if (i != xDimension && i != yDimension) {
+                is2D &= (cellLow[i] == cellHigh[i]);
+            } else if (coverage.deferredTileReading) {
+                final long remain = min(cellRanges.getSize(i), Integer.MAX_VALUE) - span;
+                final long after  = min(remain / 2, cellRanges.getHigh(i) - cellHigh[i]);
+                final long before = min(remain - after, cellLow[i] - cellRanges.getLow(i));
+                cellLow [i] -= before;
+                cellHigh[i] += after;
+            }
         }
+        if (is2D) {
+            // This code should only be reached if the requested extent is 2D.
+            assert tileRanges.getDegreesOfFreedom() <= TiledGridCoverageResource.BIDIMENSIONAL;
+            return StreamSupport.stream(builder(tileLow, tileHigh, cellLow, cellHigh).iterator(), parallel);
+        }
+        /*
+         * Splits the given extent in a lazy sequence of 2D extents.
+         * For each 2D slice, we query all tiles contained in the user requested tile ranges.
+         *
+         * Note: the iteration over slices is executed in sequential order even if `parallel` is true.
+         * Allowing parallel iteration over slices could hurt performance, because it would cause the
+         * loading of rendered images from different slices in parallel. As this class `image` caching
+         * strategy is based on 2D extents, we instead push parallelism down on tile loading level directly
+         * (see `flatMap` block).
+         */
+        final long[] tileHighInExtraDimensions = tileHigh.clone();
+        tileHighInExtraDimensions[xDimension] = tileLow[xDimension];
+        tileHighInExtraDimensions[yDimension] = tileLow[yDimension];
+        return tileRanges.reshape(tileLow, tileHighInExtraDimensions, true).latticePointStream(false)
+                .flatMap((final long[] sliceLow) -> {
+                    final long[] sliceHigh = sliceLow.clone();
+                    sliceHigh[xDimension] = tileHigh[xDimension];
+                    sliceHigh[yDimension] = tileHigh[yDimension];
+                    for (int i=0; i<sliceLow.length; i++) {
+                        if (i != xDimension && i != yDimension) {
+                            cellLow [i] = tileToCell(sliceLow[i], i);
+                            cellHigh[i] = addExact(cellLow[i], tileSize[i] - 1);    // Inclusive.
+                        }
+                    }
+                    final IteratorBuilder builder;
+                    try {
+                        builder = builder(sliceLow, sliceHigh, cellLow, cellHigh);
+                    } catch (DataStoreException e) {
+                        throw new BackingStoreException("Cannot load tiles for 2D extent", e);
+                    }
+                    return StreamSupport.stream(builder.iterator(), parallel);
+                });
     }
 
     /**
-     * Creates an object which can be used for retrieving a single tile or a stream tiles.
+     * Creates an object which can be used for retrieving a single tile or a stream of tiles.
+     * All arguments in this method are in the coordinate system of the {@linkplain #coverage}.
+     * Note that a translation may exist between the coverage and the {@linkplain #image}.
      *
-     * @param  indiceRanges  ranges of tile indices in all dimensions, or {@code null} for all tiles.
+     * <p>The cell indices may describe a region larger to the tile indices if deferred loading
+     * of tiles is enabled. In such case, we will prepare more tiles than what user requested,
+     * but will iterate over only the requested tiles.</p>
+     *
+     * @param  tileLow   tile index (inclusive) of the first valid tile requested by the user.
+     * @param  tileHigh  tile index (inclusive) of the last valid tile requested by the user.
+     * @param  cellLow   cell index (inclusive) of the first cell to load if necessary.
+     * @param  cellHigh  cell index (inclusive) of the last cell to load if necessary.
      * @return a request which can be used for getting a tile or a stream of tiles in the given region.
      * @throws DataStoreException if the tiles cannot be fetched in the given ranges of tile indexes.
      * @throws ArithmeticException if coordinate computation exceeds the capacity of 64-bits integers.
+     * @throws SubspaceNotSpecifiedException if tile size in dimensions other than X and Y is greater than 1.
      */
-    private synchronized IterationDomain<Tile> iterator(final GridExtent indiceRanges) throws DataStoreException {
+    private synchronized IteratorBuilder builder(final long[] tileLow, final long[] tileHigh,
+                                                 final long[] cellLow, final long[] cellHigh)
+            throws DataStoreException
+    {
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final TiledGridCoverage coverage = coverage();
-        boolean retry = false;
-        do {    // This loop will be executed only 1 or 2 times.
-            if (image != null) {
-                final long xmin, ymin, xmax, ymax;
-                xmin = Math.subtractExact(indiceRanges.getLow (coverage.xDimension), imageToTileX);
-                xmax = Math.subtractExact(indiceRanges.getHigh(coverage.xDimension), imageToTileX);
-                final long x0 = image.getMinTileX();
-                if (xmin >= x0 && xmax < x0 + image.getNumXTiles()) {
-                    ymin = Math.subtractExact(indiceRanges.getLow (coverage.yDimension), imageToTileY);
-                    ymax = Math.subtractExact(indiceRanges.getHigh(coverage.yDimension), imageToTileY);
-                    final long y0 = image.getMinTileY();
-                    if (ymin >= y0 && ymax < y0 + image.getNumYTiles()) {
-                        return new Iterator(Math.toIntExact(xmin),
-                                            Math.toIntExact(ymin),
-                                            Math.toIntExact(xmax),
-                                            Math.toIntExact(ymax));
-                    }
-                }
+        final int xDimension = coverage.xDimension;
+        final int yDimension = coverage.yDimension;
+        final long[] slice = cellLow.clone();
+        slice[xDimension] = 0;
+        slice[yDimension] = 0;
+        if (image != null) {
+            final long tx0, ty0;
+            if (!Arrays.equals(imageSliceIndices, slice)
+                    || tileLow [xDimension] < (tx0 = image.getMinTileX() + imageToTileX) || tileHigh[xDimension] >= tx0 + image.getNumXTiles()
+                    || tileLow [yDimension] < (ty0 = image.getMinTileY() + imageToTileY) || tileHigh[yDimension] >= ty0 + image.getNumYTiles())
+            {
+                image = null;
             }
-            /*
-             * Gets the bounds of the image to read. If deferred reading is supported,
-             * we can expand to the bounds of the whole coverage in order to perform a
-             * read operation (deferred) only once.
-             */
-            final GridExtent extent = coverage.getGridGeometry().getExtent();
-            final int dimension = extent.getDimension();
-            final var low  = new long[dimension];
-            final var high = new long[dimension];
-            for (int i=0; i<dimension; i++) {
-                final long limit = Math.incrementExact(extent.getHigh(i));
-                high[i] = Math.min(limit, tileToCell(Math.incrementExact(indiceRanges.getHigh(i)), i));
-                low [i] = Math.max(extent.getLow(i), tileToCell(indiceRanges.getLow(i), i));
-                final long span = high[i] - low[i];
-                if (span < 0 || span > Integer.MAX_VALUE) {
-                    throw new ArithmeticException(resource.errors().getString(Errors.Keys.IntegerOverflow_1, Integer.SIZE));
-                }
-                if (coverage.deferredTileReading) {
-                    final long remain = Math.min(extent.getSize(i), Integer.MAX_VALUE) - span;
-                    final long after  = Math.min(remain >> 1, limit - high[i]);
-                    final long before = Math.min(remain - after, low[i] - extent.getLow(i));
-                    low [i] -= before;
-                    high[i] += after;
-                }
-            }
-            image = coverage.render(extent.reshape(low, high, false));
-            imageToTileX = low[coverage.xDimension];
-            imageToTileY = low[coverage.yDimension];
-        } while ((retry = !retry) == true);
-        throw new InternalDataStoreException();     // Should never happen.
+        }
+        if (image == null) {
+            image = coverage.render(coverage.getGridGeometry().getExtent().reshape(cellLow, cellHigh, true));
+            imageToTileX = cellToImageTile(xDimension, cellLow, image.getTileGridXOffset(), image.getTileWidth());
+            imageToTileY = cellToImageTile(yDimension, cellLow, image.getTileGridYOffset(), image.getTileHeight());
+            imageSliceIndices = slice;
+        }
+        return new IteratorBuilder(toIntExact(subtractExact(tileLow [xDimension], imageToTileX)),
+                                   toIntExact(subtractExact(tileLow [yDimension], imageToTileY)),
+                                   toIntExact(subtractExact(tileHigh[xDimension], imageToTileX)),
+                                   toIntExact(subtractExact(tileHigh[yDimension], imageToTileY)));
     }
 
     /**
      * Converts the give tile coordinate in the given dimension to cell coordinates.
+     * The cell and tile coordinates are in the {@linkplain #coverage} space, which
+     * may be translated compared to the coordinates of the rendered image.
      *
      * @param  coordinate  the tile coordinate to convert.
      * @param  dimension   the dimension of the coordinate to convert.
-     * @return the cell coordinate.
+     * @return the cell coordinate in the grid coverage.
      * @throws ArithmeticException if the result overflows the capacity of 64-bits integers.
      */
     private long tileToCell(long coordinate, final int dimension) {
         if (dimension < tileSize.length) {
-            coordinate = Math.multiplyExact(coordinate, tileSize[dimension]);
+            coordinate = multiplyExact(coordinate, tileSize[dimension]);
         }
-        return Math.addExact(tileToCell[dimension], coordinate);
+        return addExact(tileToCell[dimension], coordinate);
+    }
+
+    /**
+     * Converts the give cell coordinate in the given dimension to tile coordinates.
+     * The cell and tile coordinates are in the {@linkplain #coverage} space, which
+     * may be translated compared to the coordinates of the rendered image.
+     *
+     * @param  coordinate  the cell coordinate to convert.
+     * @param  dimension   the dimension of the coordinate to convert.
+     * @return the tile coordinate in the grid coverage.
+     * @throws ArithmeticException if the result overflows the capacity of 64-bits integers.
+     */
+    private long cellToTile(long coordinate, final int dimension) {
+        coordinate = subtractExact(coordinate, tileToCell[dimension]);
+        if (dimension < tileSize.length) {
+            coordinate = floorDiv(coordinate, tileSize[dimension]);
+        }
+        return coordinate;
+    }
+
+    /**
+     * Converts a coverage cell coordinates to the index of a tile in the rendered image.
+     * This is used for computing {@link #imageToTileX} and {@link #imageToTileY}.
+     *
+     * @param  dimension  the dimension of the coordinate to convert.
+     * @param  origin     lower values of the grid coordinates of the extent which has been requested for rendering.
+     * @param  offset     {@link RenderedImage#getTileGridXOffset()} or {@link RenderedImage#getTileGridYOffset()}.
+     * @param  size       {@link RenderedImage#getTileWidth()} or {@link RenderedImage#getTileHeight()}.
+     * @return difference between index of the tile in the coverage and index of the tile in the rendered image.
+     * @throws ArithmeticException if the result overflows the capacity of 64-bits integers.
+     */
+    private long cellToImageTile(final int dimension, final long[] origin, final int offset, final int size) {
+        /*
+         * `cellToTile` is the tile coordinate in the grid coverage, assuming that tile indices start at (0,0).
+         * The corresponding tile coordinate in the image can be anything. Since `origin` gave the coordinates
+         * of pixel (0,0) in the rendered image, `cellToTile` corresponds to the rendered image tile which
+         * contains pixel (0,0). This is the tile at index `-tileGridoffset / tileSize` (note the minus sign).
+         */
+        return addExact(cellToTile(origin[dimension], dimension), floorDiv(offset, size));
     }
 
     /**
      * Factory for an iterator over tiles in ranges of user-specified tile indices.
      */
-    private final class Iterator extends IterationDomain<Tile> {
+    private final class IteratorBuilder extends IterationDomain<Tile> {
         /**
          * Snapshot of {@link ImageTileMatrix#image}.
          */
@@ -459,18 +615,41 @@ final class ImageTileMatrix implements TileMatrix {
         private final long offsetX, offsetY;
 
         /**
+         * Dimension indices for the <var>X</var> and <var>Y</var> axes in the tile matrix coordinate system.
+         */
+        private final int xDimension, yDimension;
+
+        /**
+         * Tile coordinates of the slice on which to iterate, except for values in X and Y dimensions.
+         * Used when returning {@linkplain Tile#getIndices() tile indices}.
+         * Tiles will use these coordinates, replacing {@link #xDimension X} and {@linkplain #yDimension Y} dimensions.
+         */
+        private final long[] sliceIndices;
+
+        /**
          * Creates a new request for tile iterators.
          *
-         * @param xmin  first column index of tiles, inclusive.
-         * @param xmin  first row index of tiles, inclusive.
-         * @param xmax  last column index of tiles, inclusive.
-         * @param ymax  last row index of tiles, inclusive.
+         * <h4>Iteration in a slice of a <var>n</var>-dimensional cube.</h4>
+         * The {@link #imageSliceIndices} field gives the tile coordinates of the slice on which to iterate.
+         * It can be any valid coordinates of the tiles managed by this iterator.
+         * It serves as base to build correct tile coordinates for each returned tile.
+         * Each tile will clone this array and replace its X and Y indices by its own.
+         * Therefore, it is important that it represents properly the coordinates of extra-dimensions
+         * this iterator operates on.
+         *
+         * @param minTileX   first column index of tiles, inclusive.
+         * @param minTileY   first row index of tiles, inclusive.
+         * @param maxTileX   last column index of tiles, inclusive.
+         * @param maxTileY   last row index of tiles, inclusive.
          */
-        Iterator(final int xmin, final int ymin, final int xmax, final int ymax) {
-            super(xmin, ymin, xmax, ymax);
-            tiles   = image;
-            offsetX = imageToTileX;
-            offsetY = imageToTileY;
+        IteratorBuilder(final int minTileX, final int minTileY, final int maxTileX, final int maxTileY) {
+            super(minTileX, minTileY, maxTileX, maxTileY);
+            tiles        = image;
+            offsetX      = imageToTileX;
+            offsetY      = imageToTileY;
+            xDimension   = coverage.xDimension;
+            yDimension   = coverage.yDimension;
+            sliceIndices = imageSliceIndices;
         }
 
         /**
@@ -491,7 +670,10 @@ final class ImageTileMatrix implements TileMatrix {
 
                 /** Returns the indices of this tile in the {@code TileMatrix}. */
                 @Override public long[] getIndices() {
-                    return new long[] {offsetX + tileX, offsetY + tileY};
+                    final long[] indices = sliceIndices.clone();
+                    indices[xDimension] = offsetX + tileX;
+                    indices[yDimension] = offsetY + tileY;
+                    return indices;
                 }
 
                 /** Returns information about whether the tile failed to load. */
@@ -528,8 +710,8 @@ final class ImageTileMatrix implements TileMatrix {
         final long[] high = new long[indices.length];
         for (int i=0; i<indices.length; i++) {
             final long size = (i < tileSize.length) ? tileSize[i] : 1;
-            low [i] = Math.addExact(tileToCell[i], Math.multiplyExact(indices[i], size));
-            high[i] = Math.addExact(low[i], size - 1);
+            low [i] = addExact(tileToCell[i], multiplyExact(indices[i], size));
+            high[i] = addExact(low[i], size - 1);
         }
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final TiledGridCoverage coverage = coverage();

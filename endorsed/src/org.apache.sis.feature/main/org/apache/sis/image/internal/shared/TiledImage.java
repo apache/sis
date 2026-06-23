@@ -23,7 +23,6 @@ import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -236,7 +235,7 @@ public class TiledImage extends PlanarImage {
      * Returns the minimum tile index in the X direction.
      */
     @Override
-    public int getMinTileX() {
+    public final int getMinTileX() {
         return minTileX;
     }
 
@@ -244,7 +243,7 @@ public class TiledImage extends PlanarImage {
      * Returns the minimum tile index in the Y direction.
      */
     @Override
-    public int getMinTileY() {
+    public final int getMinTileY() {
         return minTileY;
     }
 
@@ -255,20 +254,8 @@ public class TiledImage extends PlanarImage {
     public Raster getTile(int tileX, int tileY) {
         final int numXTiles = getNumXTiles();
         final int numYTiles = getNumYTiles();
-        tileX = verifyTileIndex("tileX", tileX, minTileX, numXTiles);
-        tileY = verifyTileIndex("tileY", tileY, minTileY, numYTiles);
-        return tiles[tileX + tileY * numXTiles];
-    }
-
-    /**
-     * Verifies that the given tile index is inside expected bounds, then returns is zero-based value.
-     */
-    private static int verifyTileIndex(final String name, final int value, final int min, final int count) {
-        final int r = value - min;
-        if (r >= 0 && r < count) {
-            return r;
-        }
-        throw new IndexOutOfBoundsException(Errors.format(
-                Errors.Keys.ValueOutOfRange_4, name, min, min + count - 1, value));
+        checkTileIndex("tileX", minTileX, numXTiles, tileX);
+        checkTileIndex("tileY", minTileY, numYTiles, tileY);
+        return tiles[(tileX - minTileX) + (tileY - minTileY) * numXTiles];
     }
 }

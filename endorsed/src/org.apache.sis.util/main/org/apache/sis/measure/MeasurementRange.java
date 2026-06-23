@@ -21,7 +21,9 @@ import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
 import org.apache.sis.math.NumberType;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -55,7 +57,8 @@ import org.apache.sis.util.resources.Errors;
  * encouraged to make sure that subclasses remain immutable for more predictable behavior.
  *
  * @author  Martin Desruisseaux (IRD)
- * @version 0.6
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.7
  *
  * @param <E>  the type of range elements as a subclass of {@link Number}.
  *
@@ -64,6 +67,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @since 0.3
  */
+@SuppressWarnings("EqualsAndHashcode")
 public class MeasurementRange<E extends Number & Comparable<? super E>> extends NumberRange<E> {
     /**
      * Serial number for inter-operability with different versions.
@@ -471,16 +475,26 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     }
 
     /**
-     * Compares this measurement range with the specified object for equality. Two {@code MeasurementRange} instances
-     * are considered equal if they met all conditions {@linkplain Range#equals(Object) documented in the parent class}
-     * and their {@link #unit()} are equal in the sense of {@link Objects#equals(Object, Object)}.
+     * Compares this measurement range with the specified object for equality according the specified criterion.
+     * Two {@code MeasurementRange} instances are considered equal if they met all conditions documented in the
+     * {@linkplain Range#equals(Object, ComparisonMode) parent class} and their {@linkplain #unit() units} are equal.
      * Note that this comparison does not distinguish the various {@link Float#NaN} or {@link Double#NaN} bit patterns.
      *
      * @return {@inheritDoc}
+     *
+     * @since 1.7
      */
     @Override
-    public boolean equals(final Object object) {
-        return super.equals(object) && Objects.equals(unit, ((MeasurementRange<?>) object).unit);
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        if (super.equals(object, mode) && object instanceof MeasurementRange<?>) {
+            final var other = (MeasurementRange<?>) object;
+            if (mode == ComparisonMode.STRICT) {
+                return Objects.equals(unit, other.unit);
+            } else {
+                return Utilities.deepEquals(unit(), other.unit(), mode);
+            }
+        }
+        return false;
     }
 
     /**

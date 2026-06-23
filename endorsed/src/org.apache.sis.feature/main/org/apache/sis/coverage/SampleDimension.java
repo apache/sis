@@ -38,8 +38,11 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.NumberType;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
@@ -79,13 +82,13 @@ import org.opengis.feature.IdentifiedType;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see org.opengis.metadata.content.SampleDimension
  *
  * @since 1.0
  */
-public class SampleDimension implements IdentifiedType, Serializable {
+public class SampleDimension implements IdentifiedType, LenientComparable, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -278,8 +281,8 @@ public class SampleDimension implements IdentifiedType, Serializable {
     public Set<Number> getNoDataValues() {
         if (converse != null) {             // Null if SampleDimension does not contain at least one quantitative category.
             final boolean isConverted = transferFunction.isIdentity();
-            final NumberRange<?>[] ranges = new NumberRange<?>[categories.size()];
-            final Class<?>[] rangeTypes = new Class<?>[ranges.length];
+            final var ranges = new NumberRange<?>[categories.size()];
+            final var rangeTypes = new Class<?>[ranges.length];
             int count = 0;
             for (final Category category : categories) {
                 final Category converted = category.converted();
@@ -294,7 +297,7 @@ public class SampleDimension implements IdentifiedType, Serializable {
             }
             if (count != 0) {
                 final NumberType widestType = NumberType.forClasses(rangeTypes).filter(NumberType::isConvertible).orElse(null);
-                final Set<Number> noDataValues = new TreeSet<>(SampleDimension::compare);
+                final var noDataValues = new TreeSet<Number>(SampleDimension::compare);
                 for (int i=0; i<count; i++) {
                     final NumberRange<?> range = ranges[i];
                     final Number minimum = range.getMinValue();
@@ -304,8 +307,9 @@ public class SampleDimension implements IdentifiedType, Serializable {
                         if (range.isMaxIncluded()) noDataValues.add(widestType.cast(maximum));
                     }
                     if (NumberType.isInteger(range.getElementType())) {
-                        long value = minimum.longValue() + 1;       // If value was inclusive, then it has already been added to the set.
-                        long stop  = maximum.longValue() - 1;
+                        // If value was inclusive, then it has already been added to the set.
+                        long value = Math.incrementExact(minimum.longValue());
+                        long stop  = Math.decrementExact(maximum.longValue());
                         while (value <= stop) {
                             noDataValues.add(widestType.wrapExact(value));
                         }
@@ -474,6 +478,8 @@ public class SampleDimension implements IdentifiedType, Serializable {
 
     /**
      * Returns a hash value for this sample dimension.
+     *
+     * @return a hash value for this sample dimension.
      */
     @Override
     public int hashCode() {
@@ -487,13 +493,44 @@ public class SampleDimension implements IdentifiedType, Serializable {
      * @return {@code true} if the given object is equal to this sample dimension.
      */
     @Override
-    public boolean equals(final Object object) {
+    public final boolean equals(final Object object) {
+        return equals(object, ComparisonMode.STRICT);
+    }
+
+    /**
+     * Compares this sample dimension with the given object for equality at the given level of strictness.
+     * The {@linkplain #getName() name} is considered as metadata.
+     *
+     * @param  object  the object to compare with.
+     * @param  mode    the comparison strictness level.
+     * @return {@code true} if both objects are equal according the given strictness level.
+     *
+     * @see Category#equals(Object, ComparisonMode)
+     * @since 1.7
+     */
+    @Override
+    public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
             return true;
         }
         if (object instanceof SampleDimension) {
             final SampleDimension that = (SampleDimension) object;
-            return name.equals(that.name) && Objects.equals(background, that.background) && categories.equals(that.categories);
+            /*
+             * `transferFunction` does not need to be compared because it is derived from the categories.
+             * It is also difficult to keep `transferFunction` comparison consistent with `categories`
+             * comparison if mode is `APPROXIMATE`, because tolerance threshold may not be the same or
+             * may not be applied on the same coefficients.
+             */
+            if (mode == ComparisonMode.STRICT) {
+                return object.getClass() == getClass()
+                        && name.equals(that.name)
+                        && categories.equals(that.categories)
+                        && Objects.equals(background, that.background);
+            }
+            if (mode.isIgnoringMetadata() || getName().equals(that.getName())) {
+                return Utilities.deepEquals(getCategories(), that.getCategories(), mode) &&
+                       Utilities.deepEquals(getBackground(), that.getBackground(), mode);
+            }
         }
         return false;
     }

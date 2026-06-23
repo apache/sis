@@ -486,6 +486,27 @@ public abstract class PlanarImage implements RenderedImage {
     }
 
     /**
+     * Verifies that an index is inside the expected range of tile indices.
+     * If the index is out of bounds, then this method throws an {@code IndexOutOfBoundsException}
+     * for consistency with {@link java.awt.image.BufferedImage#getTile(int, int)} public contract.
+     *
+     * @param  name   name of the argument to validate (usually {@code "tileX"} or {@code "tileY"}).
+     * @param  min    the minimum valid tile index (usually {@link #getMinTileX()} or {@link #getMinTileY()}).
+     * @param  count  the number of tiles (usually {@link #getNumXTiles()} or {@link #getNumYTiles()}).
+     * @param  index  the tile index to validate.
+     * @throws IndexOutOfBoundsException if the given tile index is out of bounds.
+     *
+     * @since 1.7
+     */
+    protected static void checkTileIndex(final String name, final int min, final int count, final int index) {
+        final int max = min + (count - 1);
+        if (index < min || index > max) {
+            throw new IndexOutOfBoundsException(Errors.format(
+                    Errors.Keys.ValueOutOfRange_4, name, min, max, index));
+        }
+    }
+
+    /**
      * Creates a raster with the same sample model as this image and with the given size and location.
      * This method does not verify argument validity.
      */

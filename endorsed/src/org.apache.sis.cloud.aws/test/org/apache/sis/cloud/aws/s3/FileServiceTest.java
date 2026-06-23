@@ -80,7 +80,8 @@ public final class FileServiceTest extends TestCase {
     @Test
     public void testNewFileSystemAws() throws URISyntaxException, IOException {
         newFileSystem(new URI("S3://accessKey@bucket/file"), true,
-                Map.of(FileService.AWS_SECRET_ACCESS_KEY, "secret"));
+                Map.of(FileService.AWS_REGION, ClientFileSystemTest.region(),
+                       FileService.AWS_SECRET_ACCESS_KEY, "secret"));
     }
 
     /**
@@ -92,7 +93,8 @@ public final class FileServiceTest extends TestCase {
     @Test
     public void testNewFileSystemSelfHosted() throws URISyntaxException, IOException {
         newFileSystem(new URI("S3://accessKey@localhost:8080/bucket/file"), true,
-                Map.of(FileService.AWS_SECRET_ACCESS_KEY, "secret"));
+                Map.of(FileService.AWS_REGION, ClientFileSystemTest.region(),
+                       FileService.AWS_SECRET_ACCESS_KEY, "secret"));
     }
 
     /**
@@ -105,6 +107,7 @@ public final class FileServiceTest extends TestCase {
     public void testNewFileSystemSelfHostedWithPropertiesNoPort() throws URISyntaxException, IOException {
         final var uri = new URI("S3://accessKey@bucket/file");
         final ClientFileSystem fs = newFileSystem(uri, false, Map.of(
+                FileService.AWS_REGION, ClientFileSystemTest.region(),
                 FileService.AWS_SECRET_ACCESS_KEY, "secret",
                 FileService.HOST_URL,              "localhost",
                 FileService.IS_HTTPS,              Boolean.FALSE));
@@ -128,6 +131,7 @@ public final class FileServiceTest extends TestCase {
     public void testNewFileSystemSelfHostedWithProperties() throws URISyntaxException, IOException {
         final URI uri = new URI("S3://accessKey@bucket/file");
         final ClientFileSystem fs = newFileSystem(uri, false, Map.of(
+                FileService.AWS_REGION, ClientFileSystemTest.region(),
                 FileService.AWS_SECRET_ACCESS_KEY, "secret",
                 FileService.HOST_URL,              "localhost",
                 FileService.PORT,                  8454,
@@ -149,7 +153,7 @@ public final class FileServiceTest extends TestCase {
      */
     @Test
     public void testMissingSecretKey() throws URISyntaxException {
-        final Map<String, Object> properties = Map.of();
+        final Map<String, Object> properties = Map.of(FileService.AWS_REGION, ClientFileSystemTest.region());
         final var uri = new URI("S3://accessKey@bucket/file");
         var exception = assertThrows(IllegalArgumentException.class, () -> {
             service.newFileSystem(uri, properties);
