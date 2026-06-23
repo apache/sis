@@ -25,12 +25,12 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.citation.Telephone;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.xml.bind.gco.StringAdapter;
 import org.apache.sis.xml.bind.metadata.code.CI_TelephoneTypeCode;
-import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.internal.Dependencies;
 
 // Specific to the main branch:

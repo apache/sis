@@ -94,6 +94,7 @@ import org.apache.sis.storage.UnsupportedQueryException;
 import org.apache.sis.storage.WritableFeatureSet;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.WarningAdapter;
 import org.apache.sis.storage.shapefile.cpg.CpgFiles;
 import org.apache.sis.storage.shapefile.dbf.DBFField;
 import org.apache.sis.storage.shapefile.dbf.DBFHeader;
@@ -110,7 +111,6 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.storage.base.WarningAdapter;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;

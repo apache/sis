@@ -27,6 +27,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.distribution.Medium;
 import org.opengis.metadata.distribution.Distributor;
+import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
@@ -35,7 +36,6 @@ import org.apache.sis.xml.internal.shared.LegacyNamespaces;
 import org.apache.sis.xml.bind.metadata.MD_Medium;
 import org.apache.sis.xml.bind.metadata.CI_Citation;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 
 // Specific to the main branch:
