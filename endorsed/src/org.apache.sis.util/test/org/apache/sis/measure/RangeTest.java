@@ -18,6 +18,7 @@ package org.apache.sis.measure;
 
 import java.util.Locale;
 import java.time.Instant;
+import org.apache.sis.util.ComparisonMode;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,7 @@ import org.apache.sis.test.TestCase;
  * @author  Joe White
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class RangeTest extends TestCase {
     /**
      * Creates a new test case.
@@ -387,6 +389,28 @@ public final class RangeTest extends TestCase {
         assertTrue(range5.isEmpty());
         assertTrue(range6.isEmpty());
         assertTrue(range5.equals(range6));
+    }
+
+    /**
+     * Tests the {@link Range#equals(Object, ComparisonMode)} method.
+     */
+    @Test
+    public void testLenientEquality() {
+        final Range<Integer> inclusive = new Range<>(Integer.class, 10,  true, 20,  true);
+        final Range<Integer> exclusive = new Range<>(Integer.class, 10,  true, 21,  false);
+        final Range<Float>   asFloats  = new Range<>(  Float.class, 10f, true, 20f, true);
+        final Range<Integer> different = new Range<>(Integer.class, 10,  true, 22,  false);
+        assertTrue (inclusive.equals(exclusive, ComparisonMode.ALLOW_VARIANT));
+        assertTrue (exclusive.equals(inclusive, ComparisonMode.ALLOW_VARIANT));
+        assertTrue (exclusive.equals(asFloats,  ComparisonMode.ALLOW_VARIANT));
+        assertFalse(inclusive.equals(different, ComparisonMode.ALLOW_VARIANT));
+        assertFalse(exclusive.equals(different, ComparisonMode.ALLOW_VARIANT));
+        assertFalse(inclusive.equals(exclusive, ComparisonMode.APPROXIMATE));
+        assertFalse(exclusive.equals(asFloats,  ComparisonMode.APPROXIMATE));
+        assertTrue (inclusive.equals(asFloats,  ComparisonMode.APPROXIMATE));
+        assertFalse(inclusive.equals(asFloats,  ComparisonMode.BY_CONTRACT));
+        assertTrue (inclusive.equals(asFloats,  ComparisonMode.IGNORE_METADATA));
+        assertFalse(exclusive.equals(asFloats,  ComparisonMode.IGNORE_METADATA));
     }
 
     /**

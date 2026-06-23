@@ -17,6 +17,7 @@
 package org.apache.sis.cloud.aws.s3;
 
 import java.net.URISyntaxException;
+import software.amazon.awssdk.regions.Region;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -39,6 +40,16 @@ public final class ClientFileSystemTest extends TestCase {
     }
 
     /**
+     * Returns an arbitrary region for testing purpose.
+     * This is for avoiding the <abbr>AWS</abbr> <abbr>SDK</abbr> exception saying
+     * "Unable to load region from system settings. Region must be specified either via
+     * environment variable ({@code AWS_REGION}) or system property ({@code aws.region})."
+     */
+    static Region region() {
+        return Region.of("eu-central-1");
+    }
+
+    /**
      * Returns the file system to use for testing purpose.
      *
      * @param  selfHosted  whether the service should be self hosted.
@@ -46,11 +57,13 @@ public final class ClientFileSystemTest extends TestCase {
      */
     static ClientFileSystem create(final boolean selfHosted) throws URISyntaxException {
         final var fs = new FileService();
+        final Server server;
         if (selfHosted) {
-            return new ClientFileSystem(fs, null, new Server(null, "testhost", 8581, true, null), null, null);
+            server = new Server(null, "testhost", 8581, true, null);
         } else {
-            return new ClientFileSystem(fs, new Server(null));
+            server = new Server(null);
         }
+        return new ClientFileSystem(fs, region(), server, null, null);
     }
 
     /**

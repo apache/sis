@@ -84,19 +84,6 @@ final class ClientFileSystem extends FileSystem {
     final String duplicatedSeparator;
 
     /**
-     * Creates a file system with default credential and default separator.
-     * This constructor assumes that the given {@code server} argument has no host and no port.
-     * That argument should have been created with {@link Server#Server(String)} constructor.
-     */
-    ClientFileSystem(final FileService provider, final Server server) {
-        this.provider  = provider;
-        this.server    = server;
-        this.client    = S3Client.create();
-        this.separator = DEFAULT_SEPARATOR;
-        duplicatedSeparator = DEFAULT_SEPARATOR + DEFAULT_SEPARATOR;
-    }
-
-    /**
      * Creates a new file system with the specified credential.
      *
      * @param  provider   the provider creating this file system.

@@ -44,11 +44,11 @@ import org.apache.sis.io.stream.HyperRectangleWriter;
  */
 public final class ReformattedImage {
     /**
-     * Divisor of tile sizes mandated by the TIFF specification.
+     * Divisor of tile sizes mandated by the <abbr>TIFF</abbr> specification.
      * All tile sizes must be a multiple of this value.
      * This constant must be a power of 2.
      */
-    private static final int TILE_DIVISOR = 16;
+    public static final int TILE_DIVISOR = 16;
 
     /**
      * Number of color bands before the extra bands. This number does not include the alpha channel,

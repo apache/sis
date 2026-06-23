@@ -20,8 +20,11 @@ import java.util.Random;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.measure.Units;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.util.ComparisonMode;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -34,7 +37,9 @@ import org.apache.sis.test.TestCase;
  * Tests {@link Category}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Alexis Manin (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class CategoryTest extends TestCase {
     /**
      * Small tolerance value for comparisons.
@@ -239,5 +244,107 @@ public final class CategoryTest extends TestCase {
         assertFalse (category.getTransferFunction().isPresent());
         assertTrue  (category.toConverse.isIdentity());
         assertFalse (category.isQuantitative());
+    }
+
+    /**
+     * Tests {@link Category#equals(Object, ComparisonMode)} for all comparison modes.
+     * Covers qualitative and quantitative categories, name differences, NaN ordinal
+     * differences, approximate transform comparison, and category-vs-converse inequality.
+     */
+    @Test
+    public void testLenientEquality() {
+        final Category qualA = new Category("Water", NumberRange.create(1, true, 1, true), null, null, new ToNaN());
+        final Category qualB = new Category("Water", NumberRange.create(1, true, 1, true), null, null, new ToNaN());
+
+        // Null / incompatible type — all modes must return false.
+        assertFalse(qualA.equals(null,             ComparisonMode.STRICT),      "null/STRICT");
+        assertFalse(qualA.equals("not a category", ComparisonMode.APPROXIMATE), "String/APPROXIMATE");
+
+        // Self-equality — all modes must return true.
+        assertTrue(qualA.equals(qualA, ComparisonMode.STRICT),          "self/STRICT");
+        assertTrue(qualA.equals(qualA, ComparisonMode.BY_CONTRACT),     "self/BY_CONTRACT");
+        assertTrue(qualA.equals(qualA, ComparisonMode.IGNORE_METADATA), "self/IGNORE_METADATA");
+        assertTrue(qualA.equals(qualA, ComparisonMode.APPROXIMATE),     "self/APPROXIMATE");
+
+        // Qualitative: same configuration (fresh ToNaN, same sample → same NaN ordinal).
+        assertTrue(qualA.equals(qualB, ComparisonMode.STRICT),          "qual-same/STRICT");
+        assertTrue(qualA.equals(qualB, ComparisonMode.BY_CONTRACT),     "qual-same/BY_CONTRACT");
+        assertTrue(qualA.equals(qualB, ComparisonMode.IGNORE_METADATA), "qual-same/IGNORE_METADATA");
+        assertTrue(qualA.equals(qualB, ComparisonMode.APPROXIMATE),     "qual-same/APPROXIMATE");
+
+        // Qualitative: same sample range but different NaN ordinal.
+        // Force ordinal 99 for qualC; standard ToNaN for sample value 1 yields ordinal 1.
+        final Category qualC = new Category("Water", NumberRange.create(1, true, 1, true), null, null, (v) -> 99);
+        assertFalse(qualA.equals(qualC, ComparisonMode.STRICT),      "qual-diffNaN/STRICT");
+        assertTrue (qualA.equals(qualC, ComparisonMode.APPROXIMATE), "qual-diffNaN/APPROXIMATE");
+
+        // Qualitative: same NaN ordinal but different name.
+        final Category qualD = new Category("Land", NumberRange.create(1, true, 1, true), null, null, new ToNaN());
+        assertFalse(qualA.equals(qualD, ComparisonMode.STRICT),          "qual-diffName/STRICT");
+        assertFalse(qualA.equals(qualD, ComparisonMode.BY_CONTRACT),     "qual-diffName/BY_CONTRACT");
+        assertTrue (qualA.equals(qualD, ComparisonMode.IGNORE_METADATA), "qual-diffName/IGNORE_METADATA");
+        assertTrue (qualA.equals(qualD, ComparisonMode.APPROXIMATE),     "qual-diffName/APPROXIMATE");
+
+        // Category vs its converse (ConvertedCategory): must be false in all modes.
+        final Category qualConverse = qualA.converse;
+        assertNotSame(qualA, qualConverse);
+        assertFalse(qualA.equals(qualConverse, ComparisonMode.STRICT),      "vs-converse/STRICT");
+        assertFalse(qualA.equals(qualConverse, ComparisonMode.BY_CONTRACT), "vs-converse/BY_CONTRACT");
+        assertFalse(qualA.equals(qualConverse, ComparisonMode.IGNORE_METADATA), "vs-converse/IGNORE_METADATA");
+        assertFalse(qualA.equals(qualConverse, ComparisonMode.APPROXIMATE), "vs-converse/APPROXIMATE");
+
+        // ------------------------------------------------------------------
+        // Quantitative categories with linear transfer function.
+        // ------------------------------------------------------------------
+        final MathTransform1D tf1 = (MathTransform1D) MathTransforms.linear(0.1, 5.0);
+        final Category quantA = new Category("Temperature", NumberRange.create(10, true, 100, false), tf1, null, null);
+        final Category quantB = new Category("Temperature", NumberRange.create(10, true, 100, false), tf1, null, null);
+
+        // Same configuration — all modes must return true.
+        assertTrue(quantA.equals(quantB, ComparisonMode.STRICT),          "quant-same/STRICT");
+        assertTrue(quantA.equals(quantB, ComparisonMode.BY_CONTRACT),     "quant-same/BY_CONTRACT");
+        assertTrue(quantA.equals(quantB, ComparisonMode.IGNORE_METADATA), "quant-same/IGNORE_METADATA");
+        assertTrue(quantA.equals(quantB, ComparisonMode.APPROXIMATE),     "quant-same/APPROXIMATE");
+
+        // Different name only.
+        final Category quantC = new Category("Renamed", NumberRange.create(10, true, 100, false), tf1, null, null);
+        assertFalse(quantA.equals(quantC, ComparisonMode.STRICT),          "quant-diffName/STRICT");
+        assertFalse(quantA.equals(quantC, ComparisonMode.BY_CONTRACT),     "quant-diffName/BY_CONTRACT");
+        assertTrue (quantA.equals(quantC, ComparisonMode.IGNORE_METADATA), "quant-diffName/IGNORE_METADATA");
+        assertTrue (quantA.equals(quantC, ComparisonMode.APPROXIMATE),     "quant-diffName/APPROXIMATE");
+
+        // Significantly different transfer function: scale 0.1 vs 0.2.
+        final MathTransform1D tf2 = (MathTransform1D) MathTransforms.linear(0.2, 5.0);
+        final Category quantD = new Category("Temperature", NumberRange.create(10, true, 100, false), tf2, null, null);
+        assertFalse(quantA.equals(quantD, ComparisonMode.STRICT),      "quant-bigDiff/STRICT");
+        assertFalse(quantA.equals(quantD, ComparisonMode.APPROXIMATE), "quant-bigDiff/APPROXIMATE");
+
+        // Tiny transfer function difference: offset 5.0 vs 5.0 - 1e-13.
+        // Relative threshold for offset ≈ 5.0 is 5.0 * 1E-13 = 5E-13 > 1E-13, so within tolerance.
+        final MathTransform1D tf3 = (MathTransform1D) MathTransforms.linear(0.1, 5.0 - 1e-13);
+        final Category quantE = new Category("Temperature", NumberRange.create(10, true, 100, false), tf3, null, null);
+        assertFalse(quantA.equals(quantE, ComparisonMode.STRICT),      "quant-tinyDiff/STRICT");
+        assertTrue (quantA.equals(quantE, ComparisonMode.APPROXIMATE), "quant-tinyDiff/APPROXIMATE");
+
+        // ------------------------------------------------------------------
+        // Category with MeasurementRange (identity transform, unit-bearing range).
+        // ------------------------------------------------------------------
+        final MathTransform1D identity = (MathTransform1D) MathTransforms.identity(1);
+        final Category measA = new Category("Celsius",
+                MeasurementRange.create(10f, true, 30f, true, Units.CELSIUS),
+                identity, Units.CELSIUS, null);
+        final Category measB = new Category("Celsius",
+                MeasurementRange.create(10f, true, 30f, true, Units.CELSIUS),
+                identity, Units.CELSIUS, null);
+
+        // Same unit — equal in STRICT.
+        assertTrue(measA.equals(measB, ComparisonMode.STRICT), "meas-sameUnit/STRICT");
+
+        // Different units: CELSIUS vs KELVIN — ranges differ, must be false.
+        final Category measK = new Category("Kelvin",
+                MeasurementRange.create(10f, true, 30f, true, Units.KELVIN),
+                identity, Units.KELVIN, null);
+        assertFalse(measA.equals(measK, ComparisonMode.STRICT),      "meas-diffUnit/STRICT");
+        assertFalse(measA.equals(measK, ComparisonMode.APPROXIMATE), "meas-diffUnit/APPROXIMATE");
     }
 }

@@ -25,8 +25,11 @@ import javax.measure.Unit;
 import org.apache.sis.math.NumberType;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArgumentCheckByAssertion;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Emptiable;
+import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.internal.shared.Strings;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.collection.CheckedContainer;
 
 
@@ -80,7 +83,8 @@ import org.apache.sis.util.collection.CheckedContainer;
  * @author  Joe White
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Jody Garnett (for parameterized type inspiration)
- * @version 1.6
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.7
  *
  * @param <E>  the type of range elements, typically a {@link Number} subclass or {@link java.util.Date}.
  *
@@ -89,7 +93,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  *
  * @since 0.3
  */
-public class Range<E extends Comparable<? super E>> implements CheckedContainer<E>, Formattable, Emptiable, Serializable {
+public class Range<E extends Comparable<? super E>> implements CheckedContainer<E>, Formattable, Emptiable, LenientComparable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -638,20 +642,115 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * @return {@code true} if the given object is equal to this range.
      */
     @Override
-    public boolean equals(final Object object) {
+    public final boolean equals(final Object object) {
+        return equals(object, ComparisonMode.STRICT);
+    }
+
+    /**
+     * Compares this range with the given object for equality with a tolerance specified by the given mode.
+     * This method performs the comparison described in {@link #equals(Object)} except for the following:
+     *
+     * <ul>
+     *   <li>{@link ComparisonMode#IGNORE_METADATA} or more tolerant:
+     *       ignore the {@linkplain #getElementType() element types}.
+     *       Numbers are converted to the same type before comparison.</li>
+     *   <li>{@link ComparisonMode#APPROXIMATE} or more tolerant: compare the minimum and maximum
+     *       values as double-precision floating point numbers with an arbitrary tolerance threshold.
+     *       The threshold may change in any future version of Apache <abbr>SIS</abbr>.</li>
+     *   <li>{@link ComparisonMode#ALLOW_VARIANT} or more tolerant: allow mixing different boundary types.
+     *       For example, {@code (0 … 256)} is equivalent to {@code [1 … 255]} in the case of integer types
+     *       (but not for floating point types).</li>
+     * </ul>
+     *
+     * @param  object  the object to compare with this range for equality.
+     * @param  mode    the strictness level of the comparison.
+     * @return {@code true} if the given object is equal to this range at the given strictness level.
+     *
+     * @since 1.7
+     */
+    @Override
+    public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
             return true;
         }
-        if (object != null && object.getClass() == getClass()) {
-            final Range<?> other = (Range<?>) object;
-            if (Objects.equals(elementType, other.elementType)) {
+        if (mode == ComparisonMode.STRICT) {
+            if (object != null && object.getClass() == getClass()) {
+                final var other = (Range<?>) object;
+                if (elementType == other.elementType) {
+                    if (isEmpty()) {
+                        return other.isEmpty();
+                    }
+                    return isMinIncluded == other.isMinIncluded &&
+                           isMaxIncluded == other.isMaxIncluded &&
+                           Objects.equals(minValue, other.minValue) &&
+                           Objects.equals(maxValue, other.maxValue);
+                }
+            }
+        } else if (object instanceof Range<?>) {
+            final var other = (Range<?>) object;
+            if (mode.isIgnoringMetadata() || getElementType() == getElementType()) {
                 if (isEmpty()) {
                     return other.isEmpty();
                 }
-                return Objects.equals(minValue, other.minValue) &&
-                       Objects.equals(maxValue, other.maxValue) &&
-                       isMinIncluded == other.isMinIncluded &&
-                       isMaxIncluded == other.isMaxIncluded;
+                return epsilonEqual(getMinValue(), isMinIncluded(), other.getMinValue(), other.isMinIncluded(), +1, mode) &&
+                       epsilonEqual(getMaxValue(), isMaxIncluded(), other.getMaxValue(), other.isMaxIncluded(), -1, mode);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns {@code true} if the given values are equal according the specified strictness level.
+     * In {@code APPROXIMATE} or {@code DEBUG} mode, this method will derive a relative comparison
+     * threshold from the {@link Numerics#COMPARISON_THRESHOLD} constant.
+     *
+     * @param  value1  the first  value to compare.
+     * @param  value2  the second value to compare.
+     * @param  isInc1  whether {@code value1} is inclusive.
+     * @param  isInc2  whether {@code value2} is inclusive.
+     * @param  toIncl  value to add to an integer for making it inclusive.
+     * @param  mode    the strictness level to use for comparing the numbers.
+     * @return {@code true} if both values are considered equal for the given comparison mode.
+     */
+    private static boolean epsilonEqual(final Object value1, final boolean isInc1,
+                                        final Object value2, final boolean isInc2,
+                                        final int toIncl, final ComparisonMode mode)
+    {
+        if (Objects.equals(value1, value2)) {
+            return isInc1 == isInc2;
+        }
+        if (isInc1 == isInc2 || mode.ordinal() >= ComparisonMode.ALLOW_VARIANT.ordinal()) {
+            if (mode.isIgnoringMetadata() && value1 instanceof Number && value2 instanceof Number) {
+                final var  n1 = (Number) value1;
+                final var  n2 = (Number) value2;
+                NumberType t1 = NumberType.forNumberClass(n1.getClass());
+                NumberType t2 = NumberType.forNumberClass(n2.getClass());
+                if (mode.isApproximate()) {
+                    double v1 = n1.doubleValue();
+                    double v2 = n2.doubleValue();
+                    if (isInc1 != isInc2) {
+                        /*
+                         * The comparison mode allows variants. If at least one value is an integer,
+                         * increment or decrement that value for having the same inclusiveness status
+                         * as the other value.
+                         */  if (t1.isInteger()) v1 += (isInc1 ? -toIncl : toIncl);
+                        else if (t2.isInteger()) v2 += (isInc2 ? -toIncl : toIncl);
+                    }
+                    /*
+                     * Compare as floating point numbers regardless the value types (even integers).
+                     * This is for avoiding the difficulty of keeping the result consistent with all
+                     * combinations of "is included" flags and comparison modes. The comparison stay
+                     * nevertheless strict for type `int` or smaller, and become approximate only for
+                     * type `long` or larger (`BigInteger`).
+                     */
+                    return Numerics.epsilonEqual(v1, v2, mode);
+                } else {
+                    if (t2.isWiderThan(t1)) {
+                        // Conservatively use `double` for avoiding accuracy lost if converting from `int`.
+                        t1 = (t2 == NumberType.FLOAT) ? NumberType.DOUBLE : t2;
+                    }
+                    return t1.equals(n1, n2);
+                }
             }
         }
         return false;
@@ -659,6 +758,8 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
 
     /**
      * Returns a hash code value for this range.
+     *
+     * @return a hash code value for this range.
      */
     @Override
     public int hashCode() {
@@ -704,6 +805,8 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      *
      * If this range is a {@link MeasurementRange}, then the {@linkplain Unit unit of measurement}
      * is appended to the above string representation except for empty ranges.
+     *
+     * @return an unlocalized string representation of this range.
      *
      * @see RangeFormat
      * @see <a href="https://en.wikipedia.org/wiki/ISO_31-11">Wikipedia: ISO 31-11</a>

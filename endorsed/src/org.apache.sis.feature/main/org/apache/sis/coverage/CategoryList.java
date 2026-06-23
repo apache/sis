@@ -408,7 +408,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
      */
     final MathTransform1D getTransferFunction() {
         MathTransform1D tr = categories[0].toConverse;          // See condition in javadoc.
-        for (int i=categories.length; --i >= 1;) {
+        for (int i = categories.length; --i >= 1;) {
             if (!tr.equals(categories[i].toConverse)) {
                 tr = this;
                 break;

@@ -25,6 +25,9 @@ import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.LenientComparable;   // For javadoc
+import org.apache.sis.util.internal.shared.Numerics;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -36,7 +39,9 @@ import org.apache.sis.test.TestCase;
  * Tests {@link SampleDimension}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Alexis Manin (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class SampleDimensionTest extends TestCase {
     /**
      * Creates a new test case.
@@ -222,5 +227,132 @@ public final class SampleDimensionTest extends TestCase {
         assertEquals(3, categories.size());
         assertEquals("Clouds", categories.remove(1).getName().toString());
         assertEquals(2, categories.size());
+    }
+
+    /**
+     * Tests {@link SampleDimension#equals(Object, ComparisonMode)} with null or incompatible instances.
+     */
+    @Test
+    @SuppressWarnings({"ObjectEqualsNull", "IncompatibleEquals"})
+    public void testNullAndIncompatibleTypesAreNeverEqual() {
+        final var base = new SampleDimension.Builder().setName("base").build();
+        assertFalse(base.equals(null,    ComparisonMode.STRICT));
+        assertFalse(base.equals("other", ComparisonMode.STRICT));
+        assertFalse(base.equals(null));
+        assertFalse(base.equals("other"));
+        assertFalse(base.equals(null,    ComparisonMode.APPROXIMATE));
+        assertFalse(base.equals("other", ComparisonMode.APPROXIMATE));
+    }
+
+    /**
+     * Tests {@link SampleDimension#equals(Object, ComparisonMode)} with strict equality behavior.
+     * Also ensures that the standard {@link Object#equals(Object)} is consistent with strict equality.
+     *
+     * @see LenientComparable#equals(Object, ComparisonMode)
+     * @see ComparisonMode#STRICT
+     */
+    @Test
+    public void testStrictEquality() {
+        final var base = new SampleDimension.Builder()
+                .addQualitative("Clouds", 1)
+                .addQualitative("Lands",  2)
+                .setName("base")
+                .build();
+        final var strictlyEqToBase = new SampleDimension.Builder()
+                .addQualitative("Clouds", 1)
+                .addQualitative("Lands",  2)
+                .setName("base")
+                .build();
+
+        // Same categories and background as dim1, but different dimension name.
+        final var renamed = new SampleDimension.Builder()
+                .addQualitative("Clouds", 1)
+                .addQualitative("Lands",  2)
+                .setName("Different name")
+                .build();
+
+        // Ensure a sample dimension is strictly equal to itself
+        assertTrue (base.equals(base, ComparisonMode.STRICT), "A sample dimension must be strictly equal to itself");
+        assertTrue (base.equals(base),                        "A sample dimension must be equal to itself");
+
+        // Ensure strict comparison work as expected
+        assertTrue (base.equals(strictlyEqToBase, ComparisonMode.STRICT), "identical dimensions must be equal");
+        assertTrue (strictlyEqToBase.equals(base, ComparisonMode.STRICT), "equality must be symmetric");
+        assertEquals(base.hashCode(), strictlyEqToBase.hashCode(),        "hashCode must be consistent with equals");
+
+        // Dimensions that differ only in name must NOT be equal under STRICT.
+        assertFalse(base.equals(renamed, ComparisonMode.STRICT), "different names must produce inequality");
+        assertFalse(renamed.equals(base, ComparisonMode.STRICT), "inequality must be symmetric");
+    }
+
+    /**
+     * Tests {@link SampleDimension#equals(Object, ComparisonMode)} with approximate comparison mode.
+     * The intend is to verify the compliance of {@link ComparisonMode#APPROXIMATE} with the contract
+     * documented in {@link LenientComparable#equals(Object, ComparisonMode)}.
+     * In approximate mode the dimension name is not compared, so two dimensions that differ
+     * only by name must be considered equal, while a different transfer function must not.
+     */
+    @Test
+    public void testApproximateEquality() {
+        final var base = new SampleDimension.Builder()
+                .setBackground(null, 0)
+                .addQualitative("Clouds", 1)
+                .addQuantitative("Temperature", 10, 200, 0.1, 5.0, Units.CELSIUS)
+                .setName("Base")
+                .build();
+        final var strictlyEqualToBase = new SampleDimension.Builder()
+                .setBackground(null, 0)
+                .addQualitative("Clouds", 1)
+                .addQuantitative("Temperature", 10, 200, 0.1, 5.0, Units.CELSIUS)
+                .setName("Base")
+                .build();
+        // Same structure as base but with an explicit different dimension name.
+        final SampleDimension renamed = new SampleDimension.Builder()
+                .setBackground(null, 0)
+                .addQualitative("Clouds", 1)
+                .addQuantitative("Temperature", 10, 200, 0.1, 5.0, Units.CELSIUS)
+                .setName("Renamed")
+                .build();
+
+        // Different scale in the transfer function — must not be equal even approximately.
+        final SampleDimension differentScale = new SampleDimension.Builder()
+                .setBackground(null, 0)
+                .addQualitative("Clouds", 1)
+                .addQuantitative("Temperature", 10, 200, 0.2, 5.0, Units.CELSIUS)
+                .build();
+
+        // Tiny difference in offset (differs by less than the APPROXIMATE threshold): should be equal.
+        final SampleDimension tinyOffsetDiff = new SampleDimension.Builder()
+                .setBackground(null, 0)
+                .addQualitative("Clouds", 1)
+                .addQuantitative("Temperature", 10, 200, 0.1, 5.0 - Numerics.COMPARISON_THRESHOLD, Units.CELSIUS)
+                .build();
+
+        assertTrue(base.equals(base, ComparisonMode.APPROXIMATE),
+                "A sample dimension should be approximately equal to itself");
+        // Different dimension name is ignored under APPROXIMATE — must be equal.
+        assertTrue (base.equals(strictlyEqualToBase, ComparisonMode.APPROXIMATE),
+                "two strictly equal sample dimensions should also be approximately equal");
+        assertTrue (strictlyEqualToBase.equals(base, ComparisonMode.APPROXIMATE),
+                "two strictly equal sample dimensions should also be approximately equal");
+
+        // Different dimension name is ignored under APPROXIMATE — must be equal.
+        assertTrue (base.equals(renamed, ComparisonMode.APPROXIMATE),
+                "name difference should be ignored on Sample dimension approximate equality");
+        assertTrue (renamed.equals(base, ComparisonMode.APPROXIMATE),
+                "name difference should be ignored on Sample dimension approximate equality");
+
+        // The same pair must NOT be equal under STRICT because names differ.
+        assertFalse(base.equals(renamed, ComparisonMode.STRICT), "STRICT must detect name difference");
+
+        // Different scale in the transfer function → not equal even approximately.
+        assertFalse(base.equals(differentScale, ComparisonMode.APPROXIMATE), "different scale must produce inequality");
+        assertFalse(differentScale.equals(base, ComparisonMode.APPROXIMATE), "different scale must produce inequality");
+
+        // A very little difference in transfer function offset should still mark both dimensions as approximately equal
+        assertTrue (base.equals(tinyOffsetDiff, ComparisonMode.APPROXIMATE),
+                "A tiny offset difference should not fail approximate equality");
+        assertTrue (tinyOffsetDiff.equals(base, ComparisonMode.APPROXIMATE),
+                "A tiny offset difference should not fail approximate equality");
     }
 }
