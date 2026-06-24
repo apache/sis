@@ -36,11 +36,13 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -53,6 +55,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.internal.shared.DoubleDouble;
@@ -1320,7 +1323,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         final GeneralEnvelope envelope = toEnvelope(cornerToCRS, false, cornerToCRS, null);
         try {
             final Matrix derivative = derivativeAtPOI(cornerToCRS, PixelInCell.CELL_CORNER);
-            final var builder = new GridCRSBuilder(PixelInCell.CELL_CORNER);
+            final var builder = new GridCRSBuilder();
             builder.forExtentAlone(derivative, getAxisTypes()).ifPresent(envelope::setCoordinateReferenceSystem);
         } catch (FactoryException | TransformException e) {
             Logging.ignorableException(LOGGER, GridExtent.class, "toEnvelope", e);
@@ -2348,6 +2351,34 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                 while (next(dimension));
                 done = true;
             }
+        }
+    }
+
+    /**
+     * Creates a coordinate reference system for cell indices in this extent.
+     * The {@code name} argument will be the name of the engineering datum.
+     * Coordinate operations between two <abbr>CRS</abbr>s created by this method
+     * will be possible only if they were created with the same {@code name} argument.
+     * It is recommended to use an identifier which is unique for the grid. It may be, for example, derived
+     * from the {@linkplain org.apache.sis.storage.GridCoverageResource#getIdentifier() resource identifier}.
+     *
+     * <p>This engineering <abbr>CRS</abbr> may be used when no "grid to <abbr>CRS</abbr>" information is available.
+     * Otherwise, {@link GridGeometry#createGridCRS(Identifier, PixelInCell)} should be preferred.</p>
+     *
+     * @param  name  name of the engineering datum.
+     * @return an engineering <abbr>CRS</abbr> for cell indices associated to this grid extent.
+     *
+     * @see GridGeometry#createGridCRS(Identifier, PixelInCell)
+     *
+     * @since 1.7
+     */
+    public EngineeringCRS createGridCRS(final Identifier name) {
+        ArgumentChecks.ensureNonNull("name", name);
+        try {
+            return new GridCRSBuilder().forExtent(name, getDimension(), this);
+        } catch (FactoryException e) {
+            // Should never happen because `GridCRSBuilder` uses known implementations.
+            throw new BackingStoreException(e);
         }
     }
 

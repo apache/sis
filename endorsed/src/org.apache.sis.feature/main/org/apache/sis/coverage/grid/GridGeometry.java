@@ -753,7 +753,8 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
-     * Creates a grid geometry with only an envelope.
+     * Creates a grid geometry with only an envelope and its coordinate reference system.
+     * The grid geometry has no "grid to <abbr>CRS</abbr>" transform.
      *
      * @param  envelope  the envelope together with CRS of the "real world" coordinates.
      * @throws IllegalArgumentException if the envelope has no CRS and only NaN coordinate values.
@@ -1882,7 +1883,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         final var id = new org.apache.sis.referencing.ImmutableIdentifier(null, null, name);
         try {
             // Note: the `true` boolean argument can be removed after the removal of this method.
-            final CoordinateReferenceSystem crs = new GridCRSBuilder(anchor).forCoverage(this, true, id);
+            final CoordinateReferenceSystem crs = new GridCRSBuilder().forCoverage(this, anchor, true, id);
             return (DerivedCRS) org.apache.sis.referencing.CRS.getSingleComponents(crs).get(0);
         } catch (FactoryException e) {
             throw new BackingStoreException(e);
@@ -1920,13 +1921,14 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @throws FactoryException if another error occurred during the use of a referencing factory.
      *
      * @see #createTransformTo(GridGeometry, PixelInCell)
+     * @see GridExtent#createGridCRS(Identifier)
      *
      * @since 1.7
      */
     public CoordinateReferenceSystem createGridCRS(final Identifier name, final PixelInCell anchor) throws FactoryException {
         ArgumentChecks.ensureNonNull("name", name);
         ArgumentChecks.ensureNonNull("anchor", anchor);
-        return new GridCRSBuilder(anchor).forCoverage(this, false, name);
+        return new GridCRSBuilder().forCoverage(this, anchor, false, name);
     }
 
     /**

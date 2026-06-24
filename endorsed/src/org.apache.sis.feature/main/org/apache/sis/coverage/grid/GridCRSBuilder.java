@@ -186,9 +186,9 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
     private GridGeometry fullGrid;
 
     /**
-     * The cell part (center or corner) to map.
+     * The cell part (center or corner) to map, or {@code null} if this information is not needed.
      */
-    private final PixelInCell anchor;
+    private PixelInCell anchor;
 
     /**
      * A helper tool for separating the "<abbr>CRS</abbr> to grid" transform for each component.
@@ -213,11 +213,8 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
 
     /**
      * Creates a new helper class for building a grid coordinate reference system.
-     *
-     * @param  anchor  the cell part to map (center or corner).
      */
-    GridCRSBuilder(final PixelInCell anchor) {
-        this.anchor = anchor;
+    GridCRSBuilder() {
         properties  = new HashMap<>(8);
         if (LOCALE != null) {
             properties.put(DefiningConversion.LOCALE_KEY, LOCALE);
@@ -237,15 +234,17 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
      * May return a compound <abbr>CRS</abbr> if the grid geometry has, for example, a temporal component.
      *
      * @param  grid     grid geometry of the coverage.
+     * @param  anchor   the cell part to map (center or corner).
      * @param  derived  whether to force {@link DerivedCRS} instances.
      * @param  name     name of the derived or engineering <abbr>CRS</abbr> to create.
      * @return a derived, engineering or compound <abbr>CRS</abbr> for cell indices associated to the grid extent.
      * @throws InvalidGeodeticParameterException if characteristics of the grid geometry disallow this operation.
      * @throws FactoryException if another error occurred during the use of a referencing factory.
      */
-    final CoordinateReferenceSystem forCoverage(final GridGeometry grid, final boolean derived, final Identifier name)
+    final CoordinateReferenceSystem forCoverage(final GridGeometry grid, final PixelInCell anchor, final boolean derived, final Identifier name)
             throws FactoryException
     {
+        this.anchor = anchor;
         properties.put(DefiningConversion.NORMALIZED_KEY, Boolean.FALSE);
         properties.put(ObjectDomain.SCOPE_KEY, SCOPE);
         grid.getGeographicExtent().ifPresent((domain) -> {
@@ -263,10 +262,27 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
          * We cannot create a derived CRS. Fallback on an engineering CRS with no
          * relationship to any other CRS.
          */
-        final int dimension = grid.getDimension();
+        return forExtent(name, grid.getDimension(), grid.isDefined(GridGeometry.EXTENT) ? grid.getExtent() : null);
+    }
+
+    /**
+     * Creates an engineering <abbr>CRS</abbr> for grid coordinates with no relationship to real world coordinates.
+     * The {@code name} argument is important because it is the only way to determine whether a coordinate operation
+     * is possible between two engineering <abbr>CRS</abbr>s. It is recommended to use an identifier which is unique
+     * for the grid. It may be, for example, derived from the resource identifier.
+     *
+     * @param  name       name of the engineering datum.
+     * @param  dimension  number of dimensions.
+     * @param  extent     extent, or {@code null} if none.
+     * @return an engineering <abbr>CRS</abbr> for cell indices associated to the grid extent.
+     * @throws FactoryException if an error occurred during the use of a referencing factory.
+     */
+    final EngineeringCRS forExtent(final Identifier name, final int dimension, final GridExtent extent)
+            throws FactoryException
+    {
         final DimensionNameType[] dimensionNames;
-        if (grid.isDefined(GridGeometry.EXTENT)) {
-            dimensionNames = Arrays.copyOf(grid.getExtent().getAxisTypes(), dimension);
+        if (extent != null) {
+            dimensionNames = Arrays.copyOf(extent.getAxisTypes(), dimension);
         } else {
             dimensionNames = new DimensionNameType[dimension];
         }
