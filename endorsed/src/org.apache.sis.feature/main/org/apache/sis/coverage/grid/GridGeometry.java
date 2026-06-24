@@ -1604,18 +1604,10 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
-     * Returns {@code true} if this grid geometry contains only a grid extent and no other information.
-     * Note: if {@link #gridToCRS} is {@code null}, then {@link #cornerToCRS} and {@link #resolution}
-     * should be null as well.
-     */
-    final boolean isExtentOnly() {
-        return gridToCRS == null && envelope == null && extent != null;
-    }
-
-    /**
-     * Returns {@code true} if this grid geometry contains only an envelope and no other information.
-     * Note: if {@link #gridToCRS} is {@code null}, then {@link #cornerToCRS} and {@link #resolution}
-     * should be null as well.
+     * Returns {@code true} if this grid geometry contains only an envelope with no extent or transform.
+     * Note: if {@link #gridToCRS} is {@code null}, then {@link #cornerToCRS} shall also be {@code null}.
+     * The {@link #resolution} array is usually also null, but may be non-null if this grid geometry was
+     * {@linkplain #GridGeometry(GridGeometry, GridExtent, MathTransform) derived from another grid}.
      */
     final boolean isEnvelopeOnly() {
         return gridToCRS == null && extent == null && envelope != null;

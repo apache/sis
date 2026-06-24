@@ -87,7 +87,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.6
+ * @version 1.7
  *
  * @see GridGeometry#derive()
  * @see GridGeometry#selectDimensions(int[])
@@ -543,27 +543,58 @@ public class GridDerivation {
         if (base.equals(areaOfInterest, ComparisonMode.BY_CONTRACT)) {
             return this;
         }
-        if (areaOfInterest.isEnvelopeOnly()) {
-            return subgrid(areaOfInterest.envelope, (double[]) null);
-        }
         final double[] scales;
-        if (areaOfInterest.isExtentOnly()) {
+        if (areaOfInterest.extent == null && areaOfInterest.envelope == null && base.gridToCRS == null) {
+            /*
+             * Case when `areaOfInterest` specifies only a resolution (typically in a pyramid)
+             * and we cannot use that resolution by a concatenation of "grid to CRS" transforms.
+             * The given resolution is relative to the base grid which was used for deriving `areaOfInterest`.
+             * We don't really know if it was the same base as `this.base`, but there is good chances that the
+             * fact that `base.gridToCRS` is null is the reason why `areaOfInterest` has no information other
+             * than resolution. On the assumption that both bases are the same, we need to divide the specified
+             * resolution by `base.resolution` in order to get subsampling factors.
+             */
+            scales = areaOfInterest.getResolution(true);
+            final double[] resolution = base.resolution;
+            if (resolution != null) {
+                for (int i = scales.length; --i >= 0;) {
+                    scales[i] /= resolution[i];
+                }
+            }
+        } else if (areaOfInterest.gridToCRS == null && (areaOfInterest.extent == null) != (areaOfInterest.envelope == null)) {
+            /*
+             * Case of some kind of bounding box (in grid units or CRS units) without "grid to CRS" transform.
+             * In principle, `areaOfInterest.resolution` should be null since `areaOfInterest.gridToCRS` is null.
+             * Nevertheless, it may be non-null if the given `areaOfInterest` has been derived from another grid,
+             * in which case the resolution requested by the user was saved even if no `gridToCRS` was available.
+             */
+            if (areaOfInterest.extent == null) {
+                double[] resolution = areaOfInterest.resolution;
+                if (resolution != null) {
+                    resolution = resolution.clone();
+                }
+                return subgrid(areaOfInterest.envelope, resolution);
+            }
             if (baseExtent != null) {
                 baseExtent = baseExtent.intersect(areaOfInterest.extent);
                 subGridSetter = "subgrid";
             }
-            scales = areaOfInterest.resolution;
             /*
-             * In principle, the above `resolution` should be null because it could not be derived from `gridToCRS`,
-             * because the latter is null (otherwise `isExtentOnly()` would have been false). However, an exception
-             * to this rule happens if the given `areaOfInterest` has been computed by another `GridDerivation`,
-             * in which case the resolution requested by the user was saved even if no `gridToCRS` was available.
-             * That resolution is relative to the base grid of the other `GridDerivation` instead of this one,
-             * but we ignore that details because the `resolution` field is only indicative, especially since
-             * the subsampling offsets are lost. If the exact resolution and subsampling offsets where known,
-             * they would have been stored in `gridToCRS`.
+             * The resolution is relative to the base grid which was used for deriving `areaOfInterest`.
+             * We don't really know if it was the same base as `this.base`, but it is surely not the case if
+             * `base.gridToCRS` is non-null, otherwise `areaOfInterest` would have inherited that transform.
+             * Conservatively do NOT divide the specified resolution by `base.resolution`.
+             *
+             * This approach is quite approximate. But the `resolution` field is only indicative anyway,
+             * especially since the subsampling offsets are lost. If the exact resolution and subsampling
+             * offsets where known, they should have been stored in `gridToCRS`.
              */
+            scales = areaOfInterest.resolution;
         } else try {
+            /*
+             * Case of grid geometries for which we require the presence of a "grid to CRS" transform.
+             * An `IllegalGridGeometryException` will be thrown if a transform is missing.
+             */
             final MathTransform nowraparound;
             final var finder = new CoordinateOperationFinder(areaOfInterest, base);
             finder.verifyPresenceOfCRS(false);
@@ -697,7 +728,7 @@ public class GridDerivation {
      * @param  resolution      the desired resolution in the same units and order than the axes of the given envelope,
      *                         or {@code null} or an empty array if no subsampling is desired. The array length should
      *                         be equal to the {@code areaOfInterest} dimension, but this is not mandatory
-     *                         (zero or missing values mean no sub-sampling, extraneous values are ignored).
+     *                         (zero or NaN values mean no sub-sampling, extraneous values are ignored).
      * @return {@code this} for method call chaining.
      * @throws DisjointExtentException if the given area of interest does not intersect the grid extent.
      * @throws IncompleteGridGeometryException if the base grid geometry has no extent, no "grid to CRS" transform,

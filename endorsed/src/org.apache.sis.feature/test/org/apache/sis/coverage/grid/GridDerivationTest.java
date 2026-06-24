@@ -618,6 +618,25 @@ public final class GridDerivationTest extends TestCase {
     }
 
     /**
+     * Tests {@link GridDerivation#subgrid(GridExtent, long...)} with a null "grid to CRS" transform
+     * but a non-null resolution.
+     */
+    @Test
+    public void testSubgridWithoutTransformButWithResolution() {
+        GridGeometry aoi  = new GridGeometry(null, PixelInCell.CELL_CORNER, MathTransforms.scale(128, 128), null);
+        GridGeometry base = new GridGeometry(new GridExtent(2048, 798), null, null, null, aoi.resolution, 0);
+        assertArrayEquals(new double[] {128, 128}, base.getResolution(false));
+        assertSame(base, base.derive().subgrid(aoi).build());
+
+        aoi = new GridGeometry(null, PixelInCell.CELL_CORNER, MathTransforms.scale(256, 256), null);
+        GridGeometry derived = base.derive().subgrid(aoi).build();
+        assertArrayEquals(new double[] {256, 256}, derived.getResolution(false));
+        assertExtentEquals(new long[2], new long[] {1023, 398}, derived.getExtent());
+        assertNull(derived.gridToCRS);
+        assertNull(derived.envelope);
+    }
+
+    /**
      * Tests {@link GridDerivation#slice(DirectPosition)}.
      */
     @Test
