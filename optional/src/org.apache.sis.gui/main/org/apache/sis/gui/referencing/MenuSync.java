@@ -52,11 +52,6 @@ import org.apache.sis.util.Utilities;
  */
 final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements EventHandler<ActionEvent> {
     /**
-     * The {@value} value, for identifying code that assume two-dimensional objects.
-     */
-    private static final int BIDIMENSIONAL = 2;
-
-    /**
      * Keys where to store the reference system in {@link MenuItem} properties.
      */
     private static final String REFERENCE_SYSTEM_KEY = "ReferenceSystem";
@@ -174,7 +169,7 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
     private void initialize() {
         for (final ReferenceSystem system : recentSystems) {
             if (system instanceof CoordinateReferenceSystem crs) {
-                if (CRS.getDimensionOrZero(crs) == BIDIMENSIONAL) {
+                if (CRS.getDimensionOrZero(crs) == RecentReferenceSystems.BIDIMENSIONAL) {
                     set(crs);
                     break;
                 }

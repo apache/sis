@@ -168,7 +168,7 @@ abstract class OperationFinder extends Task<MathTransform> {
     }
 
     /**
-     * Returns {@code true} if the given coordinate reference system is the CRS of the grid.
+     * Returns {@code true} if the given coordinate reference system is the <abbr>CRS</abbr> of the grid.
      * We use the {@link org.apache.sis.referencing.CommonCRS.Engineering#GRID} datum as a signature.
      */
     private static boolean isGridCRS(final CoordinateReferenceSystem crs) {

@@ -37,7 +37,8 @@ import org.apache.sis.util.resources.Errors;
  * This class intentionally blocks the optimization which consists in optimizing two consecutive linear
  * transforms with a matrix multiplication. The purpose of this transform is to replace some coordinate
  * values by zero before the matrix multiplication is applied, because Apache <abbr>SIS</abbr> handles
- * 0 × NaN in a special resulting in 0 instead of NaN (okay if NaN is interpreted as "any finite number").
+ * 0 × NaN in a special way resulting in 0 instead of NaN, which is okay if NaN is interpreted as
+ * "any finite number".
  *
  * <p>The current implementation has no tolerance threshold,
  * but a future implementation could add such tolerance if it appears useful.</p>

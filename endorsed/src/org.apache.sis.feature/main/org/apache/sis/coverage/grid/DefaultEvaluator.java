@@ -37,6 +37,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.internal.shared.WraparoundAxesFinder;
+import org.apache.sis.referencing.operation.MissingSourceDimensionsException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -645,13 +646,17 @@ next:   while (--numPoints >= 0) {
             try {
                 CoordinateOperation op = CRS.findOperation(crs, stepCRS, areaOfInterest);
                 crsToGrid = MathTransforms.concatenate(op.getMathTransform(), crsToGrid);
-            } catch (FactoryException main) {
+            } catch (MissingSourceDimensionsException main) {
                 /*
                  * Above block tried to compute a "CRS to grid" transform in the most direct way.
                  * It covers the usual case where the point has the required number of dimensions,
                  * and fixes the case when the point has more dimensions (extra dimensions are ignored).
                  * The following block covers the opposite case, where the point does not have enough
                  * dimensions. We try to fill missing dimensions with the help of the `slice` map.
+                 *
+                 * Note: we could use `CoordinateOperationContext.setConstantCoordinates(…)` in above block instead.
+                 * But it would set a constant CRS coordinate, while we want to set a constant grid coordinate, and
+                 * computing the CRS coordinate is not easy because of NaN scale factors.
                  */
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Map<Integer, Long> slice = getDefaultSlice();

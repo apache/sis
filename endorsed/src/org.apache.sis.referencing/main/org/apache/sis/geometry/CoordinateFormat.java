@@ -107,7 +107,7 @@ import org.apache.sis.pending.jdk.JDK23;
  * transform the position} before to format it.</p>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 1.4
+ * @version 1.7
  *
  * @see AngleFormat
  * @see org.apache.sis.measure.UnitFormat
@@ -620,7 +620,8 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                     unitSymbols[i] = QuantityFormat.SEPARATOR + symbol;
                 }
             }
-            if (AxisDirections.isCompass(direction)) {
+            // Note: pixel units can come from `GridGeometry` derived CRS.
+            if (AxisDirections.isCompass(direction) && unit != Units.PIXEL) {
                 if (directionSymbols == null) {
                     directionSymbols = new String[dimension * 2];
                 }
@@ -1869,6 +1870,7 @@ checkDirection: if (direction != null) {
      * @throws ClassNotFoundException if the class serialized on the stream is not on the module path.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
         parseSeparator = separator.strip();
     }
 }

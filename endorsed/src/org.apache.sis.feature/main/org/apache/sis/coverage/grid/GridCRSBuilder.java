@@ -442,11 +442,12 @@ toGrid: try {
         for (int j=0; j<dimension; j++) {
             String abbreviation = null;
             final DimensionNameType type = dimensionNames[j];
+            boolean pixel = false;
             if (type != null) {
                 if (type == DimensionNameType.COLUMN || type == DimensionNameType.SAMPLE) {
-                    abbreviation = "x";
+                    abbreviation = "x"; pixel = true;
                 } else if (type == DimensionNameType.ROW || type == DimensionNameType.LINE) {
-                    abbreviation = "y";
+                    abbreviation = "y"; pixel = true;
                 } else if (type == DimensionNameType.VERTICAL) {
                     abbreviation = "z"; hasVertical = true;
                 } else if (type == DimensionNameType.TIME) {
@@ -483,7 +484,7 @@ toGrid: try {
             if (direction == null) {
                 direction = AxisDirection.UNSPECIFIED;
             }
-            axes[j] = csFactory.createCoordinateSystemAxis(properties(name), abbreviation, direction, Units.UNITY);
+            axes[j] = csFactory.createCoordinateSystemAxis(properties(name), abbreviation, direction, pixel ? Units.PIXEL : Units.UNITY);
         }
         /*
          * Create a coordinate system of affine type if all axes seem spatial.

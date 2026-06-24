@@ -1306,13 +1306,15 @@ public class GridGeometry implements LenientComparable, Serializable {
         final double[] origin = new double[cornerToCRS.getTargetDimensions()];
         final Matrix matrix = MathTransforms.getMatrix(cornerToCRS);
         if (matrix != null) {
+            Matrix other = null;
             final int lastColumn = matrix.getNumCol() - 1;
             for (int j=0; j < origin.length; j++) {
                 if (Double.isNaN(origin[j] = matrix.getElement(j, lastColumn))) {
-                    final Matrix other = MathTransforms.getMatrix(gridToCRS);
-                    if (other != null) {
-                        origin[j] = other.getElement(j, lastColumn);
+                    if (other == null) {
+                        other = MathTransforms.getMatrix(gridToCRS);
+                        if (other == null) continue;
                     }
+                    origin[j] = other.getElement(j, lastColumn);
                 }
             }
         } else try {
