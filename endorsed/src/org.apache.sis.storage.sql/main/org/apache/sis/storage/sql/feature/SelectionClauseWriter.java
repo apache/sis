@@ -43,6 +43,7 @@ import org.opengis.filter.LogicalOperator;
 import org.opengis.filter.LogicalOperatorName;
 import org.opengis.filter.ComparisonOperatorName;
 import org.opengis.filter.BinaryComparisonOperator;
+import org.opengis.filter.LikeOperator;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.BetweenComparisonOperator;
 import org.opengis.filter.ResourceId;
@@ -111,6 +112,14 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
             } else {
                 sql.invalidate();
             }
+        });
+        setFilterHandler(ComparisonOperatorName.valueOf(FunctionNames.PROPERTY_IS_LIKE), (f,sql) -> {
+            final var filter = (LikeOperator<Feature>) f;
+            final List<Expression<Feature, ?>> parameters = filter.getExpressions();
+            write(sql, parameters.get(0));
+            sql.append(" LIKE ");
+             write(sql, parameters.get(1));
+            sql.declareFunction(JDBCType.BOOLEAN);
         });
         /*
          * Spatial filters.
