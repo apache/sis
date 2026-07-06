@@ -16,13 +16,13 @@
  */
 package org.apache.sis.storage.geoheif;
 
-import java.util.Arrays;
 import static java.lang.Math.addExact;
 import static java.lang.Math.multiplyExact;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
+import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
-import java.awt.image.BandedSampleModel;
+import java.awt.image.RasterFormatException;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.image.internal.shared.RasterFactory;
@@ -119,26 +119,6 @@ class UncompressedImage extends Image {
     }
 
     /**
-     * Returns [(width × number of samples per pixel), (height), (number of banks)], in that order.
-     * The banks are assumed to be consecutive.
-     *
-     * <p><b>Limitation:</b> current implementation ignores {@link java.awt.image.MultiPixelPackedSampleModel},
-     * but that model does not seem to be used by <abbr>HEIF</abbr>.</p>
-     *
-     * @param  sampleModel  the sample model for which to get the size.
-     * @return the scanline stride, raster height and number of banks, in that order.
-     */
-    private static long[] size(final SampleModel sampleModel) {
-        long width    = sampleModel.getWidth();
-        long numBanks = sampleModel.getNumDataElements();
-        if (!(sampleModel instanceof BandedSampleModel)) {
-            width *= numBanks;
-            numBanks = 1;
-        }
-        return new long[] {width, sampleModel.getHeight(), numBanks};
-    }
-
-    /**
      * Computes the range of bytes that will be needed for reading the tile at the specified index.
      * The given region is converted to offsets relatives to the beginning of the <abbr>HEIF</abbr>
      * file and the result is stored in the given {@code addTo} argument.
@@ -179,15 +159,27 @@ class UncompressedImage extends Image {
      * @param  context  where to store the ranges of bytes.
      * @return the function to invoke later for reading the tile.
      * @throws DataStoreException if an error occurred while computing the range of bytes.
-     * @throws ArithmeticException if an offset or index overflows the capacity of 32-bits integers.
+     * @throws ArithmeticException if an overflow occurred during integer arithmetic.
+     * @throws RasterFormatException if the sample model is unsupported.
      */
     @Override
     protected final Reader computeByteRanges(final ImageResource.Coverage.ReadContext context) throws DataStoreException {
-        final long[] sourceSize = size(sampleModel);
-        final var    region     = new Region(sourceSize, null, null, null);
-        final long   tileIndex  = addExact(multiplyExact(context.subTileY, numXTiles), context.subTileX);
+        final long[] sourceSize;
+        final Region region;
+        {   // For local scope.
+            final var builder = new Region.Builder(3, false);
+            builder.pixelsToSampleValues(sampleModel);
+            sourceSize = builder.sourceSize;
+            region = builder.build();
+        }
+        final long tileIndex = addExact(multiplyExact(context.subTileY, numXTiles), context.subTileX);
         computeByteRanges(tileIndex, region, context);
         return (ChannelDataInput input) -> {
+            final var builder = new Region.Builder(3, true);
+            final Raster empty = context.getRegionInsideTile(builder, sampleModel);
+            if (empty != null) {
+                return empty;
+            }
             long origin = context.offset();
             ComputedByteChannel inflater = context.reuseInflater();
             if (inflater == null || inflater.compressedInput() != input) {
@@ -210,15 +202,12 @@ class UncompressedImage extends Image {
             hr.setOrigin(origin);
             Region bank = region;
             final WritableRaster raster   = context.createRaster();
-            final long[]         upper    = size(raster.getSampleModel());
             final DataBuffer     target   = raster.getDataBuffer();
             final int            numBanks = target.getNumBanks();
             for (int b=0; b<numBanks; b++) {
-                upper[2] = b + 1;
-                if (b != 0 || !Arrays.equals(sourceSize, upper)) {
-                    final long[] lower = new long[upper.length];
-                    lower[2] = b;
-                    bank = new Region(sourceSize, lower, upper, null);
+                builder.setBankToRead(b);
+                if (b != 0 || !builder.containsAll(sourceSize)) {
+                    bank = builder.build();
                 }
                 hr.setDestination(RasterFactory.wrapAsBuffer(target, b));
                 hr.readAsBuffer(bank, 0);

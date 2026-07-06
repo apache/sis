@@ -17,13 +17,21 @@
 package org.apache.sis.io.stream;
 
 import java.util.Arrays;
+import java.awt.image.SampleModel;
+import java.awt.image.BandedSampleModel;
+import java.awt.image.PixelInterleavedSampleModel;
+import java.awt.image.RasterFormatException;
 import static java.lang.Math.addExact;
 import static java.lang.Math.subtractExact;
 import static java.lang.Math.multiplyExact;
 import static java.lang.Math.incrementExact;
 import static java.lang.Math.toIntExact;
-import org.apache.sis.io.TableAppender;
 import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
+import org.apache.sis.storage.internal.Resources;
+import org.apache.sis.io.TableAppender;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Classes;
 
 
 /**
@@ -313,5 +321,166 @@ public final class Region {
             table.append(String.valueOf(skips[i])).nextLine();
         }
         return table.toString();
+    }
+
+    /**
+     * Helper class for building a region.
+     * All arrays are initialized to zero.
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     */
+    public static final class Builder {
+        /**
+         * The number of elements along each dimension.
+         */
+        public final long[] sourceSize;
+
+        /**
+         * Indices of the first value to read or write along each dimension.
+         * May be {@code null} if all lower coordinates are zero.
+         */
+        public final long[] regionLower;
+
+        /**
+         * Indices after the last value to read or write along each dimension.
+         * May be {@code null} if the upper coordinates are {@link #sourceSize}.
+         */
+        public final long[] regionUpper;
+
+        /**
+         * Subsampling along each dimension. Shall be greater than zero.
+         * May be {@code null} if all subsampling factor are 1 (no subsampling).
+         */
+        public final long[] subsampling;
+
+        /**
+         * Creates a builder for a region of the given number of dimensions.
+         * If {@code subRegion} is {@code false}, then only {@link #sourceSize} is non-null.
+         * All non-null arrays are initialized to 0.
+         *
+         * @param  dimension  number of dimensions.
+         * @param  subRegion  whether the caller may need to specify a sub-region.
+         */
+        public Builder(final int dimension, final boolean subRegion) {
+            sourceSize  = new long[dimension];
+            if (subRegion) {
+                regionLower = new long[dimension];
+                regionUpper = new long[dimension];
+                subsampling = new long[dimension];
+            } else {
+                regionLower = null;
+                regionUpper = null;
+                subsampling = null;
+            }
+        }
+
+        /**
+         * Index of the bank in the arrays updated by {@link #pixelsToSampleValues(SampleModel)}.
+         */
+        private static final int BANK_INDEX = 2;
+
+        /**
+         * Computes the subregion to read for filling a raster which uses the given sample model.
+         * Before to invoke this method, the caller shall set the {@link #regionLower}, {@link #regionUpper}
+         * and {@link #subsampling} arrays (if non-null) to the pixel coordinates of the subregion to read.
+         * Subclasses of {@link org.apache.sis.storage.tiling.TiledGridCoverageResource} can do as below:
+         *
+         * {@snippet lang="java" :
+         *     final TileIterator t = ...;
+         *     final var b = new Region.Builder(3);
+         *     t.getRegionInsideTile(b.regionLower, b.regionUpper, b.subsampling, true);
+         *     b.pixelsToSampleValues(sampleModel);
+         *     }
+         *
+         * This method converts the pixel coordinates to sample values coordinates,
+         * assuming that the sample values will be stored in the raster in the same order as they are read.
+         * This method also overwrites the {@link #sourceSize} with the following values, in order:
+         *
+         * <blockquote>[(width × number of samples per pixel), (height), (number of banks)]</blockquote>
+         *
+         * The arrays can have any length. If too long, extraneous dimensions will be ignored.
+         * If too short, there is no attempt to update the missing values.
+         *
+         * @param  sm  the sample model for which to get the size and update the subregion.
+         * @throws RasterFormatException if the sample model is not recognized.
+         */
+        @SuppressWarnings("fallthrough")
+        public void pixelsToSampleValues(final SampleModel sm) {
+            switch (sourceSize.length) {
+                default: sourceSize[BANK_INDEX] = 1;        // Fallthrough in all cases.
+                case 2:  sourceSize[1] = sm.getHeight();
+                case 1:  sourceSize[0] = sm.getWidth();
+                case 0:  break;
+            }
+            final long n = sm.getNumDataElements();
+            if (n != 1) {
+                final int dimension;
+                if (sm instanceof PixelInterleavedSampleModel) {
+                    dimension = 0;      // Tile width
+                    if (subsampling != null && subsampling[dimension] != 1) {
+                        throw new RasterFormatException("Subsampling of pixel interleave not yet supported.");
+                    }
+                } else if (sm instanceof BandedSampleModel) {
+                    dimension = BANK_INDEX;
+                } else {
+                    throw unsupportedSampleModel(sm);
+                }
+                if (dimension < sourceSize.length) {
+                    sourceSize[dimension] *= n;
+                    if (regionLower != null) regionLower[dimension] *= n;
+                    if (regionUpper != null) regionUpper[dimension] *= n;
+                }
+            }
+        }
+
+        /**
+         * Returns the exception to throw for an unsupported sample model.
+         *
+         * @param  sm  the unsupported sample model.
+         * @return the exception to throw.
+         */
+        static RasterFormatException unsupportedSampleModel(final SampleModel sm) {
+            return new RasterFormatException(Resources.format(
+                    Resources.Keys.UnsupportedSampleModel_1,
+                    CharSequences.camelCaseToSentence(Classes.getShortClassName(sm))));
+        }
+
+        /**
+         * Sets the index of the <em>bank</em> (not band) to read.
+         * This is useful when each bank is read separately and stored in its own array.
+         *
+         * @param  bank  index of the bank to read.
+         */
+        public void setBankToRead(final int bank) {
+            regionLower[BANK_INDEX] = bank;
+            regionUpper[BANK_INDEX] = bank + 1;
+            subsampling[BANK_INDEX] = 1;
+        }
+
+        /**
+         * Returns {@code true} if the region would contain all data of an hyper-cube of the given size.
+         * This is true if {@link #regionLower} is equivalent to (0, 0, …, 0), if {@link #regionUpper}
+         * and {@link #sourceSize} are both equivalent to the given {@code size} argument,
+         * and there is no subsampling.
+         *
+         * @param  size  the expected size of data.
+         * @return whether the region would cover all data of the given size.
+         */
+        public boolean containsAll(final long[] size) {
+            return Arrays.equals(sourceSize,  size) &&
+                   (regionUpper == null || Arrays.equals(regionUpper, sourceSize)) &&
+                   (regionLower == null || ArraysExt.allEquals(regionLower, 0)) &&
+                   (subsampling == null || ArraysExt.allEquals(subsampling, 1));
+        }
+
+        /**
+         * Creates a new region with the fields of this builder as arguments.
+         *
+         * @return the region created from the values of the builder.
+         * @throws ArithmeticException if a size is too large.
+         */
+        public Region build() {
+            return new Region(sourceSize, regionLower, regionUpper, subsampling);
+        }
     }
 }

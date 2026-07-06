@@ -181,10 +181,9 @@ public final class SampleModelBuilder {
             bandOffsets    = cm.getBandOffsets();
             scanlineStride = cm.getScanlineStride();
             pixelStride    = cm.getPixelStride();
-            for (int i=0; i<bankIndices.length; i++) {
-                if (bankIndices[i] != 0) return;
+            if (ArraysExt.allEquals(bankIndices, 0)) {
+                bankIndices = null;     // PixelInterleavedSampleModel
             }
-            bankIndices = null;     // PixelInterleavedSampleModel
         } else if (model instanceof SinglePixelPackedSampleModel) {
             final var cm = (SinglePixelPackedSampleModel) model;
             bitMasks       = cm.getBitMasks();
