@@ -375,7 +375,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
             /**
              * Iterator over the tiles to read.
              */
-            private final AOI iterator;
+            private final Snapshot iterator;
 
             /**
              * The image readers created for reading the tiles.
@@ -454,8 +454,9 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
             final Raster getRegionInsideTile(final Region.Builder builder,
                                              final SampleModel sampleModel)
             {
-                if (iterator.getRegionInsideTile(builder.regionLower, builder.regionUpper, builder.subsampling, true)) {
+                if (iterator.getRegionInsideTile(builder.regionLower, builder.regionUpper, builder.subsampling, false)) {
                     builder.pixelsToSampleValues(sampleModel);
+                    iterator.fireTileReadStarted();
                     return null;
                 }
                 return TilePlaceholder.empty(sampleModel).create(iterator.getTileLocation());
