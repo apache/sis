@@ -1605,16 +1605,6 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
-     * Returns {@code true} if this grid geometry contains only an envelope with no extent or transform.
-     * Note: if {@link #gridToCRS} is {@code null}, then {@link #cornerToCRS} shall also be {@code null}.
-     * The {@link #resolution} array is usually also null, but may be non-null if this grid geometry was
-     * {@linkplain #GridGeometry(GridGeometry, GridExtent, MathTransform) derived from another grid}.
-     */
-    final boolean isEnvelopeOnly() {
-        return gridToCRS == null && extent == null && envelope != null;
-    }
-
-    /**
      * Returns an object that can be used for creating a new grid geometry derived from this grid geometry.
      * {@code GridDerivation} does not change the state of this {@code GridGeometry} but instead creates
      * new instances as needed. Examples of modifications include clipping to a sub-area or applying a sub-sampling.

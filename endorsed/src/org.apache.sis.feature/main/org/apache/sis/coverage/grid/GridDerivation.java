@@ -741,9 +741,30 @@ public class GridDerivation {
      */
     public GridDerivation subgrid(Envelope areaOfInterest, double... resolution) {
         ensureSubgridNotSet();
-        final boolean isEnvelopeOnly = base.isEnvelopeOnly() && (resolution == null || resolution.length == 0);
-        MathTransform cornerToCRS = isEnvelopeOnly ? MathTransforms.identity(base.envelope.getDimension())
-                                                   : base.requireGridToCRS(false);         // Normal case.
+        MathTransform cornerToCRS;
+        final boolean isEnvelopeOnly;
+        /*
+         * Check for the cases where the arguments or grid geometry information are incomplete.
+         * It includes the case where the base grid geometry has no "grid to CRS" transform but
+         * nevertheless has a resolution, which happens sometime in the context of a pyramid.
+         */
+        if (resolution == null || resolution.length == 0) {
+            isEnvelopeOnly = base.gridToCRS == null && base.extent == null && base.envelope != null;
+            if (isEnvelopeOnly) {
+                cornerToCRS = MathTransforms.identity(base.envelope.getDimension());
+            } else {
+                cornerToCRS = base.requireGridToCRS(false);
+            }
+        } else if (areaOfInterest == null && base.gridToCRS == null && base.resolution != null) {
+            final long[] subsampling = new long[base.resolution.length];
+            for (int i = subsampling.length; --i >= 0;) {
+                subsampling[i] = roundSubsampling(resolution[i] / base.resolution[i], i);
+            }
+            return subsample(subsampling);
+        } else {
+            isEnvelopeOnly = false;
+            cornerToCRS = base.requireGridToCRS(false);
+        }
         subGridSetter = "subgrid";
         try {
             /*

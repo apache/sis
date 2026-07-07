@@ -1499,6 +1499,9 @@ final class ImageFileDirectory extends DataCube {
                     domain = reader.store.customizer.customize(source, domain);
                 }
                 gridGeometry = domain;
+                if (overviews != null) {
+                    ensureResolutionExists();
+                }
             }
             return domain;
         }
@@ -2030,9 +2033,32 @@ final class ImageFileDirectory extends DataCube {
      * Sets a list of overviews from coarsest resolution (the overview) to finest resolution.
      * The full-resolution image shall be {@code this} and shall not be included in the given list.
      */
-    final void setOverviews(final List<ImageFileDirectory> images) {
+    final void setOverviews(final List<ImageFileDirectory> images) throws DataStoreException {
         if (!images.isEmpty()) {
             overviews = new Overviews(images);
+            if (gridGeometry != null) {
+                ensureResolutionExists();
+            }
+        }
+    }
+
+    /**
+     * Ensures that the grid geometry declares a resolution.
+     * This method should be invoked only when {@link #gridGeometry} <strong>and</strong>
+     * {@link #overviews} are non-null, i.e. when we determined that a pyramid exists.
+     * The pyramid system of Apache <abbr>SIS</abbr> needs a resolution in all levels.
+     * Therefore, if the base level has no resolution, we need to add an arbitrary one.
+     * A resolution is missing when there is no "grid to <abbr>CRS</abbr>" transform.
+     * Arbitrary resolution values are okay when there is no <abbr>CRS</abbr>.
+     * The arbitrary value is 1, which means that resolutions are in units of pixels
+     * of the base level.
+     */
+    private void ensureResolutionExists() throws DataStoreException {
+        if (!gridGeometry.isDefined(GridGeometry.RESOLUTION) && !gridGeometry.isDefined(GridGeometry.CRS)) try {
+            gridGeometry = new GridGeometry(gridGeometry, gridGeometry.getExtent(),
+                            MathTransforms.identity(gridGeometry.getDimension()));
+        } catch (TransformException e) {
+            throw new DataStoreReferencingException(e);     // Should never happen.
         }
     }
 
