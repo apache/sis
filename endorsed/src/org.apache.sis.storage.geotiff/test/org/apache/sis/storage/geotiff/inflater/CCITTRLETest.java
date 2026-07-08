@@ -527,6 +527,7 @@ public final class CCITTRLETest extends TestCase {
      * @see CCITTRLE#WHITE_RUNLENGTH_TREE
      * @see CCITTRLE#BLACK_RUNLENGTH_TREE
      */
+    @SuppressWarnings({"UseOfSystemOutOrSystemErr", "unused"})
     private void printTree() {
         final StringBuilder sb = new StringBuilder(1050);
         int lastCut = 0;

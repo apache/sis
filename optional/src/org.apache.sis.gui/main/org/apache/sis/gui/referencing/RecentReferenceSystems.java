@@ -50,6 +50,7 @@ import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.gazetteer.MilitaryGridReferenceSystem;
 import org.apache.sis.referencing.gazetteer.GazetteerException;
 import org.apache.sis.referencing.gazetteer.GazetteerFactory;
+import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.util.ArgumentChecks;
@@ -86,6 +87,11 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  * @since   1.1
  */
 public class RecentReferenceSystems {
+    /**
+     * The {@value} value, for identifying code that assume two-dimensional objects.
+     */
+    static final int BIDIMENSIONAL = 2;
+
     /**
      * Number of reference systems to always show before all other reference systems.
      * They are the native of preferred reference system for the visualized data.
@@ -335,13 +341,15 @@ public class RecentReferenceSystems {
         final var derived   = new CoordinateReferenceSystem[refsys.length];
         final var envelopes = new Envelope[refsys.length];
         for (final Map.Entry<Identifier, GridGeometry> entry : geometries.entrySet()) {
-            final GridGeometry gg = entry.getValue();
+            GridGeometry gg = entry.getValue();
             if (gg.isDefined(GridGeometry.CRS)) {
                 if (gg.isDefined(GridGeometry.ENVELOPE)) {
                     envelopes[countCRS] = gg.getEnvelope();
                 }
                 refsys[countCRS++] = gg.getCoordinateReferenceSystem();
             }
+            final GridExtent extent = gg.getExtent();
+            gg = gg.selectDimensions(extent.getSubspaceDimensions(Math.max(extent.getDegreesOfFreedom(), BIDIMENSIONAL)));
             try {
                 derived[countCIR] = gg.createGridCRS(entry.getKey(), PixelInCell.CELL_CENTER);
                 countCIR++;     // Increment only if above line was successful.

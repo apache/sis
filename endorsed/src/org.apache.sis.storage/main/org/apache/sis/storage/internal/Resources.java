@@ -503,6 +503,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short UnknownFormatFor_1 = 14;
 
         /**
+         * Interleave “{0}” is not supported.
+         */
+        public static final short UnsupportedSampleModel_1 = 89;
+
+        /**
          * Using {0} JDBC driver version {1}.{2}.
          */
         public static final short UseJdbcDriverVersion_3 = 82;

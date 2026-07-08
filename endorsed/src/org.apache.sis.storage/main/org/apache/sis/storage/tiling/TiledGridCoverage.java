@@ -37,6 +37,7 @@ import static java.lang.Math.decrementExact;
 import static java.lang.Math.toIntExact;
 import static java.lang.Math.floorDiv;
 import org.opengis.util.GenericName;
+import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.DisjointExtentException;
@@ -557,6 +558,10 @@ public abstract class TiledGridCoverage extends GridCoverage {
      *
      * @param  sliceExtent  a subspace of this grid coverage, or {@code null} for the whole image.
      * @return the grid slice as a rendered image. Image location is relative to {@code sliceExtent}.
+     * @throws MismatchedDimensionException if the given extent does not have the same number of dimensions as this coverage.
+     * @throws SubspaceNotSpecifiedException if the given argument is not sufficient for reducing the grid to a two-dimensional slice.
+     * @throws DisjointExtentException if the given extent does not intersect this grid coverage.
+     * @throws CannotEvaluateException if this method cannot produce the rendered image for another reason.
      */
     @Override
     public RenderedImage render(GridExtent sliceExtent) {
@@ -871,11 +876,11 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * This policy is based on the fact that this method is typically invoked before a tile is read.</p>
          *
          * @return a newly created, initially empty raster.
+         *
+         * @see #getTileLocation()
          */
         public WritableRaster createRaster() {
-            final int x = getTileOrigin(xDimension);
-            final int y = getTileOrigin(yDimension);
-            final WritableRaster tile = Raster.createWritableRaster(getCoverage().model, new Point(x, y));
+            final WritableRaster tile = Raster.createWritableRaster(getCoverage().model, getTileLocation());
             if (fireTileReadEvent) {
                 fireTileReadEvent(tile.getBounds());
             }
@@ -905,6 +910,19 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 fireTileReadEvent(tile.getBounds());
             }
             return tile;
+        }
+
+        /**
+         * Creates the coordinates of the upper-left corner of the tile at the current <abbr>AOI</abbr> position.
+         * This is the ({@code minX}, {@code minY}) values of the tile created by {@link #createRaster()}.
+         *
+         * @return coordinates of the upper-left pixel of the tile at the current iterator position.
+         *
+         * @see #createRaster()
+         * @see #getTileCoordinatesInResource()
+         */
+        public Point getTileLocation() {
+            return new Point(getTileOrigin(xDimension), getTileOrigin(yDimension));
         }
 
         /**
@@ -966,17 +984,21 @@ public abstract class TiledGridCoverage extends GridCoverage {
          *         Rectangle sourceArea = iterator.imageToResource(validArea, false);
          *
          *         // Conversion from uncropped coordinates to cropped coordinates.
-         *         getUncroppedTileLocation().ifPresent((p) -> sourceArea.translate(p.x, p.y));
+         *         iterator.getUncroppedTileLocation().ifPresent((p) -> sourceArea.translate(p.x, p.y));
          *     }
          *     }
          *
          * @param  subsampled  whether to return coordinates with subsampling applied.
          * @return pixel to read inside the tile, or {@code null} if the region is empty.
          * @throws ArithmeticException if the tile coordinates overflow 32-bits integer capacity.
+         *
+         * @see #getUncroppedTileLocation()
+         * @see TileIterator#imageToResource(Rectangle, boolean)
          */
         public Rectangle getRegionInsideTile(final boolean subsampled) {
-            final long[] lower = new long[BIDIMENSIONAL];
-            final long[] upper = new long[BIDIMENSIONAL];
+            final int dimension = Math.max(xDimension, yDimension) + 1;
+            final long[] lower = new long[dimension];
+            final long[] upper = new long[dimension];
             if (getRegionInsideTile(lower, upper, null, subsampled)) {
                 return new Rectangle(
                         toIntExact(lower[xDimension]),
@@ -1000,21 +1022,25 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * The same values can be obtained by {@link #getSubsampling(int)}.</p>
          *
          * <p>This method is a generalization of {@link #getRegionInsideTile(boolean)} to any number of dimensions.
-         * See that method for a discussion about the {@code subsampled} argument and a code snippet.</p>
+         * See that method for a discussion about the {@code subsampled} argument and a code snippet.
+         * The given arrays can be of any length, but that length must be the same for all arguments.
+         * If the given arrays are longer than necessary, the result is truncated to the arrays length.
+         * If the given arrays are longer than necessary, the extraneous array elements are unchanged.</p>
          *
          * @param  lower        a pre-allocated array where to store relative coordinates of the first pixel.
          * @param  upper        a pre-allocated array where to store relative coordinates after the last pixel.
          * @param  subsampling  a pre-allocated array where to store subsampling, or {@code null} if not needed.
          * @param  subsampled   whether to return coordinates with subsampling applied.
          * @return {@code true} on success, or {@code false} if the tile is empty.
+         * @throws ArrayIndexOutOfBoundsException if the given arrays are not of the same length.
          */
         public boolean getRegionInsideTile(final long[] lower,
                                            final long[] upper,
                                            final long[] subsampling,
                                            final boolean subsampled)
         {
-            int dimension = Math.min(lower.length, upper.length);
             final TiledGridCoverage coverage = getCoverage();
+            int dimension = Math.min(coverage.readExtent.getDimension(), Math.max(lower.length, upper.length));
             if (subsampling != null) {
                 System.arraycopy(coverage.subsampling, 0, subsampling, 0, dimension);
             }

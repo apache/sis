@@ -74,7 +74,6 @@ public class HyperRectangleWriter {
      * Creates a new writer for data of a shape specified by the given region.
      * The region also specifies the subset to write.
      *
-     * @param  output  where to write data.
      * @param  region  size of the source hyper-rectangle and region to write.
      * @throws ArithmeticException if the region is too large.
      */
@@ -351,7 +350,7 @@ public class HyperRectangleWriter {
             if (isSupported(this, sm)) {
                 return create(sm, null);
             } else {
-                throw new RasterFormatException(sm.toString());
+                throw Region.Builder.unsupportedSampleModel(sm);
             }
         }
 
@@ -428,7 +427,7 @@ public class HyperRectangleWriter {
             if (isSupported(this, sm)) {
                 return create(sm, null);
             } else {
-                throw new RasterFormatException(sm.toString());
+                throw Region.Builder.unsupportedSampleModel(sm);
             }
         }
 
@@ -471,7 +470,7 @@ public class HyperRectangleWriter {
             if (sm instanceof ComponentSampleModel)         return create((ComponentSampleModel)         sm);
             if (sm instanceof SinglePixelPackedSampleModel) return create((SinglePixelPackedSampleModel) sm);
             if (sm instanceof MultiPixelPackedSampleModel)  return create((MultiPixelPackedSampleModel)  sm);
-            throw new RasterFormatException(sm.toString());
+            throw Region.Builder.unsupportedSampleModel(sm);
         }
 
         /**
@@ -568,8 +567,11 @@ public class HyperRectangleWriter {
         /**
          * Returns the byte order to use for writing data, or {@code null} if no change is needed.
          * A specific byte order is sometime needed when {@code short} or {@code int} values are
-         * used for packing many bytes. This order can be ignored if, for example, ARGB values
-         * are really stored as integers in native byte order rather than 4 bytes.
+         * used for packing many bytes. This order can be ignored if, for example, <abbr>ARGB</abbr>
+         * values are really stored as integers in native byte order rather than 4 bytes.
+         *
+         * @param  current  the byte order used by the output file.
+         * @return the byte order to use for writing the array of numbers.
          */
         public ByteOrder byteOrder(ByteOrder current) {
             return requiresBigEndian && (current != ByteOrder.BIG_ENDIAN) ? ByteOrder.BIG_ENDIAN : null;

@@ -172,14 +172,17 @@ public abstract class BatchComputedImage extends ComputedImage {
      *
      * @param  region  indices of the tiles which will be prefetched.
      * @return handler on which to invoke {@code dispose()} after the prefetch operation.
+     * @throws ImagingOpException if an error occurred while preparing tile computation.
      */
     @Override
     protected Disposable prefetch(final Rectangle region) {
         final Raster[] tiles;
         try {
             tiles = computeTiles(region);
+        } catch (ImagingOpException e) {
+            throw e;
         } catch (Exception e) {
-            throw (ImagingOpException) new ImagingOpException(null).initCause(e);
+            throw (ImagingOpException) new ImagingOpException(e.getMessage()).initCause(e);
         }
         final Rasters r = new Rasters(region, tiles);
         synchronized (this) {

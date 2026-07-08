@@ -101,6 +101,8 @@ final class Utils {
 
     /**
      * Returns {@code true} if the given reference system should be ignored.
+     *
+     * @see org.apache.sis.gui.map.ValuesUnderCursor.Formatter#isIgnoreable(CoordinateReferenceSystem)
      */
     static boolean isIgnoreable(final ReferenceSystem system) {
         return (system instanceof CoordinateReferenceSystem c) && CommonCRS.Engineering.DISPLAY.datumUsedBy(c);

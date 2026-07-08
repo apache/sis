@@ -164,7 +164,7 @@ final class StyleController extends ItemController {
             if (showTileReads == null) {
                 final Resources resources = Resources.forLocale(canvas.getLocale());
                 showTileReads = new ItemController(new MapItem(resources.getString(Resources.Keys.ShowTileReadEvents)));
-                showTileReads.selectedProperty().addListener((p,o,n) -> canvas.showTileReads(n));
+                showTileReads.selectedProperty().addListener((p,o,n) -> canvas.showTileReads(n, true));
                 showTileReads.setIndependent(true);
             }
             children.add(showTileReads);

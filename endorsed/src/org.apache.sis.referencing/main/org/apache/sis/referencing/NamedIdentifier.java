@@ -42,7 +42,7 @@ import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**
- * An identification of a CRS object which is both a {@link Identifier} and a {@link GenericName}.
+ * An identification of a <abbr>CRS</abbr> object which is both an {@link Identifier} and a {@link GenericName}.
  * This class implements both interfaces in order to allow usage of the same instance either as an object
  * {@linkplain AbstractIdentifiedObject#getName() name} or {@linkplain AbstractIdentifiedObject#getAlias() alias}.
  * This flexibility make easier to uses object's names in two different models:
@@ -203,7 +203,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName,
      * @throws InvalidParameterValueException if a property has an invalid value.
      * @throws IllegalArgumentException if a property is invalid for some other reason.
      */
-    public NamedIdentifier(final Map<String,?> properties) throws IllegalArgumentException {
+    public NamedIdentifier(final Map<String, ?> properties) throws IllegalArgumentException {
         super(properties);
         name = (GenericName) properties.get("name");
         isNameSupplied = (name != null);
@@ -566,6 +566,8 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName,
 
     /**
      * Returns a hash code value for this object.
+     *
+     * @return a hash code value for this object.
      */
     @Override
     public int hashCode() {

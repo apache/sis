@@ -20,6 +20,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import javafx.scene.control.Menu;
 import javafx.application.Platform;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.gui.coverage.CoverageCanvas;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.geometry.GeneralDirectPosition;
@@ -38,7 +40,7 @@ import org.apache.sis.gui.internal.BackgroundThreads;
  * thread using the {@link Formatter} inner class, which needs to be thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.7
  * @since   1.1
  */
 public abstract class ValuesUnderCursor {
@@ -210,7 +212,24 @@ public abstract class ValuesUnderCursor {
          * @return a copy of the given position, or {@code null} if the position should be considered outside.
          */
         DirectPosition copy(final DirectPosition point) {
-            return new GeneralDirectPosition(point);
+            final var p = new GeneralDirectPosition(point);
+            if (isIgnoreable(point.getCoordinateReferenceSystem())) {
+                p.setCoordinateReferenceSystem(null);
+            }
+            return p;
+        }
+
+        /**
+         * Returns {@code true} if the given reference system should be ignored.
+         * We need to ignore "computer display" because this is a synthetic <abbr>CRS</abbr>
+         * added when the source coverage does not define its own <abbr>CRS</abbr>.
+         * If we do not remove that <abbr>CRS</abbr>, an exception will be thrown
+         * when the coverage will try to convert that <abbr>CRS</abbr>.
+         *
+         * @see org.apache.sis.gui.referencing.Utils#isIgnoreable
+         */
+        static boolean isIgnoreable(final CoordinateReferenceSystem system) {
+            return CommonCRS.Engineering.DISPLAY.datumUsedBy(system);
         }
 
         /**

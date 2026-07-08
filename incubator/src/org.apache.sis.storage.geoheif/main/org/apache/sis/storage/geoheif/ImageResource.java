@@ -30,15 +30,18 @@ import java.awt.image.ColorModel;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.awt.image.RasterFormatException;
 import javax.imageio.ImageReader;
 import javax.imageio.spi.ImageReaderSpi;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.image.internal.shared.TilePlaceholder;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -46,6 +49,7 @@ import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.storage.tiling.TiledGridCoverage;
 import org.apache.sis.storage.tiling.TiledGridCoverageResource;
 import org.apache.sis.storage.isobmff.ByteRanges;
+import org.apache.sis.io.stream.Region;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.inflater.ComputedByteChannel;
 import org.apache.sis.util.internal.shared.Numerics;
@@ -191,9 +195,10 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
             final GridExtent baseExtent  = base.getExtent();
             final var factors = new double[baseExtent.getDimension()];
             for (int i = 0; i < factors.length; i++) {
-                factors[i] = 1 / Numerics.divide(levelExtent.getSize(i), baseExtent.getSize(i));
+                factors[i] = Numerics.divide(baseExtent.getSize(i), levelExtent.getSize(i));
             }
-            gridGeometry = new GridGeometry(base, levelExtent, MathTransforms.scale(factors));
+            final LinearTransform toLevel = MathTransforms.scale(factors);
+            gridGeometry = toLevel.isIdentity() ? base : new GridGeometry(base, levelExtent, toLevel);
         }
     }
 
@@ -317,6 +322,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
          *
          * @param  iterator  an iterator over the tiles that intersect the Area Of Interest specified by user.
          * @return tiles decoded from the enclosing resource.
+         * @throws Exception any I/O error, arithmetic error, raster format error or other kinds of error.
          */
         @Override
         protected Raster[] readTiles(final TileIterator iterator) throws Exception {
@@ -363,12 +369,15 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
          * the image reader to use in the case of read operations delegated to Image I/O.
          * An instance of this class exist for each tile and is discarded after the tile
          * has been read.
+         *
+         * <p><b>Note:</b> this is defined as an inner class of {@link TiledGridCoverage} subclass
+         * because, at the time of writing this class, {@link AOI} is a protected class.</p>
          */
         static final class ReadContext extends ByteRanges {
             /**
              * Iterator over the tiles to read.
              */
-            private final AOI iterator;
+            private final Snapshot iterator;
 
             /**
              * The image readers created for reading the tiles.
@@ -399,6 +408,8 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
              * @param  inflater  an initially empty reference to an inflater to recycle.
              * @param  owner     the resource for which to read a tile.
              * @throws DataStoreException if an error occurred while computing the range of bytes.
+             * @throws ArithmeticException if an overflow occurred during integer arithmetic.
+             * @throws RasterFormatException if the sample model is not recognized.
              */
             @SuppressWarnings("LeakingThisInConstructor")
             private ReadContext(final AOI iterator,
@@ -424,12 +435,33 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
              *
              * @param  input   the input from which to read bytes.
              * @param  result  where to store the result.
+             * @throws Exception any I/O error, arithmetic error, raster format error or other kinds of error.
              */
             final void readTile(ChannelDataInput input, final Raster[] result) throws Exception {
+                iterator.fireTileReadStarted();
                 input = viewAsConsecutiveBytes(input);
                 Raster raster = reader.readTile(input);
                 raster = iterator.cache(iterator.moveRaster(raster));
                 result[iterator.getTileIndexInResultArray()] = raster;
+            }
+
+            /**
+             * Gets offsets of the <em>sample values</em> to read, relative to the beginning of the tiles.
+             * If that region is empty, returns an empty raster that the caller should return immediately.
+             *
+             * @param  builder  the builder to update.
+             * @return an empty raster if the region to read is empty, or {@code null} otherwise.
+             * @throws RasterFormatException if the given sample model is unsupported.
+             * @throws ArithmeticException if an overflow occurred during integer arithmetic.
+             */
+            final Raster getRegionInsideTile(final Region.Builder builder,
+                                             final SampleModel sampleModel)
+            {
+                if (iterator.getRegionInsideTile(builder.regionLower, builder.regionUpper, builder.subsampling, false)) {
+                    builder.pixelsToSampleValues(sampleModel);
+                    return null;
+                }
+                return TilePlaceholder.empty(sampleModel).create(iterator.getTileLocation());
             }
 
             /**

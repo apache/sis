@@ -55,6 +55,7 @@ public final class UncompressedFrameConfig extends FullBox {
 
     /**
      * Numerical representation of the {@code "rgb3"} profile.
+     * Interleave type is 1 (pixel interleave).
      *
      * @see ComponentType#RGB
      */
@@ -62,6 +63,7 @@ public final class UncompressedFrameConfig extends FullBox {
 
     /**
      * Numerical representation of the {@code "rgba"} profile.
+     * Interleave type is 1 (pixel interleave).
      *
      * @see ComponentType#RGBA
      */
@@ -69,6 +71,7 @@ public final class UncompressedFrameConfig extends FullBox {
 
     /**
      * Numerical representation of the {@code "abgr"} profile.
+     * Interleave type is 1 (pixel interleave).
      *
      * @see ComponentType#ABGR
      */
@@ -209,6 +212,8 @@ public final class UncompressedFrameConfig extends FullBox {
          * Field values predefined by the profile from table 5 in ISO 23001-17:2024.
          * This switch statement supports only the few cases that we can map to RGBA.
          * Unsupported profiles are variants of YUV (Luma, Chroma Cb/U, Chroma Cr/V).
+         * Note: each profile implies also pre-defined values for `interleaveType`,
+         * `pixelSize`, etc. These values are currently hard-coded in version 1.
          */
         switch (profile) {
             case RGB:  predefined = ComponentType.RGB;  break;
@@ -256,7 +261,7 @@ public final class UncompressedFrameConfig extends FullBox {
                 }
                 numTileCols    = 1;
                 numTileRows    = 1;
-                interleaveType = InterleavingMode.COMPONENT;
+                interleaveType = InterleavingMode.PIXEL;    // Type of RGB, RGBA and ABGR profiles.
                 components     = new Component[predefined.length];
                 for (int i=0; i<predefined.length; i++) {
                     components[i] = new Component(predefined[i]);

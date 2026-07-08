@@ -600,6 +600,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * @param  tiles  indices of the tiles which will be prefetched.
      * @return handler on which to invoke {@code dispose()} after the prefetch operation
      *         completed (successfully or not), or {@code null} if none.
+     * @throws ImagingOpException if an error occurred while preparing tile computation.
      *
      * @since 1.2
      */
