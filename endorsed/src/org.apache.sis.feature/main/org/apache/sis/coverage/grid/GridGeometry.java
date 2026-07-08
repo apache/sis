@@ -752,7 +752,8 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
-     * Creates a grid geometry with only an envelope.
+     * Creates a grid geometry with only an envelope and its coordinate reference system.
+     * The grid geometry has no "grid to <abbr>CRS</abbr>" transform.
      *
      * @param  envelope  the envelope together with CRS of the "real world" coordinates.
      * @throws IllegalArgumentException if the envelope has no CRS and only NaN coordinate values.
@@ -1305,13 +1306,15 @@ public class GridGeometry implements LenientComparable, Serializable {
         final double[] origin = new double[cornerToCRS.getTargetDimensions()];
         final Matrix matrix = MathTransforms.getMatrix(cornerToCRS);
         if (matrix != null) {
+            Matrix other = null;
             final int lastColumn = matrix.getNumCol() - 1;
             for (int j=0; j < origin.length; j++) {
                 if (Double.isNaN(origin[j] = matrix.getElement(j, lastColumn))) {
-                    final Matrix other = MathTransforms.getMatrix(gridToCRS);
-                    if (other != null) {
-                        origin[j] = other.getElement(j, lastColumn);
+                    if (other == null) {
+                        other = MathTransforms.getMatrix(gridToCRS);
+                        if (other == null) continue;
                     }
+                    origin[j] = other.getElement(j, lastColumn);
                 }
             }
         } else try {
@@ -1585,6 +1588,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @see #getExtent()
      * @see #getResolution(boolean)
      * @see #getGridToCRS(PixelInCell)
+     * @see #defaultToGridCRS(Identifier)
      */
     public boolean isDefined(final int bitmask) {
         if ((bitmask & ~(CRS | ENVELOPE | EXTENT | GRID_TO_CRS | ORIGIN | RESOLUTION | GEOGRAPHIC_EXTENT | TEMPORAL_EXTENT)) != 0) {
@@ -1598,24 +1602,6 @@ public class GridGeometry implements LenientComparable, Serializable {
             && ((bitmask & RESOLUTION)        == 0 || (null != resolution))
             && ((bitmask & GEOGRAPHIC_EXTENT) == 0 || (null != geographicBBox()))
             && ((bitmask & TEMPORAL_EXTENT)   == 0 || (timeRange().length != 0));
-    }
-
-    /**
-     * Returns {@code true} if this grid geometry contains only a grid extent and no other information.
-     * Note: if {@link #gridToCRS} is {@code null}, then {@link #cornerToCRS} and {@link #resolution}
-     * should be null as well.
-     */
-    final boolean isExtentOnly() {
-        return gridToCRS == null && envelope == null && extent != null;
-    }
-
-    /**
-     * Returns {@code true} if this grid geometry contains only an envelope and no other information.
-     * Note: if {@link #gridToCRS} is {@code null}, then {@link #cornerToCRS} and {@link #resolution}
-     * should be null as well.
-     */
-    final boolean isEnvelopeOnly() {
-        return gridToCRS == null && extent == null && envelope != null;
     }
 
     /**
@@ -1854,6 +1840,50 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
+     * Returns this grid geometry with missing properties defaulting to the properties of a grid <abbr>CRS</abbr>.
+     * This method usually returns {@code this} unchanged, except in the following rare circumstance:
+     * if this grid geometry has no {@linkplain #getResolution(boolean) resolution}, no "grid to <abbr>CRS</abbr>"
+     * transform and no <abbr>CRS</abbr>, then this method returns a new grid geometry with the resolution set to 1,
+     * <i>i.e.</i> the resolution is defined as one unit of grid cell.
+     * With such default, the <abbr>CRS</abbr> become implicitly the <abbr>CRS</abbr> of the grid.
+     * If {@code datum} is non-null, then this implicit assumption is made explicit
+     * by setting the <abbr>CRS</abbr> to the value returned by {@link GridExtent#createGridCRS(Identified)} and
+     * by setting "grid to <abbr>CRS</abbr>" to the identity transform.
+     * If {@code datum} is null, then the <abbr>CRS</abbr> and "grid to <abbr>CRS</abbr>" properties stay undefined.
+     *
+     * <h4>Usage in context of image pyramids</h4>
+     * The "grid to <abbr>CRS</abbr>" information is sometime missing, for example because a file
+     * is an ordinary <abbr>TIFF</abbr> file instead of GeoTIFF, or because of encoding error.
+     * Missing "grid to <abbr>CRS</abbr>" information usually causes missing grid resolution,
+     * since the latter is derived from the former.
+     * However, the {@inkplain org.apache.sis.storage.tiling tiling} package needs a resolution
+     * at each pyramid level, even if the exact "grid to <abbr>CRS</abbr>" transform is unknown.
+     * This method can be used for setting a default resolution to the base level
+     * (the level with the finest resolution) before to derive the grid geometry of other levels.
+     *
+     * @param  datum  name of the engineering datum, or {@code null} for not creating a <abbr>CRS</abbr>.
+     * @return a grid geometry with a resolution if possible.
+     *
+     * @since 1.7
+     */
+    public GridGeometry defaultToGridCRS(final Identifier datum) {
+        if (resolution != null || gridToCRS != null || getCoordinateReferenceSystem(envelope) != null) {
+            return this;
+        }
+        final double[] newResolution = new double[getDimension()];
+        Arrays.fill(newResolution, 1);
+        MathTransform tr = null;
+        ImmutableEnvelope env = envelope;
+        if (env == null && datum != null && extent != null) {
+            final GeneralEnvelope t = extent.toEnvelope(false);
+            t.setCoordinateReferenceSystem(extent.createGridCRS(datum));
+            env = new ImmutableEnvelope(t);
+            tr = MathTransforms.identity(env.getDimension());
+        }
+        return new GridGeometry(extent, tr, tr, env, newResolution, 0);
+    }
+
+    /**
      * Creates a one-, two- or three-dimensional coordinate reference system for cell indices in the grid.
      * This method returns a CRS which is derived from the "real world" CRS or a subset of it.
      * If the "real world" CRS is an instance of {@link org.opengis.referencing.crs.SingleCRS},
@@ -1887,7 +1917,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         final var id = new org.apache.sis.referencing.ImmutableIdentifier(null, null, name);
         try {
             // Note: the `true` boolean argument can be removed after the removal of this method.
-            final CoordinateReferenceSystem crs = new GridCRSBuilder(anchor).forCoverage(this, true, id);
+            final CoordinateReferenceSystem crs = new GridCRSBuilder().forCoverage(this, anchor, true, id);
             return (DerivedCRS) org.apache.sis.referencing.CRS.getSingleComponents(crs).get(0);
         } catch (FactoryException e) {
             throw new BackingStoreException(e);
@@ -1925,13 +1955,14 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @throws FactoryException if another error occurred during the use of a referencing factory.
      *
      * @see #createTransformTo(GridGeometry, PixelInCell)
+     * @see GridExtent#createGridCRS(Identifier)
      *
      * @since 1.7
      */
     public CoordinateReferenceSystem createGridCRS(final Identifier name, final PixelInCell anchor) throws FactoryException {
         ArgumentChecks.ensureNonNull("name", name);
         ArgumentChecks.ensureNonNull("anchor", anchor);
-        return new GridCRSBuilder(anchor).forCoverage(this, false, name);
+        return new GridCRSBuilder().forCoverage(this, anchor, false, name);
     }
 
     /**

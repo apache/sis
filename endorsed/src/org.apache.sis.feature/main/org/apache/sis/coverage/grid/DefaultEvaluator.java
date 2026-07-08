@@ -37,6 +37,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.internal.shared.WraparoundAxesFinder;
+import org.apache.sis.referencing.operation.MissingSourceDimensionsException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -286,7 +287,7 @@ abstract class DefaultEvaluator implements GridCoverage.Evaluator {
                 } while (axes != 0);
                 assert wraparoundExtent.length == j : j;
             }
-        } catch (TransformException e) {
+        } catch (IncompleteGridGeometryException | TransformException e) {
             recoverableException("setWraparoundEnabled", e);
         }
     }
@@ -615,6 +616,22 @@ next:   while (--numPoints >= 0) {
     }
 
     /**
+     * Returns the grid to <abbr>CRS</abbr> transform or infers a transform from the resolution.
+     *
+     * @param  grid  the grid geometry.
+     * @return the transform from grid coordinates to <abbr>CRS</abbr> coordinates.
+     * @throws IncompleteGridGeometryException if there is neither transform or resolution.
+     */
+    private static MathTransform getOfInferGridToCRS(final GridGeometry grid) {
+        if (!grid.isDefined(GridGeometry.GRID_TO_CRS) && grid.isDefined(GridGeometry.RESOLUTION)) {
+            return MathTransforms.concatenate(
+                    MathTransforms.uniformTranslation(grid.getDimension(), 0.5),
+                    MathTransforms.scale(grid.getResolution(false)));
+        }
+        return grid.getGridToCRS(PixelInCell.CELL_CENTER);
+    }
+
+    /**
      * Recomputes the {@link #inputToGrid} field if the <abbr>CRS</abbr> changed.
      * This method should be invoked when the transform has not yet been computed
      * or may became outdated because {@link #inputCRS} needs to be changed.
@@ -635,7 +652,7 @@ next:   while (--numPoints >= 0) {
         }
         final GridCoverage coverage = getCoverage();
         final GridGeometry gridGeometry = coverage.getGridGeometry();
-        MathTransform gridToCRS = gridGeometry.getGridToCRS(PixelInCell.CELL_CENTER);
+        MathTransform gridToCRS = getOfInferGridToCRS(gridGeometry);
         MathTransform crsToGrid = TranslatedTransform.resolveNaN(gridToCRS.inverse(), gridGeometry);
         if (crs != null) {
             final CoordinateReferenceSystem stepCRS = coverage.getCoordinateReferenceSystem();
@@ -643,13 +660,17 @@ next:   while (--numPoints >= 0) {
             try {
                 CoordinateOperation op = CRS.findOperation(crs, stepCRS, areaOfInterest);
                 crsToGrid = MathTransforms.concatenate(op.getMathTransform(), crsToGrid);
-            } catch (FactoryException main) {
+            } catch (MissingSourceDimensionsException main) {
                 /*
                  * Above block tried to compute a "CRS to grid" transform in the most direct way.
                  * It covers the usual case where the point has the required number of dimensions,
                  * and fixes the case when the point has more dimensions (extra dimensions are ignored).
                  * The following block covers the opposite case, where the point does not have enough
                  * dimensions. We try to fill missing dimensions with the help of the `slice` map.
+                 *
+                 * Note: we could use `CoordinateOperationContext.setConstantCoordinates(…)` in above block instead.
+                 * But it would set a constant CRS coordinate, while we want to set a constant grid coordinate, and
+                 * computing the CRS coordinate is not easy because of NaN scale factors.
                  */
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Map<Integer, Long> slice = getDefaultSlice();

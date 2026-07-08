@@ -32,6 +32,7 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.util.internal.shared.Strings;
@@ -117,10 +118,25 @@ public final class TileReadEvent extends StoreEvent {
         }
 
         /**
+         * Returns the grid to <abbr>CRS</abbr> transform or infers a transform from the resolution.
+         *
+         * @param  grid  the grid geometry.
+         * @return the transform from grid coordinates to <abbr>CRS</abbr> coordinates.
+         * @throws IncompleteGridGeometryException if there is neither transform or resolution.
+         */
+        private static MathTransform getOfInferGridToCRS(final GridGeometry grid) {
+            if (!grid.isDefined(GridGeometry.GRID_TO_CRS) && grid.isDefined(GridGeometry.RESOLUTION)) {
+                return MathTransforms.scale(grid.getResolution(false));
+            }
+            return grid.getGridToCRS(PixelInCell.CELL_CORNER);
+        }
+
+        /**
          * Returns the transform from pixel coordinates to real world coordinates in the given <abbr>CRS</abbr>.
          *
          * @param  crs  the two-dimensional <abbr>CRS</abbr> of the desired bounding box.
          * @return transform from pixel coordinates to real world coordinates in the given <abbr>CRS</abbr>.
+         * @throws IncompleteGridGeometryException if the "grid to <abbr>CRS</abbr>" transform is missing.
          * @throws TransformException if the transform cannot be computed.
          */
         final synchronized MathTransform2D imageToObjective(final CoordinateReferenceSystem crs) throws TransformException {
@@ -129,7 +145,7 @@ public final class TileReadEvent extends StoreEvent {
             if (crsToObjective == null || !CRS.equivalent(crsToObjective.getTargetCRS(), crs)) try {
                 crsToObjective = sliceGeometry.createChangeOfCRS(crs);
                 MathTransform tr = MathTransforms.translation(offsetX, offsetY);
-                tr = MathTransforms.concatenate(tr, sliceGeometry.getGridToCRS(PixelInCell.CELL_CORNER));
+                tr = MathTransforms.concatenate(tr, getOfInferGridToCRS(sliceGeometry));
                 tr = MathTransforms.concatenate(tr, crsToObjective.getMathTransform());
                 imageToObjective = MathTransforms.bidimensional(tr);
                 this.crsToObjective = crsToObjective;   // Store only after the rest was successful.
@@ -188,6 +204,7 @@ public final class TileReadEvent extends StoreEvent {
      * The length of the returned array should be 2.
      *
      * @return the resolution in units of the coverage <abbr>CRS</abbr>.
+     * @throws IncompleteGridGeometryException if the resolution information is missing.
      */
     public double[] getResolution() {
         return context.sliceGeometry.getResolution(true);
@@ -201,6 +218,7 @@ public final class TileReadEvent extends StoreEvent {
      *
      * @param  crs  the two-dimensional <abbr>CRS</abbr> of the desired bounding box.
      * @return real world coordinates of the tile expressed in the given <abbr>CRS</abbr>.
+     * @throws IncompleteGridGeometryException if the "grid to <abbr>CRS</abbr>" transform is missing.
      * @throws TransformException if the tile bounds cannot be transformed to the given <abbr>CRS</abbr>.
      */
     public Rectangle2D bounds(final CoordinateReferenceSystem crs) throws TransformException {
@@ -214,6 +232,7 @@ public final class TileReadEvent extends StoreEvent {
      *
      * @param  crs  the two-dimensional <abbr>CRS</abbr> of the desired outline.
      * @return real world coordinates of the tile expressed in the given <abbr>CRS</abbr>.
+     * @throws IncompleteGridGeometryException if the "grid to <abbr>CRS</abbr>" transform is missing.
      * @throws TransformException if the tile bounds cannot be transformed to the given <abbr>CRS</abbr>.
      */
     public Shape outline(final CoordinateReferenceSystem crs) throws TransformException {

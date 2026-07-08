@@ -292,7 +292,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
             throws FactoryException, TransformException
     {
         final GridGeometry sourceGG = source.getGridGeometry();
-        final CoordinateOperationFinder changeOfCRS = new CoordinateOperationFinder(sourceGG, target);
+        final var changeOfCRS = new CoordinateOperationFinder(sourceGG, target);
         changeOfCRS.verifyPresenceOfCRS(true);
         /*
          * Compute the transform from source pixels to target CRS (to be completed to target pixels later).

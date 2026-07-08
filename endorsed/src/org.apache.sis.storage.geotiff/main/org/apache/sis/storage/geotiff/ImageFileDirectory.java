@@ -1498,6 +1498,9 @@ final class ImageFileDirectory extends DataCube {
                 if (source != null) {
                     domain = reader.store.customizer.customize(source, domain);
                 }
+                if (overviews != null) {
+                    domain = domain.defaultToGridCRS(null);
+                }
                 gridGeometry = domain;
             }
             return domain;
@@ -2030,9 +2033,12 @@ final class ImageFileDirectory extends DataCube {
      * Sets a list of overviews from coarsest resolution (the overview) to finest resolution.
      * The full-resolution image shall be {@code this} and shall not be included in the given list.
      */
-    final void setOverviews(final List<ImageFileDirectory> images) {
+    final void setOverviews(final List<ImageFileDirectory> images) throws DataStoreException {
         if (!images.isEmpty()) {
             overviews = new Overviews(images);
+            if (gridGeometry != null) {
+                gridGeometry = gridGeometry.defaultToGridCRS(null);
+            }
         }
     }
 
@@ -2131,7 +2137,7 @@ final class ImageFileDirectory extends DataCube {
                                     case 1:  size = image.imageHeight; break;
                                     default: scales[i] = 1; continue;
                                 }
-                                scales[i] = fullExtent.getSize(i, false) / size;
+                                scales[i] = Numerics.divide(fullExtent.getSize(i), size);
                                 high[i] = size - 1;
                             }
                             image.gridGeometry = new GridGeometry(

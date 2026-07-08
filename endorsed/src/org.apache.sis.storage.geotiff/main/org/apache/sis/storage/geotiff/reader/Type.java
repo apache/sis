@@ -31,7 +31,8 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * The types of values in a TIFF header. Provides also some support for reading a value of a given type.
+ * The types of values in a <abbr>TIFF</abbr> header.
+ * Provides also some support for reading a value of a given type.
  *
  * <p><b>Note on naming convention:</b>
  * the values in this enumeration are not necessarily named as the TIFF type names.

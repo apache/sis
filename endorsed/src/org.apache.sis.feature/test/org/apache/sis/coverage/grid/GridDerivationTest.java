@@ -618,6 +618,29 @@ public final class GridDerivationTest extends TestCase {
     }
 
     /**
+     * Tests {@link GridDerivation#subgrid(GridExtent, long...)} with a null "grid to CRS" transform
+     * but a non-null resolution.
+     */
+    @Test
+    public void testSubgridWithoutTransformButWithResolution() {
+        GridGeometry aoi  = new GridGeometry(null, PixelInCell.CELL_CORNER, MathTransforms.scale(128, 128), null);
+        GridGeometry base = new GridGeometry(new GridExtent(2048, 798), null, null, null, aoi.resolution, 0);
+        assertArrayEquals(new double[] {128, 128}, base.getResolution(false));
+        assertSame(base, base.derive().subgrid(aoi).build());
+
+        final double[] resolution = {256, 256};
+        aoi = new GridGeometry(null, PixelInCell.CELL_CORNER, MathTransforms.scale(resolution), null);
+        GridGeometry derived = base.derive().subgrid(aoi).build();
+        assertArrayEquals(resolution, derived.getResolution(false));
+        assertExtentEquals(new long[2], new long[] {1023, 398}, derived.getExtent());
+        assertNull(derived.gridToCRS);
+        assertNull(derived.envelope);
+
+        // Alternative way to get the same result.
+        assertEquals(derived, base.derive().subgrid(null, resolution).build());
+    }
+
+    /**
      * Tests {@link GridDerivation#slice(DirectPosition)}.
      */
     @Test
@@ -1016,7 +1039,7 @@ public final class GridDerivationTest extends TestCase {
         GridGeometry grid1    = new GridGeometry(domain);
         GridGeometry grid2    = new GridGeometry(request);
         GridGeometry subgrid  = grid1.derive().subgrid(grid2).build();
-        assertTrue(subgrid.isEnvelopeOnly());
+        assertEnvelopeOnly(subgrid);
         assertEnvelopeEquals(expected, subgrid.getEnvelope());
         /*
          * Test same envelope but with different axis order. The request uses a different CRS,
@@ -1027,8 +1050,17 @@ public final class GridDerivationTest extends TestCase {
         grid2   = new GridGeometry(request);
         subgrid = grid1.derive().subgrid(grid2).build();
         assertSame(HardCodedCRS.WGS84, subgrid.getCoordinateReferenceSystem());
-        assertTrue(subgrid.isEnvelopeOnly());
+        assertEnvelopeOnly(subgrid);
         assertEnvelopeEquals(expected, subgrid.getEnvelope());
+    }
+
+    /**
+     * Asserts that the given grid geometry contains only an envelope, without extent.
+     */
+    private static void assertEnvelopeOnly(final GridGeometry subgrid) {
+        assertNull(subgrid.gridToCRS);
+        assertNull(subgrid.extent);
+        assertNotNull(subgrid.envelope);
     }
 
     /**

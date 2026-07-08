@@ -386,7 +386,7 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
 
         /** Returns the CRS of this position, or {@code null} if unspecified. */
         @Override public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return crs;
+            return isIgnoreable(crs) ? null : crs;
         }
     }
 
@@ -401,7 +401,7 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
     @Override
     DirectPosition copy(final DirectPosition point) {
         assert Thread.holdsLock(this);
-        final Position position = new Position(point, newSlice);
+        final var position = new Position(point, newSlice);
         newSlice = null;
         return position;
     }
