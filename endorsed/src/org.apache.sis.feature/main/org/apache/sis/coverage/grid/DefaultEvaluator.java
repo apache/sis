@@ -288,7 +288,7 @@ abstract class DefaultEvaluator implements GridCoverage.Evaluator {
                 } while (axes != 0);
                 assert wraparoundExtent.length == j : j;
             }
-        } catch (TransformException e) {
+        } catch (IncompleteGridGeometryException | TransformException e) {
             recoverableException("setWraparoundEnabled", e);
         }
     }
@@ -618,6 +618,22 @@ next:   while (--numPoints >= 0) {
     }
 
     /**
+     * Returns the grid to <abbr>CRS</abbr> transform or infers a transform from the resolution.
+     *
+     * @param  grid  the grid geometry.
+     * @return the transform from grid coordinates to <abbr>CRS</abbr> coordinates.
+     * @throws IncompleteGridGeometryException if there is neither transform or resolution.
+     */
+    private static MathTransform getOfInferGridToCRS(final GridGeometry grid) {
+        if (!grid.isDefined(GridGeometry.GRID_TO_CRS) && grid.isDefined(GridGeometry.RESOLUTION)) {
+            return MathTransforms.concatenate(
+                    MathTransforms.uniformTranslation(grid.getDimension(), 0.5),
+                    MathTransforms.scale(grid.getResolution(false)));
+        }
+        return grid.getGridToCRS(PixelInCell.CELL_CENTER);
+    }
+
+    /**
      * Recomputes the {@link #inputToGrid} field if the <abbr>CRS</abbr> changed.
      * This method should be invoked when the transform has not yet been computed
      * or may became outdated because {@link #inputCRS} needs to be changed.
@@ -638,7 +654,7 @@ next:   while (--numPoints >= 0) {
         }
         final GridCoverage coverage = getCoverage();
         final GridGeometry gridGeometry = coverage.getGridGeometry();
-        MathTransform gridToCRS = gridGeometry.getGridToCRS(PixelInCell.CELL_CENTER);
+        MathTransform gridToCRS = getOfInferGridToCRS(gridGeometry);
         MathTransform crsToGrid = TranslatedTransform.resolveNaN(gridToCRS.inverse(), gridGeometry);
         if (crs != null) {
             final CoordinateReferenceSystem stepCRS = coverage.getCoordinateReferenceSystem();

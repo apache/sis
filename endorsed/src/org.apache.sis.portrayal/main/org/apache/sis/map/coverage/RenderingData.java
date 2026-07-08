@@ -330,13 +330,15 @@ public class RenderingData implements CloneAccess {
         if (domain != null && !domain.isDefined(GridGeometry.GRID_TO_CRS)
                            &&  domain.isDefined(GridGeometry.EXTENT))
         {
-            CoordinateReferenceSystem crs = null;
-            if (domain.isDefined(GridGeometry.CRS)) {
-                crs = domain.getCoordinateReferenceSystem();
-            }
             final GridExtent extent = domain.getExtent();
-            domain = new GridGeometry(extent, PixelInCell.CELL_CENTER,
-                    MathTransforms.identity(extent.getDimension()), crs);
+            final LinearTransform gridToCRS;
+            if (domain.isDefined(GridGeometry.RESOLUTION)) {
+                gridToCRS = MathTransforms.scale(domain.getResolution(false));
+            } else {
+                gridToCRS = MathTransforms.identity(extent.getDimension());
+            }
+            // Do not reuse the CRS because the transform will map to something not really known.
+            domain = new GridGeometry(extent, PixelInCell.CELL_CORNER, gridToCRS, null);
         }
         dataGeometry = domain;
         dataRanges   = ranges;
