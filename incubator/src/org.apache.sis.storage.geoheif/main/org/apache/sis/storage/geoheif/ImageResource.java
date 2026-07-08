@@ -438,6 +438,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
              * @throws Exception any I/O error, arithmetic error, raster format error or other kinds of error.
              */
             final void readTile(ChannelDataInput input, final Raster[] result) throws Exception {
+                iterator.fireTileReadStarted();
                 input = viewAsConsecutiveBytes(input);
                 Raster raster = reader.readTile(input);
                 raster = iterator.cache(iterator.moveRaster(raster));
@@ -458,7 +459,6 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
             {
                 if (iterator.getRegionInsideTile(builder.regionLower, builder.regionUpper, builder.subsampling, false)) {
                     builder.pixelsToSampleValues(sampleModel);
-                    iterator.fireTileReadStarted();
                     return null;
                 }
                 return TilePlaceholder.empty(sampleModel).create(iterator.getTileLocation());

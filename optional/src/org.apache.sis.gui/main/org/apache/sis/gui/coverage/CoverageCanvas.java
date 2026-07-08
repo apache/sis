@@ -528,8 +528,9 @@ public class CoverageCanvas extends MapCanvasAWT {
      * If {@code true}, tiles will be shown by a translucent shape and fade away.
      *
      * @param  enabled  whether to show for a few seconds a visual indication of which tiles were read.
+     * @param  clear    whether to clear {@link #tileReadListener} if {@code enabled} is {@code false}.
      */
-    final void showTileReads(final boolean enabled) {
+    final void showTileReads(final boolean enabled, final boolean clear) {
         final GridCoverageResource resource = getResource();
         if (enabled) {
             if (tileReadListener == null) {
@@ -542,7 +543,9 @@ public class CoverageCanvas extends MapCanvasAWT {
             if (resource != null) {
                 resource.removeListener(TileReadEvent.class, tileReadListener);
             }
-            tileReadListener = null;
+            if (clear) {
+                tileReadListener = null;
+            }
         }
     }
 
@@ -1494,7 +1497,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         if (TRACE) {
             trace("clear()");
         }
-        showTileReads(false);
+        showTileReads(false, false);
         isCoverageHidden = false;
         isCoverageAdjusting = true;
         try {
