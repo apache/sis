@@ -16,6 +16,8 @@
  */
 package org.apache.sis.coverage.grid;
 
+import org.opengis.metadata.Identifier;
+
 
 /**
  * Thrown by {@link GridGeometry} when a grid geometry cannot provide the requested information.
@@ -36,7 +38,11 @@ package org.apache.sis.coverage.grid;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
- * @since   1.0
+ *
+ * @see GridGeometry#isDefined(int)
+ * @see GridGeometrydefaultToGridCRS(Identifier)
+ *
+ * @since 1.0
  */
 public class IncompleteGridGeometryException extends IllegalStateException {
     /**

@@ -547,12 +547,12 @@ public class GridDerivation {
         if (areaOfInterest.extent == null && areaOfInterest.envelope == null && base.gridToCRS == null) {
             /*
              * Case when `areaOfInterest` specifies only a resolution (typically in a pyramid)
-             * and we cannot use that resolution by a concatenation of "grid to CRS" transforms.
-             * The given resolution is relative to the base grid which was used for deriving `areaOfInterest`.
-             * We don't really know if it was the same base as `this.base`, but there is good chances that the
-             * fact that `base.gridToCRS` is null is the reason why `areaOfInterest` has no information other
-             * than resolution. On the assumption that both bases are the same, we need to divide the specified
-             * resolution by `base.resolution` in order to get subsampling factors.
+             * and we cannot use that resolution in a concatenation of "grid to CRS" transforms.
+             *
+             * Assume that the given resolution is relative to `base`. We don't really know if this is true,
+             * but the fact that `base.gridToCRS` is null is probably the reason why `areaOfInterest` has no
+             * information other than the resolution. On the assumption that both bases are the same, we need
+             * to divide the specified resolution by `base.resolution` in order to get subsampling factors.
              */
             scales = areaOfInterest.getResolution(true);
             final double[] resolution = base.resolution;

@@ -37,6 +37,7 @@ import org.opengis.metadata.Metadata;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -194,9 +195,10 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
             final GridExtent baseExtent  = base.getExtent();
             final var factors = new double[baseExtent.getDimension()];
             for (int i = 0; i < factors.length; i++) {
-                factors[i] = 1 / Numerics.divide(levelExtent.getSize(i), baseExtent.getSize(i));
+                factors[i] = Numerics.divide(baseExtent.getSize(i), levelExtent.getSize(i));
             }
-            gridGeometry = new GridGeometry(base, levelExtent, MathTransforms.scale(factors));
+            final LinearTransform toLevel = MathTransforms.scale(factors);
+            gridGeometry = toLevel.isIdentity() ? base : new GridGeometry(base, levelExtent, toLevel);
         }
     }
 

@@ -1498,10 +1498,10 @@ final class ImageFileDirectory extends DataCube {
                 if (source != null) {
                     domain = reader.store.customizer.customize(source, domain);
                 }
-                gridGeometry = domain;
                 if (overviews != null) {
-                    ensureResolutionExists();
+                    domain = domain.defaultToGridCRS(null);
                 }
+                gridGeometry = domain;
             }
             return domain;
         }
@@ -2037,28 +2037,8 @@ final class ImageFileDirectory extends DataCube {
         if (!images.isEmpty()) {
             overviews = new Overviews(images);
             if (gridGeometry != null) {
-                ensureResolutionExists();
+                gridGeometry = gridGeometry.defaultToGridCRS(null);
             }
-        }
-    }
-
-    /**
-     * Ensures that the grid geometry declares a resolution.
-     * This method should be invoked only when {@link #gridGeometry} <strong>and</strong>
-     * {@link #overviews} are non-null, i.e. when we determined that a pyramid exists.
-     * The pyramid system of Apache <abbr>SIS</abbr> needs a resolution in all levels.
-     * Therefore, if the base level has no resolution, we need to add an arbitrary one.
-     * A resolution is missing when there is no "grid to <abbr>CRS</abbr>" transform.
-     * Arbitrary resolution values are okay when there is no <abbr>CRS</abbr>.
-     * The arbitrary value is 1, which means that resolutions are in units of pixels
-     * of the base level.
-     */
-    private void ensureResolutionExists() throws DataStoreException {
-        if (!gridGeometry.isDefined(GridGeometry.RESOLUTION) && !gridGeometry.isDefined(GridGeometry.CRS)) try {
-            gridGeometry = new GridGeometry(gridGeometry, gridGeometry.getExtent(),
-                            MathTransforms.identity(gridGeometry.getDimension()));
-        } catch (TransformException e) {
-            throw new DataStoreReferencingException(e);     // Should never happen.
         }
     }
 
@@ -2157,7 +2137,7 @@ final class ImageFileDirectory extends DataCube {
                                     case 1:  size = image.imageHeight; break;
                                     default: scales[i] = 1; continue;
                                 }
-                                scales[i] = fullExtent.getSize(i, false) / size;
+                                scales[i] = Numerics.divide(fullExtent.getSize(i), size);
                                 high[i] = size - 1;
                             }
                             image.gridGeometry = new GridGeometry(

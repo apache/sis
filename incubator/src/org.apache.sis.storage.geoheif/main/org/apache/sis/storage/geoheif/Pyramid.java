@@ -88,32 +88,9 @@ final class Pyramid extends TiledGridCoverageResource implements TiledGridCovera
         tileSizeY = pyramid.tileSizeY;
         this.levels = levels;
         Arrays.sort(levels, LEVEL_COMPARATOR);
-        /*
-         * Select the finest level for which the "grid to CRS" transform, and therefore the resolution,
-         * is defined. If none, select the very fist level, which should have the finest resolution.
-         */
-        GridGeometry base = null;
-        boolean updateBase = true;
-        for (final ImageResource level : levels) {
-            final GridGeometry grid = level.getGridGeometry();
-            if (grid.isDefined(GridGeometry.GRID_TO_CRS)) {
-                updateBase = false;   // Base is already complete.
-                base = grid;
-                break;
-            } else if (base == null) {
-                base = grid;
-            }
-        }
-        /*
-         * Now compute the "grid to CRS" transform for each pyramid level.
-         * It may include the base level itself if the transform was not specified anywhere.
-         */
+        final GridGeometry base = levels[0].getGridGeometry().defaultToGridCRS(null);
         for (ImageResource level : levels) {
             level.setPyramidLevelOf(base);
-            if (updateBase) {
-                updateBase = false;
-                base = level.getGridGeometry();
-            }
         }
     }
 
