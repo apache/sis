@@ -80,7 +80,7 @@ final class Pyramid extends TiledGridCoverageResource implements TiledGridCovera
      * @throws TransformException if an error occurred while deriving a "grid to <abbr>CRS</abbr>" transform.
      */
     Pyramid(final GeoHeifStore store, final GenericName name, final ImagePyramid pyramid, final ImageResource[] levels)
-            throws TransformException
+            throws DataStoreException, TransformException
     {
         super(store);
         this.name = name;
@@ -88,9 +88,9 @@ final class Pyramid extends TiledGridCoverageResource implements TiledGridCovera
         tileSizeY = pyramid.tileSizeY;
         this.levels = levels;
         Arrays.sort(levels, LEVEL_COMPARATOR);
-        final GridGeometry base = levels[0].getGridGeometry().defaultToGridCRS(null);
+        GridGeometry base = null;
         for (ImageResource level : levels) {
-            level.setPyramidLevelOf(base);
+            base = level.setPyramidLevelOf(base);
         }
     }
 

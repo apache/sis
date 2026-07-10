@@ -44,6 +44,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.LogHandler;
 import org.apache.sis.gui.internal.ExceptionReporter;
@@ -384,7 +385,7 @@ public class GridView extends Control {
                     return null;
                 }
                 final GridGeometry gg = coverage.getGridGeometry();
-                gridCrsName = ImageRequest.gridCrsName(request.resource, gg);
+                gridCrsName = StoreUtilities.gridCrsName(request.resource, gg);
                 GridExtent slice = request.slice;
                 final GridControls c = controls;
                 if (c != null) {

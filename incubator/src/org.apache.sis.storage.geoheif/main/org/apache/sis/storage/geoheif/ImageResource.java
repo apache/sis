@@ -37,7 +37,6 @@ import org.opengis.metadata.Metadata;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -184,12 +183,17 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
 
     /**
      * Declares that this image is the pyramid level of the given base grid.
+     * If the given {@code base} argument is null, then the base grid is this grid.
      * This method does nothing if this image already has its own "grid to <abbr>CRS</abbr>" transform.
      *
-     * @param  base  grid geometry of the pyramid level at the finest resolution.
+     * @param  base  grid geometry of the pyramid level at the finest resolution, or {@code null}.
+     * @return the base grid, which is {@code base} if that argument was non-null.
      * @throws TransformException if an error occurred while deriving the "grid to <abbr>CRS</abbr>" transform.
      */
-    final void setPyramidLevelOf(final GridGeometry base) throws TransformException {
+    final GridGeometry setPyramidLevelOf(GridGeometry base) throws DataStoreException, TransformException {
+        if (base == null) {
+            return gridGeometry = getGridGeometryWithDefaults();
+        }
         if (!gridGeometry.isDefined(GridGeometry.GRID_TO_CRS)) {
             final GridExtent levelExtent = gridGeometry.getExtent();
             final GridExtent baseExtent  = base.getExtent();
@@ -197,9 +201,9 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
             for (int i = 0; i < factors.length; i++) {
                 factors[i] = Numerics.divide(baseExtent.getSize(i), levelExtent.getSize(i));
             }
-            final LinearTransform toLevel = MathTransforms.scale(factors);
-            gridGeometry = toLevel.isIdentity() ? base : new GridGeometry(base, levelExtent, toLevel);
+            gridGeometry = new GridGeometry(base, levelExtent, MathTransforms.scale(factors));
         }
+        return base;
     }
 
     /**

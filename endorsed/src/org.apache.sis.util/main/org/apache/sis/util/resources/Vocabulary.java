@@ -619,6 +619,11 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short GridExtent = 97;
 
         /**
+         * Grid of “{0}”
+         */
+        public static final short GridOf_1 = 290;
+
+        /**
          * Height
          */
         public static final short Height = 98;

@@ -1498,9 +1498,6 @@ final class ImageFileDirectory extends DataCube {
                 if (source != null) {
                     domain = reader.store.customizer.customize(source, domain);
                 }
-                if (overviews != null) {
-                    domain = domain.defaultToGridCRS(null);
-                }
                 gridGeometry = domain;
             }
             return domain;
@@ -2036,9 +2033,6 @@ final class ImageFileDirectory extends DataCube {
     final void setOverviews(final List<ImageFileDirectory> images) throws DataStoreException {
         if (!images.isEmpty()) {
             overviews = new Overviews(images);
-            if (gridGeometry != null) {
-                gridGeometry = gridGeometry.defaultToGridCRS(null);
-            }
         }
     }
 
@@ -2125,7 +2119,7 @@ final class ImageFileDirectory extends DataCube {
                          * which is the image at full resolution. Information about bands are also copied if compatible.
                          */
                         if (image.referencing == null) {
-                            final GridGeometry geometry = getGridGeometry();
+                            final GridGeometry geometry = getGridGeometryWithDefaults();
                             final GridExtent fullExtent = geometry.getExtent();
                             final int dimension = fullExtent.getDimension();
                             final var scales    = new double[dimension];

@@ -652,7 +652,6 @@ public class RecentReferenceSystems {
             final var system = (ReferenceSystem) systemsOrCodes.get(i);
             if (system != OTHER && (filter == null || filter.test(system))) {
                 if (i < NUM_CORE_ITEMS || Utils.intersects(domain, system)) {
-                    if (Utils.isIgnoreable(system)) continue;   // Ignore "Computer display" CRS.
                     systems.add(system);
                     if (systems.size() >= NUM_SHOWN_ITEMS) break;
                 }

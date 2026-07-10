@@ -62,7 +62,6 @@ import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
@@ -82,6 +81,7 @@ import org.apache.sis.image.processing.isoline.Isolines;
 import org.apache.sis.image.internal.shared.TileErrorHandler;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.tiling.TileReadEvent;
 import org.apache.sis.gui.map.MapCanvas;
@@ -704,7 +704,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                             ranges = resource.getSampleDimensions();
                             scales = Containers.peekFirst(resource.getAvailableResolutions());
                         }
-                        gridCrsName = ImageRequest.gridCrsName(resource, domain);
+                        gridCrsName = StoreUtilities.gridCrsName(resource, domain);
                         if (domain != null) {
                             /*
                              * The domain should never be null and should always be complete (including envelope).
@@ -715,8 +715,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                             if (!domain.isDefined(GridGeometry.ENVELOPE) && domain.isDefined(GridGeometry.EXTENT)) {
                                 final GridExtent extent = domain.getExtent();
                                 final int dimension = extent.getDimension();
-                                domain = new GridGeometry(extent, PixelInCell.CELL_CORNER, MathTransforms.identity(dimension),
-                                                (dimension == BIDIMENSIONAL) ? CommonCRS.Engineering.DISPLAY.crs() : null);
+                                domain = new GridGeometry(extent, PixelInCell.CELL_CORNER, MathTransforms.identity(dimension), null);
                             }
                             /*
                              * Compute the maximum zoom out. Usually, we want to show the full image.
@@ -892,7 +891,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * If this method returns an artificial name, it would cause an unusable menu
      * item to appear in the menu that offers different <abbr>CRS</abbr>.</p>
      *
-     * @see ImageRequest#gridCrsName(GridCoverageResource, GridGeometry)
+     * @see StoreUtilities#gridCrsName(GridCoverageResource, GridGeometry)
      */
     final Identifier gridCrsName() {
         return data.gridCrsName;

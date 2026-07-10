@@ -24,6 +24,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.image.ErrorHandler;
@@ -45,7 +46,7 @@ final class StyledRenderingData extends RenderingData {
     /**
      * Name of the grid <abbr>CRS</abbr>, derived from the resource identifier.
      *
-     * @see ImageRequest#gridCrsName(GridCoverageResource, GridGeometry)
+     * @see StoreUtilities#gridCrsName(GridCoverageResource, GridGeometry)
      */
     Identifier gridCrsName;
 
