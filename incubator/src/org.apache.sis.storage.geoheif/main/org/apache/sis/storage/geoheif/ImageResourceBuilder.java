@@ -70,7 +70,7 @@ import org.apache.sis.pending.jdk.JDK18;
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */
-final class CoverageBuilder implements Emptiable {
+final class ImageResourceBuilder implements Emptiable {
     /**
      * The resource which is creating a grid coverage.
      *
@@ -188,9 +188,9 @@ final class CoverageBuilder implements Emptiable {
     /**
      * The builder used for building tiles, or {@code null} if none.
      *
-     * @see #setTileBuilder(CoverageBuilder)
+     * @see #setTileBuilder(ImageResourceBuilder)
      */
-    private CoverageBuilder tileBuilder;
+    private ImageResourceBuilder tileBuilder;
 
     /**
      * Creates a new builder with the given properties.
@@ -200,10 +200,10 @@ final class CoverageBuilder implements Emptiable {
      * @param  properties       source of coverage properties for this coverage item, or {@code null} if none.
      * @param  duplicatedBoxes  names of boxes that were duplicated. Used for logging a warning only once per type of box.
      */
-    CoverageBuilder(final ResourceBuilder owner,
-                    final int imageIndex,
-                    final ItemProperties.ForID properties,
-                    final Set<String> duplicatedBoxes)
+    ImageResourceBuilder(final ResourceBuilder owner,
+                         final int imageIndex,
+                         final ItemProperties.ForID properties,
+                         final Set<String> duplicatedBoxes)
     {
         this.owner = owner;
         this.imageIndex = imageIndex;
@@ -420,7 +420,7 @@ final class CoverageBuilder implements Emptiable {
      *
      * @param  firstBuilder  the builder used for building the first tile, or {@code null} if none.
      */
-    final void setTileBuilder(final CoverageBuilder firstBuilder) {
+    final void setTileBuilder(final ImageResourceBuilder firstBuilder) {
         if (firstBuilder != null && tileBuilder == null) {
             tileBuilder = firstBuilder;
             metadata = firstBuilder.metadata();

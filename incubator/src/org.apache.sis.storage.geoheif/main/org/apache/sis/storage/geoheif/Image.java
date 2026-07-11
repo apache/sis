@@ -71,7 +71,7 @@ abstract class Image {
      * @param  name     a name that identifies this image, for debugging purpose.
      * @throws DataStoreException if an error occurred while decoding <abbr>HEIF</abbr> boxes.
      */
-    protected Image(final CoverageBuilder builder, final ByteRanges.Reader locator, final String name)
+    protected Image(final ImageResourceBuilder builder, final ByteRanges.Reader locator, final String name)
             throws DataStoreException
     {
         this.locator = locator;

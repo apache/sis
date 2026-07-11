@@ -55,7 +55,7 @@ final class TiledImage extends UncompressedImage {
      * @throws RasterFormatException if the sample model cannot be created.
      * @throws IOException if an error occurred while reading bytes from the input stream.
      */
-    TiledImage(final CoverageBuilder builder, final ByteRanges.Reader locator, final String name)
+    TiledImage(final ImageResourceBuilder builder, final ByteRanges.Reader locator, final String name)
             throws DataStoreException, IOException
     {
         super(builder, locator, name);

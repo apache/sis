@@ -49,7 +49,7 @@ import org.apache.sis.storage.isobmff.mpeg.CompressionConfiguration;
  * image or only part of it (tile, row or pixel).</p>
  *
  * <h4>Requirement</h4>
- * This class requires that {@link CoverageBuilder#sampleModel()} can build a sample model.
+ * This class requires that {@link ImageResourceBuilder#sampleModel()} can build a sample model.
  * In other words, the boxes such as {@code UncompressedFrameConfig} must have been found.
  *
  * @author Johann Sorel (Geomatys)
@@ -89,7 +89,7 @@ class UncompressedImage extends Image {
      * @param  name     a name that identifies this image, for debugging purpose.
      * @throws DataStoreContentException if the "grid to <abbr>CRS</abbr>" transform or the sample dimensions cannot be created.
      */
-    UncompressedImage(final CoverageBuilder builder, final ByteRanges.Reader locator, final String name)
+    UncompressedImage(final ImageResourceBuilder builder, final ByteRanges.Reader locator, final String name)
             throws DataStoreException
     {
         super(builder, locator, name);

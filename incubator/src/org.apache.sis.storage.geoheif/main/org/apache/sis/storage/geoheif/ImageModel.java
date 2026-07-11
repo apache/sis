@@ -108,7 +108,7 @@ final class ImageModel {
                final Object[] componentTypes,
                final byte[] bitsPerChannel,
                final ComponentPalette palette,
-               final CoverageBuilder builder)
+               final ImageResourceBuilder builder)
             throws DataStoreException
     {
         final int nc = (model          == null) ? 0 : model.components.length;
@@ -278,7 +278,7 @@ final class ImageModel {
      * @param  builder  the builder which is creating a grid coverage.
      * @param  type     the image specifier from the Image I/O <abbr>API</abbr>.
      */
-    ImageModel(final ImageTypeSpecifier type, final CoverageBuilder builder) {
+    ImageModel(final ImageTypeSpecifier type, final ImageResourceBuilder builder) {
         colorModel  = type.getColorModel();
         sampleModel = type.getSampleModel();
         dataType    = DataType.forDataBufferType(sampleModel.getDataType());
@@ -295,7 +295,7 @@ final class ImageModel {
      * @return the sample dimensions.
      * @throws DataStoreContentException if the sample dimensions cannot be created.
      */
-    final List<SampleDimension> sampleDimensions(final CoverageBuilder builder) throws DataStoreException {
+    final List<SampleDimension> sampleDimensions(final ImageResourceBuilder builder) throws DataStoreException {
         SampleDimension[] bands = sampleDimensions;
         boolean share = true;
         if (builder.imageIndex != imageIndex) {

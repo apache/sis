@@ -78,7 +78,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
     /**
      * The metadata, initially in a mutable state.
      * Modifications may still happen before the metadata is returned to the user.
-     * These modifications may happen indirectly, for example through the {@link CoverageBuilder}
+     * These modifications may happen indirectly, for example through the {@link ImageResourceBuilder}
      * that created this metadata if that builder is still used for creating more resources.
      *
      * @see #createMetadata()
@@ -135,7 +135,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
      * @param  image    the single tile for the whole image, or {@code null} if {@code tiles} is provided.
      * @throws DataStoreException if the "grid to <abbr>CRS</abbr>" transform or the sample dimensions cannot be created.
      */
-    ImageResource(final CoverageBuilder builder, Image[] tiles, final Image image) throws DataStoreException {
+    ImageResource(final ImageResourceBuilder builder, Image[] tiles, final Image image) throws DataStoreException {
         super(builder.store());
         this.store       = builder.store();
         identifier       = builder.name();

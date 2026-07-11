@@ -133,7 +133,7 @@ final class ResourceBuilder {
      * Helper objects for building coverages.
      * The internal state of each builder depends only on the properties in the associated key.
      */
-    private final Map<ItemProperties.ForID, CoverageBuilder> builders;
+    private final Map<ItemProperties.ForID, ImageResourceBuilder> builders;
 
     /**
      * Names of boxes that were duplicated.
@@ -308,7 +308,7 @@ final class ResourceBuilder {
      * @throws DataStoreException if an error occurred while building a tile.
      * @return the builder used for building the first tile.
      */
-    private void createTiles(final CoverageBuilder coverage, final SingleItemTypeReference items, final List<Image> addTo)
+    private void createTiles(final ImageResourceBuilder coverage, final SingleItemTypeReference items, final List<Image> addTo)
             throws DataStoreException, IOException
     {
         switch (items.type()) {
@@ -355,10 +355,10 @@ final class ResourceBuilder {
      * @throws DataStoreContentException if the "grid to <abbr>CRS</abbr>" transform or the sample dimensions cannot be created.
      * @throws DataStoreException if another error occurred while building the image or resource.
      */
-    private CoverageBuilder createImage(final Integer itemID, final List<ItemInfoEntry> info, final List<Image> addTo)
+    private ImageResourceBuilder createImage(final Integer itemID, final List<ItemInfoEntry> info, final List<Image> addTo)
             throws DataStoreException, IOException
     {
-        CoverageBuilder firstBuilder = null;
+        ImageResourceBuilder firstBuilder = null;
         for (final ItemInfoEntry entry : info) {
             final String name = entry.itemName();
             if (entry.itemProtectionIndex != 0) {
@@ -373,8 +373,8 @@ final class ResourceBuilder {
                 imageIndex = (resources != null) ? resources.size() : 0;
             }
             final ItemProperties.ForID itemProperties = properties.remove(itemID);
-            final CoverageBuilder coverage = builders.computeIfAbsent(itemProperties,
-                    (p) -> new CoverageBuilder(this, imageIndex, p, duplicatedBoxes));
+            final ImageResourceBuilder coverage = builders.computeIfAbsent(itemProperties,
+                    (p) -> new ImageResourceBuilder(this, imageIndex, p, duplicatedBoxes));
             if (coverage.reportUnknownBoxes(name)) {
                 // Warning already logged by `reportUnknownBoxes(…)`.
                 continue;
