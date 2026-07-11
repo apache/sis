@@ -530,7 +530,7 @@ final class ResourceBuilder {
                         default: {
                             final var grids = components.toArray(ImageResource[]::new);
                             if (child instanceof ImagePyramid pyramid) {
-                                resource = new Pyramid(store, name, pyramid, grids);
+                                resource = new PyramidedImageResource(store, name, pyramid, grids);
                             } else {
                                 resource = new Group(store, name, grids);
                             }
