@@ -33,7 +33,6 @@ import java.io.IOException;
 import javax.imageio.spi.ImageReaderSpi;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -55,7 +54,9 @@ import org.apache.sis.storage.isobmff.base.MediaData;
 import org.apache.sis.storage.isobmff.base.PrimaryItem;
 import org.apache.sis.storage.isobmff.image.DerivedImageReference;
 import org.apache.sis.storage.isobmff.image.ImagePyramid;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -220,7 +221,8 @@ final class ResourceBuilder {
             case ItemLocation.BOXTYPE: {
                 for (final ItemLocation.Item item : ((ItemLocation) box).items) {
                     if (itemLocations.putIfAbsent(item.itemID, item) != null) {
-                        warning("Many locations found for the \"{0}\" resource.", getResourceName(item.itemID));
+                        warning("Many locations found for the \"{0}\" resource.",
+                                getResourceName(item.itemID, Vocabulary.Keys.Item_1));
                     }
                 }
                 break;
@@ -250,7 +252,7 @@ final class ResourceBuilder {
      * @param  message  the message with a "{0}" pattern to be replaced by the resource name.
      * @param  name     the resource name.
      */
-    private void warning(String message, final String name) {
+    private void warning(String message, final CharSequence name) {
         message = message.replace("{0}", name);
         store.warning(new LogRecord(Level.WARNING, message));
     }
@@ -267,18 +269,42 @@ final class ResourceBuilder {
 
     /**
      * Returns the name for the item specified by the given identifier.
-     * If no name is found, then the give {@code itemID} is formatted.
+     * If no name is found, then the given {@code itemID} is formatted.
      *
      * @param  itemID  identifier of the item for which to get name.
+     * @param  key     {@link Vocabulary} key to use in case of fallback on the numerical value.
      * @return a non-null item name.
      */
-    private String getResourceName(final int itemID) {
+    private CharSequence getResourceName(final int itemID, final short key) {
         for (ItemInfoEntry entry : info(itemInfos.get(itemID))) {
             if (entry.itemName != null) {
                 return entry.itemName;
             }
         }
-        return Integer.toUnsignedString(itemID);
+        // Use the `long` type only if necessary.
+        return Vocabulary.formatInternational(key, valueOf(itemID));
+    }
+
+    /**
+     * Returns the name for the given item.
+     * If no name is found, then the given {@code itemID} is formatted.
+     *
+     * @param  entry  the item for which to get the name.
+     * @return a non-null item name.
+     */
+    private static CharSequence getResourceName(final ItemInfoEntry entry) {
+        if (entry.itemName != null) {
+            return entry.itemName;
+        }
+        return Vocabulary.formatInternational(Vocabulary.Keys.Item_1, valueOf(entry.itemID));
+    }
+
+    /**
+     * Returns the given integer as a wrapper object, with the integer considered as unsigned.
+     * The {@link Long} wrapper is used only if necessary for keeping the value positive.
+     */
+    private static Number valueOf(final int itemID) {
+        return (itemID >= 0) ? Integer.valueOf(itemID) : Integer.toUnsignedLong(itemID);
     }
 
     /**
@@ -360,7 +386,7 @@ final class ResourceBuilder {
     {
         ImageResourceBuilder firstBuilder = null;
         for (final ItemInfoEntry entry : info) {
-            final String name = entry.itemName();
+            final CharSequence name = getResourceName(entry);
             if (entry.itemProtectionIndex != 0) {
                 warning("The \"{0}\" resource is protected.", name);
                 continue;
@@ -511,7 +537,7 @@ final class ResourceBuilder {
         for (final GroupList box : groups) {
             for (Box child : box.children) {
                 if (child instanceof EntityToGroup group) {     // Should be the type of all children.
-                    final GenericName name = store.createComponentName(getResourceName(group.groupID));
+                    final GenericName name = store.createComponentName(getResourceName(group.groupID, Vocabulary.Keys.Group_1));
                     final var components = new ArrayList<ImageResource>(group.entityID.length);
                     for (int entityID : group.entityID) {
                         final Iterator<Resource> it = itemResources.getOrDefault(entityID, List.of()).iterator();

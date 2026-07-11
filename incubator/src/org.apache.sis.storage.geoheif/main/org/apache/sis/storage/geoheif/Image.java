@@ -25,6 +25,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.isobmff.ByteRanges;
+import org.apache.sis.util.internal.shared.Strings;
 
 
 /**
@@ -39,7 +40,7 @@ abstract class Image {
     /**
      * A name that identifies this image, for debugging purposes.
      */
-    private final String name;
+    private final CharSequence name;
 
     /**
      * Number of columns and rows in the tile matrix.
@@ -71,7 +72,7 @@ abstract class Image {
      * @param  name     a name that identifies this image, for debugging purpose.
      * @throws DataStoreException if an error occurred while decoding <abbr>HEIF</abbr> boxes.
      */
-    protected Image(final ImageResourceBuilder builder, final ByteRanges.Reader locator, final String name)
+    protected Image(final ImageResourceBuilder builder, final ByteRanges.Reader locator, final CharSequence name)
             throws DataStoreException
     {
         this.locator = locator;
@@ -139,6 +140,6 @@ abstract class Image {
      */
     @Override
     public String toString() {
-        return name;
+        return Strings.toString(getClass(), "name", name, "tiles", numXTiles + " × " + numYTiles);
     }
 }

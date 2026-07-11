@@ -84,14 +84,14 @@ public class GeoHeifStore extends DataStore implements Aggregate {
      * Defined as a namespace for use as the scope of children resources (the images).
      * May be {@code null}.
      *
-     * @see #createComponentName(String)
+     * @see #createComponentName(CharSequence)
      */
     private final NameSpace namespace;
 
     /**
      * The factory to use for creating resource names in the namespace of this store.
      *
-     * @see #createComponentName(String)
+     * @see #createComponentName(CharSequence)
      */
     final NameFactory nameFactory;
 
@@ -203,7 +203,7 @@ public class GeoHeifStore extends DataStore implements Aggregate {
      * @param  tip  component name as the tip of the qualified name.
      * @return a name in the namespace of this store.
      */
-    final LocalName createComponentName(final String tip) {
+    final LocalName createComponentName(final CharSequence tip) {
         return nameFactory.createLocalName(namespace, tip);
     }
 

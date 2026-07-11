@@ -92,11 +92,9 @@ final class ImageResourceBuilder implements Emptiable {
      * as "symbolic name of the item (source file for file delivery transmissions)" and this
      * class assumes that the name is unique.
      *
-     * @todo Verify if {@link ItemInfoEntry#itemName} is really unique.
-     *
-     * @see #name()
+     * @see #identifier()
      */
-    private String name;
+    private CharSequence identifier;
 
     /**
      * The size (in pixels) of the reconstructed image.
@@ -372,7 +370,7 @@ final class ImageResourceBuilder implements Emptiable {
      * @param  name  name of the resource to create.
      * @return whether at least one ignored box was flagged as essential.
      */
-    boolean reportUnknownBoxes(final String name) {
+    boolean reportUnknownBoxes(final CharSequence name) {
         boolean essential = false;
         if (!unknownBoxes.isEmpty()) {
             final Level level;
@@ -431,14 +429,14 @@ final class ImageResourceBuilder implements Emptiable {
      * Builds the grid coverage resource for an untiled image.
      * This builder should not be used anymore after this method call.
      *
-     * @param  name   name of the resource.
-     * @param  image  the single tile of the image.
+     * @param  identifier  name of the resource. Should be unique for allowing its use as identifier.
+     * @param  image       the single tile of the image.
      * @return the resource.
      * @throws DataStoreContentException if the "grid to <abbr>CRS</abbr>" transform or the sample dimensions cannot be created.
      * @throws DataStoreException if the construction failed for another reason.
      */
-    final ImageResource build(final String name, final Image image) throws DataStoreException {
-        this.name = name;
+    final ImageResource build(final CharSequence identifier, final Image image) throws DataStoreException {
+        this.identifier = identifier;
         return new ImageResource(this, null, image);
     }
 
@@ -446,14 +444,14 @@ final class ImageResourceBuilder implements Emptiable {
      * Builds the grid coverage resource for a tiled image.
      * This builder should not be used anymore after this method call.
      *
-     * @param  name   name of the resource.
-     * @param  tiles  all tiles of the image.
+     * @param  identifier  name of the resource. Should be unique for allowing its use as identifier.
+     * @param  tiles       all tiles of the image.
      * @return the resource.
      * @throws DataStoreContentException if the "grid to <abbr>CRS</abbr>" transform or the sample dimensions cannot be created.
      * @throws DataStoreException if the construction failed for another reason.
      */
-    final ImageResource build(final String name, final List<Image> tiles) throws DataStoreException {
-        this.name = name;
+    final ImageResource build(final CharSequence identifier, final List<Image> tiles) throws DataStoreException {
+        this.identifier = identifier;
         return new ImageResource(this, tiles.toArray(Image[]::new), null);
     }
 
@@ -470,14 +468,15 @@ final class ImageResourceBuilder implements Emptiable {
      * Returns a name for the resource to create and opportunistically adds it to the metadata.
      * This method should be invoked exactly once.
      */
-    public final GenericName name() {
-        GenericName gn = store().createComponentName(name);
+    public final GenericName identifier() {
+        GenericName gn = store().createComponentName(identifier);
         metadata().addIdentifier(gn, MetadataBuilder.Scope.RESOURCE);
         return gn;
     }
 
     /**
-     * Returns the builder of metadata.
+     * Returns the shared instance of metadata builder. The same instance may be shared by
+     * many {@link ImageResourceBuilder} in order to provide a consolidated set of metadata.
      */
     public final MetadataBuilder metadata() {
         if (metadata == null) {

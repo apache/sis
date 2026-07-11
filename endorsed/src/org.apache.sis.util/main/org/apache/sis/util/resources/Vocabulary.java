@@ -624,6 +624,11 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short GridOf_1 = 290;
 
         /**
+         * Group {0}
+         */
+        public static final short Group_1 = 291;
+
+        /**
          * Height
          */
         public static final short Height = 98;
@@ -707,6 +712,11 @@ public class Vocabulary extends IndexedResourceBundle {
          * Isolines
          */
         public static final short Isolines = 252;
+
+        /**
+         * Item {0}
+         */
+        public static final short Item_1 = 292;
 
         /**
          * Java home directory

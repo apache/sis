@@ -61,7 +61,10 @@ final class FromImageIO extends Image implements IIOReadWarningListener {
      * @param  name      a name that identifies this image, for debugging purpose.
      * @throws DataStoreException if an error occurred while decoding <abbr>HEIF</abbr> boxes.
      */
-    FromImageIO(ImageResourceBuilder builder, ByteRanges.Reader locator, final ImageReaderSpi provider, String name)
+    FromImageIO(final ImageResourceBuilder builder,
+                final ByteRanges.Reader locator,
+                final ImageReaderSpi provider,
+                final CharSequence name)
             throws DataStoreException
     {
         super(builder, locator, name);

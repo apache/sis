@@ -138,7 +138,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
     ImageResource(final ImageResourceBuilder builder, Image[] tiles, final Image image) throws DataStoreException {
         super(builder.store());
         this.store       = builder.store();
-        identifier       = builder.name();
+        identifier       = builder.identifier();
         sampleDimensions = builder.imageModel().sampleDimensions(builder);
         gridGeometry     = builder.gridGeometry();
         if (tiles == null) {

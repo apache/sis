@@ -89,7 +89,7 @@ class UncompressedImage extends Image {
      * @param  name     a name that identifies this image, for debugging purpose.
      * @throws DataStoreContentException if the "grid to <abbr>CRS</abbr>" transform or the sample dimensions cannot be created.
      */
-    UncompressedImage(final ImageResourceBuilder builder, final ByteRanges.Reader locator, final String name)
+    UncompressedImage(final ImageResourceBuilder builder, final ByteRanges.Reader locator, final CharSequence name)
             throws DataStoreException
     {
         super(builder, locator, name);
