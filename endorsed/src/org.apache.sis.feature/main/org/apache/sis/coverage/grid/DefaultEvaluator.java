@@ -324,13 +324,14 @@ abstract class DefaultEvaluator implements GridCoverage.Evaluator {
      *
      * @param  point  the position where to evaluate.
      * @return the sample values at the specified point, or {@code null} if the point is outside the coverage.
+     * @throws IncompleteGridGeometryException if the "grid to <abbr>CRS</abbr>" transform is missing.
      * @throws PointOutsideCoverageException if the evaluation failed because the input point
      *         has invalid coordinates and the {@link #isNullIfOutside()} flag is {@code false}.
      * @throws CannotEvaluateException if the values cannot be computed for another reason.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public double[] apply(final DirectPosition point) throws CannotEvaluateException {
+    public double[] apply(final DirectPosition point) {
         try {
             final double[] gridCoords = toGridPosition(point);
             final IntFunction<PointOutsideCoverageException> ifOutside;
@@ -359,6 +360,7 @@ abstract class DefaultEvaluator implements GridCoverage.Evaluator {
      * @param  points   the positions where to evaluate.
      * @param  parallel {@code true} for a parallel stream, or {@code false} for a sequential stream.
      * @return the sample values at the specified positions.
+     * @throws IncompleteGridGeometryException if the "grid to <abbr>CRS</abbr>" transform is missing.
      */
     @Override
     public Stream<double[]> stream(final Collection<? extends DirectPosition> points, final boolean parallel) {
@@ -377,6 +379,7 @@ abstract class DefaultEvaluator implements GridCoverage.Evaluator {
      *
      * @param  points  the positions where to evaluate.
      * @return iterator over the sample values at the specified positions.
+     * @throws IncompleteGridGeometryException if the "grid to <abbr>CRS</abbr>" transform is missing.
      * @throws FactoryException if an exception occurred while search an operation to the <abbr>CRS</abbr> of a point.
      * @throws TransformException if a coordinate transformation failed.
      */
@@ -496,6 +499,7 @@ abstract class DefaultEvaluator implements GridCoverage.Evaluator {
      *
      * @param  point  the geospatial position.
      * @return the given position converted to grid coordinates (possibly out of grid bounds).
+     * @throws IncompleteGridGeometryException if the "grid to <abbr>CRS</abbr>" transform is missing.
      * @throws FactoryException if no operation is found form given point CRS to coverage CRS.
      * @throws TransformException if the given position cannot be converted.
      */
@@ -616,22 +620,6 @@ next:   while (--numPoints >= 0) {
     }
 
     /**
-     * Returns the grid to <abbr>CRS</abbr> transform or infers a transform from the resolution.
-     *
-     * @param  grid  the grid geometry.
-     * @return the transform from grid coordinates to <abbr>CRS</abbr> coordinates.
-     * @throws IncompleteGridGeometryException if there is neither transform or resolution.
-     */
-    private static MathTransform getOfInferGridToCRS(final GridGeometry grid) {
-        if (!grid.isDefined(GridGeometry.GRID_TO_CRS) && grid.isDefined(GridGeometry.RESOLUTION)) {
-            return MathTransforms.concatenate(
-                    MathTransforms.uniformTranslation(grid.getDimension(), 0.5),
-                    MathTransforms.scale(grid.getResolution(false)));
-        }
-        return grid.getGridToCRS(PixelInCell.CELL_CENTER);
-    }
-
-    /**
      * Recomputes the {@link #inputToGrid} field if the <abbr>CRS</abbr> changed.
      * This method should be invoked when the transform has not yet been computed
      * or may became outdated because {@link #inputCRS} needs to be changed.
@@ -643,6 +631,7 @@ next:   while (--numPoints >= 0) {
      *
      * @param  crs  the new value to assign to {@link #inputCRS}. Can be {@code null}.
      * @return the new {@link #inputToGrid} value.
+     * @throws IncompleteGridGeometryException if the "grid to <abbr>CRS</abbr>" transform is missing.
      */
     private synchronized MathTransform getInputToGrid(final CoordinateReferenceSystem crs)
             throws FactoryException, NoninvertibleTransformException
@@ -652,7 +641,7 @@ next:   while (--numPoints >= 0) {
         }
         final GridCoverage coverage = getCoverage();
         final GridGeometry gridGeometry = coverage.getGridGeometry();
-        MathTransform gridToCRS = getOfInferGridToCRS(gridGeometry);
+        MathTransform gridToCRS = gridGeometry.getGridToCRS(PixelInCell.CELL_CENTER);
         MathTransform crsToGrid = TranslatedTransform.resolveNaN(gridToCRS.inverse(), gridGeometry);
         if (crs != null) {
             final CoordinateReferenceSystem stepCRS = coverage.getCoordinateReferenceSystem();
@@ -735,6 +724,7 @@ next:   while (--numPoints >= 0) {
      *
      * @param  point  the point which is outside the grid.
      * @return the exception to throw
+     * @throws IncompleteGridGeometryException if the "grid to <abbr>CRS</abbr>" transform is missing.
      */
     final synchronized PointOutsideCoverageException pointOutsideCoverage(final DirectPosition point) {
         String details = null;

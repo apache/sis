@@ -20,7 +20,6 @@ import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
@@ -28,7 +27,6 @@ import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.CRS;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
@@ -94,14 +92,5 @@ final class Utils {
             }
         }
         return conservative;
-    }
-
-    /**
-     * Returns {@code true} if the given reference system should be ignored.
-     *
-     * @see org.apache.sis.gui.map.ValuesUnderCursor.Formatter#isIgnoreable(CoordinateReferenceSystem)
-     */
-    static boolean isIgnoreable(final ReferenceSystem system) {
-        return (system instanceof CoordinateReferenceSystem c) && CommonCRS.Engineering.DISPLAY.datumUsedBy(c);
     }
 }

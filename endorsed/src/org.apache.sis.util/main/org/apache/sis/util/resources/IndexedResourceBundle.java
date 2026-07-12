@@ -670,7 +670,8 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
 
     /**
      * Creates a new log record with the localized message identified by the given key.
-     * The logger name, source class and source method are initially {@code null}.
+     * The logger name is initialized to the name of the module of the resource bundle.
+     * The source class and source method are initially {@code null}.
      *
      * @param  level  the log record level.
      * @param  key    the resource key.
@@ -678,6 +679,7 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
      */
     public final LogRecord createLogRecord(final Level level, final short key) {
         final var record = new LogRecord(level, getKeyConstants().getKeyName(key));
+        record.setLoggerName(getClass().getModule().getName());
         record.setResourceBundleName(getClass().getName());
         record.setResourceBundle(this);
         return record;
@@ -685,7 +687,8 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
 
     /**
      * Creates a new log record with the localized message identified by the given key.
-     * The logger name, source class and source method are initially {@code null}.
+     * The logger name is initialized to the name of the module of the resource bundle.
+     * The source class and source method are initially {@code null}.
      *
      * @param  level  the log record level.
      * @param  key    the resource key.
@@ -702,7 +705,8 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
 
     /**
      * Creates a new log record with the localized message identified by the given key.
-     * The logger name, source class and source method are initially {@code null}.
+     * The logger name is initialized to the name of the module of the resource bundle.
+     * The source class and source method are initially {@code null}.
      *
      * @param  level  the log record level.
      * @param  key    the resource key.
@@ -719,7 +723,8 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
 
     /**
      * Creates a new log record with the localized message identified by the given key.
-     * The logger name, source class and source method are initially {@code null}.
+     * The logger name is initialized to the name of the module of the resource bundle.
+     * The source class and source method are initially {@code null}.
      *
      * @param  level  the log record level.
      * @param  key    the resource key.
@@ -738,7 +743,8 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
 
     /**
      * Creates a new log record with the localized message identified by the given key.
-     * The logger name, source class and source method are initially {@code null}.
+     * The logger name is initialized to the name of the module of the resource bundle.
+     * The source class and source method are initially {@code null}.
      *
      * @param  level  the log record level.
      * @param  key    the resource key.

@@ -31,6 +31,7 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedEncodingException;
+import org.apache.sis.storage.geoheif.internal.Resources;
 import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.storage.isobmff.mpeg.Component;
 import org.apache.sis.storage.isobmff.mpeg.ComponentType;
@@ -108,7 +109,7 @@ final class ImageModel {
                final Object[] componentTypes,
                final byte[] bitsPerChannel,
                final ComponentPalette palette,
-               final CoverageBuilder builder)
+               final ImageResourceBuilder builder)
             throws DataStoreException
     {
         final int nc = (model          == null) ? 0 : model.components.length;
@@ -142,7 +143,7 @@ final class ImageModel {
                 if (dataType == null) {
                     dataType = c.getDataType();
                 } else if (dataType != c.getDataType()) {
-                    throw new DataStoreContentException("All bands shall be of the same data type.");
+                    throw new DataStoreContentException(Resources.format(Resources.Keys.InconsistentBandDataType));
                 }
                 bitDepth = Short.toUnsignedInt(c.bitDepth);
                 /*
@@ -183,7 +184,8 @@ final class ImageModel {
             bitsPerSample[band] = bitDepth;
             numBits += bitDepth;
             maxBits = Math.max(maxBits, bitDepth);
-            if (colorType instanceof ComponentType ct) {
+            if (colorType instanceof ComponentType) {
+                var ct = (ComponentType) colorType;
                 int mask = 0;
                 if (numBits < Integer.SIZE) {
                     mask = ((1 << bitDepth) - 1) << (Integer.SIZE - numBits);
@@ -238,7 +240,8 @@ final class ImageModel {
             switch (interleaveType) {
                 case COMPONENT: isBanded = true;  break;    // Java2D: BandedSampleModel
                 case PIXEL:     isBanded = false; break;    // Java2D: PixelInterleavedSampleModel
-                default: throw new UnsupportedEncodingException("Unsupported interleave type: " + interleaveType);
+                default: throw new UnsupportedEncodingException(
+                            Resources.format(Resources.Keys.UnsupportedInterleave_1, interleaveType));
             }
             sampleModel = new SampleModelBuilder(dataType, tileSize, bitsPerSample, isBanded).build();
         } else {
@@ -278,7 +281,7 @@ final class ImageModel {
      * @param  builder  the builder which is creating a grid coverage.
      * @param  type     the image specifier from the Image I/O <abbr>API</abbr>.
      */
-    ImageModel(final ImageTypeSpecifier type, final CoverageBuilder builder) {
+    ImageModel(final ImageTypeSpecifier type, final ImageResourceBuilder builder) {
         colorModel  = type.getColorModel();
         sampleModel = type.getSampleModel();
         dataType    = DataType.forDataBufferType(sampleModel.getDataType());
@@ -295,7 +298,7 @@ final class ImageModel {
      * @return the sample dimensions.
      * @throws DataStoreContentException if the sample dimensions cannot be created.
      */
-    final List<SampleDimension> sampleDimensions(final CoverageBuilder builder) throws DataStoreException {
+    final List<SampleDimension> sampleDimensions(final ImageResourceBuilder builder) throws DataStoreException {
         SampleDimension[] bands = sampleDimensions;
         boolean share = true;
         if (builder.imageIndex != imageIndex) {

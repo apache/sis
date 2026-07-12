@@ -39,7 +39,7 @@ import org.apache.sis.storage.tiling.TiledGridCoverageResource;
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */
-final class Pyramid extends TiledGridCoverageResource implements TiledGridCoverageResource.Pyramid {
+final class PyramidedImageResource extends TiledGridCoverageResource implements TiledGridCoverageResource.Pyramid {
     /**
      * Name of this pyramid, or {@code null} if none.
      */
@@ -79,8 +79,8 @@ final class Pyramid extends TiledGridCoverageResource implements TiledGridCovera
      * @param  levels   the child resources in arbitrary order. This array will be sorted in-place.
      * @throws TransformException if an error occurred while deriving a "grid to <abbr>CRS</abbr>" transform.
      */
-    Pyramid(final GeoHeifStore store, final GenericName name, final ImagePyramid pyramid, final ImageResource[] levels)
-            throws TransformException
+    PyramidedImageResource(final GeoHeifStore store, final GenericName name, final ImagePyramid pyramid, final ImageResource[] levels)
+            throws DataStoreException, TransformException
     {
         super(store);
         this.name = name;
@@ -88,9 +88,9 @@ final class Pyramid extends TiledGridCoverageResource implements TiledGridCovera
         tileSizeY = pyramid.tileSizeY;
         this.levels = levels;
         Arrays.sort(levels, LEVEL_COMPARATOR);
-        final GridGeometry base = levels[0].getGridGeometry().defaultToGridCRS(null);
+        GridGeometry base = null;
         for (ImageResource level : levels) {
-            level.setPyramidLevelOf(base);
+            base = level.setPyramidLevelOf(base);
         }
     }
 

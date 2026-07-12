@@ -186,7 +186,7 @@ final class ImageTileMatrix implements TileMatrix {
         this.processor  = processor;
         this.resource   = resource;
         this.tileSize   = resource.getTileSize();
-        final GridGeometry cellGrid = resource.getGridGeometry();
+        final GridGeometry cellGrid = resource.getGridGeometryWithDefaults();
         final GridExtent extent     = cellGrid.getExtent();
         final int        dimension  = extent.getDimension();
         final long[]     tileCount  = new long[dimension];
@@ -236,7 +236,7 @@ final class ImageTileMatrix implements TileMatrix {
     @Override
     public double[] getResolution() {
         try {
-            return resource.getGridGeometry().getResolution(false);
+            return resource.getGridGeometryWithDefaults().getResolution(false);
         } catch (DataStoreException e) {
             throw new BackingStoreException(e);
         }
@@ -269,7 +269,7 @@ final class ImageTileMatrix implements TileMatrix {
      * @throws DataStoreException if an error occurred while fecthing the grid geometry.
      */
     final GridExtent getResourceExtent() throws DataStoreException {
-        return resource.getGridGeometry().getExtent();
+        return resource.getGridGeometryWithDefaults().getExtent();
     }
 
     /**

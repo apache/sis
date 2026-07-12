@@ -26,7 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.Collection;
 import java.util.StringJoiner;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.awt.Dimension;
@@ -57,9 +56,9 @@ import org.apache.sis.storage.isobmff.mpeg.CompressedUnitsItemInfo;
 import org.apache.sis.storage.isobmff.mpeg.CompressionConfiguration;
 import org.apache.sis.storage.isobmff.mpeg.UncompressedFrameConfig;
 import org.apache.sis.storage.isobmff.mpeg.UnitType;
+import org.apache.sis.storage.geoheif.internal.Resources;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Emptiable;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.pending.jdk.JDK18;
 
 
@@ -70,7 +69,7 @@ import org.apache.sis.pending.jdk.JDK18;
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)
  */
-final class CoverageBuilder implements Emptiable {
+final class ImageResourceBuilder implements Emptiable {
     /**
      * The resource which is creating a grid coverage.
      *
@@ -92,11 +91,9 @@ final class CoverageBuilder implements Emptiable {
      * as "symbolic name of the item (source file for file delivery transmissions)" and this
      * class assumes that the name is unique.
      *
-     * @todo Verify if {@link ItemInfoEntry#itemName} is really unique.
-     *
-     * @see #name()
+     * @see #identifier()
      */
-    private String name;
+    private CharSequence identifier;
 
     /**
      * The size (in pixels) of the reconstructed image.
@@ -188,9 +185,9 @@ final class CoverageBuilder implements Emptiable {
     /**
      * The builder used for building tiles, or {@code null} if none.
      *
-     * @see #setTileBuilder(CoverageBuilder)
+     * @see #setTileBuilder(ImageResourceBuilder)
      */
-    private CoverageBuilder tileBuilder;
+    private ImageResourceBuilder tileBuilder;
 
     /**
      * Creates a new builder with the given properties.
@@ -200,10 +197,10 @@ final class CoverageBuilder implements Emptiable {
      * @param  properties       source of coverage properties for this coverage item, or {@code null} if none.
      * @param  duplicatedBoxes  names of boxes that were duplicated. Used for logging a warning only once per type of box.
      */
-    CoverageBuilder(final ResourceBuilder owner,
-                    final int imageIndex,
-                    final ItemProperties.ForID properties,
-                    final Set<String> duplicatedBoxes)
+    ImageResourceBuilder(final ResourceBuilder owner,
+                         final int imageIndex,
+                         final ItemProperties.ForID properties,
+                         final Set<String> duplicatedBoxes)
     {
         this.owner = owner;
         this.imageIndex = imageIndex;
@@ -317,7 +314,7 @@ final class CoverageBuilder implements Emptiable {
             if (duplicated) {
                 final String type = Box.formatFourCC(property.type());
                 if (duplicatedBoxes.add(type)) {
-                    store().warning(Errors.Keys.DuplicatedElement_1, type);
+                    store().warning(Resources.Keys.DuplicatedBox_1, type);
                 }
             }
         }
@@ -360,7 +357,14 @@ final class CoverageBuilder implements Emptiable {
                 return units[0];
             }
         }
-        throw new UnsupportedEncodingException("Unsupported compression.");
+        throw new UnsupportedEncodingException(resources().getString(Resources.Keys.UnsupportedCompression));
+    }
+
+    /**
+     * Returns the resources for localized warnings or error messages.
+     */
+    private Resources resources() {
+        return Resources.forLocale(store().getLocale());
     }
 
     /**
@@ -372,34 +376,32 @@ final class CoverageBuilder implements Emptiable {
      * @param  name  name of the resource to create.
      * @return whether at least one ignored box was flagged as essential.
      */
-    boolean reportUnknownBoxes(final String name) {
+    boolean reportUnknownBoxes(final CharSequence name) {
         boolean essential = false;
         if (!unknownBoxes.isEmpty()) {
             final Level level;
-            final var message = new StringBuilder();
+            final short message;
             final Collection<Boolean> essentials = unknownBoxes.values();
             if (essentials.contains(Boolean.TRUE)) {
                 essentials.removeIf((e) -> !e);  // Remove all non-essential boxes.
-                message.append("Cannot create a resource for \"").append(name)
-                        .append("\" because the following essential boxes are not handled: ");
-                level = Level.WARNING;
                 essential = true;
+                level     = Level.WARNING;
+                message   = Resources.Keys.EssentialBoxesIgnored_2;
             } else {
-                message.append("The \"").append(name)
-                        .append("\" resource has been read but the following boxes have been ignored: ");
-                level = Level.FINE;
+                level   = Level.FINE;
+                message = Resources.Keys.OptionalBoxesIgnored_2;
             }
             final var sj = new StringJoiner(", ");
             for (Object id : unknownBoxes.keySet()) {
                 if (id == null) {
                     id = "unidentified boxes";
-                } else if (id instanceof Integer fourCC) {
+                } else if (id instanceof Integer) {
+                    final var fourCC = (Integer) id;
                     id = Box.formatFourCC(fourCC);
                 }
                 sj.add(id.toString());
             }
-            final var record = new LogRecord(level, message.append(sj).append('.').toString());
-            store().warning(record);
+            store().warning(resources().createLogRecord(level, message, name, sj));
         }
         return essential;
     }
@@ -420,7 +422,7 @@ final class CoverageBuilder implements Emptiable {
      *
      * @param  firstBuilder  the builder used for building the first tile, or {@code null} if none.
      */
-    final void setTileBuilder(final CoverageBuilder firstBuilder) {
+    final void setTileBuilder(final ImageResourceBuilder firstBuilder) {
         if (firstBuilder != null && tileBuilder == null) {
             tileBuilder = firstBuilder;
             metadata = firstBuilder.metadata();
@@ -431,14 +433,14 @@ final class CoverageBuilder implements Emptiable {
      * Builds the grid coverage resource for an untiled image.
      * This builder should not be used anymore after this method call.
      *
-     * @param  name   name of the resource.
-     * @param  image  the single tile of the image.
+     * @param  identifier  name of the resource. Should be unique for allowing its use as identifier.
+     * @param  image       the single tile of the image.
      * @return the resource.
      * @throws DataStoreContentException if the "grid to <abbr>CRS</abbr>" transform or the sample dimensions cannot be created.
      * @throws DataStoreException if the construction failed for another reason.
      */
-    final ImageResource build(final String name, final Image image) throws DataStoreException {
-        this.name = name;
+    final ImageResource build(final CharSequence identifier, final Image image) throws DataStoreException {
+        this.identifier = identifier;
         return new ImageResource(this, null, image);
     }
 
@@ -446,14 +448,14 @@ final class CoverageBuilder implements Emptiable {
      * Builds the grid coverage resource for a tiled image.
      * This builder should not be used anymore after this method call.
      *
-     * @param  name   name of the resource.
-     * @param  tiles  all tiles of the image.
+     * @param  identifier  name of the resource. Should be unique for allowing its use as identifier.
+     * @param  tiles       all tiles of the image.
      * @return the resource.
      * @throws DataStoreContentException if the "grid to <abbr>CRS</abbr>" transform or the sample dimensions cannot be created.
      * @throws DataStoreException if the construction failed for another reason.
      */
-    final ImageResource build(final String name, final List<Image> tiles) throws DataStoreException {
-        this.name = name;
+    final ImageResource build(final CharSequence identifier, final List<Image> tiles) throws DataStoreException {
+        this.identifier = identifier;
         return new ImageResource(this, tiles.toArray(Image[]::new), null);
     }
 
@@ -470,14 +472,15 @@ final class CoverageBuilder implements Emptiable {
      * Returns a name for the resource to create and opportunistically adds it to the metadata.
      * This method should be invoked exactly once.
      */
-    public final GenericName name() {
-        GenericName gn = store().createComponentName(name);
+    public final GenericName identifier() {
+        GenericName gn = store().createComponentName(identifier);
         metadata().addIdentifier(gn, MetadataBuilder.Scope.RESOURCE);
         return gn;
     }
 
     /**
-     * Returns the builder of metadata.
+     * Returns the shared instance of metadata builder. The same instance may be shared by
+     * many {@link ImageResourceBuilder} in order to provide a consolidated set of metadata.
      */
     public final MetadataBuilder metadata() {
         if (metadata == null) {
@@ -587,7 +590,7 @@ final class CoverageBuilder implements Emptiable {
         if (sampleModel != null) {
             return sampleModel;
         }
-        throw new DataStoreContentException("Unspecified sample model.");
+        throw new DataStoreContentException(resources().getString(Resources.Keys.UnspecifiedSampleModel));
     }
 
     /**

@@ -52,6 +52,7 @@ import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
@@ -160,6 +161,18 @@ public abstract class TiledGridCoverageResource extends AbstractGridCoverageReso
      * @see #getTileMatrixSets()
      */
     private Collection<TileMatrixSet> tileMatrixSets;
+
+    /**
+     * Grid geometry with the addition of a default resolution if the latter was missing.
+     * In the normal situation where this {@code TiledGridCoverageResource} is georeferenced,
+     * the value of this field should be identical to the value returned by {@link #getGridGeometry()}.
+     * However, if the latter has no resolution, no transform and no <abbr>CRS</abbr>, then this field
+     * is set to a grid geometry with a resolution of 1. The corresponding "grid to <abbr>CRS</abbr>"
+     * (an identity transform) is added only if an engineering <abbr>CRS</abbr> for the grid can be built.
+     *
+     * @see #getGridGeometryWithDefaults()
+     */
+    private GridGeometry gridGeometryWithDefaults;
 
     /**
      * Zero-based index of the pyramid level of this grid coverage resource.
@@ -483,7 +496,9 @@ check:  if (dataType.isInteger()) {
                 @Override public double[] get(final int level) {
                     try {
                         TiledGridCoverageResource c = pyramid.forPyramidLevel(level);
-                        if (c != null) return c.getGridGeometry().getResolution(false);
+                        if (c != null) {
+                            return c.getGridGeometryWithDefaults().getResolution(false);
+                        }
                     } catch (DataStoreException e) {
                         throw new BackingStoreException(e);
                     }
@@ -662,13 +677,13 @@ check:  if (dataType.isInteger()) {
             /*
              * Normally, the number of dimensions of `tileSize` should be equal to the number of dimensions
              * of the grid geometry (determined by its `GridExtent`). However, we are tolerant to situation
-             * where the `TiledGridCoverageResource` is a two dimensional image associated to a 3-dimensional CRS.
+             * where `TiledGridCoverageResource` extent is two dimensional but the CRS is three-dimensional.
              * This is not recommended, but can happen with GeoTIFF for example. What to do with the extra
              * dimension is unclear (the GeoTIFF specification itself said nothing), so we just ignore it.
              */
             final int[] tileSize = getTileSize();
             final int dimension = tileSize.length;          // May be shorter than the grid geometry dimension.
-            GridGeometry gridGeometry = getGridGeometry();
+            GridGeometry gridGeometry = getGridGeometryWithDefaults();
             if ((domain == null || domain.getDimension() == dimension) && gridGeometry.getDimension() > dimension) {
                 gridGeometry = gridGeometry.selectDimensions(ArraysExt.range(0, dimension));
             }
@@ -772,6 +787,9 @@ check:  if (dataType.isInteger()) {
             if (colorsForBandSubset == null) {
                 colorsForBandSubset = rangeIndices.select(getColorModel(null));
             }
+            /*
+             * If the domain has no "grid to CRS" transform, set a default value
+             */
             this.domain              = domain;
             this.ranges              = bands;
             this.includedBands       = includedBands;
@@ -941,7 +959,7 @@ check:  if (dataType.isInteger()) {
                     bestFit = c;
                     level++;
                     if (request != null) {
-                        final double[] resolution = c.getGridGeometry().getResolution(true);
+                        final double[] resolution = c.getGridGeometryWithDefaults().getResolution(true);
                         if (!(request[xDimension] < resolution[xDimension] ||  // Use `!` for catching NaN.
                               request[yDimension] < resolution[yDimension])) break;
                     }
@@ -976,6 +994,7 @@ check:  if (dataType.isInteger()) {
         final GridCoverage loaded;
         final boolean preload;
         final long startTime;
+        final GridGeometry gridGeometry;
         synchronized (getSynchronizationLock()) {
             // Note: `loadingStrategy` may still be null if unitialized.
             preload = (loadingStrategy == null || loadingStrategy == RasterLoadingStrategy.AT_READ_TIME);
@@ -991,11 +1010,15 @@ check:  if (dataType.isInteger()) {
                  * We apply it anyway in case the coverage geometry is not what was announced.
                  * This condition is also necessary if `loadingStrategy` has not been initialized.
                  */
-                if (!preload || coverage.getGridGeometry().getDimension() != BIDIMENSIONAL) {
+                if (!preload) {
+                    return coverage;
+                }
+                gridGeometry = coverage.getGridGeometry();
+                if (gridGeometry.getDimension() != BIDIMENSIONAL) {
                     return coverage;
                 }
                 final RenderedImage image = coverage.render(null);
-                loaded = new GridCoverage2D(coverage.getGridGeometry(), coverage.getSampleDimensions(), image);
+                loaded = new GridCoverage2D(gridGeometry, coverage.getSampleDimensions(), image);
             } catch (RuntimeException e) {
                 /*
                  * The `coverage.render(…)` implementation may have wrapped the checked `DataStoreException`
@@ -1017,7 +1040,7 @@ check:  if (dataType.isInteger()) {
                 throw canNotRead(listeners.getSourceName(), domain, cause);
             }
         }
-        logReadOperation(coverage.getContentPath(null), coverage.getGridGeometry(), startTime);
+        logReadOperation(coverage.getContentPath(null), gridGeometry, startTime);
         return loaded;
     }
 
@@ -1165,8 +1188,8 @@ check:  if (dataType.isInteger()) {
      * @see #getTileMatrixSets()
      */
     protected List<Pyramid> getPyramids() throws DataStoreException {
-        final GridGeometry gridGeometry = getGridGeometry();
-        if (gridGeometry.isDefined(GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS | GridGeometry.RESOLUTION)) {
+        final GridGeometry gridGeometry = getGridGeometryWithDefaults();
+        if (gridGeometry.isDefined(GridGeometry.EXTENT | GridGeometry.RESOLUTION)) {
             if (isTiled(gridGeometry.getExtent())) {
                 return List.of(new Pyramid() {
                     @Override public OptionalInt numberOfLevels() {return OptionalInt.of(1);}
@@ -1177,6 +1200,35 @@ check:  if (dataType.isInteger()) {
             }
         }
         return List.of();
+    }
+
+    /**
+     * Returns the grid geometry with missing properties defaulting to the properties of a grid <abbr>CRS</abbr>.
+     * This method usually returns {@link #getGridGeometry()} unchanged, except in the following rare circumstance:
+     * if the grid geometry has no resolution, no "grid to <abbr>CRS</abbr>" transform and no <abbr>CRS</abbr>,
+     * then this method returns a grid geometry with the resolution set to 1,
+     * <i>i.e.</i> the resolution is defined as one unit of grid cell.
+     *
+     * <p>This method can be invoked for computing the grid geometry of {@link TiledGridCoverage}.
+     * This is particularly important in the context of pyramids because the levels are selected
+     * on the basis of their resolution. Implementations of {@link Pyramid#forPyramidLevel(int)}
+     * are encouraged to use this method for the base level, and only that level.</p>
+     *
+     * @return grid geometry potentially completed with the addition of resolution and engineering <abbr>CRS</abbr>.
+     * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
+     */
+    protected GridGeometry getGridGeometryWithDefaults() throws DataStoreException {
+        synchronized (getSynchronizationLock()) {
+            GridGeometry gridGeometry = gridGeometryWithDefaults;
+            if (gridGeometry == null) {
+                gridGeometry = getGridGeometry();
+                if (!gridGeometry.isDefined(GridGeometry.GRID_TO_CRS)) {
+                    gridGeometry = gridGeometry.defaultToGridCRS(StoreUtilities.gridCrsName(this, gridGeometry));
+                }
+                gridGeometryWithDefaults = gridGeometry;
+            }
+            return gridGeometry;
+        }
     }
 
     /**
@@ -1286,6 +1338,7 @@ check:  if (dataType.isInteger()) {
          * @throws DataStoreException if an error occurred while creating the resource.
          *
          * @see #getAvailableResolutions()
+         * @see #getGridGeometryWithDefaults()
          */
         TiledGridCoverageResource forPyramidLevel(int level) throws DataStoreException;
 

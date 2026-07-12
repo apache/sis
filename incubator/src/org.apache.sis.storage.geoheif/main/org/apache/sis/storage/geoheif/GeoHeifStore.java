@@ -47,6 +47,7 @@ import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.base.URIDataStoreOption;
 import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.storage.geoheif.internal.Resources;
 import org.apache.sis.storage.isobmff.Root;
 import org.apache.sis.storage.isobmff.Reader;
 import org.apache.sis.util.collection.Containers;
@@ -84,14 +85,14 @@ public class GeoHeifStore extends DataStore implements Aggregate {
      * Defined as a namespace for use as the scope of children resources (the images).
      * May be {@code null}.
      *
-     * @see #createComponentName(String)
+     * @see #createComponentName(CharSequence)
      */
     private final NameSpace namespace;
 
     /**
      * The factory to use for creating resource names in the namespace of this store.
      *
-     * @see #createComponentName(String)
+     * @see #createComponentName(CharSequence)
      */
     final NameFactory nameFactory;
 
@@ -203,7 +204,7 @@ public class GeoHeifStore extends DataStore implements Aggregate {
      * @param  tip  component name as the tip of the qualified name.
      * @return a name in the namespace of this store.
      */
-    final LocalName createComponentName(final String tip) {
+    final LocalName createComponentName(final CharSequence tip) {
         return nameFactory.createLocalName(namespace, tip);
     }
 
@@ -318,11 +319,11 @@ public class GeoHeifStore extends DataStore implements Aggregate {
      * Logs a warning with a message built from localized resources. This method pretends that the
      * warning has been emitted by {@link #components()}. It should be the case, but often indirectly.
      *
-     * @param  errorKey  one of {@link Errors.Keys} values.
-     * @param  args   the parameter for the log message, which may be an array.
+     * @param  key   one of {@link Resources.Keys} values.
+     * @param  args  the parameter for the log message, which may be an array.
      */
-    final void warning(final short errorKey, final Object args) {
-        warning(Errors.forLocale(getLocale()).createLogRecord(Level.WARNING, errorKey, args));
+    final void warning(final short key, final Object args) {
+        warning(Resources.forLocale(getLocale()).createLogRecord(Level.WARNING, key, args));
     }
 
     /**

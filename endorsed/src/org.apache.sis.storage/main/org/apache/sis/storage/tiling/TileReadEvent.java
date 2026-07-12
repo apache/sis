@@ -118,20 +118,6 @@ public final class TileReadEvent extends StoreEvent {
         }
 
         /**
-         * Returns the grid to <abbr>CRS</abbr> transform or infers a transform from the resolution.
-         *
-         * @param  grid  the grid geometry.
-         * @return the transform from grid coordinates to <abbr>CRS</abbr> coordinates.
-         * @throws IncompleteGridGeometryException if there is neither transform or resolution.
-         */
-        private static MathTransform getOfInferGridToCRS(final GridGeometry grid) {
-            if (!grid.isDefined(GridGeometry.GRID_TO_CRS) && grid.isDefined(GridGeometry.RESOLUTION)) {
-                return MathTransforms.scale(grid.getResolution(false));
-            }
-            return grid.getGridToCRS(PixelInCell.CELL_CORNER);
-        }
-
-        /**
          * Returns the transform from pixel coordinates to real world coordinates in the given <abbr>CRS</abbr>.
          *
          * @param  crs  the two-dimensional <abbr>CRS</abbr> of the desired bounding box.
@@ -145,7 +131,7 @@ public final class TileReadEvent extends StoreEvent {
             if (crsToObjective == null || !CRS.equivalent(crsToObjective.getTargetCRS(), crs)) try {
                 crsToObjective = sliceGeometry.createChangeOfCRS(crs);
                 MathTransform tr = MathTransforms.translation(offsetX, offsetY);
-                tr = MathTransforms.concatenate(tr, getOfInferGridToCRS(sliceGeometry));
+                tr = MathTransforms.concatenate(tr, sliceGeometry.getGridToCRS(PixelInCell.CELL_CORNER));
                 tr = MathTransforms.concatenate(tr, crsToObjective.getMathTransform());
                 imageToObjective = MathTransforms.bidimensional(tr);
                 this.crsToObjective = crsToObjective;   // Store only after the rest was successful.

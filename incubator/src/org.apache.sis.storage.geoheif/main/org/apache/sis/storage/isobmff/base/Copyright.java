@@ -24,6 +24,7 @@ import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
 import org.apache.sis.storage.isobmff.UnsupportedVersionException;
+import org.apache.sis.pending.jdk.JDK19;
 
 
 /**
@@ -77,7 +78,7 @@ public final class Copyright extends FullBox {
             code[i] = (byte) ((packed & 0b111) + 0x60);
             packed >>>= 3;
         }
-        language = Locale.of(new String(code, StandardCharsets.US_ASCII));
+        language = JDK19.localeOf(new String(code, StandardCharsets.US_ASCII));
         notice = reader.readNullTerminatedString(true);
     }
 

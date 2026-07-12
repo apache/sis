@@ -16,20 +16,20 @@
  */
 package org.apache.sis.storage.base;
 
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.logging.Filter;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
+import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.identification.DataIdentification;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.Classes;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStore;
@@ -37,15 +37,24 @@ import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.WritableFeatureSet;
+import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.internal.Resources;
+import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.metadata.internal.shared.Identifiers;
 import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.system.Modules;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.Localized;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
@@ -189,6 +198,46 @@ public final class StoreUtilities {
             }
         }
         return title;
+    }
+
+    /**
+     * Returns a name for the grid <abbr>CRS</abbr> derived from the resource identifier.
+     *
+     * @param  resource  resource from which to get the identifier, or {@code null} if none.
+     * @param  domain    grid geometry of the resource or coverage loaded from the resource.
+     * @return name derived from the identifier which can be used for the grid <abbr>CRS</abbr>.
+     * @throws DataStoreException if an error occurred while fetching the identifier.
+     */
+    public static Identifier gridCrsName(final GridCoverageResource resource, final GridGeometry domain)
+            throws DataStoreException
+    {
+        if (resource != null) {
+            final GenericName name = resource.getIdentifier().orElse(null);
+            if (name != null) {
+                if (name instanceof Identifier) {
+                    return (Identifier) name;
+                }
+                /*
+                 * Do not use `NamedIdentifier` because we want the full name as identifier code.
+                 * By contrast, `NamedIdentifier` takes only the tip (because it is better suited
+                 * to datum names or projection parameter names). In the context of resource, the
+                 * tip alone is not sufficient because it is often only an image number in a file
+                 * specified by the name component before the tip.
+                 */
+                String codeSpace = null;
+                final NameSpace scope = name.scope();
+                if (scope != null && !scope.isGlobal()) {
+                    codeSpace = scope.name().toString();
+                }
+                Locale locale = (resource instanceof Localized) ? ((Localized) resource).getLocale() : null;
+                String code = Vocabulary.forLocale(locale).getString(Vocabulary.Keys.GridOf_1, name.toString());
+                return new ImmutableIdentifier(null, codeSpace, code);
+            }
+        }
+        return (domain.isDefined(GridGeometry.GRID_TO_CRS)
+                        ? CommonCRS.Engineering.GRID.datum()    // "Unknown grid"
+                        : CommonCRS.Engineering.GRID.crs())     // "Cell indices"
+                .getName();
     }
 
     /**
