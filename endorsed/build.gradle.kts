@@ -354,6 +354,18 @@ publishing {
                 description = "Bridge between netCDF Climate and Forecast (CF) convention and ISO 19115 metadata."
             }
         }
+        create<MavenPublication>("storage.geoheif") {
+            var module = "org.apache.sis.storage.geoheif"
+            groupId    = "org.apache.sis.storage"
+            artifactId = "sis-geoheif"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS GeoHEIF Coverage storage"
+                description = "Read files in GeoHEIF format."
+            }
+        }
         create<MavenPublication>("storage.geotiff") {
             var module = "org.apache.sis.storage.geotiff"
             groupId    = "org.apache.sis.storage"
