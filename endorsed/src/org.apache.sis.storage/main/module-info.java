@@ -52,10 +52,10 @@ module org.apache.sis.storage {
             org.apache.sis.storage.xml,
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,
+            org.apache.sis.storage.geoheif,
             org.apache.sis.storage.geotiff,
             org.apache.sis.storage.earthobservation,
             org.apache.sis.storage.coveragejson,        // In the "incubator" sub-project.
-            org.apache.sis.storage.geoheif,             // In the "incubator" sub-project.
             org.apache.sis.storage.shapefile,           // In the "incubator" sub-project.
             org.apache.sis.storage.geopackage,          // In the "incubator" sub-project.
             org.apache.sis.storage.gsf,                 // In the "incubator" sub-project.
@@ -69,10 +69,10 @@ module org.apache.sis.storage {
             org.apache.sis.storage.xml,
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,
+            org.apache.sis.storage.geoheif,
             org.apache.sis.storage.geotiff,
             org.apache.sis.storage.earthobservation,
             org.apache.sis.storage.coveragejson,        // In the "incubator" sub-project.
-            org.apache.sis.storage.geoheif,             // In the "incubator" sub-project.
             org.apache.sis.storage.geopackage,          // In the "incubator" sub-project.
             org.apache.sis.storage.gsf,                 // In the "incubator" sub-project.
             org.apache.sis.storage.gdal,                // In the "optional" sub-project.
@@ -82,9 +82,9 @@ module org.apache.sis.storage {
             org.apache.sis.storage.xml,
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,
+            org.apache.sis.storage.geoheif,
             org.apache.sis.storage.geotiff,
             org.apache.sis.storage.coveragejson,        // In the "incubator" sub-project.
-            org.apache.sis.storage.geoheif,             // In the "incubator" sub-project.
             org.apache.sis.storage.shapefile,           // In the "incubator" sub-project.
             org.apache.sis.storage.geopackage,          // In the "incubator" sub-project.
             org.apache.sis.storage.gdal,                // In the "optional" sub-project.
@@ -93,8 +93,8 @@ module org.apache.sis.storage {
             org.apache.sis.gui;                         // In the "optional" sub-project.
 
     exports org.apache.sis.io.stream.inflater to
-            org.apache.sis.storage.geotiff,
-            org.apache.sis.storage.geoheif;             // In the "incubator" sub-project.
+            org.apache.sis.storage.geoheif,
+            org.apache.sis.storage.geotiff;
 
     exports org.apache.sis.storage.xml to
             org.apache.sis.storage.xml,

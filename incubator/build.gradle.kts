@@ -195,18 +195,6 @@ publishing {
                 description = "Read and write files in the Shapefile format."
             }
         }
-        create<MavenPublication>("storage.geoheif") {
-            var module = "org.apache.sis.storage.geoheif"
-            groupId    = "org.apache.sis.storage"
-            artifactId = "sis-geoheif"
-            artifact(layout.buildDirectory.file("libs/${module}.jar"))
-            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
-            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
-            pom {
-                name        = "Apache SIS GeoHEIF Coverage storage"
-                description = "Read files in GeoHEIF format."
-            }
-        }
         create<MavenPublication>("storage.geopackage") {
             var module = "org.apache.sis.storage.geopackage"
             groupId    = "org.apache.sis.storage"
