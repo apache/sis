@@ -121,7 +121,8 @@ public final class ComponentPalette extends FullBox {
         for (int band=0; band<n; band++) {
             final Component c = components[band];
             final Object type = c.type;
-            if (type instanceof ComponentType ct) {
+            if (type instanceof ComponentType) {
+                final var ct = (ComponentType) type;
                 final int shift;
                 switch (ct) {
                     case ALPHA: shift = 3; break;

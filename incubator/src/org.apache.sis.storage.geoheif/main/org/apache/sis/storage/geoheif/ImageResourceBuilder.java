@@ -395,7 +395,8 @@ final class ImageResourceBuilder implements Emptiable {
             for (Object id : unknownBoxes.keySet()) {
                 if (id == null) {
                     id = "unidentified boxes";
-                } else if (id instanceof Integer fourCC) {
+                } else if (id instanceof Integer) {
+                    final var fourCC = (Integer) id;
                     id = Box.formatFourCC(fourCC);
                 }
                 sj.add(id.toString());

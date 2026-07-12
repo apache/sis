@@ -344,7 +344,8 @@ public final class Reader implements Cloneable {
      */
     final void unknownBoxType(Object type) {
         if (isNewWarning(type, null)) {
-            if (type instanceof Integer fourCC) {
+            if (type instanceof Integer) {
+                final var fourCC = (Integer) type;
                 type = Box.formatFourCC(fourCC);
             }
             warning(Resources.Keys.UnsupportedBoxType_1, type);

@@ -377,7 +377,8 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
          * <p><b>Note:</b> this is defined as an inner class of {@link TiledGridCoverage} subclass
          * because, at the time of writing this class, {@link AOI} is a protected class.</p>
          */
-        static final class ReadContext extends ByteRanges {
+        // TODO: make static when allowed to compile with JDK12 (exact version not verified).
+        final class ReadContext extends ByteRanges {
             /**
              * Iterator over the tiles to read.
              */

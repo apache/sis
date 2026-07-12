@@ -184,7 +184,8 @@ final class ImageModel {
             bitsPerSample[band] = bitDepth;
             numBits += bitDepth;
             maxBits = Math.max(maxBits, bitDepth);
-            if (colorType instanceof ComponentType ct) {
+            if (colorType instanceof ComponentType) {
+                var ct = (ComponentType) colorType;
                 int mask = 0;
                 if (numBits < Integer.SIZE) {
                     mask = ((1 << bitDepth) - 1) << (Integer.SIZE - numBits);

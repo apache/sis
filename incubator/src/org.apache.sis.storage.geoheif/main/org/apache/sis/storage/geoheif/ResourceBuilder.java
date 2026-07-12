@@ -526,7 +526,8 @@ final class ResourceBuilder {
          */
         for (final GroupList box : groups) {
             for (Box child : box.children) {
-                if (child instanceof EntityToGroup group) {     // Should be the type of all children.
+                if (child instanceof EntityToGroup) {     // Should be the type of all children.
+                    final var group = (EntityToGroup) child;
                     final GenericName name = store.createComponentName(getResourceName(group.groupID, Vocabulary.Keys.Group_1));
                     final var components = new ArrayList<ImageResource>(group.entityID.length);
                     for (int entityID : group.entityID) {
@@ -545,7 +546,8 @@ final class ResourceBuilder {
                         case 1: resource = components.get(0); break;
                         default: {
                             final var grids = components.toArray(ImageResource[]::new);
-                            if (child instanceof ImagePyramid pyramid) {
+                            if (child instanceof ImagePyramid) {
+                                final var pyramid = (ImagePyramid) child;
                                 resource = new PyramidedImageResource(store, name, pyramid, grids);
                             } else {
                                 resource = new Group(store, name, grids);
