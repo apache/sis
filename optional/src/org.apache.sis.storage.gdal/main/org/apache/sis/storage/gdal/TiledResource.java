@@ -83,11 +83,11 @@ final class TiledResource extends TiledGridCoverageResource {
     private final int imageIndex;
 
     /**
-     * The identifier of this resource, or {@code null} if none.
+     * The identifier of this resource, created when first needed.
      *
      * @see #getIdentifier()
      */
-    private final GenericName identifier;
+    private volatile GenericName identifier;
 
     /**
      * The grid geometry of the raster, or {@code null} if not yet computed.
@@ -174,7 +174,6 @@ final class TiledResource extends TiledGridCoverageResource {
         this.tileHeight = t.height;
         this.parent     = parent;
         this.imageIndex = imageIndex;
-        this.identifier = parent.factory.createLocalName(parent.namespace, String.valueOf(imageIndex)).toFullyQualifiedName();
         this.width      = size.width();
         this.height     = size.height();
         this.dataType   = DataType.valueOf(size.type());
@@ -288,7 +287,11 @@ final class TiledResource extends TiledGridCoverageResource {
      */
     @Override
     public final Optional<GenericName> getIdentifier() {
-        return Optional.ofNullable(identifier);
+        GenericName name = identifier;
+        if (name == null) {
+            identifier = name = parent.factory.createLocalName(parent.namespace, String.valueOf(imageIndex)).toFullyQualifiedName();
+        }
+        return Optional.of(name);
     }
 
     /**

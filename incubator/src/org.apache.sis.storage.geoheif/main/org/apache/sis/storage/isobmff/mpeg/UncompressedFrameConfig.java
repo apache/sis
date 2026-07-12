@@ -21,6 +21,7 @@ import java.awt.color.ColorSpace;
 import java.awt.image.SinglePixelPackedSampleModel;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.UnsupportedEncodingException;
+import org.apache.sis.storage.geoheif.internal.Resources;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
 import org.apache.sis.storage.isobmff.UnsupportedVersionException;
@@ -257,7 +258,8 @@ public final class UncompressedFrameConfig extends FullBox {
             }
             case 1: {
                 if (predefined == null) {
-                    throw new UnsupportedEncodingException("Unsupported profile: " + formatFourCC(profile));
+                    throw new UnsupportedEncodingException(Resources.format(
+                            Resources.Keys.UnsupportedImageProfile_1, formatFourCC(profile)));
                 }
                 numTileCols    = 1;
                 numTileRows    = 1;

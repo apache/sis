@@ -135,7 +135,8 @@ public final class ItemProperties extends ContainerBox {
          */
         @Override
         public boolean equals(final Object obj) {
-            if (obj instanceof ForID other) {
+            if (obj instanceof ForID) {
+                final var other = (ForID) obj;
                 return super.equals(other)
                         && essentials.equals(other.essentials)
                         && missingItem == other.missingItem

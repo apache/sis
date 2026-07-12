@@ -324,8 +324,11 @@ public class RenderingData implements CloneAccess {
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
     public final void setImageSpace(GridGeometry domain, final List<SampleDimension> ranges, final int[] xyDims) {
         /*
-         * If the grid geometry does not define a "grid to CRS" transform, set it to an identity transform.
+         * If the grid geometry does not define a "grid to CRS" transform, use an approximate transform inferred
+         * from the resolution. If the resolution is not available neither, fallback to an identity transform.
          * We do that because this class needs a complete `GridGeometry` as much as possible.
+         * We accept the risk that the transform may be wrong because it will be used for rendering to screen,
+         * in which case we hope that the user will see if an image is not at the correct location.
          */
         if (domain != null && !domain.isDefined(GridGeometry.GRID_TO_CRS)
                            &&  domain.isDefined(GridGeometry.EXTENT))

@@ -17,6 +17,7 @@
 package org.apache.sis.storage.isobmff;
 
 import org.apache.sis.storage.UnsupportedEncodingException;
+import org.apache.sis.storage.geoheif.internal.Resources;
 
 
 /**
@@ -39,6 +40,6 @@ public final class UnsupportedVersionException extends UnsupportedEncodingExcept
      * @param  version  the unsupported version.
      */
     public UnsupportedVersionException(final int type, final int version) {
-        super("Version " + version + " of '" + Box.formatFourCC(type) + "' boxes is unsupported.");
+        super(Resources.format(Resources.Keys.UnsupportedVersion_2, Box.formatFourCC(type), version));
     }
 }

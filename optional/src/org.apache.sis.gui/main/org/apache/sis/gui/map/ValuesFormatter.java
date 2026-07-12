@@ -383,11 +383,6 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
         @Override public double getCoordinate(final int dimension) {
             return coordinates[dimension];
         }
-
-        /** Returns the CRS of this position, or {@code null} if unspecified. */
-        @Override public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return isIgnoreable(crs) ? null : crs;
-        }
     }
 
     /**

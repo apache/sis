@@ -528,9 +528,12 @@ public class GridCoverage2D extends GridCoverage {
          * Returns a sequence of double values for a given point in the coverage.
          * The CRS of the given point may be any coordinate reference system,
          * or {@code null} for the same CRS as the coverage.
+         *
+         * @throws IncompleteGridGeometryException if the "grid to <abbr>CRS</abbr>" transform is missing.
+         * @throws CannotEvaluateException if the values cannot be computed for another reason.
          */
         @Override
-        public double[] apply(final DirectPosition point) throws CannotEvaluateException {
+        public double[] apply(final DirectPosition point) {
             try {
                 final double[] gridCoords = toGridPosition(point);
                 final double cx = gridCoords[xDimension];

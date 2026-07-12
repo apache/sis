@@ -132,16 +132,16 @@ public abstract class TreeNode {
          * @return the formatted value, or {@code null} if absent.
          */
         String format(final TreeBuilder tree, Number value) {
-            switch (value) {
-                case Byte    i: value = Byte   .toUnsignedInt (i); break;
-                case Short   i: value = Short  .toUnsignedInt (i); break;
-                case Integer i: value = Integer.toUnsignedLong(i); break;
-                default: {
-                    final long n = value.longValue();
-                    if (n < 0) {
-                        value = new BigInteger(Long.toUnsignedString(n));
-                    }
-                    break;
+            if (value instanceof Byte) {
+                value = Byte.toUnsignedInt((Byte) value);
+            } else if (value instanceof Short) {
+                value = Short.toUnsignedInt((Short) value);
+            } else if (value instanceof Integer) {
+                value = Integer.toUnsignedLong((Integer) value);
+            } else {
+                final long n = value.longValue();
+                if (n < 0) {
+                    value = new BigInteger(Long.toUnsignedString(n));
                 }
             }
             return tree.integerFormat.format(value);
@@ -186,12 +186,17 @@ public abstract class TreeNode {
      * @return the formatted value.
      */
     static String formatUnsigned(final Number value) {
-        return Long.toUnsignedString(switch (value) {
-            case Byte    i -> Byte   .toUnsignedLong(i);
-            case Short   i -> Short  .toUnsignedLong(i);
-            case Integer i -> Integer.toUnsignedLong(i);
-            default        -> value.longValue();
-        });
+        final long n;
+        if (value instanceof Byte) {
+            n = Byte.toUnsignedLong((Byte) value);
+        } else if (value instanceof Short) {
+            n = Short.toUnsignedLong((Short) value);
+        } else if (value instanceof Integer) {
+            n = Integer.toUnsignedLong((Integer) value);
+        } else {
+            n = value.longValue();
+        }
+        return Long.toUnsignedString(n);
     }
 
     /**
@@ -483,7 +488,8 @@ public abstract class TreeNode {
                      * Identifier codes will be converted to their four-character code (4CC) representations.
                      * The fields to convert to 4CC are identified by the `@Interpretation` annotation.
                      */
-                    if (value instanceof TreeNode addTo) {
+                    if (value instanceof TreeNode) {
+                        final var addTo = (TreeNode) value;
                         appendProperties(addTo, addNode(target, camelCaseToWords(field), addTo, null));
                     } else {
                         final Interpretation itpr = field.getAnnotation(Interpretation.class);

@@ -20,6 +20,7 @@ import java.awt.image.BandedSampleModel;
 import java.awt.image.ComponentSampleModel;
 import java.awt.image.PixelInterleavedSampleModel;
 import org.apache.sis.storage.UnsupportedEncodingException;
+import org.apache.sis.storage.geoheif.internal.Resources;
 import org.apache.sis.util.CharSequences;
 
 
@@ -84,7 +85,7 @@ public enum InterleavingMode {
         if (ordinal >= 0 && ordinal < VALUES.length) {
             return VALUES[ordinal];
         }
-        throw new UnsupportedEncodingException("Unknown interleaving mode: " + ordinal);
+        throw new UnsupportedEncodingException(Resources.format(Resources.Keys.UnsupportedInterleave_1, ordinal));
     }
 
     /**

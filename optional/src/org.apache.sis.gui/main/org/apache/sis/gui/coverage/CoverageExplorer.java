@@ -37,6 +37,7 @@ import org.opengis.metadata.Identifier;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.portrayal.RenderException;
@@ -622,7 +623,7 @@ public class CoverageExplorer extends Widget {
                 Identifier name = gridName;
                 if (name == null && resource != null) try {
                     // May happen if `CoverageCanvas.setNewSource(…)` did not had the time to be executed.
-                    name = ImageRequest.gridCrsName(resource, gg);
+                    name = StoreUtilities.gridCrsName(resource, gg);
                 } catch (DataStoreException e) {
                     // Declare `setResource` as the public method invoking (indirectly) this method.
                     Logging.recoverableException(LOGGER, CoverageExplorer.class, "setResource", e);

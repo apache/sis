@@ -166,16 +166,6 @@ public final class ItemInfoEntry extends FullBox {
     }
 
     /**
-     * Returns the item name. If {@link #itemName} is null, then {@link #itemID} is used.
-     * This is used for formatting error messages and should not be used as real identifier.
-     *
-     * @return a non-null item name.
-     */
-    public String itemName() {
-        return (itemName != null) ? itemName : Integer.toUnsignedString(itemID);
-    }
-
-    /**
      * Converts node properties to <abbr>ISO</abbr> 19115 metadata.
      *
      * @param  builder  the builder where to set metadata information.

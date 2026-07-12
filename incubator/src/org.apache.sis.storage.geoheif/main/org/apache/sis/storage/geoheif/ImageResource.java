@@ -37,7 +37,6 @@ import org.opengis.metadata.Metadata;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -79,7 +78,7 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
     /**
      * The metadata, initially in a mutable state.
      * Modifications may still happen before the metadata is returned to the user.
-     * These modifications may happen indirectly, for example through the {@link CoverageBuilder}
+     * These modifications may happen indirectly, for example through the {@link ImageResourceBuilder}
      * that created this metadata if that builder is still used for creating more resources.
      *
      * @see #createMetadata()
@@ -136,10 +135,10 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
      * @param  image    the single tile for the whole image, or {@code null} if {@code tiles} is provided.
      * @throws DataStoreException if the "grid to <abbr>CRS</abbr>" transform or the sample dimensions cannot be created.
      */
-    ImageResource(final CoverageBuilder builder, Image[] tiles, final Image image) throws DataStoreException {
+    ImageResource(final ImageResourceBuilder builder, Image[] tiles, final Image image) throws DataStoreException {
         super(builder.store());
         this.store       = builder.store();
-        identifier       = builder.name();
+        identifier       = builder.identifier();
         sampleDimensions = builder.imageModel().sampleDimensions(builder);
         gridGeometry     = builder.gridGeometry();
         if (tiles == null) {
@@ -184,12 +183,17 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
 
     /**
      * Declares that this image is the pyramid level of the given base grid.
+     * If the given {@code base} argument is null, then the base grid is this grid.
      * This method does nothing if this image already has its own "grid to <abbr>CRS</abbr>" transform.
      *
-     * @param  base  grid geometry of the pyramid level at the finest resolution.
+     * @param  base  grid geometry of the pyramid level at the finest resolution, or {@code null}.
+     * @return the base grid, which is {@code base} if that argument was non-null.
      * @throws TransformException if an error occurred while deriving the "grid to <abbr>CRS</abbr>" transform.
      */
-    final void setPyramidLevelOf(final GridGeometry base) throws TransformException {
+    final GridGeometry setPyramidLevelOf(GridGeometry base) throws DataStoreException, TransformException {
+        if (base == null) {
+            return gridGeometry = getGridGeometryWithDefaults();
+        }
         if (!gridGeometry.isDefined(GridGeometry.GRID_TO_CRS)) {
             final GridExtent levelExtent = gridGeometry.getExtent();
             final GridExtent baseExtent  = base.getExtent();
@@ -197,9 +201,9 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
             for (int i = 0; i < factors.length; i++) {
                 factors[i] = Numerics.divide(baseExtent.getSize(i), levelExtent.getSize(i));
             }
-            final LinearTransform toLevel = MathTransforms.scale(factors);
-            gridGeometry = toLevel.isIdentity() ? base : new GridGeometry(base, levelExtent, toLevel);
+            gridGeometry = new GridGeometry(base, levelExtent, MathTransforms.scale(factors));
         }
+        return base;
     }
 
     /**
@@ -373,7 +377,8 @@ final class ImageResource extends TiledGridCoverageResource implements StoreReso
          * <p><b>Note:</b> this is defined as an inner class of {@link TiledGridCoverage} subclass
          * because, at the time of writing this class, {@link AOI} is a protected class.</p>
          */
-        static final class ReadContext extends ByteRanges {
+        // TODO: make static when allowed to compile with JDK12 (exact version not verified).
+        final class ReadContext extends ByteRanges {
             /**
              * Iterator over the tiles to read.
              */

@@ -19,6 +19,7 @@ package org.apache.sis.storage.isobmff.base;
 import java.io.IOException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.geoheif.internal.Resources;
 import org.apache.sis.storage.isobmff.ByteRanges;
 import org.apache.sis.storage.isobmff.Reader;
 import org.apache.sis.storage.isobmff.Box;
@@ -92,7 +93,7 @@ public class ItemData extends Box implements ByteRanges.Reader {
                 length = size;
             }
         } else if (length < 0) {
-            throw new DataStoreContentException("Stream of unknown length.");
+            throw new DataStoreContentException(Resources.format(Resources.Keys.StreamOfUnknownLength));
         }
         offset = Math.addExact(payloadOffset, offset);
         addTo.addRange(offset, Math.addExact(offset, length));

@@ -94,7 +94,8 @@ public abstract class Box extends TreeNode {
     public String typeName() {
         String name = super.typeName();
         Object type = typeKey();
-        if (type instanceof Integer fourCC) {
+        if (type instanceof Integer) {
+            final var fourCC = (Integer) type;
             type = formatFourCC(fourCC);
         }
         if (type != null) {

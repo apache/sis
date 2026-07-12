@@ -27,17 +27,15 @@ import java.util.LinkedHashMap;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.stream.Stream;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.io.IOException;
 import javax.imageio.spi.ImageReaderSpi;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedEncodingException;
+import org.apache.sis.storage.geoheif.internal.Resources;
 import org.apache.sis.storage.isobmff.Box;
 import org.apache.sis.storage.isobmff.ByteRanges;
 import org.apache.sis.storage.isobmff.Root;
@@ -55,7 +53,9 @@ import org.apache.sis.storage.isobmff.base.MediaData;
 import org.apache.sis.storage.isobmff.base.PrimaryItem;
 import org.apache.sis.storage.isobmff.image.DerivedImageReference;
 import org.apache.sis.storage.isobmff.image.ImagePyramid;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -133,7 +133,7 @@ final class ResourceBuilder {
      * Helper objects for building coverages.
      * The internal state of each builder depends only on the properties in the associated key.
      */
-    private final Map<ItemProperties.ForID, CoverageBuilder> builders;
+    private final Map<ItemProperties.ForID, ImageResourceBuilder> builders;
 
     /**
      * Names of boxes that were duplicated.
@@ -220,7 +220,8 @@ final class ResourceBuilder {
             case ItemLocation.BOXTYPE: {
                 for (final ItemLocation.Item item : ((ItemLocation) box).items) {
                     if (itemLocations.putIfAbsent(item.itemID, item) != null) {
-                        warning("Many locations found for the \"{0}\" resource.", getResourceName(item.itemID));
+                        store.warning(Resources.Keys.ManyLocationsForResource_1,
+                                      getResourceName(item.itemID, Vocabulary.Keys.Item_1));
                     }
                 }
                 break;
@@ -245,17 +246,6 @@ final class ResourceBuilder {
     }
 
     /**
-     * Logs a warning as if it was emitted by {@link GeoHeifStore#components()}.
-     *
-     * @param  message  the message with a "{0}" pattern to be replaced by the resource name.
-     * @param  name     the resource name.
-     */
-    private void warning(String message, final String name) {
-        message = message.replace("{0}", name);
-        store.warning(new LogRecord(Level.WARNING, message));
-    }
-
-    /**
      * Returns the provider of <abbr>JPEG</abbr> readers.
      */
     private ImageReaderSpi readerJPEG() throws UnsupportedEncodingException {
@@ -267,18 +257,42 @@ final class ResourceBuilder {
 
     /**
      * Returns the name for the item specified by the given identifier.
-     * If no name is found, then the give {@code itemID} is formatted.
+     * If no name is found, then the given {@code itemID} is formatted.
      *
      * @param  itemID  identifier of the item for which to get name.
+     * @param  key     {@link Vocabulary} key to use in case of fallback on the numerical value.
      * @return a non-null item name.
      */
-    private String getResourceName(final int itemID) {
+    private CharSequence getResourceName(final int itemID, final short key) {
         for (ItemInfoEntry entry : info(itemInfos.get(itemID))) {
             if (entry.itemName != null) {
                 return entry.itemName;
             }
         }
-        return Integer.toUnsignedString(itemID);
+        // Use the `long` type only if necessary.
+        return Vocabulary.formatInternational(key, valueOf(itemID));
+    }
+
+    /**
+     * Returns the name for the given item.
+     * If no name is found, then the given {@code itemID} is formatted.
+     *
+     * @param  entry  the item for which to get the name.
+     * @return a non-null item name.
+     */
+    private static CharSequence getResourceName(final ItemInfoEntry entry) {
+        if (entry.itemName != null) {
+            return entry.itemName;
+        }
+        return Vocabulary.formatInternational(Vocabulary.Keys.Item_1, valueOf(entry.itemID));
+    }
+
+    /**
+     * Returns the given integer as a wrapper object, with the integer considered as unsigned.
+     * The {@link Long} wrapper is used only if necessary for keeping the value positive.
+     */
+    private static Number valueOf(final int itemID) {
+        return (itemID >= 0) ? Integer.valueOf(itemID) : Integer.toUnsignedLong(itemID);
     }
 
     /**
@@ -308,7 +322,7 @@ final class ResourceBuilder {
      * @throws DataStoreException if an error occurred while building a tile.
      * @return the builder used for building the first tile.
      */
-    private void createTiles(final CoverageBuilder coverage, final SingleItemTypeReference items, final List<Image> addTo)
+    private void createTiles(final ImageResourceBuilder coverage, final SingleItemTypeReference items, final List<Image> addTo)
             throws DataStoreException, IOException
     {
         switch (items.type()) {
@@ -334,7 +348,8 @@ final class ResourceBuilder {
         try {
             createImage(itemID, info(itemInfos.remove(itemID)), null);
         } catch (UnsupportedEncodingException e) {
-            store.listeners().warning("A resource uses an unsupported sample model.", e);
+            store.warning(Resources.Keys.UnsupportedSampleModel_1,
+                          getResourceName(itemID, Vocabulary.Keys.Item_1));
         }
     }
 
@@ -355,14 +370,14 @@ final class ResourceBuilder {
      * @throws DataStoreContentException if the "grid to <abbr>CRS</abbr>" transform or the sample dimensions cannot be created.
      * @throws DataStoreException if another error occurred while building the image or resource.
      */
-    private CoverageBuilder createImage(final Integer itemID, final List<ItemInfoEntry> info, final List<Image> addTo)
+    private ImageResourceBuilder createImage(final Integer itemID, final List<ItemInfoEntry> info, final List<Image> addTo)
             throws DataStoreException, IOException
     {
-        CoverageBuilder firstBuilder = null;
+        ImageResourceBuilder firstBuilder = null;
         for (final ItemInfoEntry entry : info) {
-            final String name = entry.itemName();
+            final CharSequence name = getResourceName(entry);
             if (entry.itemProtectionIndex != 0) {
-                warning("The \"{0}\" resource is protected.", name);
+                store.warning(Resources.Keys.ResourceIsProtected_1, name);
                 continue;
             }
             final int imageIndex;
@@ -373,14 +388,14 @@ final class ResourceBuilder {
                 imageIndex = (resources != null) ? resources.size() : 0;
             }
             final ItemProperties.ForID itemProperties = properties.remove(itemID);
-            final CoverageBuilder coverage = builders.computeIfAbsent(itemProperties,
-                    (p) -> new CoverageBuilder(this, imageIndex, p, duplicatedBoxes));
+            final ImageResourceBuilder coverage = builders.computeIfAbsent(itemProperties,
+                    (p) -> new ImageResourceBuilder(this, imageIndex, p, duplicatedBoxes));
             if (coverage.reportUnknownBoxes(name)) {
                 // Warning already logged by `reportUnknownBoxes(…)`.
                 continue;
             }
             if (coverage.isEmpty()) {
-                warning("The \"{0}\" resource is empty.", name);
+                store.warning(Resources.Keys.ResourceIsEmpty_1, name);
                 continue;
             }
             if (firstBuilder == null) {
@@ -389,7 +404,8 @@ final class ResourceBuilder {
             Image image = null;
             switch (entry.itemType) {
                 default: {
-                    warning("Unsupported type " + Box.formatFourCC(entry.itemType) + " for the \"{0}\" resource.", name);
+                    store.warning(Resources.Keys.UnsupportedResourceType_2,
+                                  new CharSequence[] {name, Box.formatFourCC(entry.itemType)});
                     continue;
                 }
                 /*
@@ -412,7 +428,7 @@ final class ResourceBuilder {
                         }
                         if (addTo == null && tiles != null && !tiles.isEmpty()) {
                             builders.remove(itemProperties);    // Builder cannot be reused after resource creation.
-                            resources(entry.itemID).add(coverage.build(name, tiles));
+                            getResources(entry.itemID).add(coverage.build(name, tiles));
                         }
                     }
                     continue;
@@ -457,13 +473,13 @@ final class ResourceBuilder {
                 }
             }
             if (image == null) {
-                warning("No data found for the \"{0}\" resource.", name);
+                store.warning(Resources.Keys.NoDataFoundForResource_1, name);
             } else {
                 if (addTo != null) {
                     addTo.add(image);
                 } else {
                     builders.remove(itemProperties);    // Builder cannot be reused after resource creation.
-                    resources(entry.itemID).add(coverage.build(name, image));
+                    getResources(entry.itemID).add(coverage.build(name, image));
                 }
             }
         }
@@ -510,8 +526,9 @@ final class ResourceBuilder {
          */
         for (final GroupList box : groups) {
             for (Box child : box.children) {
-                if (child instanceof EntityToGroup group) {     // Should be the type of all children.
-                    final GenericName name = store.createComponentName(getResourceName(group.groupID));
+                if (child instanceof EntityToGroup) {     // Should be the type of all children.
+                    final var group = (EntityToGroup) child;
+                    final GenericName name = store.createComponentName(getResourceName(group.groupID, Vocabulary.Keys.Group_1));
                     final var components = new ArrayList<ImageResource>(group.entityID.length);
                     for (int entityID : group.entityID) {
                         final Iterator<Resource> it = itemResources.getOrDefault(entityID, List.of()).iterator();
@@ -529,14 +546,15 @@ final class ResourceBuilder {
                         case 1: resource = components.get(0); break;
                         default: {
                             final var grids = components.toArray(ImageResource[]::new);
-                            if (child instanceof ImagePyramid pyramid) {
-                                resource = new Pyramid(store, name, pyramid, grids);
+                            if (child instanceof ImagePyramid) {
+                                final var pyramid = (ImagePyramid) child;
+                                resource = new PyramidedImageResource(store, name, pyramid, grids);
                             } else {
                                 resource = new Group(store, name, grids);
                             }
                         }
                     }
-                    resources(group.groupID).add(resource);
+                    getResources(group.groupID).add(resource);
                 }
             }
         }
@@ -554,7 +572,7 @@ final class ResourceBuilder {
      * @param  itemID  item identifier for which to get the resources.
      * @return modifiable list of resources for the given identifier.
      */
-    private List<Resource> resources(final int itemID) {
+    private List<Resource> getResources(final int itemID) {
         return itemResources.computeIfAbsent(itemID, (key) -> new ArrayList<>());
     }
 }
