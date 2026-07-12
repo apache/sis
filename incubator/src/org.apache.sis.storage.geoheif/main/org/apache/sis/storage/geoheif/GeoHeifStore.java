@@ -47,6 +47,7 @@ import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.base.URIDataStoreOption;
 import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.storage.geoheif.internal.Resources;
 import org.apache.sis.storage.isobmff.Root;
 import org.apache.sis.storage.isobmff.Reader;
 import org.apache.sis.util.collection.Containers;
@@ -318,11 +319,11 @@ public class GeoHeifStore extends DataStore implements Aggregate {
      * Logs a warning with a message built from localized resources. This method pretends that the
      * warning has been emitted by {@link #components()}. It should be the case, but often indirectly.
      *
-     * @param  errorKey  one of {@link Errors.Keys} values.
-     * @param  args   the parameter for the log message, which may be an array.
+     * @param  key   one of {@link Resources.Keys} values.
+     * @param  args  the parameter for the log message, which may be an array.
      */
-    final void warning(final short errorKey, final Object args) {
-        warning(Errors.forLocale(getLocale()).createLogRecord(Level.WARNING, errorKey, args));
+    final void warning(final short key, final Object args) {
+        warning(Resources.forLocale(getLocale()).createLogRecord(Level.WARNING, key, args));
     }
 
     /**

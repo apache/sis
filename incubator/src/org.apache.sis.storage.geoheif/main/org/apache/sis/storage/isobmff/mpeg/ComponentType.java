@@ -19,6 +19,7 @@ package org.apache.sis.storage.isobmff.mpeg;
 import java.awt.color.ColorSpace;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.storage.UnsupportedEncodingException;
+import org.apache.sis.storage.geoheif.internal.Resources;
 
 
 /**
@@ -146,7 +147,7 @@ public enum ComponentType {
         if (ordinal >= 0 && ordinal < VALUES.length) {
             return VALUES[ordinal];
         }
-        throw new UnsupportedEncodingException("Unknown interleaving mode: " + ordinal);
+        throw new UnsupportedEncodingException(Resources.format(Resources.Keys.UnsupportedComponent_1, ordinal));
     }
 
     /**

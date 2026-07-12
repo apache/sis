@@ -27,8 +27,6 @@ import java.util.LinkedHashMap;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.stream.Stream;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.io.IOException;
 import javax.imageio.spi.ImageReaderSpi;
 import org.opengis.util.GenericName;
@@ -37,6 +35,7 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedEncodingException;
+import org.apache.sis.storage.geoheif.internal.Resources;
 import org.apache.sis.storage.isobmff.Box;
 import org.apache.sis.storage.isobmff.ByteRanges;
 import org.apache.sis.storage.isobmff.Root;
@@ -221,8 +220,8 @@ final class ResourceBuilder {
             case ItemLocation.BOXTYPE: {
                 for (final ItemLocation.Item item : ((ItemLocation) box).items) {
                     if (itemLocations.putIfAbsent(item.itemID, item) != null) {
-                        warning("Many locations found for the \"{0}\" resource.",
-                                getResourceName(item.itemID, Vocabulary.Keys.Item_1));
+                        store.warning(Resources.Keys.ManyLocationsForResource_1,
+                                      getResourceName(item.itemID, Vocabulary.Keys.Item_1));
                     }
                 }
                 break;
@@ -244,17 +243,6 @@ final class ResourceBuilder {
                 break;
             }
         }
-    }
-
-    /**
-     * Logs a warning as if it was emitted by {@link GeoHeifStore#components()}.
-     *
-     * @param  message  the message with a "{0}" pattern to be replaced by the resource name.
-     * @param  name     the resource name.
-     */
-    private void warning(String message, final CharSequence name) {
-        message = message.replace("{0}", name);
-        store.warning(new LogRecord(Level.WARNING, message));
     }
 
     /**
@@ -360,7 +348,8 @@ final class ResourceBuilder {
         try {
             createImage(itemID, info(itemInfos.remove(itemID)), null);
         } catch (UnsupportedEncodingException e) {
-            store.listeners().warning("A resource uses an unsupported sample model.", e);
+            store.warning(Resources.Keys.UnsupportedSampleModel_1,
+                          getResourceName(itemID, Vocabulary.Keys.Item_1));
         }
     }
 
@@ -388,7 +377,7 @@ final class ResourceBuilder {
         for (final ItemInfoEntry entry : info) {
             final CharSequence name = getResourceName(entry);
             if (entry.itemProtectionIndex != 0) {
-                warning("The \"{0}\" resource is protected.", name);
+                store.warning(Resources.Keys.ResourceIsProtected_1, name);
                 continue;
             }
             final int imageIndex;
@@ -406,7 +395,7 @@ final class ResourceBuilder {
                 continue;
             }
             if (coverage.isEmpty()) {
-                warning("The \"{0}\" resource is empty.", name);
+                store.warning(Resources.Keys.ResourceIsEmpty_1, name);
                 continue;
             }
             if (firstBuilder == null) {
@@ -415,7 +404,8 @@ final class ResourceBuilder {
             Image image = null;
             switch (entry.itemType) {
                 default: {
-                    warning("Unsupported type " + Box.formatFourCC(entry.itemType) + " for the \"{0}\" resource.", name);
+                    store.warning(Resources.Keys.UnsupportedResourceType_2,
+                                  new CharSequence[] {name, Box.formatFourCC(entry.itemType)});
                     continue;
                 }
                 /*
@@ -438,7 +428,7 @@ final class ResourceBuilder {
                         }
                         if (addTo == null && tiles != null && !tiles.isEmpty()) {
                             builders.remove(itemProperties);    // Builder cannot be reused after resource creation.
-                            resources(entry.itemID).add(coverage.build(name, tiles));
+                            getResources(entry.itemID).add(coverage.build(name, tiles));
                         }
                     }
                     continue;
@@ -483,13 +473,13 @@ final class ResourceBuilder {
                 }
             }
             if (image == null) {
-                warning("No data found for the \"{0}\" resource.", name);
+                store.warning(Resources.Keys.NoDataFoundForResource_1, name);
             } else {
                 if (addTo != null) {
                     addTo.add(image);
                 } else {
                     builders.remove(itemProperties);    // Builder cannot be reused after resource creation.
-                    resources(entry.itemID).add(coverage.build(name, image));
+                    getResources(entry.itemID).add(coverage.build(name, image));
                 }
             }
         }
@@ -562,7 +552,7 @@ final class ResourceBuilder {
                             }
                         }
                     }
-                    resources(group.groupID).add(resource);
+                    getResources(group.groupID).add(resource);
                 }
             }
         }
@@ -580,7 +570,7 @@ final class ResourceBuilder {
      * @param  itemID  item identifier for which to get the resources.
      * @return modifiable list of resources for the given identifier.
      */
-    private List<Resource> resources(final int itemID) {
+    private List<Resource> getResources(final int itemID) {
         return itemResources.computeIfAbsent(itemID, (key) -> new ArrayList<>());
     }
 }

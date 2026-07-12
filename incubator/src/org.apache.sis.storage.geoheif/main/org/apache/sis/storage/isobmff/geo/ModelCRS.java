@@ -25,6 +25,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.storage.geoheif.internal.Resources;
 import org.apache.sis.storage.isobmff.FullBox;
 import org.apache.sis.storage.isobmff.Reader;
 import org.apache.sis.storage.isobmff.UnsupportedVersionException;
@@ -135,12 +136,13 @@ public final class ModelCRS extends FullBox {
                     case CRSU: return CRS.forCode(crs);
                     case WKT2: return CRS.fromWKT(crs);
                     default: {
-                        warning = new LogRecord(Level.WARNING, "Unknown CRS encoding: “" + formatFourCC(crsEncoding) + "”.");
+                        warning = Resources.forLocale(null).createLogRecord(
+                                Level.WARNING, Resources.Keys.UnsupportedCrsEncoding_1, formatFourCC(crsEncoding));
                         break;
                     }
                 }
             } catch (FactoryException e) {
-                warning = new LogRecord(Level.WARNING, "Cannot decode the CRS.");
+                warning = Resources.forLocale(null).createLogRecord(Level.WARNING, Resources.Keys.CannotDecodeCRS);
                 warning.setThrown(e);
             }
             warning.setLoggerName(Reader.LOGGER_NAME);

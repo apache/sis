@@ -37,6 +37,7 @@ import org.apache.sis.storage.UnsupportedEncodingException;
 import org.apache.sis.storage.isobmff.ByteRanges;
 import org.apache.sis.storage.isobmff.mpeg.CompressedUnitsItemInfo;
 import org.apache.sis.storage.isobmff.mpeg.CompressionConfiguration;
+import org.apache.sis.storage.geoheif.internal.Resources;
 
 
 /**
@@ -112,9 +113,9 @@ class UncompressedImage extends Image {
             case 0: return null;
             case CompressionConfiguration.COMPRESSION_ZLIB:    return new Deflate(input, listeners, false);
             case CompressionConfiguration.COMPRESSION_DEFLATE: return new Deflate(input, listeners, true);
-            default: throw new UnsupportedEncodingException("The \"" +
-                    CompressionConfiguration.formatFourCC(compressionType) + "\" compression is not supported.");
-
+            default: throw new UnsupportedEncodingException(Resources.format(
+                        Resources.Keys.UnsupportedCompression_1,
+                        CompressionConfiguration.formatFourCC(compressionType)));
         }
     }
 
@@ -147,7 +148,7 @@ class UncompressedImage extends Image {
      */
     protected CompressedUnitsItemInfo.Unit compressedImageUnit(final long tileIndex) throws DataStoreException {
         if (compressedImageUnit == null) {
-            throw new DataStoreContentException("Missing compressed unit.");
+            throw new DataStoreContentException(Resources.format(Resources.Keys.MissingCompressedUnit));
         }
         return compressedImageUnit;
     }

@@ -34,6 +34,7 @@ import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.storage.geoheif.internal.Resources;
 import org.apache.sis.storage.isobmff.base.MovieHeader;
 import org.apache.sis.storage.isobmff.mpeg.ComponentDefinition;
 import org.apache.sis.util.ArraysExt;
@@ -190,7 +191,7 @@ public final class Reader implements Cloneable {
                 min += Long.BYTES;
             }
             if (end < min) {
-                throw new DataStoreContentException("Malformed HEIF file: invalid box size: " + end + " bytes");
+                throw new DataStoreContentException(resources().getString(Resources.Keys.InvalidBoxSize_1, end));
             }
             end = Math.addExact(startOfCurrentBox, end);    // Now, it becomes the real box end
         }
@@ -207,15 +208,15 @@ public final class Reader implements Cloneable {
         } catch (DataStoreException cause) {
             box = null;
             if (isNewWarning(type, Classes.getClass(cause))) {
-                var record = new LogRecord(Level.WARNING, "Cannot read the “" + Box.formatFourCC(type) + "” box.");
-                record.setLoggerName(LOGGER_NAME);
+                var record = resources().createLogRecord(Level.WARNING, Resources.Keys.CannotReadBox_1, Box.formatFourCC(type));
                 record.setThrown(cause);
-                listeners.warning(record);
+                warning(record);
             }
         }
         endOfCurrentBox = end;      // May have been modified by recursive invocations.
         if (end >= 0 && input.getStreamPosition() > end) {
-            throw new DataStoreContentException("The \"" + Box.formatFourCC(box.type()) + "\" box is longer than expected.");
+            throw new DataStoreContentException(resources().getString(
+                    Resources.Keys.BoxLongerThanExpected_1, Box.formatFourCC(box.type())));
         }
         return box;
     }
@@ -262,7 +263,7 @@ public final class Reader implements Cloneable {
      */
     public final int[] readRemainingInts() throws IOException {
         if (endOfCurrentBox < 0) {
-            throw new IOException("Stream of unknown length.");
+            throw new IOException(resources().getString(Resources.Keys.StreamOfUnknownLength));
         }
         int n = Math.toIntExact((endOfCurrentBox - input.getStreamPosition()) / Integer.BYTES);
         return (n != 0) ? input.readInts(n) : ArraysExt.EMPTY_INT;
@@ -346,9 +347,7 @@ public final class Reader implements Cloneable {
             if (type instanceof Integer fourCC) {
                 type = Box.formatFourCC(fourCC);
             }
-            var record = new LogRecord(Level.WARNING, "The “" + type + "” type of box is unrecognized.");
-            record.setLoggerName(LOGGER_NAME);
-            listeners.warning(record);
+            warning(Resources.Keys.UnsupportedBoxType_1, type);
         }
     }
 
@@ -362,9 +361,11 @@ public final class Reader implements Cloneable {
      */
     public final void unexpectedChildType(final int container, final int child) {
         if (isNewWarning(container, child)) {
-            final var message = new StringBuilder("Container box “").append(Box.formatFourCC(container))
-                    .append("” cannot contain children of type “").append(Box.formatFourCC(child)).append("”.");
-            listeners.warning(message.toString());
+            warning(Resources.Keys.IllegalChildForBox_2,
+                    new String[] {
+                        Box.formatFourCC(container),
+                        Box.formatFourCC(child)
+                    });
         }
     }
 
@@ -377,12 +378,36 @@ public final class Reader implements Cloneable {
      */
     public final void cannotParse(final Exception error, final String value, final boolean ignoreable) {
         if (isNewWarning(error.getClass(), value)) {
-            final LogRecord record = Errors.forLocale(listeners.getLocale())
-                    .createLogRecord(ignoreable ? Level.FINE : Level.WARNING, Errors.Keys.CanNotParse_1, value);
-            record.setLoggerName(LOGGER_NAME);
+            final LogRecord record = resources().createLogRecord(
+                    ignoreable ? Level.FINE : Level.WARNING, Errors.Keys.CanNotParse_1, value);
             record.setThrown(error);
-            listeners.warning(record);
+            warning(record);
         }
+    }
+
+    /**
+     * Returns the resources for localized warnings or error messages.
+     */
+    private Resources resources() {
+        return Resources.forLocale(listeners.getLocale());
+    }
+
+    /**
+     * Logs a warning with a message built from localized resources.
+     *
+     * @param  key   one of {@link Resources.Keys} values.
+     * @param  args  the parameter for the log message, which may be an array.
+     */
+    private void warning(final short key, final Object args) {
+        warning(resources().createLogRecord(Level.WARNING, key, args));
+    }
+
+    /**
+     * Logs the given warning.
+     */
+    private void warning(final LogRecord record) {
+        record.setLoggerName(LOGGER_NAME);
+        listeners.warning(record);
     }
 
     /**

@@ -26,7 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.Collection;
 import java.util.StringJoiner;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.awt.Dimension;
@@ -57,9 +56,9 @@ import org.apache.sis.storage.isobmff.mpeg.CompressedUnitsItemInfo;
 import org.apache.sis.storage.isobmff.mpeg.CompressionConfiguration;
 import org.apache.sis.storage.isobmff.mpeg.UncompressedFrameConfig;
 import org.apache.sis.storage.isobmff.mpeg.UnitType;
+import org.apache.sis.storage.geoheif.internal.Resources;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Emptiable;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.pending.jdk.JDK18;
 
 
@@ -315,7 +314,7 @@ final class ImageResourceBuilder implements Emptiable {
             if (duplicated) {
                 final String type = Box.formatFourCC(property.type());
                 if (duplicatedBoxes.add(type)) {
-                    store().warning(Errors.Keys.DuplicatedElement_1, type);
+                    store().warning(Resources.Keys.DuplicatedBox_1, type);
                 }
             }
         }
@@ -358,7 +357,14 @@ final class ImageResourceBuilder implements Emptiable {
                 return units[0];
             }
         }
-        throw new UnsupportedEncodingException("Unsupported compression.");
+        throw new UnsupportedEncodingException(resources().getString(Resources.Keys.UnsupportedCompression));
+    }
+
+    /**
+     * Returns the resources for localized warnings or error messages.
+     */
+    private Resources resources() {
+        return Resources.forLocale(store().getLocale());
     }
 
     /**
@@ -374,18 +380,16 @@ final class ImageResourceBuilder implements Emptiable {
         boolean essential = false;
         if (!unknownBoxes.isEmpty()) {
             final Level level;
-            final var message = new StringBuilder();
+            final short message;
             final Collection<Boolean> essentials = unknownBoxes.values();
             if (essentials.contains(Boolean.TRUE)) {
                 essentials.removeIf((e) -> !e);  // Remove all non-essential boxes.
-                message.append("Cannot create a resource for \"").append(name)
-                        .append("\" because the following essential boxes are not handled: ");
-                level = Level.WARNING;
                 essential = true;
+                level     = Level.WARNING;
+                message   = Resources.Keys.EssentialBoxesIgnored_2;
             } else {
-                message.append("The \"").append(name)
-                        .append("\" resource has been read but the following boxes have been ignored: ");
-                level = Level.FINE;
+                level   = Level.FINE;
+                message = Resources.Keys.OptionalBoxesIgnored_2;
             }
             final var sj = new StringJoiner(", ");
             for (Object id : unknownBoxes.keySet()) {
@@ -396,8 +400,7 @@ final class ImageResourceBuilder implements Emptiable {
                 }
                 sj.add(id.toString());
             }
-            final var record = new LogRecord(level, message.append(sj).append('.').toString());
-            store().warning(record);
+            store().warning(resources().createLogRecord(level, message, name, sj));
         }
         return essential;
     }
@@ -586,7 +589,7 @@ final class ImageResourceBuilder implements Emptiable {
         if (sampleModel != null) {
             return sampleModel;
         }
-        throw new DataStoreContentException("Unspecified sample model.");
+        throw new DataStoreContentException(resources().getString(Resources.Keys.UnspecifiedSampleModel));
     }
 
     /**

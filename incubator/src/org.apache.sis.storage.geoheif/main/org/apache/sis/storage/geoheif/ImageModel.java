@@ -31,6 +31,7 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedEncodingException;
+import org.apache.sis.storage.geoheif.internal.Resources;
 import org.apache.sis.storage.modifier.CoverageModifier;
 import org.apache.sis.storage.isobmff.mpeg.Component;
 import org.apache.sis.storage.isobmff.mpeg.ComponentType;
@@ -142,7 +143,7 @@ final class ImageModel {
                 if (dataType == null) {
                     dataType = c.getDataType();
                 } else if (dataType != c.getDataType()) {
-                    throw new DataStoreContentException("All bands shall be of the same data type.");
+                    throw new DataStoreContentException(Resources.format(Resources.Keys.InconsistentBandDataType));
                 }
                 bitDepth = Short.toUnsignedInt(c.bitDepth);
                 /*
@@ -238,7 +239,8 @@ final class ImageModel {
             switch (interleaveType) {
                 case COMPONENT: isBanded = true;  break;    // Java2D: BandedSampleModel
                 case PIXEL:     isBanded = false; break;    // Java2D: PixelInterleavedSampleModel
-                default: throw new UnsupportedEncodingException("Unsupported interleave type: " + interleaveType);
+                default: throw new UnsupportedEncodingException(
+                            Resources.format(Resources.Keys.UnsupportedInterleave_1, interleaveType));
             }
             sampleModel = new SampleModelBuilder(dataType, tileSize, bitsPerSample, isBanded).build();
         } else {

@@ -22,6 +22,7 @@ import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.UnsupportedEncodingException;
+import org.apache.sis.storage.geoheif.internal.Resources;
 import org.apache.sis.storage.isobmff.UnsupportedVersionException;
 import org.apache.sis.storage.isobmff.VectorReader;
 import org.apache.sis.storage.isobmff.ByteRanges;
@@ -249,7 +250,7 @@ public final class ItemLocation extends FullBox {
         public void resolve(long offset, long length, ByteRanges addTo) throws DataStoreException {
             switch (constructionMethod) {
                 default: {
-                    throw new DataStoreContentException("Unexpected construction method.");
+                    throw new DataStoreContentException(Resources.format(Resources.Keys.UnexpectedConstructionMethod));
                 }
                 case IDAT_OFFSET:
                 case ITEM_OFFSET: {
@@ -269,7 +270,7 @@ public final class ItemLocation extends FullBox {
                         } else if (length >= 0) {
                             available = length;
                         } else {
-                            throw new DataStoreException("Stream of unknown length.");
+                            throw new DataStoreException(Resources.format(Resources.Keys.StreamOfUnknownLength));
                         }
                         if (available < offset) {
                             offset -= available;    // Make offset relative to the next extent.

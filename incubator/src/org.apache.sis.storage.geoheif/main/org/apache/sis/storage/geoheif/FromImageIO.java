@@ -30,6 +30,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.IllegalOpenParameterException;
 import org.apache.sis.storage.UnsupportedEncodingException;
+import org.apache.sis.storage.geoheif.internal.Resources;
 import org.apache.sis.storage.isobmff.ByteRanges;
 import org.apache.sis.util.ArraysExt;
 
@@ -89,7 +90,7 @@ final class FromImageIO extends Image implements IIOReadWarningListener {
                 return provider;
             }
         }
-        throw new UnsupportedEncodingException("Could not find a " + format + " reader.");
+        throw new UnsupportedEncodingException(Resources.format(Resources.Keys.ImageReaderNotFound_1, format));
     }
 
     /**
@@ -109,7 +110,7 @@ final class FromImageIO extends Image implements IIOReadWarningListener {
         try {
             reader.setInput(input, true, true);
         } catch (IllegalArgumentException e) {
-            throw new IllegalOpenParameterException("Not an image input stream.", e);
+            throw new IllegalOpenParameterException(Resources.format(Resources.Keys.NotImageInputStream), e);
         }
     }
 
