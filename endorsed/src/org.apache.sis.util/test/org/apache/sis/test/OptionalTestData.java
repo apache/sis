@@ -101,7 +101,13 @@ public enum OptionalTestData {
      * Any GeoTIFF image supported by Apache SIS, without any particular expectation on data.
      * This is used for self-consistency tests.
      */
-    GEOTIFF("AnyGeoTIFF.tiff");
+    GEOTIFF("AnyGeoTIFF.tiff"),
+
+    /**
+     * Any GeoHEIF image supported by Apache SIS, without any particular expectation on data.
+     * This is used for self-consistency tests.
+     */
+    GEOHEIF("AnyGeoHEIF.heif");
 
     /**
      * The filename in {@code $SIS_DATA/Tests} directory.
