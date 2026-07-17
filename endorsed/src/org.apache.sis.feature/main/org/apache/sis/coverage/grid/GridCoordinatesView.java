@@ -71,7 +71,7 @@ final class GridCoordinatesView {
         return coordinates[offset + Objects.checkIndex(index, getDimension())];
     }
 
-    /**
+    /*
      * Do not allow modification of grid coordinates since they are backed by {@link GridExtent}.
      */
 //  public void setCoordinateValue(final int index, long value) {

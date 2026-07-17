@@ -35,6 +35,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("serial")
 final class ExpandedFeature extends AbstractFeature {
     /**
      * The array for properties having no value.

@@ -22,7 +22,7 @@
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   1.3
  */
 package org.apache.sis.storage.aggregate;

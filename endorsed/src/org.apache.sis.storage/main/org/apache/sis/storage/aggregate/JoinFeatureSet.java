@@ -68,7 +68,7 @@ import org.apache.sis.pending.geoapi.filter.BinaryComparisonOperator;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   1.0
  */
 public class JoinFeatureSet extends AggregatedFeatureSet {
@@ -175,7 +175,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
      * This condition specifies also if the comparison is {@linkplain BinaryComparisonOperator#isMatchingCase() case
      * sensitive} and {@linkplain BinaryComparisonOperator#getMatchAction() how to compare multi-values}.
      */
-    public final BinaryComparisonOperator<AbstractFeature> condition;
+    private final BinaryComparisonOperator<AbstractFeature> condition;
 
     /**
      * The factory to use for creating {@code Query} expressions for retrieving subsets of feature sets.
@@ -208,7 +208,8 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
     public JoinFeatureSet(final Resource parent,
                           final FeatureSet left,  String leftAlias,
                           final FeatureSet right, String rightAlias,
-                          final Type joinType, final BinaryComparisonOperator<AbstractFeature> condition,
+                          final Type joinType,
+                          final Filter<AbstractFeature> condition,
                           Map<String,?> featureInfo)
             throws DataStoreException
     {
@@ -225,7 +226,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
         this.rightName   = rightAlias;
         this.swapSides   = joinType.swapSides;
         this.isOuterJoin = joinType.isOuterJoin;
-        this.condition   = condition;
+        this.condition   = (BinaryComparisonOperator<AbstractFeature>) condition;
         this.factory     = DefaultFilterFactory.forFeatures();
         /*
          * We could build the FeatureType only when first needed, but the type is required by the iterators.
