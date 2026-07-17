@@ -48,7 +48,7 @@ public final class StoreTest extends TestCaseWithLogs {
      * Creates a new test case.
      */
     public StoreTest() {
-        super("ucar.nc2.NetcdfFile");
+        super("ucar.nc2.NetcdfFiles");
     }
 
     /**
@@ -71,7 +71,7 @@ public final class StoreTest extends TestCaseWithLogs {
      */
     @Test
     public void testComponents() throws URISyntaxException, DataStoreException, IOException {
-        final Set<String> identifiers = new HashSet<>(List.of("EPSG:4326", "Sample 1", "Sample 2", "Sample 3", "data4"));
+        final var identifiers = new HashSet<String>(List.of("EPSG:4326", "Sample 1", "Sample 2", "Sample 3", "data4"));
         final Path path = testDirectory();
         try (Store store = new Store(null, new StorageConnector(path), path, null)) {
             assertEquals(4, store.components().size(), "Wrong number of data stores.");
@@ -94,8 +94,8 @@ public final class StoreTest extends TestCaseWithLogs {
      */
     @Test
     public void testSearchProviderParameter() throws URISyntaxException, DataStoreException, IOException {
-        final StoreProvider provider = new StoreProvider();
-        final Set<String> identifiers = new HashSet<>(List.of("Sample 1", "Sample 2", "Sample 3", "data4"));
+        final var provider = new StoreProvider();
+        final var identifiers = new HashSet<String>(List.of("Sample 1", "Sample 2", "Sample 3", "data4"));
         final ParameterValueGroup params = StoreProvider.provider().getOpenParameters().createValue();
         params.parameter("location").setValue(testDirectory());
         params.parameter("format").setValue("XML");

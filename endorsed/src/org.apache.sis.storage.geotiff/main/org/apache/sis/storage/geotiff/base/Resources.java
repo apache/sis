@@ -201,7 +201,7 @@ public class Resources extends IndexedResourceBundle {
         /**
          * The “{1}” parameter was not expected for the “{0}” projection method.
          */
-        public static final short UnexpectedParameter_2 = 17;
+        public static final short UnexpectedProjectionParameter_2 = 17;
 
         /**
          * Found {2} tiles or strips in the “{0}” file while {1} were expected.

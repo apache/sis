@@ -158,6 +158,7 @@ fun addExportForTests(args : MutableList<String>) {
 
     addExport(args, "org.apache.sis.storage",           "org.apache.sis.storage.test",
                     "org.apache.sis.storage.geotiff," +
+                    "org.apache.sis.storage.geoheif," +
                     "org.apache.sis.storage.netcdf")
     /*
      * Some test classes need access to more internal packages than requested by the main classes.

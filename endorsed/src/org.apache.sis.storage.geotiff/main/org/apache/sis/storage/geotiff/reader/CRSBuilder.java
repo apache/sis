@@ -26,6 +26,7 @@ import java.util.StringJoiner;
 import java.util.NoSuchElementException;
 import java.util.Locale;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.lang.reflect.Array;
 import java.io.IOException;
@@ -43,6 +44,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -150,6 +152,12 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
     private final StoreListeners listeners;
 
     /**
+     * The logger where warnings are sent when not consumed by a listener.
+     */
+    @SuppressWarnings("NonConstantLogger")
+    private final Logger logger;
+
+    /**
      * Version of the set of keys declared in the {@code GeoKeyDirectory} header.
      */
     private short majorRevision, minorRevision;
@@ -160,7 +168,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
      * so we can easily detect at the end of the parsing process which GeoTIFF keys were
      * unrecognized or ignored.
      */
-    private final Map<Short,Object> geoKeys;
+    private final Map<Short, Object> geoKeys;
 
     /**
      * Missing GeoKeys, used for avoiding to report the same warning twice.
@@ -200,9 +208,11 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
      * Creates a new builder of coordinate reference systems.
      *
      * @param  listeners  the listeners where to report warnings.
+     * @param  logger     the logger where warnings are sent when not consumed by a listener.
      */
-    public CRSBuilder(final StoreListeners listeners) {
+    public CRSBuilder(final StoreListeners listeners, final Logger logger) {
         this.listeners = listeners;
+        this.logger = logger;
         geoKeys = new HashMap<>(32);
         missingGeoKeys = new HashSet<>();
     }
@@ -224,8 +234,15 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
      * @see GeoKeysLoader#warning(short, Object...)
      */
     final void warning(final short key, final Object... args) {
-        LogRecord record = Resources.forLocale(getLocale()).createLogRecord(Level.WARNING, key, args);
-        // Logger name will be set by listeners.warning(record).
+        warning(Level.WARNING, key, args);
+    }
+
+    /**
+     * Same as {@link #warning(short, Object...)} but with the specified logging level.
+     */
+    private void warning(final Level level, final short key, final Object... args) {
+        LogRecord record = Resources.forLocale(getLocale()).createLogRecord(level, key, args);
+        record.setLoggerName(logger.getName());
         record.setSourceClassName(GeoTiffStore.class.getName());
         record.setSourceMethodName("getMetadata");
         listeners.warning(record);
@@ -438,7 +455,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
      * @param  key       the GeoTIFF key of the user-defined value to compare with the expected one.
      * @param  unit      the unit of measurement for {@code expected} and {@code actual}, or {@code null} if none.
      */
-    private void verify(final IdentifiedObject epsg, final double expected, final short key, final Unit<?> unit) {
+    private void verifyNumber(final IdentifiedObject epsg, final double expected, final short key, final Unit<?> unit) {
         final double actual = getAsDouble(key);         // May be NaN.
         if (Math.abs(expected - actual) > expected * Numerics.COMPARISON_THRESHOLD) {
             String symbol = "";
@@ -452,16 +469,55 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
              * Use Double.toString(…) instead of NumberFormat because the latter does not show
              * enough significant digits for parameters like inverse flattening.
              */
-            warning(Resources.Keys.NotTheEpsgValue_5, IdentifiedObjects.getIdentifierOrName(epsg),
-                    String.valueOf(expected), GeoKeys.name(key), String.valueOf(actual), symbol);
+            warning(Resources.Keys.NotTheEpsgValue_5,
+                    IdentifiedObjects.getIdentifierOrName(epsg),
+                    String.valueOf(expected),
+                    GeoKeys.name(key),
+                    String.valueOf(actual),
+                    symbol);
         }
     }
 
     /**
-     * Verifies that the EPSG code found in the GeoTIFF file is equal to the expected value.
-     * This method is invoked when a CRS component is defined by an EPSG code, in which case
-     * there is no need to specify the EPSG codes of the components, but the file still supply
-     * those EPSG codes. If the values do not match, a warning is reported.
+     * Verifies that the coordinate system unit declared in GeoTIFF corresponds to the <abbr>EPSG</abbr> unit.
+     * Current implementation checks only the unit of the first axis, but future implementation may expand to
+     * more dimensions.
+     */
+    private void verifyUnit(final CoordinateSystem epsg, final Unit<?> actual, final short key) {
+        final Unit<?> expected = epsg.getAxis(0).getUnit();
+        if (!actual.equals(expected)) {
+            warning(Resources.Keys.NotTheEpsgValue_5,
+                    IdentifiedObjects.getIdentifierOrName(epsg),
+                    expected,
+                    GeoKeys.name(key),
+                    actual, "");
+        }
+    }
+
+    /**
+     * Verifies that the name declared in GeoTIFF corresponds to the <abbr>EPSG</abbr> name.
+     *
+     * @param epsg  the EPSG object with authoritative name.
+     * @param key   the GeoTIFF key from which to get the declared name.
+     */
+    private void verifyName(final IdentifiedObject epsg, final short key) {
+        final String name = getAsString(key);
+        if (name != null && IdentifiedObjects.isHeuristicMatchForName(epsg, name)) {
+            warning(Level.INFO,
+                    Resources.Keys.NotTheEpsgValue_5,
+                    IdentifiedObjects.getIdentifierOrName(epsg),
+                    epsg.getName().getCode(),
+                    GeoKeys.name(key),
+                    name, "");
+        }
+    }
+
+    /**
+     * Verifies that the <abbr>EPSG</abbr> code found in the GeoTIFF file is equal to the expected value.
+     * This method is invoked when a <abbr>CRS</abbr> component is defined by an <abbr>EPSG</abbr> code,
+     * in which case supplying the <abbr>EPSG</abbr> codes of the components should not be necessary,
+     * but the GeoTIFF file nevertheless supplies the component codes. This method compares the supplied
+     * codes with the authoritative codes and, if they do not match, emits a warning.
      *
      * @param  parent  the parent which contains the {@code epsg} object
      * @param  epsg    the object created from the EPSG geodetic dataset.
@@ -775,7 +831,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
      * @param  unit  the unit of measurement declared in the GeoTIFF file.
      */
     private void verify(final PrimeMeridian pm, final Unit<Angle> unit) {
-        verify(pm, ReferencingUtilities.getGreenwichLongitude(pm, unit), GeoKeys.PrimeMeridianLongitude, unit);
+        verifyNumber(pm, ReferencingUtilities.getGreenwichLongitude(pm, unit), GeoKeys.PrimeMeridianLongitude, unit);
     }
 
     /**
@@ -853,9 +909,9 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
      */
     private void verify(final Ellipsoid ellipsoid, final Unit<Length> unit) {
         final UnitConverter uc = ellipsoid.getAxisUnit().getConverterTo(unit);
-        verify(ellipsoid, uc.convert(ellipsoid.getSemiMajorAxis()), GeoKeys.SemiMajorAxis, unit);
-        verify(ellipsoid, uc.convert(ellipsoid.getSemiMinorAxis()), GeoKeys.SemiMinorAxis, unit);
-        verify(ellipsoid, ellipsoid.getInverseFlattening(),         GeoKeys.InvFlattening, null);
+        verifyNumber(ellipsoid, uc.convert(ellipsoid.getSemiMajorAxis()), GeoKeys.SemiMajorAxis, unit);
+        verifyNumber(ellipsoid, uc.convert(ellipsoid.getSemiMinorAxis()), GeoKeys.SemiMinorAxis, unit);
+        verifyNumber(ellipsoid, ellipsoid.getInverseFlattening(),         GeoKeys.InvFlattening, null);
     }
 
     /**
@@ -1325,7 +1381,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
         final Conversion projection = crs.getConversionFromBase();
         verifyIdentifier(crs, projection, GeoKeys.Projection);
         verify(projection, angularUnit, linearUnit);
-        getAsString(GeoKeys.ProjectedCitation);
+        verifyName(crs, GeoKeys.ProjectedCitation);
     }
 
     /**
@@ -1522,10 +1578,10 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
                         value = parameters.doubleValue(p, unit);
                     } catch (ClassCastException | ParameterNotFoundException e) {
                         if (isSameProjection) {
-                            warning(Resources.Keys.UnexpectedParameter_2, code, GeoKeys.name(key));
+                            warning(Resources.Keys.UnexpectedProjectionParameter_2, code, GeoKeys.name(key));
                         }
                     }
-                    verify(projection, value, key, unit);
+                    verifyNumber(projection, value, key, unit);
                 }
             }
         }
@@ -1595,9 +1651,24 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
                 return getCRSFactory().createVerticalCRS(properties(name), datum, cs);
             }
             default: {
-                return getCRSAuthorityFactory().createVerticalCRS(String.valueOf(epsg));
+                VerticalCRS crs = getCRSAuthorityFactory().createVerticalCRS(String.valueOf(epsg));
+                verify(crs);
+                return crs;
             }
         }
+    }
+
+    /**
+     * Verifies if the user-defined CRS created from GeoTIFF values
+     * matches the given CRS created from the EPSG geodetic dataset.
+     * This method does not verify the EPSG code of the given CRS.
+     *
+     * @param  crs  the CRS created from the EPSG geodetic dataset.
+     */
+    private void verify(final VerticalCRS crs) throws FactoryException {
+        verifyName      (crs, GeoKeys.VerticalCitation);
+        verifyIdentifier(crs, DatumOrEnsemble.asDatum(crs), GeoKeys.VerticalDatum);
+        verifyUnit      (crs.getCoordinateSystem(), createLinearUnit(UnitKey.VERTICAL), GeoKeys.VerticalUnits);
     }
 
     /**

@@ -186,6 +186,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short MismatchedVariableType_3 = 13;
 
         /**
+         * Missing or incomplete ellipsoid on the “{1}” variable of netCDF file “{0}”: {2}
+         */
+        public static final short MissingEllipsoid_3 = 31;
+
+        /**
          * Missing attribute “{2}” on the “{1}” variable of netCDF file “{0}”.
          */
         public static final short MissingVariableAttribute_3 = 23;

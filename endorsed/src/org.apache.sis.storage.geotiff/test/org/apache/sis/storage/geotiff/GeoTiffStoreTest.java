@@ -61,8 +61,8 @@ import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.feature.Assertions.assertPixelsEqual;
 import static org.apache.sis.feature.Assertions.assertGridToCornerEquals;
 import org.apache.sis.image.OverviewImageTest;
-import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
+import org.apache.sis.storage.DataStoreTestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 
@@ -79,7 +79,7 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
  * @author  Alexis Manin (Geomatys)
  */
 @SuppressWarnings("exports")
-public final class GeoTiffStoreTest extends TestCase {
+public final class GeoTiffStoreTest extends DataStoreTestCase {
     /**
      * Name of a test file for an untiled image with a single band in gray-scale.
      * The image is uncompressed for avoiding <abbr>JVM</abbr>-dependent variations.
@@ -135,6 +135,7 @@ public final class GeoTiffStoreTest extends TestCase {
         final Path file = Files.createTempFile("sis-test-", ".tiff");
         try {
             try (DataStore store = DataStores.openWritable(file, "GeoTIFF")) {
+                listenToWarnings(store);
                 assertInstanceOf(GeoTiffStore.class, store).append(coverage, null);
             }
             /*
@@ -142,6 +143,7 @@ public final class GeoTiffStoreTest extends TestCase {
              * and that the result has the expected number of dimensions, axis order and scale factors.
              */
             try (DataStore store = DataStores.open(file, "GeoTIFF")) {
+                listenToWarnings(store);
                 GridCoverageResource r = assertSingleton(assertInstanceOf(GeoTiffStore.class, store).components());
                 GridGeometry gg = r.getGridGeometry();
                 assertEquals(3, gg.getDimension());
@@ -161,6 +163,7 @@ public final class GeoTiffStoreTest extends TestCase {
         } finally {
             Files.delete(file);
         }
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -208,7 +211,7 @@ public final class GeoTiffStoreTest extends TestCase {
      * @param  tileSize  size of the tiles, or {@code null} for the image size.
      * @param  length    expected length in bytes.
      */
-    private static void testWriteAndRead(final String filename, final Rectangle bounds, final Dimension tileSize, final int length)
+    private void testWriteAndRead(final String filename, final Rectangle bounds, final Dimension tileSize, final int length)
             throws TransformException, DataStoreException, IOException
     {
         /*
@@ -228,8 +231,9 @@ public final class GeoTiffStoreTest extends TestCase {
         final var buffer = new ByteArrayOutputStream(length);
         final var source = new StorageConnector(buffer);
         source.setOption(Compression.OPTION_KEY, Compression.NONE);
-        try (DataStore ds = DataStores.openWritable(source, "geotiff")) {
-            assertInstanceOf(GeoTiffStore.class, ds).append(coverage, null);
+        try (DataStore store = DataStores.openWritable(source, "geotiff")) {
+            listenToWarnings(store);
+            assertInstanceOf(GeoTiffStore.class, store).append(coverage, null);
         }
         final byte[] actual = buffer.toByteArray();
         assertEquals(length, actual.length);
@@ -247,6 +251,7 @@ public final class GeoTiffStoreTest extends TestCase {
          * unless we had no file to compare with.
          */
         try (var store = new GeoTiffStore(null, new StorageConnector(ByteBuffer.wrap(actual)))) {
+            listenToWarnings(store);
             final var coverageToValidate = assertSingleton(store.components()).read(null);
             assertEqualsApproximately(
                     coverage.getGridGeometry(),
@@ -266,6 +271,7 @@ public final class GeoTiffStoreTest extends TestCase {
                 validateTileSize("height", tileSize.height, actualRendering.getTileHeight());
             }
         }
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -330,6 +336,7 @@ public final class GeoTiffStoreTest extends TestCase {
                 StandardOpenOption.WRITE
             });
             try (var store = new GeoTiffStore(null, connector)) {
+                listenToWarnings(store);
                 assertNotNull(store.append(coverage, null));
             }
             /*
@@ -365,5 +372,6 @@ public final class GeoTiffStoreTest extends TestCase {
         } finally {
             Files.delete(path);
         }
+        loggings.assertNoUnexpectedLog();
     }
 }

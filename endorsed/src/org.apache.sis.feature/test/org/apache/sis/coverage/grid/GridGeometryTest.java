@@ -82,7 +82,7 @@ public final class GridGeometryTest extends TestCase {
     /**
      * Verifies grid extent coordinates.
      */
-    static void assertExtentEquals(final long[] low, final long[] high, final GridExtent extent) {
+    public static void assertExtentEquals(final long[] low, final long[] high, final GridExtent extent) {
         assertArrayEquals(low,  extent.getLow() .getCoordinateValues(), "extent.low");
         assertArrayEquals(high, extent.getHigh().getCoordinateValues(), "extent.high");
     }

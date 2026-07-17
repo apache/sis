@@ -88,8 +88,8 @@ public final class FeatureNamingTest extends TestCase {
      */
     @Test
     public void testSimple() throws IllegalNameException {
-        final DataStoreMock store = new DataStoreMock("testDataStore");
-        final FeatureNaming<Integer> map = new FeatureNaming<>();
+        final var store = new DataStoreMock("testDataStore");
+        final var map   = new FeatureNaming<Integer>();
         map.add(store, A, 1);
         map.add(store, B, 2);
         assertEquals(Integer.valueOf(1), map.get(store, "myNS:A"));

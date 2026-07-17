@@ -481,12 +481,12 @@ public class Convention {
      *
      * @see <a href="http://cfconventions.org/cf-conventions/cf-conventions.html#grid-mappings-and-projections">CF-conventions</a>
      */
-    public Map<String,Object> projection(final Node node) {
+    public Map<String, Object> projection(final Node node) {
         final String method = node.getAttributeAsString(CF.GRID_MAPPING_NAME);
         if (method == null) {
             return null;
         }
-        final var definition = new LinkedHashMap<String,Object>();
+        final var definition = new LinkedHashMap<String, Object>();
         definition.put(CF.GRID_MAPPING_NAME, method);
         for (final String name : node.getAttributeNames()) try {
             final String nameLC = name.toLowerCase(Decoder.DATA_LOCALE);
@@ -560,9 +560,11 @@ public class Convention {
     }
 
     /**
-     * Returns an identification of default geodetic components to use if no corresponding information is found in the
-     * netCDF file. The default implementation returns <q>Unknown datum based upon the GRS 1980 ellipsoid</q>.
-     * Note that the GRS 1980 ellipsoid is close to WGS 84 ellipsoid.
+     * Returns an identification of default geodetic components to use if no corresponding information is found
+     * in the netCDF file. The prime meridian shall be Greenwich or the international meridian.
+     *
+     * <p>The default implementation returns <q>Unknown datum based upon the GRS 1980 ellipsoid</q>.
+     * Note that the <abbr>GRS</abbr> 1980 ellipsoid is close to <abbr>WGS</abbr> 84 ellipsoid.</p>
      *
      * <h4>Maintenance note</h4>
      * If this default is changed, search also for "GRS 1980" strings in {@link CRSBuilder} class.
@@ -710,7 +712,7 @@ public class Convention {
      * @param  data  the variable for which to get no-data values.
      * @return no-data values with bitmask of their roles or textual descriptions.
      */
-    public Map<Number,Object> nodataValues(final Variable data) {
+    public Map<Number, Object> nodataValues(final Variable data) {
         final var pads = new LinkedHashMap<Number,Object>();
         for (int i=0; i < NODATA_ATTRIBUTES.length; i++) {
             final String name = NODATA_ATTRIBUTES[i];
@@ -788,7 +790,7 @@ public class Convention {
      * @param  data  the variable for which to get the colors.
      * @return colors to use for each category, or {@code null} for the default.
      */
-    public Function<Category,Color[]> getColors(final Variable data) {
+    public Function<Category, Color[]> getColors(final Variable data) {
         return null;
     }
 }

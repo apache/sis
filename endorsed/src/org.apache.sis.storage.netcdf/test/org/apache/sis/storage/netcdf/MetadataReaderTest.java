@@ -48,11 +48,13 @@ import org.apache.sis.test.ContentVerifier;
 
 
 /**
- * Tests {@link MetadataReader}. This tests uses the SIS embedded implementation and the UCAR library
- * for reading netCDF attributes.
+ * Tests {@link MetadataReader}.
+ * This tests uses the <abbr>SIS</abbr> embedded implementation
+ * and the <abbr>UCAR</abbr> library for reading netCDF attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class MetadataReaderTest extends TestCase {
     /**
      * Creates a new test case.
