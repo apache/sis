@@ -470,14 +470,15 @@ valid:  if (i >= 0 && i < steps.size()) {
     /**
      * Tries to simplify the transform chain when some coordinates are passed-through the transform at index 0.
      * A "pass-through" coordinate is an input coordinate which is copied in the output tuple by the transform
-     * with <em>no change</em> and <em>without using this coordinate value in calculation</em>. In such cases,
-     * for any {@code MathTransform} that use or modify this coordinate value immediately before or after the
-     * transform at relative index 0, it does not matter if the order of those operations is modified.
+     * with <em>no change</em> and <em>without using that coordinate value in calculation</em>. In such cases,
+     * for any {@code MathTransform} that uses or modifies that coordinate value immediately before or after
+     * the pass-through transform at relative index 0, it does not matter if the order of those operations is
+     * modified.
      *
-     * <p>{@link AbstractMathTransform#tryConcatenate(TransformJoiner)} Implementations can invoke this method
+     * <p>{@link AbstractMathTransform#tryConcatenate(TransformJoiner)} implementations can invoke this method
      * with a map containing the zero-based indexes of the dimensions that are passed-through by the transform
      * on which {@code tryConcatenate(…)} has been invoked. Each map key is the index of a pass-through coordinate
-     * in source tuples, while the associated map value is the index for the same coordinate but in target tuples.
+     * in source tuples. Each associated map value is the index for the same coordinate but in target tuples.
      * In the common case where the transform does not change the coordinate order,
      * the keys and the values are the same numbers.</p>
      *

@@ -46,7 +46,7 @@ final class CacheKey {
 
     /**
      * Creates a new key to use in the cache.
-     * The {@code propertyType.isInstance(metadata)} condition should always be {@code true},
+     * The {@code propertyType.isAssignableFrom(type)} condition should always be {@code true},
      * but this is not verified by this constructor. Instead, the validity can be verified
      * after constructor with {@link #isValid()}.
      *

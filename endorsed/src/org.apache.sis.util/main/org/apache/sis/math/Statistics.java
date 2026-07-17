@@ -90,6 +90,7 @@ import org.apache.sis.util.internal.shared.DoubleDouble;
  * @version 1.4
  * @since   0.3
  */
+@SuppressWarnings("overloads")  // Ambiguous `andThen(…)`, but the two variants do the same work.
 public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Serializable {
     /**
      * Serial number for compatibility with different versions.
@@ -597,6 +598,8 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
 
     /**
      * Returns a hash code value for this statistics.
+     *
+     * @return  hash code for this statistics.
      */
     @Override
     public int hashCode() {
