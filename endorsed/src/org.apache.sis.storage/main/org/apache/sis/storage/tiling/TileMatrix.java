@@ -198,6 +198,16 @@ public interface TileMatrix {
     TileStatus getTileStatus(long... indices) throws DataStoreException;
 
     /**
+     * Query the matrix for information on where data can be found.
+     *
+     * @param region searched region, null for the complete tiling scheme.
+     * @throws DataStoreException  if fetching the tile status failed.
+     */
+    default Optional<TileMatrixStatus> getTileStatus(GridExtent region) throws DataStoreException {
+        return Optional.empty();
+    }
+
+    /**
      * Gets a tile at the given indices.
      *
      * @param  indices  indices of the tile to fetch, as coordinates inside the matrix {@link GridExtent}.
