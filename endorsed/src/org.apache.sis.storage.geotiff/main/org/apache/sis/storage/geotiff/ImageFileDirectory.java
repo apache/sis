@@ -1487,7 +1487,7 @@ final class ImageFileDirectory extends DataCube {
             GridGeometry domain = gridGeometry;
             if (domain == null) {
                 if (referencing != null) try {
-                    domain = referencing.build(reader.store.listeners(), imageWidth, imageHeight, imageDate);
+                    domain = referencing.build(reader.store.listeners(), reader.getLogger(), imageWidth, imageHeight, imageDate);
                 } catch (FactoryException e) {
                     throw new DataStoreContentException(reader.resources().getString(Resources.Keys.CanNotComputeGridGeometry_1, filename()), e);
                 } else {
@@ -1961,9 +1961,9 @@ final class ImageFileDirectory extends DataCube {
      */
     private void warning(final Level level, final short key, final Object... parameters) {
         final LogRecord record = reader.resources().createLogRecord(level, key, parameters);
+        record.setLoggerName(reader.getLogger().getName());
         record.setSourceClassName(GeoTiffStore.class.getName());
         record.setSourceMethodName("components()");
-        // Logger name will be set by listeners.warning(record).
         listeners.warning(record);
     }
 

@@ -18,6 +18,7 @@ package org.apache.sis.storage.geotiff.reader;
 
 import java.time.Instant;
 import java.util.NoSuchElementException;
+import java.util.logging.Logger;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.metadata.spatial.CellGeometry;
@@ -268,6 +269,7 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
      * and can be used as a flag for determining that the build has been completed.
      *
      * @param  listeners  the listeners where to report warnings.
+     * @param  logger     the logger where warnings are sent when not consumed by a listener.
      * @param  width      the image width in pixels.
      * @param  height     the image height in pixels.
      * @param  imageDate  the date/time found in the {@code DATE_TIME} tag, or {@code null} if none.
@@ -275,12 +277,13 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
      * @throws FactoryException if an error occurred while creating a CRS or a transform.
      */
     @SuppressWarnings("fallthrough")
-    public GridGeometry build(final StoreListeners listeners, final long width, final long height, final Instant imageDate)
+    public GridGeometry build(final StoreListeners listeners, final Logger logger,
+                              final long width, final long height, final Instant imageDate)
             throws FactoryException
     {
         CoordinateReferenceSystem crs = null;
         if (keyDirectory != null) {
-            final var helper = new CRSBuilder(listeners);
+            final var helper = new CRSBuilder(listeners, logger);
             try {
                 crs = helper.build(this);
                 description  = helper.description;

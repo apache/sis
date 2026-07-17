@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
+import org.apache.sis.pending.jdk.JDK19;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -151,7 +152,7 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
     /**
      * Identifier of the thread to watch.
      */
-    private final long threadId = Thread.currentThread().getId();
+    private final long threadId = JDK19.threadId(Thread.currentThread());
 
     /**
      * Whether the test will be multi-threaded. If this flag is set to {@code true},
@@ -325,12 +326,10 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
      * Each call of this method advances to the next log message.
      *
      * @param  keywords  the keywords that are expected to exist in the next log message.
-     *         May be an empty array for requesting only the existence of a log with any message.
+     *         May be an empty array for requesting the existence of a log with any message.
      */
     public synchronized void assertNextLogContains(final String... keywords) {
-        if (messages.isEmpty()) {
-            fail("Expected a logging messages but got no more.");
-        }
+        assertFalse(messages.isEmpty(), "Expected a logging messages but got no more.");
         final Message message = messages.remove();
         for (final String word : keywords) {
             if (!message.text.contains(word)) {

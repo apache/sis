@@ -29,7 +29,6 @@ import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
-import org.apache.sis.system.Loggers;
 import org.apache.sis.util.Version;
 
 // Test dependencies
@@ -54,7 +53,6 @@ public final class NetcdfStoreTest extends DataStoreTestCase {
      * Creates a new test case.
      */
     public NetcdfStoreTest() {
-        super(Loggers.CRS_FACTORY);
     }
 
     /**
@@ -89,7 +87,7 @@ public final class NetcdfStoreTest extends DataStoreTestCase {
     private NetcdfStore create(final String name, final URL dataset) throws DataStoreException {
         assertNotNull(dataset, name);
         final var store = new NetcdfStore(null, new StorageConnector(dataset));
-        listen(store);
+        listenToWarnings(store);
         return store;
     }
 

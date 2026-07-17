@@ -16,9 +16,9 @@
  */
 package org.apache.sis.storage;
 
-import java.util.logging.Logger;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
+import org.apache.sis.system.Loggers;
 
 // Test dependencies
 import org.apache.sis.test.TestCaseWithLogs;
@@ -26,27 +26,22 @@ import org.apache.sis.test.TestCaseWithLogs;
 
 /**
  * Base class for {@link DataStore} tests which may emit warnings.
+ * This class listens to logs emitted by the referencing modules,
+ * because this is the module which is most likely to emit logs
+ * that are not under control of the data store.
+ *
+ * <p>For listening to logs emitted by the tested data store,
+ * subclasses should invoke {@link #listenToWarnings(DataStore)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
 @SuppressWarnings("exports")
 public abstract class DataStoreTestCase extends TestCaseWithLogs implements StoreListener<WarningEvent> {
     /**
-     * Creates a new test case which will listen to logs emitted by the given logger.
-     *
-     * @param  logger  the logger to listen to.
+     * Creates a new test case which will listen to logs emitted by the referencing modules.
      */
-    protected DataStoreTestCase(Logger logger) {
-        super(logger);
-    }
-
-    /**
-     * Creates a new test case which will listen to logs emitted by the logger of the given name.
-     *
-     * @param logger  name of the logger to listen.
-     */
-    protected DataStoreTestCase(String logger) {
-        super(logger);
+    protected DataStoreTestCase() {
+        super(Loggers.CRS_FACTORY);
     }
 
     /**
@@ -55,7 +50,7 @@ public abstract class DataStoreTestCase extends TestCaseWithLogs implements Stor
      *
      * @param  store  the data store to listen to.
      */
-    protected final void listen(DataStore store) {
+    protected final void listenToWarnings(DataStore store) {
         store.addListener(WarningEvent.class, this);
     }
 

@@ -57,8 +57,8 @@ public final class NetcdfStoreProviderTest extends TestCase {
      */
     @Test
     public void testProbeContentFromStream() throws DataStoreException {
-        final StorageConnector c = new StorageConnector(TestData.NETCDF_2D_GEOGRAPHIC.location());
-        final NetcdfStoreProvider provider = new NetcdfStoreProvider();
+        final var c = new StorageConnector(TestData.NETCDF_2D_GEOGRAPHIC.location());
+        final var provider = new NetcdfStoreProvider();
         final ProbeResult probe = provider.probeContent(c);
         assertTrue  (probe.isSupported());
         assertEquals(NetcdfStoreProvider.MIME_TYPE, probe.getMimeType());
@@ -75,8 +75,8 @@ public final class NetcdfStoreProviderTest extends TestCase {
     @Test
     public void testProbeContentFromUCAR() throws IOException, DataStoreException {
         try (NetcdfFile file = createUCAR(TestData.NETCDF_2D_GEOGRAPHIC)) {
-            final StorageConnector c = new StorageConnector(file);
-            final NetcdfStoreProvider provider = new NetcdfStoreProvider();
+            final var c = new StorageConnector(file);
+            final var provider = new NetcdfStoreProvider();
             final ProbeResult probe = provider.probeContent(c);
             assertTrue  (probe.isSupported());
             assertEquals(NetcdfStoreProvider.MIME_TYPE, probe.getMimeType());
@@ -93,7 +93,7 @@ public final class NetcdfStoreProviderTest extends TestCase {
      */
     @Test
     public void testDecoderFromStream() throws IOException, DataStoreException {
-        final StorageConnector c = new StorageConnector(TestData.NETCDF_2D_GEOGRAPHIC.open());
+        final var c = new StorageConnector(TestData.NETCDF_2D_GEOGRAPHIC.open());
         final Decoder decoder = NetcdfStoreProvider.decoder(createListeners(), c);
         assertInstanceOf(ChannelDecoder.class, decoder);
         decoder.close(new DataStoreMock("lock"));
@@ -108,7 +108,7 @@ public final class NetcdfStoreProviderTest extends TestCase {
      */
     @Test
     public void testDecoderFromUCAR() throws IOException, DataStoreException {
-        final StorageConnector c = new StorageConnector(createUCAR(TestData.NETCDF_2D_GEOGRAPHIC));
+        final var c = new StorageConnector(createUCAR(TestData.NETCDF_2D_GEOGRAPHIC));
         final Decoder decoder = NetcdfStoreProvider.decoder(createListeners(), c);
         assertInstanceOf(DecoderWrapper.class, decoder);
         decoder.close(new DataStoreMock("lock"));

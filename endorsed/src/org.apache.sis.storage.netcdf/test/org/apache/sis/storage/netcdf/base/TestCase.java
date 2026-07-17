@@ -200,6 +200,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * @throws IOException if an error occurred while closing a file.
      */
     @AfterAll
+    @SuppressWarnings("UseSpecificCatch")
     public void closeAllDecoders() throws IOException {
         final var ds = new DataStoreMock("lock");
         Throwable failure = null;
