@@ -41,6 +41,7 @@ import org.opengis.test.dataset.TestData;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class NetcdfStoreProviderTest extends TestCase {
     /**
      * Creates a new test case.

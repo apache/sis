@@ -64,6 +64,7 @@ import static org.apache.sis.feature.Assertions.assertGridToCornerEquals;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.ObjectDomain;
 import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
+import static org.apache.sis.feature.Assertions.assertExtentEquals;
 
 
 /**
@@ -78,14 +79,6 @@ public final class GridGeometryTest extends TestCase {
      * Creates a new test case.
      */
     public GridGeometryTest() {
-    }
-
-    /**
-     * Verifies grid extent coordinates.
-     */
-    static void assertExtentEquals(final long[] low, final long[] high, final GridExtent extent) {
-        assertArrayEquals(low,  extent.getLow() .getCoordinateValues(), "extent.low");
-        assertArrayEquals(high, extent.getHigh().getCoordinateValues(), "extent.high");
     }
 
     /**

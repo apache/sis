@@ -419,12 +419,12 @@ public abstract class Grid extends NamedElement {
              */
             final int[] gridDimensionIndices = new int[nonLinears.size()];
             Arrays.fill(gridDimensionIndices, -1);
-            for (int i=0; i<gridDimensionIndices.length; i++) {
+            for (int i=0; i < gridDimensionIndices.length; i++) {
                 final int tgtDim = deferred[i];
                 final Axis axis = axes[tgtDim];
 findFree:       for (int srcDim : axis.gridDimensionIndices) {                  // In preference order (will take only one).
                     srcDim = lastSrcDim - srcDim;                               // Convert netCDF order to "natural" order.
-                    for (int j=affine.getNumRow(); --j>=0;) {
+                    for (int j = affine.getNumRow(); --j>=0;) {
                         if (affine.getElement(j, srcDim) != 0) {
                             continue findFree;
                         }

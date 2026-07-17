@@ -22,6 +22,7 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.image.PixelIterator;
+import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
 
@@ -43,6 +44,18 @@ public final class Assertions {
      * Do not allow instantiation of this class.
      */
     private Assertions() {
+    }
+
+    /**
+     * Verifies grid extent coordinates.
+     *
+     * @param  low     the expected low coordinate values.
+     * @param  high    the expected high coordinate values.
+     * @param  actual  the extent to validate.
+     */
+    public static void assertExtentEquals(final long[] low, final long[] high, final GridExtent actual) {
+        assertArrayEquals(low,  actual.getLow() .getCoordinateValues(), "low");
+        assertArrayEquals(high, actual.getHigh().getCoordinateValues(), "high");
     }
 
     /**
