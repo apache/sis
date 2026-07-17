@@ -18,7 +18,9 @@ package org.apache.sis.storage.geotiff;
 
 import java.util.Set;
 import java.io.Closeable;
+import java.util.logging.Logger;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.geotiff.base.Resources;
 
 
@@ -77,5 +79,13 @@ abstract class IOBase implements Closeable {
      */
     final Resources resources() {
         return Resources.forLocale(store.getLocale());
+    }
+
+    /**
+     * Returns the logger.
+     */
+    final Logger getLogger() {
+        final DataStoreProvider provider = store.getProvider();
+        return (provider != null) ? provider.getLogger() : GeoTiffStoreProvider.LOGGER;
     }
 }

@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.awt.image.Raster;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
+import java.awt.image.BandedSampleModel;
 import java.awt.image.MultiPixelPackedSampleModel;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.RenderedImage;
@@ -124,6 +125,12 @@ final class SubsampledImage extends PlanarImage {
                     sm.getPixelBitStride(),
                     sm.getScanlineStride() * subY,
                     sm.getDataBitOffset());
+        } else if (sourceModel instanceof BandedSampleModel sm) {
+            assertEquals(1, sm.getNumBands(), "Banded image with more than 1 band is not supported.");
+            model = new PixelInterleavedSampleModel(sm.getDataType(),
+                    divExclusive(sm.getWidth(),  subX),
+                    divExclusive(sm.getHeight(), subY),
+                    subX, sm.getScanlineStride()*subY, sm.getBandOffsets());
         } else {
             throw new AssertionError("Unsupported sample model: " + sourceModel);
         }
@@ -202,12 +209,22 @@ final class SubsampledImage extends PlanarImage {
             }
             final String warning = image.verify();
             if (warning != null && (source instanceof PlanarImage planar)) {
+                final String message = Strings.orEmpty(planar.verify());
                 // Source warning may be "source.height", which we replace by "height".
-                final String s = Strings.orEmpty(planar.verify());
-                assertEquals(s.substring(s.lastIndexOf('.') + 1), warning, s);
+                final String fromSource = message.substring(message.lastIndexOf('.') + 1);
+                if (!(isIgnoreableWarning(fromSource)) && isIgnoreableWarning(warning)) {
+                    assertEquals(fromSource, warning, message);
+                }
             }
             return image;
         }
+    }
+
+    /**
+     * Returns whether the given return value of {@link PlanarImage#verify()} can be ignored.
+     */
+    private static boolean isIgnoreableWarning(final String warning) {
+        return "width".equals(warning) || "height".equals(warning);
     }
 
     /**

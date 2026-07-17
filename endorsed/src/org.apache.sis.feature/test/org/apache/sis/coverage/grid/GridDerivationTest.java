@@ -41,7 +41,6 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import static org.apache.sis.coverage.grid.GridGeometryTest.assertExtentEquals;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -50,6 +49,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
+import static org.apache.sis.feature.Assertions.assertExtentEquals;
 import static org.apache.sis.feature.Assertions.assertGridToCenterEquals;
 import static org.apache.sis.feature.Assertions.assertGridToCornerEquals;
 

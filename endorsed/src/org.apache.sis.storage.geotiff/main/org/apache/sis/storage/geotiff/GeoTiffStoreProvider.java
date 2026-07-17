@@ -71,7 +71,7 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
      *
      * @see #getLogger()
      */
-    private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.geotiff");
+    static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.geotiff");
 
     /**
      * Name of the parameter for specifying the format modifiers (BigTIFF, <abbr>COG</abbr>…).

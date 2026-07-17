@@ -1114,12 +1114,15 @@ public final class CRS {
 
     /**
      * Returns the geodetic reference frame used by the given coordinate reference system.
-     * If the given <abbr>CRS</abbr> is an instance of {@link GeodeticCRS}, then this method returns the
-     * <abbr>CRS</abbr>'s datum. Otherwise, if the given <abbr>CRS</abbr> is an instance of {@link CompoundCRS},
-     * then this method searches for the first geodetic component. Otherwise, this method returns an empty value.
+     * If the given <abbr>CRS</abbr> is a {@link GeodeticCRS}, then this method returns the <abbr>CRS</abbr>'s datum.
+     * If the given <abbr>CRS</abbr> is a {@link DerivedCRS} and if its base <abbr>CRS</abbr> is a {@link GeodeticCRS},
+     * then this method returns the base <abbr>CRS</abbr>'s datum.
+     * Otherwise, if the given <abbr>CRS</abbr> is a {@link CompoundCRS},
+     * then this method performs the above checks on each component.
+     * Otherwise, this method returns an empty value.
      *
      * @param  crs  the coordinate reference system for which to get the geodetic reference frame, or {@code null}.
-     * @return the geodetic reference frame, or an empty value if none.
+     * @return the geodetic reference frame of the given <abbr>CRS</abbr>, or an empty value if none.
      *
      * @see DatumOrEnsemble#getEllipsoid(CoordinateReferenceSystem)
      * @see DatumOrEnsemble#getPrimeMeridian(CoordinateReferenceSystem)
@@ -1127,10 +1130,14 @@ public final class CRS {
      *
      * @since 1.6
      */
-    public static Optional<GeodeticDatum> getGeodeticReferenceFrame(final CoordinateReferenceSystem crs) {
+    public static Optional<GeodeticDatum> getGeodeticReferenceFrame(CoordinateReferenceSystem crs) {
+        if (crs instanceof GeneralDerivedCRS) {
+            crs = ((GeneralDerivedCRS) crs).getBaseCRS();
+        }
         if (crs instanceof GeodeticCRS) {
             return Optional.ofNullable(DatumOrEnsemble.asDatum((GeodeticCRS) crs));
-        } else if (crs instanceof CompoundCRS) {
+        }
+        if (crs instanceof CompoundCRS) {
             for (CoordinateReferenceSystem component : ((CompoundCRS) crs).getComponents()) {
                 final Optional<GeodeticDatum> datum = getGeodeticReferenceFrame(component);
                 if (datum.isPresent()) {

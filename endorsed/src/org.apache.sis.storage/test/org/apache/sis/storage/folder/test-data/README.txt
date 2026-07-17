@@ -1,6 +1,6 @@
-This directory contains data to be read by the folder data store.
-We need to put those data in a different directory than the Store
-implementation class because otherwise, opening the folder would
-scan all *.class files in addition to test files. Implementation
-should be robust to that, but we nevertheless keep those files
-separated for more predictable tests.
+This directory contains data to be read by the folder data store test.
+It contains:
+
+- 1 CRS definition in Well Known Text (WKT) format,
+- 3 metadata in XML format (including in one sub-directory).
+- 1 dummy XML file.

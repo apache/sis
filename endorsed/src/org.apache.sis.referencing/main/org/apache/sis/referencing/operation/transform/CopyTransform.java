@@ -49,7 +49,7 @@ final class CopyTransform extends AbstractLinearTransform {
     private final int srcDim;
 
     /**
-     * The indices of coordinates to copy in the source array.
+     * The indices of source coordinates to copy in the source array.
      * The length of this array is the target dimension.
      */
     private final int[] indices;
@@ -59,7 +59,7 @@ final class CopyTransform extends AbstractLinearTransform {
      *
      * @param srcDim   the dimension of source coordinates.
      *                 Must be greater than the highest value in {@code indices}.
-     * @param indices  the indices of coordinates to copy in the target array.
+     * @param indices  the indices of source coordinates to copy in the target array.
      *                 The length of this array is the number of target dimensions.
      */
     CopyTransform(final int srcDim, final int[] indices) {

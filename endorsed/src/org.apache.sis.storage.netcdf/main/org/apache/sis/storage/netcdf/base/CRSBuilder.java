@@ -294,7 +294,7 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
          * We should have at most one builder of each class. But if we nevertheless have more,
          * add to the most recently used builder. If there is no builder, create a new one.
          */
-        for (int i=components.size(); --i >= 0;) {
+        for (int i = components.size(); --i >= 0;) {
             final CRSBuilder<?,?> builder = components.get(i);
             if (addTo.isInstance(builder) || i == alternative) {
                 builder.add(axis);
@@ -418,7 +418,7 @@ previous:   for (int i = components.size(); --i >= 0;) {
          * Using a predefined CS allows us to get more complete definitions (minimum and maximum values, etc.).
          */
         if (coordinateSystem != null) {
-            for (int i=dimension; --i >= 0;) {
+            for (int i = dimension; --i >= 0;) {
                 final Axis expected = axes[i];
                 if (expected == null || !expected.isSameUnitAndDirection(coordinateSystem.getAxis(i))) {
                     coordinateSystem = null;
@@ -441,7 +441,7 @@ previous:   for (int i = components.size(); --i >= 0;) {
          */
         if (grid) {
             final CoordinateSystem cs = referenceSystem.getCoordinateSystem();
-            for (int i=cs.getDimension(); --i >= 0;) {
+            for (int i = cs.getDimension(); --i >= 0;) {
                 final CoordinateSystemAxis axis = cs.getAxis(i);
                 if (axis.getRangeMeaning() == RangeMeaning.WRAPAROUND) {
                     final NumberRange<?> range = axes[i].read().range();                // Vector is cached.
@@ -473,7 +473,7 @@ previous:   for (int i = components.size(); --i >= 0;) {
         final Map<String,?> properties;
         if (coordinateSystem == null) {
             // Fallback if the coordinate system is not predefined.
-            final StringJoiner joiner = new StringJoiner(" ");
+            final var joiner = new StringJoiner(" ");
             final CSFactory csFactory = decoder.getCSFactory();
             final var iso = new CoordinateSystemAxis[dimension];
             for (int i=0; i<iso.length; i++) {

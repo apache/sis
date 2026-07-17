@@ -14,19 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.geotiff;
+package org.apache.sis.storage.geoheif;
 
-import java.util.List;
-import org.opengis.util.GenericName;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
-import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.StorageConnector;
 
 // Test dependencies
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.OptionalTestData;
 import org.apache.sis.storage.test.CoverageReadConsistency;
 
@@ -39,17 +34,16 @@ import org.apache.sis.storage.test.CoverageReadConsistency;
  * a subset of data.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @author  Alexis Manin (Geomatys)
  */
 @SuppressWarnings("exports")
-public final class SelfConsistencyTest extends CoverageReadConsistency<GeoTiffStore> {
+public final class SelfConsistencyTest extends CoverageReadConsistency<GeoHeifStore> {
     /**
      * Opens the test file to be used for all tests.
      *
      * @throws DataStoreException if an error occurred while opening the file.
      */
     public SelfConsistencyTest() throws DataStoreException {
-        super(new GeoTiffStore(null, new StorageConnector(OptionalTestData.GEOTIFF.path())));
+        super(new GeoHeifStore(null, new StorageConnector(OptionalTestData.GEOHEIF.path())));
     }
 
     /**
@@ -60,29 +54,6 @@ public final class SelfConsistencyTest extends CoverageReadConsistency<GeoTiffSt
      */
     @Override
     protected GridCoverageResource resource() throws DataStoreException {
-        return store.components().iterator().next();
-    }
-
-    /**
-     * Verifies that {@link GeoTiffStore#findResource(String)} returns the resource when using
-     * either the full name or only its tip.
-     *
-     * @throws DataStoreException if an error occurred while reading the file.
-     */
-    @Test
-    public void findResourceByName() throws DataStoreException {
-        final List<GridCoverageResource> datasets = store.components();
-        assertFalse(datasets.isEmpty());
-        for (GridCoverageResource dataset : datasets) {
-            final GenericName name = dataset.getIdentifier()
-                    .orElseThrow(() -> new AssertionError("A component of the GeoTIFF datastore is unnamed"));
-            GridCoverageResource foundResource = store.findResource(name.toString());
-            assertSame(dataset, foundResource);
-            foundResource = store.findResource(name.tip().toString());
-            assertSame(dataset, foundResource);
-        }
-        var e = assertThrows(IllegalNameException.class, () -> store.findResource("a_wrong_namespace:1"),
-                "No dataset should be returned when user specifies the wrong namespace.");
-        assertMessageContains(e, "a_wrong_namespace:1");
+        return assertInstanceOf(GridCoverageResource.class, store.components().iterator().next());
     }
 }

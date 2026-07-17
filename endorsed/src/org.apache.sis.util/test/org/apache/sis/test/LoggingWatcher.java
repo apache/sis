@@ -22,11 +22,13 @@ import java.util.Queue;
 import java.util.LinkedList;
 import java.util.ConcurrentModificationException;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.logging.Filter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
+import org.apache.sis.pending.jdk.JDK19;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -74,7 +76,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallback, Filter {
+public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallback, Filter, Consumer<LogRecord> {
     /**
      * Name of the lock to use in a JUnit {@code ResourceLock} annotation.
      * Tests that are executed in a single thread can be run in parallel
@@ -150,7 +152,7 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
     /**
      * Identifier of the thread to watch.
      */
-    private final long threadId = Thread.currentThread().getId();
+    private final long threadId = JDK19.threadId(Thread.currentThread());
 
     /**
      * Whether the test will be multi-threaded. If this flag is set to {@code true},
@@ -265,24 +267,35 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
              */
             LoggingWatcher owner = null;
             synchronized (logger) {
-                if (allFilters == null) {   // Should never be null, but sometime happens for an unknown reason.
-                    return true;
-                }
-                for (final LoggingWatcher w : allFilters) {
-                    if (w.isMultiThread || w.threadId == record.getLongThreadID()) {
-                        owner = w;
-                        break;
+                if (allFilters != null) {   // Should never be null when executed by JUnit.
+                    for (final LoggingWatcher w : allFilters) {
+                        if (w.isMultiThread || w.threadId == record.getLongThreadID()) {
+                            owner = w;
+                            break;
+                        }
                     }
+                } else {
+                    owner = this;   // Not executed by JUnit. Assume sequential execution.
                 }
             }
             if (owner == null) {
                 return true;
             }
-            synchronized (owner) {
-                owner.messages.add(new Message(owner.formatter.formatMessage(record), record.getThrown()));
-            }
+            owner.accept(record);
         }
         return TestCase.VERBOSE;
+    }
+
+    /**
+     * Unconditionally adds the logging message to the {@link #messages} list.
+     * Contrarily to {@link #isLoggable(LogRecord)}, this method does not check
+     * ownership or the log level.
+     *
+     * @param  record  the log record to add to the {@link #messages} list.
+     */
+    @Override
+    public synchronized void accept(final LogRecord record) {
+        messages.add(new Message(formatter.formatMessage(record), record.getThrown()));
     }
 
     /**
@@ -313,12 +326,10 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
      * Each call of this method advances to the next log message.
      *
      * @param  keywords  the keywords that are expected to exist in the next log message.
-     *         May be an empty array for requesting only the existence of a log with any message.
+     *         May be an empty array for requesting the existence of a log with any message.
      */
     public synchronized void assertNextLogContains(final String... keywords) {
-        if (messages.isEmpty()) {
-            fail("Expected a logging messages but got no more.");
-        }
+        assertFalse(messages.isEmpty(), "Expected a logging messages but got no more.");
         final Message message = messages.remove();
         for (final String word : keywords) {
             if (!message.text.contains(word)) {

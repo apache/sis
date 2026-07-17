@@ -17,9 +17,12 @@
 package org.apache.sis.storage.netcdf.base;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.event.WarningEvent;
+import org.apache.sis.util.ArraysExt;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -163,7 +166,10 @@ public class GridTest extends TestCase {
      */
     @Test
     public void testGridMapping() throws IOException, DataStoreException {
-        final Node data = selectDataset(TestData.NETCDF_4D_PROJECTED).findNode("CIP");
+        final Decoder decoder = selectDataset(TestData.NETCDF_4D_PROJECTED);
+        final var warnings = new ArrayList<Object[]>();
+        decoder.listeners.addListener(WarningEvent.class, (event) -> warnings.add(event.getDescription().getParameters()));
+        final Node data = decoder.findNode("CIP");
         final GridMapping mapping = GridMapping.forVariable((Variable) data);
         assertNotNull(mapping);
         assertInstanceOf(ProjectedCRS.class, mapping.crs());
@@ -172,5 +178,9 @@ public class GridTest extends TestCase {
         assertEquals(-95,    pg.parameter("Longitude of false origin")        .doubleValue());
         assertEquals( 25,    pg.parameter("Latitude of 1st standard parallel").doubleValue());
         assertEquals( 25.05, pg.parameter("Latitude of 2nd standard parallel").doubleValue());
+
+        // Verifies warning about missing ellipsoid axis lengths.
+        final Object[] parameters = assertSingleton(warnings);
+        assertTrue(ArraysExt.contains(parameters, "grid_mapping_0"));
     }
 }

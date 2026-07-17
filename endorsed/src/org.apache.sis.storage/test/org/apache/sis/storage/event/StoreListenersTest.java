@@ -32,6 +32,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class StoreListenersTest extends TestCase implements StoreListener<WarningEvent> {
     /**
      * Dummy data store used for firing events.
