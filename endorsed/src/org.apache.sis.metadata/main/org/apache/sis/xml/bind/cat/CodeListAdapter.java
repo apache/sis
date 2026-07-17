@@ -111,7 +111,7 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
      */
     @Override
     public final BoundType unmarshal(final ValueType adapter) {
-        if (adapter != null) try {
+        if (adapter != null && adapter.identifier != null) try {
             return CodeLists.getOrCreate(getCodeListClass(), adapter.identifier.toString());
         } catch (RuntimeException e) {
             Context.warningOccured(Context.current(), CodeListAdapter.class, "unmarshal", e, true);
