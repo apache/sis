@@ -30,8 +30,10 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.CodeList;
 import org.opengis.metadata.Metadata;               // For javadoc
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.metadata.internal.Resources;
+import org.apache.sis.metadata.internal.shared.Merger;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.pending.jdk.JDK19;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
@@ -80,7 +82,7 @@ import static org.apache.sis.metadata.internal.shared.ImplementationHelper.value
  *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   0.3
  */
 @XmlTransient
@@ -143,6 +145,48 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      */
     protected ModifiableMetadata(final Object source) {
         super(source);
+    }
+
+    /**
+     * Merges the data from the given source into this metadata.
+     * The result of the merge is stored in this metadata.
+     * The given {@code source} metadata is not modified.
+     *
+     * <p>For each non-null and {@linkplain ValueExistencePolicy#NON_EMPTY non-empty} property
+     * value from the <var>source</var> metadata, the merge operation is defined as below:</p>
+     *
+     * <ul>
+     *   <li>If this metadata does not have a non-null and non-empty value for the same property, then the
+     *     reference to the value from the source metadata is stored <em>as-is</em> in this metadata.</li>
+     *   <li>Otherwise, if the target property value is a collection, then:
+     *     <ul>
+     *       <li>All source elements that are {@link ComparisonMode#BY_CONTRACT equal by contract}
+     *         to an existing target element are ignored.</li>
+     *       <li>For each element of the source collection, a corresponding element of the target collection is searched.
+     *         A pair of source and target elements is established if the pair meets all of the following conditions:
+     *         <ul>
+     *           <li>The {@linkplain MetadataStandard#getInterface(Class) standard type} of the source element
+     *               is assignable to the type of the target element.</li>
+     *           <li>There is no conflict, <i>i.e.</i> no property value that are not collection and not equal.</li>
+     *         </ul>
+     *         If such pair is found, then the merge operation if performed recursively
+     *         for that pair of source and target elements.</li>
+     *       <li>All other source elements will be added as new elements in the target collection.</li>
+     *     </ul>
+     *   </li>
+     *   <li>Otherwise, the merge operation is performed recursively on property values.</li>
+     * </ul>
+     *
+     * @param  source  the source metadata to merge into this metadata. Will never be modified.
+     * @throws ClassCastException if {@code source} is not an instance compatible with this metadata.
+     * @throws InvalidMetadataException if this metadata cannot hold all {@code source} properties,
+     *         for example because the source class is a more specialized type than this metadata class.
+     * @throws IllegalArgumentException if this method detects a cross-reference between source and this metadata.
+     *
+     * @since 1.7
+     */
+    public void merge(final Object source) {
+        new Merger(null).copy(source, this);
     }
 
     /**

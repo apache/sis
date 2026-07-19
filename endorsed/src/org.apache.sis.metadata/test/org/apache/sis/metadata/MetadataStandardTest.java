@@ -186,7 +186,7 @@ public final class MetadataStandardTest extends TestCase {
     }
 
     /**
-     * Tests the {@link MetadataStandard#equals(Object, Object, ComparisonMode)} method.
+     * Tests the {@link MetadataStandard#equals(Object, Object, Class, ComparisonMode)} method.
      */
     @Test
     public void testEquals() {
@@ -194,17 +194,17 @@ public final class MetadataStandardTest extends TestCase {
 
         // Self equality test
         DefaultCitation instance = HardCodedCitations.EPSG;
-        assertFalse(standard.equals(instance, HardCodedCitations.SIS,  ComparisonMode.STRICT));
-        assertTrue (standard.equals(instance, HardCodedCitations.EPSG, ComparisonMode.STRICT));
+        assertFalse(standard.equals(instance, HardCodedCitations.SIS,  null, ComparisonMode.STRICT));
+        assertTrue (standard.equals(instance, HardCodedCitations.EPSG, null, ComparisonMode.STRICT));
 
         // Test comparison with a copy
         instance = new DefaultCitation(HardCodedCitations.EPSG);
-        assertFalse(standard.equals(instance, HardCodedCitations.SIS,  ComparisonMode.STRICT));
-        assertTrue (standard.equals(instance, HardCodedCitations.EPSG, ComparisonMode.STRICT));
+        assertFalse(standard.equals(instance, HardCodedCitations.SIS,  null, ComparisonMode.STRICT));
+        assertTrue (standard.equals(instance, HardCodedCitations.EPSG, null, ComparisonMode.STRICT));
 
         // test comparison with a modified copy
         instance.setTitle(new SimpleInternationalString("A dummy title"));
-        assertFalse(standard.equals(instance, HardCodedCitations.EPSG, ComparisonMode.STRICT));
+        assertFalse(standard.equals(instance, HardCodedCitations.EPSG, null, ComparisonMode.STRICT));
     }
 
     /**

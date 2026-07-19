@@ -374,6 +374,8 @@ public class MetadataStandard implements Serializable {
      * @param  propertyType  base class of the metadata object, or {@code null} if unknown.
      * @param  mandatory     whether this method shall throw an exception if no accessor is found.
      * @return the accessor for the given object, or {@code null} if none and {@code mandatory} is {@code false}.
+     * @throws ClassCastException if the metadata object does not implement an expected metadata interface
+     *         and {@code mandatory} is {@code true}.
      */
     final PropertyAccessor getInstanceAccessor(final Object metadata, Class<?> propertyType, final boolean mandatory) {
         if (propertyType == null) {
@@ -637,24 +639,52 @@ public class MetadataStandard implements Serializable {
 
     /**
      * Returns the metadata interface implemented by the specified implementation class.
-     * If the given type is already an interface from this standard, then it is returned
-     * unchanged.
+     * If the given type is already an interface from this standard, then that type is returned directly.
+     * If the given type does not implement an interface from this standard, then a {@link ClassCastException} is thrown.
+     * If the given type implements more than one interface from this standard, then a {@link ClassCastException} is also
+     * thrown because of the ambiguity.
      *
      * <div class="note"><b>Note:</b>
-     * The word "interface" may be taken in a looser sense than the usual Java sense because
-     * if the given type is defined in this standard package, then it is returned unchanged.
-     * The standard package is usually made of interfaces and code lists only, but this is
-     * not verified by this method.</div>
+     * in this context, "interface" should be understood as
+     * "the type which is defining the public <abbr>API</abbr>".
+     * This is usually an interface in the Java sense, but not always.</div>
      *
      * @param  <T>   the compile-time {@code type}.
      * @param  type  the implementation class.
      * @return the interface implemented by the given implementation class.
-     * @throws ClassCastException if the specified implementation class does not implement an interface of this standard.
+     * @throws ClassCastException if the specified implementation class does not implement exactly one interface
+     *         of this standard,
      *
      * @see AbstractMetadata#getStandardType()
      */
     public <T> Class<? super T> getInterface(final Class<T> type) {
         return getInterface(new CacheKey(Objects.requireNonNull(type), Object.class), null);
+    }
+
+    /**
+     * Returns the metadata interface by choosing in a subset of the interfaces implemented by the given class.
+     * This method does the same work as {@link #getInterface(Class)} except that it ignores all interfaces that
+     * are not assignable to {@code baseType}.
+     * This filtering can avoid some ambiguities when the same class implements many interfaces.
+     *
+     * @param  <T>       the compile-time {@code type}.
+     * @param  type      the implementation class.
+     * @param  baseType  base type of the metadata of interest, or {@code null} if unspecified.
+     * @return the interface implemented by the given implementation class.
+     * @throws ClassCastException if the specified implementation class is not assignable to {@code baseType},
+     *         or if the class does not implement exactly one interface which is a subtype of {@code baseType}.
+     *
+     * @since 1.7
+     */
+    public <T> Class<? super T> getInterface(final Class<T> type, Class<?> baseType) {
+        if (baseType == null) {
+            baseType = Object.class;
+        }
+        final var key = new CacheKey(Objects.requireNonNull(type), baseType);
+        if (key.isValid()) {
+            return getInterface(key, null);
+        }
+        throw new ClassCastException(key.invalid());
     }
 
     /**
@@ -1143,9 +1173,35 @@ public class MetadataStandard implements Serializable {
      * @return {@code true} if the given metadata objects are equals or if the two arguments are {@code null}.
      * @throws ClassCastException if {@code metadata1} does not implement an expected metadata interface.
      *
-     * @see AbstractMetadata#equals(Object, ComparisonMode)
+     * @deprecated Replaced by {@link #equals(Object, Object, Class, ComparisonMode)} because this method
+     * is ambiguous when one of the given metadata instances implements more than one metadata interface.
      */
+    @Deprecated(since="1.7", forRemoval=true)
     public boolean equals(final Object metadata1, final Object metadata2, final ComparisonMode mode) {
+        return equals(metadata1, metadata2, null, mode);
+    }
+
+    /**
+     * Compares the two specified metadata instances for equality.
+     * Unless the {@code mode} argument is {@link ComparisonMode#STRICT},
+     * the two metadata objects do not need to be instances of the same class.
+     * However, {@code metadata1} shall implement an interface defined by this {@code MetadataStandard},
+     * otherwise a {@link ClassCastException} may be thrown. If {@code metadata1} implements more than
+     * one interface managed by this {@code MetadataStandard}, the ambiguity can be resolved by specifying
+     * the interface of interest (or a non-ambiguous super-type of it) in the {@code baseType} argument.
+     *
+     * @param  metadata1  the first metadata object to compare, or {@code null}.
+     * @param  metadata2  the second metadata object to compare, or {@code null}.
+     * @param  baseType   base type of the metadata of interest, or {@code null} if unspecified.
+     * @param  mode       the strictness level of the comparison.
+     * @return {@code true} if the given metadata objects are equals or if the two arguments are {@code null}.
+     * @throws ClassCastException if {@code metadata1} does not implement an expected metadata interface.
+     *
+     * @see AbstractMetadata#equals(Object, ComparisonMode)
+     *
+     * @since 1.7
+     */
+    public boolean equals(final Object metadata1, final Object metadata2, final Class<?> baseType, final ComparisonMode mode) {
         if (metadata1 == metadata2) {
             return true;
         }
@@ -1157,7 +1213,7 @@ public class MetadataStandard implements Serializable {
         if (type1 != type2 && mode == ComparisonMode.STRICT) {
             return false;
         }
-        final PropertyAccessor accessor = getInstanceAccessor(metadata1, null, true);
+        final PropertyAccessor accessor = getInstanceAccessor(metadata1, baseType, true);
         if (type1 != type2) {
             final var key = new CacheKey(type2, accessor.type);
             // Not strictly necessary, but can avoid the relatively costly creation of new `PropertyAccessor`.

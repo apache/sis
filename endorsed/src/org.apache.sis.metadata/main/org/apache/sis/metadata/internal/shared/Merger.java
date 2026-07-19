@@ -32,6 +32,9 @@ import org.apache.sis.metadata.KeyNamePolicy;
 import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Utilities;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.internal.shared.Unsafe;
 import org.apache.sis.util.resources.Errors;
 
@@ -44,14 +47,16 @@ import org.apache.sis.util.resources.Errors;
  * <ul>
  *   <li>If the target metadata does not have a non-null and non-empty value for the same property, then the
  *     reference to the value from the source metadata is stored <em>as-is</em> in the target metadata.</li>
- *   <li>Otherwise if the target value is a collection, then:
+ *   <li>Otherwise, if the target property value is a collection, then:
  *     <ul>
+ *       <li>All source elements that are {@link ComparisonMode#BY_CONTRACT equal by contract}
+ *           to an existing target element are ignored.</li>
  *       <li>For each element of the source collection, a corresponding element of the target collection is searched.
  *         A pair of source and target elements is established if the pair meets all of the following conditions:
  *         <ul>
  *           <li>The {@linkplain MetadataStandard#getInterface(Class) standard type} of the source element
  *               is assignable to the type of the target element.</li>
- *           <li>There is no conflict, i.e. no property value that are not collection and not equal.
+ *           <li>There is no conflict, <i>i.e.</i> no property value that are not collection and not equal.
  *               This condition can be modified by overriding {@link #resolve(Object, ModifiableMetadata)}.</li>
  *         </ul>
  *         If such pair is found, then the merge operation if performed recursively
@@ -59,12 +64,14 @@ import org.apache.sis.util.resources.Errors;
  *       <li>All other source elements will be added as new elements in the target collection.</li>
  *     </ul>
  *   </li>
- *   <li>Otherwise the {@link #copy(Object, ModifiableMetadata) copy(…)} method is invoked.</li>
+ *   <li>Otherwise, the {@link #copy(Object, ModifiableMetadata) copy(…)} method is invoked.</li>
  * </ul>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Benjamin Garcia (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ *
+ * @see ModifiableMetadata#merge(Object)
  */
 public class Merger {
     /**
@@ -118,8 +125,11 @@ public class Merger {
      */
     public final void copy(final Object source, final ModifiableMetadata target) {
         if (!copy(source, target, false)) {
-            throw new InvalidMetadataException(errors().getString(Errors.Keys.IllegalArgumentClass_3, "target",
-                    target.getStandard().getInterface(source.getClass()), Classes.getClass(target)));
+            throw new InvalidMetadataException(errors().getString(
+                    Errors.Keys.IllegalArgumentClass_3,
+                    "source",
+                    target.getStandardType(),
+                    Classes.getClass(source)));
         }
     }
 
@@ -139,13 +149,25 @@ public class Merger {
          * taken will depend on the caller: it may either skips the value or throws an exception.
          */
         final MetadataStandard standard = target.getStandard();
-        if (!standard.getInterface(source.getClass()).isInstance(target)) {
+        Class<?> baseType = Classes.getRawClass(target.getStandardType());
+deeper: if (!baseType.isInstance(source)) {
+            // The target class is too speclalized. Search for a more general type.
+            for (final Class<?> parent : Classes.getAllInterfaces(baseType)) {
+                if (standard.isMetadata(parent) && parent.isInstance(source)) {
+                    baseType = parent;
+                    break deeper;
+                }
+            }
+            return false;
+        }
+        if (!standard.getInterface(source.getClass(), baseType).isInstance(target)) {
             return false;
         }
         /*
          * Only after we verified that the merge operation is theoretically allowed, remember that
          * we are going to merge those two metadata and verify that we are not in an infinite loop.
          * We will also verify that the target metadata does not contain a source, or vice-versa.
+         * Reminder: `done` values are `FALSE` for sources and `TRUE` for targets.
          */
         {   // For keeping `sourceDone` and `targetDone` more local.
             final Boolean sourceDone = done.put(source, Boolean.FALSE);
@@ -171,7 +193,7 @@ public class Merger {
         if (source instanceof AbstractMetadata) {
             sourceMap = ((AbstractMetadata) source).asMap();          // Gives to subclasses a chance to override.
         } else {
-            sourceMap = standard.asValueMap(source, null, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
+            sourceMap = standard.asValueMap(source, baseType, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
         }
         /*
          * Iterate on source values in order to find the objects that need to be copied or merged.
@@ -209,17 +231,49 @@ public class Merger {
                     /*
                      * If the target value is a collection, then the source value should be a collection too
                      * (otherwise the two objects would not be implementing the same standard, in which case
-                     * a ClassCastException is conform to this method contract). The loop tries to merge the
-                     * source elements to target elements that are specialized enough.
+                     * a ClassCastException is conform to this method contract). The list of source elements
+                     * will exclude elements that are already present in the target.
                      */
                     final var targetList = (Collection<?>) targetValue;
                     final var sourceList = new LinkedList<>((Collection<?>) sourceValue);
+                    for (Iterator<?> it = sourceList.iterator(); it.hasNext();) {
+                        final Object value = it.next();
+                        for (final Object element : targetList) {
+                            if (value != element) {
+                                /*
+                                 * The comparisons must be done with `BY_CONTRACT` mode because the source `value`
+                                 * may implement many interfaces, while we are interrested only in the interface
+                                 * implemented by the target `element`.
+                                 */
+                                final boolean equals;
+                                final var criteria = ComparisonMode.BY_CONTRACT;
+                                if (element instanceof AbstractMetadata) {
+                                    equals = ((AbstractMetadata) element).equals(value, criteria);
+                                } else if (targetList instanceof CheckedContainer<?>) {
+                                    Class<?> propertyType = ((CheckedContainer<?>) targetList).getElementType();
+                                    equals = standard.equals(element, value, propertyType, criteria);
+                                } else {
+                                    equals = Utilities.deepEquals(element, value, criteria);
+                                }
+                                if (!equals) continue;
+                            }
+                            it.remove();
+                            break;
+                        }
+                    }
+                    if (sourceList.isEmpty()) {
+                        continue;
+                    }
+                    /*
+                     * Try to merge the source elements into target elements that are specialized enough.
+                     */
                     for (final Object element : targetList) {
                         if (element instanceof ModifiableMetadata) {
+                            final var targetElement = (ModifiableMetadata) element;
                             final Iterator<?> it = sourceList.iterator();
 distribute:                 while (it.hasNext()) {
                                 final Object value = it.next();
-                                switch (resolve(value, (ModifiableMetadata) element)) {
+                                switch (resolve(value, targetElement)) {
                                     default: throw new UnsupportedOperationException();
                                     case SEPARATE: break;               // do nothing.
                                     case MERGE: {
@@ -228,7 +282,7 @@ distribute:                 while (it.hasNext()) {
                                          * by recursive checks in all children. The intent is to have a "all or nothing"
                                          * behavior, before the copy(…, false) call below starts to modify the values.
                                          */
-                                        if (!copy(value, (ModifiableMetadata) element, false)) break;
+                                        if (!copy(value, targetElement, false)) break;
                                         // Fall through
                                     }
                                     case IGNORE: {
@@ -248,7 +302,7 @@ distribute:                 while (it.hasNext()) {
                     for (final Object element : sourceList) {
                         final Object old = targetMap.put(propertyName, element);
                         if (old instanceof Collection<?>) {
-                            final Collection<?> oldList = (Collection<?>) old;
+                            final var oldList = (Collection<?>) old;
                             if (oldList.size() <= targetList.size()) {
                                 /*
                                  * Above was only a cheap check based on collection size only.
@@ -399,8 +453,8 @@ distribute:                 while (it.hasNext()) {
     /**
      * Invoked when a source metadata element is about to be written in an existing target element.
      * The default implementation returns {@link Resolution#MERGE} if writing in the given target
-     * would only fill holes, without overwriting any existing value. Otherwise this method returns
-     * {@code Resolution#SEPARATE}.
+     * would only fill holes (i.e. without overwriting any existing value),
+     * or returns {@code Resolution#SEPARATE} otherwise.
      *
      * @param  source  the source metadata to copy.
      * @param  target  where the source metadata would be copied if this method returns {@link Resolution#MERGE}.
