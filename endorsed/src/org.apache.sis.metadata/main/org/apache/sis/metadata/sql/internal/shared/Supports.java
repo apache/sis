@@ -82,9 +82,14 @@ final class Supports {
     public static final int JAVA_TIME = 0x100;
 
     /**
+     * Whether the database supports the {@code ILIKE} function.
+     */
+    public static final int ILIKE = 0x200;
+
+    /**
      * Whether the spatial extension supports <abbr>SRID</abbr> in {@code ST_*} functions.
      */
-    public static final int SRID = 0x200;
+    public static final int SRID = 0x400;
 
     /**
      * Do not allow instantiation of this class.
