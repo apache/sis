@@ -49,6 +49,7 @@ import org.apache.sis.referencing.operation.CoordinateOperationContext;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.referencing.operation.transform.WraparoundTransform;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.internal.shared.CoordinateOperations;
 import org.apache.sis.referencing.internal.shared.DirectPositionView;
 import org.apache.sis.referencing.internal.shared.TemporalAccessor;
@@ -102,7 +103,7 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.6
+ * @version 1.7
  *
  * @see org.apache.sis.metadata.iso.extent.Extents
  * @see CRS
@@ -577,11 +578,12 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
      * or when it cross the ±180° longitude.</p>
      *
      * <h4>Usage note</h4>
-     * If the envelope CRS is non-null, then the caller should ensure that the operation source CRS
-     * is the same as the envelope CRS. In case of mismatch, this method transforms the envelope
-     * to the operation source CRS before to apply the operation. This extra step may cause a lost
-     * of accuracy. In order to prevent this method from performing such pre-transformation (if not desired),
-     * callers can ensure that the envelope CRS is {@code null} before to call this method.
+     * If the given envelope has a non-null <abbr>CRS</abbr>, then the caller should ensure that the
+     * {@linkplain Envelope#getCoordinateReferenceSystem() envelope <abbr>CRS</abbr>} is equivalent
+     * to the {@linkplain CoordinateOperation#getSourceCRS() operation source <abbr>CRS</abbr>}.
+     * In case of mismatch, this method may add an operation step from the former to the latter.
+     * IF such extra step is not desired or for more predictable results,
+     * callers can force the envelope <abbr>CRS</abbr> to {@code null} before to call this method.
      *
      * @param  operation  the operation to use.
      * @param  envelope   envelope to transform, or {@code null}. This envelope will not be modified.
@@ -592,7 +594,7 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
      *
      * @since 0.5
      */
-    public static GeneralEnvelope transform(final CoordinateOperation operation, Envelope envelope)
+    public static GeneralEnvelope transform(final CoordinateOperation operation, final Envelope envelope)
             throws TransformException
     {
         ArgumentChecks.ensureNonNull("operation", operation);
@@ -600,31 +602,34 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
             return null;
         }
         boolean isOperationComplete = true;
-        final CoordinateReferenceSystem sourceCRS = operation.getSourceCRS();
+        MathTransform mt = operation.getMathTransform();
+        CoordinateReferenceSystem sourceCRS = operation.getSourceCRS();
         if (sourceCRS != null) {
             final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
             if (crs != null && !CRS.equivalent(crs, sourceCRS)) {
                 /*
                  * Argument-check: the envelope CRS seems inconsistent with the given operation.
-                 * However, we need to push the check a little bit further, since 3D-GeographicCRS
-                 * are considered not equal to CompoundCRS[2D-GeographicCRS + ellipsoidal height].
+                 * But this is not sure since `CRS.equivalent(…)` sometime returns false negative.
                  * Checking for identity MathTransform is a more powerfull (but more costly) check.
-                 * Since we have the MathTransform, perform an opportunist envelope transform if it
-                 * happen to be required.
+                 * The very tolerant accuracy is an indication that datum shift can be ignored.
                  */
-                final MathTransform mt;
+                final MathTransform prefix;
                 try {
-                    mt = CRS.findOperation(crs, sourceCRS, null).getMathTransform();
+                    final var context = new CoordinateOperationContext();
+                    context.setDesiredAccuracy(Double.POSITIVE_INFINITY);
+                    prefix = CRS.findOperation(new DefaultCoordinateMetadata(crs, null),
+                                               new DefaultCoordinateMetadata(sourceCRS, null),
+                                               context).getMathTransform();
                 } catch (FactoryException e) {
                     throw new TransformException(Errors.format(Errors.Keys.CanNotTransformEnvelope), e);
                 }
-                if (!mt.isIdentity()) {
+                if (!prefix.isIdentity()) {
+                    mt = MathTransforms.concatenate(prefix, mt);
+                    sourceCRS = crs;
                     isOperationComplete = false;
-                    envelope = transform(mt, envelope);
                 }
             }
         }
-        final MathTransform mt = operation.getMathTransform();
         final double[] centerPt = new double[mt.getTargetDimensions()];
         final GeneralEnvelope transformed = transform(mt, envelope, centerPt, null);
         /*
