@@ -21,6 +21,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Queue;
+import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.LogRecord;
@@ -350,6 +351,19 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     final Region getView() {
         return fixedPane;
+    }
+
+    /**
+     * Return an identifier derived from the resource identifier.
+     * This method returns an empty value if no worker has read the resource identifier yet.
+     * It may happen randomly depending on thread execution order.
+     *
+     * @return an identifier of the rendered coverage.
+     * @since 1.7
+     */
+    @Override
+    public Optional<Identifier> getContentIdentifier() {
+        return Optional.ofNullable(data.gridCrsName);
     }
 
     /**
@@ -879,22 +893,6 @@ public class CoverageCanvas extends MapCanvasAWT {
         data.setImageSpace(domain, ranges, xyDimensions);
         initialize(visibleArea);
         setObjectiveBounds(bounds);
-    }
-
-    /**
-     * Return a name of the grid <abbr>CRS</abbr>, derived from the resource identifier.
-     * This method returns {@code null} if no worker has read the resource identifier yet.
-     * It may happen randomly depending on thread execution order.
-     *
-     * <p>Note: do not fallback on an artificial name if the name is {@code null}.
-     * This method is used for building a grid <abbr>CRS</abbr> for cell indices.
-     * If this method returns an artificial name, it would cause an unusable menu
-     * item to appear in the menu that offers different <abbr>CRS</abbr>.</p>
-     *
-     * @see StoreUtilities#gridCrsName(GridCoverageResource, GridGeometry)
-     */
-    final Identifier gridCrsName() {
-        return data.gridCrsName;
     }
 
     /**

@@ -19,6 +19,7 @@ package org.apache.sis.gui.map;
 import java.util.Locale;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Formatter;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
@@ -55,6 +56,7 @@ import javafx.scene.transform.Transform;
 import javafx.scene.transform.NonInvertibleTransformException;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
+import org.opengis.metadata.Identifier;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.ReferenceSystem;
@@ -437,6 +439,19 @@ public abstract class MapCanvas extends PlanarCanvas {
         objectiveBounds = bounds;
         initialState = visibleArea;
         invalidObjectiveToDisplay = true;
+    }
+
+    /**
+     * Returns an identifier of the rendered data.
+     * The identifier should be unique on a best effort basis, but this is not a strict requirement.
+     * It can be, for example, derived from the
+     * {@linkplain org.apache.sis.storage.GridCoverageResource#getIdentifier() resource identifier}.
+     *
+     * @return an identifier of the rendered data.
+     * @since 1.7
+     */
+    public Optional<Identifier> getContentIdentifier() {
+        return Optional.empty();
     }
 
     /**
@@ -1418,7 +1433,11 @@ public abstract class MapCanvas extends PlanarCanvas {
                     if (init != null && init.isDefined(GridGeometry.CRS)) {
                         objectiveCRS = init.getCoordinateReferenceSystem();
                     } else {
-                        objectiveCRS = extent.toEnvelope(crsToDisplay.inverse()).getCoordinateReferenceSystem();
+                        Optional<Identifier> id = getContentIdentifier();
+                        if (id.isPresent()) {
+                            Envelope e = extent.toEnvelope(crsToDisplay.inverse(), id.get());
+                            objectiveCRS = e.getCoordinateReferenceSystem();
+                        }
                     }
                     /*
                      * Above code tried to provide a non-null CRS on a "best effort" basis. The objective CRS
@@ -1745,7 +1764,9 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
-     * Clears the error message in status bar.
+     * Clears the error message in the status bar.
+     *
+     * @see #clear()
      */
     protected final void clearError() {
         hasError = false;
@@ -1854,6 +1875,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      *     }
      *
      * @see #reset()
+     * @see #clearError()
      * @see #runAfterRendering(Runnable)
      */
     @Override

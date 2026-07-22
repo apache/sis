@@ -322,7 +322,7 @@ public class GridView extends Control {
     /**
      * Invoked after the image has been loaded or after failure.
      *
-     * @param  gridName  value equivalent to {@link CoverageCanvas#gridCrsName()}.
+     * @param  gridName  value equivalent to {@link CoverageCanvas#getContentIdentifier()}.
      * @param  resource  the new source of coverage, or {@code null} if none.
      * @param  coverage  the new coverage, or {@code null} if none.
      * @param  image     the loaded image, or {@code null} on failure.

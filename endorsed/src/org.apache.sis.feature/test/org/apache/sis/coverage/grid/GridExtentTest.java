@@ -21,13 +21,16 @@ import java.util.Locale;
 import java.io.IOException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
@@ -515,7 +518,7 @@ public final class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#toEnvelope(MathTransform)} with an identity transform.
+     * Tests {@link GridExtent#toEnvelope(MathTransform, Identifier)} with an identity transform.
      *
      * @throws TransformException if an error occurred while transforming to an envelope.
      */
@@ -526,20 +529,24 @@ public final class GridExtentTest extends TestCase {
             DimensionNameType.ROW,
             DimensionNameType.TIME
         }, new long[] {0, 0, 741}, new long[] {13, 9, 741}, true);
-        final GeneralEnvelope envelope = extent.toEnvelope(MathTransforms.identity(3));
+        final Identifier id = new ImmutableIdentifier(null, null, "Grid cell");
+        final GeneralEnvelope envelope = extent.toEnvelope(MathTransforms.identity(3), id);
 
         assertEnvelopeEquals(new GeneralEnvelope(
                 new double[] { 0,  0, 741},
                 new double[] {14, 10, 742}), envelope);
 
-        assertAxisDirectionsEqual(envelope.getCoordinateReferenceSystem().getCoordinateSystem(),
+        EngineeringCRS crs = assertInstanceOf(EngineeringCRS.class, envelope.getCoordinateReferenceSystem());
+        assertEquals(id, crs.getDatum().getName());
+
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(),
                 AxisDirection.COLUMN_POSITIVE,
                 AxisDirection.ROW_POSITIVE,
                 AxisDirection.FUTURE);
     }
 
     /**
-     * Tests {@link GridExtent#toEnvelope(MathTransform)} with a non-identity transform.
+     * Tests {@link GridExtent#toEnvelope(MathTransform, Identifier)} with a non-identity transform.
      *
      * @throws TransformException if an error occurred while transforming to an envelope.
      */
@@ -551,16 +558,20 @@ public final class GridExtentTest extends TestCase {
             DimensionNameType.COLUMN,
             DimensionNameType.VERTICAL
         }, new long[] {100, 5, 200, 40}, new long[] {500, 7, 800, 50}, false);
+        final Identifier id = new ImmutableIdentifier(null, null, "Grid cell");
         final GeneralEnvelope envelope = extent.toEnvelope(MathTransforms.linear(Matrices.create(5, 5, new double[] {
             0,  0,  1,  0,  0,
            -1,  0,  0,  0,  0,
             0,  0,  0, -1,  0,
             0,  1,  0,  0,  0,
-            0,  0,  0,  0,  1})));
+            0,  0,  0,  0,  1})), id);
 
         assertEnvelopeEquals(new GeneralEnvelope(
                 new double[] {200, -500, -50, 5},
                 new double[] {800, -100, -40, 7}), envelope);
+
+        EngineeringCRS crs = assertInstanceOf(EngineeringCRS.class, envelope.getCoordinateReferenceSystem());
+        assertEquals(id, crs.getDatum().getName());
 
         assertAxisDirectionsEqual(envelope.getCoordinateReferenceSystem().getCoordinateSystem(),
                 AxisDirection.COLUMN_POSITIVE,

@@ -604,8 +604,11 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @param extent    the extent to validate, or {@code null} if none.
      * @param expected  the expected number of dimension.
+     * @throws MismatchedDimensionException if the dimensions do not match.
      */
-    private static void ensureDimensionMatches(final int expected, final GridExtent extent) throws MismatchedDimensionException {
+    private static void ensureDimensionMatches(final int expected, final GridExtent extent)
+            throws MismatchedDimensionException
+    {
         if (extent != null) {
             final int dimension = extent.getDimension();
             if (dimension != expected) {
@@ -1847,10 +1850,16 @@ public class GridGeometry implements LenientComparable, Serializable {
      * transform and no <abbr>CRS</abbr>, then this method returns a new grid geometry with the resolution set to 1,
      * <i>i.e.</i> the resolution is defined as one unit of grid cell.
      * With such default, the <abbr>CRS</abbr> become implicitly the <abbr>CRS</abbr> of the grid.
-     * If {@code datum} is non-null, then this implicit assumption is made explicit
-     * by setting the <abbr>CRS</abbr> to the value returned by {@link GridExtent#createGridCRS(Identified)} and
-     * by setting "grid to <abbr>CRS</abbr>" to the identity transform.
+     *
+     * <p>If this {@code GridGeometry} is incomplete and this method returns a new grid geometry, there is a choice:
      * If {@code datum} is null, then the <abbr>CRS</abbr> and "grid to <abbr>CRS</abbr>" properties stay undefined.
+     * Otherwise, the implicit grid <abbr>CRS</abbr> is made explicit by adding the following properties:</p>
+     *
+     * <ul>
+     *   <li>an explicit identity "grid to <abbr>CRS</abbr>" transform, and</li>
+     *   <li>an {@link EngineeringCRS} associated to an engineering datum
+     *       of the name given by the {@code datum} argument.</li>
+     * </ul>
      *
      * <h4>Usage in context of image pyramids</h4>
      * The "grid to <abbr>CRS</abbr>" information is sometime missing, for example because a file
@@ -1876,9 +1885,15 @@ public class GridGeometry implements LenientComparable, Serializable {
         MathTransform tr = null;
         ImmutableEnvelope env = envelope;
         if (env == null && datum != null && extent != null) {
-            final GeneralEnvelope t = extent.toEnvelope(false);
-            t.setCoordinateReferenceSystem(extent.createGridCRS(datum));
-            env = new ImmutableEnvelope(t);
+            final GeneralEnvelope bounds = extent.toEnvelope(false);
+            try {
+                bounds.setCoordinateReferenceSystem(new GridCRSBuilder().forExtent(
+                        extent.getAxisTypes(), extent.getDimension(), null, true, datum));
+            } catch (FactoryException e) {
+                // Should never happen because `GridCRSBuilder` uses known implementations.
+                recoverableException("defaultToGridCRS", e);
+            }
+            env = new ImmutableEnvelope(bounds);
             tr = MathTransforms.identity(env.getDimension());
         }
         return new GridGeometry(extent, tr, tr, env, newResolution, 0);
@@ -1918,7 +1933,9 @@ public class GridGeometry implements LenientComparable, Serializable {
         final var id = new org.apache.sis.referencing.ImmutableIdentifier(null, null, name);
         try {
             // Note: the `true` boolean argument can be removed after the removal of this method.
-            final CoordinateReferenceSystem crs = new GridCRSBuilder().forCoverage(this, anchor, true, id);
+            var builder = new GridCRSBuilder();
+            builder.derived = true;
+            final CoordinateReferenceSystem crs = builder.forCoverage(this, anchor, id);
             return (DerivedCRS) org.apache.sis.referencing.CRS.getSingleComponents(crs).get(0);
         } catch (FactoryException e) {
             throw new BackingStoreException(e);
@@ -1956,14 +1973,14 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @throws FactoryException if another error occurred during the use of a referencing factory.
      *
      * @see #createTransformTo(GridGeometry, PixelInCell)
-     * @see GridExtent#createGridCRS(Identifier)
+     * @see GridExtent#toEnvelope(MathTransform, Identifier)
      *
      * @since 1.7
      */
     public CoordinateReferenceSystem createGridCRS(final Identifier name, final PixelInCell anchor) throws FactoryException {
         ArgumentChecks.ensureNonNull("name", name);
         ArgumentChecks.ensureNonNull("anchor", anchor);
-        return new GridCRSBuilder().forCoverage(this, anchor, false, name);
+        return new GridCRSBuilder().forCoverage(this, anchor, name);
     }
 
     /**

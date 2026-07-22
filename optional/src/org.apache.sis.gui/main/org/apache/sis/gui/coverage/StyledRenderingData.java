@@ -46,6 +46,11 @@ final class StyledRenderingData extends RenderingData {
     /**
      * Name of the grid <abbr>CRS</abbr>, derived from the resource identifier.
      *
+     * <p>Note: do not fallback on an artificial name if the name is missing.
+     * This field is used for building a grid <abbr>CRS</abbr> for cell indices.
+     * If this method returns an artificial name, it would cause an unusable menu
+     * item to appear in the menu that offers different <abbr>CRS</abbr>.</p>
+     *
      * @see StoreUtilities#gridCrsName(GridCoverageResource, GridGeometry)
      */
     Identifier gridCrsName;

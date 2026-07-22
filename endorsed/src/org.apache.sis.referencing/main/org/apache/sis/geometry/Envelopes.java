@@ -361,6 +361,9 @@ public final class Envelopes {
      * @param  results    where to store the individual results when the transform contains wraparound steps,
      *                    or {@code null} for computing the union of all results instead.
      * @return the transformed envelope. May be {@code null} if {@code results} was non-null.
+     * @throws MismatchedDimensionException if the  {@code transform} source number of dimensions
+     *         is not equal to the {@code envelope} dimension.
+     * @throws TransformException if an error occurred during the execution of the transform.
      */
     private static GeneralEnvelope transform(final MathTransform transform, final Envelope envelope,
             double[] targetPt, final Map<Parameters, GeneralEnvelope> results) throws TransformException
@@ -388,8 +391,9 @@ public final class Envelopes {
         final int sourceDim = transform.getSourceDimensions();
         final int targetDim = transform.getTargetDimensions();
         if (envelope.getDimension() != sourceDim) {
-            throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_2,
-                      sourceDim, envelope.getDimension()));
+            throw new MismatchedDimensionException(Errors.format(
+                        Errors.Keys.MismatchedDimension_2,
+                        sourceDim, envelope.getDimension()));
         }
         /*
          * Allocates all needed objects. The power of 3 below is because the following `while` loop
@@ -947,7 +951,9 @@ poles:  for (int i=0; i<dimension; i++) {
      * @param  transform  the transform to use.
      * @param  envelope   envelope to transform, or {@code null}. This envelope will not be modified.
      * @return the transformed envelope, or {@code null} if {@code envelope} was null.
-     * @throws TransformException if a transform failed.
+     * @throws MismatchedDimensionException if the  {@code transform} source number of dimensions
+     *         is not equal to the {@code envelope} dimension.
+     * @throws TransformException if an error occurred during the execution of the transform.
      *
      * @see #transform(CoordinateOperation, Envelope)
      *
