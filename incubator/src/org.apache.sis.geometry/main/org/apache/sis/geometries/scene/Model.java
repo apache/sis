@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.scene;
 
+import org.apache.sis.geometries.scene.material.Material;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;

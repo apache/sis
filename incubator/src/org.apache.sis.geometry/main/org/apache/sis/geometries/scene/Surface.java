@@ -16,6 +16,8 @@
  */
 package org.apache.sis.geometries.scene;
 
+import org.apache.sis.geometries.scene.material.PBR;
+import org.apache.sis.geometries.scene.material.Material;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -38,7 +40,7 @@ public class Surface {
     public Surface(Geometry geometry) {
         ArgumentChecks.ensureNonNull("geometry", geometry);
         this.geometry = geometry;
-        this.material = new Material();
+        this.material = new PBR();
     }
 
     public Surface(Geometry geometry, Material material) {
