@@ -82,6 +82,11 @@ public class Errors extends IndexedResourceBundle {
         public static final short AmbiguousName_3 = 2;
 
         /**
+         * Type ‘{1}’ is ambiguous because it implements more than one subtype of ‘{0}’.
+         */
+        public static final short AmbiguousType_2 = 207;
+
+        /**
          * Computation in background failed.
          */
         public static final short BackgroundComputationFailed = 3;

@@ -50,6 +50,7 @@ import org.opengis.metadata.citation.Responsibility;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class TypeMapTest extends TestCase {
     /**
      * Creates a new test case.

@@ -50,6 +50,7 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class HashCodeTest extends TestCase {
     /**
      * Creates a new test case.
@@ -61,7 +62,7 @@ public final class HashCodeTest extends TestCase {
      * Computes the hash code value of the given object.
      */
     private static Integer hash(final Object metadata) {
-        return HashCode.getOrCreate().walk(MetadataStandard.ISO_19115, null, metadata, true);
+        return HashCode.getOrCreate().walk(MetadataStandard.ISO_19115, null, metadata, UnresolvedTypePolicy.THROW);
     }
 
     /**

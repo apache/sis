@@ -267,9 +267,10 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
      * Compares the specified object with this linear transform for equality.
      * This implementation returns {@code true} if the following conditions are met:
      * <ul>
-     *   <li>In {@code STRICT} mode, the objects are of the same class and {@link #equalsSameClass(Object)}
-     *       returns {@code true}.</li>
-     *   <li>In other modes, the matrix are equals or approximately equals (depending on the mode).</li>
+     *   <li>In {@code STRICT} mode, the objects are of the same class
+     *       and {@link #equalsSameClass(Object)} returns {@code true}.</li>
+     *   <li>In other modes, the matrices are equal or approximately equal
+     *       (depending on the comparison criteria).</li>
      * </ul>
      *
      * @param  object  the object to compare with this transform.

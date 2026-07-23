@@ -35,6 +35,7 @@ import org.apache.sis.metadata.iso.citation.HardCodedCitations;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class SpecialCasesTest extends TestCase {
     /**
      * The accessor instance to be tested.

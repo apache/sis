@@ -34,6 +34,7 @@ import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.internal.shared.Unsafe;
 import org.apache.sis.util.resources.Errors;
@@ -212,8 +213,8 @@ deeper: if (!baseType.isInstance(source)) {
                     if (!success) {
                         /*
                          * This exception may happen if the source is a subclass of the target. This is the converse
-                         * of what we usually have in Java (we can assign a sub-type to a more generic Java variable)
-                         * but happen here because if the source is a sub-type, we may not be able to copy all values
+                         * of what we usually have in Java (we can assign a subtype to a more generic Java variable)
+                         * but happen here because if the source is a subtype, we may not be able to copy all values
                          * from the source to the target. We do not use ClassCastException type in the hope to reduce
                          * confusion.
                          */
@@ -245,17 +246,18 @@ deeper: if (!baseType.isInstance(source)) {
                                  * may implement many interfaces, while we are interrested only in the interface
                                  * implemented by the target `element`.
                                  */
-                                final boolean equals;
+                                final Boolean equals;
                                 final var criteria = ComparisonMode.BY_CONTRACT;
-                                if (element instanceof AbstractMetadata) {
-                                    equals = ((AbstractMetadata) element).equals(value, criteria);
+                                if (element instanceof LenientComparable) {
+                                    equals = ((LenientComparable) element).equals(value, criteria);
                                 } else if (targetList instanceof CheckedContainer<?>) {
                                     Class<?> propertyType = ((CheckedContainer<?>) targetList).getElementType();
                                     equals = standard.equals(element, value, propertyType, criteria);
                                 } else {
                                     equals = Utilities.deepEquals(element, value, criteria);
                                 }
-                                if (!equals) continue;
+                                // In case of doubt (null), do not remove.
+                                if (equals == null || !equals) continue;
                             }
                             it.remove();
                             break;

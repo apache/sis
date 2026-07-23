@@ -700,7 +700,7 @@ public class MatrixParameters<E> implements CheckedContainer<E>, Serializable {
 
     /**
      * Returns the default value for the parameter descriptor at the given indices.
-     * The default implementation returns 1 if all indices are equals, or 0 otherwise.
+     * The default implementation returns 1 if all indices are equal, or 0 otherwise.
      *
      * @param  indices  the indices of the matrix element for which to get the default value,
      *                  in (<var>row</var>, <var>column</var>, …) order.

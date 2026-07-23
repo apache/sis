@@ -362,7 +362,8 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         final MetadataStandard standard = getStandard();
-        return standard.equals(this, object, standard.getInterface(getClass()), mode);
+        final Boolean equals = standard.equals(this, object, standard.getInterface(getClass()), mode);
+        return (equals != null) && equals;
     }
 
     /**

@@ -19,6 +19,7 @@ package org.apache.sis.metadata;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.Completeness;
 import org.opengis.metadata.extent.GeographicExtent;
@@ -151,7 +152,8 @@ public final class MetadataStandardTest extends TestCase {
      * Returns the interface type declared by the accessor for the given class.
      */
     private Class<?> getAccessor(final Class<?> type, final boolean mandatory) {
-        final PropertyAccessor accessor = standard.getTypeAccessor(type, mandatory);
+        final PropertyAccessor accessor = standard.getTypeAccessor(type,
+                mandatory ? UnresolvedTypePolicy.THROW : UnresolvedTypePolicy.NULL);
         return (accessor != null) ? accessor.type : null;
     }
 
@@ -180,9 +182,11 @@ public final class MetadataStandardTest extends TestCase {
      */
     @Test
     public void testGetWrongInterface() {
-        standard = new MetadataStandard("SIS", "org.apache.sis.dummy.");
+        standard = new MetadataStandard("Pseudo Standard", "org.apache.sis.dummy.");
         var e = assertThrows(ClassCastException.class, () -> getInterface(DefaultCitation.class));
-        assertMessageContains(e, "DefaultCitation");
+        assertMessageContains(e, "DefaultCitation", "Pseudo Standard");
+        var cause = assertInstanceOf(NoSuchElementException.class, e.getCause());
+        assertMessageContains(cause, "DefaultCitation");
     }
 
     /**
@@ -192,19 +196,19 @@ public final class MetadataStandardTest extends TestCase {
     public void testEquals() {
         standard = MetadataStandard.ISO_19115;
 
-        // Self equality test
+        // Self equality test.
         DefaultCitation instance = HardCodedCitations.EPSG;
-        assertFalse(standard.equals(instance, HardCodedCitations.SIS,  null, ComparisonMode.STRICT));
-        assertTrue (standard.equals(instance, HardCodedCitations.EPSG, null, ComparisonMode.STRICT));
+        assertFalse(standard.equals(instance, HardCodedCitations.SIS,  Object.class, ComparisonMode.STRICT));
+        assertTrue (standard.equals(instance, HardCodedCitations.EPSG, Object.class, ComparisonMode.STRICT));
 
-        // Test comparison with a copy
+        // Test comparison with a copy.
         instance = new DefaultCitation(HardCodedCitations.EPSG);
-        assertFalse(standard.equals(instance, HardCodedCitations.SIS,  null, ComparisonMode.STRICT));
-        assertTrue (standard.equals(instance, HardCodedCitations.EPSG, null, ComparisonMode.STRICT));
+        assertFalse(standard.equals(instance, HardCodedCitations.SIS,  Object.class, ComparisonMode.STRICT));
+        assertTrue (standard.equals(instance, HardCodedCitations.EPSG, Object.class, ComparisonMode.STRICT));
 
-        // test comparison with a modified copy
+        // Test comparison with a modified copy.
         instance.setTitle(new SimpleInternationalString("A dummy title"));
-        assertFalse(standard.equals(instance, HardCodedCitations.EPSG, null, ComparisonMode.STRICT));
+        assertFalse(standard.equals(instance, HardCodedCitations.EPSG, Object.class, ComparisonMode.STRICT));
     }
 
     /**

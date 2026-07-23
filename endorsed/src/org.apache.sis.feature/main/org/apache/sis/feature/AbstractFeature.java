@@ -100,11 +100,6 @@ public abstract class AbstractFeature implements Feature, Serializable {
     private static final long serialVersionUID = -5637918246427380190L;
 
     /**
-     * Sentinel value for missing property.
-     */
-    private static final Object MISSING = new Object();
-
-    /**
      * Information about the feature (name, characteristics, <i>etc.</i>).
      */
     @SuppressWarnings("serial")     // Most SIS implementations are serializable.

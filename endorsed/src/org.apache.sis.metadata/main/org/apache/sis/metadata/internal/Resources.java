@@ -68,6 +68,11 @@ public class Resources extends IndexedResourceBundle {
         }
 
         /**
+         * Cannot handle `{1}` as a type derived from the {0} standard.
+         */
+        public static final short CannotHandleAsStandardType_2 = 9;
+
+        /**
          * Connection to “{0}” database is already initialized.
          */
         public static final short ConnectionAlreadyInitialized_1 = 6;

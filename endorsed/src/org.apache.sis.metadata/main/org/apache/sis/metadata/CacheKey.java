@@ -112,4 +112,11 @@ final class CacheKey {
     final String invalid() {
         return Errors.format(Errors.Keys.IllegalArgumentClass_3, "type", propertyType, type);
     }
+
+    /**
+     * Creates an error message for an ambiguous property type.
+     */
+    final String ambiguous() {
+        return Errors.format(Errors.Keys.AmbiguousType_2, propertyType, type);
+    }
 }
