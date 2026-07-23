@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.scene;
 
+import org.apache.sis.geometries.scene.lights.Light;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -104,6 +105,7 @@ public class SceneNode {
 
     private CoordinateReferenceSystem crs = Geometries.RIGHT_HAND_3D;
     private Camera camera;
+    private Light light;
     private Model model;
     private String name;
     private Feature feature;
@@ -250,6 +252,20 @@ public class SceneNode {
      */
     public void setCamera(Camera camera) {
         this.camera = camera;
+    }
+
+    /**
+     * @return light attached, may be null
+     */
+    public Light getLight() {
+        return light;
+    }
+
+    /**
+     * @param light to attach, may be null
+     */
+    public void setLight(Light light) {
+        this.light = light;
     }
 
     /**
@@ -415,6 +431,7 @@ public class SceneNode {
         sb.append('(');
         if (model != null) sb.append(" Model ");
         if (camera != null) sb.append(" Camera ");
+        if (light != null) sb.append(" Light ");
         if (feature != null) sb.append(" Feature ");
         sb.append(" Children[").append(children.size()).append("] ");
         sb.append(')');
@@ -426,6 +443,7 @@ public class SceneNode {
         int hash = 7;
         hash = 97 * hash + Objects.hashCode(this.parentToNode);
         hash = 97 * hash + Objects.hashCode(this.camera);
+        hash = 97 * hash + Objects.hashCode(this.light);
         hash = 97 * hash + Objects.hashCode(this.model);
         hash = 97 * hash + Objects.hashCode(this.name);
         return hash;
@@ -453,6 +471,9 @@ public class SceneNode {
             return false;
         }
         if (!Objects.equals(this.camera, other.camera)) {
+            return false;
+        }
+        if (!Objects.equals(this.light, other.light)) {
             return false;
         }
         if (!Objects.equals(this.model, other.model)) {
