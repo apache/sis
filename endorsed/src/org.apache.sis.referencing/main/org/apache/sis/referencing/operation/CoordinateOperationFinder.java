@@ -925,6 +925,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         }
         /*
          * At this point, a coordinate operation has been found for all components of the target CRS.
+         * That coordinate operation may be explicit (non-null) or implicit (a coordinate coordinate).
          * However, the CoordinateOperation.getSourceCRS() values are not necessarily in the same order
          * than in the `sourceComponents` list given to this method, and some dimensions may be dropped.
          * The matrix computed by sourceToSelected(…) gives us the rearrangement needed for the coordinate
@@ -934,9 +935,9 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final Matrix select = SubOperationInfo.sourceToSelected(sourceCRS.getCoordinateSystem().getDimension(), infos);
         /*
          * First, we need a CRS matching the above-cited rearrangement. That CRS will be named `stepSourceCRS`
-         * and its components will be named `stepComponents`. Then we will execute a loop in which each component
-         * is progressively (one by one) updated from a source component to a target component. A new step CRS is
-         * recreated each time, since it will be needed for each PassThroughOperation.
+         * and its components will be named `stepComponents`. Then we will execute a loop in which each
+         * component is progressively (one by one) updated from a source component to a target component.
+         * A new step CRS is recreated each time, since it will be needed for each PassThroughOperation.
          */
         CoordinateReferenceSystem stepSourceCRS;
         CoordinateOperation operation;
@@ -972,7 +973,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
              * Only after the loop finished, `stepTargetCRS` will become the complete target definition.
              */
             final CoordinateReferenceSystem stepTargetCRS;
-            stepComponents[info.targetComponentIndex] = target;
+            stepComponents[info.targetComponentIndex()] = target;
             if (i >= indexOfFinal) {
                 stepTargetCRS = targetCRS;              // If all remaining transforms are identity, we reached the final CRS.
             } else if (info.isIdentity()) {
