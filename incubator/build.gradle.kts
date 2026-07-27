@@ -219,10 +219,10 @@ publishing {
                 description = "Read files in GSF format."
             }
         }
-        create<MavenPublication>("storage.coveragejson") {
-            var module = "org.apache.sis.storage.coveragejson"
+        create<MavenPublication>("storage.json") {
+            var module = "org.apache.sis.storage.json"
             groupId    = "org.apache.sis.storage"
-            artifactId = "sis-coveragejson"
+            artifactId = "sis-json"
             artifact(layout.buildDirectory.file("libs/${module}.jar"))
             artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
             artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}

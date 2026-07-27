@@ -18,15 +18,14 @@
 /**
  * Coverage-json store.
  *
- * @todo Consider renaming as {@code org.apache.sis.storage.json.coverage} in order to group all JSON formats
- *       in a single root. Also rename package names accordingly. Having the exact format name "coveragejson"
- *       in module/package name is redundant with {@code CoverageJsonStore} class name. Furthermore the
- *       "Coverage-json" description appears right after module name in Javadoc. Having a single "json"
+ * @todo Consider renaming packages as {@code org.apache.sis.storage.json.coverage} in order to group all JSON formats.
+ *       Having the exact format name "coveragejson" in package name is redundant with {@code CoverageJsonStore} class name.
+ *       Furthermore, the "Coverage-json" description appears right after module name in Javadoc. Having a single "json"
  *       root allow Javadoc to detect more easily the related modules and organize them accordingly.
  *
  * @author  Johann Sorel (Geomatys)
  */
-module org.apache.sis.storage.coveragejson {
+module org.apache.sis.storage.json {
     // Dependencies used in public API.
     requires transitive org.apache.sis.referencing;
     requires transitive org.apache.sis.storage;
