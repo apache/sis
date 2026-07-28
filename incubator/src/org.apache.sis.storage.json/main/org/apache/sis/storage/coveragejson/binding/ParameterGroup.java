@@ -16,10 +16,9 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.Arrays;
 import java.util.Objects;
-import jakarta.json.bind.annotation.JsonbNillable;
-import jakarta.json.bind.annotation.JsonbPropertyOrder;
 
 
 /**
@@ -28,8 +27,7 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
  *
  * @author Johann Sorel (Geomatys)
  */
-@JsonbNillable(false)
-@JsonbPropertyOrder({"type","id","label","description","observedProperty","members"})
+@JsonPropertyOrder({"type","id","label","description","observedProperty","members"})
 public final class ParameterGroup extends CoverageJsonObject {
     /**
      * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
@@ -70,6 +68,7 @@ public final class ParameterGroup extends CoverageJsonObject {
     public String[] members;
 
     public ParameterGroup() {
+        type = "ParameterGroup";
     }
 
     @Override

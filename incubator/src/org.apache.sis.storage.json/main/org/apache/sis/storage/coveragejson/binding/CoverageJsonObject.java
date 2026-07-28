@@ -16,9 +16,10 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
-import jakarta.json.bind.annotation.JsonbSubtype;
-import jakarta.json.bind.annotation.JsonbTypeInfo;
-
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.apache.sis.storage.json.DataTransferObject;
 
 /**
  * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
@@ -37,22 +38,26 @@ import jakarta.json.bind.annotation.JsonbTypeInfo;
  *
  * @author Johann Sorel (Geomatys)
  */
-@JsonbTypeInfo ( key = "type",value = {
-    @JsonbSubtype(alias = "Coverage", type = Coverage.class),
-    @JsonbSubtype(alias = "CoverageCollection", type = CoverageCollection.class),
-    @JsonbSubtype(alias = "Domain", type = Domain.class),
-    @JsonbSubtype(alias = "NdArray", type = NdArray.class),
-    @JsonbSubtype(alias = "Parameter", type = Parameter.class),
-    @JsonbSubtype(alias = "ParameterGroup", type = ParameterGroup.class),
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type")
+@JsonSubTypes ( {
+    @Type(name = "Coverage", value = Coverage.class),
+    @Type(name = "CoverageCollection", value = CoverageCollection.class),
+    @Type(name = "Domain", value = Domain.class),
+    @Type(name = "NdArray", value = NdArray.class),
+    @Type(name = "Parameter", value = Parameter.class),
+    @Type(name = "ParameterGroup", value = ParameterGroup.class),
 
     //system subtypes
-    @JsonbSubtype(alias = "GeographicCRS", type = GeographicCRS.class),
-    @JsonbSubtype(alias = "ProjectedCRS", type = ProjectedCRS.class),
-    @JsonbSubtype(alias = "IdentifierRS", type = IdentifierRS.class),
-    @JsonbSubtype(alias = "VerticalCRS", type = VerticalCRS.class),
-    @JsonbSubtype(alias = "TemporalRS", type = TemporalRS.class)
+    @Type(name = "GeographicCRS", value = GeographicCRS.class),
+    @Type(name = "ProjectedCRS", value = ProjectedCRS.class),
+    @Type(name = "IdentifierRS", value = IdentifierRS.class),
+    @Type(name = "VerticalCRS", value = VerticalCRS.class),
+    @Type(name = "TemporalRS", value = TemporalRS.class)
 })
-public class CoverageJsonObject extends Dictionary<Object> {
+public class CoverageJsonObject extends DataTransferObject {
+
+    public String type;
+
     public CoverageJsonObject() {
     }
 }

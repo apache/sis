@@ -16,19 +16,9 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
-import java.lang.reflect.Type;
 import java.util.Locale;
-import java.util.Map;
-import jakarta.json.bind.annotation.JsonbTypeDeserializer;
-import jakarta.json.bind.annotation.JsonbTypeSerializer;
-import jakarta.json.bind.serializer.DeserializationContext;
-import jakarta.json.bind.serializer.JsonbDeserializer;
-import jakarta.json.bind.serializer.JsonbSerializer;
-import jakarta.json.bind.serializer.SerializationContext;
-import jakarta.json.stream.JsonGenerator;
-import jakarta.json.stream.JsonParser;
 import org.opengis.util.InternationalString;
-import org.apache.sis.storage.coveragejson.binding.I18N.Serializer;
+import org.apache.sis.storage.json.DataTransferObject;
 
 
 /**
@@ -38,9 +28,7 @@ import org.apache.sis.storage.coveragejson.binding.I18N.Serializer;
  *
  * @author Johann Sorel (Geomatys)
  */
-@JsonbTypeDeserializer(I18N.Deserializer.class)
-@JsonbTypeSerializer(Serializer.class)
-public final class I18N extends Dictionary<String> implements InternationalString {
+public final class I18N extends DataTransferObject implements InternationalString {
 
     public static final String UNDETERMINED = "und";
 
@@ -48,25 +36,22 @@ public final class I18N extends Dictionary<String> implements InternationalStrin
     }
 
     public I18N(String lang, String text) {
-        setAnyProperty(lang, text);
+        setOtherField(lang, text);
     }
 
     private String getDefault() {
-        String str = any.get(UNDETERMINED);
-        if (str == null && !any.isEmpty()) str = any.get(any.keySet().iterator().next());
+        Object str = unknownFields.get(UNDETERMINED);
+        if (str == null && !unknownFields.isEmpty()) str = unknownFields.get(unknownFields.keySet().iterator().next());
         if (str == null) str = "";
-        return str;
-    }
-
-    public String toString() {
-        return getDefault();
+        return String.valueOf(str);
     }
 
     @Override
     public String toString(Locale locale) {
-        String str = any.get(locale.getLanguage());
-        if (str == null) str = any.get(locale.getISO3Language());
-        return getDefault();
+        Object str = unknownFields.get(locale.getLanguage());
+        if (str == null) str = unknownFields.get(locale.getISO3Language());
+        if (str == null) getDefault();
+        return String.valueOf(str);
     }
 
     @Override
@@ -89,37 +74,4 @@ public final class I18N extends Dictionary<String> implements InternationalStrin
         return getDefault().compareTo(o.toString());
     }
 
-    public static class Deserializer implements JsonbDeserializer<I18N> {
-        public Deserializer() {
-        }
-
-        @Override
-        public I18N deserialize(JsonParser parser, DeserializationContext ctx, Type rtType) {
-            final I18N candidate = new I18N();
-            while (parser.hasNext()) {
-                final JsonParser.Event event = parser.next();
-                if (event == JsonParser.Event.KEY_NAME) {
-                    // Deserialize inner object
-                    final String name = parser.getString();
-                    String value = ctx.deserialize(String.class, parser);
-                    candidate.setAnyProperty(name, value);
-                }
-            }
-            return candidate;
-        }
-    }
-
-    public static class Serializer implements JsonbSerializer<I18N> {
-        public Serializer() {
-        }
-
-        @Override
-        public void serialize(I18N ranges, JsonGenerator jg, SerializationContext sc) {
-            jg.writeStartObject();
-            for (Map.Entry<String,String> entry : ranges.any.entrySet()) {
-                jg.write(entry.getKey(), entry.getValue());
-            }
-            jg.writeEnd();
-        }
-    }
 }

@@ -16,9 +16,9 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.Objects;
-import jakarta.json.bind.annotation.JsonbNillable;
-import jakarta.json.bind.annotation.JsonbPropertyOrder;
+import org.apache.sis.storage.json.DataTransferObject;
 
 
 /**
@@ -27,14 +27,14 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
  *
  * @author Johann Sorel (Geomatys)
  */
-@JsonbNillable(false)
-@JsonbPropertyOrder({"x","y","z","t"})
-public final class Axes extends Dictionary<Object> {
+@JsonPropertyOrder({"x","y","z","t","composite"})
+public final class Axes extends DataTransferObject {
 
     public Axe x;
     public Axe y;
     public Axe z;
     public Axe t;
+    public Axe composite;
 
     public Axes() {
     }
@@ -49,7 +49,8 @@ public final class Axes extends Dictionary<Object> {
             && Objects.equals(x, cdt.x)
             && Objects.equals(y, cdt.y)
             && Objects.equals(y, cdt.y)
-            && Objects.equals(t, cdt.t);
+            && Objects.equals(t, cdt.t)
+            && Objects.equals(composite, cdt.composite);
     }
 
     @Override
@@ -58,6 +59,7 @@ public final class Axes extends Dictionary<Object> {
                 x,
                 y,
                 z,
-                t);
+                t,
+                composite);
     }
 }

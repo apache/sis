@@ -16,9 +16,9 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.Objects;
-import jakarta.json.bind.annotation.JsonbNillable;
-import jakarta.json.bind.annotation.JsonbPropertyOrder;
+import org.apache.sis.storage.json.DataTransferObject;
 
 
 /**
@@ -28,9 +28,8 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
  *
  * @author Johann Sorel (Geomatys)
  */
-@JsonbNillable(false)
-@JsonbPropertyOrder({"id","label","symbol"})
-public final class Unit extends Dictionary<Object> {
+@JsonPropertyOrder({"id","label","symbol"})
+public final class Unit extends DataTransferObject {
     /**
      * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * MAY have the member "id".

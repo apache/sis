@@ -16,9 +16,9 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import java.util.Map;
 import java.util.Objects;
-import jakarta.json.bind.annotation.JsonbNillable;
-import jakarta.json.bind.annotation.JsonbPropertyOrder;
 
 
 /**
@@ -29,8 +29,7 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
  *
  * @author Johann Sorel (Geomatys)
  */
-@JsonbNillable(false)
-@JsonbPropertyOrder({"type","id","label","description","targetConcept","identifiers"})
+@JsonPropertyOrder({"type","id","label","description","targetConcept","identifiers"})
 public final class IdentifierRS extends CoverageJsonObject {
     /**
      * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
@@ -64,9 +63,10 @@ public final class IdentifierRS extends CoverageJsonObject {
      * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * An identifier RS object MAY have a member "identifiers".
      */
-    public Identifiers identifiers;
+    public Map<String,TargetConcept> identifiers;
 
     public IdentifierRS() {
+        type = "IdentifierRS";
     }
 
     @Override

@@ -31,23 +31,14 @@ module org.apache.sis.storage.json {
     requires transitive org.apache.sis.storage;
 
     // Dependencies internal to the implementation.
-    requires jakarta.json;
-    requires jakarta.json.bind;
-
-    // Temporary dependency used by BindingTest class. TODO: remove that dependency.
-    requires org.eclipse.yasson;
+    requires com.fasterxml.jackson.core;
+    requires com.fasterxml.jackson.annotation;
+    requires com.fasterxml.jackson.databind;
 
     provides org.apache.sis.storage.DataStoreProvider
         with org.apache.sis.storage.coveragejson.CoverageJsonStoreProvider;
 
+    exports org.apache.sis.storage.json;
     exports org.apache.sis.storage.coveragejson;
-
-    /*
-     * TODO
-     * Following should be a qualified export to `org.eclipse.yasson` only.
-     * However it does not work with Yasson:
-     *
-     * https://github.com/eclipse-ee4j/yasson/issues/545
-     */
     exports org.apache.sis.storage.coveragejson.binding;
 }

@@ -16,15 +16,17 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
-import java.lang.reflect.Type;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import jakarta.json.bind.JsonbException;
-import jakarta.json.bind.annotation.JsonbNillable;
-import jakarta.json.bind.annotation.JsonbPropertyOrder;
-import jakarta.json.bind.serializer.DeserializationContext;
-import jakarta.json.bind.serializer.JsonbDeserializer;
-import jakarta.json.stream.JsonParser;
 
 
 /**
@@ -33,8 +35,7 @@ import jakarta.json.stream.JsonParser;
  *
  * @author Johann Sorel (Geomatys)
  */
-@JsonbNillable(false)
-@JsonbPropertyOrder({"type","id","domain","parameters","parameterGroups","ranges"})
+@JsonPropertyOrder({"type","id","domain","parameters","parameterGroups","ranges"})
 public final class Coverage extends CoverageJsonObject {
     /**
      * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
@@ -56,9 +57,8 @@ public final class Coverage extends CoverageJsonObject {
      * "domainType" member then that member SHOULD be omitted in the coverage
      * object.
      */
-    //@JsonbTypeDeserializer(Coverage.DomainDeserializer.class)
-    //TODO should be a Domain or an URL, DomainDeserializer not working as expected
-    public Domain domain;
+    @JsonDeserialize(using = DomainDeserializer.class)
+    public Object domain;
 
     /**
      * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
@@ -72,7 +72,7 @@ public final class Coverage extends CoverageJsonObject {
      * is not part of a coverage collection or if the coverage collection does
      * not have a "parameters" member.
      */
-    public Parameters parameters;
+    public Map<String,Parameter> parameters;
 
     /**
      * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
@@ -98,9 +98,10 @@ public final class Coverage extends CoverageJsonObject {
      * to one of the values defined in the "categoryEncoding" object and be
      * interpreted as the matching category.
      */
-    public Ranges ranges;
+    public Map<String,NdArray> ranges;
 
     public Coverage() {
+        type = "Coverage";
     }
 
     @Override
@@ -127,20 +128,20 @@ public final class Coverage extends CoverageJsonObject {
                 ranges);
     }
 
-    public static class DomainDeserializer implements JsonbDeserializer<Object> {
+    public static class DomainDeserializer extends JsonDeserializer<Object> {
         public DomainDeserializer() {
         }
 
         @Override
-        public Object deserialize(JsonParser parser, DeserializationContext ctx, Type rtType) {
-            final JsonParser.Event event = parser.next();
-            if (event == JsonParser.Event.START_OBJECT) {
-                // Deserialize inner object
-                return ctx.deserialize(Domain.class, parser);
-            } else if (event == JsonParser.Event.VALUE_STRING) {
-                return parser.getString();
+        public Object deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException, JacksonException {
+            final JsonNode rootNode = ctxt.readTree(parser);
+
+            if (rootNode.isTextual()) {
+                return rootNode.textValue();
+            } else if (rootNode.isObject()) {
+                return ctxt.readTreeAsValue(rootNode, Domain.class);
             } else {
-                throw new JsonbException("Unexpected json element");
+                throw new IOException("Unexpected json element");
             }
         }
     }

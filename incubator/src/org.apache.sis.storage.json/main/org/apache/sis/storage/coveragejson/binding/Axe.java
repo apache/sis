@@ -16,10 +16,10 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import java.util.Objects;
-import jakarta.json.bind.annotation.JsonbNillable;
-import jakarta.json.bind.annotation.JsonbPropertyOrder;
+import org.apache.sis.storage.json.DataTransferObject;
 
 
 /**
@@ -30,9 +30,8 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
  *
  * @author Johann Sorel (Geomatys)
  */
-@JsonbNillable(false)
-@JsonbPropertyOrder({"start","stop","num","dataType","coordinates","values","bounds"})
-public final class Axe extends Dictionary<Object> {
+@JsonPropertyOrder({"start","stop","num","dataType","coordinates","values","bounds"})
+public final class Axe extends DataTransferObject {
 
     public static final String DATATYPE_PRIMITIVE = "primitive";
     public static final String DATATYPE_TUPLE = "tuple";

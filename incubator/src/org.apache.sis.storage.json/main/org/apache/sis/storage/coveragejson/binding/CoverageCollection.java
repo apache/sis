@@ -16,10 +16,10 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import jakarta.json.bind.annotation.JsonbNillable;
-import jakarta.json.bind.annotation.JsonbPropertyOrder;
 
 
 /**
@@ -28,8 +28,7 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
  *
  * @author Johann Sorel (Geomatys)
  */
-@JsonbNillable(false)
-@JsonbPropertyOrder({"type","domainType","parameters","parameterGroups","referencing","coverages"})
+@JsonPropertyOrder({"type","domainType","parameters","parameterGroups","referencing","coverages"})
 public final class CoverageCollection extends CoverageJsonObject {
     /**
      * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
@@ -50,7 +49,7 @@ public final class CoverageCollection extends CoverageJsonObject {
      * where the value is an object where each member has as name a short
      * identifier and as value a parameter object.
      */
-    public Parameter parameters;
+    public Map<String,Parameter> parameters;
 
     /**
      * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
@@ -75,6 +74,7 @@ public final class CoverageCollection extends CoverageJsonObject {
     public List<Coverage> coverages;
 
     public CoverageCollection() {
+        type = "CoverageCollection";
     }
 
     @Override

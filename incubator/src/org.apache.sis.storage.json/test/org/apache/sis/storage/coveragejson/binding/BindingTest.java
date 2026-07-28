@@ -16,10 +16,12 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,10 +29,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import jakarta.json.JsonObject;
-import jakarta.json.bind.Jsonb;
-import jakarta.json.bind.JsonbBuilder;
-import org.eclipse.yasson.YassonConfig;
 
 // Test dependencies
 import org.junit.jupiter.api.AfterAll;
@@ -47,10 +45,11 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class BindingTest {
 
-    private final Jsonb jsonb;
+    private final ObjectMapper mapper;
 
     public BindingTest() {
-        jsonb = JsonbBuilder.create(new YassonConfig().withFormatting(true));
+        mapper = new ObjectMapper();
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
     }
 
     public static String readResource(String path) throws IOException {
@@ -70,18 +69,17 @@ public class BindingTest {
     private void compare(String jsonpath, Object expected) throws IOException {
         String json = readResource(jsonpath);
         //reformat it the same way.
-        JsonObject map = jsonb.fromJson(json, JsonObject.class);
-        String formattedJson = jsonb.toJson(map);
+        JsonNode map = mapper.readTree(json);
+        String formattedJson = mapper.writeValueAsString(map);
 
-        final Object candidate = jsonb.fromJson(json, expected.getClass());
+        final Object candidate = mapper.readValue(json, expected.getClass());
         expected.equals(candidate);
         assertEquals(expected, candidate);
-        assertEquals(formattedJson, jsonb.toJson(candidate));
+        assertEquals(formattedJson, mapper.writeValueAsString(candidate));
     }
 
     @AfterAll
     public void afterClass() throws Exception {
-        jsonb.close();
     }
 
     @Test
@@ -185,9 +183,9 @@ public class BindingTest {
         POTM.unit = new Unit(null,null,"°C");
         POTM.observedProperty = new ObservedProperty("http://vocab.nerc.ac.uk/standard_name/sea_water_potential_temperature/", new I18N("en", "Sea Water Potential Temperature"), null, null);
 
-        final Parameters parameters = new Parameters();
-        parameters.setAnyProperty("PSAL", PSAL);
-        parameters.setAnyProperty("POTM", POTM);
+        final Map<String,Parameter> parameters = new LinkedHashMap<>();
+        parameters.put("PSAL", PSAL);
+        parameters.put("POTM", POTM);
 
         final NdArray PSALr = new NdArray();
         PSALr.dataType ="float";
@@ -201,9 +199,9 @@ public class BindingTest {
         POTMr.axisNames = new String[]{"z"};
         POTMr.values = asList(23.8, 23.7);
 
-        final Ranges ranges = new Ranges();
-        ranges.setAnyProperty("PSAL", PSALr);
-        ranges.setAnyProperty("POTM", POTMr);
+        final Map<String,NdArray> ranges = new LinkedHashMap<>();
+        ranges.put("PSAL", PSALr);
+        ranges.put("POTM", POTMr);
 
         final Coverage expected = new Coverage();
         expected.domain = domain;
@@ -220,9 +218,9 @@ public class BindingTest {
         final List<Object> lst = new ArrayList<>(array.length);
         for (int i=0;i<array.length;i++) {
             if (array[i] instanceof Integer v) {
-                lst.add(BigDecimal.valueOf(v));
+                lst.add(v);
             } else if (array[i] instanceof Double v) {
-                lst.add(BigDecimal.valueOf(v));
+                lst.add(v);
             } else {
                 lst.add(array[i]);
             }

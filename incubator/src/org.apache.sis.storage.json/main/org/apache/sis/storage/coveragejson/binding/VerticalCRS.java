@@ -16,9 +16,8 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.Objects;
-import jakarta.json.bind.annotation.JsonbNillable;
-import jakarta.json.bind.annotation.JsonbPropertyOrder;
 
 
 /**
@@ -28,8 +27,7 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
  *
  * @author Johann Sorel (Geomatys)
  */
-@JsonbNillable(false)
-@JsonbPropertyOrder({"type","id","description"})
+@JsonPropertyOrder({"type","id","description"})
 public final class VerticalCRS extends CoverageJsonObject {
     /**
      * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
@@ -46,6 +44,7 @@ public final class VerticalCRS extends CoverageJsonObject {
     public I18N description;
 
     public VerticalCRS() {
+        type = "VerticalCRS";
     }
 
     @Override

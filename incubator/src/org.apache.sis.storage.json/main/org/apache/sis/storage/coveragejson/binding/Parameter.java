@@ -16,9 +16,8 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.Objects;
-import jakarta.json.bind.annotation.JsonbNillable;
-import jakarta.json.bind.annotation.JsonbPropertyOrder;
 
 
 /**
@@ -27,8 +26,7 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
  *
  * @author Johann Sorel (Geomatys)
  */
-@JsonbNillable(false)
-@JsonbPropertyOrder({"type","id","label","description","unit","observedProperty","categoryEncoding"})
+@JsonPropertyOrder({"type","id","label","description","unit","observedProperty","categoryEncoding"})
 public final class Parameter extends CoverageJsonObject {
     /**
      * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
@@ -75,6 +73,7 @@ public final class Parameter extends CoverageJsonObject {
     public CategoryEncoding categoryEncoding;
 
     public Parameter() {
+        type = "Parameter";
     }
 
     @Override

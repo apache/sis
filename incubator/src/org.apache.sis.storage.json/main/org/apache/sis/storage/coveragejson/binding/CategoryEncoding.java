@@ -16,18 +16,7 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
-import java.lang.reflect.Type;
-import java.util.Map;
-import jakarta.json.bind.annotation.JsonbTypeDeserializer;
-import jakarta.json.bind.annotation.JsonbTypeSerializer;
-import jakarta.json.bind.serializer.DeserializationContext;
-import jakarta.json.bind.serializer.JsonbDeserializer;
-import jakarta.json.bind.serializer.JsonbSerializer;
-import jakarta.json.bind.serializer.SerializationContext;
-import jakarta.json.stream.JsonGenerator;
-import jakarta.json.stream.JsonParser;
-import org.apache.sis.storage.coveragejson.binding.CategoryEncoding.Deserializer;
-import org.apache.sis.storage.coveragejson.binding.CategoryEncoding.Serializer;
+import org.apache.sis.storage.json.DataTransferObject;
 
 
 /**
@@ -40,43 +29,9 @@ import org.apache.sis.storage.coveragejson.binding.CategoryEncoding.Serializer;
  *
  * @author Johann Sorel (Geomatys)
  */
-@JsonbTypeDeserializer(Deserializer.class)
-@JsonbTypeSerializer(Serializer.class)
-public final class CategoryEncoding extends Dictionary<Object> {
+public final class CategoryEncoding extends DataTransferObject {
+
     public CategoryEncoding() {
     }
 
-    public static class Deserializer implements JsonbDeserializer<CategoryEncoding> {
-        public Deserializer() {
-        }
-
-        @Override
-        public CategoryEncoding deserialize(JsonParser parser, DeserializationContext ctx, Type rtType) {
-            final CategoryEncoding candidate = new CategoryEncoding();
-            while (parser.hasNext()) {
-                final JsonParser.Event event = parser.next();
-                if (event == JsonParser.Event.KEY_NAME) {
-                    // Deserialize inner object
-                    final String name = parser.getString();
-                    String value = ctx.deserialize(String.class, parser);
-                    candidate.setAnyProperty(name, value);
-                }
-            }
-            return candidate;
-        }
-    }
-
-    public static class Serializer implements JsonbSerializer<CategoryEncoding> {
-        public Serializer() {
-        }
-
-        @Override
-        public void serialize(CategoryEncoding ranges, JsonGenerator jg, SerializationContext sc) {
-            jg.writeStartObject();
-            for (Map.Entry<String,Object> entry : ranges.any.entrySet()) {
-                sc.serialize(entry.getKey(), entry.getValue(), jg);
-            }
-            jg.writeEnd();
-        }
-    }
 }

@@ -16,19 +16,18 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.Arrays;
 import java.util.Objects;
-import jakarta.json.bind.annotation.JsonbNillable;
-import jakarta.json.bind.annotation.JsonbPropertyOrder;
+import org.apache.sis.storage.json.DataTransferObject;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-@JsonbNillable(false)
-@JsonbPropertyOrder({"tileShape","urlTemplate"})
-public final class TileSet extends Dictionary<Object> {
+@JsonPropertyOrder({"tileShape","urlTemplate"})
+public final class TileSet extends DataTransferObject {
     /**
      * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A TileSet object MUST have a member with the name "tileShape" where

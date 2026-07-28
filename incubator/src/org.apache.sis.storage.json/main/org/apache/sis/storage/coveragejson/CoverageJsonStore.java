@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.coveragejson;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,9 +29,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import jakarta.json.bind.Jsonb;
-import jakarta.json.bind.JsonbBuilder;
-import jakarta.json.bind.JsonbConfig;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -96,9 +94,8 @@ public class CoverageJsonStore extends DataStore implements WritableAggregate {
         if (!parsed) {
             parsed = true;
             if (Files.exists(path)) {
-                try (Jsonb b = JsonbBuilder.create();
-                     InputStream in = new BufferedInputStream(Files.newInputStream(path))) {
-                    final CoverageJsonObject obj = b.fromJson(in, CoverageJsonObject.class);
+                try (InputStream in = new BufferedInputStream(Files.newInputStream(path))) {
+                    final CoverageJsonObject obj = new ObjectMapper().readValue(in, CoverageJsonObject.class);
 
                     if (obj instanceof Coverage) {
                         final Coverage coverage = (Coverage) obj;
@@ -159,8 +156,8 @@ public class CoverageJsonStore extends DataStore implements WritableAggregate {
             //single coverage
             final CoverageResource res = (CoverageResource) components.get(0);
 
-            try (Jsonb jsonb = JsonbBuilder.create(new JsonbConfig().withFormatting(true))) {
-                json = jsonb.toJson(res.getBinding());
+            try {
+                json = new ObjectMapper().writeValueAsString(res.getBinding());
             } catch (Exception ex) {
                 throw new DataStoreException("Failed to create coverage json binding", ex);
             }
@@ -172,8 +169,8 @@ public class CoverageJsonStore extends DataStore implements WritableAggregate {
                 col.coverages.add(res.getBinding());
             }
 
-            try (Jsonb jsonb = JsonbBuilder.create(new JsonbConfig().withFormatting(true))) {
-                json = jsonb.toJson(col);
+            try {
+                json = new ObjectMapper().writeValueAsString(col);
             } catch (Exception ex) {
                 throw new DataStoreException("Failed to create coverage collection json binding", ex);
             }

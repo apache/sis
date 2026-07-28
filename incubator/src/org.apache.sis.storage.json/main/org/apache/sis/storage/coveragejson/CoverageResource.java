@@ -66,9 +66,7 @@ import org.apache.sis.storage.coveragejson.binding.IdentifierRS;
 import org.apache.sis.storage.coveragejson.binding.NdArray;
 import org.apache.sis.storage.coveragejson.binding.ObservedProperty;
 import org.apache.sis.storage.coveragejson.binding.Parameter;
-import org.apache.sis.storage.coveragejson.binding.Parameters;
 import org.apache.sis.storage.coveragejson.binding.ProjectedCRS;
-import org.apache.sis.storage.coveragejson.binding.Ranges;
 import org.apache.sis.storage.coveragejson.binding.ReferenceSystemConnection;
 import org.apache.sis.storage.coveragejson.binding.TemporalRS;
 import org.apache.sis.storage.coveragejson.binding.VerticalCRS;
@@ -127,13 +125,13 @@ final class CoverageResource extends AbstractGridCoverageResource {
 
         // Rebuild grid geometry
         try {
-            gridGeometry = jsonToGridGeometry(binding.domain);
+            gridGeometry = jsonToGridGeometry((Domain)binding.domain);
         } catch (FactoryException ex) {
             throw new DataStoreException("Failed to create GridGeometry from JSON Domain", ex);
         }
         // Rebuild sample dimensions
         sampleDimensions = new ArrayList<>();
-        for (Entry<String,Parameter> entry : binding.parameters.any.entrySet()) {
+        for (Entry<String,Parameter> entry : binding.parameters.entrySet()) {
             final SampleDimension sd = jsonToSampleDimension(entry.getKey(), entry.getValue());
             sampleDimensions.add(sd);
         }
@@ -142,7 +140,7 @@ final class CoverageResource extends AbstractGridCoverageResource {
         }
         // Read datas
         datas = new HashMap<>();
-        for (Entry<String,NdArray> entry : binding.ranges.any.entrySet()) {
+        for (Entry<String,NdArray> entry : binding.ranges.entrySet()) {
             datas.put(entry.getKey(), jsonToDataBuffer(entry.getValue()));
         }
     }
@@ -488,15 +486,15 @@ final class CoverageResource extends AbstractGridCoverageResource {
         }
 
         // Build parameters
-        binding.parameters = new Parameters();
+        binding.parameters = new LinkedHashMap<>();
         for (SampleDimension sd : coverage.getSampleDimensions()) {
             final Entry<String, Parameter> entry = sampleDimensionToJson(sd);
-            binding.parameters.setAnyProperty(entry.getKey(), entry.getValue());
+            binding.parameters.put(entry.getKey(), entry.getValue());
         }
 
         // Build datas
-        binding.ranges = new Ranges();
-        binding.ranges.any.putAll(imageToJson(coverage, new ArrayList<>(binding.parameters.any.keySet())));
+        binding.ranges = new LinkedHashMap<>();
+        binding.ranges.putAll(imageToJson(coverage, new ArrayList<>(binding.parameters.keySet())));
 
         return binding;
     }
@@ -635,7 +633,7 @@ final class CoverageResource extends AbstractGridCoverageResource {
                 for (double i = min; i < max; i++) {
                     values.add((int) i);
                 }
-                catEnc.any.put(catb.id, values);
+                catEnc.setOtherField(catb.id, values);
             }
         }
 

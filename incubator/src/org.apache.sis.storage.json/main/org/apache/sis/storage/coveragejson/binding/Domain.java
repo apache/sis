@@ -16,10 +16,9 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import java.util.Objects;
-import jakarta.json.bind.annotation.JsonbNillable;
-import jakarta.json.bind.annotation.JsonbPropertyOrder;
 
 
 /**
@@ -29,8 +28,7 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
  *
  * @author Johann Sorel (Geomatys)
  */
-@JsonbNillable(false)
-@JsonbPropertyOrder({"type","domainType","axes","referencing"})
+@JsonPropertyOrder({"type","domainType","axes","referencing"})
 public final class Domain extends CoverageJsonObject {
 
     public static final String DOMAINTYPE_GRID = "Grid";
@@ -75,6 +73,7 @@ public final class Domain extends CoverageJsonObject {
     public List<ReferenceSystemConnection> referencing;
 
     public Domain() {
+        type = "Domain";
     }
 
     @Override

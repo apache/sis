@@ -16,11 +16,10 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import jakarta.json.bind.annotation.JsonbNillable;
-import jakarta.json.bind.annotation.JsonbPropertyOrder;
 
 
 /**
@@ -38,8 +37,7 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
  *
  * @author Johann Sorel (Geomatys)
  */
-@JsonbNillable(false)
-@JsonbPropertyOrder({"type","dataType","axisNames","shape","values"})
+@JsonPropertyOrder({"type","dataType","axisNames","shape","values"})
 public final class NdArray extends CoverageJsonObject {
 
     public static final String DATATYPE_FLOAT = "float";
@@ -90,6 +88,7 @@ public final class NdArray extends CoverageJsonObject {
     public List<Object> values; //because of null and string values
 
     public NdArray() {
+        type = "NdArray";
     }
 
     @Override

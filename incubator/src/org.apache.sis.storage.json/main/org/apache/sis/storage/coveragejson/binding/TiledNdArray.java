@@ -16,10 +16,10 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.Arrays;
 import java.util.Objects;
-import jakarta.json.bind.annotation.JsonbNillable;
-import jakarta.json.bind.annotation.JsonbPropertyOrder;
+import org.apache.sis.storage.json.DataTransferObject;
 
 
 /**
@@ -32,9 +32,8 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
  *
  * @author Johann Sorel (Geomatys)
  */
-@JsonbNillable(false)
-@JsonbPropertyOrder({"dataType","shape","axisNames","tileSets"})
-public final class TiledNdArray extends Dictionary<Object> {
+@JsonPropertyOrder({"dataType","shape","axisNames","tileSets"})
+public final class TiledNdArray extends DataTransferObject {
     /**
      * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
      * A TiledNdArray object MUST have a member with the name "dataType" where

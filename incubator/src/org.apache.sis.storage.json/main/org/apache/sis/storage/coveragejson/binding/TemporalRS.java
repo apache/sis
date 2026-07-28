@@ -16,9 +16,8 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.Objects;
-import jakarta.json.bind.annotation.JsonbNillable;
-import jakarta.json.bind.annotation.JsonbPropertyOrder;
 
 
 /**
@@ -45,8 +44,7 @@ import jakarta.json.bind.annotation.JsonbPropertyOrder;
  *
  * @author Johann Sorel (Geomatys)
  */
-@JsonbNillable(false)
-@JsonbPropertyOrder({"type","calendar","timeScale"})
+@JsonPropertyOrder({"type","calendar","timeScale"})
 public final class TemporalRS extends CoverageJsonObject {
     /**
      * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
@@ -64,6 +62,7 @@ public final class TemporalRS extends CoverageJsonObject {
     public String timeScale;
 
     public TemporalRS() {
+        type = "TemporalRS";
     }
 
     @Override
