@@ -66,6 +66,7 @@ dependencyResolutionManagement {
             library("yasson",        "org.eclipse",            "yasson")              .version {strictly("[3.0, 4.0[");  prefer("3.0.4")}
             library("jts.core",      "org.locationtech.jts",   "jts-core")            .version {strictly("[1.15, 2.0["); prefer("1.20.0")}
             library("esri.geometry", "com.esri.geometry",      "esri-geometry-api")   .version {strictly("[2.0, 3.0[");  prefer("2.2.4")}
+            library("s2.geometry",   "com.google.geometry",    "s2-geometry")         .version {strictly("[2.0.0, 2.0.0]"); prefer("2.0.0")}
             library("libreoffice",   "org.libreoffice",        "libreoffice")         .version {strictly("[7.0, 8.0[");  prefer("24.8.4")}
             library("ucar",          "edu.ucar",               "cdm-core")            .version {strictly("[5.0, 6.0[");  prefer("5.9.1")}
             library("udunits",       "edu.ucar",               "udunits")             .version {strictly("[5.0, 6.0[");  prefer("5.9.1")}

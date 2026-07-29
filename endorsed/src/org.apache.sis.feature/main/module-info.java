@@ -68,6 +68,7 @@ module org.apache.sis.feature {
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.shapefile,       // In the "incubator" sub-project.
+            org.apache.sis.referencing.dggs,       // In the "incubator" sub-project.
             org.apache.sis.storage.gdal,            // In the "optional" sub-project.
             org.apache.sis.portrayal,
             org.apache.sis.portrayal.map,           // In the "incubator" sub-project.
@@ -82,6 +83,7 @@ module org.apache.sis.feature {
             org.apache.sis.storage.gdal,            // In the "optional" sub-project.
             org.apache.sis.storage.shapefile,       // In the "incubator" sub-project.
             org.apache.sis.portrayal.map,           // In the "incubator" sub-project.
+            org.apache.sis.referencing.dggs,       // In the "incubator" sub-project.
             org.apache.sis.cql;                     // In the "incubator" sub-project.
 
     exports org.apache.sis.geometry.wrapper.j2d to
@@ -90,6 +92,7 @@ module org.apache.sis.feature {
     exports org.apache.sis.geometry.wrapper.jts to
             org.apache.sis.geometry,                // In the "incubator" sub-project.
             org.apache.sis.portrayal.map,           // In the "incubator" sub-project.
+            org.apache.sis.referencing.dggs,        // In the "incubator" sub-project.
             org.apache.sis.cql;                     // In the "incubator" sub-project.
 
     exports org.apache.sis.coverage.internal.shared to
@@ -103,6 +106,7 @@ module org.apache.sis.feature {
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.geoheif,
             org.apache.sis.storage.geotiff,
+            org.apache.sis.referencing.dggs,            // In the "incubator" sub-project.
             org.apache.sis.storage.gdal,                // In the "optional" sub-project.
             org.apache.sis.portrayal,
             org.apache.sis.gui;                         // In the "optional" sub-project.

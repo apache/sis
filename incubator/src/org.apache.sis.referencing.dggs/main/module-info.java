@@ -21,5 +21,15 @@
  * @author Johann Sorel (Geomatys)
  */
 module org.apache.sis.referencing.dggs {
+    requires static s2.geometry;
+    requires static org.locationtech.jts;
     requires transitive org.apache.sis.referencing;
+    requires transitive org.apache.sis.referencing.gazetteer;
+    requires transitive org.apache.sis.feature;
+    requires transitive org.apache.sis.geometry;
+
+
+    uses org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystemFactory;
+    provides org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystemFactory
+        with org.apache.sis.referencing.dggs.s2.S2Factory;
 }

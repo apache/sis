@@ -104,6 +104,7 @@ module org.apache.sis.util {
             org.apache.sis.metadata,
             org.apache.sis.referencing,
             org.apache.sis.referencing.gazetteer,
+            org.apache.sis.referencing.dggs,            // In the "incubator" sub-project.
             org.apache.sis.feature,
             org.apache.sis.storage,
             org.apache.sis.storage.xml,
@@ -136,6 +137,7 @@ module org.apache.sis.util {
             org.apache.sis.storage.earthobservation,
             org.apache.sis.cql,                         // In the "incubator" sub-project.
             org.apache.sis.portrayal,
+            org.apache.sis.referencing.dggs,
             org.apache.sis.storage.gdal,                // In the "optional" sub-project.
             org.apache.sis.cloud.aws,
             org.apache.sis.console,

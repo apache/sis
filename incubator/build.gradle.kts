@@ -41,10 +41,12 @@ dependencies {
     api(libs.jaxb.api)                  // Transitive dependency.
     api(libs.jts.core)                  // Should be an optional dependency.
     api(libs.esri.geometry)             // Idem.
+    api(libs.s2.geometry)               // Idem.
     api(libs.yasson)
     api(files("../endorsed/build/classes/java/main/org.apache.sis.util"))
     api(files("../endorsed/build/classes/java/main/org.apache.sis.metadata"))
     api(files("../endorsed/build/classes/java/main/org.apache.sis.referencing"))
+    api(files("../endorsed/build/classes/java/main/org.apache.sis.referencing.gazetteer"))
     api(files("../endorsed/build/classes/java/main/org.apache.sis.feature"))
     api(files("../endorsed/build/classes/java/main/org.apache.sis.storage"))
     api(files("../endorsed/build/classes/java/main/org.apache.sis.storage.sql"))
