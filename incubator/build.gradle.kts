@@ -186,6 +186,18 @@ publishing {
                 description = "Geometry API."
             }
         }
+        create<MavenPublication>("dggs") {
+            var module = "org.apache.sis.referencing.dggs"
+            groupId    = "org.apache.sis.core"
+            artifactId = "sis-dggs"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS Discrete Global Grid Systems"
+                description = "Discrete Global Grid Systems (DGGS)."
+            }
+        }
         create<MavenPublication>("storage.shapefile") {
             var module = "org.apache.sis.storage.shapefile"
             groupId    = "org.apache.sis.storage"
