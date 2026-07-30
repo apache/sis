@@ -47,7 +47,6 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
  * Tests the {@link HashCode} class. This is also used as a relatively simple {@link MetadataVisitor} test.
  * The entry point is the {@link HashCode#walk(MetadataStandard, Class, Object, boolean)} method.
  *
- *
  * @author  Martin Desruisseaux (Geomatys)
  */
 @SuppressWarnings("exports")

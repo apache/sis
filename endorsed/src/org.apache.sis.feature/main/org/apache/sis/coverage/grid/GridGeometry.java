@@ -1749,7 +1749,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         if (t1 != null || t2 != null) {
             boolean isZero = true;
             final double[] vector = new double[getDimension()];
-            for (int i=Math.min(vector.length, translation.length); --i >= 0;) {
+            for (int i = Math.min(vector.length, translation.length); --i >= 0;) {
                 isZero &= (translation[i] == 0);
                 double v = translation[i];
                 vector[i] = negate ? v : -v;    // Really negate if `negate` is false.
@@ -1786,7 +1786,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * The "grid to CRS" transforms and the resolution stay the same as this {@code GridGeometry}.
      * The "real world" envelope is recomputed for the new grid extent using the "grid to CRS" transforms.
      *
-     * <p>The given extent is taken verbatim; this method does no clipping.
+     * <p>The given extent is taken verbatim, this method does no clipping.
      * The given extent does not need to intersect the extent of this grid geometry.</p>
      *
      * @param  newExtent  extent of the grid geometry to return.

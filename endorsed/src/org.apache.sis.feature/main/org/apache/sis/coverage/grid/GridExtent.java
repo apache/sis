@@ -959,10 +959,11 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @return number of lattice points contained inside this grid extent.
      * @throws ArithmeticException if the count is too large for the {@code long} primitive type.
-     * @see #latticePointStream(boolean).
+     *
+     * @see #latticePointStream(boolean)
      * @since 1.7
      */
-    public long getLatticePointCount() throws ArithmeticException{
+    public long getLatticePointCount() {
         final int dimension = getDimension();
         if (dimension == 0) return 0;
         long n = getSize(0);
@@ -2275,6 +2276,8 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @param  parallel  whether to return a parallel stream.
      * @return stream of lattice points inside this grid extent.
+     *
+     * @see #getLatticePointCount()
      * @since 1.7
      */
     public Stream<long[]> latticePointStream(final boolean parallel) {

@@ -137,7 +137,7 @@ module org.apache.sis.util {
             org.apache.sis.storage.earthobservation,
             org.apache.sis.cql,                         // In the "incubator" sub-project.
             org.apache.sis.portrayal,
-            org.apache.sis.referencing.dggs,
+            org.apache.sis.referencing.dggs,            // In the "incubator" sub-project.
             org.apache.sis.storage.gdal,                // In the "optional" sub-project.
             org.apache.sis.cloud.aws,
             org.apache.sis.console,

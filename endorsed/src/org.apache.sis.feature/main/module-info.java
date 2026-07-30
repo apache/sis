@@ -68,7 +68,7 @@ module org.apache.sis.feature {
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.shapefile,       // In the "incubator" sub-project.
-            org.apache.sis.referencing.dggs,       // In the "incubator" sub-project.
+            org.apache.sis.referencing.dggs,        // In the "incubator" sub-project.
             org.apache.sis.storage.gdal,            // In the "optional" sub-project.
             org.apache.sis.portrayal,
             org.apache.sis.portrayal.map,           // In the "incubator" sub-project.
@@ -83,7 +83,7 @@ module org.apache.sis.feature {
             org.apache.sis.storage.gdal,            // In the "optional" sub-project.
             org.apache.sis.storage.shapefile,       // In the "incubator" sub-project.
             org.apache.sis.portrayal.map,           // In the "incubator" sub-project.
-            org.apache.sis.referencing.dggs,       // In the "incubator" sub-project.
+            org.apache.sis.referencing.dggs,        // In the "incubator" sub-project.
             org.apache.sis.cql;                     // In the "incubator" sub-project.
 
     exports org.apache.sis.geometry.wrapper.j2d to

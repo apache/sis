@@ -212,7 +212,7 @@ public class GridCoverageBuilder {
     private long flippedAxes;
 
     /**
-     * The properties to give to the image, or {@code null} if none.
+     * The properties to give to the image.
      *
      * @see #addImageProperty(String, Object)
      */
