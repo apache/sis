@@ -455,7 +455,7 @@ public class ImageRenderer {
                 ig = geometry;
             } else try {
                 ig = new SliceGeometry(geometry, sliceExtent, gridDimensions, mtFactory)
-                        .reduce(new GridExtent(imageX, imageY, width, height), dimCRS);
+                            .reduce(new GridExtent(getBounds()), dimCRS);
             } catch (FactoryException e) {
                 throw SliceGeometry.canNotCompute(e);
             }

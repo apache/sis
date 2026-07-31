@@ -628,7 +628,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
             }
             final var iterator = new TileIterator(tileLower, tileUpper, offsetAOI, dimension, xDimension, yDimension, eventContext);
             final var properties = new HashMap<String, Object>(4);
-            properties.put(PlanarImage.GRID_GEOMETRY_KEY, DeferredProperty.forGridGeometry(gridGeometry, selectedDimensions));
+            DeferredProperty.addGridGeometry(properties, gridGeometry, selectedDimensions);
             if (name != null) {
                 properties.put(PlanarImage.SOURCE_NAME_KEY, name.toFullyQualifiedName());
             }

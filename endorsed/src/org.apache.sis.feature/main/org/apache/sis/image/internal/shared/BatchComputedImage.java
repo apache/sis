@@ -104,7 +104,7 @@ public abstract class BatchComputedImage extends ComputedImage {
     public Object getProperty(final String key) {
         Object value = properties.getOrDefault(key, Image.UndefinedProperty);
         if (value instanceof DeferredProperty) {
-            value = ((DeferredProperty) value).compute(this);
+            value = ((DeferredProperty) value).getOrCompute(this);
         }
         return value;
     }

@@ -67,7 +67,7 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
      * @param tiles       the tiles. Must contains at least one element.
      *                    This array is not cloned.
      */
-    public WritableTiledImage(final Map<String,Object> properties, final ColorModel colorModel,
+    public WritableTiledImage(final Map<String, ?> properties, final ColorModel colorModel,
                               final int width, final int height, final int minTileX, final int minTileY,
                               final WritableRaster... tiles)
     {

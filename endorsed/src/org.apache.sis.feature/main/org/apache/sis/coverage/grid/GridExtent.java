@@ -277,7 +277,9 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     public GridExtent(final Rectangle bounds) {
         this(bounds.width, bounds.height);
-        translate2D(bounds.x, bounds.y);
+        for (int i = coordinates.length; --i >= 0;) {
+            coordinates[i] += ((i & 1) == 0) ? bounds.x : bounds.y;
+        }
     }
 
     /**
@@ -296,30 +298,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         coordinates[2] = width  - 1;
         coordinates[3] = height - 1;
         types = DEFAULT_TYPES;
-    }
-
-    /**
-     * Creates a new grid extent for an image of the given size and location. This constructor
-     * is for internal usage: argument meanings differ from conventions in public constructors.
-     *
-     * @param  xmin    column index of the first cell.
-     * @param  ymin    row index of the first cell.
-     * @param  width   number of pixels in each row.
-     * @param  height  number of pixels in each column.
-     */
-    GridExtent(final int xmin, final int ymin, final int width, final int height) {
-        this(width, height);
-        translate2D(xmin, ymin);
-    }
-
-    /**
-     * Completes a {@link GridExtent} construction with a final translation.
-     * Shall be invoked for two-dimensional extents only.
-     */
-    private void translate2D(final long xmin, final long ymin) {
-        for (int i=coordinates.length; --i >= 0;) {
-            coordinates[i] += ((i & 1) == 0) ? xmin : ymin;
-        }
     }
 
     /**
