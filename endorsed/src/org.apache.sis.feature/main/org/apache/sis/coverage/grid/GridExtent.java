@@ -955,6 +955,24 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
+     * Returns the product of each dimension size in this grid extent.
+     *
+     * @return number of lattice points contained inside this grid extent.
+     * @throws ArithmeticException if the count is too large for the {@code long} primitive type.
+     * @see #latticePointStream(boolean).
+     * @since 1.7
+     */
+    public long getLatticePointCount() throws ArithmeticException{
+        final int dimension = getDimension();
+        if (dimension == 0) return 0;
+        long n = getSize(0);
+        for (int i = 1; i < dimension; i++) {
+            n = Math.multiplyExact(n, getSize(i));
+        }
+        return n;
+    }
+
+    /**
      * A comparator of grid extent sizes where each dimension is compared in increasing index order.
      * For a given pair of {@code GridExtent} instances, the comparison begins with the
      * {@linkplain #getSize(int) size} of each extent in the first dimension (index 0):
