@@ -16,66 +16,23 @@
  */
 package org.apache.sis.storage.coverage;
 
-import java.lang.reflect.Array;
-import java.net.URI;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import org.apache.sis.coverage.grid.GridCoverage;
-import static org.apache.sis.feature.AbstractIdentifiedType.NAME_KEY;
-import org.apache.sis.feature.DefaultAttributeType;
-import org.apache.sis.feature.DefaultFeatureType;
-import org.apache.sis.feature.Features;
-import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.geometry.wrapper.Geometries;
-import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.apache.sis.parameter.Parameters;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.FeatureSet;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import org.apache.sis.util.ObjectConverters;
-import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.iso.DefaultNameFactory;
-import org.apache.sis.util.iso.DefaultNameSpace;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureAssociation;
-import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.Operation;
-import org.opengis.feature.Property;
 import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.feature.PropertyType;
-import org.opengis.filter.ResourceId;
-import org.opengis.geometry.Envelope;
-import org.opengis.parameter.GeneralParameterDescriptor;
-import org.opengis.parameter.GeneralParameterValue;
-import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.parameter.ParameterValue;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.util.FactoryException;
-import org.opengis.util.GenericName;
 
 /**
  * NOTE : merge with Apache SIS 'org.apache.sis.feature.Features' class.
@@ -85,11 +42,6 @@ import org.opengis.util.GenericName;
 public final class FeatureExt {
 
     public static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.coverage");
-
-    /**
-     * TODO remove when AttributeConvention.CRS will exist
-     */
-    public static final String CRS = "sis:crs";
 
     /**
      * A test to know if a given property is an SIS convention or not. Return true if
@@ -127,7 +79,7 @@ public final class FeatureExt {
      * @return CoordinateReferenceSystem or null
      */
     public static CoordinateReferenceSystem getCRS(PropertyType type){
-        return getCharacteristicValue(type, CRS, null);
+        return getCharacteristicValue(type, AttributeConvention.CRS, null);
     }
 
     /**

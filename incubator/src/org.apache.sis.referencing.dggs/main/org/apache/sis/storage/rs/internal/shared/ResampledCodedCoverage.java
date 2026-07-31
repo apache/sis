@@ -20,7 +20,6 @@ import java.util.Arrays;
 import org.apache.sis.referencing.rs.Code;
 import org.apache.sis.referencing.rs.CodeOperation;
 import org.apache.sis.referencing.rs.ReferenceSystems;
-import org.apache.sis.storage.coverage.TileMatrices;
 import org.apache.sis.storage.rs.CodeIterator;
 import org.apache.sis.storage.rs.CodeTransform;
 import org.apache.sis.storage.rs.CodedCoverage;
@@ -75,7 +74,7 @@ public final class ResampledCodedCoverage extends AbstractCodedCoverage {
 
         BandedIterator() {
             sourceIterator = base.createIterator();
-            nbCell = TileMatrices.countCells(extent);
+            nbCell = extent.getLatticePointCount();
             sourceBanded = sourceIterator instanceof CodeIterator;
         }
 

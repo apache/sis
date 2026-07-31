@@ -27,11 +27,9 @@ import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.coverage.TileMatrices;
 import org.apache.sis.storage.rs.CodeIterator;
 import org.apache.sis.storage.rs.CodedGeometry;
 import org.apache.sis.storage.rs.WritableCodeIterator;
-import org.opengis.feature.FeatureType;
 import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
 
@@ -47,7 +45,7 @@ public final class ArrayCodedCoverage extends AbstractCodedCoverage{
     public ArrayCodedCoverage(final GenericName name, CodedGeometry gridGeometry, SampleDimension ... sampleDimensions) throws FactoryException {
         super(name, gridGeometry, List.of(sampleDimensions));
 
-        final int nbCell = Math.toIntExact(TileMatrices.countCells(gridGeometry.getExtent()));
+        final int nbCell = Math.toIntExact(gridGeometry.getExtent().getLatticePointCount());
 
         samples = new ArrayList<>();
         final double[] nans = new double[sampleDimensions.length];
@@ -64,7 +62,7 @@ public final class ArrayCodedCoverage extends AbstractCodedCoverage{
         super(name, gridGeometry, toSds(samples));
 
         this.samples = samples;
-        final long nbCell = TileMatrices.countCells(extent);
+        final long nbCell = extent.getLatticePointCount();
         for (Array ta : samples) {
             if (ta.getLength() != nbCell) {
                 throw new IllegalArgumentException("Number of samples do not match number of cells");
@@ -127,7 +125,7 @@ public final class ArrayCodedCoverage extends AbstractCodedCoverage{
         private final Cursor[] cursors;
 
         public Iterator() {
-            nbCell = TileMatrices.countCells(extent);
+            nbCell = extent.getLatticePointCount();
 
             cursors = new Cursor[samples.size()];
             for (int i = 0; i < cursors.length; i++) {

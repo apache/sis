@@ -44,7 +44,6 @@ import org.apache.sis.storage.NoSuchDataException;
 import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
-import org.apache.sis.storage.coverage.TileMatrices;
 import org.apache.sis.referencing.rs.Code;
 import org.apache.sis.referencing.rs.ReferenceSystems;
 import org.apache.sis.storage.rs.CodedCoverage;
@@ -167,7 +166,7 @@ public final class GridAsCodedResource extends AbstractResource implements Coded
 
         final GridExtent extent = resultGeometry.getExtent();
         final CodeTransform transform = resultGeometry.getGridToRS();
-        final int nbZone = Math.toIntExact(TileMatrices.countCells(extent));
+        final int nbZone = Math.toIntExact(extent.getLatticePointCount());
 
         final List<Array> samples = new ArrayList<>();
         final double[] nans = new double[sampleDimensions.size()];
