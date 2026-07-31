@@ -43,7 +43,7 @@ import org.apache.sis.image.ImageLayout;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.WritablePixelIterator;
 import org.apache.sis.image.internal.shared.ColorScaleBuilder;
-import org.apache.sis.image.internal.shared.ObservableImage;
+import org.apache.sis.image.internal.shared.WritableUntiledImage;
 import org.apache.sis.image.internal.shared.TiledImage;
 import org.apache.sis.image.internal.shared.WritableTiledImage;
 import org.apache.sis.coverage.SampleDimension;
@@ -601,7 +601,7 @@ public class GridCoverageBuilder {
         if (colors != null && tiles.length == 1) {
             final Raster tile = tiles[0];
             if (tile instanceof WritableRaster && (tile.getMinX() | tile.getMinY()) == 0) {
-                return new ObservableImage(colors, (WritableRaster) tile, false, properties);
+                return new WritableUntiledImage(colors, (WritableRaster) tile, false, properties);
             }
         }
         if (tiles instanceof WritableRaster[]) {

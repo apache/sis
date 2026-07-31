@@ -42,7 +42,7 @@ import org.apache.sis.image.PixelIterator;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.WritablePixelIterator;
 import org.apache.sis.image.internal.shared.ColorModelFactory;
-import org.apache.sis.image.internal.shared.ObservableImage;
+import org.apache.sis.image.internal.shared.WritableUntiledImage;
 import org.apache.sis.image.internal.shared.FillValues;
 import org.apache.sis.storage.util.TriFunction;
 import org.apache.sis.util.ArgumentChecks;
@@ -97,7 +97,7 @@ public class BufferedImages {
             if (cm == null) {
                 cm = ColorModelFactory.createGrayScale(dataType, nbBand, 0, 0, 1);
             }
-            final BufferedImage resultImage = new ObservableImage(cm, raster, cm.isAlphaPremultiplied(), null);
+            final BufferedImage resultImage = new WritableUntiledImage(cm, raster, cm.isAlphaPremultiplied(), null);
             return resultImage;
         } else {
             //we need to create a new image
@@ -126,7 +126,7 @@ public class BufferedImages {
         //create a temporary fallback colormodel which will always work
         //extract grayscale min/max from sample dimension
         final ColorModel graycm = ColorModelFactory.createGrayScale(dataType, nbBand, 0, 0, 1);
-        return new ObservableImage(graycm, raster, false, null);
+        return new WritableUntiledImage(graycm, raster, false, null);
     }
 
     public static WritableRaster createRaster(int width, int height, int nbBand, int dataType, Point upperLeft) throws IllegalArgumentException{

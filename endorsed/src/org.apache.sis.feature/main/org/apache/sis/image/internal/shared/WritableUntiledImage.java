@@ -18,30 +18,46 @@ package org.apache.sis.image.internal.shared;
 
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.function.Function;
 import java.awt.Point;
 import java.awt.image.TileObserver;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.Raster;
+import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
-import org.apache.sis.feature.internal.Resources;
+import java.awt.image.ImagingOpException;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.feature.internal.Resources;
+import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
 
 
 /**
- * A buffered image which can notify tile observers when tile are acquired for write operations.
- * Provides also helper methods for {@link WritableRenderedImage} implementations.
+ * The buffered image used by Apache <abbr>SIS</abbr> for untiled images.
+ * This class is preferred to {@link TiledImage} in the untiled case because
+ * Java2D has performance optimizations for instances of {@link BufferedImage}.
+ * This class is also preferred to instances of the exact {@link BufferedImage}
+ * class for the following reasons:
  *
- * <p>This class should be used in preference to {@link BufferedImage} when the image may be the
- * source of {@link org.apache.sis.image.ImageProcessor} operations. It is the case In particular
- * when this image is given to {@link org.apache.sis.coverage.grid.GridCoverage2D} constructor.
- * We cannot prevent {@link BufferedImage} to implement {@link WritableRenderedImage}, but we
- * can give a change to Apache SIS to be notified about modifications to pixel data.</p>
+ * <p>First, this class can notify tile observers when tiles are acquired for write operations.
+ * We cannot prevent {@link BufferedImage} to implement {@link WritableRenderedImage}, but we can
+ * increase the chances that Apache <abbr>SIS</abbr> is notified about pixel data modifications.
+ * For example, images given to {@link org.apache.sis.coverage.grid.GridCoverage2D} constructor
+ * are often used as sources of {@link org.apache.sis.image.ImageProcessor} operations,
+ * which listen to tile changes in order to flush the cache of invalidated tiles.</p>
+ *
+ * <p>Second, this class can compute the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY}
+ * property when first needed. We use this class even when the property value is known in advance
+ * because it has the desired side-effect of not letting {@link #getSubimage(int, int, int, int)}
+ * inherit that property.</p>
+ *
+ * <p>This class provides also static helper methods for {@link WritableRenderedImage} implementations.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public class ObservableImage extends BufferedImage {
+public final class WritableUntiledImage extends BufferedImage {
     /**
      * The observers, or {@code null} if none. This is a copy-on-write array:
      * values are never modified after construction (new arrays are created).
@@ -56,9 +72,19 @@ public class ObservableImage extends BufferedImage {
 
     /**
      * Number of times that the tile has been acquired for writing and not yet released.
-     * Write operations on this field should be in synchronized blocks.
+     * Write operations on this field should be done inside synchronized blocks.
      */
     private volatile int writeCount;
+
+    /**
+     * The value associated to the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY} key.
+     * May be a {@code Function<RenderedImage, GridGeometry} if the grid geometry is computed when
+     * first requested. This is {@code null} if there is no such property.
+     *
+     * This property is stored as a {@code WritableUntiledImage} field rather than a {@code Hashtable}
+     * entry for preventing inheritance by {@link #getSubimage(int, int, int, int)}.
+     */
+    private Object gridGeometry;
 
     /**
      * Creates an image of the specified type.
@@ -67,20 +93,92 @@ public class ObservableImage extends BufferedImage {
      * @param height  image height.
      * @param type    one of {@code TYPE_*} constants.
      */
-    public ObservableImage(int width, int height, int type) {
+    public WritableUntiledImage(int width, int height, int type) {
         super(width, height, type);
     }
 
     /**
      * Creates an image using the specified raster.
      *
-     * @param colors  color model of the new image.
-     * @param raster  the singleton raster for the image data.
-     * @param isRasterPremultiplied   whether data in the raster has been premultiplied with alpha.
-     * @param properties  image properties as ({@code String}, {@code Object}) entries.
+     * @param colors         color model of the new image.
+     * @param raster         the singleton raster for the image data.
+     * @param premultiplied  whether data in the raster has been premultiplied with alpha.
+     * @param properties     image properties as ({@code String}, {@code Object}) entries.
      */
-    public ObservableImage(ColorModel colors, WritableRaster raster, boolean isRasterPremultiplied, Hashtable<?,?> properties) {
-        super(colors, raster, isRasterPremultiplied, properties);
+    @SuppressWarnings("UseOfObsoleteCollectionType")
+    public WritableUntiledImage(final ColorModel colors,
+                                final WritableRaster raster,
+                                final boolean premultiplied,
+                                final Hashtable<?,?> properties)
+    {
+        super(colors, raster, premultiplied, properties);
+    }
+
+    /**
+     * Sets the value associated to the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY} key.
+     * If the grid geometry is known in advance, it will be used. Otherwise the grid geometry will be
+     * computed when first requested using the given supplier.
+     *
+     * @param  ifKnown   the grid geometry, or {@code null} if no known in advance.
+     * @param  supplier  the function to execute when first needed, or {@code null} if none.
+     * @return {@code this} for method call chaining.
+     */
+    public WritableUntiledImage setGridGeometry(final GridGeometry ifKnown, final Function<RenderedImage, GridGeometry> supplier) {
+        gridGeometry = (ifKnown != null) ? ifKnown : supplier;
+        return this;
+    }
+
+    /**
+     * Returns the names of properties that this image can provide.
+     */
+    @Override
+    public String[] getPropertyNames() {
+        String[] names = super.getPropertyNames();  // May be null.
+        if (gridGeometry != null) {
+            if (names == null) {
+                names = new String[] {GRID_GEOMETRY_KEY};
+            } else {
+                names = ArraysExt.append(names, GRID_GEOMETRY_KEY);
+            }
+        }
+        return names;
+    }
+
+    /**
+     * Returns the property associated to the given key.
+     * If the key is {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY},
+     * then the {@link GridGeometry} will be computed when first needed.
+     *
+     * @param  name  name of the property to get.
+     * @return property value associated to the given name, or {@link #UndefinedProperty} if none.
+     * @throws ImagingOpException if the property value cannot be computed.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public Object getProperty(final String name) {
+        if (GRID_GEOMETRY_KEY.equals(name)) {
+            synchronized (this) {
+                if (gridGeometry != null) {
+                    if (gridGeometry instanceof GridGeometry) {
+                        return (GridGeometry) gridGeometry;
+                    }
+                    // `ClassCastException` should never occur here.
+                    return gridGeometry = ((Function<RenderedImage, GridGeometry>) gridGeometry).apply(this);
+                }
+            }
+        }
+        return super.getProperty(name);
+    }
+
+    /**
+     * Adds an observer to be notified when a tile is checked out for writing.
+     * If the observer is already present, it will receive multiple notifications.
+     *
+     * @param  observer  the observer to notify.
+     */
+    @Override
+    public synchronized void addTileObserver(final TileObserver observer) {
+        observers = addTileObserver(observers, observer);
     }
 
     /**
@@ -101,6 +199,18 @@ public class ObservableImage extends BufferedImage {
             observers[n] = observer;
         }
         return observers;
+    }
+
+    /**
+     * Removes an observer from the list of observers notified when a tile is checked out for writing.
+     * If the observer was not registered, nothing happens. If the observer was registered for multiple
+     * notifications, it will now be registered for one fewer.
+     *
+     * @param  observer  the observer to stop notifying.
+     */
+    @Override
+    public synchronized void removeTileObserver(final TileObserver observer) {
+        observers = removeTileObserver(observers, observer);
     }
 
     /**
@@ -125,6 +235,19 @@ public class ObservableImage extends BufferedImage {
 
     /**
      * Notifies all listeners that the specified tile has been checked out for writing or has been released.
+     * The notifications are sent only if the given {@code count} is zero.
+     *
+     * @param count           value of {@link #writeCount} before increment or after decrement.
+     * @param willBeWritable  if {@code true}, the tile will be grabbed for writing; otherwise it is being released.
+     */
+    private void fireTileUpdate(final int count, final boolean willBeWritable) {
+        if (count == 0) {
+            fireTileUpdate(observers, this, 0, 0, willBeWritable);
+        }
+    }
+
+    /**
+     * Notifies all listeners that the specified tile has been checked out for writing or has been released.
      *
      * @param observers       the observers to notify, or {@code null} if none.
      * @param image           the image that owns the tile.
@@ -139,42 +262,6 @@ public class ObservableImage extends BufferedImage {
             for (final TileObserver observer : observers) {
                 observer.tileUpdate(image, tileX, tileY, willBeWritable);
             }
-        }
-    }
-
-    /**
-     * Adds an observer to be notified when a tile is checked out for writing.
-     * If the observer is already present, it will receive multiple notifications.
-     *
-     * @param  observer  the observer to notify.
-     */
-    @Override
-    public synchronized void addTileObserver(final TileObserver observer) {
-        observers = addTileObserver(observers, observer);
-    }
-
-    /**
-     * Removes an observer from the list of observers notified when a tile is checked out for writing.
-     * If the observer was not registered, nothing happens. If the observer was registered for multiple
-     * notifications, it will now be registered for one fewer.
-     *
-     * @param  observer  the observer to stop notifying.
-     */
-    @Override
-    public synchronized void removeTileObserver(final TileObserver observer) {
-        observers = removeTileObserver(observers, observer);
-    }
-
-    /**
-     * Notifies all listeners that the specified tile has been checked out for writing or has been released.
-     * The notifications are sent only if the given {@code count} is zero.
-     *
-     * @param count           value of {@link #writeCount} before increment or after decrement.
-     * @param willBeWritable  if {@code true}, the tile will be grabbed for writing; otherwise it is being released.
-     */
-    private void fireTileUpdate(final int count, final boolean willBeWritable) {
-        if (count == 0) {
-            fireTileUpdate(observers, this, 0, 0, willBeWritable);
         }
     }
 

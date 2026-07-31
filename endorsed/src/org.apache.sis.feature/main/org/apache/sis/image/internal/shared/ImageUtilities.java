@@ -46,7 +46,7 @@ import static org.apache.sis.util.internal.shared.Numerics.COMPARISON_THRESHOLD;
 
 
 /**
- * Utility methods related to images and their color model or sample model.
+ * Utility methods related to images, their tiles, their color model and their sample model.
  * Those methods only fetch information, they do not create new rasters or sample/color models
  * (see {@code *Factory} classes for creating those objects).
  *

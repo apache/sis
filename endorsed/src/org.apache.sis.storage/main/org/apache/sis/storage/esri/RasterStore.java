@@ -45,7 +45,7 @@ import org.apache.sis.storage.base.PRJDataStore;
 import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.image.internal.shared.ColorModelFactory;
 import org.apache.sis.image.internal.shared.ColorModelBuilder;
-import org.apache.sis.image.internal.shared.ObservableImage;
+import org.apache.sis.image.internal.shared.WritableUntiledImage;
 import org.apache.sis.coverage.internal.shared.RangeArgument;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
@@ -464,7 +464,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
                 cm = ColorModelFactory.createGrayScale(data.getSampleModel(), VISIBLE_BAND, band.getSampleRange().orElse(null));
             }
         }
-        return new GridCoverage2D(domain, Arrays.asList(bands), new ObservableImage(cm, data, false, properties));
+        return new GridCoverage2D(domain, Arrays.asList(bands), new WritableUntiledImage(cm, data, false, properties));
     }
 
     /**

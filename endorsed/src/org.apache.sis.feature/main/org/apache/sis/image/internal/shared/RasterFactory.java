@@ -90,14 +90,14 @@ public final class RasterFactory {
             case DataBuffer.TYPE_BYTE:
             case DataBuffer.TYPE_USHORT: {
                 if (numComponents == 1 && ColorModelFactory.isStandardRange(dataType, minimum, maximum)) {
-                    return new ObservableImage(width, height, (dataType == DataBuffer.TYPE_BYTE)
+                    return new WritableUntiledImage(width, height, (dataType == DataBuffer.TYPE_BYTE)
                                 ? BufferedImage.TYPE_BYTE_GRAY : BufferedImage.TYPE_USHORT_GRAY);
                 }
                 break;
             }
         }
         final ColorModel cm = ColorModelFactory.createGrayScale(dataType, numComponents, visibleBand, minimum, maximum);
-        return new ObservableImage(cm, cm.createCompatibleWritableRaster(width, height), false, null);
+        return new WritableUntiledImage(cm, cm.createCompatibleWritableRaster(width, height), false, null);
     }
 
     /**

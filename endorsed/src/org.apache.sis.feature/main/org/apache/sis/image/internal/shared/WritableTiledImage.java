@@ -51,7 +51,7 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
      * Values are counter of calls to {@link #getWritableTile(int, int)}.
      * All accesses to this map shall be synchronized on the map instance.
      */
-    private final Map<Point,Integer> writables;
+    private final Map<Point, Integer> writables;
 
     /**
      * Creates a new tiled image.
@@ -83,7 +83,7 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
      */
     @Override
     public synchronized void addTileObserver(final TileObserver observer) {
-        observers = ObservableImage.addTileObserver(observers, observer);
+        observers = WritableUntiledImage.addTileObserver(observers, observer);
     }
 
     /**
@@ -95,7 +95,7 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
      */
     @Override
     public synchronized void removeTileObserver(final TileObserver observer) {
-        observers = ObservableImage.removeTileObserver(observers, observer);
+        observers = WritableUntiledImage.removeTileObserver(observers, observer);
     }
 
     /**
@@ -115,7 +115,7 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
             count = writables.merge(key, 1, (old, one) -> old + 1);
         }
         if (count <= 1) {
-            ObservableImage.fireTileUpdate(observers, this, tileX, tileY, true);
+            WritableUntiledImage.fireTileUpdate(observers, this, tileX, tileY, true);
         }
         return tile;
     }
@@ -144,7 +144,7 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
             throw new IllegalArgumentException(Resources.format(Resources.Keys.TileNotWritable_2, tileX, tileY));
         }
         if (close) {
-            ObservableImage.fireTileUpdate(observers, this, tileX, tileY, false);
+            WritableUntiledImage.fireTileUpdate(observers, this, tileX, tileY, false);
         }
     }
 
@@ -157,7 +157,7 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
      */
     @Override
     public boolean isTileWritable(final int tileX, final int tileY) {
-        final Point key = new Point(tileX, tileY);
+        final var key = new Point(tileX, tileY);
         synchronized (writables) {
             return writables.containsKey(key);
         }
@@ -207,7 +207,7 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
         final Rectangle bounds = data.getBounds();
         ImageUtilities.clipBounds(this, bounds);
         if (!bounds.isEmpty()) {
-            final TileOpExecutor op = new TileOpExecutor(this, bounds) {
+            final var op = new TileOpExecutor(this, bounds) {
                 @Override protected void writeTo(final WritableRaster target) {
                     target.setRect(data);
                 }
