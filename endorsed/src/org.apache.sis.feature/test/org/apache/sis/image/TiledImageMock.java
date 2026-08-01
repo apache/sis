@@ -16,10 +16,13 @@
  */
 package org.apache.sis.image;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
@@ -47,8 +50,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * A rendered image which can contain an arbitrary number of tiles. Tiles are stored in memory.
- * We use this class for testing purpose only because tiled images in production use need a more
- * sophisticated implementation capable to store some tiles on disk (for memory consumption reasons).
+ * We use this class for testing purpose only.
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -143,6 +145,29 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
     private ColorModel colorModel;
 
     /**
+     * Image properties as a writable map.
+     */
+    private final Map<String, Object> properties;
+
+    /**
+     * Creates a new tiled image starting a (0,0) and storing data as unsigned short (16 bits) integers.
+     * This is a convenience constructor for cases simpler than the full-featured constructor.
+     *
+     * @param width        number of pixels along X axis in the whole rendered image.
+     * @param height       number of pixels along Y axis in the whole rendered image.
+     * @param tileWidth    number of pixels along X axis in a single tile of the image.
+     * @param tileHeight   number of pixels along Y axis in a single tile of the image.
+     * @param numBands     number of bands in the sample model to create.
+     * @param banded       whether to use {@link BandedSampleModel} instead of {@link PixelInterleavedSampleModel}.
+     */
+    public TiledImageMock(final int width,     final int height,
+                          final int tileWidth, final int tileHeight,
+                          final int numBands,  final boolean banded)
+    {
+        this(DataBuffer.TYPE_SHORT, numBands, 0, 0, width, height, tileWidth, tileHeight, 0, 0, banded);
+    }
+
+    /**
      * Creates a new tiled image. Testers should invoke {@link #validate()} after construction.
      *
      * @param dataType     sample data type as one of the {@link java.awt.image.DataBuffer} constants.
@@ -178,6 +203,7 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
         this.sampleModel = banded ? new BandedSampleModel(dataType, tileWidth, tileHeight, numBands) :
                           new PixelInterleavedSampleModel(dataType, tileWidth, tileHeight, numBands,
                                  StrictMath.multiplyExact(numBands, tileWidth), ArraysExt.range(0, numBands));
+        this.properties  = new HashMap<>();
     }
 
     /**
@@ -210,8 +236,45 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
         return colorModel;
     }
 
-    /** Returns a sample model for data type given to the constructor. */
-    @Override public SampleModel getSampleModel() {return sampleModel;}
+    /**
+     * Returns a sample model for data type given to the constructor.
+     */
+    @Override
+    public SampleModel getSampleModel() {
+        return sampleModel;
+    }
+
+    /**
+     * Returns the name of all properties, or {@code null} if none.
+     *
+     * @return the name of all properties, or {@code null} if none.
+     */
+    @Override
+    public synchronized String[] getPropertyNames() {
+        return properties.isEmpty() ? null : properties.keySet().toArray(String[]::new);
+    }
+
+    /**
+     * Returns the value associated to the given property name.
+     *
+     * @param  name  name of the property to fetch.
+     * @return the associated value, or {@link Image#UndefinedProperty} if none.
+     */
+    @Override
+    public synchronized Object getProperty(final String name) {
+        return properties.getOrDefault(name, Image.UndefinedProperty);
+    }
+
+    /**
+     * Adds a value associated to the given property name.
+     * Each property name can be associated to a value only once.
+     *
+     * @param  name   name of the property to set.
+     * @param  value  value of the property.
+     */
+    public synchronized void addProperty(final String name, final Object value) {
+        assertNull(properties.putIfAbsent(name, value), name);
+    }
 
     /*
      * Information specified to the constructor.
