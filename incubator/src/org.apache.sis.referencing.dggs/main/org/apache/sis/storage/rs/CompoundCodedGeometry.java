@@ -19,9 +19,9 @@ package org.apache.sis.storage.rs;
 import java.util.List;
 import java.util.Optional;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.referencing.rs.ReferenceSystems;
 import org.apache.sis.storage.rs.internal.shared.CodeTransforms;
+import org.apache.sis.util.ArraysExt;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.referencing.ReferenceSystem;
 

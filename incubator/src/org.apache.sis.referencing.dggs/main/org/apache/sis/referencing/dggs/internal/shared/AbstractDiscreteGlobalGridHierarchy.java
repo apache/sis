@@ -20,10 +20,10 @@ import java.util.AbstractList;
 import java.util.List;
 import javax.measure.IncommensurableException;
 import javax.measure.Quantity;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGrid;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridHierarchy;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
+import org.apache.sis.util.ArgumentChecks;
 
 /**
  *

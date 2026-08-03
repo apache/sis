@@ -16,9 +16,6 @@
  */
 package org.apache.sis.storage.dggs;
 
-import org.apache.sis.referencing.dggs.Zone;
-import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
-import org.apache.sis.storage.dggs.internal.shared.GridAsDiscreteGlobalGridResource;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -26,9 +23,12 @@ import javax.measure.IncommensurableException;
 import javax.measure.Quantity;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGrid;
+import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
+import org.apache.sis.referencing.dggs.Zone;
 import org.apache.sis.referencing.rs.ReferenceSystems;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.dggs.internal.shared.GridAsDiscreteGlobalGridResource;
 import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.storage.rs.CodedGeometry;
 import org.apache.sis.storage.rs.CodedResource;

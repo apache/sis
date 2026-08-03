@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.rs;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -34,7 +33,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
-import org.apache.sis.storage.util.StringUtilities;
 
 /**
  * Holds the ordinates for geometry/area/zone/point within some reference system.
@@ -150,7 +148,7 @@ public final class Code {
 
     @Override
     public String toString() {
-        final List<String> parts = new ArrayList<>();
+        final StringBuilder sb = new StringBuilder("Code");
 
         final ReferenceSystem rs = getReferenceSystem();
         final List<ReferenceSystem> singleComponents = ReferenceSystems.getSingleComponents(rs, true);
@@ -158,17 +156,16 @@ public final class Code {
             final ReferenceSystem srs = singleComponents.get(i);
             if (srs instanceof TemporalCRS tcrs) {
                 Instant instant = DefaultTemporalCRS.castOrCopy(tcrs).toInstant(((Number)ordinates[i]).doubleValue());
-                parts.add(instant + " " + tcrs.getName().toString());
+                sb.append("\n  " + instant + " " + tcrs.getName().toString());
             } else if (srs instanceof CoordinateReferenceSystem crs) {
-                parts.add(ordinates[i] + " " + crs.getName().toString());
+                sb.append("\n  " + ordinates[i] + " " + crs.getName().toString());
             } else if (srs instanceof ReferencingByIdentifiers rbi) {
-                parts.add(ordinates[i] + " " + rbi.getName().toString());
+                sb.append("\n  " + ordinates[i] + " " + rbi.getName().toString());
             } else {
                 throw new UnsupportedOperationException("todo");
             }
         }
-
-        return StringUtilities.toStringTree("Location", parts);
+        return sb.toString();
     }
 
     @Override

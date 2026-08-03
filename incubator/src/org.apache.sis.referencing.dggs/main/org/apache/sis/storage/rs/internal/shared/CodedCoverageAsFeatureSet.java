@@ -30,18 +30,20 @@ import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
+import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
+import org.apache.sis.referencing.dggs.Zone;
+import org.apache.sis.referencing.rs.ReferenceSystems;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.iso.Names;
-import org.apache.sis.util.internal.shared.AbstractIterator;
-import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridSystems;
-import org.apache.sis.referencing.dggs.Zone;
+import org.apache.sis.storage.rs.CodeIterator;
+import org.apache.sis.storage.rs.CodeTransform;
 import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.storage.rs.CodedGeometry;
-import org.apache.sis.referencing.rs.ReferenceSystems;
-import org.apache.sis.storage.rs.CodeIterator;
+import org.apache.sis.storage.rs.WritableCodeIterator;
+import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.internal.shared.AbstractIterator;
+import org.apache.sis.util.iso.Names;
 import org.locationtech.jts.geom.CoordinateXY;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
@@ -51,8 +53,6 @@ import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.GenericName;
-import org.apache.sis.storage.rs.CodeTransform;
-import org.apache.sis.storage.rs.WritableCodeIterator;
 
 /**
  * View a DGGS Coverage as a FeatureSet.

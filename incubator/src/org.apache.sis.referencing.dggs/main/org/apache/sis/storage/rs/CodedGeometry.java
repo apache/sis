@@ -16,8 +16,6 @@
  */
 package org.apache.sis.storage.rs;
 
-import org.apache.sis.referencing.rs.ReferenceSystems;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -27,11 +25,11 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.geometry.Envelopes;
-import org.apache.sis.util.ArraysExt;
-import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
+import org.apache.sis.referencing.rs.ReferenceSystems;
+import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
 import org.apache.sis.storage.rs.internal.shared.CodeTransforms;
-import org.apache.sis.storage.util.StringUtilities;
+import org.apache.sis.util.ArraysExt;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.referencing.ReferenceSystem;
@@ -339,11 +337,11 @@ public class CodedGeometry {
 
     @Override
     public String toString() {
-        final List lst = new ArrayList();
-        if (rs != null) lst.add(rs);
-        if (extent != null) lst.add(extent);
-        if (gridToRS != null) lst.add(gridToRS);
-        return StringUtilities.toStringTree("ReferencedGridGeometry", lst);
+        final StringBuilder sb = new StringBuilder("CodedGeometry");
+        if (rs != null) sb.append("\n").append(rs);
+        if (extent != null) sb.append("\n").append(extent);
+        if (gridToRS != null) sb.append("\n").append(gridToRS);
+        return sb.toString();
     }
 
     @Override

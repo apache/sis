@@ -16,8 +16,6 @@
  */
 package org.apache.sis.storage.dggs;
 
-import org.apache.sis.referencing.dggs.Zone;
-import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
 import java.util.List;
 import javax.measure.IncommensurableException;
 import javax.measure.Quantity;
@@ -27,18 +25,20 @@ import org.apache.sis.geometries.operation.GeometryOperations;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGrid;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridHierarchy;
+import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
+import org.apache.sis.referencing.dggs.Zone;
+import org.apache.sis.storage.rs.CodeTransform;
 import org.apache.sis.storage.rs.CodedGeometry;
 import org.apache.sis.storage.rs.internal.shared.CodeTransforms;
+import org.apache.sis.util.Utilities;
 import org.opengis.geometry.Envelope;
+import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
-import org.apache.sis.storage.rs.CodeTransform;
-import org.opengis.metadata.extent.GeographicExtent;
 
 /**
  * DGGRS coverage geometry.

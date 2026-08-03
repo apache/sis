@@ -42,13 +42,13 @@ import org.apache.sis.geometry.wrapper.jts.JTS;
 import org.apache.sis.image.PixelIterator;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.storage.image.internal.BufferedImages;
-import org.apache.sis.storage.coverage.CoverageUtilities;
-import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
 import org.apache.sis.referencing.dggs.Zone;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.storage.coverage.CoverageUtilities;
+import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridSystems;
+import org.apache.sis.storage.image.internal.ImageBuilder;
 import org.apache.sis.storage.rs.CodeIterator;
 import org.locationtech.jts.geom.Polygon;
 import org.opengis.coverage.CannotEvaluateException;
@@ -111,7 +111,11 @@ public abstract class IndexedDiscreteGlobalGridCoverage extends AbstractDiscrete
             final int width = Math.toIntExact(extent.getSize(0));
             final int height = Math.toIntExact(extent.getSize(1));
             final MathTransform gridToCRS = tileArea.getGridToCRS(PixelInCell.CELL_CENTER);
-            final BufferedImage maskImage = BufferedImages.createImage(width, height, 1, DataBuffer.TYPE_BYTE);
+            final BufferedImage maskImage = new ImageBuilder()
+                    .setSize(width, height)
+                    .setNumBands(1)
+                    .setDataType(DataBuffer.TYPE_BYTE)
+                    .createBufferedImage();
             final Graphics2D g = maskImage.createGraphics();
             g.setColor(Color.WHITE);
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
@@ -125,7 +129,12 @@ public abstract class IndexedDiscreteGlobalGridCoverage extends AbstractDiscrete
             //prepare the coverage
             final double[] fillValue = new double[sampleDimensions.size()];
             Arrays.fill(fillValue, Double.NaN);
-            final BufferedImage image = BufferedImages.createImage(width, height, sampleDimensions.size(), DataBuffer.TYPE_DOUBLE, fillValue);
+            final BufferedImage image = new ImageBuilder()
+                    .setSize(width, height)
+                    .setNumBands(sampleDimensions.size())
+                    .setDataType(DataBuffer.TYPE_DOUBLE)
+                    .setFillValue(fillValue)
+                    .createBufferedImage();
             final WritableRaster raster = image.getRaster();
 
             final DiscreteGlobalGridReferenceSystem.Coder coder = dggrs.createCoder();

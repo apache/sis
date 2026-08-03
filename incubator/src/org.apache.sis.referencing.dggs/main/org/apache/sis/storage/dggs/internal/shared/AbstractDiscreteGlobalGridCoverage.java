@@ -31,13 +31,13 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.Utilities;
-import org.apache.sis.storage.image.internal.BufferedImages;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
-import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
+import org.apache.sis.storage.image.internal.ImageBuilder;
 import org.apache.sis.storage.rs.CodedCoverage;
+import org.apache.sis.util.Utilities;
 import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -94,7 +94,11 @@ public abstract class AbstractDiscreteGlobalGridCoverage extends CodedCoverage{
             final long lowX = extent.getLow(0);
             final long lowY = extent.getLow(1);
             final MathTransform gridToCRS = tileArea.getGridToCRS(PixelInCell.CELL_CENTER);
-            final BufferedImage image = BufferedImages.createImage(width, height, sampleDimensions.size(), DataBuffer.TYPE_DOUBLE);
+            final BufferedImage image = new ImageBuilder()
+                    .setSize(width, height)
+                    .setNumBands(sampleDimensions.size())
+                    .setDataType(DataBuffer.TYPE_DOUBLE)
+                    .createBufferedImage();
             final WritableRaster raster = image.getRaster();
 
             // Verify no overflow is possible before allocating any array

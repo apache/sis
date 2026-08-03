@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.rs.internal.shared;
 
-import org.apache.sis.storage.dggs.internal.shared.GridAsDiscreteGlobalGridResource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -32,23 +31,26 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridOrientation;
 import org.apache.sis.coverage.grid.GridRoundingMode;
-import org.apache.sis.geometries.math.DataType;
-import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.Array;
+import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.NDArrays;
+import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
+import org.apache.sis.referencing.rs.Code;
+import org.apache.sis.referencing.rs.ReferenceSystems;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.NoSuchDataException;
 import org.apache.sis.storage.RasterLoadingStrategy;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
-import org.apache.sis.referencing.rs.Code;
-import org.apache.sis.referencing.rs.ReferenceSystems;
+import org.apache.sis.storage.dggs.internal.shared.GridAsDiscreteGlobalGridResource;
+import org.apache.sis.storage.rs.CodeTransform;
 import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.storage.rs.CodedGeometry;
 import org.apache.sis.storage.rs.CodedResource;
+import org.apache.sis.storage.rs.WritableCodeIterator;
+import org.apache.sis.util.ArgumentChecks;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.ReferenceSystem;
@@ -57,8 +59,6 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
-import org.apache.sis.storage.rs.CodeTransform;
-import org.apache.sis.storage.rs.WritableCodeIterator;
 
 /**
  * View a grid coverage resource as a dggrs coverage resource.

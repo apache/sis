@@ -14,19 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.util;
+package org.apache.sis.storage.image.internal;
+
+import java.awt.Point;
 
 /**
- * Similar to BiFunction but with three input parameters.
  *
  * @author Johann Sorel (Geomatys)
- * @param <A> first parameter type
- * @param <B> second parameter type
- * @param <C> third parameter type
- * @param <R> returned type
  */
-public interface TriFunction<A,B,C,R> {
+public interface MergeOperator {
 
-    R apply(A a, B b, C c);
-
+    double[] apply(Point pt, double[] source, double[] target);
 }

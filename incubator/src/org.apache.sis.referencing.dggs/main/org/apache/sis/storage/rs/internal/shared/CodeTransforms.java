@@ -29,14 +29,14 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.rs.Code;
 import org.apache.sis.referencing.rs.ReferenceSystems;
+import org.apache.sis.storage.rs.CodeTransform;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
-import org.apache.sis.storage.rs.CodeTransform;
-import org.opengis.referencing.operation.Matrix;
 
 /**
  *
