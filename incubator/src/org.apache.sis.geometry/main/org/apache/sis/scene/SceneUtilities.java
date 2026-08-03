@@ -14,30 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.scene;
+
+import org.apache.sis.geometries.math.Matrix;
+import org.apache.sis.geometries.math.Similarity3D;
 
 /**
- * Geometries.
  *
  * @author Johann Sorel (Geomatys)
  */
-module org.apache.sis.geometry {
-    requires esri.geometry.api;     // TODO: remove (this is for tests).
-    requires org.apache.sis.feature;
-    requires org.apache.sis.util;
-    requires transitive org.apache.sis.storage;
+public final class SceneUtilities {
 
+    private SceneUtilities(){}
 
-    exports org.apache.sis.geometries;
-    exports org.apache.sis.geometries.operation;
-    exports org.apache.sis.geometries.processor;
-    exports org.apache.sis.geometries.math;
-    exports org.apache.sis.scene;
-    exports org.apache.sis.scene.light;
-    exports org.apache.sis.scene.material;
-    exports org.apache.sis.scene.physics;
+    /**
+     * Compute the root to node transform.
+     */
+    public static Similarity3D computeRootOtNodeTransform(SceneNode node) {
 
-    exports org.apache.sis.geometries.internal.shared to
-            org.apache.sis.referencing.dggs;
+        Matrix<?> matrix = node.getTransform().toMatrix();
+        SceneNode parent = node.getParent();
+        while (parent != null) {
+            Matrix<?> m = parent.getTransform().toMatrix();
+            matrix = m.multiply(matrix);
+            parent = parent.getParent();
+        }
 
-
+        final Similarity3D t = new Similarity3D();
+        t.setFromMatrix(matrix);
+        return t;
+    }
 }

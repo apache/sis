@@ -16,28 +16,12 @@
  */
 
 /**
- * Geometries.
+ * This package contains a simplified version of a scene model.
  *
- * @author Johann Sorel (Geomatys)
+ * Based on specifications :
+ * <ul>
+ * <li>Khronos GLTF-2 https://github.com/KhronosGroup/glTF/tree/main/specification/2.0</li>
+ * <li>Khronos ANARI https://github.com/KhronosGroup/ANARI-SDK</li>
+ * </ul>
  */
-module org.apache.sis.geometry {
-    requires esri.geometry.api;     // TODO: remove (this is for tests).
-    requires org.apache.sis.feature;
-    requires org.apache.sis.util;
-    requires transitive org.apache.sis.storage;
-
-
-    exports org.apache.sis.geometries;
-    exports org.apache.sis.geometries.operation;
-    exports org.apache.sis.geometries.processor;
-    exports org.apache.sis.geometries.math;
-    exports org.apache.sis.scene;
-    exports org.apache.sis.scene.light;
-    exports org.apache.sis.scene.material;
-    exports org.apache.sis.scene.physics;
-
-    exports org.apache.sis.geometries.internal.shared to
-            org.apache.sis.referencing.dggs;
-
-
-}
+package org.apache.sis.scene;

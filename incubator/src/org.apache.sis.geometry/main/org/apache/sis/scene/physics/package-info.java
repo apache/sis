@@ -16,28 +16,12 @@
  */
 
 /**
- * Geometries.
+ * This package contains physical model description, also called Rigid-Bodies.
  *
- * @author Johann Sorel (Geomatys)
+ * Based on specifications :
+ * <ul>
+ * <li>Khronos GLTF-2 : KHR_implicit_shapes https://github.com/eoineoineoin/glTF_Physics/tree/master/extensions/2.0/Khronos/KHR_implicit_shapes</li>
+ * <li>Khronos GLTF-2 : KHR_physics_rigid_bodies https://github.com/eoineoineoin/glTF_Physics/tree/master/extensions/2.0/Khronos/KHR_physics_rigid_bodies</li>
+ * </ul>
  */
-module org.apache.sis.geometry {
-    requires esri.geometry.api;     // TODO: remove (this is for tests).
-    requires org.apache.sis.feature;
-    requires org.apache.sis.util;
-    requires transitive org.apache.sis.storage;
-
-
-    exports org.apache.sis.geometries;
-    exports org.apache.sis.geometries.operation;
-    exports org.apache.sis.geometries.processor;
-    exports org.apache.sis.geometries.math;
-    exports org.apache.sis.scene;
-    exports org.apache.sis.scene.light;
-    exports org.apache.sis.scene.material;
-    exports org.apache.sis.scene.physics;
-
-    exports org.apache.sis.geometries.internal.shared to
-            org.apache.sis.referencing.dggs;
-
-
-}
+package org.apache.sis.scene.physics;
