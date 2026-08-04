@@ -16,25 +16,16 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.sis.storage.json.AbstractBindingTest;
 
 // Test dependencies
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -42,45 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Johann Sorel (Geomatys)
  */
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class BindingTest {
-
-    private final ObjectMapper mapper;
-
-    public BindingTest() {
-        mapper = new ObjectMapper();
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
-    }
-
-    public static String readResource(String path) throws IOException {
-        final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-        int nRead;
-        byte[] data = new byte[16384];
-        try (InputStream in = BindingTest.class.getResourceAsStream(path)) {
-            while ((nRead = in.read(data, 0, data.length)) != -1) {
-              buffer.write(data, 0, nRead);
-            }
-        }
-        buffer.flush();
-        return new String(buffer.toByteArray(), StandardCharsets.UTF_8);
-    }
-
-    private void compare(String jsonpath, Object expected) throws IOException {
-        String json = readResource(jsonpath);
-        //reformat it the same way.
-        JsonNode map = mapper.readTree(json);
-        String formattedJson = mapper.writeValueAsString(map);
-
-        final Object candidate = mapper.readValue(json, expected.getClass());
-        expected.equals(candidate);
-        assertEquals(expected, candidate);
-        assertEquals(formattedJson, mapper.writeValueAsString(candidate));
-    }
-
-    @AfterAll
-    public void afterClass() throws Exception {
-    }
+public class BindingTest extends AbstractBindingTest {
 
     @Test
     public void testAxeBounds() throws Exception {

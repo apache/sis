@@ -1,0 +1,17 @@
+{
+  "type": "Polygon",
+  "coordinates": [
+    [
+      [100.0, 0.0, 0.0],
+      [101.0, 0.0, 1.0],
+      [101.0, 1.0, 2.0],
+      [100.0, 1.0, 3.0],
+      [100.0, 0.0, 0.0]
+    ]
+  ],
+  "measures": {
+    "enabled": true,
+    "unit": "m",
+    "description": "Example measure value carried by this geometry."
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "Feature",
+  "id": "time-date",
+  "conformsTo": [
+    "http://www.opengis.net/spec/json-fg-1/1.0/conf/core"
+  ],
+  "time": {
+    "date": "2021-06-10"
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [7.7, 51.9]
+  },
+  "properties": null
+}

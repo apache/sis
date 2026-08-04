@@ -1,0 +1,21 @@
+{
+  "type": "Polyhedron",
+  "coordinates": [
+    [
+      [
+        [
+          [0.0, 0.0, 0.0, 0.0],
+          [1.0, 0.0, 0.0, 1.0],
+          [1.0, 1.0, 0.0, 2.0],
+          [0.0, 1.0, 0.0, 3.0],
+          [0.0, 0.0, 0.0, 0.0]
+        ]
+      ]
+    ]
+  ],
+  "measures": {
+    "enabled": true,
+    "unit": "m",
+    "description": "Example measure value carried by this geometry."
+  }
+}

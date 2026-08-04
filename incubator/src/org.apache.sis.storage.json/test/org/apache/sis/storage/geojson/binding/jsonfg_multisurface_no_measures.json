@@ -1,0 +1,32 @@
+{
+  "type": "MultiSurface",
+  "geometries": [
+    {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [0.0, 0.0],
+          [1.0, 0.0],
+          [1.0, 1.0],
+          [0.0, 1.0],
+          [0.0, 0.0]
+        ]
+      ]
+    },
+    {
+      "type": "CurvePolygon",
+      "geometries": [
+        {
+          "type": "LineString",
+          "coordinates": [
+            [2.0, 2.0],
+            [3.0, 2.0],
+            [3.0, 3.0],
+            [2.0, 3.0],
+            [2.0, 2.0]
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -26,6 +26,7 @@
  * @author  Johann Sorel (Geomatys)
  */
 module org.apache.sis.storage.json {
+    requires static org.locationtech.jts;
     // Dependencies used in public API.
     requires transitive org.apache.sis.referencing;
     requires transitive org.apache.sis.storage;
