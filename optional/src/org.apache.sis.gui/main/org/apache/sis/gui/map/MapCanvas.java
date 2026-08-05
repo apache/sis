@@ -407,7 +407,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * {@linkplain #setObjectiveCRS(CoordinateReferenceSystem, DirectPosition) objective CRS} of this canvas.
      * The {@code visibleArea} {@linkplain GridGeometry#getEnvelope() envelope} defines the (usually constant)
      * {@linkplain #setObjectiveBounds(Envelope) objective bounds} of this canvas.
-     * In addition if {@code visibleArea} contains a {@linkplain GridGeometry#getGridToCRS grid to CRS} transform,
+     * In addition, if {@code visibleArea} contains a {@linkplain GridGeometry#getGridToCRS grid to CRS} transform,
      * its inverse will define the initial {@linkplain #setObjectiveToDisplay objective to display} transform
      * (which in turn defines the initial viewed area and zoom level).
      *
@@ -416,7 +416,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * cause new repaint event; {@link #requestRepaint()} must be invoked by the caller if desired.</p>
      *
      * @param  visibleArea  bounding box, objective <abbr>CRS</abbr> and or initial zoom level,
-     *         or {@code null} if unknown (in which case an identity transform will be set).
+     *         or {@code null} for a default transform showing fully the map.
      * @throws MismatchedDimensionException if the given grid geometry is not two-dimensional.
      *
      * @see #setObjectiveBounds(Envelope)
