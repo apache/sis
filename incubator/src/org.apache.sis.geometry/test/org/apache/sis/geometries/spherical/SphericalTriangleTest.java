@@ -34,8 +34,6 @@ public class SphericalTriangleTest {
 
     private static final double TOLERANCE = 1e-12;
 
-    private final Sphere sphere = new Sphere(3);
-
     /**
      * Triangle covering the octant of the sphere where x,y,z are all positive.
      * Corners are given in CCW order viewed from outside the sphere.
@@ -43,13 +41,13 @@ public class SphericalTriangleTest {
     private final ReadOnly.Vector<?> a = new Vector3D.Double(1, 0, 0);
     private final ReadOnly.Vector<?> b = new Vector3D.Double(0, 1, 0);
     private final ReadOnly.Vector<?> c = new Vector3D.Double(0, 0, 1);
-    private final SphericalTriangle triangle = new SphericalTriangle(sphere, a, b, c);
 
     /**
      * Constructor and corner accessors test.
      */
     @Test
     public void constructorTest() {
+        final SphericalTriangle triangle = new SphericalTriangle(new Sphere(3), a, b, c);
         assertSame(a, triangle.getA());
         assertSame(b, triangle.getB());
         assertSame(c, triangle.getC());
@@ -60,19 +58,45 @@ public class SphericalTriangleTest {
      */
     @Test
     public void getCentroidTest() {
+        final SphericalTriangle triangle = new SphericalTriangle(new Sphere(3), a, b, c);
         final ReadOnly.Vector<?> centroid = triangle.getCentroid();
         final double v = 1.0 / Math.sqrt(3.0);
         assertArrayEquals(new double[]{v, v, v}, centroid.toArrayDouble(), TOLERANCE);
     }
 
     /**
-     * Contains test, using the single argument overload which relies on the
-     * class default epsilon of -1e9. Since this epsilon is far below the
-     * range of possible dot product values for unit vectors, this method
-     * currently returns true regardless of the tested point.
+     * Spherical excess test.
+     * The octant triangle (1,0,0),(0,1,0),(0,0,1) has three right angles,
+     * so its spherical excess is 3*(PI/2) - PI = PI/2.
+     */
+    @Test
+    public void getSphericalExcessTest() {
+        final SphericalTriangle triangle = new SphericalTriangle(new Sphere(3), a, b, c);
+        assertEquals(Math.PI / 2, triangle.getSphericalExcess(), TOLERANCE);
+    }
+
+    /**
+     * Area test.
+     * The octant triangle covers 1/8th of the sphere surface (4*PI*r^2),
+     * so its area is PI/2 * r^2.
+     */
+    @Test
+    public void getAreaTest() {
+        final SphericalTriangle triangle = new SphericalTriangle(new Sphere(3), a, b, c);
+        assertEquals(Math.PI / 2, triangle.getArea(), TOLERANCE);
+
+        final Sphere biggerSphere = new Sphere(3);
+        biggerSphere.setRadius(2);
+        final SphericalTriangle biggerTriangle = new SphericalTriangle(biggerSphere, a, b, c);
+        assertEquals(Math.PI / 2 * 4, biggerTriangle.getArea(), TOLERANCE);
+    }
+
+    /**
+     * Contains test.
      */
     @Test
     public void containsTest() {
+        final SphericalTriangle triangle = new SphericalTriangle(new Sphere(3), a, b, c);
         assertTrue(triangle.contains(triangle.getA()));
         assertTrue(triangle.contains(triangle.getB()));
         assertTrue(triangle.contains(triangle.getC()));
@@ -87,6 +111,7 @@ public class SphericalTriangleTest {
      */
     @Test
     public void quadSubdivideTest() {
+        final SphericalTriangle triangle = new SphericalTriangle(new Sphere(3), a, b, c);
         final SphericalTriangle[] children = triangle.quadSubdivide();
         assertEquals(4, children.length);
 

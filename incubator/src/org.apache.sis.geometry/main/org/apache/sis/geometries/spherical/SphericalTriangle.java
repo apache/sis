@@ -81,6 +81,38 @@ public final class SphericalTriangle {
     }
 
     /**
+     * Compute the spherical excess of this triangle : the sum of its three
+     * angles minus PI.
+     *
+     * @see <a href="https://mathworld.wolfram.com/SphericalExcess.html">Spherical Excess</a>
+     * @return spherical excess in radians
+     */
+    public double getSphericalExcess() {
+        final double cosA = clamp(vecB.dot(vecC));
+        final double cosB = clamp(vecC.dot(vecA));
+        final double cosC = clamp(vecA.dot(vecB));
+        final double sinA = Math.sqrt(1 - cosA * cosA);
+        final double sinB = Math.sqrt(1 - cosB * cosB);
+        final double sinC = Math.sqrt(1 - cosC * cosC);
+
+        final double angleA = Math.acos(clamp((cosA - cosB * cosC) / (sinB * sinC)));
+        final double angleB = Math.acos(clamp((cosB - cosC * cosA) / (sinC * sinA)));
+        final double angleC = Math.acos(clamp((cosC - cosA * cosB) / (sinA * sinB)));
+
+        return angleA + angleB + angleC - Math.PI;
+    }
+
+    /**
+     * Compute the area of this triangle, using the sphere radius.
+     *
+     * @return triangle area, in the sphere radius squared units
+     */
+    public double getArea() {
+        final double radius = sphere.getRadius();
+        return getSphericalExcess() * radius * radius;
+    }
+
+    /**
      * Test if given vector is contained in this triangle with default epsilon -1e-9.
      *
      * @param vecP vector to test
@@ -130,4 +162,11 @@ public final class SphericalTriangle {
         return p.copy().add(q).normalize();
     }
 
+    /**
+     * Clamp a value in the [-1 ... 1] range, to avoid NaN results from
+     * {@link Math#acos(double) } caused by floating point rounding errors.
+     */
+    private static double clamp(double value) {
+        return Math.max(-1, Math.min(1, value));
+    }
 }
