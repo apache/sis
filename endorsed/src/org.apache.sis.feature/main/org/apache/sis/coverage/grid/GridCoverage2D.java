@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.text.NumberFormat;
 import java.text.FieldPosition;
@@ -91,7 +92,7 @@ import org.opengis.coverage.CannotEvaluateException;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   1.1
  */
 public class GridCoverage2D extends GridCoverage {
@@ -168,7 +169,7 @@ public class GridCoverage2D extends GridCoverage {
     /**
      * Constructs a grid coverage using the same domain and range than the given coverage, but different data.
      * This constructor can be used when new data have been computed by an image processing operation,
-     * but each pixel of the result have the same coordinates and the same units of measurement
+     * and each pixel of the result has the same coordinates and the same units of measurement
      * than in the source coverage.
      *
      * @param  source  the coverage from which to copy grid geometry and sample dimensions.
@@ -180,7 +181,8 @@ public class GridCoverage2D extends GridCoverage {
      */
     @SuppressWarnings("this-escape")    // The invoked method does not store `this` and is not overrideable.
     public GridCoverage2D(final GridCoverage source, RenderedImage data) {
-        super(source, source.getGridGeometry());
+        // Read `gridGeometry` instead of `getGridGeometry()` for consistency with other field reads.
+        super(source, source.gridGeometry);
         this.data = data = unwrapIfSameSize(Objects.requireNonNull(data));
         final GridExtent extent = gridGeometry.getExtent();
         final int[] imageAxes;
@@ -433,6 +435,42 @@ public class GridCoverage2D extends GridCoverage {
     @Override
     final DataType getBandType() {
         return DataType.forBands(data);
+    }
+
+    /**
+     * Returns the given coverage as a two-dimensional coverage if possible.
+     * If the given coverage is already an instance of {@code GridCoverage2D}, then it is returned as-is.
+     * Otherwise, if the given coverage is two-dimensional or is a two-dimensional slice in a multi-dimensional cube,
+     * then this method invokes {@code other.render(null)} and returns the result wrapped in a new {@code GridCoverage2D}.
+     * Otherwise, this method returns an empty value.
+     *
+     * <p>Note that in some grid coverage implementations,
+     * the call to {@code other.render(…)} may force immediate loading or computation of coverage data.
+     * This side-effect is sometime desirable and may be a reason to invoke this {@code castOrRender(…)} method.</p>
+     *
+     * @param  other  the other coverage to view as a two-dimensional coverage.
+     * @return the two-dimensional coverage, or empty if the given coverage is null or effectively multi-dimensional.
+     * @throws CannotEvaluateException if an error occurred during the execution of {@code other.render(null)}.
+     * @throws IllegalArgumentException if the image size or number of bands is inconsistent with the coverage.
+     *
+     * @see #render(GridExtent)
+     *
+     * @since 1.7
+     */
+    public static Optional<GridCoverage2D> castOrRender(final GridCoverage other) {
+        if (other != null) {
+            if (other instanceof GridCoverage2D) {
+                return Optional.of((GridCoverage2D) other);
+            }
+            final int dimension = other.gridGeometry.getDimension();
+            if (dimension >= BIDIMENSIONAL) {
+                final GridExtent extent = other.gridGeometry.extent;
+                if ((extent != null ? extent.getDegreesOfFreedom() : dimension) <= BIDIMENSIONAL) {
+                    return Optional.of(new GridCoverage2D(other, other.render(null)));
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     /**

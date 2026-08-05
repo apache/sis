@@ -284,7 +284,7 @@ final class ImageTileMatrix implements TileMatrix {
      */
     private synchronized TiledGridCoverage coverage() throws DataStoreException {
         if (coverage == null) {
-            coverage = resource.readAtGetTileTime();
+            coverage = resource.readAtGetTileTime(null, null);
         }
         return coverage;
     }

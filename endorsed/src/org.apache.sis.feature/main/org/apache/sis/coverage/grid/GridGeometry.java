@@ -1782,7 +1782,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
-     * Returns a grid geometry with the given grid extent, which implies a new "real world" computation.
+     * Returns a grid geometry with the given grid extent, which implies a new "real world" envelope.
      * The "grid to CRS" transforms and the resolution stay the same as this {@code GridGeometry}.
      * The "real world" envelope is recomputed for the new grid extent using the "grid to CRS" transforms.
      *

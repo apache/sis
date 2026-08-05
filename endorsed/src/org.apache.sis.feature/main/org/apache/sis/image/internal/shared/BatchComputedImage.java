@@ -126,6 +126,10 @@ public abstract class BatchComputedImage extends ComputedImage {
      * It is implementer responsibility to ensure that all rasters have consistent
      * {@link Raster#getMinX()}/{@code getMinY()} values.
      *
+     * <h4>Multi-threading</h4>
+     * This method may be invoked simultaneously in different threads for different tiles.
+     * Implementations need to synchronize themselves if tile computation uses non thread-safe resources.
+     *
      * @todo The return type should be changed to something more reactive, maybe {@link java.util.concurrent.Flow}.
      *       It would allow processing (e.g. map reprojection) of some tiles as soon as they become available,
      *       without waiting for all tiles to be available. Note that the tiles can be returned in any order.

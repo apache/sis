@@ -355,7 +355,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * Returns the immediate sources of image data for this image (may be {@code null}).
      * This method returns all sources specified at construction time.
      *
-     * @return the immediate sources, or an empty vector is none, or {@code null} if unknown.
+     * @return the immediate sources, or an empty vector if none, or {@code null} if unknown.
      */
     @Override
     @SuppressWarnings("UseOfObsoleteCollectionType")
@@ -555,6 +555,12 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      *         return tile;
      *     }
      * }
+     *
+     * <h4>Multi-threading</h4>
+     * This method may be invoked simultaneously in different threads for different tiles.
+     * Implementations need to synchronize themselves if tile computation uses non thread-safe resources.
+     * Note that {@link #getTile(int, int)} does not invoke this method simultaneously for the same tile.
+     * Therefore, implementations do not need to protect against duplicated computations.
      *
      * <h4>Error handling</h4>
      * If this method throws an exception or returns {@code null}, then {@link #getTile(int, int) getTile(…)}
