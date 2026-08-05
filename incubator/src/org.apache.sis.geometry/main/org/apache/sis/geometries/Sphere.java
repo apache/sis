@@ -59,6 +59,24 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
         center = Vectors.createDouble(crs);
     }
 
+    /**
+     * @param dimension number of dimensions of the sphere, must be positive.
+     * @param radius radius new sphere radius, must be positive.
+     */
+    public Sphere(int dimension, double radius) {
+        this(Geometries.getUndefinedCRS(dimension));
+        this.radius = radius;
+    }
+
+    /**
+     * @param crs sphere coordinate system, not null.
+     * @param radius radius new sphere radius, must be positive.
+     */
+    public Sphere(CoordinateReferenceSystem crs, double radius) {
+        center = Vectors.createDouble(crs);
+        this.radius = radius;
+    }
+
     @Override
     public String getGeometryType() {
         return "SPHERE";

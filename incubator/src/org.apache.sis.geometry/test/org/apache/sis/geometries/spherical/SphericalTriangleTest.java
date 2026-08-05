@@ -59,7 +59,7 @@ public class SphericalTriangleTest {
     @Test
     public void getCentroidTest() {
         final SphericalTriangle triangle = new SphericalTriangle(new Sphere(3), a, b, c);
-        final ReadOnly.Vector<?> centroid = triangle.getCentroid();
+        final ReadOnly.Vector<?> centroid = triangle.getCentroidVector();
         final double v = 1.0 / Math.sqrt(3.0);
         assertArrayEquals(new double[]{v, v, v}, centroid.toArrayDouble(), TOLERANCE);
     }
@@ -85,9 +85,7 @@ public class SphericalTriangleTest {
         final SphericalTriangle triangle = new SphericalTriangle(new Sphere(3), a, b, c);
         assertEquals(Math.PI / 2, triangle.getArea(), TOLERANCE);
 
-        final Sphere biggerSphere = new Sphere(3);
-        biggerSphere.setRadius(2);
-        final SphericalTriangle biggerTriangle = new SphericalTriangle(biggerSphere, a, b, c);
+        final SphericalTriangle biggerTriangle = new SphericalTriangle(new Sphere(3, 2), a, b, c);
         assertEquals(Math.PI / 2 * 4, biggerTriangle.getArea(), TOLERANCE);
     }
 
@@ -100,7 +98,7 @@ public class SphericalTriangleTest {
         assertTrue(triangle.contains(triangle.getA()));
         assertTrue(triangle.contains(triangle.getB()));
         assertTrue(triangle.contains(triangle.getC()));
-        assertTrue(triangle.contains(triangle.getCentroid()));
+        assertTrue(triangle.contains(triangle.getCentroidVector()));
         assertFalse(triangle.contains(new Vector3D.Double(-1, 0, 0)));
         assertFalse(triangle.contains(new Vector3D.Double(0, -1, 0)));
         assertFalse(triangle.contains(new Vector3D.Double(0, 0, -1)));

@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.spherical;
 
 import org.apache.sis.geometries.Sphere;
+import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.ReadOnly;
 
 /**
@@ -27,9 +28,21 @@ import org.apache.sis.geometries.math.ReadOnly;
  */
 public final class SphericalTriangle {
 
+    /**
+     * base sphere.
+     */
     private final Sphere sphere;
+    /**
+     * first triangle point, as a unit direction vector from the sphere center
+     */
     private final ReadOnly.Vector<?> vecA;
+    /**
+     * second triangle point, as a unit direction vector from the sphere center
+     */
     private final ReadOnly.Vector<?> vecB;
+    /**
+     * third triangle point, as a unit direction vector from the sphere center
+     */
     private final ReadOnly.Vector<?> vecC;
 
     /**
@@ -50,6 +63,13 @@ public final class SphericalTriangle {
         this.vecA = vecA;
         this.vecB = vecB;
         this.vecC = vecC;
+    }
+
+    /**
+     * @return the base sphere
+     */
+    public Sphere getSphere() {
+        return sphere;
     }
 
     /**
@@ -76,7 +96,7 @@ public final class SphericalTriangle {
     /**
      * @return triangle centroid unit direction vector from the sphere center
      */
-    public ReadOnly.Vector<?> getCentroid() {
+    public ReadOnly.Vector<?> getCentroidVector() {
         return vecA.copy().add(vecB).add(vecC).normalize();
     }
 
@@ -88,17 +108,15 @@ public final class SphericalTriangle {
      * @return spherical excess in radians
      */
     public double getSphericalExcess() {
-        final double cosA = clamp(vecB.dot(vecC));
-        final double cosB = clamp(vecC.dot(vecA));
-        final double cosC = clamp(vecA.dot(vecB));
+        final double cosA = Maths.clamp(vecB.dot(vecC),-1,1);
+        final double cosB = Maths.clamp(vecC.dot(vecA),-1,1);
+        final double cosC = Maths.clamp(vecA.dot(vecB),-1,1);
         final double sinA = Math.sqrt(1 - cosA * cosA);
         final double sinB = Math.sqrt(1 - cosB * cosB);
         final double sinC = Math.sqrt(1 - cosC * cosC);
-
-        final double angleA = Math.acos(clamp((cosA - cosB * cosC) / (sinB * sinC)));
-        final double angleB = Math.acos(clamp((cosB - cosC * cosA) / (sinC * sinA)));
-        final double angleC = Math.acos(clamp((cosC - cosA * cosB) / (sinA * sinB)));
-
+        final double angleA = Math.acos(Maths.clamp((cosA - cosB * cosC) / (sinB * sinC),-1,1));
+        final double angleB = Math.acos(Maths.clamp((cosB - cosC * cosA) / (sinC * sinA),-1,1));
+        final double angleC = Math.acos(Maths.clamp((cosC - cosA * cosB) / (sinA * sinB),-1,1));
         return angleA + angleB + angleC - Math.PI;
     }
 
@@ -162,11 +180,4 @@ public final class SphericalTriangle {
         return p.copy().add(q).normalize();
     }
 
-    /**
-     * Clamp a value in the [-1 ... 1] range, to avoid NaN results from
-     * {@link Math#acos(double) } caused by floating point rounding errors.
-     */
-    private static double clamp(double value) {
-        return Math.max(-1, Math.min(1, value));
-    }
 }
