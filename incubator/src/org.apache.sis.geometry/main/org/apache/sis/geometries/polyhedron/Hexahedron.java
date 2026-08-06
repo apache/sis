@@ -16,11 +16,53 @@
  */
 package org.apache.sis.geometries.polyhedron;
 
+import org.apache.sis.geometries.Polygon;
+import org.apache.sis.geometries.math.Array;
+import org.apache.sis.geometries.math.ArrayFactoryJava;
+import org.apache.sis.geometries.math.DataType;
+import org.apache.sis.geometries.math.ReadOnly;
+
 /**
  *
  * @see https://mathworld.wolfram.com/Cube.html
  * @author Johann Sorel (Geomatys)
  */
 public final class Hexahedron extends AbstractPolyhedron{
+
+    private static final Array VERTICES = ArrayFactoryJava.INSTANCE.builder()
+        .dataType(DataType.DOUBLE).values(new ReadOnly.Vector<?>[]{
+        fromLatLon( CUBE_LAT,    Math.PI/4),
+        fromLatLon(-CUBE_LAT,    Math.PI/4),
+        fromLatLon( CUBE_LAT,   -Math.PI/4),
+        fromLatLon(-CUBE_LAT,   -Math.PI/4),
+        fromLatLon( CUBE_LAT,  3*Math.PI/4),
+        fromLatLon(-CUBE_LAT,  3*Math.PI/4),
+        fromLatLon( CUBE_LAT, -3*Math.PI/4),
+        fromLatLon(-CUBE_LAT, -3*Math.PI/4)
+    }, true).build();
+
+    private static final int[][] FACES = {
+        {1, 0, 2, 3, 1},
+        {4, 0, 1, 5, 4},
+        {2, 0, 4, 6, 2},
+        {5, 1, 3, 7, 5},
+        {3, 2, 6, 7, 3},
+        {6, 4, 5, 7, 6}
+    };
+
+    @Override
+    public int getFaceCount() {
+        return FACES.length;
+    }
+
+    @Override
+    public Polygon getFace(int index) {
+        return toPolygon(VERTICES, FACES[index]);
+    }
+
+    @Override
+    public int getFace(ReadOnly.Vector<?> unitVector) {
+        return nearestFace(VERTICES, FACES, unitVector);
+    }
 
 }
