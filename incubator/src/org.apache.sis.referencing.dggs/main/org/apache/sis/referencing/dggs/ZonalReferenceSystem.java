@@ -24,6 +24,9 @@ package org.apache.sis.referencing.dggs;
  *
  * @author Johann Sorel (Geomatys)
  * @see https://docs.ogc.org/DRAFTS/21-038r1.html#term-zirs
+ * @see https://www.mdpi.com/2220-9964/4/1/320 for the different kind of indexing
+ * @see https://docs.ogc.org/per/23-010.html#_the_pyxis_indexing for pyxis indexing
+ * @see https://defs.opengis.net/prez/catalogs/ogc-cat:register/col/def:dggrs for DGGRS ZIRS definitions
  */
 public interface ZonalReferenceSystem {
 
