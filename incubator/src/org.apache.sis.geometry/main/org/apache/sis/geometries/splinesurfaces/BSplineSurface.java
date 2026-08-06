@@ -19,7 +19,6 @@ package org.apache.sis.geometries.splinesurfaces;
 import java.util.List;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
-import org.opengis.geometry.coordinate.BSplineSurfaceForm;
 import org.apache.sis.geometries.Knot;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.ParametricCurveSurface;
