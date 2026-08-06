@@ -145,7 +145,7 @@ public final class SphericalTriangle {
      *
      * @param vecP vector to test
      * @param epsilon edge tolerance, should be a negative value close to zero
-     * @return true if vector is inside triangle
+     * @return true if vector is inside the triangle
      */
     public boolean contains(ReadOnly.Vector<?> vecP, double epsilon) {
         return vecP.dot(vecA.cross(vecB)) >= epsilon
