@@ -34,9 +34,9 @@ import org.apache.sis.util.Disposable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;       // For javadoc
+import org.apache.sis.image.internal.Summarizer;
 import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.image.internal.shared.TileOpExecutor;
-import org.apache.sis.image.internal.shared.Summarizer;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.pending.jdk.JDK18;
 

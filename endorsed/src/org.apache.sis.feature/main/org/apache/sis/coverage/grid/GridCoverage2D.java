@@ -42,9 +42,9 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.image.DataType;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.image.internal.Summarizer;
 import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.image.internal.shared.ReshapedImage;
-import org.apache.sis.image.internal.shared.Summarizer;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
@@ -719,6 +719,6 @@ public class GridCoverage2D extends GridCoverage {
     void appendDataLayout(TreeTable.Node root, final Vocabulary vocabulary, final TableColumn<CharSequence> column) {
         root = root.newChild();
         root.setValue(column, vocabulary.getString(Vocabulary.Keys.RenderedImage));
-        new Summarizer(root, vocabulary, column).layout(data);
+        Summarizer.layout(data, root, column, vocabulary);
     }
 }
