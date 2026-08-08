@@ -20,7 +20,6 @@ import java.awt.Image;
 import java.awt.Shape;
 import java.awt.Rectangle;
 import java.awt.image.ColorModel;
-import java.awt.image.IndexColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
@@ -33,12 +32,11 @@ import static java.lang.Math.multiplyFull;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Messages;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;       // For javadoc
 import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.image.internal.shared.TileOpExecutor;
-import org.apache.sis.image.internal.shared.ColorModelFactory;
+import org.apache.sis.image.internal.shared.Summarizer;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.pending.jdk.JDK18;
 
@@ -734,59 +732,7 @@ public abstract class PlanarImage implements RenderedImage {
      */
     @Override
     public String toString() {
-        final var buffer = new StringBuilder(100).append(Classes.getShortClassName(this)).append('[');
-        final Object name = getProperty(SOURCE_NAME_KEY);
-        if (name != null && name != Image.UndefinedProperty) {
-            buffer.append('“').append(name).append("”: ");
-        }
-        buffer.append('(').append(getWidth()).append(" × ").append(getHeight()).append(") pixels starting at ")
-              .append('(').append(getMinX()) .append(", ") .append(getMinY()).append(')');
-        final SampleModel sm = getSampleModel();
-        if (sm != null) {
-            buffer.append(" in ").append(sm.getNumBands()).append(" bands");
-            final String type = ImageUtilities.getDataTypeName(sm);
-            if (type != null) {
-                buffer.append(" of type ").append(type);
-            }
-        }
-        /*
-         * Write details about color model only if there is "useful" information for a geospatial raster.
-         * The main category of interest are "color palette" versus "gray scale" versus everything else,
-         * and whether the image may have transparent pixels.
-         */
-        final ColorModel cm = getColorModel();
-colors: if (cm != null) {
-            buffer.append(". Colors: ");
-            if (cm instanceof IndexColorModel) {
-                buffer.append(((IndexColorModel) cm).getMapSize()).append(" indexed colors");
-            } else {
-                ColorModelFactory.formatDescription(cm.getColorSpace(), buffer);
-            }
-            final String transparency;
-            switch (cm.getTransparency()) {
-                case ColorModel.OPAQUE:      transparency = "opaque"; break;
-                case ColorModel.TRANSLUCENT: transparency = "translucent"; break;
-                case ColorModel.BITMASK:     transparency = "bitmask transparency"; break;
-                default: break colors;
-            }
-            buffer.append("; ").append(transparency);
-        }
-        /*
-         * Tiling information last because it is usually a secondary aspect compared to above information.
-         * If a warning is emitted, it will usually be a tiling problem so it is useful to keep it close.
-         */
-        final int tx = getNumXTiles();
-        final int ty = getNumYTiles();
-        if (tx != 1 || ty != 1) {
-            buffer.append("; ").append(tx).append(" × ").append(ty).append(" tiles");
-        }
-        buffer.append(']');
-        final String error = verify();
-        if (error != null) {
-            buffer.append(System.lineSeparator()).append("└─")
-                  .append(Messages.format(Messages.Keys.PossibleInconsistency_1, error));
-        }
-        return buffer.toString();
+        return Summarizer.toString(this);
     }
 
     /*

@@ -41,6 +41,8 @@ import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.feature.internal.Resources;
 
 
 /**
@@ -715,21 +717,55 @@ public final class ColorModelFactory {
     }
 
     /**
-     * Appends a description of the given color space in the given buffer.
+     * Appends a description of the given color model.
      * This is used for {@code toString()} method implementations.
      *
-     * @param  cs      the color space to describe, or {@code null}.
-     * @param  buffer  where to append the description.
+     * @param  cm         the color model to describe, or {@code null}.
+     * @param  resources  resources in the desired locale.
+     * @param  buffer     where to append the description if a buffer is needed.
+     * @return the description as {@code buffer} or as a {@link String}, or {@code null} if none.
      */
     @Debug
-    public static void formatDescription(final ColorSpace cs, final StringBuilder buffer) {
-        if (cs != null) {
-            if (cs instanceof ScaledColorSpace) {
-                ((ScaledColorSpace) cs).formatRange(buffer.append("showing "));
-            } else if (cs.getType() == ColorSpace.TYPE_GRAY) {
-                buffer.append("grayscale");
+    public static CharSequence formatDescription(final ColorModel cm, final Resources resources, final StringBuilder buffer) {
+        if (cm != null) {
+            if (cm instanceof IndexColorModel) {
+                return resources.getString(Resources.Keys.PaletteOfColors_1, ((IndexColorModel) cm).getMapSize());
+            }
+            final ColorSpace cs = cm.getColorSpace();
+            if (cs != null) {
+                if (cs instanceof ScaledColorSpace) {
+                    return ((ScaledColorSpace) cs).formatRange(buffer.append("showing "));
+                } else if (cs.getType() == ColorSpace.TYPE_GRAY) {
+                    return Vocabulary.forLocale(resources.getLocale()).getString(Vocabulary.Keys.Grayscale);
+                }
             }
         }
+        return null;
+    }
+
+    /**
+     * Returns the key of a localizable text that describes the transparency.
+     *
+     * @param  cm  the color model from which to get the transparency, or {@code null}.
+     * @param  resources  resources in the desired locale.
+     * @return a description of the transparency, or {@code null} if unknown.
+     */
+    public static String describeTransparency(final ColorModel cm, final Resources resources) {
+        if (cm == null) {
+            return null;
+        }
+        final short key;
+        if (cm.hasAlpha()) {
+            key = Resources.Keys.ImageHasAlphaChannel;
+        } else {
+            switch (cm.getTransparency()) {
+                case ColorModel.TRANSLUCENT:
+                case ColorModel.BITMASK: key = Resources.Keys.ImageAllowsTransparency; break;
+                case ColorModel.OPAQUE:  key = Resources.Keys.ImageIsOpaque; break;
+                default: return null;
+            }
+        }
+        return resources.getString(key);
     }
 
     /**

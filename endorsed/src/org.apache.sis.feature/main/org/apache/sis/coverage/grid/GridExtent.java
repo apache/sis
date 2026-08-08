@@ -1821,7 +1821,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             if (s > 1) {
                 final int j = i + m;
                 long low  = coordinates[i];
-                long size = coordinates[j] - low + 1;                      // Result is an unsigned number.
+                long size = coordinates[j] - low + 1;       // Result handled as an unsigned number.
                 if (size == 0) {
                     throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Long.SIZE));
                 }
@@ -2484,7 +2484,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             final long lower = coordinates[i];
             final long upper = coordinates[i + dimension];
             table.setCellAlignment(TableAppender.ALIGN_LEFT);
-            table.append(name).append(": ").nextColumn();
+            table.append(vocabulary.toLabel(name)).append(' ').nextColumn();
             table.append('[').nextColumn();
             table.setCellAlignment(TableAppender.ALIGN_RIGHT);
             table.append(Long.toString(lower)).append(" … ").nextColumn();

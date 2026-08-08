@@ -654,11 +654,6 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short Image = 102;
 
         /**
-         * Image layout
-         */
-        public static final short ImageLayout = 103;
-
-        /**
          * Image size
          */
         public static final short ImageSize = 234;
@@ -1137,6 +1132,11 @@ public class Vocabulary extends IndexedResourceBundle {
          * Remote configuration
          */
         public static final short RemoteConfiguration = 170;
+
+        /**
+         * Rendered image
+         */
+        public static final short RenderedImage = 103;
 
         /**
          * Representative value

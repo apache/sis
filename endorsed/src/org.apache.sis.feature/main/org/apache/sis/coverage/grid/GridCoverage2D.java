@@ -22,10 +22,6 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.text.NumberFormat;
-import java.text.FieldPosition;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
@@ -48,6 +44,7 @@ import org.apache.sis.image.DataType;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.image.internal.shared.ReshapedImage;
+import org.apache.sis.image.internal.shared.Summarizer;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
@@ -710,7 +707,7 @@ public class GridCoverage2D extends GridCoverage {
     }
 
     /**
-     * Appends a "data layout" branch (if it exists) to the tree representation of this coverage.
+     * Appends a "data layout" branch to the tree representation of this coverage.
      * That branch will be inserted between "coverage domain" and "sample dimensions" branches.
      *
      * @param  root        root of the tree where to add a branch.
@@ -719,50 +716,9 @@ public class GridCoverage2D extends GridCoverage {
      */
     @Debug
     @Override
-    void appendDataLayout(final TreeTable.Node root, final Vocabulary vocabulary, final TableColumn<CharSequence> column) {
-        final TreeTable.Node branch = root.newChild();
-        branch.setValue(column, vocabulary.getString(Vocabulary.Keys.ImageLayout));
-        final var nf = NumberFormat.getIntegerInstance(vocabulary.getLocale());
-        final var pos = new FieldPosition(0);
-        final var buffer = new StringBuffer();
-write:  for (int item=0; ; item++) try {
-            switch (item) {
-                case 0: {
-                    vocabulary.appendLabel(Vocabulary.Keys.Origin, buffer);
-                    nf.format(data.getMinX(), buffer.append(' '),  pos);
-                    nf.format(data.getMinY(), buffer.append(", "), pos);
-                    break;
-                }
-                case 1: {
-                    final int tx = data.getTileWidth();
-                    final int ty = data.getTileHeight();
-                    if (tx == data.getWidth() && ty == data.getHeight()) continue;
-                    vocabulary.appendLabel(Vocabulary.Keys.TileSize, buffer);
-                    nf.format(tx, buffer.append( ' ' ), pos);
-                    nf.format(ty, buffer.append(" × "), pos);
-                    break;
-                }
-                case 2: {
-                    final String type = ImageUtilities.getDataTypeName(data.getSampleModel());
-                    if (type == null) continue;
-                    vocabulary.appendLabel(Vocabulary.Keys.DataType, buffer);
-                    buffer.append(' ').append(type);
-                    break;
-                }
-                case 3: {
-                    final short t = ImageUtilities.getTransparencyDescription(data.getColorModel());
-                    if (t != 0) {
-                        final String desc = Resources.forLocale(vocabulary.getLocale()).getString(t);
-                        branch.newChild().setValue(column, desc);
-                    }
-                    continue;
-                }
-                default: break write;
-            }
-            branch.newChild().setValue(column, buffer.toString());
-            buffer.setLength(0);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);      // Should never happen since we are writing to StringBuilder.
-        }
+    void appendDataLayout(TreeTable.Node root, final Vocabulary vocabulary, final TableColumn<CharSequence> column) {
+        root = root.newChild();
+        root.setValue(column, vocabulary.getString(Vocabulary.Keys.RenderedImage));
+        new Summarizer(root, vocabulary, column).layout(data);
     }
 }
