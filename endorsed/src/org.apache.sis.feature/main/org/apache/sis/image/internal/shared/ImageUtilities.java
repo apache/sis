@@ -473,7 +473,7 @@ public final class ImageUtilities {
      * @throws ArithmeticException if the result overflows 32 bits integer.
      */
     public static Rectangle pixelsToTiles(final RenderedImage image, final Rectangle pixels) {
-        final Rectangle r = new Rectangle();
+        final var r = new Rectangle();
         if (!pixels.isEmpty()) {
             int  size;
             long offset, shifted;
@@ -507,7 +507,7 @@ public final class ImageUtilities {
      * @throws ArithmeticException if the result overflows 32 bits integer.
      */
     public static Rectangle tilesToPixels(final RenderedImage image, final Rectangle tiles) {
-        final Rectangle r = new Rectangle();
+        final var r = new Rectangle();
         if (!tiles.isEmpty()) {
             int size, offset;
             size     = image.getTileWidth();

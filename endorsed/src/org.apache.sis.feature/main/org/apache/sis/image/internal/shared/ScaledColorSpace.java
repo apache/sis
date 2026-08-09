@@ -190,7 +190,7 @@ final class ScaledColorSpace extends ColorSpace {
     final StringBuilder formatRange(final StringBuilder buffer) {
         return buffer.append('[').append(offset)
             .append(" … ").append(maximum)
-            .append(" in band ").append(visibleBand).append(']');
+            .append("] in band ").append(visibleBand);
     }
 
     /**

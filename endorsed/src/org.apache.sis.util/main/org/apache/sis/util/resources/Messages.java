@@ -222,6 +222,11 @@ public class Messages extends IndexedResourceBundle {
         public static final short OptionalModuleNotFound_1 = 27;
 
         /**
+         * Some tiles may be only partially filled.
+         */
+        public static final short PartiallyFilledTiles = 38;
+
+        /**
          * Possible inconsistency in “{0}”.
          */
         public static final short PossibleInconsistency_1 = 34;

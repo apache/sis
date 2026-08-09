@@ -218,8 +218,12 @@ public final class Summarizer {
                     if (!(data instanceof PlanarImage)) continue;
                     String warning = ((PlanarImage) data).verify();
                     if (warning == null) continue;
-                    row = new Summarizer((short) 0,
-                            Messages.forLocale(locale).getString(Messages.Keys.PossibleInconsistency_1, warning));
+                    final Messages r = Messages.forLocale(locale);
+                    row = new Summarizer((short) 0, r.getString(Messages.Keys.PossibleInconsistency_1, warning));
+                    String tip = warning.substring(warning.lastIndexOf('.') + 1);
+                    if (tip.equals("width") || tip.equals("height")) {
+                        row.note = r.getString(Messages.Keys.PartiallyFilledTiles);
+                    }
                     break;
                 }
                 /*

@@ -872,8 +872,7 @@ check:  if (dataType.isInteger()) {
                     if (virtualSize / stride > ImageLayout.MAX_TILE_SIZE) {
                         // Tile is too large, even after subsampling.
                         if (i == xDimension || i == yDimension) {
-                            // TODO: need more tests
-                            // applyArtificialTiling |= !loadAtReadTime;
+                            applyArtificialTiling |= !loadAtReadTime;
                         }
                     }
                     virtualTileSize[i] = virtualSize;

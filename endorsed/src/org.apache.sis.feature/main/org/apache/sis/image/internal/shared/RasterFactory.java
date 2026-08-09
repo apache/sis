@@ -17,6 +17,7 @@
 package org.apache.sis.image.internal.shared;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
@@ -32,6 +33,7 @@ import java.awt.image.DataBufferUShort;
 import java.awt.image.RasterFormatException;
 import java.awt.image.WritableRaster;
 import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
@@ -98,6 +100,21 @@ public final class RasterFactory {
         }
         final ColorModel cm = ColorModelFactory.createGrayScale(dataType, numComponents, visibleBand, minimum, maximum);
         return new WritableUntiledImage(cm, cm.createCompatibleWritableRaster(width, height), false, null);
+    }
+
+    /**
+     * Creates a raster with the given sample model or a compatible one, and with the given size and location.
+     * This method does not verify argument validity.
+     *
+     * @param  model   the sample model. Will be resized if needed.
+     * @param  bounds  the raster bounds.
+     * @return a raster with the given bounds.
+     */
+    public static WritableRaster createWritableRaster(SampleModel model, final Rectangle bounds) {
+        if (model.getWidth() != bounds.width || model.getHeight() != bounds.height) {
+            model = unique(model.createCompatibleSampleModel(bounds.width, bounds.height));
+        }
+        return Raster.createWritableRaster(model, bounds.getLocation());
     }
 
     /**

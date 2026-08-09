@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.function.Function;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.image.TileObserver;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -29,9 +30,10 @@ import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.awt.image.ImagingOpException;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.feature.internal.Resources;
-import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
+import org.apache.sis.image.PlanarImage;
 
 
 /**
@@ -41,17 +43,20 @@ import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
  * This class is also preferred to instances of the exact {@link BufferedImage}
  * class for the following reasons:
  *
- * <p>First, this class can notify tile observers when tiles are acquired for write operations.
- * We cannot prevent {@link BufferedImage} to implement {@link WritableRenderedImage}, but we can
- * increase the chances that Apache <abbr>SIS</abbr> is notified about pixel data modifications.
- * For example, images given to {@link org.apache.sis.coverage.grid.GridCoverage2D} constructor
- * are often used as sources of {@link org.apache.sis.image.ImageProcessor} operations,
- * which listen to tile changes in order to flush the cache of invalidated tiles.</p>
- *
- * <p>Second, this class can compute the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY}
- * property when first needed. We use this class even when the property value is known in advance
- * because it has the desired side-effect of not letting {@link #getSubimage(int, int, int, int)}
- * inherit that property.</p>
+ * <ul class="verbose">
+ *   <li>This class can notify tile observers when tiles are acquired for write operations.
+ *     We cannot prevent {@link BufferedImage} to implement {@link WritableRenderedImage}, but we can
+ *     increase the chances that Apache <abbr>SIS</abbr> is notified about pixel data modifications.
+ *     For example, images given to {@link org.apache.sis.coverage.grid.GridCoverage2D} constructor
+ *     are often used as sources of {@link org.apache.sis.image.ImageProcessor} operations,
+ *     which listen to tile changes in order to flush the cache of invalidated tiles.</li>
+ *   <li>This class can compute the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY}
+ *     property when first needed. We use this class even when the property value is known in advance
+ *     because it has the desired side-effect of not letting {@link #getSubimage(int, int, int, int)}
+ *     inherit that property.</li>
+ *   <li>This class implements {@link #getData(Rectangle)} by delegating to more efficient Java2D methods
+ *     and with a tolerance required by Apache <abbr>SIS</abbr> regarding intersections.</li>
+ * </ul>
  *
  * <p>This class provides also static helper methods for {@link WritableRenderedImage} implementations.</p>
  *
@@ -136,9 +141,9 @@ public final class WritableUntiledImage extends BufferedImage {
         String[] names = super.getPropertyNames();  // May be null.
         if (gridGeometry != null) {
             if (names == null) {
-                names = new String[] {GRID_GEOMETRY_KEY};
+                names = new String[] {PlanarImage.GRID_GEOMETRY_KEY};
             } else {
-                names = ArraysExt.append(names, GRID_GEOMETRY_KEY);
+                names = ArraysExt.append(names, PlanarImage.GRID_GEOMETRY_KEY);
             }
         }
         return names;
@@ -156,7 +161,7 @@ public final class WritableUntiledImage extends BufferedImage {
     @Override
     @SuppressWarnings("unchecked")
     public Object getProperty(final String name) {
-        if (GRID_GEOMETRY_KEY.equals(name)) {
+        if (PlanarImage.GRID_GEOMETRY_KEY.equals(name)) {
             synchronized (this) {
                 if (gridGeometry != null) {
                     if (gridGeometry instanceof GridGeometry) {
@@ -345,6 +350,80 @@ public final class WritableUntiledImage extends BufferedImage {
     @Override
     public boolean hasTileWriters() {
         return writeCount != 0;
+    }
+
+    /**
+     * Returns a copy of this image as one large tile.
+     * The returned raster will not be updated if this image is changed.
+     *
+     * <p>Note: the implementation in Java 25 allocates a whole new tile if the raster is a subtile.
+     * By contrast, the implementation in this class allocates only the space required by the subtile.</p>
+     *
+     * @return a copy of this image as one large tile.
+     *
+     * @see PlanarImage#getData()
+     */
+    @Override
+    public Raster getData() {
+        return copyData(null);
+    }
+
+    /**
+     * Returns a copy of an arbitrary region of this image.
+     * The returned raster will not be updated if this image is changed.
+     *
+     * <h4>Handling of regions outside the image bounds</h4>
+     * The given Area Of Interest (<abbr>AOI</abbr>) shall intersect the image bounds,
+     * but does not need to be fully contained inside those bounds.
+     * If {@code aoi} is partially outside the image bounds,
+     * only the pixels inside the intersection are copied and the other pixels are set to 0.
+     * This is useful when re-tiling with a tile size which is not divisor of the image size.
+     * Note that different {@link RenderedImage} implementations may have different policies.
+     *
+     * @param  aoi  the region of this image to copy.
+     * @return a copy of this image in the given area of interest.
+     *
+     * @see PlanarImage#getData(Rectangle)
+     * @throws IllegalArgumentException if the given rectangle is empty or does not intersect this image bounds.
+     */
+    @Override
+    public Raster getData(final Rectangle aoi) {
+        if (aoi.isEmpty()) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "aoi"));
+        }
+        return copyData(RasterFactory.createWritableRaster(getSampleModel(), aoi));
+    }
+
+    /**
+     * Copies an arbitrary rectangular region of this image to the supplied writable raster.
+     * The region to be copied is determined from the bounds of the supplied target raster.
+     *
+     * <h4>Handling of regions outside the image bounds</h4>
+     * The bounds of the {@code target} raster shall intersect the bounds of this image.
+     * Only the pixels inside the intersection are copied and the other pixels are unchanged.
+     * This tolerance is useful when using tile sizes that are not divisor of the image size.
+     * Note that different {@link RenderedImage} implementations may have different policies.
+     *
+     * @param  target  the raster to hold a copy of this image, or {@code null}.
+     * @return the given raster if it was not null, or a new raster otherwise.
+     *
+     * @see PlanarImage#copyData(WritableRaster)
+     */
+    @Override
+    public WritableRaster copyData(WritableRaster target) {
+        Raster source = getRaster();
+        Rectangle aoi = source.getBounds();
+        if (target == null) {
+            target = RasterFactory.createWritableRaster(source.getSampleModel(), aoi);
+        } else if (!aoi.equals(aoi = aoi.intersection(target.getBounds()))) {
+            if (aoi.isEmpty()) {
+                // Note: this is stricter than `PlanarImage.copy(target)`, but useful for debugging.
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
+            }
+            source = source.createChild(aoi.x, aoi.y, aoi.width, aoi.height, aoi.x, aoi.y, null);
+        }
+        target.setRect(source);
+        return target;
     }
 
     /**

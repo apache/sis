@@ -35,6 +35,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;       // For javadoc
 import org.apache.sis.image.internal.Summarizer;
+import org.apache.sis.image.internal.shared.RasterFactory;
 import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.image.internal.shared.TileOpExecutor;
 import org.apache.sis.feature.internal.Resources;
@@ -509,68 +510,89 @@ public abstract class PlanarImage implements RenderedImage {
      * This method does not verify argument validity.
      */
     private WritableRaster createWritableRaster(final Rectangle aoi) {
-        SampleModel sm = getSampleModel();
-        if (sm.getWidth() != aoi.width || sm.getHeight() != aoi.height) {
-            sm = sm.createCompatibleSampleModel(aoi.width, aoi.height);
-        }
-        return Raster.createWritableRaster(sm, aoi.getLocation());
+        return RasterFactory.createWritableRaster(getSampleModel(), aoi);
     }
 
     /**
      * Returns a copy of this image as one large tile.
      * The returned raster will not be updated if this image is changed.
+     * Invoking this method is equivalent to invoking {@code copyData(null)}.
+     *
+     * <h4>Warning about memory usage</h4>
+     * Invoking this method may cause an {@link OutOfMemoryError}.
+     * A {@code PlanarImage} may represent an image theoretically larger than the memory capacity,
+     * but in which data loading or calculation are deferred until first needed on a tile-by-tile basis.
+     * Invoking this method causes the immediate calculation of all tiles, which may exceed memory capacity.
+     * This method should be invoked only when the caller has verified that the image is reasonably small.
      *
      * @return a copy of this image as one large tile.
+     *
+     * @see #copyData(WritableRaster)
      */
     @Override
     public Raster getData() {
-        final Rectangle aoi = getBounds();
-        final WritableRaster raster = createWritableRaster(aoi);
-        copyData(aoi, this, raster);
-        return raster;
+        return copyData(null);
     }
 
     /**
      * Returns a copy of an arbitrary region of this image.
+     * The given Area Of Interest (<abbr>AOI</abbr>) shall be contained inside the image bounds,
      * The returned raster will not be updated if this image is changed.
      *
      * @param  aoi  the region of this image to copy.
      * @return a copy of this image in the given area of interest.
-     * @throws IllegalArgumentException if the given rectangle is not contained in this image bounds.
+     * @throws IllegalArgumentException if the given rectangle is empty or is not contained inside this image bounds.
      */
     @Override
-    public Raster getData(final Rectangle aoi) {
+    public Raster getData(Rectangle aoi) {
+        aoi = new Rectangle(aoi);
+        if (aoi.isEmpty()) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "aoi"));
+        }
         if (!getBounds().contains(aoi)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
         }
-        final WritableRaster raster = createWritableRaster(aoi);
-        copyData(aoi, this, raster);
-        return raster;
+        final WritableRaster target = createWritableRaster(aoi);
+        copyData(aoi, this, target);
+        return target;
     }
 
     /**
      * Copies an arbitrary rectangular region of this image to the supplied writable raster.
-     * The region to be copied is determined from the bounds of the supplied raster.
+     * The region to be copied is determined from the bounds of the supplied target raster.
      * The supplied raster must have a {@link SampleModel} that is compatible with this image.
      * If the given raster is {@code null}, a new raster is created by this method.
      *
-     * @param  raster  the raster to hold a copy of this image, or {@code null}.
-     * @return the given raster if it was not-null, or a new raster otherwise.
+     * <h4>Handling of regions outside the image bounds</h4>
+     * The bounds of the {@code target} raster should intersect the bounds of this image,
+     * but this method nevertheless accepts target raster located anywhere.
+     * Only the pixels inside the intersection are copied and the other pixels are unchanged.
+     * This tolerance is useful when using tile sizes that are not divisor of the image size.
+     * Note that different {@link RenderedImage} implementations may have different policies.
+     *
+     * <h4>Warning about memory usage</h4>
+     * Invoking this method with a {@code null} argument may cause an {@link OutOfMemoryError}.
+     * A {@code PlanarImage} may represent an image theoretically larger than the memory capacity,
+     * but in which data loading or calculation are deferred until first needed on a tile-by-tile basis.
+     * A null argument causes the immediate calculation of all tiles, which may exceed memory capacity.
+     *
+     * @param  target  the raster to hold a copy of this image, or {@code null}.
+     * @return the given raster if it was not null, or a new raster otherwise.
      */
     @Override
-    public WritableRaster copyData(WritableRaster raster) {
+    public WritableRaster copyData(WritableRaster target) {
         final Rectangle aoi;
-        if (raster != null) {
-            aoi = raster.getBounds();
+        if (target != null) {
+            aoi = target.getBounds();
             ImageUtilities.clipBounds(this, aoi);
         } else {
             aoi = getBounds();
-            raster = createWritableRaster(aoi);
+            target = createWritableRaster(aoi);
         }
         if (!aoi.isEmpty()) {
-            copyData(aoi, this, raster);
+            copyData(aoi, this, target);
         }
-        return raster;
+        return target;
     }
 
     /**

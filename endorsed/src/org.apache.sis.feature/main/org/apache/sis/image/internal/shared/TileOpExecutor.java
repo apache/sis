@@ -331,7 +331,7 @@ public class TileOpExecutor {
      */
     public final void parallelReadFrom(final RenderedImage source) {
         if (isMultiTiled()) {
-            executeOnReadable(source, executor((ignore,tile) -> {
+            executeOnReadable(source, executor((ignore, tile) -> {
                 try {
                     readFrom(tile);
                 } catch (Exception ex) {
@@ -370,7 +370,7 @@ public class TileOpExecutor {
      */
     public final void parallelWriteTo(final WritableRenderedImage target) {
         if (isMultiTiled()) {
-            executeOnWritable(target, executor((ignore,tile) -> {
+            executeOnWritable(target, executor((ignore, tile) -> {
                 try {
                     writeTo(tile);
                 } catch (Exception ex) {
@@ -987,9 +987,10 @@ public class TileOpExecutor {
          * @throws RuntimeException if any error occurred during the process.
          */
         @Override
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         protected void executeOnCurrentTile() {
             final WritableRenderedImage image = cursor.image;
-            final int tx = super.tx;                                // Protect from changes (paranoiac safety).
+            final int tx = super.tx;        // Protect from changes (paranoiac safety).
             final int ty = super.ty;
             final WritableRaster tile = image.getWritableTile(tx, ty);
             try {

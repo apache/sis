@@ -21,6 +21,8 @@ import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.ColorModel;
+import java.awt.image.SampleModel;
+import java.awt.image.WritableRaster;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -153,8 +155,8 @@ final class ArtificiallyTiledImage extends BatchComputedImage {
         final int numXTiles = tiles.width;
         final var rasters = new Raster[Math.multiplyExact(numXTiles, tiles.height)];
         for (int i = 0; i < rasters.length; i++) {
-            final int x = i % numXTiles;
-            final int y = i / numXTiles;
+            final int x = tiles.x + i % numXTiles;
+            final int y = tiles.y + i / numXTiles;
             if ((rasters[i] = cache.get(new Point(x, y))) == null) {
                 if (x < minTileX) minTileX = x;
                 if (x > maxTileX) maxTileX = x;
@@ -198,20 +200,51 @@ final class ArtificiallyTiledImage extends BatchComputedImage {
             final GridCoverage coverage = source.readAtGetTileTime(request, requestedBands);
             extent = coverage.getGridGeometry().extentOf(request, PixelInCell.CELL_CORNER, GridRoundingMode.NEAREST);
             final RenderedImage image = coverage.render(extent);
-            final int tileWidth  = getTileWidth();
-            final int tileHeight = getTileHeight();
-            final var tileBounds = new Rectangle();
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
+            final SampleModel sampleModel = getSampleModel();
+            final long offsetX = Math.multiplyFull(minTileX, getTileWidth());
+            final long offsetY = Math.multiplyFull(minTileY, getTileHeight());
             for (int y = minTileY; y <= maxTileY; y++) {
                 for (int x = minTileX; x <= maxTileX; x++) {
                     // No integer arithmetic can overflow in this loop.
-                    final int i = y * numXTiles + x;
+                    final int i = (y - tiles.y) * numXTiles + (x - tiles.x);
                     if (rasters[i] == null) {
-                        // By contract, image pixel coordinates (0,0) correspond to (minTileX, minTileY) in the request.
-                        tileBounds.x = Math.multiplyExact(x - minTileX, tileWidth);
-                        tileBounds.y = Math.multiplyExact(y - minTileY, tileHeight);
-                        tileBounds.width  = tileWidth;
-                        tileBounds.height = tileHeight;
-                        rasters[i] = cache.computeIfAbsent(new Point(x, y), (key) -> image.getData(tileBounds));
+                        rasters[i] = cache.computeIfAbsent(new Point(x, y), (key) -> {
+                            final int tileWidth  = sampleModel.getWidth();
+                            final int tileHeight = sampleModel.getHeight();
+                            final int tileMinX   = Math.multiplyExact(key.x, tileWidth);
+                            final int tileMinY   = Math.multiplyExact(key.y, tileHeight);
+                            WritableRaster tile  = Raster.createWritableRaster(sampleModel, new Point(tileMinX, tileMinY));
+                            /*
+                             * By contract, image pixel coordinates (0,0) correspond to (minTileX, minTileY) in the request.
+                             * We need to temporarily translate the raster where pixel values will be copied.
+                             * The original raster is the parent of the translated raster.
+                             */
+                            if ((offsetX | offsetY) != 0) {
+                                tile = tile.createWritableTranslatedChild(
+                                        Math.toIntExact(tileMinX - offsetX),
+                                        Math.toIntExact(tileMinY - offsetY));
+                            }
+                            Raster copy = image.copyData(tile);
+                            /*
+                             * Get the untranslated raster. It should be `tile` directory if we did not applied
+                             * any translation, or the direct parent of `tile` other. We nevertheless search in
+                             * all parents in case and fallback on a new raster if no parent is found.
+                             */
+                            while (copy.getMinX()   != tileMinX ||
+                                   copy.getMinY()   != tileMinY ||
+                                   copy.getWidth()  != tileWidth ||
+                                   copy.getHeight() != tileHeight)
+                            {
+                                Raster parent = copy.getParent();
+                                if (parent == null) {
+                                    // Should never happen, but defined for safety.
+                                    return tile.createTranslatedChild(tileMinX, tileMinY);
+                                }
+                                copy = parent;
+                            }
+                            return copy;
+                        });
                     }
                 }
             }
