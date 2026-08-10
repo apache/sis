@@ -38,6 +38,9 @@ import org.apache.sis.util.resources.Errors;
  * Implementations should manage their own cache for avoiding to compute the same tiles many times.
  * The caching mechanism inherited from {@link ComputedImage} is less useful here.
  *
+ * @todo Consider moving as a public class in {@link org.apache.sis.image.internal}
+ *       for leveraging {@code MultiSourcePrefetch}.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  */
 public abstract class BatchComputedImage extends ComputedImage {
@@ -74,6 +77,13 @@ public abstract class BatchComputedImage extends ComputedImage {
             width  = r.width;
             height = r.height;
             this.tiles = tiles;
+        }
+
+        /**
+         * Tests whether this set of tiles contains the given set.
+         */
+        final boolean contains(final Rectangle other) {
+            return new Rectangle(x, y, width, height).contains(other);
         }
 
         /** Discards this set of tiles. */
@@ -179,7 +189,14 @@ public abstract class BatchComputedImage extends ComputedImage {
      * @throws ImagingOpException if an error occurred while preparing tile computation.
      */
     @Override
-    protected Disposable prefetch(final Rectangle region) {
+    public Disposable prefetch(final Rectangle region) {
+        synchronized (this) {
+            for (Rasters r = prefetched; r != null; r = r.next) {
+                if (r.contains(region)) {
+                    return null;    // Already prefetched.
+                }
+            }
+        }
         final Raster[] tiles;
         try {
             tiles = computeTiles(region);
@@ -188,7 +205,7 @@ public abstract class BatchComputedImage extends ComputedImage {
         } catch (Exception e) {
             throw (ImagingOpException) new ImagingOpException(e.getMessage()).initCause(e);
         }
-        final Rasters r = new Rasters(region, tiles);
+        final var r = new Rasters(region, tiles);
         synchronized (this) {
             r.next = prefetched;
             prefetched = r;

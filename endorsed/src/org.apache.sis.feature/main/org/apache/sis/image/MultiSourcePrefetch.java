@@ -29,7 +29,7 @@ import org.apache.sis.image.internal.shared.ImageUtilities;
 /**
  * A helper class for forwarding a {@code prefetch(…)} operation to multiple sources.
  * This implementation assumes that all sources share the same pixel coordinates space.
- * However the tile matrix does not need to be the same.
+ * However, the tile matrix does not need to be the same.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -102,12 +102,13 @@ final class MultiSourcePrefetch implements Disposable {
      * @param  parallel  whether parallelism is allowed.
      * @return a handler for disposing resources after prefetch, or {@code null} if none.
      */
+    @SuppressWarnings("UseSpecificCatch")
     final Disposable run(boolean parallel) {
         switch (count) {
             case 0: return null;
             case 1: parallel = false;
         }
-        @SuppressWarnings({"unchecked","rawtypes"})
+        @SuppressWarnings({"unchecked", "rawtypes"})
         final var workers = (Future<Disposable>[]) (parallel ? new Future[count] : null);
         cleaners = new Disposable[count];
         for (int i=0; i<count; i++) {

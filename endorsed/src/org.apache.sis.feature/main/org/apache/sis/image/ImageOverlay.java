@@ -399,7 +399,7 @@ final class ImageOverlay extends MultiSourceImage {
      */
     @Override
     protected Raster computeTile(final int tileX, final int tileY, WritableRaster target) {
-        final Rectangle aoi = new Rectangle(
+        final var aoi = new Rectangle(
                 ImageUtilities.tileToPixelX(this, tileX),
                 ImageUtilities.tileToPixelY(this, tileY),
                 getTileWidth(),

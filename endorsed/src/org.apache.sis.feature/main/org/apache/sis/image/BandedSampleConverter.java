@@ -454,10 +454,10 @@ class BandedSampleConverter extends WritableComputedImage {
         @Override
         public void setData(final Raster data) {
             final Rectangle bounds = data.getBounds();
-            final WritableRenderedImage target = (WritableRenderedImage) getSource();
+            final var target = (WritableRenderedImage) getSource();
             ImageUtilities.clipBounds(target, bounds);
             if (!bounds.isEmpty()) {
-                final TileOpExecutor executor = new TileOpExecutor(target, bounds) {
+                final var executor = new TileOpExecutor(target, bounds) {
                     @Override protected void writeTo(final WritableRaster target) throws TransformException {
                         final Rectangle aoi = target.getBounds().intersection(bounds);
                         Transferer.create(data, target, aoi).compute(inverses);
@@ -506,7 +506,7 @@ class BandedSampleConverter extends WritableComputedImage {
     @Override
     public boolean equals(final Object object) {
         if (equalsBase(object)) {
-            final BandedSampleConverter other = (BandedSampleConverter) object;
+            final var other = (BandedSampleConverter) object;
             return Arrays .equals(converters, other.converters) &&
                    Objects.equals(colorModel, other.colorModel) &&
                    Arrays .equals(sampleResolutions, other.sampleResolutions);

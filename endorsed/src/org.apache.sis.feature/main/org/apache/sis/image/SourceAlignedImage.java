@@ -199,7 +199,7 @@ abstract class SourceAlignedImage extends ComputedImage {
     /**
      * Notifies the source image that tiles will be computed soon in the given region.
      * If the source image is an instance of {@link PlanarImage}, then this method
-     * forwards the notification to it. Otherwise default implementation does nothing.
+     * forwards the notification to it. Otherwise, the default implementation does nothing.
      */
     @Override
     protected Disposable prefetch(final Rectangle tiles) {

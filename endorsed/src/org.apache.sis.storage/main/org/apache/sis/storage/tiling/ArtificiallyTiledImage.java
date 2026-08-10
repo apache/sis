@@ -152,11 +152,13 @@ final class ArtificiallyTiledImage extends BatchComputedImage {
         int minTileY = Integer.MAX_VALUE;
         int maxTileX = Integer.MIN_VALUE;
         int maxTileY = Integer.MIN_VALUE;
+        final int tilex0    = tiles.x;      // Tile index of the raster at index 0 in the returned array.
+        final int tileY0    = tiles.y;
         final int numXTiles = tiles.width;
         final var rasters = new Raster[Math.multiplyExact(numXTiles, tiles.height)];
         for (int i = 0; i < rasters.length; i++) {
-            final int x = tiles.x + i % numXTiles;
-            final int y = tiles.y + i / numXTiles;
+            final int x = tilex0 + i % numXTiles;
+            final int y = tileY0 + i / numXTiles;
             if ((rasters[i] = cache.get(new Point(x, y))) == null) {
                 if (x < minTileX) minTileX = x;
                 if (x > maxTileX) maxTileX = x;
@@ -195,6 +197,11 @@ final class ArtificiallyTiledImage extends BatchComputedImage {
              * Then, the requested extent is converted to the coverage grid coordinate system.
              * Because this is also expected to be an identity operation or at most a translation,
              * the rounding more is set to `NEAREST` instead of `ENCLOSING`.
+             *
+             * TODO: we use `RasterLoadingStrategy.AT_GET_TILE_TIME` because we don't know if we are going
+             * to use all requested tiles (because the cache in this class may make some reading unnecessary).
+             * We should do something more advanced, with a mask (potentially made of many rectangles) of the
+             * tiles that we really need to read.
              */
             final GridGeometry request  = domain.relocate(extent.reshape(low, high, true));
             final GridCoverage coverage = source.readAtGetTileTime(request, requestedBands);
@@ -207,7 +214,7 @@ final class ArtificiallyTiledImage extends BatchComputedImage {
             for (int y = minTileY; y <= maxTileY; y++) {
                 for (int x = minTileX; x <= maxTileX; x++) {
                     // No integer arithmetic can overflow in this loop.
-                    final int i = (y - tiles.y) * numXTiles + (x - tiles.x);
+                    final int i = (y - tileY0) * numXTiles + (x - tilex0);
                     if (rasters[i] == null) {
                         rasters[i] = cache.computeIfAbsent(new Point(x, y), (key) -> {
                             final int tileWidth  = sampleModel.getWidth();

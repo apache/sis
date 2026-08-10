@@ -25,6 +25,7 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.awt.image.RenderedImage;
+import java.awt.image.ImagingOpException;
 import java.util.Objects;
 import java.util.Vector;
 import java.util.function.DoubleUnaryOperator;
@@ -633,6 +634,7 @@ public abstract class PlanarImage implements RenderedImage {
      * @param  tiles  indices of the tiles which will be prefetched.
      * @return handler on which to invoke {@code dispose()} after the prefetch operation
      *         completed (successfully or not), or {@code null} if none.
+     * @throws ImagingOpException if an error occurred while preparing tile computation.
      */
     Disposable prefetch(Rectangle tiles) {
         return null;
