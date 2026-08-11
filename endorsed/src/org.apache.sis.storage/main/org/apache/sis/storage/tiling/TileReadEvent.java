@@ -18,6 +18,7 @@ package org.apache.sis.storage.tiling;
 
 import java.io.Serializable;
 import java.awt.Shape;
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import org.opengis.util.FactoryException;
@@ -35,6 +36,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.geometry.Shapes2D;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.shared.Strings;
 
 
@@ -82,7 +84,13 @@ public final class TileReadEvent extends StoreEvent {
          * Lowest coordinates of the region which has been requested by the user for producing an image.
          * The pixel coordinates (0,0) correspond to the lowest coordinates of the requested extent.
          */
-        private final long offsetX, offsetY;
+        final long offsetX, offsetY;
+
+        /**
+         * Coordinates in dimensions other than <var>x</var> and <var>y</var>.
+         * This is an empty array in the common case of two-dimensional grid.
+         */
+        final long[] sliceCoordinates;
 
         /**
          * Coordinate operation from the <abbr>CRS</abbr> of the coverage to the <abbr>CRS</abbr>
@@ -97,7 +105,6 @@ public final class TileReadEvent extends StoreEvent {
          * That user-specified <abbr>CRS</abbr> is called "objective <abbr>CRS</abbr>" because it is often the
          * <abbr>CRS</abbr> using for rendering purposes.
          */
-        @SuppressWarnings("serial")     // Most SIS implementations are serializable.
         private transient MathTransform2D imageToObjective;
 
         /**
@@ -115,6 +122,19 @@ public final class TileReadEvent extends StoreEvent {
             sliceGeometry = domain.selectDimensions(xDimension, yDimension);
             offsetX = aoi.getLow(xDimension);
             offsetY = aoi.getLow(yDimension);
+            final int dimension = aoi.getDimension();
+            if (dimension > TiledGridCoverageResource.BIDIMENSIONAL) {
+                sliceCoordinates = new long[dimension - TiledGridCoverageResource.BIDIMENSIONAL];
+                int n = 0;
+                for (int i=0; i<dimension; i++) {
+                    if (i != xDimension && i != yDimension) {
+                        // The low and high coordinates should be the same, but ask for the median in case.
+                        sliceCoordinates[n++] = aoi.getMedian(i);
+                    }
+                }
+            } else {
+                sliceCoordinates = ArraysExt.EMPTY_LONG;
+            }
         }
 
         /**
@@ -152,9 +172,7 @@ public final class TileReadEvent extends StoreEvent {
     /**
      * Bounds of the tile in pixel coordinates.
      *
-     * Note: there is no public <abbr>API</abbr> yet for fetching this value
-     * because the pixel coordinates are not necessarily the same as the grid
-     * coordinates of the resource, which may confuse users.
+     * @see #getTileSize()
      */
     private final Rectangle rasterBounds;
 
@@ -170,6 +188,41 @@ public final class TileReadEvent extends StoreEvent {
         this.context = context;
         this.rasterBounds = rasterBounds;
     }
+
+    /**
+     * Returns the location of the tile in units of grid coordinates of the grid coverage.
+     * The two first elements of the array are the minimum <var>x</var> grid coordinate and
+     * the minimum <var>y</var> grid coordinate in that exact order.
+     * All other elements, if any, are the coordinates of the slice in other dimensions.
+     *
+     * <p><b>Note:</b> the coordinate order returned by this method is not necessarily the same
+     * as the coordinate order of the grid coverage, because this method always put <var>x</var>
+     * and <var>y</var> first for making easy to ignore the supplemental dimensions.</p>
+     *
+     * @return tile location in an array of length {@value TiledGridCoverageResource#BIDIMENSIONAL} or more.
+     */
+    public long[] getTileLocation() {
+        final int n = context.sliceCoordinates.length;
+        final var coordinates = new long[TiledGridCoverageResource.BIDIMENSIONAL + n];
+        coordinates[0] = Math.addExact(context.offsetX, rasterBounds.x);
+        coordinates[1] = Math.addExact(context.offsetY, rasterBounds.y);
+        System.arraycopy(context.sliceCoordinates, 0, coordinates, TiledGridCoverageResource.BIDIMENSIONAL, n);
+        return coordinates;
+    }
+
+    /**
+     * Returns the width and height of the tile in pixels.
+     *
+     * @return width and height of the tile in pixels.
+     */
+    public Dimension getTileSize() {
+        return rasterBounds.getSize();
+    }
+
+    /*
+     * Note: there is no public method for fetching the (x, y) location because the pixel coordinates
+     * are not necessarily the same as the grid coordinates of the resource, which may confuse users.
+     */
 
     /**
      * Returns the zero-based index of the pyramid level of the tile which is read.
