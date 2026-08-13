@@ -24,6 +24,8 @@ module org.apache.sis.geometry {
     requires esri.geometry.api;     // TODO: remove (this is for tests).
     requires org.apache.sis.feature;
     requires org.apache.sis.util;
+    requires org.apache.sis.metadata;
+    requires transitive jakarta.xml.bind;
     requires transitive org.apache.sis.storage;
 
 
@@ -39,5 +41,10 @@ module org.apache.sis.geometry {
     exports org.apache.sis.geometries.internal.shared to
             org.apache.sis.referencing.dggs;
 
+    /*
+     * Allow JAXB to use reflection for marshalling and
+     * unmarshalling Apache SIS objects in XML documents.
+     */
+    opens org.apache.sis.gml to jakarta.xml.bind;
 
 }

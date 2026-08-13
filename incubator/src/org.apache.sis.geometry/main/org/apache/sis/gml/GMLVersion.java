@@ -14,32 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.gml;
+
 
 /**
- * XML files store.
+ * The GML version that {@link GMLWriter} should target.
+ * There is a single {@link #V3} value covering GML 3.0, 3.1 and 3.2, since
+ * {@link GML3Writer} always emits canonical GML 3.2 output regardless of intent.
  *
  * @author  Johann Sorel (Geomatys)
- * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
  */
-module org.apache.sis.storage.xml {
-    requires jakarta.xml.bind;
-    requires static org.locationtech.jts;
-    requires transitive org.apache.sis.storage;
-
-    provides org.apache.sis.storage.DataStoreProvider
-        with org.apache.sis.storage.gpx.StoreProvider;
-
-    exports org.apache.sis.storage.gps;
-
-    exports org.apache.sis.storage.gpx to
-            org.apache.sis.console,
-            org.apache.sis.gui;                     // In the "optional" sub-project.
-
-    /*
-     * Allow JAXB to use reflection for marshalling and
-     * unmarshalling Apache SIS objects in XML documents.
+public enum GMLVersion {
+    /**
+     * 2.0
      */
-    opens org.apache.sis.storage.gpx to jakarta.xml.bind;
+    V2,
+
+    /**
+     * GML 3 (3.0, 3.1 or 3.2)
+     */
+    V3
 }
