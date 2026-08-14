@@ -221,6 +221,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Optionally contains the initial "objective to display" CRS to use if a predetermined
      * value is desired instead of an automatically computed one. The grid extent is ignored,
      * except for fetching the grid center if a non-linear transform needs to be linearized.
+     * Can be {@code null} if no initial state has been specified.
      *
      * @see #initialize(GridGeometry)
      * @see #invalidObjectiveToDisplay
@@ -1412,7 +1413,12 @@ public abstract class MapCanvas extends PlanarCanvas {
                      * If a CRS is present, it is used for deciding if we need to swap or flip axes.
                      */
                     @SuppressWarnings("LocalVariableHidesMemberVariable")
-                    final Envelope objectiveBounds = getObjectiveBounds();
+                    final Envelope objectiveBounds;
+                    if (init != null && init.isDefined(GridGeometry.ENVELOPE)) {
+                        objectiveBounds = init.getEnvelope();
+                    } else {
+                        objectiveBounds = getObjectiveBounds();
+                    }
                     if (objectiveBounds != null) {
                         final MatrixSIS m;
                         objectiveCRS = objectiveBounds.getCoordinateReferenceSystem();

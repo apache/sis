@@ -894,7 +894,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         data.gridCrsName = gridCrsName;
         data.setImageSpace(domain, ranges, xyDimensions);
         initialize(visibleArea);
-        setObjectiveBounds(bounds);
+        setObjectiveBounds(bounds);     // Overwrite the objective bounds specified by `visibleArea`.
     }
 
     /**
