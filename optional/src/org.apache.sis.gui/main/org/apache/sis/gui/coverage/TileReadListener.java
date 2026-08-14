@@ -29,6 +29,7 @@ import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Shape;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.StrokeType;
 import javafx.scene.layout.Pane;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
@@ -149,6 +150,8 @@ final class TileReadListener implements StoreListener<TileReadEvent>, EventHandl
             /*
              * `TileReadListener.snapshot` may change at any time. We can take any value,
              * but it must stay constant for the rest of this method for consistency.
+             * It is not really useful to take the value at the time when the event occurred,
+             * because that event is itself sent after an arbitrarily long background thread.
              */
             @SuppressWarnings("LocalVariableHidesMemberVariable")
             final CoverageCanvas.StaticGraphics snapshot = TileReadListener.this.snapshot;
@@ -171,6 +174,7 @@ final class TileReadListener implements StoreListener<TileReadEvent>, EventHandl
                     }
                 } else {
                     tile.setStroke(TILE_COLORS[ic]);
+                    tile.setStrokeType(StrokeType.INSIDE);
                 }
                 tile.setFill(FILL_COLORS[ic]);
                 tile.setOpacity(0.5);

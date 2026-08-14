@@ -50,6 +50,7 @@ final class EvanescentPane extends Pane implements ListChangeListener<Node> {
      */
     private EvanescentPane(final MapCanvas.StaticGraphics owner) {
         this.owner = owner;
+        setManaged(false);
     }
 
     /**

@@ -507,7 +507,7 @@ public abstract class MapCanvas extends PlanarCanvas {
         public final CoordinateReferenceSystem objectiveCRS;
 
         /**
-         * Returns the (usually affine) conversion from objective <abbr>CRS</abbr> to display coordinate system.
+         * The (usually affine) conversion from objective <abbr>CRS</abbr> to display coordinate system.
          * This is the value of {@link #getObjectiveToDisplay()} at the time when this {@code StaticGraphics}
          * instance has been obtained. This is never {@code null}.
          *
