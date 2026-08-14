@@ -114,7 +114,7 @@ public abstract class CascadedStoreEvent<E extends CascadedStoreEvent<E>> extend
          * Invoked when an event is fired on a parent resource.
          * This method causes similar event to be fired on children resources.
          */
-        @Override public void eventOccured(final E event) {
+        @Override public void eventOccurred(final E event) {
             final StoreListeners r = listeners.get();
             if (r == null) {
                 parent.removeListener(eventType, this);

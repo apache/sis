@@ -40,7 +40,7 @@ public final class StoreListenersTest extends TestCase implements StoreListener<
     private final DataStoreMock store;
 
     /**
-     * The warning received by {@link #eventOccured(WarningEvent)}.
+     * The warning received by {@link #eventOccurred(WarningEvent)}.
      * This is stored for allowing test methods to verify the properties.
      */
     private LogRecord warning;
@@ -59,7 +59,7 @@ public final class StoreListenersTest extends TestCase implements StoreListener<
      * @param  warning  the warning event emitted by the data store.
      */
     @Override
-    public void eventOccured(final WarningEvent warning) {
+    public void eventOccurred(final WarningEvent warning) {
         assertSame(store, warning.getSource());
         this.warning = warning.getDescription();
     }
@@ -140,7 +140,7 @@ public final class StoreListenersTest extends TestCase implements StoreListener<
         class Listener implements StoreListener<CloseEvent> {
             /** Whether the resource has been closed. */boolean isClosed;
 
-            @Override public void eventOccured(CloseEvent event) {
+            @Override public void eventOccurred(CloseEvent event) {
                 assertSame(resource, event.getSource());
                 assertFalse(isClosed);
                 isClosed = true;

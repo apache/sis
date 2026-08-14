@@ -334,7 +334,7 @@ public final class LogHandler extends Handler implements StoreListener<WarningEv
      * @param  event  the warning event.
      */
     @Override
-    public void eventOccured(final WarningEvent event) {
+    public void eventOccurred(final WarningEvent event) {
         final Resource source = event.getSource();
         if (source != null) {
             final LogRecord log = event.getDescription();

@@ -143,7 +143,7 @@ final class TileReadListener implements StoreListener<TileReadEvent>, EventHandl
      */
     @Override
     @SuppressWarnings("UseSpecificCatch")
-    public void eventOccured(final TileReadEvent event) {
+    public void eventOccurred(final TileReadEvent event) {
         final boolean pending = childrenUpdateRequested;
         childrenUpdateRequested = true;
         BackgroundThreads.EXECUTOR.execute(() -> {
@@ -185,7 +185,7 @@ final class TileReadListener implements StoreListener<TileReadEvent>, EventHandl
                 transition.setOnFinished(this);
                 tileShapes.add(transition);
             } catch (Exception e) {
-                Logging.recoverableException(LOGGER, TileReadListener.class, "eventOccured", e);
+                Logging.recoverableException(LOGGER, TileReadListener.class, "eventOccurred", e);
             }
             /*
              * The addition of the tiles in the scene graph needs to be done in the JavaFX thread.
