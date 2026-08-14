@@ -46,7 +46,7 @@ public abstract class DataStoreTestCase extends TestCaseWithLogs implements Stor
 
     /**
      * Performs an unconditional redirection of the warnings emitted by the given store to the JUnit extension.
-     * The {@link #eventOccured(WarningEvent)} method will be invoked for each warning.
+     * The {@link #eventOccurred(WarningEvent)} method will be invoked for each warning.
      *
      * @param  store  the data store to listen to.
      */
@@ -61,7 +61,7 @@ public abstract class DataStoreTestCase extends TestCaseWithLogs implements Stor
      * @param  event  the warning emitted by the data store.
      */
     @Override
-    public final void eventOccured(WarningEvent event) {
+    public final void eventOccurred(WarningEvent event) {
         loggings.accept(event.getDescription());
     }
 }

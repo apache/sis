@@ -70,7 +70,7 @@ import org.opengis.filter.BinaryComparisonOperator;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   1.0
  */
 public class JoinFeatureSet extends AggregatedFeatureSet {
@@ -176,6 +176,8 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
      * The join condition in the form <var>property from left feature</var> = <var>property from right feature</var>.
      * This condition specifies also if the comparison is {@linkplain BinaryComparisonOperator#isMatchingCase() case
      * sensitive} and {@linkplain BinaryComparisonOperator#getMatchAction() how to compare multi-values}.
+     *
+     * @since 2.0 (temporary version number until this branch is released)
      */
     public final BinaryComparisonOperator<Feature> condition;
 
@@ -210,7 +212,8 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
     public JoinFeatureSet(final Resource parent,
                           final FeatureSet left,  String leftAlias,
                           final FeatureSet right, String rightAlias,
-                          final Type joinType, final BinaryComparisonOperator<Feature> condition,
+                          final Type joinType,
+                          final BinaryComparisonOperator<Feature> condition,
                           Map<String,?> featureInfo)
             throws DataStoreException
     {

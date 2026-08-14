@@ -160,7 +160,7 @@ public abstract class ValuesUnderCursor {
      */
     protected abstract static class Formatter implements Runnable {
         /**
-         * Coordinates and <abbr>CRS</abbr> of the position where to evaluate values.
+         * Coordinates and <abbr>CRS</abbr> of the position where to evaluate sample values.
          * This position shall not be modified; new coordinates shall be specified in a new instance.
          * A {@code null} value means that there is no more sample values to format.
          *

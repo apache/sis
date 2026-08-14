@@ -49,7 +49,7 @@
  * <ul class="verbose">
  *   <li>The {@code Abstract} prefix means that the class is abstract in the sense of the implemented standard.
  *       It it not necessarily abstract in the sense of Java. Because incomplete metadata are common in practice,
- *       sometimes we wish to instantiate an "abstract" class because of the lack of knowledge about the exact sub-type.</li>
+ *       sometimes we wish to instantiate an "abstract" class because of the lack of knowledge about the exact subtype.</li>
  *   <li>The properties are determined by the getter methods declared in the interfaces.
  *       Getter methods declared in the implementation classes are ignored.</li>
  *   <li>Setter methods, if any, can be declared in the implementation classes without the need for declarations

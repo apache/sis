@@ -47,9 +47,9 @@ import org.opengis.metadata.citation.Individual;
  * Tests the {@link HashCode} class. This is also used as a relatively simple {@link MetadataVisitor} test.
  * The entry point is the {@link HashCode#walk(MetadataStandard, Class, Object, boolean)} method.
  *
- *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class HashCodeTest extends TestCase {
     /**
      * Creates a new test case.
@@ -61,7 +61,7 @@ public final class HashCodeTest extends TestCase {
      * Computes the hash code value of the given object.
      */
     private static Integer hash(final Object metadata) {
-        return HashCode.getOrCreate().walk(MetadataStandard.ISO_19115, null, metadata, true);
+        return HashCode.getOrCreate().walk(MetadataStandard.ISO_19115, null, metadata, UnresolvedTypePolicy.THROW);
     }
 
     /**

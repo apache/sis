@@ -177,6 +177,7 @@ module org.apache.sis.referencing {
 
     exports org.apache.sis.referencing.internal.shared to
             org.apache.sis.referencing.gazetteer,
+            org.apache.sis.referencing.dggs,                // In the "incubator" sub-project.
             org.apache.sis.feature,
             org.apache.sis.geometry,                        // In the "incubator" sub-project.
             org.apache.sis.storage,

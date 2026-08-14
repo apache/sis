@@ -1,0 +1,9 @@
+{
+  "type": "Point",
+  "coordinates": [100.0, 0.0, 5.0],
+  "measures": {
+    "enabled": true,
+    "unit": "m",
+    "description": "Example measure value carried by this geometry."
+  }
+}

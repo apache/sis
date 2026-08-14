@@ -49,6 +49,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.ImageRenderer;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.coverage.grid.PixelTranslation;
+import org.apache.sis.coverage.internal.shared.SampleDimensions;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
@@ -58,26 +59,25 @@ import org.apache.sis.image.ErrorHandler;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.image.internal.shared.ColorModelType;
 import org.apache.sis.image.internal.shared.ImageUtilities;
-import org.apache.sis.coverage.internal.shared.SampleDimensions;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.internal.shared.WraparoundApplicator;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.shared.CloneAccess;
 import org.apache.sis.util.internal.shared.Numerics;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.extent.Extents;
-import org.apache.sis.referencing.operation.transform.LinearTransform;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.map.internal.Resources;
-import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.portrayal.PlanarCanvas;       // For javadoc.
 
 
@@ -123,7 +123,7 @@ public class RenderingData implements CloneAccess {
      *
      * @see #xyDimensions
      */
-    private static final int BIDIMENSIONAL = 2;
+    protected static final int BIDIMENSIONAL = 2;
 
     /**
      * Whether to allow the creation of {@link java.awt.image.IndexColorModel}. This flag may be temporarily set
@@ -367,8 +367,12 @@ public class RenderingData implements CloneAccess {
      * <p>Caller should invoke {@link #ensureImageLoaded(GridCoverage, GridExtent, boolean)}
      * after this method (this is not done automatically).</p>
      *
+     * <p>The {@code objectivePOI} argument should generally be non-null. But a null value is tolerated
+     * if the transform between the {@link GridCoverage} <abbr>CRS</abbr> and the argument given to the
+     * {@link #setObjectiveCRS(CoordinateReferenceSystem)} method is linear.</p>
+     *
      * @param  objectiveToDisplay  transform used for rendering the coverage on screen.
-     * @param  objectivePOI        point where to compute resolution, in coordinates of objective CRS.
+     * @param  objectivePOI        point where to compute resolution, in coordinates of objective <abbr>CRS</abbr>.
      * @return the loaded grid coverage, or {@code null} if no loading has been done
      *         (which means that the coverage is unchanged, not that it does not exist).
      * @throws TransformException if an error occurred while computing resolution from given transforms.
@@ -726,7 +730,7 @@ public class RenderingData implements CloneAccess {
      *
      * @param  transform     the transform to concatenate with a "wraparound" operation.
      * @param  sourceMedian  point of interest in the <em>source</em> CRS of given transform.
-     * @param  targetMedian  point of interest after wraparound.
+     * @param  targetMedian  point of interest after wraparound, or {@code null} if none.
      * @param  targetCRS     the target CRS of the given transform.
      */
     private static MathTransform applyWraparound(final MathTransform transform, DirectPosition sourceMedian,
@@ -905,7 +909,7 @@ public class RenderingData implements CloneAccess {
      * This is used for error reporting.
      */
     private String getCRSName() {
-        if (dataGeometry.isDefined(GridGeometry.CRS)) {
+        if (isDefined(GridGeometry.CRS)) {
             String name = IdentifiedObjects.getDisplayName(dataGeometry.getCoordinateReferenceSystem(), locale);
             if (name != null) {
                 return name;

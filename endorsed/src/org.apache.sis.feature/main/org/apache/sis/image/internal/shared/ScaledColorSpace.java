@@ -176,9 +176,7 @@ final class ScaledColorSpace extends ColorSpace {
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(20).append(getClass().getSimpleName());
-        formatRange(buffer);
-        return buffer.toString();
+        return formatRange(new StringBuilder(20).append(getClass().getSimpleName())).toString();
     }
 
     /**
@@ -186,12 +184,13 @@ final class ScaledColorSpace extends ColorSpace {
      * This method is used for {@link #toString()} implementation and may change in any future version.
      *
      * @param  buffer  where to append the range of values.
+     * @return {@code buffer}.
      */
     @Debug
-    final void formatRange(final StringBuilder buffer) {
-        buffer.append('[').append(offset)
+    final StringBuilder formatRange(final StringBuilder buffer) {
+        return buffer.append('[').append(offset)
             .append(" … ").append(maximum)
-            .append(" in band ").append(visibleBand).append(']');
+            .append("] in band ").append(visibleBand);
     }
 
     /**
@@ -210,7 +209,7 @@ final class ScaledColorSpace extends ColorSpace {
     @Override
     public boolean equals(final Object obj) {
         if (obj instanceof ScaledColorSpace) {
-            final ScaledColorSpace that = (ScaledColorSpace) obj;
+            final var that = (ScaledColorSpace) obj;
             return Numerics.equals(scale,   that.scale)             &&
                    Numerics.equals(offset,  that.offset)            &&
                    Numerics.equals(maximum, that.maximum)           &&

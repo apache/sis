@@ -243,12 +243,11 @@ public final class ResampledGridCoverageTest extends TestCase {
         final GridExtent sourceExtent = source.gridGeometry.getExtent();
         final int newWidth   = StrictMath.toIntExact(sourceExtent.getSize(0) - tx);
         final int newHeight  = StrictMath.toIntExact(sourceExtent.getSize(1) - ty);
-        GridExtent subExtent = new GridExtent(
+        final var subExtent = new GridExtent(new Rectangle(
                 StrictMath.toIntExact(sourceExtent.getLow(0) + tx),
                 StrictMath.toIntExact(sourceExtent.getLow(1) + ty),
                 newWidth,
-                newHeight
-        );
+                newHeight));
         assertPixelsEqual(source.render(null), new Rectangle(tx, ty, newWidth, newHeight),
                           target.render(subExtent), new Rectangle(newWidth, newHeight));
     }
@@ -707,6 +706,7 @@ public final class ResampledGridCoverageTest extends TestCase {
      *                assuming extent low coordinate matches source image (0,0) coordinate.
      * @return the image directly displayable through debugger.
      */
+    @SuppressWarnings("unused")
     private static BufferedImage debug(final RenderedImage source, final GridExtent extent) {
         Raster tile = source.getTile(source.getMinTileX(), source.getMinTileY());
         final int width, height;

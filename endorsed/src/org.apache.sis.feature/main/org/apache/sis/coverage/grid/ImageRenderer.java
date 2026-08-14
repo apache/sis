@@ -27,10 +27,8 @@ import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
-import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.awt.image.ImagingOpException;
 import java.awt.image.RasterFormatException;
 import java.awt.image.Raster;
 import static java.lang.Math.addExact;
@@ -48,13 +46,12 @@ import org.apache.sis.coverage.Category;
 import org.apache.sis.image.internal.shared.ColorScaleBuilder;
 import org.apache.sis.image.internal.shared.DeferredProperty;
 import org.apache.sis.image.internal.shared.RasterFactory;
-import org.apache.sis.image.internal.shared.ObservableImage;
 import org.apache.sis.image.internal.shared.TiledImage;
 import org.apache.sis.image.internal.shared.WritableTiledImage;
+import org.apache.sis.image.internal.shared.WritableUntiledImage;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Vector;
 import static org.apache.sis.image.PlanarImage.XY_DIMENSIONS_KEY;
@@ -103,7 +100,7 @@ import org.opengis.geometry.MismatchedDimensionException;
  * Support for tiled images will be added in a future version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  *
  * @see GridCoverage#render(GridExtent)
  *
@@ -281,6 +278,7 @@ public class ImageRenderer {
     /**
      * The properties to give to the image, or {@code null} if none.
      *
+     * @see #properties()
      * @see #addProperty(String, Object)
      */
     @SuppressWarnings("UseOfObsoleteCollectionType")
@@ -457,7 +455,7 @@ public class ImageRenderer {
                 ig = geometry;
             } else try {
                 ig = new SliceGeometry(geometry, sliceExtent, gridDimensions, mtFactory)
-                        .reduce(new GridExtent(imageX, imageY, width, height), dimCRS);
+                            .reduce(new GridExtent(getBounds()), dimCRS);
             } catch (FactoryException e) {
                 throw SliceGeometry.canNotCompute(e);
             }
@@ -512,15 +510,23 @@ public class ImageRenderer {
             case GRID_GEOMETRY_KEY:
             case SAMPLE_DIMENSIONS_KEY: break;
             default: {
-                if (properties == null) {
-                    properties = new Hashtable<>();
-                }
-                if (properties.putIfAbsent(key, value) == null) {
+                if (properties().putIfAbsent(key, value) == null) {
                     return;
                 }
             }
         }
         throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, key));
+    }
+
+    /**
+     * Returns the properties, created when first needed.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    private Hashtable<String, Object> properties() {
+        if (properties == null) {
+            properties = new Hashtable<>();
+        }
+        return properties;
     }
 
     /**
@@ -780,104 +786,19 @@ public class ImageRenderer {
                 supplier = new SliceGeometry(geometry, sliceExtent, gridDimensions, mtFactory);
             }
         }
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final Hashtable<String, Object> properties = properties();
+        properties.putIfAbsent(SAMPLE_DIMENSIONS_KEY, bands);
+        properties.putIfAbsent(XY_DIMENSIONS_KEY, gridDimensions);
         final WritableRaster wr = (raster instanceof WritableRaster) ? (WritableRaster) raster : null;
         if (wr != null && cm != null && (imageX | imageY) == 0) {
-            return new Untiled(cm, wr, properties, gridDimensions, imageGeometry, supplier, bands);
+            return new WritableUntiledImage(cm, wr, false, properties).setGridGeometry(imageGeometry, supplier);
         }
-        if (properties == null) {
-            properties = new Hashtable<>();
-        }
-        properties.putIfAbsent(XY_DIMENSIONS_KEY, gridDimensions);
         properties.putIfAbsent(GRID_GEOMETRY_KEY, (supplier != null) ? new DeferredProperty(supplier) : imageGeometry);
-        properties.putIfAbsent(SAMPLE_DIMENSIONS_KEY, bands);
         if (wr != null) {
             return new WritableTiledImage(properties, cm, width, height, 0, 0, wr);
         } else {
             return new TiledImage(properties, cm, width, height, 0, 0, raster);
-        }
-    }
-
-    /**
-     * A {@link BufferedImage} which will compute the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY}
-     * property when first needed. We use this class even when the property value is known in advance because it
-     * has the desired side-effect of not letting {@link #getSubimage(int, int, int, int)} inherit that property.
-     * The use of a {@link BufferedImage} subclass is desired because Java2D rendering pipeline has optimizations
-     * in the form {@code if (image instanceof BufferedImage)}.
-     */
-    private static final class Untiled extends ObservableImage {
-        /**
-         * The value associated to the {@value org.apache.sis.image.PlanarImage#XY_DIMENSIONS_KEY} key.
-         */
-        private final int[] gridDimensions;
-
-        /**
-         * The value associated to the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY} key,
-         * or {@code null} if not yet computed.
-         */
-        private GridGeometry geometry;
-
-        /**
-         * The object to use for computing {@link #geometry}, or {@code null} if not needed.
-         * This field is cleared after {@link #geometry} has been computed.
-         */
-        private SliceGeometry supplier;
-
-        /**
-         * The value associated to the {@value org.apache.sis.image.PlanarImage#SAMPLE_DIMENSIONS_KEY} key.
-         */
-        private final SampleDimension[] bands;
-
-        /**
-         * Creates a new buffered image wrapping the given raster.
-         */
-        @SuppressWarnings("UseOfObsoleteCollectionType")
-        Untiled(final ColorModel colors, final WritableRaster raster, final Hashtable<?,?> properties,
-                final int[] gridDimensions, final GridGeometry geometry, final SliceGeometry supplier, final SampleDimension[] bands)
-        {
-            super(colors, raster, false, properties);
-            this.gridDimensions = gridDimensions;
-            this.geometry       = geometry;
-            this.supplier       = supplier;
-            this.bands          = bands;
-        }
-
-        /**
-         * Returns the names of properties that this image can provide.
-         */
-        @Override
-        public String[] getPropertyNames() {
-            return ArraysExt.concatenate(super.getPropertyNames(), new String[] {
-                    XY_DIMENSIONS_KEY,
-                    GRID_GEOMETRY_KEY,
-                    SAMPLE_DIMENSIONS_KEY});
-        }
-
-        /**
-         * Returns the property associated to the given key.
-         * If the key is {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY},
-         * then the {@link GridGeometry} will be computed when first needed.
-         *
-         * @throws ImagingOpException if the property value cannot be computed.
-         */
-        @Override
-        public Object getProperty(final String key) {
-            switch (key) {
-                default: return super.getProperty(key);
-                case SAMPLE_DIMENSIONS_KEY: return bands.clone();
-                case XY_DIMENSIONS_KEY: return gridDimensions.clone();
-                case GRID_GEOMETRY_KEY: {
-                    synchronized (this) {
-                        if (geometry == null) {
-                            final SliceGeometry s = supplier;
-                            if (s != null) {
-                                supplier = null;                // Let GC do its work.
-                                geometry = s.apply(this);
-                            }
-                        }
-                        return geometry;
-                    }
-                }
-            }
         }
     }
 }

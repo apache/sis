@@ -94,6 +94,35 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractTuple<T> i
         return (T) this;
     }
 
+    /**
+     * Convert latitude/longitude radian angles to a unit vector
+     * and store the values in this vector.
+     *
+     * @param latRad in range [-PI/2 .. +PI/2]
+     * @param lonRad in range [-PI .. +PI]
+     * @return this vector
+     */
+    public T setFromLatLon(double latRad, double lonRad) {
+        double cosLat = Math.cos(latRad);
+        set(0, cosLat * Math.cos(lonRad));
+        set(1, cosLat * Math.sin(lonRad));
+        set(2,          Math.sin(latRad));
+        return (T) this;
+    }
+
+    /**
+     * Convert this vector to latitude/longitude radian angles.
+     * This vector is expected to be a unit vector.
+     *
+     * @return latitude/longitude in radians
+     */
+    public double[] toLatLon() {
+        final double latRad = Math.asin(Maths.clamp(get(2), -1, 1));
+        final double lonRad = Math.atan2(get(1), get(0));
+        return new double[]{latRad, lonRad};
+    }
+
+
     @Override
     public final int getDimension() {
         return 3;

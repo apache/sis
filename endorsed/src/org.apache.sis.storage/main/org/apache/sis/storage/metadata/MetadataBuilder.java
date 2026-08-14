@@ -3416,7 +3416,7 @@ public class MetadataBuilder {
         } else {
             return false;
         }
-        final Merger merger = new Merger(locale);
+        final var merger = new Merger(locale);
         merger.copy(source, target);
         useParentElements();
         return true;

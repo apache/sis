@@ -1,0 +1,12 @@
+{
+  "type": "LineString",
+  "coordinates": [
+    [100.0, 0.0, 0.0],
+    [101.0, 1.0, 10.0]
+  ],
+  "measures": {
+    "enabled": true,
+    "unit": "m",
+    "description": "Example measure value carried by this geometry."
+  }
+}

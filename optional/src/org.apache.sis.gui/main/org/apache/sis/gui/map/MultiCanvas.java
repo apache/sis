@@ -796,7 +796,7 @@ final class MultiCanvas extends Widget implements Observable {
          * This method blocks until the JavaFX thread finished to execute {@code removeResource(…)}
          * for avoiding that the background thread closes the resource before we removed its usages.
          */
-        @Override public void eventOccured(final CloseEvent event) {
+        @Override public void eventOccurred(final CloseEvent event) {
             final Resource resource = event.getSource();
             if (Platform.isFxApplicationThread()) {
                 removeResource(resource);

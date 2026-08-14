@@ -70,7 +70,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * Serialization should be used only for short term storage or RMI between applications running the same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.7
  *
  * @see MathTransforms#passThrough(int, MathTransform, int)
  * @see MathTransforms#compound(MathTransform...)
@@ -780,6 +780,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      *   <li>If the other transform is also a {@code PassThroughTransform},
      *       then the two transforms may be merged in a single {@code PassThroughTransform} instance.</li>
      *   <li>If the other transform discards some dimensions, verify if we still need a {@code PassThroughTransform}.</li>
+     *   <li>Eventually move affine transform inside or outside the pass-through transform if it can simplify the chain.</li>
      * </ul>
      *
      * @param  context  information about the neighbor transforms, and the object where to set the result.
@@ -846,9 +847,6 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
             }
         }
         /*
-         * TODO: replace the remaining code by a call to `TransformJoiner.reduceDimension(…)`.
-         * But first, we need to verify if this is really equivalent.
-         *
          * Verify if matrix discards the sub-transform. If it does not, then we need to keep all the sub-transform
          * dimensions (discarding them is a "all or nothing" operation). Other dimensions (leading and trailing)
          * can be keep or discarded on a case-by-case basis.

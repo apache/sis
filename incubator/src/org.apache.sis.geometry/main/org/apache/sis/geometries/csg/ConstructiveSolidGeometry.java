@@ -16,12 +16,49 @@
  */
 package org.apache.sis.geometries.csg;
 
+import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
+ * This class is a place holder for futur CSG implementation.
+ * TODO : see with Apache commons Geometry if code can be duplicated here.
  *
  * @author Johann Sorel (Geomatys)
  * @see https://en.wikipedia.org/wiki/Constructive_solid_geometry
  */
-public class ConstructiveSolidGeometry {
+public final class ConstructiveSolidGeometry extends AbstractGeometry {
+
+    @Override
+    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) throws IllegalArgumentException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public AttributesType getAttributesType() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public String getGeometryType() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Envelope getEnvelope() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public boolean isEmpty() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
 }

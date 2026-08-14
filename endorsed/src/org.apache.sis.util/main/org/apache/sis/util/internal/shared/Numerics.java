@@ -343,7 +343,7 @@ public final class Numerics {
     }
 
     /**
-     * Returns {@code true} if the given floats are equals. Positive and negative zero are
+     * Returns {@code true} if the given floats are equal. Positive and negative zero are
      * considered different, while a NaN value is considered equal to all other NaN values.
      *
      * @param  v1  the first value to compare.

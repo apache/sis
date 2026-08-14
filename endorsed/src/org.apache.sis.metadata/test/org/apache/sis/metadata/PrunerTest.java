@@ -38,6 +38,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class PrunerTest extends TestCase {
     /**
      * The root metadata object being tested.

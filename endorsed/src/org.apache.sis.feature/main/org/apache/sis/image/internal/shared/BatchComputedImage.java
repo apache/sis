@@ -38,6 +38,9 @@ import org.apache.sis.util.resources.Errors;
  * Implementations should manage their own cache for avoiding to compute the same tiles many times.
  * The caching mechanism inherited from {@link ComputedImage} is less useful here.
  *
+ * @todo Consider moving as a public class in {@link org.apache.sis.image.internal}
+ *       for leveraging {@code MultiSourcePrefetch}.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  */
 public abstract class BatchComputedImage extends ComputedImage {
@@ -76,6 +79,13 @@ public abstract class BatchComputedImage extends ComputedImage {
             this.tiles = tiles;
         }
 
+        /**
+         * Tests whether this set of tiles contains the given set.
+         */
+        final boolean contains(final Rectangle other) {
+            return new Rectangle(x, y, width, height).contains(other);
+        }
+
         /** Discards this set of tiles. */
         @Override public void dispose() {
             remove(this);
@@ -104,7 +114,7 @@ public abstract class BatchComputedImage extends ComputedImage {
     public Object getProperty(final String key) {
         Object value = properties.getOrDefault(key, Image.UndefinedProperty);
         if (value instanceof DeferredProperty) {
-            value = ((DeferredProperty) value).compute(this);
+            value = ((DeferredProperty) value).getOrCompute(this);
         }
         return value;
     }
@@ -125,6 +135,10 @@ public abstract class BatchComputedImage extends ComputedImage {
      * Tiles shall be returned in row-major order.
      * It is implementer responsibility to ensure that all rasters have consistent
      * {@link Raster#getMinX()}/{@code getMinY()} values.
+     *
+     * <h4>Multi-threading</h4>
+     * This method may be invoked simultaneously in different threads for different tiles.
+     * Implementations need to synchronize themselves if tile computation uses non thread-safe resources.
      *
      * @todo The return type should be changed to something more reactive, maybe {@link java.util.concurrent.Flow}.
      *       It would allow processing (e.g. map reprojection) of some tiles as soon as they become available,
@@ -175,7 +189,14 @@ public abstract class BatchComputedImage extends ComputedImage {
      * @throws ImagingOpException if an error occurred while preparing tile computation.
      */
     @Override
-    protected Disposable prefetch(final Rectangle region) {
+    public Disposable prefetch(final Rectangle region) {
+        synchronized (this) {
+            for (Rasters r = prefetched; r != null; r = r.next) {
+                if (r.contains(region)) {
+                    return null;    // Already prefetched.
+                }
+            }
+        }
         final Raster[] tiles;
         try {
             tiles = computeTiles(region);
@@ -184,7 +205,7 @@ public abstract class BatchComputedImage extends ComputedImage {
         } catch (Exception e) {
             throw (ImagingOpException) new ImagingOpException(e.getMessage()).initCause(e);
         }
-        final Rasters r = new Rasters(region, tiles);
+        final var r = new Rasters(region, tiles);
         synchronized (this) {
             r.next = prefetched;
             prefetched = r;

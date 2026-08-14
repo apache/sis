@@ -19,7 +19,6 @@ package org.apache.sis.geometries;
 import java.util.List;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
-import org.opengis.geometry.coordinate.GriddedSurface;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 
 
@@ -94,7 +93,7 @@ public interface Polygon extends Surface {
     }
 
     @UML(identifier="spanningSurface", specification=ISO_19107) // section 8.1.2.3
-    default GriddedSurface getSpanningSurface() {
+    default ParametricCurveSurface getSpanningSurface() {
         //TODO
         throw new UnsupportedOperationException();
     }

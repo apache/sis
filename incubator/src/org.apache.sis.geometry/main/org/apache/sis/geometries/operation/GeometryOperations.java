@@ -97,8 +97,37 @@ public final class GeometryOperations {
     private static final Map<UnaryKey,Processor> UNARY_PROCESSORS = new HashMap<>();
     private static final Map<BinaryKey,Processor> BINARY_PROCESSORS = new HashMap<>();
     static {
-        final ServiceLoader<Processor> serviceLoader = ServiceLoader.load(Processor.class, Processor.class.getClassLoader());
-        final Iterator<Processor> iterator = serviceLoader.iterator();
+        final List<Processor> processors = List.of(
+                new org.apache.sis.geometries.processor.spatialanalysis2d.Distance.PointPoint(),
+                new org.apache.sis.geometries.processor.spatialanalysis2d.Intersection.PrimitiveTrianglesPrimitivePoints(),
+                new org.apache.sis.geometries.processor.spatialanalysis2d.Intersection.PrimitiveTrianglesPrimitiveLines(),
+
+                new org.apache.sis.geometries.processor.spatialedition.To3D.Point(),
+                new org.apache.sis.geometries.processor.spatialedition.To3D.LineString(),
+                new org.apache.sis.geometries.processor.spatialedition.To3D.Primitive(),
+
+                new org.apache.sis.geometries.processor.spatialedition.ComputeAttribute.Primitive(),
+                new org.apache.sis.geometries.processor.spatialedition.ComputeAttribute.MultiPrimitive(),
+
+                new org.apache.sis.geometries.processor.spatialedition.ToPrimitive.Point(),
+                new org.apache.sis.geometries.processor.spatialedition.ToPrimitive.LineString(),
+                new org.apache.sis.geometries.processor.spatialedition.ToPrimitive.Polygon(),
+                new org.apache.sis.geometries.processor.spatialedition.ToPrimitive.MultiLineString(),
+                new org.apache.sis.geometries.processor.spatialedition.ToPrimitive.MultiPoint(),
+                new org.apache.sis.geometries.processor.spatialedition.ToPrimitive.MultiPrimitive(),
+                new org.apache.sis.geometries.processor.spatialedition.ToPrimitive.Primitive(),
+                new org.apache.sis.geometries.processor.spatialedition.ToPrimitive.GeometryCollection(),
+
+                new org.apache.sis.geometries.processor.spatialedition.Transform.LinearRing(),
+                new org.apache.sis.geometries.processor.spatialedition.Transform.Polygon(),
+                new org.apache.sis.geometries.processor.spatialedition.Transform.MultiPrimitive(),
+                new org.apache.sis.geometries.processor.spatialedition.Transform.Primitive(),
+                new org.apache.sis.geometries.processor.spatialedition.Transform.Triangle(),
+
+                new org.apache.sis.geometries.processor.spatialrelations2d.Contains.PolygonPoint()
+        );
+
+        final Iterator<Processor> iterator = processors.iterator();
         while (iterator.hasNext()) {
             final Processor p = iterator.next();
             if (Operation.Binary.class.isAssignableFrom(p.getOperationClass())) {

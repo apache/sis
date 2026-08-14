@@ -46,7 +46,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.image.internal.shared.ColorModelBuilder;
 import org.apache.sis.image.internal.shared.ColorModelFactory;
-import org.apache.sis.image.internal.shared.ObservableImage;
+import org.apache.sis.image.internal.shared.WritableUntiledImage;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.internal.shared.AffineTransform2D;
 import org.apache.sis.io.stream.ChannelDataInput;
@@ -336,7 +336,7 @@ public final class RasterReader extends RasterFormat {
             }
             cm = ColorModelFactory.createGrayScale(dataType, numBands, visibleBand, minimum, maximum);
         }
-        return new ObservableImage(cm, raster, false, null);
+        return new WritableUntiledImage(cm, raster, false, null);
     }
 
     /**

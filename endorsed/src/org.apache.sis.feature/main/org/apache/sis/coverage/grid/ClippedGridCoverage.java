@@ -131,7 +131,9 @@ final class ClippedGridCoverage extends DerivedGridCoverage {
                 } else {
                     gridDimensions = clipped.getSubspaceDimensions(BIDIMENSIONAL);
                 }
-                return ReshapedImage.translate(image, translation[gridDimensions[0]], translation[gridDimensions[1]]);
+                return ReshapedImage.translate(image,
+                        translation[gridDimensions[0]],
+                        translation[gridDimensions[1]]);
             }
         }
         return image;

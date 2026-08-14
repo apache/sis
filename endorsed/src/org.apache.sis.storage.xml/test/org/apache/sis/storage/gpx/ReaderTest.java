@@ -24,15 +24,19 @@ import java.time.Instant;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polyline;
 import org.opengis.geometry.Envelope;
+import org.opengis.metadata.maintenance.ScopeCode;
+import org.opengis.metadata.identification.Identification;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.gps.Fix;
+import org.apache.sis.metadata.iso.DefaultMetadata;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertSingleton;
 import static org.apache.sis.test.Assertions.assertSingletonFeature;
 import org.apache.sis.test.TestCase;
 
@@ -90,13 +94,20 @@ public final class ReaderTest extends TestCase {
     }
 
     /**
-     * Verifies that the given {@code actual} envelope has the expected values.
+     * Verifies that an envelope is two-dimensional and has the expected values.
      * A strict equality is requested.
+     *
+     * @param xmin    the expected minimum value of the first coordinate.
+     * @param xmax    the expected maximum value of the first coordinate.
+     * @param ymin    the expected minimum value of the second coordinate.
+     * @param ymax    the expected maximum value of the second coordinate.
+     * @param actual  the feature from which to get the envelope to compare with the expected values.
      */
     private static void assertEnvelopeEquals(final double xmin, final double xmax,
                                              final double ymin, final double ymax,
-                                             final Envelope actual)
+                                             final Feature f)
     {
+        final Envelope actual = assertInstanceOf(Envelope.class, f.getPropertyValue("sis:envelope"));
         assertEquals(2, actual.getDimension(), "dimension");
         assertEquals(actual.getMinimum(0), xmin, "xmin");
         assertEquals(actual.getMaximum(0), xmax, "xmax");
@@ -115,6 +126,13 @@ public final class ReaderTest extends TestCase {
     }
 
     /**
+     * Gets the metadata from the given store.
+     */
+    private static Metadata getMetadata(final Store reader) throws DataStoreException {
+        return assertInstanceOf(Metadata.class, reader.getMetadata());
+    }
+
+    /**
      * Tests parsing of GPX version 1.0.0 metadata.
      *
      * @throws DataStoreException if reader failed to be created or failed at reading.
@@ -122,7 +140,7 @@ public final class ReaderTest extends TestCase {
     @Test
     public void testMetadata100() throws DataStoreException {
         try (Store reader = create(TestData.V1_0, TestData.METADATA)) {
-            final Metadata md = (Metadata) reader.getMetadata();
+            final Metadata md = getMetadata(reader);
             verifyMetadata(md, 1);
             assertNull(md.author.link);
             assertNull(md.copyright);
@@ -138,7 +156,7 @@ public final class ReaderTest extends TestCase {
     @Test
     public void testMetadata110() throws DataStoreException {
         try (Store reader = create(TestData.V1_1, TestData.METADATA)) {
-            final Metadata md = (Metadata) reader.getMetadata();
+            final Metadata md = getMetadata(reader);
             verifyMetadata(md, 3);
             assertStringEquals("http://someone-site.org", md.author.link);
             assertEquals("Apache", md.copyright.author);
@@ -200,6 +218,36 @@ public final class ReaderTest extends TestCase {
     }
 
     /**
+     * Tests the merging of two {@link Metadata} object.
+     * The difficulty is that, for implementation convenience, the same class implements many metadata interfaces.
+     * The merge process should detect which interface to use based on the type of the {@code merged} object as a
+     * starting point, then based on the type of each property to merge.
+     *
+     * @throws DataStoreException if reader failed to be created or failed at reading.
+     */
+    @Test
+    public void testMetadataMerge() throws DataStoreException {
+        final Metadata first, second;
+        final DefaultMetadata merged;
+        try (Store reader = create(TestData.V1_1, TestData.METADATA)) {
+            first = getMetadata(reader);
+            try (Store other = create(TestData.V1_1, TestData.ROUTE)) {
+                second = getMetadata(other);
+                merged = new DefaultMetadata(first);
+                merged.merge(second);
+            }
+        }
+        // Both metadata declare this scope, only one instance should be retained.
+        assertEquals(ScopeCode.DATASET, assertSingleton(merged.getMetadataScopes()).getResourceScope());
+
+        // Should find the identification info of each dataset.
+        final Iterator<Identification> it = merged.getIdentificationInfo().iterator();
+        assertSame(assertSingleton(first .getIdentificationInfo()), it.next());
+        assertSame(assertSingleton(second.getIdentificationInfo()), it.next());
+        assertFalse(it.hasNext());
+    }
+
+    /**
      * Tests parsing of GPX version 1.0.0 way point.
      *
      * @throws DataStoreException if reader failed to be created or failed at reading.
@@ -207,7 +255,7 @@ public final class ReaderTest extends TestCase {
     @Test
     public void testWayPoint100() throws DataStoreException {
         try (Store reader = create(TestData.V1_0, TestData.WAYPOINT)) {
-            verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
+            verifyAlmostEmptyMetadata(getMetadata(reader));
             assertEquals(StoreProvider.V1_0, reader.getVersion());
             try (Stream<Feature> features = reader.features(false)) {
                 final Iterator<Feature> it = features.iterator();
@@ -227,7 +275,7 @@ public final class ReaderTest extends TestCase {
     @Test
     public void testWayPoint110() throws DataStoreException {
         try (Store reader = create(TestData.V1_1, TestData.WAYPOINT)) {
-            verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
+            verifyAlmostEmptyMetadata(getMetadata(reader));
             assertEquals(StoreProvider.V1_1, reader.getVersion());
             try (Stream<Feature> features = reader.features(false)) {
                 final Iterator<Feature> it = features.iterator();
@@ -247,7 +295,7 @@ public final class ReaderTest extends TestCase {
     @Test
     public void testRoute100() throws DataStoreException {
         try (Store reader = create(TestData.V1_0, TestData.ROUTE)) {
-            verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
+            verifyAlmostEmptyMetadata(getMetadata(reader));
             assertEquals(StoreProvider.V1_0, reader.getVersion());
             try (Stream<Feature> features = reader.features(false)) {
                 final Iterator<Feature> it = features.iterator();
@@ -266,7 +314,7 @@ public final class ReaderTest extends TestCase {
     @Test
     public void testRoute110() throws DataStoreException {
         try (Store reader = create(TestData.V1_1, TestData.ROUTE)) {
-            verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
+            verifyAlmostEmptyMetadata(getMetadata(reader));
             assertEquals(StoreProvider.V1_1, reader.getVersion());
             verifyRoute110(reader);
         }
@@ -322,7 +370,7 @@ public final class ReaderTest extends TestCase {
         assertEquals(new Point(15, 10), p.getPoint(0));
         assertEquals(new Point(25, 20), p.getPoint(1));
         assertEquals(new Point(35, 30), p.getPoint(2));
-        assertEnvelopeEquals(15, 35, 10, 30, (Envelope) f.getPropertyValue("sis:envelope"));
+        assertEnvelopeEquals(15, 35, 10, 30, f);
     }
 
     /**
@@ -352,7 +400,7 @@ public final class ReaderTest extends TestCase {
     @Test
     public void testTrack100() throws DataStoreException {
         try (Store reader = create(TestData.V1_0, TestData.TRACK)) {
-            verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
+            verifyAlmostEmptyMetadata(getMetadata(reader));
             assertEquals(StoreProvider.V1_0, reader.getVersion());
             try (Stream<Feature> features = reader.features(false)) {
                 final Iterator<Feature> it = features.iterator();
@@ -371,7 +419,7 @@ public final class ReaderTest extends TestCase {
     @Test
     public void testTrack110() throws DataStoreException {
         try (Store reader = create(TestData.V1_1, TestData.TRACK)) {
-            verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
+            verifyAlmostEmptyMetadata(getMetadata(reader));
             assertEquals(StoreProvider.V1_1, reader.getVersion());
             try (Stream<Feature> features = reader.features(false)) {
                 final Iterator<Feature> it = features.iterator();
@@ -424,7 +472,7 @@ public final class ReaderTest extends TestCase {
         assertEquals(new Point(15, 10), p.getPoint(0));
         assertEquals(new Point(25, 20), p.getPoint(1));
         assertEquals(new Point(35, 30), p.getPoint(2));
-        assertEnvelopeEquals(15, 35, 10, 30, (Envelope) f.getPropertyValue("sis:envelope"));
+        assertEnvelopeEquals(15, 35, 10, 30, f);
     }
 
     /**
@@ -464,7 +512,7 @@ public final class ReaderTest extends TestCase {
                     assertStringEquals("http://first-address2.org", links.get(1));
                     assertStringEquals("http://first-address3.org", links.get(2));
                 }
-                assertEnvelopeEquals(15, 15, 10, 10, (Envelope) f.getPropertyValue("sis:envelope"));
+                assertEnvelopeEquals(15, 15, 10, 10, f);
                 break;
             }
             case 1: {
@@ -488,7 +536,7 @@ public final class ReaderTest extends TestCase {
                 assertNull(f.getPropertyValue("ageofdgpsdata"));
                 assertNull(f.getPropertyValue("dgpsid"));
                 assertTrue(assertInstanceOf(List.class, f.getPropertyValue("link")).isEmpty());
-                assertEnvelopeEquals(25, 25, 20, 20, (Envelope) f.getPropertyValue("sis:envelope"));
+                assertEnvelopeEquals(25, 25, 20, 20, f);
                 break;
             }
             case 2: {
@@ -517,7 +565,7 @@ public final class ReaderTest extends TestCase {
                 if (v11) {
                     assertStringEquals("http://third-address2.org", links.get(1));
                 }
-                assertEnvelopeEquals(35, 35, 30, 30, (Envelope) f.getPropertyValue("sis:envelope"));
+                assertEnvelopeEquals(35, 35, 30, 30, f);
                 break;
             }
             default: {
@@ -534,7 +582,7 @@ public final class ReaderTest extends TestCase {
      * @throws DataStoreException if reader failed to be created or failed at reading.
      */
     @Test
-    public void testRouteSkipMetadata() throws DataStoreException {
+    public void testRouteIgnoringMetadata() throws DataStoreException {
         try (Store reader = create(TestData.V1_1, TestData.ROUTE)) {
             verifyRoute110(reader);
         }
@@ -545,7 +593,7 @@ public final class ReaderTest extends TestCase {
      * Using the URL makes easier for the data store to read the same data more than once.
      */
     private Store createFromURL() throws DataStoreException {
-        final StorageConnector connector = new StorageConnector(TestData.V1_1.getURL(TestData.ROUTE));
+        final var connector = new StorageConnector(TestData.V1_1.getURL(TestData.ROUTE));
         connector.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.ESRI);
         connector.setOption(OptionKey.URL_ENCODING, "UTF-8");
         return new Store(provider, connector);
@@ -568,7 +616,7 @@ public final class ReaderTest extends TestCase {
              * The new 'features()' call should reuse the reader created by 'getMetadata()' - this can
              * be verified by stepping in the code with a debugger.
              */
-            md = (Metadata) reader.getMetadata();
+            md = getMetadata(reader);
             verifyRoute110(reader);
             /*
              * One more check.
@@ -586,6 +634,7 @@ public final class ReaderTest extends TestCase {
      * @throws DataStoreException if reader failed to be created or failed at reading.
      */
     @Test
+    @SuppressWarnings("ConvertToTryWithResources")
     public void testConcurrentReads() throws DataStoreException {
         try (Store reader = createFromURL()) {
             final Stream<Feature>   f1 = reader.features(false);

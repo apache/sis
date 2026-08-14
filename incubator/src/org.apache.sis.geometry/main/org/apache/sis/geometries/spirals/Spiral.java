@@ -31,7 +31,7 @@ import org.apache.sis.geometries.math.Vector;
 @UML(identifier="Spiral", specification=ISO_19107) // section 7.11.2
 public interface Spiral extends Curve {
 
-    @UML(identifier="Spiral", specification=ISO_19107) // section 7.11.2.2
+    @UML(identifier="curvature", specification=ISO_19107) // section 7.11.2.2
     RealFunction getCurvature();
 
     @UML(identifier="torsion", specification=ISO_19107) // section 7.11.2.3

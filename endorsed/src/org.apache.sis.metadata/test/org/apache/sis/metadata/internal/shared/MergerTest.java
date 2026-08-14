@@ -60,10 +60,10 @@ public final class MergerTest extends TestCase {
      * Creates a metadata sample with 3 content information of different kind.
      */
     private static DefaultMetadata createSample1() {
-        final DefaultFeatureCatalogueDescription features = new DefaultFeatureCatalogueDescription();
-        final DefaultCoverageDescription         coverage = new DefaultCoverageDescription();
-        final DefaultImageDescription            image    = new DefaultImageDescription();
-        final DefaultMetadata                    metadata = new DefaultMetadata();
+        final var features = new DefaultFeatureCatalogueDescription();
+        final var coverage = new DefaultCoverageDescription();
+        final var image    = new DefaultImageDescription();
+        final var metadata = new DefaultMetadata();
         features.setFeatureCatalogueCitations(Set.of(new DefaultCitation("Shapefile")));
         features.setIncludedWithDataset(Boolean.TRUE);
         metadata.getContentInfo().add(features);
@@ -84,9 +84,9 @@ public final class MergerTest extends TestCase {
      * than the one created by {@link #createSample1()}.
      */
     private static DefaultMetadata createSample2() {
-        final DefaultFeatureCatalogueDescription features = new DefaultFeatureCatalogueDescription();
-        final DefaultImageDescription            image    = new DefaultImageDescription();
-        final DefaultMetadata                    metadata = new DefaultMetadata();
+        final var features = new DefaultFeatureCatalogueDescription();
+        final var image    = new DefaultImageDescription();
+        final var metadata = new DefaultMetadata();
         image.setProcessingLevelCode(new DefaultIdentifier("Level 2"));
         metadata.getContentInfo().add(image);
 
@@ -106,7 +106,7 @@ public final class MergerTest extends TestCase {
     public void testDeepMerge() {
         final DefaultMetadata source = createSample1();
         final DefaultMetadata target = createSample2();
-        final Merger merger = new Merger(null);
+        final var merger = new Merger(null);
         merger.copy(source, target);
 
         assertSetEquals(List.of(Locale.JAPANESE, Locale.FRENCH),
@@ -114,10 +114,10 @@ public final class MergerTest extends TestCase {
         assertSetEquals(List.of(StandardCharsets.UTF_16, StandardCharsets.UTF_8),
                         target.getLocalesAndCharsets().values());
 
-        final Iterator<ContentInformation> it       = target.getContentInfo().iterator();
-        final ImageDescription             image    = (ImageDescription)            it.next();
-        final FeatureCatalogueDescription  features = (FeatureCatalogueDescription) it.next();
-        final CoverageDescription          coverage = (CoverageDescription)         it.next();
+        final Iterator<ContentInformation> it = target.getContentInfo().iterator();
+        final var  image    = assertInstanceOf(ImageDescription.class,            it.next());
+        final var  features = assertInstanceOf(FeatureCatalogueDescription.class, it.next());
+        final var  coverage = assertInstanceOf(CoverageDescription.class,         it.next());
         assertFalse(it.hasNext());
 
         assertEquals(ImagingCondition.CLOUD, image   .getImagingCondition());

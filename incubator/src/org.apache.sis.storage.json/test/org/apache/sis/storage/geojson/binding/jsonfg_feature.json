@@ -1,0 +1,49 @@
+{
+  "type": "Feature",
+  "id": "3713041O3613255A",
+  "conformsTo": [
+    "http://www.opengis.net/spec/json-fg-1/1.0/conf/core"    ,
+    "http://www.opengis.net/spec/json-fg-1/1.0/conf/measures"
+  ],
+  "coordRefSys": "http://www.opengis.net/def/crs/OGC/0/CRS84",
+  "measures": {
+    "enabled": true,
+    "unit": "km",
+    "description": "Kilometers along the road based on the kilometer markers. Positions between two physical markers are interpolated."
+  },
+  "geometry": null,
+  "place": {
+    "type": "LineString",
+    "coordinates": [
+      [7.9379077, 52.2841795, 227.396],
+      [7.9386618, 52.2856218, 227.227],
+      [7.9389695, 52.2862999, 227.149],
+      [7.9395120, 52.2876169, 226.998],
+      [7.9397562, 52.2883001, 226.920],
+      [7.9401802, 52.2896330, 226.769],
+      [7.9405226, 52.2910055, 226.614],
+      [7.9412150, 52.2945101, 226.222],
+      [7.9415283, 52.2959768, 226.057],
+      [7.9416385, 52.2964391, 226.005],
+      [7.9421299, 52.2981305, 225.814],
+      [7.9426214, 52.2995303, 225.655],
+      [7.9429592, 52.3003909, 225.556],
+      [7.9434566, 52.3015636, 225.422],
+      [7.9438507, 52.3024014, 225.325],
+      [7.9443588, 52.3034069, 225.208]
+    ]
+  },
+  "time": {"instant": "2022-10-21T18:00:00Z"},
+  "properties": {
+    "road.title": "A1",
+    "road.class": "A",
+    "road.number": 1,
+    "num": "8",
+    "type": "Abschnitt",
+    "lr_start": 0,
+    "length_m": 2188,
+    "adminarea.name": "Bundesrepublik Deutschland",
+    "adminarea.knz": "00000000000",
+    "netzstand": "2022-10-21T18:00:00Z"
+  }
+}

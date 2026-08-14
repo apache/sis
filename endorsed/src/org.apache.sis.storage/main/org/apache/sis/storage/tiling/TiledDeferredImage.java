@@ -57,7 +57,7 @@ final class TiledDeferredImage extends BatchComputedImage {
      */
     TiledDeferredImage(final int[] imageSize,
                        final int[] tileLower,
-                       final Map<String,Object> properties,
+                       final Map<String, Object> properties,
                        final TiledGridCoverage.TileIterator iterator)
     {
         super(iterator.getCoverage().model, properties);

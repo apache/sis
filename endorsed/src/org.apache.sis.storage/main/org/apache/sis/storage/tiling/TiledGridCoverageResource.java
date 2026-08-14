@@ -21,8 +21,10 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Collection;
 import java.util.Spliterator;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.lang.reflect.Array;
+import java.awt.Dimension;
 import java.awt.image.DataBuffer;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
@@ -45,6 +47,7 @@ import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.coverage.internal.shared.RangeArgument;
 import org.apache.sis.image.DataType;
+import org.apache.sis.image.ImageLayout;
 import org.apache.sis.image.internal.shared.ColorModelFactory;
 import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.storage.Resource;
@@ -141,6 +144,7 @@ public abstract class TiledGridCoverageResource extends AbstractGridCoverageReso
      * For each value, the {@link Raster#getMinX()} and {@code minY} values
      * can be anything, depending which {@link TiledGridCoverageResource} was first to load the tile.
      *
+     * @see #clearCache()
      * @see TiledGridCoverage#rasters
      * @see TiledGridCoverage.AOI#getCachedTile()
      */
@@ -223,36 +227,14 @@ public abstract class TiledGridCoverageResource extends AbstractGridCoverageReso
     }
 
     /**
-     * Returns the size of tiles in this resource.
+     * Returns the size of tiles in the grid coverages read by this resource.
      * The length of the returned array is the number of dimensions,
-     * which must be {@value #BIDIMENSIONAL} or more.
+     * which must be {@value #BIDIMENSIONAL} or greater.
      *
-     * @return the size of tiles (in pixels) in this resource.
+     * @return the size of tiles (in pixels) in the {@link RenderedImage}s created by this resource.
      * @throws DataStoreException if an error occurred while fetching the tile size.
      */
     protected abstract int[] getTileSize() throws DataStoreException;
-
-    /**
-     * Returns the tile size to use for a read operation using the given subsampling.
-     * The default implementation returns the real tile size, as returned by {@link #getTileSize()}.
-     * Subclasses may override if it is easy for them to read many tiles as if they were a single tile.
-     * Such coalescing can be useful for avoiding that a read operation produces tiles that become too
-     * small after the subsampling.
-     *
-     * <p>Note that {@link TiledGridCoverage} aligns its {@link GridExtent} on the boundaries of "real" tiles
-     * (i.e. on tiles of the size returned by {@link #getTileSize()}), not on the boundaries of virtual tiles.
-     * Therefore, subclasses should override this method only if they are prepared to read regions covering a
-     * fraction of the virtual tiles. A simple and efficient strategy is to simply multiply {@code tileSize[i]}
-     * by {@code subsampling[i]} for each dimension <var>i</var> so that each virtual tile contains only whole
-     * real tiles.
-     *
-     * @param  subsampling  the subsampling which will be applied in a read operation.
-     * @return the size of tiles (in pixels) in this resource.
-     * @throws DataStoreException if an error occurred while fetching the tile size.
-     */
-    protected long[] getVirtualTileSize(long[] subsampling) throws DataStoreException {
-        return ArraysExt.copyAsLongs(getTileSize());
-    }
 
     /**
      * Returns the number of sample values in an indivisible element of a tile.
@@ -273,6 +255,57 @@ public abstract class TiledGridCoverageResource extends AbstractGridCoverageReso
      */
     protected int getAtomSize(final int dim) throws DataStoreException {
         return (dim == 0) ? TiledGridCoverage.getPixelsPerElement(getSampleModel(null)) : 1;
+    }
+
+    /**
+     * Returns whether this resource can read a tiled image as if the tiles had the specified size.
+     * This method is invoked when {@code TiledGridCoverageResource} wishes to create an image with
+     * tiles that are larger or smaller than the real tile size returned by {@link #getTileSize()}.
+     * A return value of {@code true} means that the subclass can use the given tile size easily.
+     * It is the case, for example, if the subclass delegates its work to another library such as
+     * <abbr>GDAL</abbr> which answers to arbitrary requests with its own tile management.
+     * If this method returns {@code false}, then {@code TiledGridCoverageResource} may
+     * try a different tile size or use a fallback simulating the desired tiling.
+     *
+     * <h4>Tile size amendment</h4>
+     * If the subclass does not support exactly the given size but would support a slightly different size,
+     * then this method can modify the given {@code virtualTileSize} array in-place and return {@code true}.
+     * The updated values will be used by the caller as the new virtual tile size.
+     *
+     * <h4>Use cases</h4>
+     * {@code TiledGridCoverageResource} may want to read many tiles as if they were a single tile.
+     * Such coalescing can be useful for avoiding that a read operation produces tiles that become
+     * too small after subsampling. In such case, virtual tile sizes are larger than real tile sizes.
+     *
+     * <p>Conversely, {@code TiledGridCoverageResource} may want to apply an artificial tiling on an untiled image,
+     * or re-tile an image having unreasonably large tiles (with "unreasonable" defined by an arbitrary threshold).
+     * This is done by using a virtual tile size which is smaller than the {@linkplain #getTileSize() real tile size}.
+     * Note that this artificial tiling is applied only if the {@linkplain #getLoadingStrategy() loading strategy} is
+     * {@link RasterLoadingStrategy#AT_GET_TILE_TIME} or, to a lesser extent, {@code AT_RENDER_TIME}.</p>
+     *
+     * <h4>Note for implementers</h4>
+     * Except in untiled cases, {@link TiledGridCoverage} aligns the {@link GridExtent}s requested by users
+     * on the boundaries of {@linkplain #getTileSize() real tiles}, not on the boundaries of virtual tiles.
+     * Therefore, a subclass should return {@code true} for arbitrary virtual tile sizes only if that subclass
+     * can read fractions of the areas covered by real tiles and assemble these areas in a single {@link Raster}.
+     * If the subclass can assemble only whole real tiles, then this method should accept only virtual tile sizes
+     * that are multiple of the real tile size.
+     *
+     * <p>This method is not invoked for the values returned by {@link #getTileSize()}.
+     * It may not be invoked neither for untiled image.
+     * Therefore, this method does not need to handle those special cases.
+     * The default implementation unconditionally returns {@code false}.</p>
+     *
+     * @param  virtualTileSize  the size of virtual tiles. Can be amended in-place.
+     * @return whether this resource can pretend that tiles have the given size.
+     * @throws DataStoreException if an error occurred while verifying the tile size.
+     *
+     * @see #getTileSize()
+     * @see Subset#getVirtualTileSize(int)
+     * @see Subset#createCoverage()
+     */
+    protected boolean supportsVirtualTileSize(long[] virtualTileSize) throws DataStoreException {
+        return false;
     }
 
     /**
@@ -546,8 +579,12 @@ check:  if (dataType.isInteger()) {
 
     /**
      * Parameters that describe the resource subset to be accepted by the {@link TiledGridCoverage} constructor.
-     * Instances of this class are temporary and used only for transferring information from {@link TiledGridCoverageResource}
-     * to {@link TiledGridCoverage}. This class does not perform I/O operations.
+     * Instances of this class are created by {@linkplain #describeSubset a factory method} and are short-lived,
+     * only for transferring information from {@link TiledGridCoverageResource} to {@link TiledGridCoverage}.
+     * This class does not perform <abbr>I/O</abbr> operations.
+     *
+     * @see #describeSubset(GridGeometry, int[])
+     * @see TiledGridCoverage#TiledGridCoverage(Subset)
      */
     public class Subset {
         /**
@@ -573,18 +610,19 @@ check:  if (dataType.isInteger()) {
          * <p>This value is derived from the {@code domain} argument given to the constructor,
          * but is not necessarily identical since it has been converted to the <abbr>CRS</abbr>
          * of the base grid geometry.</p>
+         *
+         * @see GridCoverage#getGridGeometry()
          */
         public final GridGeometry domain;
 
         /**
-         * Sample dimensions for each image band. This is the range of the grid coverage to create.
-         * If {@link #includedBands} is non-null, then the size of this list should be equal to
-         * {@link #includedBands} array length. However, bands are not necessarily in the same order:
-         * the order of bands in this {@code ranges} list is the order specified by user, while the
-         * order of bands in {@link #includedBands} is always increasing index order for efficiency
-         * reasons.
+         * Sample dimension for each image band, in the order requested by the user.
+         * The size of this list is the number of bands in the rendered image.
+         * This is the sample dimensions of the grid coverage to create.
+         *
+         * @see GridCoverage#getSampleDimensions()
          */
-        final List<? extends SampleDimension> ranges;
+        public final List<? extends SampleDimension> ranges;
 
         /**
          * Indices of {@link TiledGridCoverageResource} bands which have been retained for inclusion
@@ -597,9 +635,21 @@ check:  if (dataType.isInteger()) {
          * account by the {@link #modelForBandSubset}. This {@code includedBands} array does
          * not apply any change of order for making sequential readings easier.</p>
          *
+         * <p>This array is {@code null} if all bands shall be included in resource order.
+         * If this array is non-null, then the size of this list should be equal to {@link #ranges} list size.
+         * However, bands are not necessarily in the same order: the order of bands in the {@code ranges} list
+         * is the order specified by user, while {@code includedBands} is always in increasing index order for
+         * efficiency reasons.</p>
+         *
          * @see TiledGridCoverage#includedBands
          */
         final int[] includedBands;
+
+        /**
+         * The bands in the order they were requested, or {@code null} if all bands shall be included.
+         * This is the same content as {@link #includedBands} but potentially in a different order.
+         */
+        final int[] requestedBands;
 
         /**
          * Coordinate conversion from subsampled grid to the grid at full resolution.
@@ -614,16 +664,24 @@ check:  if (dataType.isInteger()) {
         final long[] subsamplingOffsets;
 
         /**
-         * Size of tiles (or chunks) in the resource, without sub-sampling.
+         * Size of tiles (or chunks) in to read from the resource, ignoring sub-sampling.
          * May be a virtual tile size (i.e., tiles larger than the tiles in the file)
          * if the resource can easily coalesce many tiles in a single read operation.
          * Conversely, it may also be smaller than the real tile size if the subset
          * is effectively untiled (the requested region covers a single tile).
          *
-         * @see #getVirtualTileSize(long[])
+         * @see #getTileSize()
          * @see TiledGridCoverage#virtualTileSize
          */
         final long[] virtualTileSize;
+
+        /**
+         * Whether an artificial tiling has been requested. It may happen if the grid coverage
+         * of the resource is untiled or has unreasonably large tiles.
+         *
+         * @see ImageLayout#MAX_TILE_SIZE
+         */
+        private final boolean applyArtificialTiling;
 
         /**
          * The sample model for the bands to read (not the full set of bands in the resource).
@@ -645,6 +703,20 @@ check:  if (dataType.isInteger()) {
         final Number[] fillValues;
 
         /**
+         * Whether all tiles should be read immediately at {@code resource.read(…)} method call.
+         * If {@code false}, reading will be deferred at image rendering time or at tile get time.
+         */
+        private final boolean loadAtReadTime;
+
+        /**
+         * The backing coverage created by {@link #createCoverage()}, or {@code null} if none.
+         * This coverage implements {@link RasterLoadingStrategy#AT_GET_TILE_TIME} natively,
+         * and simulates {@link RasterLoadingStrategy#AT_RENDER_TIME} if requested
+         * (which is also a deferred loading strategy).
+         */
+        private TiledGridCoverage deferredCoverage;
+
+        /**
          * Cache to use for tiles loaded by the {@link TiledGridCoverage}.
          * It is a reference to {@link TiledGridCoverageResource#rasters} if shareable.
          */
@@ -657,23 +729,53 @@ check:  if (dataType.isInteger()) {
 
         /**
          * Creates parameters for the given domain and range.
-         * The arguments given to this constructor are the arguments
-         * given to the {@link #read(GridGeometry, int...)} method.
-         * This constructor should not need to be invoked directly, except by subclasses.
+         * The {@code domain} and {@code range} arguments given to this constructor
+         * are the arguments given to the {@link #read(GridGeometry, int...)} method.
+         * Instances are created by {@link #describeSubset(GridGeometry, int[])}.
+         *
+         * <h4>Changes of tile size</h4>
+         * The {@code tilingPreferences} argument is a hint used for choosing a virtual tile size.
+         * Virtual tiles may be used when the {@linkplain #getTileSize() real tile size} seems sub-optimal.
+         * For example, the tile may be unreasonably large (with "reasonably" defined by an arbitrary threshold),
+         * This case typically happens with large untiled images, where the whole image appears as a single tile.
+         * Depending on the {@linkplain #getLoadingStrategy() loading strategy}, requesting even a small sub-region
+         * may cause the reading of the whole tile, which may be slow or cause {@link OutOfMemoryError}.
+         * A virtual tile size may also be used if, on the contrary, the tiles would become too small
+         * after the subsampling implied by the {@code domain} argument has been applied.
+         * In the latter case, tile coalescing may be desirable.
+         *
+         * <p>If the {@code tilingPreferences} argument is non-null, this constructor will use it
+         * for deriving a virtual tile size from the {@linkplain #getTileSize() real tile size}.
+         * If the virtual tile size {@linkplain #supportsVirtualTileSize(long[]) is supported},
+         * it will be used by {@link TiledGridCoverage}. Otherwise, the real tile size is used.</p>
+         *
+         * <p>If the {@code tilingPreferences} argument is null, this constructor does not derive
+         * a virtual tile size. The real tile size is unconditionally used.</p>
+         *
+         * <p>It is okay to specify {@link ImageLayout#DEFAULT} for the {@code tilingPreferences} argument.
+         * It is not necessary to tune the {@linkplain ImageLayout#getPreferredTileSize() preferred tile size}
+         * property because it is used only for targeting an order of magnitude when coalescing or dividing tiles.
+         * Note: the preferred size is the desired order of magnitude <em>after</em> subsampling has been applied.</p>
          *
          * @param  domain  the domain argument specified by user in a call to {@code GridCoverageResource.read(…)}.
-         * @param  range   the range argument specified by user in a call to {@code GridCoverageResource.read(…)}.
+         * @param  range   the range  argument specified by user in a call to {@code GridCoverageResource.read(…)}.
+         * @param  tilingPreferences  provider of tile size suggestions, or {@code null} if none.
          *
          * @throws ArithmeticException if pixel indices exceed 64 bits integer capacity.
          * @throws DataStoreException if a call to {@link TiledGridCoverageResource} method failed.
          * @throws RasterFormatException if the sample model is not recognized.
          * @throws IllegalArgumentException if an error occurred in an operation
          *         such as creating the {@code SampleModel} subset for selected bands.
+         *
+         * @see #describeSubset(GridGeometry, int[])
          */
-        protected Subset(GridGeometry domain, final int[] range) throws DataStoreException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        protected Subset(GridGeometry domain, final int[] range, final ImageLayout tilingPreferences)
+                throws DataStoreException
+        {
             // Validate argument first, before more expensive computations.
-            List<SampleDimension> bands = getSampleDimensions();
-            final RangeArgument rangeIndices = RangeArgument.validate(bands.size(), range, listeners);
+            List<SampleDimension> ranges = getSampleDimensions();
+            final RangeArgument rangeIndices = RangeArgument.validate(ranges.size(), range, listeners);
             /*
              * Normally, the number of dimensions of `tileSize` should be equal to the number of dimensions
              * of the grid geometry (determined by its `GridExtent`). However, we are tolerant to situation
@@ -723,7 +825,7 @@ check:  if (dataType.isInteger()) {
                  * Build the domain in units of subsampled pixels, and get the same extent (`readExtent`)
                  * without subsampling, i.e. in units of cells of the original grid resource.
                  */
-                final GridDerivation target = gridGeometry.derive()
+                final GridDerivation request = gridGeometry.derive()
                             .pointsToInclude(PixelInCell.CELL_CENTER)       // For tight bounding box.
                             .chunkSize(chunkSize)
                             .maximumSubsampling(maxSubsmp)
@@ -733,8 +835,8 @@ check:  if (dataType.isInteger()) {
                  * Post-condition: we could have put `assert gridGeometry.contains(domain)` below,
                  * if it wasn't for the `chunkSize` argument which can make the result larger.
                  */
-                domain     = target.build();
-                readExtent = target.getIntersection();
+                domain     = request.build();
+                readExtent = request.getIntersection();
                 /*
                  * The grid extent may have more dimensions than the tile size because of cases such as GeoTIFF,
                  * which may declare a three-dimensional CRS despite the image being two-dimensional. We need to
@@ -742,30 +844,81 @@ check:  if (dataType.isInteger()) {
                  * because those arrays as used in `TileGridCoverage.createCacheKey(…)`. Inconsistent lengths
                  * would cause the reader to not detect that a tile is available in the cache.
                  */
-                subsampling        = ArraysExt.resize(target.getSubsampling(), dimension);
-                subsamplingOffsets = ArraysExt.resize(target.getSubsamplingOffsets(), dimension);
+                subsampling        = ArraysExt.resize(request.getSubsampling(),        dimension);
+                subsamplingOffsets = ArraysExt.resize(request.getSubsamplingOffsets(), dimension);
             }
+            // Note: `loadingStrategy` may still be null if unitialized. The default is `AT_READ_TIME`.
+            final RasterLoadingStrategy loadingStrategy = TiledGridCoverageResource.this.loadingStrategy;
+            loadAtReadTime = (loadingStrategy == null || loadingStrategy == RasterLoadingStrategy.AT_READ_TIME);
             /*
-             * Virtual tile size is usually the same as the tile size encoded in the binary file.
-             * The virtual size may be larger if the subclass override `getVirtualTileSize(…)`.
-             * The loop below is where the virtual tile size may be made smaller.
+             * Compute a virtual tile size, which may be bigger or smaller than the real tile size.
+             * If a subsampling is applied, we will need to read larger tiles in order to get final
+             * tiles of the desired size. Conversely if the tiles are too large, we should re-tile
+             * them as smaller tiles for avoiding `OutOfMemoryError`.
              */
-            virtualTileSize = getVirtualTileSize(subsampling);
-            for (int i=0; i < virtualTileSize.length; i++) {
-                virtualTileSize[i] = Math.min(sourceExtent.getSize(i), Math.max(tileSize[i], virtualTileSize[i]));
+            if (tilingPreferences == null) {
+                applyArtificialTiling = false;
+                virtualTileSize = ArraysExt.copyAsLongs(tileSize);
+            } else {
+                final Dimension preferredTileSize = tilingPreferences.getPreferredTileSize();
+                boolean applyArtificialTiling = false;
+                virtualTileSize = new long[dimension];
+                for (int i=0; i<dimension; i++) {
+                    final int  size   = tileSize[i];
+                    final long stride = subsampling[i];
+                    final long expand = Math.max(1, stride / Math.max(1, size / sizeOf(preferredTileSize, i)));
+                    final long extent = sourceExtent.getSize(i);
+                    long  virtualSize = Math.min(Math.multiplyExact(expand, size), extent);
+                    if (virtualSize / stride > ImageLayout.MAX_TILE_SIZE) {
+                        // Tile is too large, even after subsampling.
+                        if (i == xDimension || i == yDimension) {
+                            applyArtificialTiling = !loadAtReadTime;
+                        }
+                    }
+                    virtualTileSize[i] = virtualSize;
+                }
+                /*
+                 * If the tiles are too large along the x or y axis, compute a smaller tile size.
+                 * The new size will be either accepted directly by the resource or simulated with
+                 * `ArtificiallyTiledImage` (created by the caller).
+                 */
+                if (applyArtificialTiling) {
+                    final long rx = Math.multiplyExact(subsampling[xDimension], preferredTileSize.width);
+                    final long ry = Math.multiplyExact(subsampling[yDimension], preferredTileSize.height);
+                    final Dimension size = tilingPreferences
+                            .withPreferredTileSize(new Dimension(Numerics.clamp(rx), Numerics.clamp(ry)))
+                            .allowImageBoundsAdjustments(true)
+                            .suggestTileSize(Numerics.clamp(Math.max(rx, virtualTileSize[xDimension])),
+                                             Numerics.clamp(Math.max(ry, virtualTileSize[yDimension])));
+                    virtualTileSize[xDimension] = size.width;
+                    virtualTileSize[yDimension] = size.height;
+                }
+                /*
+                 * If the resource does not accept the virtual tile size, we will need to either apply
+                 * an artificial tiling for avoiding `OutOfMemoryError` or reset to the real tile size
+                 * when there is not really bad consequence other than a lot of small tiles.
+                 */
+                if (supportsVirtualTileSize(virtualTileSize)) {
+                    applyArtificialTiling = false;
+                } else if (!applyArtificialTiling) {
+                    for (int i=0; i<dimension; i++) {
+                        virtualTileSize[i] = tileSize[i];
+                    }
+                }
+                this.applyArtificialTiling = applyArtificialTiling;
             }
             /*
              * Get the bands selected by user in strictly increasing order of source band index.
              * If user has specified bands in a different order, that change of band order will
              * be handled by the `SampleModel`, not by the `includedBands` array.
              */
-            int[] requestedBands = null;          // Same as `includedBands` but in user-specified order.
-            @SuppressWarnings("LocalVariableHidesMemberVariable") int[]       includedBands       = null;
-            @SuppressWarnings("LocalVariableHidesMemberVariable") SampleModel modelForBandSubset  = null;
-            @SuppressWarnings("LocalVariableHidesMemberVariable") ColorModel  colorsForBandSubset = null;
+            int[]       requestedBands      = null;
+            int[]       includedBands       = null;
+            SampleModel modelForBandSubset  = null;
+            ColorModel  colorsForBandSubset = null;
             boolean loadAllBands = rangeIndices.isIdentity();
             if (!loadAllBands) {
-                bands = Arrays.asList(rangeIndices.select(bands));
+                ranges = List.of(rangeIndices.select(ranges));
                 loadAllBands = !canSeparateBands();
                 if (!loadAllBands) {
                     sharedCache = false;
@@ -791,8 +944,9 @@ check:  if (dataType.isInteger()) {
              * If the domain has no "grid to CRS" transform, set a default value
              */
             this.domain              = domain;
-            this.ranges              = bands;
+            this.ranges              = ranges;
             this.includedBands       = includedBands;
+            this.requestedBands      = requestedBands;
             this.modelForBandSubset  = Objects.requireNonNull(modelForBandSubset);
             this.colorsForBandSubset = colorsForBandSubset;
             this.fillValues          = getFillValues(requestedBands);
@@ -807,8 +961,9 @@ check:  if (dataType.isInteger()) {
         /**
          * Returns flags telling, for each dimension, whether the read region should be an integer number of tiles.
          * By default (when {@link #canReadTruncatedTiles(int, boolean)} is not overridden), the flags are set for
-         * all dimensions except the ones where the region to read is smaller than the tile size. The latter case
-         * happens when reading an effectively untiled coverage (when the requested region is inside a single tile).
+         * all dimensions except the ones where the region to read is smaller than the virtual tile size.
+         * The latter case happens when reading an effectively untiled coverage
+         * (when the requested region is inside a single tile).
          *
          * @param  subSize  tile size after subsampling.
          * @return a bitmask with the flag for the first dimension in the lowest bit.
@@ -823,6 +978,81 @@ check:  if (dataType.isInteger()) {
                 }
             }
             return forceWholeTiles;
+        }
+
+        /**
+         * Returns the resource from which a coverage subset will be read.
+         *
+         * @return the enclosing resource.
+         */
+        public final TiledGridCoverageResource resource() {
+            return TiledGridCoverageResource.this;
+        }
+
+        /**
+         * Returns the number of dimensions of the grid.
+         *
+         * @return number of dimensions of the grid.
+         */
+        public final int getDimension() {
+            return virtualTileSize.length;
+        }
+
+        /**
+         * Returns the size of tiles (or chunks) to read from the resource, ignoring sub-sampling.
+         * The virtual tile size may be larger or smaller than the {@linkplain #getTileSize() real tile size}
+         * if the resource can easily coalesce many tiles in a single read operation,
+         * or on the contrary if large tiles need to be divided into smaller tiles.
+         *
+         * @param  dimension  the dimension for which the virtual tile size is desired.
+         * @return the size of tiles (in pixels) to read from the resource.
+         * @throws IndexOutOfBoundsException if {@code dimension} is not between 0 inclusive and {@link #getDimension()} exclusive.
+         *
+         * @see #getTileSize()
+         * @see #supportsVirtualTileSize(long[])
+         */
+        public final long getVirtualTileSize(final int dimension) {
+            return virtualTileSize[dimension];
+        }
+
+        /**
+         * Returns the size of the tiles in the rendered image to create.
+         * This is the {@linkplain #getVirtualTileSize(int) virtual tile size}
+         * with {@linkplain #getSubsampling(int) subsampling} applied and clipped to the image size.
+         *
+         * @param  dimension  the dimension for which the image tile size is desired.
+         * @return the size of tiles (in pixels) of the image to create.
+         * @throws IndexOutOfBoundsException if {@code dimension} is not between 0 inclusive and {@link #getDimension()} exclusive.
+         */
+        public final int getImageTileSize(final int dimension) {
+            final long size = ((virtualTileSize[dimension] - 1) / subsampling[dimension]) + 1;
+            final long extent = domain.getExtent().getSize(dimension);
+            return Math.toIntExact(Math.min(size, extent));
+        }
+
+        /**
+         * Returns the subsampling to apply along the specified dimension of the grid.
+         * The returned value is guaranteed equal or greater than 1.
+         *
+         * @param  dimension  the dimension for which the subsampling is desired.
+         * @return the subsampling to apply along the specified dimension.
+         * @throws IndexOutOfBoundsException if {@code dimension} is not between 0 inclusive and {@link #getDimension()} exclusive.
+         */
+        public final long getSubsampling(final int dimension) {
+            return subsampling[dimension];
+        }
+
+        /**
+         * Returns the offset of the first cell to read along the specified dimension of the grid.
+         * The value is guaranteed between 0 inclusive and {@code getSubsampling(i)} exclusive.
+         * In the common case where no subsampling is applied, the offset is always zero.
+         *
+         * @param  dimension  the dimension for which the subsampling offset is desired.
+         * @return offset of the first cell to read along the specified dimension of the grid.
+         * @throws IndexOutOfBoundsException if {@code dimension} is not between 0 inclusive and {@link #getDimension()} exclusive.
+         */
+        public final long getSubsamplingOffset(final int dimension) {
+            return subsamplingOffsets[dimension];
         }
 
         /**
@@ -865,9 +1095,36 @@ check:  if (dataType.isInteger()) {
         }
 
         /**
+         * Returns the sample model of the rendered image to create.
+         * The width and height of the returned sample model are the expected size of tiles in the rendered image,
+         * as computed by {@link #getImageTileSize(int)} for dimensions returned by {@link #xDimension()} (width)
+         * and {@link #yDimension()} (height).
+         *
+         * <p>The sample model has the number of bands specified in the {@code range} arguments of the constructor.
+         * The {@linkplain DataBuffer data buffers} should store the sample values in order of increasing band index.
+         * If the {@code range} argument specified bands in a different order, the reordering will be applied by the
+         * returned {@code SampleModel}.</p>
+         *
+         * @return the sample model of the image to create.
+         *
+         * @see #getSampleModel(int[])
+         */
+        public final SampleModel getImageModel() {
+            SampleModel model = modelForBandSubset;
+            final int width  = getImageTileSize(xDimension);
+            final int height = getImageTileSize(yDimension);
+            if (model.getWidth() != width || model.getHeight() != height) {
+                model = model.createCompatibleSampleModel(width, height);
+            }
+            return model;
+        }
+
+        /**
          * Whether the reading of tiles is deferred until {@link RenderedImage#getTile(int, int)} is invoked.
          * This is true if the user explicitly {@linkplain #setLoadingStrategy requested such deferred loading
          * strategy} and this method considers that it is worth to do so.
+         *
+         * @see #loadAtReadTime()
          */
         final boolean deferredTileReading() {
             if (loadingStrategy != RasterLoadingStrategy.AT_GET_TILE_TIME) {
@@ -889,11 +1146,95 @@ check:  if (dataType.isInteger()) {
         final int pyramidLevel() {
             return pyramidLevel;
         }
+
+        /**
+         * Creates a tiled grid coverage for the coverage subset described by this {@code Subset}.
+         * If this subset uses the {@linkplain #getTileSize() tile size specified by the resource},
+         * or use (for efficiency reasons) a {@linkplain #getVirtualTileSize(int) virtual tile size}
+         * which is {@linkplain #supportsVirtualTileSize(long[]) supported by the resource},
+         * then this method delegates to {@link #read(Subset)}.
+         * Otherwise, this method returns a wrapper which will simulate the virtual tiling.
+         *
+         * <h4>Usage</h4>
+         * This method is invoked by the default implementation of {@link #read(GridGeometry, int...)}.
+         * This method should generally not be invoked by user's code. It is rather for overriding in subclasses.
+         * The caller is responsible for holding the {@linkplain #getSynchronizationLock() synchronization lock}.
+         *
+         * @return the grid coverage for the specified domain, resolution and ranges.
+         * @throws DataStoreException if the coverage cannot be created.
+         * @throws RuntimeException if the coverage cannot be created for a reason not handled as a data store exception.
+         *
+         * @see #read(GridGeometry, int...)
+         */
+        protected GridCoverage createCoverage() throws DataStoreException {
+            if (applyArtificialTiling) {
+                return new GridCoverage2D(domain, ranges, new ArtificiallyTiledImage(this));
+            }
+            deferredCoverage = read(this);
+            /*
+             * The coverage returned by `read(subset)` implements the `AT_GET_TILE_TIME` loading strategy
+             * and will simulate the `AT_RENDER_TIME` strategy if requested. Usually this coverage can be
+             * returned directly. Only if the loading strategy is `AT_READ_TIME` (which is the default),
+             * we force the immediate loading of all requested data.
+             */
+            if (loadAtReadTime) {
+                Optional<GridCoverage2D> loaded = GridCoverage2D.castOrRender(deferredCoverage);
+                if (loaded.isPresent()) {
+                    return loaded.get();
+                }
+            }
+            return deferredCoverage;
+        }
+    }
+
+    /**
+     * Prepares a description of the resource subset to be accepted by the {@link TiledGridCoverage} constructor.
+     * This method is invoked by the default implementation of {@link #read(GridGeometry, int...)} for computing
+     * the argument given to {@link #read(Subset)}. The default implementation is as below:
+     *
+     * {@snippet lang="java" :
+     *     return new Subset(domain, range, ImageLayout.DEFAULT);
+     *     }
+     *
+     * The {@link ImageLayout#DEFAULT} argument is a provider of virtual tile size suggestions.
+     * See the {@linkplain Subset#Subset <code>Subset</code> constructor} for more information.
+     * The suggested virtual tile sizes are submitted to the {@link #supportsVirtualTileSize(long[])}
+     * method and, if accepted, used by the {@link TiledGridCoverage} constructor.
+     *
+     * <h4>Usage</h4>
+     * This method is invoked by the default implementation of {@link #read(GridGeometry, int...)}.
+     * This method should generally not be invoked by user's code. It is rather for overriding in subclasses.
+     * The caller is responsible for holding the {@linkplain #getSynchronizationLock() synchronization lock}.
+     *
+     * @param  domain  the domain argument specified by user in a call to {@code GridCoverageResource.read(…)}.
+     * @param  range   the range  argument specified by user in a call to {@code GridCoverageResource.read(…)}.
+     * @return descriptions of the grid coverage subset identified by the given domain and range.
+     * @throws DataStoreException if an error occurred while computing the subset description.
+     * @throws RuntimeException in case of arithmetic error, Java2D error or other errors.
+     *
+     * @see Subset#Subset(GridGeometry, int[], ImageLayout)
+     */
+    protected Subset describeSubset(GridGeometry domain, int[] range) throws DataStoreException {
+        return new Subset(domain, range, ImageLayout.DEFAULT);
+    }
+
+    /**
+     * Extracts the component of the given {@code Dimension} which corresponds
+     * to the given grid dimension index.
+     *
+     * @param  size       a size along the the <var>x</var> and <var>y</var> axes.
+     * @param  dimension  index of the grid dimension for which the size is desired.
+     * @return size along the given dimension.
+     */
+    private int sizeOf(final Dimension size, final int dimension) {
+        if (dimension == xDimension) return size.width;
+        if (dimension == yDimension) return size.height;
+        return ImageLayout.DEFAULT_TILE_SIZE;
     }
 
     /**
      * Creates a coverage which will read the specified subset from this resource when first requested.
-     * This method is invoked by the default implementation of {@link #read(GridGeometry, int...)}.
+     * This method is invoked (indirectly) by the default implementation of {@link #read(GridGeometry, int...)}.
      * This method creates a subclass of {@link TiledGridCoverage} which will read tiles later, when first requested.
      * The implementation of this method does not need to care about synchronization, immediate (rather than deferred)
      * loading of tiles, logging of loading time and handling of {@link RuntimeException}.
@@ -904,6 +1245,7 @@ check:  if (dataType.isInteger()) {
      * @throws DataStoreException if the coverage cannot be created.
      * @throws RuntimeException if the coverage cannot be created for a reason not handled as a data store exception.
      *
+     * @see Subset#createCoverage()
      * @see TiledGridCoverage#TiledGridCoverage(Subset)
      */
     protected abstract TiledGridCoverage read(Subset subset) throws DataStoreException;
@@ -915,19 +1257,30 @@ check:  if (dataType.isInteger()) {
      *
      * <ol>
      *   <li>Selects a {@code TiledGridCoverageResource} instance for the pyramid level
-     *       considered the best fit for the resolution of the specified {@code domain}.
+     *       which is considered the best fit for the resolution of the specified {@code domain}.
      *       The selected instance may be {@code this}.</li>
-     *   <li>Invokes the {@link #read(Subset)} method on that selected instance inside a block
-     *       synchronized on the {@linkplain #getSynchronizationLock() synchronization lock}.</li>
+     *   <li>Invokes the {@link #describeSubset(GridGeometry, int[])} method on the instance selected in above step.
+     *       The created {@link Subset} contains tiling and subsampling information adapted to the pyramid level.</li>
+     *   <li>Invokes the {@link Subset#createCoverage()} method on the {@code Subset} created in above step.</li>
+     *   <li>Above {@code createCoverage()} method <em>may</em> callback {@link #read(Subset)} immediately,
+     *       or may defer that callback to a later time. That callback is done on the same
+     *       {@code TiledGridCoverageResource} instance as the one that created the {@code Subset}
+     *       (i.e., the instance selected in the first step as the best fit for the pyramid level).</li>
      *   <li>If the {@linkplain #getLoadingStrategy() current loading strategy} is
      *       {@link RasterLoadingStrategy#AT_READ_TIME}, forces the immediate reading of tiles
      *       and logs the time required for this operation.</li>
      * </ol>
      *
+     * These steps are executed inside a block synchronized on the
+     * {@linkplain #getSynchronizationLock() synchronization lock}.
+     *
      * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
      * @param  ranges  0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
      * @return the grid coverage for the specified domain and ranges.
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
+     *
+     * @see #describeSubset(GridGeometry, int[])
+     * @see Subset#createCoverage()
      */
     @Override
     public GridCoverage read(final GridGeometry domain, final int... ranges) throws DataStoreException {
@@ -986,39 +1339,23 @@ check:  if (dataType.isInteger()) {
      * @param  listenersOfLevel0  listeners of the resource at level 0, can be {@code null} if that resource is {@code this}.
      * @return the grid coverage for the specified domain and ranges.
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
+     *
+     * @see #readAtGetTileTime(GridGeometry, int[])
      */
     private GridCoverage readAtThisPyramidLevel(final GridGeometry domain, final int[] ranges, final StoreListeners listenersOfLevel0)
             throws DataStoreException
     {
-        final TiledGridCoverage coverage;
-        final GridCoverage loaded;
-        final boolean preload;
-        final long startTime;
-        final GridGeometry gridGeometry;
+        final GridCoverage coverage;
+        final TiledGridCoverage deferredCoverage;
+        final long startTime = System.nanoTime();
         synchronized (getSynchronizationLock()) {
-            // Note: `loadingStrategy` may still be null if unitialized.
-            preload = (loadingStrategy == null || loadingStrategy == RasterLoadingStrategy.AT_READ_TIME);
-            startTime = preload ? System.nanoTime() : 0;
             try {
-                final var subset = new Subset(domain, ranges);
+                final var subset = describeSubset(domain, ranges);
                 if (listenersOfLevel0 != null) {
                     subset.listenersOfLevel0 = listenersOfLevel0;
                 }
-                coverage = read(subset);
-                /*
-                 * In theory the following condition is redundant with `supportImmediateLoading()`.
-                 * We apply it anyway in case the coverage geometry is not what was announced.
-                 * This condition is also necessary if `loadingStrategy` has not been initialized.
-                 */
-                if (!preload) {
-                    return coverage;
-                }
-                gridGeometry = coverage.getGridGeometry();
-                if (gridGeometry.getDimension() != BIDIMENSIONAL) {
-                    return coverage;
-                }
-                final RenderedImage image = coverage.render(null);
-                loaded = new GridCoverage2D(gridGeometry, coverage.getSampleDimensions(), image);
+                coverage = subset.createCoverage();
+                deferredCoverage = subset.deferredCoverage;
             } catch (RuntimeException e) {
                 /*
                  * The `coverage.render(…)` implementation may have wrapped the checked `DataStoreException`
@@ -1040,22 +1377,33 @@ check:  if (dataType.isInteger()) {
                 throw canNotRead(listeners.getSourceName(), domain, cause);
             }
         }
-        logReadOperation(coverage.getContentPath(null), gridGeometry, startTime);
-        return loaded;
+        /*
+         * Log outside the synchronization block because we have no reason to block other threads here.
+         * Log only if the reading has not been deferred, otherwise the reported time is not meaningful.
+         */
+        if (deferredCoverage != null && deferredCoverage != coverage) {
+            logReadOperation(deferredCoverage.getContentPath(null), deferredCoverage.getGridGeometry(), startTime);
+        }
+        return coverage;
     }
 
     /**
      * Returns a coverage which will read the tiles as late as possible.
+     * The tiling uses the {@linkplain #getTileSize() real tile size} (no virtual tiles).
      *
+     * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
+     * @param  ranges  0-based indices of sample dimensions to read, or {@code null} or an empty sequence for reading them all.
      * @return the coverage.
      * @throws DataStoreException if an error occurred while reading the grid coverage data.
+     *
+     * @see #readAtThisPyramidLevel(GridGeometry, int[], StoreListeners)
      */
-    final TiledGridCoverage readAtGetTileTime() throws DataStoreException {
+    final TiledGridCoverage readAtGetTileTime(final GridGeometry domain, final int[] range) throws DataStoreException {
         synchronized (getSynchronizationLock()) {
             final RasterLoadingStrategy old = loadingStrategy;
             try {
                 loadingStrategy = RasterLoadingStrategy.AT_GET_TILE_TIME;
-                return read(new Subset(null, null));
+                return read(new Subset(domain, range, null));
             } catch (RuntimeException e) {
                 throw canNotRead(listeners.getSourceName(), null, e);
             } finally {
@@ -1359,5 +1707,16 @@ check:  if (dataType.isInteger()) {
      */
     final Errors errors() {
         return Errors.forLocale(listeners.getLocale());
+    }
+
+    /**
+     * Clears all data cached in this resource, forcing the data to be reloaded when needed again.
+     */
+    @Override
+    protected void clearCache() {
+        synchronized (getSynchronizationLock()) {
+            rasters.clear();
+            super.clearCache();
+        }
     }
 }

@@ -16,6 +16,7 @@
         <dependency org="org.eclipse"            name="yasson"                  rev="3.0.4"/>
         <dependency org="com.esri.geometry"      name="esri-geometry-api"       rev="2.2.4"/>
         <dependency org="org.locationtech.jts"   name="jts-core"                rev="1.20.0"/>
+        <dependency org="com.google.geometry"    name="s2-geometry"             rev="2.0.0"/>
         <dependency org="org.postgresql"         name="postgresql"              rev="42.7.7"/>
         <dependency org="edu.ucar"               name="cdm-core"                rev="5.9.1"/>
         <dependency org="edu.ucar"               name="udunits"                 rev="5.9.1"/>
@@ -37,5 +38,10 @@
         <dependency org="gov.nist.math"          name="jama"                    rev="1.0.3"/>
         <dependency org="net.sf.geographiclib"   name="GeographicLib-Java"      rev="2.0"/>
         <dependency org="org.xerial"             name="sqlite-jdbc"             rev="3.45.1.0"/>
+        <dependency org="org.xerial"             name="sqlite-jdbc"             rev="3.45.1.0"/>
+        <dependency org="org.xerial"             name="sqlite-jdbc"             rev="3.45.1.0"/>
+        <dependency org="com.fasterxml.jackson.core" name="jackson-core"        rev="2.22.1"/>
+        <dependency org="com.fasterxml.jackson.core" name="jackson-annotations" rev="2.22"/>
+        <dependency org="com.fasterxml.jackson.core" name="jackson-databind"    rev="2.22.1"/>
     </dependencies>
 </ivy-module>

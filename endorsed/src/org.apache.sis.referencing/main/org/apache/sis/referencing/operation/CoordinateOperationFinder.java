@@ -67,6 +67,7 @@ import org.apache.sis.referencing.operation.provider.DatumShiftMethod;
 import org.apache.sis.referencing.operation.provider.GeocentricAffine;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.internal.shared.DoubleDouble;
@@ -334,7 +335,9 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         // │                Any single CRS  ↔  CRS of the same type                 │
         // └────────────────────────────────────────────────────────────────────────┘
         if (sourceCRS instanceof SingleCRS && targetCRS instanceof SingleCRS) {
-            return createOperationStepFallback((SingleCRS) sourceCRS, (SingleCRS) targetCRS);
+            if (Classes.implementSameInterfaces(sourceCRS.getClass(), targetCRS.getClass(), SingleCRS.class)) {
+                return createOperationStepFallback((SingleCRS) sourceCRS, (SingleCRS) targetCRS);
+            }
         }
         // ┌────────────────────────────────────────────────────────────────────────┐
         // │                        Compound  ↔  various CRS                        │
@@ -846,18 +849,13 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
 
     /**
      * Creates an operation between two coordinate reference systems having no specialized method.
-     * The two given <abbr>CRS</abbr> should be of the same type. This is not verified directly by
-     * this method. However, because the <abbr>CRS</abbr> type is determined by the datum type
+     * The two given <abbr>CRS</abbr> should be of the same type, but this is verified indirectly:
+     * because the <abbr>CRS</abbr> type is determined by the datum type
      * (sometimes completed by the <abbr>CS</abbr> type), having equivalent datum and compatible
      * <abbr>CS</abbr> should be a sufficient criterion for saying that the <abbr>CRS</abbr> are
      * of the same type.
      *
-     * <p>This method should be invoked as in last resort only.</p>
-     *
-     * <h4>Implementation type</h4>
-     * The method body is a pattern repeated in most {@code createOperationStep(…)} methods of this class.
-     * Except that in other methods, the logic is interleaved with more complex checks for datum changes.
-     * Understanding the code of this method can help to understand the code of other methods.
+     * <p>This method should be invoked in last resort only.</p>
      *
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
@@ -877,10 +875,13 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             typeOfChange = AXIS_CHANGES;
         } else {
             finalDatum = DatumOrEnsemble.ofTarget(sourceCRS, targetCRS);
-            if (finalDatum.isEmpty()) {
+            if (finalDatum.isPresent()) {
+                typeOfChange = SAME_DATUM_ENSEMBLE;
+            } else if (desiredAccuracy == Double.POSITIVE_INFINITY) {
+                typeOfChange = UNSPECIFIED_DATUM_CHANGE;
+            } else {
                 throw new OperationNotFoundException(datumChangeNotFound(sourceDatum, targetDatum));
             }
-            typeOfChange = SAME_DATUM_ENSEMBLE;
         }
         final CoordinateSystem sourceCS = sourceCRS.getCoordinateSystem();
         final CoordinateSystem targetCS = targetCRS.getCoordinateSystem();
@@ -933,6 +934,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         }
         /*
          * At this point, a coordinate operation has been found for all components of the target CRS.
+         * That coordinate operation may be explicit (non-null) or implicit (a coordinate coordinate).
          * However, the CoordinateOperation.getSourceCRS() values are not necessarily in the same order
          * than in the `sourceComponents` list given to this method, and some dimensions may be dropped.
          * The matrix computed by sourceToSelected(…) gives us the rearrangement needed for the coordinate
@@ -942,9 +944,9 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final Matrix select = SubOperationInfo.sourceToSelected(sourceCRS.getCoordinateSystem().getDimension(), infos);
         /*
          * First, we need a CRS matching the above-cited rearrangement. That CRS will be named `stepSourceCRS`
-         * and its components will be named `stepComponents`. Then we will execute a loop in which each component
-         * is progressively (one by one) updated from a source component to a target component. A new step CRS is
-         * recreated each time, since it will be needed for each PassThroughOperation.
+         * and its components will be named `stepComponents`. Then we will execute a loop in which each
+         * component is progressively (one by one) updated from a source component to a target component.
+         * A new step CRS is recreated each time, since it will be needed for each PassThroughOperation.
          */
         CoordinateReferenceSystem stepSourceCRS;
         CoordinateOperation operation;
@@ -980,7 +982,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
              * Only after the loop finished, `stepTargetCRS` will become the complete target definition.
              */
             final CoordinateReferenceSystem stepTargetCRS;
-            stepComponents[info.targetComponentIndex] = target;
+            stepComponents[info.targetComponentIndex()] = target;
             if (i >= indexOfFinal) {
                 stepTargetCRS = targetCRS;              // If all remaining transforms are identity, we reached the final CRS.
             } else if (info.isIdentity()) {

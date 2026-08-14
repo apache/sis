@@ -195,6 +195,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
             verifySimpleWhere(store);
             verifyWhereOnLink(store);
             verifyLinkInProjection(store);
+            verifyLike(store);
             verifyStreamOperations(store.findResource("Cities"));
         }
         canada = null;
@@ -453,7 +454,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
         try (Stream<Feature> features = cities.subset(query).features(false)) {
             result = features.map(f -> f.getPropertyValue("native_name")).toArray();
         }
-        assertSetEquals(Arrays.asList("Montréal", "Québec"), Arrays.asList(result));
+        assertSetEquals(List.of("Montréal", "Québec"), Arrays.asList(result));
     }
 
     /**
@@ -507,6 +508,23 @@ public final class SQLStoreTest extends TestOnAllDatabases {
             names = features.map(f -> f.getPropertyValue("native_name")).toList();
         }
         assertSetEquals(List.of("Canada", "France", "日本"), names);
+    }
+
+    /**
+     * Requests a new set of features filtered by a {@code LIKE} condition.
+     *
+     * @param  dataset  the store on which to query the features.
+     * @throws DataStoreException if an error occurred during query execution.
+     */
+    private void verifyLike(final SimpleFeatureStore dataset) throws Exception {
+        final FeatureQuery query = new FeatureQuery();
+        query.setSelection(FF.like(FF.property("english_name"), "M#o?t*al", '*', '?', '#', false));
+        final FeatureSet cities = dataset.findResource("Cities");
+        final Object[] result;
+        try (Stream<Feature> features = cities.subset(query).features(false)) {
+            result = features.map(f -> f.getPropertyValue("english_name")).toArray();
+        }
+        assertSetEquals(List.of("Montreal"), Arrays.asList(result));
     }
 
     /**

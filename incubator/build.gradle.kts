@@ -41,10 +41,12 @@ dependencies {
     api(libs.jaxb.api)                  // Transitive dependency.
     api(libs.jts.core)                  // Should be an optional dependency.
     api(libs.esri.geometry)             // Idem.
+    api(libs.s2.geometry)               // Idem.
     api(libs.yasson)
     api(files("../endorsed/build/classes/java/main/org.apache.sis.util"))
     api(files("../endorsed/build/classes/java/main/org.apache.sis.metadata"))
     api(files("../endorsed/build/classes/java/main/org.apache.sis.referencing"))
+    api(files("../endorsed/build/classes/java/main/org.apache.sis.referencing.gazetteer"))
     api(files("../endorsed/build/classes/java/main/org.apache.sis.feature"))
     api(files("../endorsed/build/classes/java/main/org.apache.sis.storage"))
     api(files("../endorsed/build/classes/java/main/org.apache.sis.storage.sql"))
@@ -57,11 +59,14 @@ dependencies {
      * Dependencies used only by incubated modules. The dependencies are not declared
      * in the global `settings.gradle.kts` because incubated modules are not released.
      */
-    implementation(group = "org.antlr",       name = "antlr4-maven-plugin", version = "4.13.2")
-    implementation(group = "org.xerial",      name = "sqlite-jdbc",         version = "3.45.1.0")
-    compileOnly   (group = "jakarta.servlet", name = "jakarta.servlet-api", version = "6.1.0")
-    compileOnly   (group = "org.osgi",        name = "osgi.core",           version = "8.0.0")
-    antlr         (group = "org.antlr",       name = "antlr4",              version = "4.13.2")
+    implementation(group = "com.fasterxml.jackson.core", name = "jackson-core",        version = "2.22.1")
+    implementation(group = "com.fasterxml.jackson.core", name = "jackson-annotations", version = "2.22")
+    implementation(group = "com.fasterxml.jackson.core", name = "jackson-databind",    version = "2.22.1")
+    implementation(group = "org.antlr",                  name = "antlr4-maven-plugin", version = "4.13.2")
+    implementation(group = "org.xerial",                 name = "sqlite-jdbc",         version = "3.45.1.0")
+    compileOnly   (group = "jakarta.servlet",            name = "jakarta.servlet-api", version = "6.1.0")
+    compileOnly   (group = "org.osgi",                   name = "osgi.core",           version = "8.0.0")
+    antlr         (group = "org.antlr",                  name = "antlr4",              version = "4.13.2")
 }
 
 /*
@@ -183,6 +188,18 @@ publishing {
                 description = "Geometry API."
             }
         }
+        create<MavenPublication>("dggs") {
+            var module = "org.apache.sis.referencing.dggs"
+            groupId    = "org.apache.sis.core"
+            artifactId = "sis-dggs"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS Discrete Global Grid Systems"
+                description = "Discrete Global Grid Systems (DGGS)."
+            }
+        }
         create<MavenPublication>("storage.shapefile") {
             var module = "org.apache.sis.storage.shapefile"
             groupId    = "org.apache.sis.storage"
@@ -219,10 +236,10 @@ publishing {
                 description = "Read files in GSF format."
             }
         }
-        create<MavenPublication>("storage.coveragejson") {
-            var module = "org.apache.sis.storage.coveragejson"
+        create<MavenPublication>("storage.json") {
+            var module = "org.apache.sis.storage.json"
             groupId    = "org.apache.sis.storage"
-            artifactId = "sis-coveragejson"
+            artifactId = "sis-json"
             artifact(layout.buildDirectory.file("libs/${module}.jar"))
             artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
             artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}

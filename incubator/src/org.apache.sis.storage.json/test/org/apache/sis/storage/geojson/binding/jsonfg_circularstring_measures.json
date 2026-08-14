@@ -1,0 +1,13 @@
+{
+  "type": "CircularString",
+  "coordinates": [
+    [0.0, 0.0, 0.0],
+    [1.0, 1.0, 5.0],
+    [2.0, 0.0, 10.0]
+  ],
+  "measures": {
+    "enabled": true,
+    "unit": "m",
+    "description": "Example measure value carried by this geometry."
+  }
+}

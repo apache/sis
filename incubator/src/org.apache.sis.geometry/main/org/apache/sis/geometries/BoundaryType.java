@@ -24,6 +24,5 @@ package org.apache.sis.geometries;
 public enum BoundaryType {
     METRIC,
     MOD_2,
-    AT_LEAST_2,
-    SPIRAL
+    AT_LEAST_2
 }

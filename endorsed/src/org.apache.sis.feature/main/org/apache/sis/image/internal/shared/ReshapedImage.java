@@ -19,6 +19,7 @@ package org.apache.sis.image.internal.shared;
 import java.util.Vector;
 import java.util.Objects;
 import java.awt.Rectangle;
+import java.awt.Image;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
@@ -31,7 +32,12 @@ import static java.lang.Math.subtractExact;
 import static java.lang.Math.multiplyFull;
 import static java.lang.Math.floorDiv;
 import static java.lang.Math.toIntExact;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.image.PlanarImage;
+import static org.apache.sis.image.ResampledImage.POSITIONAL_CONSISTENCY_KEY;
 
 
 /**
@@ -82,7 +88,8 @@ public final class ReshapedImage extends PlanarImage {
     private final int minTileX, minTileY;
 
     /**
-     * Creates an image with the following properties.
+     * Creates an image with the given properties.
+     * This constructor is invoked by the static factory methods.
      *
      * @throws ArithmeticException if image indices overflow 32-bits integer capacity.
      */
@@ -94,6 +101,9 @@ public final class ReshapedImage extends PlanarImage {
     {
         while (source instanceof ReshapedImage) {
             final var r = (ReshapedImage) source;
+            if ((offsetX | offsetY) == 0 && width >= r.width && height >= r.height) {
+                break;      // Will be simplified by the caller through `simplify()`.
+            }
             offsetX = addExact(offsetX, r.offsetX);
             offsetY = addExact(offsetY, r.offsetY);
             source  = r.source;
@@ -123,15 +133,14 @@ public final class ReshapedImage extends PlanarImage {
     public static RenderedImage singleTile(final RenderedImage source, final int tileX, final int tileY) {
         final int tileWidth  = source.getTileWidth();
         final int tileHeight = source.getTileHeight();
-        final var image = new ReshapedImage(source,
+        return new ReshapedImage(source,
                 -(multiplyFull(tileX, tileWidth)  + source.getTileGridXOffset()),   // This negate cannot overflow.
                 -(multiplyFull(tileY, tileHeight) + source.getTileGridYOffset()),
                 0, 0,
                 tileWidth,
                 tileHeight,
                 tileX,
-                tileY);
-        return image.isIdentity() ? image.source : image;
+                tileY).simplify();
     }
 
     /**
@@ -148,7 +157,7 @@ public final class ReshapedImage extends PlanarImage {
         if ((offsetX | offsetY) == 0) {
             return source;
         }
-        final var image = new ReshapedImage(
+        return new ReshapedImage(
                 source,
                 offsetX,
                 offsetY,
@@ -157,8 +166,7 @@ public final class ReshapedImage extends PlanarImage {
                 source.getWidth(),
                 source.getHeight(),
                 source.getMinTileX(),
-                source.getMinTileY());
-        return image.isIdentity() ? image.source : image;
+                source.getMinTileY()).simplify();
     }
 
     /**
@@ -173,7 +181,10 @@ public final class ReshapedImage extends PlanarImage {
      * @return the relocated image. May be the given source or one of its sources.
      * @throws ArithmeticException if image indices would overflow 32-bits integer capacity.
      */
-    public static RenderedImage relocate(final RenderedImage source, final long xmin, final long ymin, final long xmax, final long ymax) {
+    public static RenderedImage relocate(final RenderedImage source,
+                                         final long xmin, final long ymin,
+                                         final long xmax, final long ymax)
+    {
         /*
          * Compute indices of all tiles to retain in this image. All local fields are `long` in order to force
          * 64-bits integer arithmetic, because may have temporary 32-bits integer overflow during intermediate
@@ -206,27 +217,41 @@ public final class ReshapedImage extends PlanarImage {
          */
         final long x = subtractExact(sx, xmin);
         final long y = subtractExact(sy, ymin);
-        final var image = new ReshapedImage(source,
+        return new ReshapedImage(
+                source,
                 x - sx,
                 y - sy,
                 x, y,
                 toIntExact(min(upperX, (maxTX + 1) * tw + xo) - sx),
                 toIntExact(min(upperY, (maxTY + 1) * th + yo) - sy),
                 toIntExact(minTX),
-                toIntExact(minTY));
-        return image.isIdentity() ? image.source : image;
+                toIntExact(minTY)).simplify();
     }
 
     /**
-     * Returns {@code true} if this image does not move and does not subset the wrapped image.
+     * Applies to the given image the same translation and clip as this image.
+     * This is used for auxiliary images such as {@value #MASK_KEY} and {@value #POSITIONAL_ACCURACY_KEY}.
+     */
+    private RenderedImage applySameChanges(final RenderedImage other) {
+        final Rectangle r = getBounds();
+        ImageUtilities.clipBounds(other, r);
+        return new ReshapedImage(
+                source, offsetX, offsetY,
+                r.x, r.y, r.width, r.height,
+                ImageUtilities.pixelToTileX(other, r.x),
+                ImageUtilities.pixelToTileY(other, r.y)).simplify();
+    }
+
+    /**
+     * Returns {@code source} if this image does not move and does not subset the wrapped image.
      * This is tested after construction in case that the result of unwrapping the source produces
      * an identity operation.
      *
-     * @return whether this image does not move and does not subset the wrapped image.
+     * @return a simplified version of this image, if possible.
      */
-    private boolean isIdentity() {
+    private RenderedImage simplify() {
         // The use of >= is a paranoiac check, but the > case should never happen actually.
-        return offsetX == 0 && offsetY == 0 && width >= source.getWidth() && height >= source.getHeight();
+        return (offsetX | offsetY) == 0 && width >= source.getWidth() && height >= source.getHeight() ? source : this;
     }
 
     /**
@@ -235,23 +260,65 @@ public final class ReshapedImage extends PlanarImage {
     @Override
     @SuppressWarnings("UseOfObsoleteCollectionType")
     public Vector<RenderedImage> getSources() {
-        final Vector<RenderedImage> sources = new Vector<>(1);
+        final var sources = new Vector<RenderedImage>(1);
         sources.add(source);
         return sources;
     }
 
     /**
-     * Delegates to the wrapped image with no change.
+     * Returns the name of all supported properties, or {@code null} if none.
+     * Current implementation inherits all properties declared by the source,
+     * but some of them will need a translation.
+     */
+    @Override
+    public String[] getPropertyNames() {
+        return source.getPropertyNames();
+    }
+
+    /**
+     * Returns the property of the given name.
+     * The property is inherited from the source image,
+     * potentially with a translation of pixel coordinates.
      *
      * @param  name  name of the property to get.
      * @return property value for the given name.
      */
-    @Override public Object      getProperty(String name) {return source.getProperty(name);}
-    @Override public String[]    getPropertyNames()       {return source.getPropertyNames();}
-    @Override public ColorModel  getColorModel()          {return source.getColorModel();}
-    @Override public SampleModel getSampleModel()         {return source.getSampleModel();}
-    @Override public int         getTileWidth()           {return source.getTileWidth();}
-    @Override public int         getTileHeight()          {return source.getTileHeight();}
+    @Override
+    public Object getProperty(final String name) {
+        final Object property = source.getProperty(name);
+        switch (name) {
+            default: {
+                return property;
+            }
+            case GRID_GEOMETRY_KEY: {
+                if (property instanceof GridGeometry) try {
+                    final var base = (GridGeometry) property;
+                    return base.shiftGrid(offsetX, offsetY).relocate(new GridExtent(getBounds()));
+                } catch (TransformException e) {
+                    // In most of Apache SIS, caller has a fallback for the case when this property is missing.
+                    Logging.recoverableException(ImageUtilities.LOGGER, ReshapedImage.class, "getProperty", e);
+                }
+                break;
+            }
+            case POSITIONAL_CONSISTENCY_KEY:
+            case MASK_KEY: {
+                if (property instanceof RenderedImage) {
+                    // Not cached for avoiding to retain memory.
+                    return applySameChanges((RenderedImage) property);
+                }
+                break;
+            }
+        }
+        return Image.UndefinedProperty;
+    }
+
+    /**
+     * Delegates to the wrapped image with no change.
+     */
+    @Override public ColorModel  getColorModel()  {return source.getColorModel();}
+    @Override public SampleModel getSampleModel() {return source.getSampleModel();}
+    @Override public int         getTileWidth()   {return source.getTileWidth();}
+    @Override public int         getTileHeight()  {return source.getTileHeight();}
 
     /**
      * Returns properties determined at construction time.
@@ -420,7 +487,7 @@ public final class ReshapedImage extends PlanarImage {
     @Override
     public boolean equals(final Object object) {
         if (object instanceof ReshapedImage) {
-            final ReshapedImage other = (ReshapedImage) object;
+            final var other = (ReshapedImage) object;
             return source.equals(other.source) &&
                     minX     == other.minX     &&
                     minY     == other.minY     &&

@@ -357,11 +357,13 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * @param  mode    the strictness level of the comparison.
      * @return {@code true} if the given object is equal to this metadata.
      *
-     * @see MetadataStandard#equals(Object, Object, ComparisonMode)
+     * @see MetadataStandard#equals(Object, Object, Class, ComparisonMode)
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        return getStandard().equals(this, object, mode);
+        final MetadataStandard standard = getStandard();
+        final Boolean equals = standard.equals(this, object, standard.getInterface(getClass()), mode);
+        return (equals != null) && equals;
     }
 
     /**

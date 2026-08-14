@@ -1,0 +1,41 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * Discrete Global Grid Systems (<abbr>DGGS</abbr>).
+ *
+ * @author Johann Sorel (Geomatys)
+ */
+module org.apache.sis.referencing.dggs {
+    requires static s2.geometry;
+    requires static org.locationtech.jts;
+    requires transitive org.apache.sis.referencing;
+    requires transitive org.apache.sis.referencing.gazetteer;
+    requires transitive org.apache.sis.feature;
+    requires transitive org.apache.sis.geometry;
+
+    exports org.apache.sis.referencing.dggs;
+    exports org.apache.sis.referencing.dggs.s2;
+    exports org.apache.sis.referencing.rs;
+    exports org.apache.sis.storage.coverage;
+    exports org.apache.sis.storage.dggs;
+    exports org.apache.sis.storage.rs;
+
+    uses org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystemFactory;
+    provides org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystemFactory
+        with org.apache.sis.referencing.dggs.s2.S2Factory;
+}

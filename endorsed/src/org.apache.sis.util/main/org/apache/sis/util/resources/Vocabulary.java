@@ -649,16 +649,6 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short Identity = 101;
 
         /**
-         * Image
-         */
-        public static final short Image = 102;
-
-        /**
-         * Image layout
-         */
-        public static final short ImageLayout = 103;
-
-        /**
          * Image size
          */
         public static final short ImageSize = 234;
@@ -1054,6 +1044,11 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short Paths = 159;
 
         /**
+         * Pixel
+         */
+        public static final short Pixel = 293;
+
+        /**
          * Plug-ins
          */
         public static final short Plugins = 160;
@@ -1139,6 +1134,11 @@ public class Vocabulary extends IndexedResourceBundle {
         public static final short RemoteConfiguration = 170;
 
         /**
+         * Rendered image
+         */
+        public static final short RenderedImage = 102;
+
+        /**
          * Representative value
          */
         public static final short RepresentativeValue = 171;
@@ -1197,6 +1197,11 @@ public class Vocabulary extends IndexedResourceBundle {
          * Simplified
          */
         public static final short Simplified = 180;
+
+        /**
+         * Size
+         */
+        public static final short Size = 103;
 
         /**
          * {0}/{1}

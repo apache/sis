@@ -209,9 +209,11 @@ class TreeNode implements Node {
 
     /**
      * Returns the metadata interface for the object represented by this node.
+     *
+     * @return the interface implemented by the value, or {@code null} if unknown.
      */
     private Class<?> getInterface() {
-        return table.standard.getInterface(key(), null);
+        return table.standard.getInterface(key(), UnresolvedTypePolicy.NULL, null);
     }
 
     /**
@@ -898,9 +900,11 @@ class TreeNode implements Node {
              * If we need to create a new collection, we know that the property accessor
              * exists otherwise the call to `isLeaf()` above would have returned `true`.
              */
-            if (children == null || ((TreeNodeChildren) children).metadata != value) {
-                PropertyAccessor accessor = table.standard.getInstanceAccessor(value, baseType, true);
+            if (children == null || ((TreeNodeChildren) children).metadata != value) try {
+                PropertyAccessor accessor = table.standard.getInstanceAccessor(value, baseType, UnresolvedTypePolicy.THROW);
                 children = new TreeNodeChildren(this, value, accessor);
+            } catch (ClassCastException | NoSuchElementException | IllegalArgumentException e) {
+                throw new IllegalStateException(e.getMessage(), e);
             }
         }
         return children;

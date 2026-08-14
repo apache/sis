@@ -203,11 +203,12 @@ public final class ReshapedImageTest extends TestCase {
     }
 
     /**
-     * Verify a reshaped image created to expose a single tile from a source tiled image only serves the requested tile.
+     * Verifies a reshaped image created to expose a single tile
+     * from a source tiled image which only serves the requested tile.
      */
     @Test
     public void testExposeSingleTileFromTiledImage() {
-        var source  = new TiledImageMock(DataBuffer.TYPE_USHORT, 1, 0, 0, 4, 4, 2, 2, 0, 0, false);
+        var source  = new TiledImageMock(4, 4, 2, 2, 1, false);
         source.validate();
         source.initializeAllTiles(0);
         RenderedImage lastTile = ReshapedImage.singleTile(source, 1, 1);

@@ -31,6 +31,7 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
+import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.referencing.internal.shared.ReferencingUtilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArraysExt;
@@ -106,7 +107,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
     @Override
     public GridGeometry apply(final RenderedImage image) {
         try {
-            final GridExtent extent = new GridExtent(image.getMinX(), image.getMinY(), image.getWidth(), image.getHeight());
+            final var extent = new GridExtent(ImageUtilities.getBounds(image));
             return reduce(extent, GridCoverage.BIDIMENSIONAL);
         } catch (FactoryException e) {
             throw canNotCompute(e);

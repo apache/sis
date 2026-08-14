@@ -523,6 +523,8 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
      * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
      * This method may replace fill/missing values by NaN values and caches the returned vector.
      *
+     * @throws ArrayStoreException if an error occurred while converting the <abbr>UCAR</abbr> array.
+     *
      * @see #read()
      */
     @Override
@@ -538,6 +540,7 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
      * @param  subsampling  subsampling along each dimension, or {@code null} if none.
      * @return the data as a vector wrapping a Java array.
      * @throws ArithmeticException if an argument exceeds the capacity of 32 bits integer.
+     * @throws ArrayStoreException if an error occurred while converting the <abbr>UCAR</abbr> array.
      */
     @Override
     public Vector read(final GridExtent area, final long[] subsampling) throws IOException, DataStoreException {
@@ -553,6 +556,7 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
      * @param  subsampling  subsampling along each dimension, or {@code null} if none.
      * @return the data as a list of {@link Number} or {@link String} instances.
      * @throws ArithmeticException if an argument exceeds the capacity of 32 bits integer.
+     * @throws ArrayStoreException if an error occurred while converting the <abbr>UCAR</abbr> array.
      */
     @Override
     public List<?> readAnyType(final GridExtent area, final long[] subsampling) throws IOException, DataStoreException {
@@ -573,6 +577,7 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
      * @param  subsampling  subsampling along each dimension, or {@code null} if none.
      * @return the data as an array of a Java primitive type.
      * @throws ArithmeticException if an argument exceeds the capacity of 32 bits integer.
+     * @throws ArrayStoreException if an error occurred while converting the <abbr>UCAR</abbr> array.
      *
      * @see #read()
      * @see #read(GridExtent, long[])
@@ -604,9 +609,24 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
      * Returns the one-dimensional Java array for the given UCAR array, avoiding copying if possible.
      * If {@link #hasRealValues()} returns {@code true}, then this method replaces fill and missing
      * values by {@code NaN} values.
+     *
+     * @throws ArrayStoreException if an error occurred while converting the <abbr>UCAR</abbr> array.
      */
     private Object get1DJavaArray(final Array array) {
-        final Object data = array.get1DJavaArray(ucar.ma2.DataType.getType(array));
+        final var type = ucar.ma2.DataType.getType(array);
+        Object data = array.get1DJavaArray(type);
+        switch (type) {
+            case STRING: {
+                /*
+                 * For an unknown reason, the UCAR library sometime represents
+                 * array of this type as `String[]` and sometime as `Object[]`.
+                 */
+                if (data.getClass() == Object[].class) {
+                    final var source = (Object[]) data;
+                    data = Arrays.copyOf(source, source.length, String[].class);
+                }
+            }
+        }
         replaceNaN(data);
         return data;
     }

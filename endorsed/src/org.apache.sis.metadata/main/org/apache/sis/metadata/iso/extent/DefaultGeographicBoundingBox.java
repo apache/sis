@@ -776,7 +776,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
          * is generic enough for all other cases.
          */
         if (object != null && object.getClass() == DefaultGeographicBoundingBox.class) {
-            final DefaultGeographicBoundingBox that = (DefaultGeographicBoundingBox) object;
+            final var that = (DefaultGeographicBoundingBox) object;
             return Objects.equals(getInclusion(), that.getInclusion()) &&
                    doubleToLongBits(southBoundLatitude) == doubleToLongBits(that.southBoundLatitude) &&
                    doubleToLongBits(northBoundLatitude) == doubleToLongBits(that.northBoundLatitude) &&

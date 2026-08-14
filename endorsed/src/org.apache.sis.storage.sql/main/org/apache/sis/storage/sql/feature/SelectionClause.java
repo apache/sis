@@ -37,6 +37,7 @@ import org.apache.sis.util.Workaround;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.filter.Filter;
+import org.opengis.filter.LikeOperator;
 import org.opengis.filter.ValueReference;
 
 
@@ -111,6 +112,14 @@ public final class SelectionClause extends SQLBuilder {
     private JDBCType functionReturnType;
 
     /**
+     * If this builder is writing the patten of a {@code LIKE} operator, the operator.
+     * Otherwise, {@code null}.
+     *
+     * @see #appendLiteral(Object)
+     */
+    LikeOperator<?> writingPattenOf;
+
+    /**
      * Flag sets to {@code true} if a filter or expression cannot be converted to SQL.
      * When a SQL string become flagged as invalid, it is truncated to the length that
      * it had the last time that it was valid.
@@ -181,10 +190,17 @@ public final class SelectionClause extends SQLBuilder {
     }
 
     /**
-     * Writes a literal value, or marks this SQL as invalid if the value cannot be formatted.
+     * Writes a literal value, or marks this <abbr>SQL</abbr> as invalid if the value cannot be formatted.
+     * The value can be {@code null}, a character string, a Boolean, a number, a temporal object,
+     * a geographic bounding box or an envelope. If the given object cannot be formatted,
+     * then this clause is {@linkplain #invalidate() marked as invalid}.
      */
     final void appendLiteral(final Object value) {
-        if (value instanceof GeographicBoundingBox) {
+        if (value == null) {
+            append(NULL);
+        } else if (value instanceof CharSequence) {
+            appendLiteralOrPattern(value.toString());
+        } else if (value instanceof GeographicBoundingBox) {
             appendGeometry(null, new GeneralEnvelope((GeographicBoundingBox) value));
         } else if (value instanceof Envelope) {
             appendGeometry(null, (Envelope) value);
@@ -192,6 +208,63 @@ public final class SelectionClause extends SQLBuilder {
             Geometries.wrap(value).ifPresentOrElse(
                     (wrapper) -> appendGeometry(wrapper, null),
                     ()        -> appendValue(value));
+        }
+    }
+
+    /**
+     * Appends a literal which may be the pattern in a {@code LIKE ? ESCAPE '\'} <abbr>SQL</abbr> fragment.
+     * This method appends also the {@code ESCAPE} fragment if it appears to be necessary. If the given text
+     * cannot be formatted, then this clause is {@linkplain #invalidate() marked as invalid}.
+     *
+     * @param  text  the literal or pattern to add, or {@code null}.
+     */
+    private void appendLiteralOrPattern(String text) {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final LikeOperator<?> writingPattenOf = this.writingPattenOf;
+        if (writingPattenOf == null || text == null) {
+            appendValue(text);
+            return;
+        }
+        final char escape = writingPattenOf.getEscapeChar();
+        StringBuilder replacement = null;
+        boolean s = false;
+        do {
+            final char source, target;
+            if (s) {target = '_'; source = writingPattenOf.getSingleChar();}
+            else   {target = '%'; source = writingPattenOf.getWildCard();}
+            if (source == escape || target == escape) {
+                invalidate();
+                return;
+            }
+            if (source != target) {
+                int i = text.indexOf(source);
+                while (i >= 0) {
+                    // Search the first previous character which is not an escape character.
+                    int p = i;
+                    while (--p >= 0) {
+                        if (text.charAt(p) != escape) break;
+                    }
+                    /*
+                     * The wildcard is not escaped in the number of escape characters is even.
+                     * That number is `(i-1) - p`, replaced by checking whether `i - p` is odd.
+                     */
+                    if (((i - p) & 1) != 0) {
+                        if (replacement == null) {
+                            replacement = new StringBuilder(text);
+                        }
+                        replacement.setCharAt(i, target);
+                    }
+                    i = text.indexOf(source, i + 1);
+                }
+            }
+        } while ((s = !s) == true);
+        if (replacement != null) {
+            text = replacement.toString();
+        }
+        appendValue(text);
+        final String customEscape = String.valueOf(escape);
+        if (!customEscape.equals(wildcardEscape)) {
+            append(" ESCAPE ").appendValue(customEscape);
         }
     }
 
