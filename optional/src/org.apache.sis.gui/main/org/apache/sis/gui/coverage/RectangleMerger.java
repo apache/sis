@@ -32,6 +32,12 @@ import org.apache.sis.util.internal.shared.Numerics;
  */
 final class RectangleMerger implements Predicate<FadeTransition> {
     /**
+     * The user data that rectangles must have for being merged.
+     * This is an identification of the list of children where the rectangles belong.
+     */
+    private final CoverageCanvas.StaticGraphics filter;
+
+    /**
      * Bounds of the rectangle.
      */
     private double xmin, xmax, ymin, ymax;
@@ -51,7 +57,8 @@ final class RectangleMerger implements Predicate<FadeTransition> {
      *
      * @param  r  the initial rectangle.
      */
-    RectangleMerger(final Rectangle r) {
+    RectangleMerger(final CoverageCanvas.StaticGraphics filter, final Rectangle r) {
+        this.filter = filter;
         xmin = r.getX();
         ymin = r.getY();
         xmax = xmin + (tolX = r.getWidth());
@@ -70,7 +77,7 @@ final class RectangleMerger implements Predicate<FadeTransition> {
      */
     @Override
     public boolean test(final FadeTransition t) {
-        if (t.getNode() instanceof Rectangle r) {
+        if (t.getNode() instanceof Rectangle r && r.getUserData() == filter) {
             final double x0 = r.getX();
             final double y0 = r.getY();
             final double x1 = x0 + r.getWidth();

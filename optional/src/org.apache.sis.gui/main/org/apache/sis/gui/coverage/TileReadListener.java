@@ -16,6 +16,11 @@
  */
 package org.apache.sis.gui.coverage;
 
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.awt.Dimension;
@@ -27,6 +32,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.layout.Pane;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.util.Duration;
@@ -69,7 +75,13 @@ final class TileReadListener implements StoreListener<TileReadEvent>, EventHandl
      * the tile height is 1 pixel (as in <abbr>TIFF</abbr> stripped images), the stroke fills all the
      * surface and the tile appears opaque.
      */
-    private static final int MIN_SIZE = 10;
+    private static final int MIN_TILE_SIZE = 10;
+
+    /**
+     * Delay in milliseconds before to request an update (in JavaFX thread) of the children list.
+     * This delay is for grouping some children additions or removals in a single change event.
+     */
+    private static final int DELAY_BEFORE_UPDATE = 100;
 
     /**
      * Time that tiles are visible before they fade away.
@@ -90,11 +102,27 @@ final class TileReadListener implements StoreListener<TileReadEvent>, EventHandl
     private volatile CoverageCanvas.StaticGraphics snapshot;
 
     /**
+     * Children waiting to be removed. Stored in a separated queue for removing many children together.
+     * This is necessary because removing children one-by-one can cause slow invalidation of JavaFX scene.
+     * This map shall be used in the JavaFX thread only.
+     */
+    private final Map<Node, ObservableList<Node>> childrenToRemove;
+
+    /**
+     * Whether an update (to be done in JavaFX thread) of the list of children has already been requested.
+     * This is used for waiting a little bit before to perform an update in order to produce less change events.
+     *
+     * @see #DELAY_BEFORE_UPDATE
+     */
+    private boolean childrenUpdateRequested;
+
+    /**
      * Creates a new listener of tile read events.
      * This constructor must be invoked from the JavaFX thread.
      */
     TileReadListener(final CoverageCanvas canvas) {
         tileShapes = new ConcurrentLinkedQueue<>();
+        childrenToRemove = new IdentityHashMap<>();
         newStaticGraphics(canvas);
     }
 
@@ -115,6 +143,8 @@ final class TileReadListener implements StoreListener<TileReadEvent>, EventHandl
     @Override
     @SuppressWarnings("UseSpecificCatch")
     public void eventOccured(final TileReadEvent event) {
+        final boolean pending = childrenUpdateRequested;
+        childrenUpdateRequested = true;
         BackgroundThreads.EXECUTOR.execute(() -> {
             /*
              * `TileReadListener.snapshot` may change at any time. We can take any value,
@@ -126,16 +156,16 @@ final class TileReadListener implements StoreListener<TileReadEvent>, EventHandl
                 final Shape tile = ShapeConverter.convert(event.outline(snapshot.objectiveCRS), objectiveToDisplay);
                 final int ic = event.getPyramidLevel() % TILE_COLORS.length;
                 final Dimension tileSize = event.getTileSize();
-                if (tileSize.width < MIN_SIZE || tileSize.height < MIN_SIZE) {
+                if (tileSize.width < MIN_TILE_SIZE || tileSize.height < MIN_TILE_SIZE) {
                     /*
                      * If the tiles are very thin, there is a risk of adding too many nodes.
                      * Tries to reduce the number of transitions by merging adjacent tile shapes.
                      * We do that only if there is no stroke, otherwise some lines would disappear.
-                     * Note that the `tileShapes` list should be small, because it contains only the
+                     * Note that the `tileShapes` queue should be small, because it contains only the
                      * transitions not yet processed by an execution of `Platform.runLater(…)` below.
                      */
                     if (tile instanceof Rectangle r) {
-                        final var merger = new RectangleMerger(r);
+                        final var merger = new RectangleMerger(snapshot, r);
                         while (tileShapes.removeIf(merger)) {}
                         merger.copyTo(r);
                     }
@@ -153,18 +183,32 @@ final class TileReadListener implements StoreListener<TileReadEvent>, EventHandl
             } catch (Exception e) {
                 Logging.recoverableException(LOGGER, TileReadListener.class, "eventOccured", e);
             }
-            Platform.runLater(this);
+            /*
+             * The addition of the tiles in the scene graph needs to be done in the JavaFX thread.
+             * Wait a little bit for improving the chance to group many tiles in a single event.
+             */
+            if (!pending) {
+                try {
+                    Thread.sleep(DELAY_BEFORE_UPDATE);
+                } catch (InterruptedException e) {
+                    // Ignore.
+                }
+                Platform.runLater(this);
+            }
         });
     }
 
     /**
-     * Invoked in the JavaFX thread for playing the animations that have been prepared.
-     * The animation are taken from the {@link #tileShapes} queue, which usually contains
-     * exactly one element. But more elements may be present if tiles have been read quickly
-     * between two executions of this method by the JavaFX thread.
+     * Invoked in the JavaFX thread for updating the children lists and playing the animations that have been prepared.
+     * The animation are taken from the {@link #tileShapes} queue, which often contains exactly one element.
+     * But more elements may be present if tiles have been read quickly between two executions of this method.
      */
     @Override
     public void run() {
+        childrenUpdateRequested = false;
+        removeFinishedTransitions();
+        final var group = new ArrayList<FadeTransition>();
+        CoverageCanvas.StaticGraphics target = null;
         FadeTransition transition;
         while ((transition = tileShapes.poll()) != null) {
             final Node node = transition.getNode();
@@ -174,24 +218,106 @@ final class TileReadListener implements StoreListener<TileReadEvent>, EventHandl
              */
             @SuppressWarnings("LocalVariableHidesMemberVariable")
             final var snapshot = (CoverageCanvas.StaticGraphics) node.getUserData();
-            snapshot.getChildren().add(node);
             node.setUserData(null);             // Not needed anymore.
-            transition.play();
+            if (target != snapshot) {
+                addAndPlay(group, target);
+                target = snapshot;
+                group.clear();
+            }
+            group.add(transition);
+        }
+        addAndPlay(group, target);
+    }
+
+    /**
+     * Adds the given tiles to the JavaFX scene graph and play them.
+     * This method is used for trying to add nodes in bulk, because adding a
+     * list of nodes causes less change events than adding nodes one by one.
+     *
+     * @param tiles   the tiles to add as (usually) rectangles that will fade away.
+     * @param target  where to add the tiles. May be {@code null} if {@code tiles} is empty.
+     */
+    private static void addAndPlay(final List<FadeTransition> tiles, final CoverageCanvas.StaticGraphics target) {
+        final int n = tiles.size();
+        if (n != 0) {
+            final ObservableList<Node> children = target.getChildren();
+            if (n == 1) {
+                // Shortcut for a very common case.
+                FadeTransition transition = tiles.get(0);
+                children.add(transition.getNode());
+                transition.play();
+            } else {
+                // JavaFX is faster with bulk changes.
+                final var shapes = new Node[n];
+                for (int i=0; i<shapes.length; i++) {
+                    shapes[i] = tiles.get(i).getNode();
+                }
+                children.addAll(shapes);
+                tiles.forEach(FadeTransition::play);
+            }
         }
     }
 
     /**
      * Invoked in the JavaFX thread when the animation of a tile is finished.
-     * This method removes the JavaFX geometry object that represented the tile outline.
+     * The JavaFX geometry object that represented the tile outline is added
+     * to a list of nodes to be removed a little bit later.
+     * The removal is not done immediately for having a chance to group them,
+     * because removing nodes one-by-one appears to be sometime very slow.
      */
     @Override
-    @SuppressWarnings("element-type-mismatch")
     public void handle(final ActionEvent event) {
         final var transition = (FadeTransition) event.getSource();
         final Node node = transition.getNode();
-        final Pane parent = (Pane) node.getParent();
-        if (parent != null && parent.getChildren().remove(node) && CoverageCanvas.TRACE) {
-            CoverageCanvas.trace("TileReadListener.removeChild");
+        if (node.getParent() instanceof Pane parent) {
+            childrenToRemove.put(node, parent.getChildren());
+        }
+        if (childrenToRemove.size() <= 1 && !childrenUpdateRequested) {
+            BackgroundThreads.EXECUTOR.execute(() -> {
+                try {
+                    Thread.sleep(DELAY_BEFORE_UPDATE * 10);     // Can wait longer because the effect is not visible.
+                } catch (InterruptedException e) {
+                    // Ignore.
+                }
+                Platform.runLater(() -> removeFinishedTransitions());
+            });
+        }
+    }
+
+    /**
+     * Removes children which were waiting to be removed.
+     * This method tries to remove children by groups.
+     */
+    private void removeFinishedTransitions() {
+        Iterator<ObservableList<Node>> it;
+        while ((it = childrenToRemove.values().iterator()).hasNext()) {
+            final ObservableList<Node> children = it.next();
+            int upper = children.size();
+            int lower = upper;
+            while (lower != 0) {
+                if (childrenToRemove.containsKey(children.get(lower - 1))) {
+                    // Include in the range of nodes to remove.
+                    lower--;
+                } else {
+                    // Found a node to not remove. Remove the range found before.
+                    if (lower != upper) {
+                        children.remove(lower, upper);
+                    }
+                    upper = --lower;
+                }
+            }
+            children.remove(lower, upper);
+            /*
+             * Removes all map entries which were removing elements from the same list.
+             * They should have been removed already by above loop. The map will often
+             * become empty, but we verify by reexecuted the loop for other lists.
+             */
+            it.remove();
+            while (it.hasNext()) {
+                if (it.next() == children) {
+                    it.remove();
+                }
+            }
         }
     }
 }

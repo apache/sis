@@ -1406,7 +1406,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     @Debug
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
-    static void trace(final String format, final Object... arguments) {
+    private static void trace(final String format, final Object... arguments) {
         if (TRACE) {
             System.out.print("CoverageCanvas.");
             System.out.printf(format, arguments);
