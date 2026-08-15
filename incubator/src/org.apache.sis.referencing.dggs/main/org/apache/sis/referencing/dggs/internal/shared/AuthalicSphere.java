@@ -16,8 +16,9 @@
  */
 package org.apache.sis.referencing.dggs.internal.shared;
 
-import org.opengis.referencing.datum.Ellipsoid;
 import static java.lang.Math.*;
+import org.opengis.referencing.datum.Ellipsoid;
+
 
 /**
  * Ellipse to/from Authalic sphere with formulas from document : https://arxiv.org/pdf/2212.05818

@@ -16,10 +16,10 @@
  */
 package org.apache.sis.geometries.csg;
 
-import org.apache.sis.geometries.AttributesType;
-import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 
 
 /**

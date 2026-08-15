@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.dggs;
 
-import com.google.common.geometry.S2Polygon;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,7 +25,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.LongFunction;
 import java.util.stream.Stream;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Polygon;
+import com.google.common.geometry.S2Polygon;
 import javax.measure.IncommensurableException;
+import org.opengis.geometry.Envelope;
+import org.opengis.metadata.extent.BoundingPolygon;
+import org.opengis.metadata.extent.GeographicExtent;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.LinearRing;
 import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.internal.shared.ArraySequence;
@@ -56,16 +66,7 @@ import org.apache.sis.storage.rs.CodedResource;
 import org.apache.sis.storage.rs.internal.shared.CodedCoverageAsFeatureSet;
 import org.apache.sis.storage.rs.internal.shared.s2.Factory;
 import org.apache.sis.storage.rs.internal.shared.s2.S2;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Polygon;
-import org.opengis.geometry.Envelope;
-import org.opengis.metadata.extent.BoundingPolygon;
-import org.opengis.metadata.extent.GeographicExtent;
-import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.crs.ProjectedCRS;
-import org.opengis.referencing.datum.Ellipsoid;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
+
 
 /**
  * Utility methods for DGGRS.

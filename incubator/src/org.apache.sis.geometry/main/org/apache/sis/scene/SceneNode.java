@@ -16,7 +16,6 @@
  */
 package org.apache.sis.scene;
 
-import org.apache.sis.scene.light.Light;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -29,6 +28,7 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.scene.light.Light;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.math.Similarity;
 import org.apache.sis.geometries.math.Similarity3D;

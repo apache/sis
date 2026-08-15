@@ -23,6 +23,12 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import javax.measure.IncommensurableException;
 import javax.measure.Quantity;
+import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
@@ -37,12 +43,7 @@ import org.apache.sis.storage.coverage.BandedCoverageResource;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
 import org.apache.sis.storage.dggs.internal.shared.GridAsDiscreteGlobalGridResource;
 import org.apache.sis.storage.rs.internal.shared.CodeTransforms;
-import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.SingleCRS;
-import org.opengis.referencing.crs.VerticalCRS;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
+
 
 /**
  * A Resource which offer acces to a coverage structured in located cells.

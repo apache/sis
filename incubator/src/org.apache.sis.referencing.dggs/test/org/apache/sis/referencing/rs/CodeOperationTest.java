@@ -16,19 +16,21 @@
  */
 package org.apache.sis.referencing.rs;
 
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.gazetteer.GazetteerException;
-import org.apache.sis.referencing.gazetteer.GeohashReferenceSystem;
-import org.apache.sis.referencing.gazetteer.MilitaryGridReferenceSystem;
-import org.apache.sis.referencing.rs.internal.shared.CodeOperations;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.gazetteer.GazetteerException;
+import org.apache.sis.referencing.gazetteer.GeohashReferenceSystem;
+import org.apache.sis.referencing.gazetteer.MilitaryGridReferenceSystem;
+import org.apache.sis.referencing.rs.internal.shared.CodeOperations;
 
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+
 
 /**
  *

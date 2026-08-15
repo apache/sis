@@ -19,13 +19,14 @@ package org.apache.sis.referencing.dggs;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.util.SimpleInternationalString;
 import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.referencing.gazetteer.LocationType;
 import org.opengis.util.InternationalString;
+import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.util.SimpleInternationalString;
+
 
 /**
  * A subtype of LocationType dedicated to DGGRS refinement levels.

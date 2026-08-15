@@ -21,17 +21,19 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Collections;
 import java.util.Objects;
-import org.apache.sis.referencing.NamedIdentifier;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.gazetteer.ReferencingByIdentifiers;
-import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.util.FactoryException;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.gazetteer.ReferencingByIdentifiers;
+import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
+
+// Specific to the geoapi-3.1 branch:
+import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.referencing.NamedIdentifier;
 
 
 /**

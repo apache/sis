@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import org.opengis.util.FactoryException;
+import org.opengis.util.GenericName;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.math.Cursor;
@@ -30,8 +32,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.rs.CodeIterator;
 import org.apache.sis.storage.rs.CodedGeometry;
 import org.apache.sis.storage.rs.WritableCodeIterator;
-import org.opengis.util.FactoryException;
-import org.opengis.util.GenericName;
+
 
 /**
  * Referenced Coverage backed by a list of samples stored in TupleArrays.

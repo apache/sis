@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.dggs;
 
+
 /**
  * Parameters of the base polyhedron.
  *

@@ -21,8 +21,8 @@ import org.opengis.metadata.Metadata;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.MathTransform;
-import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
@@ -34,11 +34,11 @@ import org.apache.sis.util.Version;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.apache.sis.feature.Assertions.assertExtentEquals;
 import org.apache.sis.storage.DataStoreTestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.dataset.TestData;
+import static org.apache.sis.feature.Assertions.assertExtentEquals;
 
 
 /**

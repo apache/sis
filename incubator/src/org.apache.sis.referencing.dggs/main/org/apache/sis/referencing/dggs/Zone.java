@@ -18,16 +18,17 @@ package org.apache.sis.referencing.dggs;
 
 import java.util.Collection;
 import java.util.stream.Stream;
+import org.opengis.geometry.Envelope;
+import org.opengis.metadata.extent.GeographicExtent;
+import org.opengis.referencing.gazetteer.Location;
+import org.opengis.util.InternationalString;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridSystems;
 import org.apache.sis.util.SimpleInternationalString;
-import org.opengis.geometry.Envelope;
-import org.opengis.metadata.extent.GeographicExtent;
-import org.opengis.referencing.gazetteer.Location;
-import org.opengis.util.InternationalString;
+
 
 /**
  * Particular region of space-time.

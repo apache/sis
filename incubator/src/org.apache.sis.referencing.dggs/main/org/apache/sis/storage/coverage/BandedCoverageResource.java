@@ -20,6 +20,11 @@ import java.awt.Dimension;
 import java.awt.image.DataBufferDouble;
 import java.util.List;
 import java.util.stream.IntStream;
+import org.opengis.coverage.CannotEvaluateException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
 import org.apache.sis.coverage.BandedCoverage;
 import org.apache.sis.coverage.BandedCoverage.Evaluator;
 import org.apache.sis.coverage.SampleDimension;
@@ -36,11 +41,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Query;
 import org.apache.sis.storage.UnsupportedQueryException;
 import org.apache.sis.util.ArgumentChecks;
-import org.opengis.coverage.CannotEvaluateException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
+
 
 /**
  * Experimental interface for banded coverage resources.

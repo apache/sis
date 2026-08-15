@@ -19,6 +19,7 @@ package org.apache.sis.scene.light;
 import java.util.Objects;
 import org.apache.sis.util.ArgumentChecks;
 
+
 /**
  * A light emitting uniformly in all directions from a single point.
  *

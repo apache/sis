@@ -18,6 +18,7 @@ package org.apache.sis.storage.image.internal;
 
 import java.awt.Point;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

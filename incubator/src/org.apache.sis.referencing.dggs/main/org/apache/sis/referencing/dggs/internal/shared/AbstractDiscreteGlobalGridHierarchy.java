@@ -25,6 +25,7 @@ import org.apache.sis.referencing.dggs.DiscreteGlobalGridHierarchy;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
 import org.apache.sis.util.ArgumentChecks;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

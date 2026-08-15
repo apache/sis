@@ -16,12 +16,13 @@
  */
 package org.apache.sis.storage.geojson.binding;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 
 /**
  * JSONFGCurvePolygon, added in JSON-FG version 1.0.0, "Circular Arcs" conformance class.

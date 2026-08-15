@@ -19,6 +19,7 @@ package org.apache.sis.scene.light;
 import java.awt.Color;
 import org.apache.sis.util.ArgumentChecks;
 
+
 /**
  * A light emits illumination into the scene. Position and orientation are
  * not carried by the light itself but by the {@link SceneNode} it is

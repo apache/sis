@@ -49,12 +49,12 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
-import static org.apache.sis.feature.Assertions.assertExtentEquals;
 import static org.apache.sis.feature.Assertions.assertGridToCenterEquals;
 import static org.apache.sis.feature.Assertions.assertGridToCornerEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assertions.assertBetween;
+import static org.apache.sis.feature.Assertions.assertExtentEquals;
 
 
 /**

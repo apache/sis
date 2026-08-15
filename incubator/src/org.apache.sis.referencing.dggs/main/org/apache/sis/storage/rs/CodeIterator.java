@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.rs;
 
+
 /**
  * Referenced coverage location iterator.
  *

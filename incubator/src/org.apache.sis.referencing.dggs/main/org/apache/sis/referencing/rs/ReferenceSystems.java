@@ -20,12 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.gazetteer.ReferencingByIdentifiers;
-import org.apache.sis.util.Utilities;
-import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
-import org.apache.sis.referencing.rs.internal.shared.CodeOperations;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -34,6 +28,13 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.util.FactoryException;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.gazetteer.ReferencingByIdentifiers;
+import org.apache.sis.util.Utilities;
+import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
+import org.apache.sis.referencing.rs.internal.shared.CodeOperations;
+
 
 /**
  *

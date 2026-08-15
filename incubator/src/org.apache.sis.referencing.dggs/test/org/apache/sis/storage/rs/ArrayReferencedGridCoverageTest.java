@@ -16,12 +16,16 @@
  */
 package org.apache.sis.storage.rs;
 
-import org.apache.sis.referencing.rs.Code;
-import org.apache.sis.referencing.rs.ReferenceSystems;
 import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import org.opengis.referencing.ReferenceSystem;
+import org.opengis.util.GenericName;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.rs.Code;
+import org.apache.sis.referencing.rs.ReferenceSystems;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.BufferedGridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -30,8 +34,6 @@ import org.apache.sis.coverage.grid.GridOrientation;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.internal.shared.RasterFactory;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.MemoryGridCoverageResource;
 import org.apache.sis.util.iso.Names;
@@ -39,11 +41,11 @@ import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
 import org.apache.sis.referencing.dggs.Zone;
 import org.apache.sis.referencing.dggs.s2.S2Dggrs;
 import org.apache.sis.storage.rs.internal.shared.CodeTransforms;
-import org.opengis.referencing.ReferenceSystem;
-import org.opengis.util.GenericName;
 
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+
 
 /**
  *

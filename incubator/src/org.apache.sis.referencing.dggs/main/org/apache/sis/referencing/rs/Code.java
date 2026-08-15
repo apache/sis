@@ -20,12 +20,6 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import org.apache.sis.geometry.GeneralDirectPosition;
-import org.apache.sis.referencing.dggs.Zone;
-import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
-import org.apache.sis.referencing.crs.DefaultTemporalCRS;
-import org.apache.sis.referencing.gazetteer.ReferencingByIdentifiers;
-import org.apache.sis.util.ArraysExt;
 import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.ReferenceSystem;
@@ -33,6 +27,13 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+import org.apache.sis.geometry.GeneralDirectPosition;
+import org.apache.sis.referencing.dggs.Zone;
+import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
+import org.apache.sis.referencing.crs.DefaultTemporalCRS;
+import org.apache.sis.referencing.gazetteer.ReferencingByIdentifiers;
+import org.apache.sis.util.ArraysExt;
+
 
 /**
  * Holds the ordinates for geometry/area/zone/point within some reference system.

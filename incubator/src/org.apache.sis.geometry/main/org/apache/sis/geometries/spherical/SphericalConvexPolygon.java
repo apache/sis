@@ -21,6 +21,7 @@ import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.math.ReadOnly;
 import org.apache.sis.geometries.math.Vector3D;
 
+
 /**
  * A polygon on a sphere.
  *

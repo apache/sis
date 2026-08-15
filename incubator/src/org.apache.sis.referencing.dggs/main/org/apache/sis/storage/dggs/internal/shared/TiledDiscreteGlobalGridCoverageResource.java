@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import javax.measure.IncommensurableException;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridHierarchy;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
@@ -29,7 +30,7 @@ import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridResource;
 import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.storage.rs.CodedGeometry;
-import org.opengis.referencing.operation.TransformException;
+
 
 /**
  *

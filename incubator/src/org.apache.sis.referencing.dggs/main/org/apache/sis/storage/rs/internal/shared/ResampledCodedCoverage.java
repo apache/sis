@@ -17,6 +17,9 @@
 package org.apache.sis.storage.rs.internal.shared;
 
 import java.util.Arrays;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
+import org.opengis.util.GenericName;
 import org.apache.sis.referencing.rs.Code;
 import org.apache.sis.referencing.rs.CodeOperation;
 import org.apache.sis.referencing.rs.ReferenceSystems;
@@ -25,9 +28,7 @@ import org.apache.sis.storage.rs.CodeTransform;
 import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.storage.rs.CodedGeometry;
 import org.apache.sis.storage.rs.WritableCodeIterator;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
-import org.opengis.util.GenericName;
+
 
 /**
  *

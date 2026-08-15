@@ -40,18 +40,19 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 import javax.imageio.ImageIO;
-import org.apache.sis.image.ImageProcessor;
-import org.apache.sis.image.Interpolation;
-import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
-import org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic;
-import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
-import org.apache.sis.storage.dggs.DiscreteGlobalGridSystems;
 import org.locationtech.jts.geom.Coordinate;
 import org.opengis.metadata.citation.Organisation;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
+import org.apache.sis.image.ImageProcessor;
+import org.apache.sis.image.Interpolation;
+import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
+import org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic;
+import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
+import org.apache.sis.storage.dggs.DiscreteGlobalGridSystems;
+
 
 /**
  *

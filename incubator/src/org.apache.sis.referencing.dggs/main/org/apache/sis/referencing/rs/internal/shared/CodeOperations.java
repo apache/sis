@@ -17,15 +17,7 @@
 package org.apache.sis.referencing.rs.internal.shared;
 
 import java.util.Arrays;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.NamedIdentifier;
-import org.apache.sis.referencing.gazetteer.ReferencingByIdentifiers;
-import org.apache.sis.referencing.rs.Code;
-import org.apache.sis.referencing.rs.CodeOperation;
-import org.apache.sis.referencing.rs.ReferenceSystems;
-import org.apache.sis.util.iso.Names;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.gazetteer.Location;
@@ -34,6 +26,17 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.gazetteer.ReferencingByIdentifiers;
+import org.apache.sis.referencing.rs.Code;
+import org.apache.sis.referencing.rs.CodeOperation;
+import org.apache.sis.referencing.rs.ReferenceSystems;
+import org.apache.sis.util.iso.Names;
+
+// Specific to the geoapi-3.1 branch:
+import org.opengis.referencing.ReferenceIdentifier;
+
 
 /**
  *

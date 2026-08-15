@@ -21,6 +21,7 @@ import org.apache.sis.referencing.dggs.DiscreteGlobalGrid;
 import org.apache.sis.referencing.dggs.Zone;
 import org.apache.sis.referencing.dggs.internal.shared.AbstractDiscreteGlobalGridHierarchy;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

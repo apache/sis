@@ -16,9 +16,9 @@
  */
 package org.apache.sis.storage.coveragejson.binding;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
 /**

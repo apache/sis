@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridHierarchy;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
@@ -31,7 +32,7 @@ import org.apache.sis.referencing.dggs.Zone;
 import org.apache.sis.referencing.rs.Code;
 import org.apache.sis.storage.rs.CodeTransform;
 import org.apache.sis.storage.rs.internal.shared.SubTransform;
-import org.opengis.referencing.operation.TransformException;
+
 
 /**
  *

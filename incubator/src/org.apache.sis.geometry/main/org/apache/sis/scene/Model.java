@@ -16,7 +16,6 @@
  */
 package org.apache.sis.scene;
 
-import org.apache.sis.scene.material.Material;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,6 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.scene.material.Material;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.mesh.MeshPrimitive;

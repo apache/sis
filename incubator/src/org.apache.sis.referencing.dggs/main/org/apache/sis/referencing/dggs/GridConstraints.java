@@ -19,6 +19,7 @@ package org.apache.sis.referencing.dggs;
 import java.util.List;
 import org.opengis.util.CodeList;
 
+
 /**
  * Set of descriptive information on the dggrs cell properties.
  *

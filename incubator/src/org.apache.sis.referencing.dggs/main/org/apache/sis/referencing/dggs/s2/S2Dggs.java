@@ -25,6 +25,7 @@ import org.apache.sis.referencing.dggs.RefinementStrategy;
 import org.apache.sis.referencing.dggs.PolyhedronParameters;
 import org.apache.sis.referencing.dggs.internal.shared.AbstractDiscreteGlobalGridSystem;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

@@ -16,18 +16,8 @@
  */
 package org.apache.sis.storage.rs.internal.shared.s2;
 
-import com.google.common.geometry.S2LatLng;
-import com.google.common.geometry.S2Loop;
-import com.google.common.geometry.S2Point;
-import com.google.common.geometry.S2Polygon;
-import com.google.common.geometry.S2PolygonBuilder;
-import com.google.common.geometry.S2Region;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.metadata.iso.extent.DefaultBoundingPolygon;
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.util.Utilities;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -35,8 +25,19 @@ import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequence;
+import com.google.common.geometry.S2LatLng;
+import com.google.common.geometry.S2Loop;
+import com.google.common.geometry.S2Point;
+import com.google.common.geometry.S2Polygon;
+import com.google.common.geometry.S2PolygonBuilder;
+import com.google.common.geometry.S2Region;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.BoundingPolygon;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.metadata.iso.extent.DefaultBoundingPolygon;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.util.Utilities;
+
 
 /**
  *

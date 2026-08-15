@@ -18,11 +18,12 @@ package org.apache.sis.referencing.dggs.s2;
 
 import java.util.Collection;
 import java.util.List;
-import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
-import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystemFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
+import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
+import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystemFactory;
+
 
 /**
  *

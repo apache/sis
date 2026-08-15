@@ -19,6 +19,7 @@ package org.apache.sis.scene.light;
 import java.util.Objects;
 import org.apache.sis.util.ArgumentChecks;
 
+
 /**
  * A planar, procedural rectangular area light source lying in the node's
  * local XY plane (width along local X, height along local Y), emitting

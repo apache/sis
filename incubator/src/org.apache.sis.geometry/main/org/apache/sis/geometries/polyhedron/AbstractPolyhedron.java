@@ -17,6 +17,8 @@
 package org.apache.sis.geometries.polyhedron;
 
 import java.util.List;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.LinearRing;
 import org.apache.sis.geometries.MultiPolygon;
@@ -29,8 +31,7 @@ import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.ReadOnly;
 import org.apache.sis.geometries.math.Vector3D;
 import org.apache.sis.geometries.spherical.SphericalConvexPolygon;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
  *

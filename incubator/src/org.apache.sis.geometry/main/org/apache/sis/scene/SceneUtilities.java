@@ -19,6 +19,7 @@ package org.apache.sis.scene;
 import org.apache.sis.geometries.math.Matrix;
 import org.apache.sis.geometries.math.Similarity3D;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

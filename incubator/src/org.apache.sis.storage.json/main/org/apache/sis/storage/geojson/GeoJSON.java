@@ -18,6 +18,15 @@ package org.apache.sis.storage.geojson;
 
 import java.util.List;
 import java.util.Map.Entry;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateXY;
+import org.locationtech.jts.geom.CoordinateXYZM;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
@@ -31,17 +40,11 @@ import org.apache.sis.storage.geojson.binding.GeoJSONMultiPoint;
 import org.apache.sis.storage.geojson.binding.GeoJSONMultiPolygon;
 import org.apache.sis.storage.geojson.binding.GeoJSONPoint;
 import org.apache.sis.storage.geojson.binding.GeoJSONPolygon;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.CoordinateXY;
-import org.locationtech.jts.geom.CoordinateXYZM;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.LinearRing;
-import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.Polygon;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+
 
 /**
  *

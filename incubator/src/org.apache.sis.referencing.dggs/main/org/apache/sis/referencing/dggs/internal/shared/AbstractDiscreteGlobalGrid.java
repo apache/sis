@@ -17,14 +17,15 @@
 package org.apache.sis.referencing.dggs.internal.shared;
 
 import javax.measure.Quantity;
-import org.apache.sis.measure.Quantities;
-import org.apache.sis.measure.Units;
-import org.apache.sis.referencing.dggs.DiscreteGlobalGrid;
-import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
+import org.apache.sis.referencing.dggs.DiscreteGlobalGrid;
+import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
+
 
 /**
  *

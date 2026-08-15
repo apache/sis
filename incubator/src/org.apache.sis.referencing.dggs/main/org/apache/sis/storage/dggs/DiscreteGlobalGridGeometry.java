@@ -19,6 +19,12 @@ package org.apache.sis.storage.dggs;
 import java.util.List;
 import javax.measure.IncommensurableException;
 import javax.measure.Quantity;
+import org.opengis.geometry.Envelope;
+import org.opengis.metadata.extent.GeographicExtent;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.operation.GeometryOperations;
@@ -33,12 +39,7 @@ import org.apache.sis.storage.rs.CodeTransform;
 import org.apache.sis.storage.rs.CodedGeometry;
 import org.apache.sis.storage.rs.internal.shared.CodeTransforms;
 import org.apache.sis.util.Utilities;
-import org.opengis.geometry.Envelope;
-import org.opengis.metadata.extent.GeographicExtent;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
+
 
 /**
  * DGGRS coverage geometry.

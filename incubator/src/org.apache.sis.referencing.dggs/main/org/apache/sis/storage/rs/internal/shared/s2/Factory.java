@@ -16,6 +16,12 @@
  */
 package org.apache.sis.storage.rs.internal.shared.s2;
 
+import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import com.google.common.geometry.S2Cap;
 import com.google.common.geometry.S2Cell;
 import com.google.common.geometry.S2LatLng;
@@ -27,12 +33,6 @@ import com.google.common.geometry.S2PointRegion;
 import com.google.common.geometry.S2Polyline;
 import com.google.common.geometry.S2Polygon;
 import com.google.common.geometry.S2RegionUnion;
-import java.nio.ByteBuffer;
-import java.nio.DoubleBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 import org.apache.sis.geometry.wrapper.Capability;
 import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.geometry.wrapper.Geometries;
@@ -40,6 +40,7 @@ import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.collection.Containers;
+
 
 /**
  * The factory of geometry objects backed by S2.

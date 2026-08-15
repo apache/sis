@@ -17,8 +17,9 @@
 package org.apache.sis.storage.movingfeature.binding;
 
 // Test dependencies
-import org.apache.sis.storage.json.AbstractBindingTest;
 import org.junit.jupiter.api.TestInstance;
+import org.apache.sis.storage.json.AbstractBindingTest;
+
 
 /**
  * Test moving features bindings.

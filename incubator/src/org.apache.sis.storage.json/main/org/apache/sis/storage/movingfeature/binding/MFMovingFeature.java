@@ -16,16 +16,17 @@
  */
 package org.apache.sis.storage.movingfeature.binding;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.apache.sis.storage.geojson.binding.GeoJSONGeometry;
 import org.apache.sis.storage.geojson.binding.GeoJSONObject;
 import org.apache.sis.storage.ogcjson.Link;
+
 
 /**
  * MFMovingFeature, per Moving Features JSON (MF-JSON, OGC 16-140r1).
