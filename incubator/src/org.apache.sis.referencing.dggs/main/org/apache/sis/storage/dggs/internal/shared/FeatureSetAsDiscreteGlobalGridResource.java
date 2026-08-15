@@ -20,6 +20,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import org.locationtech.jts.geom.Geometry;
+import org.opengis.feature.AttributeType;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.PropertyType;
+import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Metadata;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.GenericName;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.geometry.Envelopes;
@@ -36,15 +45,7 @@ import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridResource;
 import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.storage.rs.CodedGeometry;
-import org.locationtech.jts.geom.Geometry;
-import org.opengis.feature.AttributeType;
-import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
-import org.opengis.geometry.Envelope;
-import org.opengis.metadata.Metadata;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.GenericName;
+
 
 /**
  *

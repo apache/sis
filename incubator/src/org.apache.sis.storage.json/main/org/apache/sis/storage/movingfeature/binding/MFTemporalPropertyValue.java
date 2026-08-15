@@ -16,13 +16,14 @@
  */
 package org.apache.sis.storage.movingfeature.binding;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.apache.sis.storage.json.DataTransferObject;
+
 
 /**
  * Value of one arbitrarily-named entry of a {@link MFTemporalPropertyGroup}, per Moving

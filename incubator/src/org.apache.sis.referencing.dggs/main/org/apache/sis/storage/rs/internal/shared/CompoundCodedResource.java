@@ -26,6 +26,13 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
+import org.opengis.util.GenericName;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -40,13 +47,7 @@ import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
 import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.storage.rs.CodedGeometry;
 import org.apache.sis.storage.rs.CodedResource;
-import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.VerticalCRS;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
-import org.opengis.util.GenericName;
+
 
 /**
  *

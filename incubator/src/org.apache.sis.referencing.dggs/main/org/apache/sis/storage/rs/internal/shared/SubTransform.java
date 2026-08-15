@@ -16,9 +16,10 @@
  */
 package org.apache.sis.storage.rs.internal.shared;
 
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.rs.Code;
 import org.apache.sis.storage.rs.CodeTransform;
-import org.opengis.referencing.operation.TransformException;
+
 
 /**
  *

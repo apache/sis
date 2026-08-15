@@ -16,11 +16,12 @@
  */
 package org.apache.sis.referencing.dggs.internal.shared;
 
-import org.apache.sis.referencing.datum.DatumOrEnsemble;
-import org.apache.sis.referencing.dggs.DiscreteGlobalGridSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.datum.Ellipsoid;
+import org.apache.sis.referencing.datum.DatumOrEnsemble;
+import org.apache.sis.referencing.dggs.DiscreteGlobalGridSystem;
+
 
 /**
  *

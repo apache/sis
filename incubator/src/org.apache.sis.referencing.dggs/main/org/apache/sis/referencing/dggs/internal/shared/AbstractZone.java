@@ -19,11 +19,12 @@ package org.apache.sis.referencing.dggs.internal.shared;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
-import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
-import org.apache.sis.referencing.dggs.Zone;
 import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.util.InternationalString;
+import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
+import org.apache.sis.referencing.dggs.Zone;
+
 
 /**
  *

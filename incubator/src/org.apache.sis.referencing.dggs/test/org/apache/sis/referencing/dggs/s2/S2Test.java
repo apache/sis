@@ -16,17 +16,18 @@
  */
 package org.apache.sis.referencing.dggs.s2;
 
-import org.apache.sis.geometries.Polygon;
-import org.apache.sis.referencing.dggs.AbstractDggrsTest;
-import org.apache.sis.referencing.dggs.Zone;
-import org.apache.sis.storage.dggs.DiscreteGlobalGridSystems;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.geometries.Polygon;
+import org.apache.sis.referencing.dggs.Zone;
+import org.apache.sis.storage.dggs.DiscreteGlobalGridSystems;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.referencing.dggs.AbstractDggrsTest;
+
 
 /**
  *

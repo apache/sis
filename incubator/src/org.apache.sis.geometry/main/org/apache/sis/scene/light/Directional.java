@@ -19,6 +19,7 @@ package org.apache.sis.scene.light;
 import java.util.Objects;
 import org.apache.sis.util.ArgumentChecks;
 
+
 /**
  * A light which is thought to be infinitely far away, so its rays arrive
  * (almost) parallel, such as sunlight.

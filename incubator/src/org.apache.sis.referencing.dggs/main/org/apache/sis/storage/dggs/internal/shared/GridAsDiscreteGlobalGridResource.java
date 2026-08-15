@@ -20,6 +20,11 @@ import java.util.List;
 import java.util.Optional;
 import javax.measure.IncommensurableException;
 import javax.measure.Quantity;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.GenericName;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.geometry.DirectPosition2D;
@@ -38,11 +43,7 @@ import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridResource;
 import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.storage.rs.CodedGeometry;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.SingleCRS;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.GenericName;
+
 
 /**
  * View a grid coverage resource as a dggrs coverage resource.

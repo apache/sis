@@ -64,12 +64,12 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.ObjectDomain;

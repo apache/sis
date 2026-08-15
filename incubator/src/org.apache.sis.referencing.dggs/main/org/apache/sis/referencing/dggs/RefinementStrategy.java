@@ -19,6 +19,7 @@ package org.apache.sis.referencing.dggs;
 import java.util.List;
 import org.opengis.util.CodeList;
 
+
 /**
  * List of characteristics of the DGGS refinement strategy.
  *

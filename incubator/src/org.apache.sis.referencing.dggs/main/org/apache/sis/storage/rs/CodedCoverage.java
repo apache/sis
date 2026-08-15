@@ -17,11 +17,12 @@
 package org.apache.sis.storage.rs;
 
 import java.util.function.Function;
-import org.apache.sis.referencing.rs.Code;
-import org.apache.sis.storage.coverage.BandedCoverageExt;
 import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+import org.apache.sis.referencing.rs.Code;
+import org.apache.sis.storage.coverage.BandedCoverageExt;
+
 
 /**
  * A coverage which is structured by a collection of locations defined by a ReferenceSystem.

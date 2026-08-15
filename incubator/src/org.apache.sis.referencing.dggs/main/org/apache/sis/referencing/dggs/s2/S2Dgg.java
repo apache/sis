@@ -16,26 +16,27 @@
  */
 package org.apache.sis.referencing.dggs.s2;
 
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import com.google.common.geometry.S2CellId;
 import com.google.common.geometry.S2CellUnion;
 import com.google.common.geometry.S2LatLng;
 import com.google.common.geometry.S2Polygon;
 import com.google.common.geometry.S2RegionCoverer;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.util.Utilities;
-import org.apache.sis.referencing.dggs.Zone;
-import org.apache.sis.referencing.dggs.internal.shared.AbstractDiscreteGlobalGrid;
-import org.apache.sis.storage.dggs.DiscreteGlobalGridSystems;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.util.Utilities;
+import org.apache.sis.referencing.dggs.Zone;
+import org.apache.sis.referencing.dggs.internal.shared.AbstractDiscreteGlobalGrid;
+import org.apache.sis.storage.dggs.DiscreteGlobalGridSystems;
+
 
 /**
  *

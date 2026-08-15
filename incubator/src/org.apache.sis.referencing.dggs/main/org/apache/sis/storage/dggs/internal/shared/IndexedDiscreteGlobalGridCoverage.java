@@ -30,8 +30,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.locationtech.jts.geom.Polygon;
 import javax.measure.IncommensurableException;
 import javax.measure.Quantity;
+import org.opengis.coverage.CannotEvaluateException;
+import org.opengis.coverage.PointOutsideCoverageException;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverageBuilder;
@@ -50,13 +57,7 @@ import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridSystems;
 import org.apache.sis.storage.image.internal.ImageBuilder;
 import org.apache.sis.storage.rs.CodeIterator;
-import org.locationtech.jts.geom.Polygon;
-import org.opengis.coverage.CannotEvaluateException;
-import org.opengis.coverage.PointOutsideCoverageException;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
+
 
 /**
  *

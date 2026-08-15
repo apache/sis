@@ -26,6 +26,7 @@ import org.apache.sis.storage.dggs.DiscreteGlobalGridResource;
 import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.storage.rs.CodedGeometry;
 
+
 /**
  * Decorate a DGGS coverage as a DGGS resource.
  *

@@ -16,16 +16,17 @@
  */
 package org.apache.sis.storage.geojson.binding;
 
+import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import java.util.Objects;
 import static org.apache.sis.storage.geojson.binding.GeoJSONGeometry.PROPERTY_COORD_REF_SYS;
 import static org.apache.sis.storage.geojson.binding.GeoJSONGeometry.PROPERTY_MEASURES;
 import static org.apache.sis.storage.geojson.binding.GeoJSONObject.PROPERTY_TYPE;
+
 
 /**
  *

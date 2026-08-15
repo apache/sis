@@ -19,14 +19,15 @@ package org.apache.sis.referencing.dggs.s2;
 import com.google.common.geometry.S2CellId;
 import com.google.common.geometry.S2LatLng;
 import javax.measure.IncommensurableException;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
-import org.apache.sis.util.Utilities;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
+import org.apache.sis.util.Utilities;
+
 
 /**
  *

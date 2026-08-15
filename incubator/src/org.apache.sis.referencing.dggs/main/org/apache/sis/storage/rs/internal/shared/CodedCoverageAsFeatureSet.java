@@ -24,6 +24,15 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import org.locationtech.jts.geom.CoordinateXY;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.PropertyNotFoundException;
+import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.GenericName;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.builder.AttributeRole;
@@ -44,15 +53,7 @@ import org.apache.sis.storage.rs.WritableCodeIterator;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.internal.shared.AbstractIterator;
 import org.apache.sis.util.iso.Names;
-import org.locationtech.jts.geom.CoordinateXY;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.Point;
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyNotFoundException;
-import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.GenericName;
+
 
 /**
  * View a DGGS Coverage as a FeatureSet.

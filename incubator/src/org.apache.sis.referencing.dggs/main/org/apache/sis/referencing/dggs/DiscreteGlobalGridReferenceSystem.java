@@ -23,11 +23,12 @@ import java.util.List;
 import java.util.Map;
 import javax.measure.IncommensurableException;
 import javax.measure.Quantity;
-import org.apache.sis.referencing.gazetteer.ReferencingByIdentifiers;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.citation.Party;
 import org.opengis.referencing.gazetteer.LocationType;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.gazetteer.ReferencingByIdentifiers;
+
 
 /**
  * Integrated system comprised of a specific discrete global grid hierarchy, spatiotemporal referencing by

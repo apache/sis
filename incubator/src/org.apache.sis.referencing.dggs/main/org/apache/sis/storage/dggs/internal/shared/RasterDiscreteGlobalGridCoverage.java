@@ -20,6 +20,8 @@ import java.awt.Point;
 import java.awt.image.RenderedImage;
 import java.util.List;
 import java.util.function.Function;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.GenericName;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.image.PixelIterator;
 import org.apache.sis.image.WritablePixelIterator;
@@ -29,8 +31,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
 import org.apache.sis.storage.rs.CodeIterator;
 import org.apache.sis.storage.rs.WritableCodeIterator;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.GenericName;
+
 
 /**
  * Discrete global grid coverage with data stored in a raster image.

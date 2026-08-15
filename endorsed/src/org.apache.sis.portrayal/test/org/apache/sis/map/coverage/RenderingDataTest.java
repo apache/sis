@@ -33,7 +33,6 @@ import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.image.ErrorHandler;
 import org.apache.sis.image.PlanarImage;
-import org.apache.sis.image.TiledImageMock;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -43,6 +42,7 @@ import org.apache.sis.storage.MemoryGridCoverageResource;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.image.TiledImageMock;
 import static org.apache.sis.test.Assertions.assertSingleton;
 import org.apache.sis.test.TestCase;
 

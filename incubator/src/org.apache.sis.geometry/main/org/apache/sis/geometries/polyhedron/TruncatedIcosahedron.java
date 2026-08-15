@@ -22,6 +22,7 @@ import org.apache.sis.geometries.math.ArrayFactoryJava;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.ReadOnly;
 
+
 /**
  *
  * @see https://mathworld.wolfram.com/TruncatedIcosahedron.html

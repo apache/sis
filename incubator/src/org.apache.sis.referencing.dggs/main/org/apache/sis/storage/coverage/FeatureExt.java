@@ -22,8 +22,6 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import org.apache.sis.feature.internal.shared.AttributeConvention;
-import org.apache.sis.geometry.wrapper.Geometries;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
@@ -33,6 +31,9 @@ import org.opengis.feature.Operation;
 import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.feature.PropertyType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.feature.internal.shared.AttributeConvention;
+import org.apache.sis.geometry.wrapper.Geometries;
+
 
 /**
  * NOTE : merge with Apache SIS 'org.apache.sis.feature.Features' class.

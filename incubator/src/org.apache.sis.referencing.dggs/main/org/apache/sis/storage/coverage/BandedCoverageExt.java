@@ -16,11 +16,12 @@
  */
 package org.apache.sis.storage.coverage;
 
+import org.opengis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.BandedCoverage;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.DataStoreException;
-import org.opengis.coverage.CannotEvaluateException;
+
 
 /**
  * Subclass of BandedCoverage to support missing capabilities.

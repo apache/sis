@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.dggs;
 
+
 /**
  * Reference system establishing a specific association of zone identifiers to zones for one or more
  * discrete global grid hierarchy.

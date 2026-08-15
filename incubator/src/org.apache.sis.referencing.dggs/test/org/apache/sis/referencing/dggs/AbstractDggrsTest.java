@@ -22,6 +22,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.measure.IncommensurableException;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
 import org.apache.sis.coverage.BandedCoverage;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -32,23 +37,21 @@ import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.Vector2D;
-import org.apache.sis.referencing.GeodeticCalculator;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Vectors;
+import org.apache.sis.referencing.GeodeticCalculator;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.iso.Names;
-import org.apache.sis.storage.dggs.internal.shared.ArrayDiscreteGlobalGridCoverage;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridSystems;
+import org.apache.sis.storage.dggs.internal.shared.ArrayDiscreteGlobalGridCoverage;
 import org.apache.sis.storage.rs.CodeIterator;
+
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
+
 
 /**
  *

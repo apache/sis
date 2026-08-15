@@ -20,6 +20,7 @@ import org.apache.sis.geometries.Sphere;
 import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.ReadOnly;
 
+
 /**
  * A triangle on a sphere.
  *

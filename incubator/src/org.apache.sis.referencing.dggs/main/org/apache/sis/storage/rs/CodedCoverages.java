@@ -17,6 +17,10 @@
 package org.apache.sis.storage.rs;
 
 import javax.measure.IncommensurableException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
+import org.opengis.util.GenericName;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
 import org.apache.sis.storage.DataStoreException;
@@ -25,10 +29,7 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.dggs.internal.shared.GridAsDiscreteGlobalGridResource;
 import org.apache.sis.storage.rs.internal.shared.CodedCoverageAsFeatureSet;
 import org.apache.sis.storage.rs.internal.shared.GridAsCodedResource;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
-import org.opengis.util.GenericName;
+
 
 /**
  *

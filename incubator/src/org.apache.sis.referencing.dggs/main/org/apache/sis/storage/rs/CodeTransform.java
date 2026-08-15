@@ -16,9 +16,10 @@
  */
 package org.apache.sis.storage.rs;
 
-import org.apache.sis.referencing.rs.Code;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.rs.Code;
+
 
 /**
  *

@@ -18,13 +18,14 @@ package org.apache.sis.storage.rs.internal.shared;
 
 import java.util.List;
 import java.util.Optional;
+import org.opengis.util.GenericName;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.storage.rs.CodedGeometry;
 import org.apache.sis.storage.rs.CodedResource;
-import org.opengis.util.GenericName;
+
 
 /**
  * Decorate a referenced coverage as a referenced resource.

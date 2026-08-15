@@ -21,6 +21,8 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import javax.measure.IncommensurableException;
 import javax.measure.Quantity;
+import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGrid;
@@ -32,8 +34,7 @@ import org.apache.sis.storage.dggs.internal.shared.GridAsDiscreteGlobalGridResou
 import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.storage.rs.CodedGeometry;
 import org.apache.sis.storage.rs.CodedResource;
-import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
+
 
 /**
  * A Resource which offer acces to a coverage structured in DGGS cells.

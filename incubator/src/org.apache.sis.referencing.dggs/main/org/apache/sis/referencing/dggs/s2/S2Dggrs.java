@@ -22,6 +22,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.opengis.metadata.citation.Party;
+import org.opengis.referencing.ObjectDomain;
+import org.opengis.referencing.gazetteer.LocationType;
+import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.ImmutableIdentifier;
@@ -34,10 +38,7 @@ import org.apache.sis.referencing.dggs.DiscreteGlobalGridSystem;
 import org.apache.sis.referencing.dggs.SubZoneOrder;
 import org.apache.sis.referencing.dggs.ZonalReferenceSystem;
 import org.apache.sis.referencing.dggs.internal.shared.DefaultZonalReferenceSystem;
-import org.opengis.metadata.citation.Party;
-import org.opengis.referencing.ObjectDomain;
-import org.opengis.referencing.gazetteer.LocationType;
-import org.opengis.util.InternationalString;
+
 
 /**
  *

@@ -19,6 +19,7 @@ package org.apache.sis.referencing.dggs;
 import java.util.List;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+
 /**
  * Integrated system comprising a hierarchy of discrete global grids, spatiotemporal referencing by zonal
  * identifiers and functions for quantization, zonal query, and interoperability.

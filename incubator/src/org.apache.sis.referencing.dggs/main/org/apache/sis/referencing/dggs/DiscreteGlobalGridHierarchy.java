@@ -26,6 +26,7 @@ import java.util.Set;
 import javax.measure.IncommensurableException;
 import javax.measure.Quantity;
 
+
 /**
  * Series of discrete global grids organized in a hierarchy of successive levels of zone refinement,
  * using a specific set of parameters fully establishing the geometry of all zones.

@@ -16,12 +16,12 @@
  */
 package org.apache.sis.storage.coverage;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.grid.PixelInCell;
-import org.opengis.referencing.operation.MathTransform;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 
 /**

@@ -22,10 +22,10 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.sis.storage.json.AbstractBindingTest;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.apache.sis.storage.json.AbstractBindingTest;
 
 
 /**

@@ -20,6 +20,7 @@ import java.awt.image.RenderedImage;
 import java.util.Objects;
 import org.apache.sis.util.ArgumentChecks;
 
+
 /**
  * A textured light source surrounding the scene, illuminating it from
  * infinity. The environment map orientation follows the node's local axes

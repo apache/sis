@@ -16,13 +16,14 @@
  */
 package org.apache.sis.storage.rs.internal.shared.s2;
 
-import com.google.common.geometry.S2Region;
 import java.util.Iterator;
+import com.google.common.geometry.S2Region;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 
 /**
  * The wrapper of S2 geometries.

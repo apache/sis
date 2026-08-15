@@ -16,18 +16,19 @@
  */
 package org.apache.sis.referencing.dggs;
 
-import com.google.common.geometry.S2Polygon;
 import java.util.stream.Stream;
+import com.google.common.geometry.S2Polygon;
 import javax.measure.Quantity;
-import org.apache.sis.geometry.DirectPosition2D;
-import org.apache.sis.geometry.Envelopes;
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.storage.rs.internal.shared.s2.S2;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.storage.rs.internal.shared.s2.S2;
+
 
 /**
  * Set of zones at the same refinement level, that uniquely and completely cover a globe.

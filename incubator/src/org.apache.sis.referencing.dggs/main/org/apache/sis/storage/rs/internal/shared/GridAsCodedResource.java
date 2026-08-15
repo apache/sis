@@ -24,6 +24,14 @@ import java.util.Optional;
 import java.util.Set;
 import javax.measure.IncommensurableException;
 import javax.measure.Quantity;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
+import org.opengis.util.GenericName;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -51,14 +59,7 @@ import org.apache.sis.storage.rs.CodedGeometry;
 import org.apache.sis.storage.rs.CodedResource;
 import org.apache.sis.storage.rs.WritableCodeIterator;
 import org.apache.sis.util.ArgumentChecks;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.SingleCRS;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
-import org.opengis.util.GenericName;
+
 
 /**
  * View a grid coverage resource as a dggrs coverage resource.

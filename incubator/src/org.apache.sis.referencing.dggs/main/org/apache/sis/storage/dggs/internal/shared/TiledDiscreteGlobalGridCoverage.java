@@ -18,6 +18,10 @@ package org.apache.sis.storage.dggs.internal.shared;
 
 import java.util.Arrays;
 import java.util.List;
+import org.opengis.coverage.CannotEvaluateException;
+import org.opengis.coverage.PointOutsideCoverageException;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.BandedCoverage;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
@@ -26,10 +30,7 @@ import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
 import org.apache.sis.storage.rs.CodeIterator;
 import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.storage.rs.WritableCodeIterator;
-import org.opengis.coverage.CannotEvaluateException;
-import org.opengis.coverage.PointOutsideCoverageException;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.operation.TransformException;
+
 
 /**
  *

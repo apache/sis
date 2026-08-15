@@ -18,6 +18,7 @@ package org.apache.sis.storage.rs;
 
 import org.apache.sis.storage.DataStoreException;
 
+
 /**
  * Writable RS coverage location iterator.
  *

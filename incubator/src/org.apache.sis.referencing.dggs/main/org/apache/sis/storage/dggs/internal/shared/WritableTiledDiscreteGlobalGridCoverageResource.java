@@ -19,6 +19,7 @@ package org.apache.sis.storage.dggs.internal.shared;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.rs.CodedCoverage;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

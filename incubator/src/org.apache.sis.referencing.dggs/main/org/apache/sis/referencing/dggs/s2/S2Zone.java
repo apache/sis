@@ -16,15 +16,17 @@
  */
 package org.apache.sis.referencing.dggs.s2;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import com.google.common.geometry.S2Cell;
 import com.google.common.geometry.S2CellId;
 import com.google.common.geometry.S2LatLng;
 import com.google.common.geometry.S2Loop;
 import com.google.common.geometry.S2Point;
 import com.google.common.geometry.S2Polygon;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.metadata.extent.BoundingPolygon;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.referencing.CommonCRS;
@@ -32,8 +34,7 @@ import org.apache.sis.referencing.dggs.RefinementLevel;
 import org.apache.sis.referencing.dggs.Zone;
 import org.apache.sis.referencing.dggs.internal.shared.AbstractZone;
 import org.apache.sis.storage.rs.internal.shared.s2.S2;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.metadata.extent.BoundingPolygon;
+
 
 /**
  *

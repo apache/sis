@@ -16,11 +16,12 @@
  */
 package org.apache.sis.storage.movingfeature.binding;
 
+import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import java.util.Objects;
 import org.apache.sis.storage.json.DataTransferObject;
+
 
 /**
  * Value of a Moving Features JSON (MF-JSON, OGC 16-140r1) 'base' member of a

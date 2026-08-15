@@ -22,6 +22,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Metadata;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
+import org.opengis.util.GenericName;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.referencing.dggs.Zone;
@@ -30,11 +35,7 @@ import org.apache.sis.storage.dggs.DiscreteGlobalGridCoverageProcessor;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridResource;
 import org.apache.sis.storage.rs.CodedCoverage;
-import org.opengis.geometry.Envelope;
-import org.opengis.metadata.Metadata;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
-import org.opengis.util.GenericName;
+
 
 /**
  *

@@ -35,6 +35,7 @@ import org.apache.sis.image.internal.shared.ColorModelFactory;
 import org.apache.sis.image.internal.shared.FillValues;
 import org.apache.sis.image.internal.shared.WritableUntiledImage;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)
