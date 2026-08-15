@@ -448,7 +448,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      *
      * <h4>Implementation note</h4>
      * We do not require that {@code record.getRecordType() == this} in order to allow record
-     * "sub-types" to define additional fields, in a way similar to Java sub-classing.
+     * subtypes to define additional fields, in a way similar to Java sub-classing.
      *
      * @param  record  the record to test for compatibility with this type, or {@code null}.
      * @return {@code true} if the given record is non-null and compatible with this record type.

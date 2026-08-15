@@ -38,6 +38,15 @@ public final class ImageLayoutTest extends TestCase {
     }
 
     /**
+     * Verifies the condition documented in {@link ImageLayout#DEFAULT_TILE_SIZE}.
+     */
+    @Test
+    public void verifyDefaultTileSize() {
+        assertTrue(ImageLayout.DEFAULT_TILE_SIZE > ImageLayout.MIN_TILE_SIZE);
+        assertTrue(ImageLayout.DEFAULT_TILE_SIZE < ImageLayout.MAX_TILE_SIZE);
+    }
+
+    /**
      * Tests {@link ImageLayout#suggestTileSize(int, int)}.
      */
     @Test

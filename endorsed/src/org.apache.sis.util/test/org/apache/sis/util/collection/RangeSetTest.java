@@ -43,6 +43,7 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class RangeSetTest extends TestCase {
     /**
      * Tolerance factor for comparison of floating point numbers.
@@ -58,7 +59,7 @@ public final class RangeSetTest extends TestCase {
     }
 
     /**
-     * Asserts that the two given values are equals to the expected one.
+     * Asserts that the two given values are equal to the expected range.
      * This method is used for testing {@link RangeSet#first()} and {@link RangeSet#last()}
      * at the same time as the values from the iterator.
      */
@@ -573,6 +574,7 @@ public final class RangeSetTest extends TestCase {
      * @throws InterruptedException if the test has been interrupted.
      */
     @Benchmark
+    @SuppressWarnings("SleepWhileInLoop")
     public void stress() throws InterruptedException {
         final Random r = TestUtilities.createRandomNumberGenerator();
         for (int p=0; p<10; p++) {

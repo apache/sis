@@ -79,6 +79,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short AmbiguousGridAxisOmission_1 = 84;
 
         /**
+         * {0,number,integer} band{0,choice,1#|2#s}
+         */
+        public static final short BandCount_1 = 94;
+
+        /**
          * Cannot assign characteristics to the “{0}” property.
          */
         public static final short CanNotAssignCharacteristics_1 = 2;
@@ -423,6 +428,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short OutOfIteratorDomain_2 = 57;
 
         /**
+         * Palette of {0,number,integer} colors
+         */
+        public static final short PaletteOfColors_1 = 96;
+
+        /**
          * Point ({0}) is outside the coverage domain.
          */
         public static final short PointOutsideCoverageDomain_1 = 37;
@@ -446,6 +456,11 @@ public class Resources extends IndexedResourceBundle {
          * Source images do not intersect.
          */
         public static final short SourceImagesDoNotIntersect = 80;
+
+        /**
+         * {0} tiles of {1} pixels
+         */
+        public static final short TileCountAndSize_2 = 95;
 
         /**
          * Tile ({0}, {1}) is unavailable because of error in a previous calculation attempt.

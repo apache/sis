@@ -81,7 +81,7 @@ final class Pruner extends MetadataVisitor<Boolean> {
         final Pruner visitor = VISITORS.get();
         final boolean p = visitor.prune;
         visitor.prune = prune;
-        final Boolean r = visitor.walk(metadata.getStandard(), Object.class, metadata, false);
+        final Boolean r = visitor.walk(metadata.getStandard(), Object.class, metadata, UnresolvedTypePolicy.NULL);
         visitor.prune = p;
         return (r != null) && r;        // If there is a cycle (r == null), then the metadata is non-empty.
     }
@@ -140,7 +140,7 @@ final class Pruner extends MetadataVisitor<Boolean> {
                          * For implementation that are not subtype of AbstractMetadata but nevertheless
                          * implement some metadata interfaces, we will invoke recursively this method.
                          */
-                        final Boolean r = walk(standard, type, element, false);
+                        final Boolean r = walk(standard, type, element, UnresolvedTypePolicy.NULL);
                         if (r != null) {
                             isEmptyElement = r;
                             if (!isEmptyElement && element instanceof Emptiable) {

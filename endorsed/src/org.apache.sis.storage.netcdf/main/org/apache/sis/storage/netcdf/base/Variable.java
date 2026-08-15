@@ -996,6 +996,7 @@ public abstract class Variable extends Node {
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of the variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
+     * @throws IllegalArgumentException if the type of the array which is read by this method is not recognized.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public final Vector read() throws IOException, DataStoreException {
@@ -1018,6 +1019,7 @@ public abstract class Variable extends Node {
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of the variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
+     * @throws ArrayStoreException if an error occurred while converting the type of array elements.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public final List<?> readAnyType() throws IOException, DataStoreException {
@@ -1048,6 +1050,7 @@ public abstract class Variable extends Node {
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
+     * @throws ArrayStoreException if an error occurred while converting the type of array elements.
      */
     public abstract Vector read(GridExtent area, long[] subsampling) throws IOException, DataStoreException;
 
@@ -1063,6 +1066,7 @@ public abstract class Variable extends Node {
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
+     * @throws ArrayStoreException if an error occurred while converting the type of array elements.
      */
     public abstract List<?> readAnyType(GridExtent area, long[] subsampling) throws IOException, DataStoreException;
 
@@ -1073,6 +1077,7 @@ public abstract class Variable extends Node {
      * @return the data as an array of a Java primitive type.
      * @throws IOException if an error occurred while reading the data.
      * @throws DataStoreException if a logical error occurred.
+     * @throws ArrayStoreException if an error occurred while converting the type of array elements.
      */
     protected abstract Object readFully() throws IOException, DataStoreException;
 
@@ -1083,6 +1088,7 @@ public abstract class Variable extends Node {
      * @param  array          the values as an array of primitive type (for example {@code float[]}.
      * @param  forceNumerics  whether to force the replacement of character strings by real numbers.
      * @throws ArithmeticException if the dimensions of this variable are too large.
+     * @throws IllegalArgumentException if the type of the given array is not recognized.
      */
     final void setValues(final Object array, final boolean forceNumerics) {
         final DataType dataType = getDataType();
@@ -1192,6 +1198,7 @@ public abstract class Variable extends Node {
      * @param  data        the data to wrap in a vector.
      * @param  isUnsigned  whether the data type is an unsigned type.
      * @return vector wrapping the given data.
+     * @throws IllegalArgumentException if the type of the given data object is not recognized.
      */
     protected static Vector createDecimalVector(final Object data, final boolean isUnsigned) {
         if (data instanceof float[]) {

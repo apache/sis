@@ -60,7 +60,7 @@ public class TiledImage extends PlanarImage {
     /**
      * Image properties, or an empty map if none.
      */
-    private final Map<String,Object> properties;
+    private final Map<String, Object> properties;
 
     /**
      * Creates a new tiled image. The first tile in the given array must be the
@@ -76,7 +76,7 @@ public class TiledImage extends PlanarImage {
      * @param minTileY    minimum tile index in the Y direction.
      * @param tiles       the tiles. Must contains at least one element. This array is not cloned.
      */
-    public TiledImage(final Map<String, Object> properties, final ColorModel colorModel,
+    public TiledImage(final Map<String, ?> properties, final ColorModel colorModel,
                       final int width, final int height, final int minTileX, final int minTileY,
                       final Raster... tiles)
     {
@@ -166,7 +166,7 @@ public class TiledImage extends PlanarImage {
     public Object getProperty(final String key) {
         Object value = properties.getOrDefault(key, Image.UndefinedProperty);
         if (value instanceof DeferredProperty) {
-            value = ((DeferredProperty) value).compute(this);
+            value = ((DeferredProperty) value).getOrCompute(this);
         }
         return value;
     }

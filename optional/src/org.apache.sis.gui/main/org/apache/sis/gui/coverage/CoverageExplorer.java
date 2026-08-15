@@ -612,7 +612,7 @@ public class CoverageExplorer extends Widget {
      * {@link #coverageProperty}. In the latter case, the {@code resource} and {@code coverage} arguments
      * given to this method may be the value that the properties already have.</p>
      *
-     * @param  gridName  value of {@link CoverageCanvas#gridCrsName()} or equivalent.
+     * @param  gridName  value of {@link CoverageCanvas#getContentIdentifier()} or equivalent.
      * @param  resource  the new source of coverage, or {@code null} if none.
      * @param  coverage  the new coverage, or {@code null} if none.
      */

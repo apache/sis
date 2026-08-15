@@ -21,13 +21,16 @@ import java.util.Locale;
 import java.io.IOException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
+import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
@@ -82,6 +85,16 @@ public final class GridExtentTest extends TestCase {
     }
 
     /**
+     * Verifies that the given extent has the dimension name types specified by {@link #create3D()}.
+     */
+    private static void verifyDimensions(final GridExtent extent) {
+        assertEquals(3, extent.getDimension(), "dimension");
+        assertEquals(DimensionNameType.COLUMN, extent.getAxisType(0).get());
+        assertEquals(DimensionNameType.ROW,    extent.getAxisType(1).get());
+        assertEquals(DimensionNameType.TIME,   extent.getAxisType(2).get());
+    }
+
+    /**
      * Verifies the low and high values in the specified dimension of the given extent
      */
     static void assertExtentEquals(final GridExtent extent, final int dimension, final int low, final int high) {
@@ -96,11 +109,12 @@ public final class GridExtentTest extends TestCase {
      */
     @Test
     public void testSubsample() {
-        GridExtent extent = create3D();
+        GridExtent extent = create3D();             // low = (100, 200, 40) and size = (400 × 600 × 10).
         extent = extent.subsample(4, 3, 9);
-        assertExtentEquals(extent, 0, 25, 124);                 // 100 cells
-        assertExtentEquals(extent, 1, 66, 265);                 // 200 cells
-        assertExtentEquals(extent, 2,  4,   5);                 //   2 cells
+        verifyDimensions(extent);
+        assertExtentEquals(extent, 0, 25, 124);     // 100 cells, exact division of everything.
+        assertExtentEquals(extent, 1, 66, 265);     // 200 cells, exact division of size, truncation of low coordinate.
+        assertExtentEquals(extent, 2,  4,   5);     //   2 cells, size rounded upward, low coordinate truncated.
     }
 
     /**
@@ -108,11 +122,12 @@ public final class GridExtentTest extends TestCase {
      */
     @Test
     public void testUpsample() {
-        GridExtent extent = create3D();
+        GridExtent extent = create3D();             // low = (100, 200, 40) and size = (400 × 600 × 10).
         extent = extent.upsample(4, 3, 9);
-        assertExtentEquals(extent, 0, 400, 1999);               // 1600 cells
-        assertExtentEquals(extent, 1, 600, 2399);               // 1800 cells
-        assertExtentEquals(extent, 2, 360,  449);               //   90 cells
+        verifyDimensions(extent);
+        assertExtentEquals(extent, 0, 400, 1999);   // 1600 cells.
+        assertExtentEquals(extent, 1, 600, 2399);   // 1800 cells.
+        assertExtentEquals(extent, 2, 360,  449);   //   90 cells.
     }
 
     /**
@@ -229,6 +244,7 @@ public final class GridExtentTest extends TestCase {
         GridExtent extent = create3D();
         assertSame(extent, extent.withRange(1, 200, 799));
         extent = extent.withRange(2, 30, 60);
+        verifyDimensions(extent);
         assertExtentEquals(extent, 0, 100, 499);
         assertExtentEquals(extent, 1, 200, 799);
         assertExtentEquals(extent, 2,  30,  60);
@@ -242,6 +258,7 @@ public final class GridExtentTest extends TestCase {
         GridExtent extent = create3D();
         assertSame(extent, extent.expand(new long[3]));
         extent = extent.expand(20, -10);            // One less dimension than `exent` dimension.
+        verifyDimensions(extent);
         assertExtentEquals(extent, 0,  80, 519);
         assertExtentEquals(extent, 1, 210, 789);
         assertExtentEquals(extent, 2,  40,  49);
@@ -254,6 +271,7 @@ public final class GridExtentTest extends TestCase {
     public void testForChunkSize() {
         GridExtent extent = create3D();
         extent = extent.forChunkSize(300, 200, 15);
+        verifyDimensions(extent);
         assertExtentEquals(extent, 0,   0, 599);
         assertExtentEquals(extent, 1, 200, 799);
         assertExtentEquals(extent, 2,  30,  59);
@@ -266,6 +284,7 @@ public final class GridExtentTest extends TestCase {
     public void testResize() {
         GridExtent extent = create3D();
         extent = extent.resize(200, 150);
+        verifyDimensions(extent);
         assertExtentEquals(extent, 0, 50, 249);
         assertExtentEquals(extent, 1, 50, 199);
         assertExtentEquals(extent, 2, 40,  49);
@@ -319,6 +338,7 @@ public final class GridExtentTest extends TestCase {
     public void testIntersect() {
         final GridExtent domain = createOther();
         final GridExtent extent = create3D().intersect(domain);
+        verifyDimensions(extent);
         assertExtentEquals(extent, 0, 150, 399);
         assertExtentEquals(extent, 1, 220, 799);
         assertExtentEquals(extent, 2, 40,  46);
@@ -336,6 +356,7 @@ public final class GridExtentTest extends TestCase {
     public void testUnion() {
         final GridExtent domain = createOther();
         final GridExtent extent = create3D().union(domain);
+        verifyDimensions(extent);
         assertExtentEquals(extent, 0, 100, 499);
         assertExtentEquals(extent, 1, 200, 819);
         assertExtentEquals(extent, 2, 35,  49);
@@ -386,7 +407,7 @@ public final class GridExtentTest extends TestCase {
         final var slicePoint = new GeneralDirectPosition(226.7, 47.2);
         final GridExtent extent = create3D();
         final GridExtent slice  = extent.slice(slicePoint, new int[] {1, 2});
-        assertEquals(3, slice.getDimension(), "dimension");
+        verifyDimensions(slice);
         assertExtentEquals(slice, 0, 100, 499);
         assertExtentEquals(slice, 1, 227, 227);
         assertExtentEquals(slice, 2,  47,  47);
@@ -515,7 +536,7 @@ public final class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#toEnvelope(MathTransform)} with an identity transform.
+     * Tests {@link GridExtent#toEnvelope(MathTransform, Identifier)} with an identity transform.
      *
      * @throws TransformException if an error occurred while transforming to an envelope.
      */
@@ -526,20 +547,24 @@ public final class GridExtentTest extends TestCase {
             DimensionNameType.ROW,
             DimensionNameType.TIME
         }, new long[] {0, 0, 741}, new long[] {13, 9, 741}, true);
-        final GeneralEnvelope envelope = extent.toEnvelope(MathTransforms.identity(3));
+        final Identifier id = new ImmutableIdentifier(null, null, "Grid cell");
+        final GeneralEnvelope envelope = extent.toEnvelope(MathTransforms.identity(3), id);
 
         assertEnvelopeEquals(new GeneralEnvelope(
                 new double[] { 0,  0, 741},
                 new double[] {14, 10, 742}), envelope);
 
-        assertAxisDirectionsEqual(envelope.getCoordinateReferenceSystem().getCoordinateSystem(),
+        EngineeringCRS crs = assertInstanceOf(EngineeringCRS.class, envelope.getCoordinateReferenceSystem());
+        assertEquals(id, crs.getDatum().getName());
+
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(),
                 AxisDirection.COLUMN_POSITIVE,
                 AxisDirection.ROW_POSITIVE,
                 AxisDirection.FUTURE);
     }
 
     /**
-     * Tests {@link GridExtent#toEnvelope(MathTransform)} with a non-identity transform.
+     * Tests {@link GridExtent#toEnvelope(MathTransform, Identifier)} with a non-identity transform.
      *
      * @throws TransformException if an error occurred while transforming to an envelope.
      */
@@ -551,16 +576,20 @@ public final class GridExtentTest extends TestCase {
             DimensionNameType.COLUMN,
             DimensionNameType.VERTICAL
         }, new long[] {100, 5, 200, 40}, new long[] {500, 7, 800, 50}, false);
+        final Identifier id = new ImmutableIdentifier(null, null, "Grid cell");
         final GeneralEnvelope envelope = extent.toEnvelope(MathTransforms.linear(Matrices.create(5, 5, new double[] {
             0,  0,  1,  0,  0,
            -1,  0,  0,  0,  0,
             0,  0,  0, -1,  0,
             0,  1,  0,  0,  0,
-            0,  0,  0,  0,  1})));
+            0,  0,  0,  0,  1})), id);
 
         assertEnvelopeEquals(new GeneralEnvelope(
                 new double[] {200, -500, -50, 5},
                 new double[] {800, -100, -40, 7}), envelope);
+
+        EngineeringCRS crs = assertInstanceOf(EngineeringCRS.class, envelope.getCoordinateReferenceSystem());
+        assertEquals(id, crs.getDatum().getName());
 
         assertAxisDirectionsEqual(envelope.getCoordinateReferenceSystem().getCoordinateSystem(),
                 AxisDirection.COLUMN_POSITIVE,

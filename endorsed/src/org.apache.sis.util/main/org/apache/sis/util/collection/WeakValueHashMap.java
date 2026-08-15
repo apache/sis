@@ -675,7 +675,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
                 return equals = oldValue.equals(other);
             }
         }
-        final Observer observer = new Observer();
+        final var observer = new Observer();
         return intern(key, newValue, observer) != null && observer.equals;
     }
 
@@ -732,7 +732,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
                 final Entry[] table = WeakValueHashMap.this.table;
                 for (Entry el : table) {
                     while (el != null) {
-                        final Map.Entry<K,V> entry = new SimpleEntry<>(el);
+                        final var entry = new SimpleEntry<K,V>(el);
                         if (entry.getValue() != null) {
                             elements[index++] = entry;
                         }

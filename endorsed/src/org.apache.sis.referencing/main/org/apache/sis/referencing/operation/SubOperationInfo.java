@@ -31,6 +31,9 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.measure.NumberRange;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.internal.shared.Strings;
 
 // Specific to the main branch:
 import org.apache.sis.referencing.crs.DefaultParametricCRS;
@@ -104,6 +107,9 @@ final class SubOperationInfo {
     /**
      * The first dimension (inclusive) and the last dimension (exclusive) where the
      * {@link SingleCRS} starts/ends in the full (usually compound) <abbr>CRS</abbr>.
+     * The source dimension may be equal to the target dimension if the component does
+     * not exist in the source <abbr>CRS</abbr>, in which case {@link #constantCoordinates}
+     * should be specified.
      *
      * @see #sourceToSelected(int, SubOperationInfo[])
      */
@@ -111,10 +117,13 @@ final class SubOperationInfo {
                       targetLowerDimension, targetUpperDimension;
 
     /**
-     * Index of this instance in the array of {@code SubOperationInfo} instances,
-     * before the reordering applied by {@link #getSourceCRS(SubOperationInfo[])}.
+     * Index of this instance in the array of {@code SubOperationInfo} instances.
+     * This is initially the index in the array returned by {@link #createSteps createSteps(…)},
+     * then is modified by the reordering applied by {@link #getSourceCRS(SubOperationInfo[])}.
+     *
+     * @see #targetComponentIndex()
      */
-    final int targetComponentIndex;
+    private int targetComponentIndex;
 
     /**
      * The component of the target <abbr>CRS</abbr> which is managed by this {@code SubOperationInfo}.
@@ -313,6 +322,10 @@ searchSrc:  while (sourceComponentIndex < sourceComponentIsUsed.length) {
             if (component.operation == null) {
                 System.arraycopy(selected, i+1, selected, i, last - i);
                 selected[last] = component;
+                component.targetComponentIndex = last;
+                for (int j = last; --j >= i;) {
+                    selected[j].targetComponentIndex--;
+                }
                 n--;
                 i--;
             }
@@ -394,6 +407,15 @@ searchSrc:  while (sourceComponentIndex < sourceComponentIsUsed.length) {
             }
         }
         return select;
+    }
+
+    /**
+     * Returns the index of this instance in the array of {@code SubOperationInfo} instances.
+     * The returned value may differ depending on whether this method is invoked before or after
+     * {@link #getSourceCRS(SubOperationInfo[])}.
+     */
+    final int targetComponentIndex() {
+        return targetComponentIndex;
     }
 
     /**
@@ -484,5 +506,17 @@ otherRow:           for (int j = last.getNumRow() - 1; --j >= 0;) {     // Ignor
      */
     final boolean resultWasContextSensitive() {
         return constantCoordinates != null;
+    }
+
+    /**
+     * Returns a string representation for debugging purposes.
+     */
+    @Override
+    public String toString() {
+        return Strings.toString(getClass(),
+                "index",  targetComponentIndex,
+                "type",   Classes.getShortClassName(targetComponent),
+                "source", new NumberRange<>(Integer.class, sourceLowerDimension, true, sourceUpperDimension, false),
+                "target", new NumberRange<>(Integer.class, targetLowerDimension, true, targetUpperDimension, false));
     }
 }

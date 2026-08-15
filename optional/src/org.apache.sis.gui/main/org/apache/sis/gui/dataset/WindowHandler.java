@@ -263,7 +263,7 @@ public abstract class WindowHandler {
          * this method will block until the JavaFX thread finished to close all windows, for avoiding that
          * the background thread closes the resource before we removed all usages in JavaFX thread.
          */
-        @Override public void eventOccured(final CloseEvent event) {
+        @Override public void eventOccurred(final CloseEvent event) {
             final Resource resource = event.getSource();
             if (Platform.isFxApplicationThread()) {
                 close(resource);

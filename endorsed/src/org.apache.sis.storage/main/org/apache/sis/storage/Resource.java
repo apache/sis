@@ -346,12 +346,12 @@ public interface Resource {
 
     /**
      * Registers a listener to notify when the specified kind of event occurs in this resource or in children.
-     * The resource will call the {@link StoreListener#eventOccured(StoreEvent)} method when new events matching
+     * The resource will call the {@link StoreListener#eventOccurred(StoreEvent)} method when new events matching
      * the {@code eventType} occur. An event may be a change in resource content or structure, or a warning that
      * occurred during a read or write operation.
      *
      * <p>Registering a listener for a given {@code eventType} also register the listener for all event sub-types.
-     * The same listener can be registered many times, but its {@link StoreListener#eventOccured(StoreEvent)}
+     * The same listener can be registered many times, but its {@link StoreListener#eventOccurred(StoreEvent)}
      * method will be invoked only once per event. This filtering applies even if the listener is registered
      * on different resources in the same tree, for example a parent and its children.</p>
      *

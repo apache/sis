@@ -35,7 +35,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * An image which delegate all tile requests to another image except for some tiles that are fetched in advance.
+ * An image which delegates all tile requests to another image except for some tiles that are fetched in advance.
  * This image has the same coordinate systems as the source image.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -108,7 +108,7 @@ final class PrefetchedImage extends PlanarImage implements TileErrorHandler.Exec
                 return;
             }
         }
-        final Worker worker = new Worker(source, areaOfInterest);
+        final var worker = new Worker(source, areaOfInterest);
         final Rectangle ti = worker.getTileIndices();
         minTileX  = ti.x;
         minTileY  = ti.y;

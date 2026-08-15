@@ -132,7 +132,7 @@ public final class DatumOrEnsemble {
     }
 
     /**
-     * Returns the datum or ensemble of a coordinate operation from <var>source</var> to <var>target</var>.
+     * Returns the datum or datum ensemble of a coordinate operation from <var>source</var> to <var>target</var>.
      * If the two given coordinate reference systems are associated to equal datum (ignoring metadata),
      * then this method returns the <var>target</var> datum. Otherwise, this method returns
      * the largest ensemble which fully contains the datum or datum ensemble of the other <abbr>CRS</abbr>.

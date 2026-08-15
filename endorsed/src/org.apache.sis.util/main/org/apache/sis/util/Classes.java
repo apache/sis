@@ -456,13 +456,14 @@ public final class Classes {
     /**
      * Returns every interfaces implemented, directly or indirectly, by the given class or interface.
      * This is similar to {@link Class#getInterfaces()} except that this method searches recursively
-     * in the super-interfaces. For example, if the given type is {@link java.util.ArrayList}, then
-     * the returned set will contain {@link java.util.List} (which is implemented directly)
+     * in the super-interfaces, omitting duplicated values.
+     * For example, if the given type is {@link java.util.ArrayList},
+     * then the returned set will contain {@link java.util.List} (which is implemented directly)
      * together with its parent interfaces {@link Collection} and {@link Iterable}.
      *
      * <h4>Elements ordering</h4>
      * All interfaces implemented directly by the given type are first and in the order they are declared
-     * in the {@code implements} or {@code extends} clause. Parent interfaces are next.
+     * in the {@code implements} or {@code extends} clause. Interfaces implemented by parent interfaces are next.
      *
      * @param  <T>   the compile-time type of the {@code Class} argument.
      * @param  type  the class or interface for which to get all implemented interfaces, or {@code null}.
@@ -628,7 +629,7 @@ next:       for (final Class<?> candidate : candidates) {
      * @param  c1  the first class, or {@code null}.
      * @param  c2  the second class, or {@code null}.
      * @return the interfaces common to both classes, or an empty set if none.
-     *         Callers can freely modify the returned set.
+     *         CThe returned set supports remove operation.
      */
     public static Set<Class<?>> findCommonInterfaces(final Class<?> c1, final Class<?> c2) {
         final Class<?> baseType = Object.class;     // Not configurable for now, but could be an argument.

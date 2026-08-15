@@ -187,7 +187,7 @@ public class MetadataCopier extends MetadataVisitor<Object> {
         if (metadata != null) {
             final MetadataStandard std = getStandard(metadata);
             if (std != null) {
-                final Object result = walk(std, type, metadata, false);
+                final Object result = walk(std, type, metadata, UnresolvedTypePolicy.NULL);
                 if (result != null) {
                     return result;
                 }

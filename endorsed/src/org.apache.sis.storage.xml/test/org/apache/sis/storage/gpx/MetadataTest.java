@@ -82,23 +82,23 @@ public final class MetadataTest extends TestCase {
      * Creates a metadata instance with the same data as the one in the {@code "1.1/metadata.xml"} test file.
      */
     static Metadata create() throws URISyntaxException {
-        final Person person = new Person();
+        final var person = new Person();
         person.name  = "Jean-Pierre";
         person.email = "jean.pierre@test.com";
         person.link  = new Link(new URI("http://someone-site.org"));
 
-        final Copyright copyright = new Copyright();
+        final var copyright = new Copyright();
         copyright.author  = "Apache";
         copyright.year    = 2004;
         copyright.license = new URI("http://www.apache.org/licenses/LICENSE-2.0");
 
-        final Bounds bounds = new Bounds();
+        final var bounds = new Bounds();
         bounds.westBoundLongitude = -20;
         bounds.eastBoundLongitude =  30;
         bounds.southBoundLatitude =  10;
         bounds.northBoundLatitude =  40;
 
-        final Metadata metadata = new Metadata();
+        final var metadata = new Metadata();
         metadata.name        = "Sample";
         metadata.description = "GPX test file";
         metadata.author      = person;

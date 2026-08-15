@@ -65,7 +65,8 @@ import static org.apache.sis.metadata.ValueExistencePolicy.isNullOrEmpty;
  * <ul>
  *   <li>The standard properties defined by the GeoAPI (or other standard) interfaces.
  *       Those properties are the only ones accessible by most methods in this class, except
- *       {@link #equals(Object, Object, ComparisonMode)} and {@link #walkWritable(MetadataVisitor, Object, Object)}.</li>
+ *       {@link #equals(Object, Object, ComparisonMode)} and
+ *       {@link #walkWritable(MetadataVisitor, Object, Object)}.</li>
  *
  *   <li>Extra properties defined by the {@link IdentifiedObject} interface. Those properties
  *       invisible in the ISO 19115-1 model, but appears in ISO 19115-3 XML marshalling. So we

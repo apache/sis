@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.awt.image.SampleModel;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -82,7 +83,8 @@ public abstract class GridCoverage extends BandedCoverage {
     }
 
     /**
-     * The grid extent, coordinate reference system (CRS) and conversion from cell indices to CRS.
+     * The grid extent, coordinate reference system (<abbr>CRS</abbr>)
+     * and conversion from cell indices to <abbr>CRS</abbr>.
      *
      * @see #getGridGeometry()
      */
@@ -118,7 +120,7 @@ public abstract class GridCoverage extends BandedCoverage {
     protected GridCoverage(final GridGeometry domain, final List<? extends SampleDimension> ranges) {
         gridGeometry     = Objects.requireNonNull(domain);
         sampleDimensions = ranges.toArray(SampleDimension[]::new);
-        for (int i=0; i<sampleDimensions.length; i++) {
+        for (int i = 0; i < sampleDimensions.length; i++) {
             ArgumentChecks.ensureNonNullElement("ranges", i, sampleDimensions[i]);
         }
     }
@@ -171,11 +173,12 @@ public abstract class GridCoverage extends BandedCoverage {
 
     /**
      * Returns information about the <i>domain</i> of this grid coverage.
-     * Information includes the grid extent, CRS and conversion from cell indices to CRS.
+     * Information includes the grid extent, CRS and conversion from cell indices to <abbr>CRS</abbr>.
      * {@code GridGeometry} can also provide derived information like bounding box and resolution.
      *
-     * @return grid extent, CRS and conversion from cell indices to CRS.
+     * @return grid extent, <abbr>CRS</abbr> and conversion from cell indices to <abbr>CRS</abbr>.
      *
+     * @see #gridGeometry
      * @see org.apache.sis.storage.GridCoverageResource#getGridGeometry()
      */
     public GridGeometry getGridGeometry() {
@@ -185,8 +188,8 @@ public abstract class GridCoverage extends BandedCoverage {
     /**
      * Returns information about the <i>range</i> of this grid coverage.
      * Information include names, sample value ranges, fill values and transfer functions for all bands in this grid coverage.
-     * The length of the returned list should be equal to the {@linkplain java.awt.image.SampleModel#getNumBands() number of
-     * bands} in the rendered image.
+     * The length of the returned list should be equal to the {@linkplain SampleModel#getNumBands() number of bands}
+     * in the rendered image.
      *
      * @return names, value ranges, fill values and transfer functions for all bands in this grid coverage.
      *
@@ -202,7 +205,7 @@ public abstract class GridCoverage extends BandedCoverage {
      */
     private NumberRange<?>[] getRanges() {
         NumberRange<?>[] ranges = null;
-        for (int i=0; i<sampleDimensions.length; i++) {
+        for (int i = 0; i < sampleDimensions.length; i++) {
             final Optional<NumberRange<?>> r = sampleDimensions[i].getSampleRange();
             if (r.isPresent()) {
                 if (ranges == null) {

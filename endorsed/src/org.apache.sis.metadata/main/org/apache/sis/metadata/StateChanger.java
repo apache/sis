@@ -71,7 +71,7 @@ final class StateChanger extends MetadataVisitor<Boolean> {
         final StateChanger changer = VISITORS.get();
         final ModifiableMetadata.State previous = changer.target;
         changer.target = target;
-        changer.walk(metadata.getStandard(), Object.class, metadata, true);
+        changer.walk(metadata.getStandard(), Object.class, metadata, UnresolvedTypePolicy.THROW);
         changer.target = previous;
     }
 

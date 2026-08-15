@@ -22,7 +22,7 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
-import org.apache.sis.image.internal.shared.ObservableImage;
+import org.apache.sis.image.internal.shared.WritableUntiledImage;
 
 
 /**
@@ -104,7 +104,7 @@ abstract class WritableComputedImage extends ComputedImage {
      * @param  observer  the observer to notify.
      */
     public synchronized void addTileObserver(final TileObserver observer) {
-        observers = ObservableImage.addTileObserver(observers, observer);
+        observers = WritableUntiledImage.addTileObserver(observers, observer);
     }
 
     /**
@@ -115,7 +115,7 @@ abstract class WritableComputedImage extends ComputedImage {
      * @param  observer  the observer to stop notifying.
      */
     public synchronized void removeTileObserver(final TileObserver observer) {
-        observers = ObservableImage.removeTileObserver(observers, observer);
+        observers = WritableUntiledImage.removeTileObserver(observers, observer);
     }
 
     /**
@@ -129,7 +129,7 @@ abstract class WritableComputedImage extends ComputedImage {
     protected boolean markTileWritable(final int tileX, final int tileY, final boolean writing) {
         final boolean notify = super.markTileWritable(tileX, tileY, writing);
         if (notify && this instanceof WritableRenderedImage) {
-            ObservableImage.fireTileUpdate(observers, (WritableRenderedImage) this, tileX, tileY, writing);
+            WritableUntiledImage.fireTileUpdate(observers, (WritableRenderedImage) this, tileX, tileY, writing);
         }
         return notify;
     }

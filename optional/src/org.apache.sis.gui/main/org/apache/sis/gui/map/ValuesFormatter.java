@@ -116,7 +116,7 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
      * @see #toNodataKey(int, float)
      * @see MathFunctions#toNanOrdinal(float)
      */
-    private final Map<Long,String> nodata;
+    private final Map<Long, String> nodata;
 
     /**
      * The text to show when cursor is outside coverage area. It should contain dimension names, for example "(SST)".
@@ -382,6 +382,11 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
         /** Returns the coordinate value in given dimension. */
         @Override public double getCoordinate(final int dimension) {
             return coordinates[dimension];
+        }
+
+        /** Returns the coordinate reference system of this position. */
+        @Override public CoordinateReferenceSystem getCoordinateReferenceSystem() {
+            return crs;
         }
     }
 

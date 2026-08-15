@@ -86,11 +86,6 @@ public abstract class AbstractFeature implements Serializable {
     private static final long serialVersionUID = -5637918246427380190L;
 
     /**
-     * Sentinel value for missing property.
-     */
-    private static final Object MISSING = new Object();
-
-    /**
      * Information about the feature (name, characteristics, <i>etc.</i>).
      */
     final DefaultFeatureType type;
@@ -569,7 +564,7 @@ public abstract class AbstractFeature implements Serializable {
      * @param  property        name of the property for which to get a characteristic.
      * @param  characteristic  name of the characteristic of the property of the given name.
      * @return default value of the specified characteristic on the specified property.
-     * @throws PropertyNotFoundException if the {@code property} argument is not the name of a property.
+     * @throws IllegalArgumentException if the {@code property} argument is not the name of a property.
      */
     final Optional<?> getDefaultCharacteristicValue(final String property, final String characteristic) {
         final AbstractIdentifiedType p = type.getProperty(property);

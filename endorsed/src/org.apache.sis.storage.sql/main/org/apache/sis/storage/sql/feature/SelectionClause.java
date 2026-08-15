@@ -181,10 +181,17 @@ public final class SelectionClause extends SQLBuilder {
     }
 
     /**
-     * Writes a literal value, or marks this SQL as invalid if the value cannot be formatted.
+     * Writes a literal value, or marks this <abbr>SQL</abbr> as invalid if the value cannot be formatted.
+     * The value can be {@code null}, a character string, a Boolean, a number, a temporal object,
+     * a geographic bounding box or an envelope. If the given object cannot be formatted,
+     * then this clause is {@linkplain #invalidate() marked as invalid}.
      */
     final void appendLiteral(final Object value) {
-        if (value instanceof GeographicBoundingBox) {
+        if (value == null) {
+            append(NULL);
+        } else if (value instanceof CharSequence) {
+            appendValue(value.toString());
+        } else if (value instanceof GeographicBoundingBox) {
             appendGeometry(null, new GeneralEnvelope((GeographicBoundingBox) value));
         } else if (value instanceof Envelope) {
             appendGeometry(null, (Envelope) value);

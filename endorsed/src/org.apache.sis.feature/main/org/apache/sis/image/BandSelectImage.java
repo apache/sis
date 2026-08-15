@@ -33,7 +33,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.image.internal.shared.ImageUtilities;
 import org.apache.sis.image.internal.shared.TileOpExecutor;
 import org.apache.sis.image.internal.shared.ColorModelFactory;
-import org.apache.sis.image.internal.shared.ObservableImage;
+import org.apache.sis.image.internal.shared.WritableUntiledImage;
 
 
 /**
@@ -154,7 +154,7 @@ class BandSelectImage extends SourceAlignedImage {
                     properties.put(key, value);
                 }
             }
-            image = new ObservableImage(cm,
+            image = new WritableUntiledImage(cm,
                     bi.getRaster().createWritableChild(0, 0, bi.getWidth(), bi.getHeight(), 0, 0, bands),
                     bi.isAlphaPremultiplied(), properties);
         } else if (source instanceof WritableRenderedImage) {

@@ -16,6 +16,8 @@
  */
 package org.apache.sis.referencing.operation.provider;
 
+import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
+
 
 /**
  * The method to use for applying a datum shift.
@@ -61,7 +63,9 @@ public enum DatumShiftMethod {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-369">SIS-369</a>
      */
     public static DatumShiftMethod forAccuracy(final double desired) {
-        if (desired >= 5) {
+        if (desired >= PositionalAccuracyConstant.UNKNOWN_ACCURACY) {
+            return NONE;
+        } else if (desired >= 5) {
             return MOLODENSKY;
         } else {
             return GEOCENTRIC_DOMAIN;

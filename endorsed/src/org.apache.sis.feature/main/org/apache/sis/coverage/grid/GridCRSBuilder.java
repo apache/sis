@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.EnumSet;
 import java.util.Locale;
-import java.util.Optional;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
@@ -67,11 +66,14 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Units;
+import org.apache.sis.util.resources.Errors;
 
 // Specific to the main branch:
 import org.opengis.referencing.datum.Datum;
+import org.opengis.geometry.MismatchedDimensionException;
 
 
 /**
@@ -80,8 +82,8 @@ import org.opengis.referencing.datum.Datum;
  * coordinates associated to the grid extent. This class provides two factory methods:
  *
  * <ul>
- *   <li>{@link #forCoverage()}</li>
- *   <li>{@link #forExtentAlone(Matrix, DimensionNameType[])}</li>
+ *   <li>{@link #forCoverage(GridGeometry, PixelInCell, Identifier)}</li>
+ *   <li>{@link #forExtent(DimensionNameType[], int, Matrix, boolean, Identifier)}</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -212,6 +214,14 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
     private static final Locale LOCALE = null;
 
     /**
+     * Whether to force {@link DerivedCRS} instances.
+     *
+     * @deprecated to be removed after {@link GridGeometry#createImageCRS} has been removed.
+     */
+    @Deprecated(forRemoval = true)
+    boolean derived;
+
+    /**
      * Creates a new helper class for building a grid coordinate reference system.
      */
     GridCRSBuilder() {
@@ -233,15 +243,14 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
      * Derived <abbr>CRS</abbr> are preferred as they allow conversions to geospatial <abbr>CRS</abbr>.
      * May return a compound <abbr>CRS</abbr> if the grid geometry has, for example, a temporal component.
      *
-     * @param  grid     grid geometry of the coverage.
-     * @param  anchor   the cell part to map (center or corner).
-     * @param  derived  whether to force {@link DerivedCRS} instances.
-     * @param  name     name of the derived or engineering <abbr>CRS</abbr> to create.
+     * @param  grid    grid geometry of the coverage.
+     * @param  anchor  the cell part to map (center or corner).
+     * @param  name    name of the derived or engineering <abbr>CRS</abbr> to create.
      * @return a derived, engineering or compound <abbr>CRS</abbr> for cell indices associated to the grid extent.
      * @throws InvalidGeodeticParameterException if characteristics of the grid geometry disallow this operation.
      * @throws FactoryException if another error occurred during the use of a referencing factory.
      */
-    final CoordinateReferenceSystem forCoverage(final GridGeometry grid, final PixelInCell anchor, final boolean derived, final Identifier name)
+    final CoordinateReferenceSystem forCoverage(final GridGeometry grid, final PixelInCell anchor, final Identifier name)
             throws FactoryException
     {
         this.anchor = anchor;
@@ -262,7 +271,8 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
          * We cannot create a derived CRS. Fallback on an engineering CRS with no
          * relationship to any other CRS.
          */
-        return forExtent(name, grid.getDimension(), grid.isDefined(GridGeometry.EXTENT) ? grid.getExtent() : null);
+        DimensionNameType[] types = grid.isDefined(GridGeometry.EXTENT) ? grid.getExtent().getAxisTypes() : null;
+        return forExtent(types, grid.getDimension(), null, true, name);
     }
 
     /**
@@ -271,24 +281,68 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
      * is possible between two engineering <abbr>CRS</abbr>s. It is recommended to use an identifier which is unique
      * for the grid. It may be, for example, derived from the resource identifier.
      *
-     * @param  name       name of the engineering datum.
-     * @param  dimension  number of dimensions.
-     * @param  extent     extent, or {@code null} if none.
+     * <p>The <abbr>CRS</abbr> type is always engineering. In particular, the <abbr>CRS</abbr> cannot be temporal
+     * because we do not know the temporal datum origin and because index unit is not a temporal unit.</p>
+     *
+     * @param  types       {@link GridExtent#getAxisTypes()} or {@code null} if there is no extent.
+     * @param  dimension   number of dimensions of the <abbr>CRS</abbr> to create.
+     * @param  derivative  derivative of the transform from cell indices to envelope coordinates, or {@code null}.
+     * @param  isLinear    whether the derivative come from a linear transform.
+     * @param  name        name of the engineering datum.
      * @return an engineering <abbr>CRS</abbr> for cell indices associated to the grid extent.
      * @throws FactoryException if an error occurred during the use of a referencing factory.
+     *
+     * @see GridExtent#toEnvelope(MathTransform, Identifier)
+     * @see GridExtent#typeFromAxes(CoordinateReferenceSystem, int)
      */
-    final EngineeringCRS forExtent(final Identifier name, final int dimension, final GridExtent extent)
+    final EngineeringCRS forExtent(final DimensionNameType[] types,
+                                   final int     dimension,
+                                   final Matrix  derivative,
+                                   final boolean isLinear,
+                                   final Identifier name)
             throws FactoryException
     {
         final DimensionNameType[] dimensionNames;
-        if (extent != null) {
-            dimensionNames = Arrays.copyOf(extent.getAxisTypes(), dimension);
+        final AxisDirection[] directions;
+        final boolean cartesian;
+        if (derivative != null) {
+            dimensionNames = new DimensionNameType[dimension];
+            directions = reorder(directions(types), derivative, types, dimensionNames);
+            cartesian  = isLinear && isOrthogonal(derivative, dimension);
         } else {
             dimensionNames = new DimensionNameType[dimension];
+            if (types != null) {
+                System.arraycopy(types, 0, dimensionNames, 0, dimension);
+            }
+            directions = directions(dimensionNames);
+            cartesian  = true;
         }
-        final CoordinateSystem cs = createCS(dimension, dimensionNames, directions(dimensionNames), 1, true);
+        final CoordinateSystem cs = createCS(dimension, dimensionNames, directions, 1, cartesian);
         final EngineeringDatum datum = getDatumFactory().createEngineeringDatum(properties(name));
         return getCRSFactory().createEngineeringCRS(properties(datum.getName()), datum, cs);
+    }
+
+    /**
+     * Returns whether applying a transform with the given derivative would still have orthogonal axes.
+     * This is {@code true} if each row and each column contains exactly one non-zero coefficient.
+     */
+    private static boolean isOrthogonal(final Matrix derivative, final int dimension) {
+        long columns = 0;
+        for (int j = Math.min(derivative.getNumRow(), dimension); --j >= 0;) {
+            boolean found = false;
+            for (int i = Math.min(derivative.getNumCol(), dimension); --i >= 0;) {
+                if (derivative.getElement(j, i) != 0) {
+                    if (found || (columns == (columns |= Numerics.bitmask(i)))) {
+                        return false;
+                    }
+                    found = true;
+                }
+                if (!found) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -369,6 +423,7 @@ toGrid: try {
             } else try {
                 derivative = crsToGrid.derivative(null);
             } catch (NullPointerException e) {
+                // `GridGeometry.createGridCRS(…)` is the public API that invoked this method.
                 Logging.ignorableException(GridExtent.LOGGER, GridGeometry.class, "createGridCRS", e);
                 directions = directions(dimensionNames);
                 break toGrid;
@@ -428,22 +483,14 @@ toGrid: try {
     }
 
     /**
-     * Returns the coordinate reference system that we use as a template for object names.
-     * This template uses generic terms such as "Cell indices" for the <abbr>CRS</abbr> name
-     * and "Unknown grid" for the datum.
-     */
-    private static EngineeringCRS template() {
-        return CommonCRS.Engineering.GRID.crs();
-    }
-
-    /**
      * Creates the coordinate system for the derived or engineering <abbr>CRS</abbr> of a grid.
      *
      * @param  dimension       number of dimensions of the coordinate system to create.
      * @param  dimensionNames  names of grid dimension. Shall not be null but may contain null elements.
      * @param  directions      directions of the axes of the coordinate system to create. May contain null elements.
      * @param  labelOffset     offset to add to the dimension for producing a default axis name or abbreviation.
-     * @return coordinate system for the grid extent, or {@code null} if it cannot be inferred.
+     * @param  cartesian       {@code true} for a Cartesian <abbr>CS</abbr>, or {@code false} for an affine <abbr>CS</abbr>.
+     * @return coordinate system for the grid extent.
      * @throws FactoryException if an error occurred during the use of {@link CSFactory}.
      */
     private CoordinateSystem createCS(final int dimension, final DimensionNameType[] dimensionNames,
@@ -508,7 +555,7 @@ toGrid: try {
          * coordinate system type in last resort.
          */
         @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final Map<String,?> properties = properties(template().getCoordinateSystem().getName());
+        final Map<String,?> properties = properties(CommonCRS.Engineering.GRID.crs().getCoordinateSystem().getName());
         final CoordinateSystemAxis axis = axes[0];
         switch (dimension) {
             case 1:  {
@@ -540,6 +587,8 @@ toGrid: try {
 
     /**
      * Returns the default axis directions for grid dimensions of the given name.
+     * The returned array has the same length as the given array, but may contain
+     * null elements.
      *
      * @param  types  grid dimension names.
      * @return default axis directions. May contain null elements.
@@ -564,19 +613,30 @@ toGrid: try {
      * and if {@code derivative} is the derivative of the <abbr>CRS</abbr> to grid transform, then this
      * method returns the axis directions of the grid. Values that cannot be mapped are set to null.
      *
+     * <p>The {@code source} and {@code target} arrays shall be either both null, or both non-null.
+     * If non-null, the following should be true:</p>
+     *
+     * <ul>
+     *   <li>{@code source.length} = {@code directions.length}</li>
+     *   <li>{@code target.length} = length of the returned array</li>
+     * </ul>
+     *
      * @param  directions  the directions to reorder. Shall not be null but may contain null elements.
      * @param  derivative  derivative of the transform from source to target <abbr>CRS</abbr>.
-     * @param  source      an optional array to reorder together with {@code directions}.
+     * @param  source      array of the same length as {@code directions} to be reordered as well.
      * @param  target      where to store the result of {@code source} reordering, or {@code null}.
      * @return the reordered axis directions. May contain {@code null} elements.
      */
     private static AxisDirection[] reorder(final AxisDirection[] directions, final Matrix derivative,
                                            final DimensionNameType[] source, final DimensionNameType[] target)
     {
-        final var ordered = new AxisDirection[derivative.getNumRow()];
-        for (int j=0; j<ordered.length; j++) {
+        final int numRow, numCol;
+        ensureDimensionMatches("source", numCol = derivative.getNumCol(), source);
+        ensureDimensionMatches("target", numRow = derivative.getNumRow(), target);
+        final var ordered = new AxisDirection[numRow];
+        for (int j=0; j<numRow; j++) {
             boolean found = false;
-            for (int i=0; i<directions.length; i++) {
+            for (int i=0; i<numCol; i++) {
                 final double m = derivative.getElement(j, i);
                 if (m != 0) {
                     if (found) {
@@ -592,7 +652,7 @@ toGrid: try {
                         selected = AxisDirections.opposite(selected);
                     }
                     ordered[j] = selected;
-                    if (target != null && i < source.length) {
+                    if (target != null) {
                         target[j] = source[i];
                     }
                 }
@@ -602,34 +662,16 @@ toGrid: try {
     }
 
     /**
-     * Builds the coordinate reference system of the result of transforming a {@link GridExtent}.
-     * This is used only in the rare cases where we need to represent an extent as an envelope.
-     * This class converts {@link DimensionNameType} codes into axis names, abbreviations and directions.
-     * It is the converse of {@link GridExtent#typeFromAxes(CoordinateReferenceSystem, int)}.
+     * Verifies the number of dimensions of an array of axis directions.
      *
-     * <p>The <abbr>CRS</abbr> type is always engineering. In particular, the <abbr>CRS</abbr> cannot be temporal
-     * because we do not know the temporal datum origin and because index unit is not a temporal unit.</p>
-     *
-     * @param  derivative  derivative of the transform converting grid cell indices to envelope coordinates.
-     * @param  types       the value of {@link GridExtent#types} or a default value (shall not be {@code null}).
-     * @return <abbr>CRS</abbr> for the grid, or empty if it cannot be built.
-     * @throws FactoryException if an error occurred during the use of a referencing factory.
-     *
-     * @see GridExtent#toEnvelope(MathTransform)
-     * @see GridExtent#typeFromAxes(CoordinateReferenceSystem, int)
+     * @throws MismatchedDimensionException if the dimensions do not match.
      */
-    final Optional<EngineeringCRS> forExtentAlone(final Matrix derivative, final DimensionNameType[] types)
-            throws FactoryException
+    private static void ensureDimensionMatches(final String name, final int expected, final DimensionNameType[] axes)
+            throws MismatchedDimensionException
     {
-        final int dimension = derivative.getNumRow();
-        final var dimensionNames = new DimensionNameType[dimension];
-        AxisDirection[] directions = directions(ArraysExt.resize(types, dimension));
-        directions = reorder(directions, derivative, types, dimensionNames);
-        final CoordinateSystem cs = createCS(dimension, dimensionNames, directions, 1, false);
-        if (cs == null) {
-            return Optional.empty();
+        if (axes != null && axes.length != expected) {
+            throw new MismatchedDimensionException(Errors.format(
+                    Errors.Keys.MismatchedDimension_3, name, expected, axes.length));
         }
-        final EngineeringCRS template = template();
-        return Optional.of(getCRSFactory().createEngineeringCRS(properties(template.getName()), template.getDatum(), cs));
     }
 }

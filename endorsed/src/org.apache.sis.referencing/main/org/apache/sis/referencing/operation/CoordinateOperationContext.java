@@ -251,10 +251,10 @@ public class CoordinateOperationContext implements Localized {
      * Returns the desired accuracy in metres.
      * A value of 0 means to search for the most accurate operation.
      *
-     * <p>When searching for the most accurate operation, SIS considers only the operations specified by the authority.
+     * <p>When searching for the most accurate operation, <abbr>SIS</abbr> considers only the operations specified by the authority.
      * For example, the <cite>Molodensky</cite> method is a better datum shift approximation than <cite>Abridged Molodensky</cite>.
-     * But if all coordinate operations defined by the authority use the Abridged Molodensky method, then SIS will ignore
-     * the Molodensky one.</p>
+     * But if all coordinate operations defined by the authority use the Abridged Molodensky method,
+     * then the Molodensky operation will not be used despite being theoretically more accurate.</p>
      *
      * @return the desired accuracy in metres.
      */

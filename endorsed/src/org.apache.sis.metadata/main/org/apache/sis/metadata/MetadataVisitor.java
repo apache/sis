@@ -143,17 +143,20 @@ abstract class MetadataVisitor<R> {
      * {@link AbstractMetadata#getStandardType()} to be invoked, then it is preferable
      * to specify {@code Object.class} for avoiding to do reflection twice.
      *
-     * @param  standard   the metadata standard implemented by the object to visit.
-     * @param  baseType   the standard interface implemented by the metadata object, or {@code null} if unknown.
-     * @param  metadata   the metadata to visit.
-     * @param  mandatory  {@code true} for throwing an exception for unsupported metadata type, or {@code false} for ignoring.
+     * @param  standard  the metadata standard implemented by the object to visit.
+     * @param  baseType  the standard interface implemented by the metadata object, or {@code null} if unknown.
+     * @param  metadata  the metadata to visit.
+     * @param  policy    {@code true} for throwing an exception for unsupported metadata type, or {@code false} for ignoring.
      * @return the value of {@link #result()} after all elements of the given metadata have been visited.
      *         If the given metadata instance has already been visited, then this is the previously computed value.
      *         If the computation is in progress (e.g. a cyclic graph), then this method returns {@code null}.
+     * @throws ClassCastException if {@code metadata} is not an instance of {@code baseType}.
+     * @throws NoSuchElementException if the object does not implement a metadata interface and {@code policy} is {@code THROW}.
+     * @throws IllegalArgumentException if the object implements more than one metadata interface and {@code policy} is {@code THROW}.
      */
-    final R walk(final MetadataStandard standard, final Class<?> baseType, final Object metadata, final boolean mandatory) {
+    final R walk(final MetadataStandard standard, final Class<?> baseType, final Object metadata, final UnresolvedTypePolicy policy) {
         if (!visited.containsKey(metadata)) {               // Reminder: the associated value may be null.
-            final PropertyAccessor accessor = standard.getInstanceAccessor(metadata, baseType, mandatory);
+            final PropertyAccessor accessor = standard.getInstanceAccessor(metadata, baseType, policy);
             if (accessor != null) {
                 final Filter filter = preVisit(accessor);       // NONE, NON_EMPTY, WRITABLE or WRITABLE_RESULT.
                 final boolean preconstructed;                   // Whether to write in instance provided by `result()`.

@@ -23,15 +23,15 @@ import org.apache.sis.util.internal.shared.Constants;
 
 
 /**
- * The SQL dialect used by a connection. This class defines also a few driver-specific operations
- * that cannot (to our knowledge) be inferred from the {@link DatabaseMetaData}.
+ * The <abbr>SQL</abbr> dialect used by a connection. This class defines also a few driver-specific
+ * information that cannot (to our knowledge) be inferred from the {@link DatabaseMetaData}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
 public enum Dialect {
     /**
-     * The database is presumed to use ANSI SQL syntax.
+     * The database is presumed to use <abbr>ANSI</abbr> <abbr>SQL</abbr> syntax.
      *
      * @see DatabaseMetaData#supportsANSI92EntryLevelSQL()
      */
@@ -73,6 +73,7 @@ public enum Dialect {
                            | Supports.READ_ONLY_UPDATE
                            | Supports.CONCURRENCY
                            | Supports.JAVA_TIME
+                           | Supports.ILIKE
                            | Supports.SRID),
 
     /**
@@ -137,6 +138,8 @@ public enum Dialect {
 
     /**
      * Whether this dialect supports table inheritance.
+     *
+     * @return whether the database supports table inheritance.
      */
     public final boolean supportsTableInheritance() {
         return (flags & Supports.TABLE_INHERITANCE) != 0;
@@ -146,6 +149,7 @@ public enum Dialect {
      * {@code true} if child tables inherit the index of their parent tables.
      * This feature is not yet supported in PostgreSQL.
      *
+     * @return whether child tables inherit the index of their parent tables.
      * @see <a href="https://issues.apache.org/jira/browse/SIS-358">SIS-358</a>
      */
     public final boolean supportsIndexInheritance() {
@@ -156,6 +160,7 @@ public enum Dialect {
      * Whether this dialect supports adding table constraints after creation.
      * This feature is not yet supported in SQLite.
      *
+     * @return whether the database supports adding table constraints after creation.
      * @see DatabaseMetaData#supportsAlterTableWithAddColumn()
      */
     public final boolean supportsAlterTableWithAddConstraint() {
@@ -170,6 +175,8 @@ public enum Dialect {
      * {@snippet lang="sql" :
      *     GRANT USAGE ON SCHEMA metadata TO PUBLIC;
      *     }
+     *
+     * @return whether the database supports {@code "GRANT USAGE ON SCHEMA"} statements.
      */
     public final boolean supportsGrantUsageOnSchema() {
         return (flags & Supports.GRANT_USAGE_ON_SCHEMA) != 0;
@@ -184,6 +191,7 @@ public enum Dialect {
      *     GRANT SELECT ON TABLE "Coordinate Reference System" TO PUBLIC;
      *     }
      *
+     * @return whether the database supports {@code "GRANT SELECT ON TABLE"} statements.
      */
     public final boolean supportsGrantSelectOnTable() {
         return (flags & Supports.GRANT_SELECT_ON_TABLE) != 0;
@@ -191,6 +199,8 @@ public enum Dialect {
 
     /**
      * Whether this dialect supports all the {@code "GRANT … ON …"} features documented in this class.
+     *
+     * @return whether the database supports the {@code "GRANT … ON …"} features.
      */
     public final boolean supportsAllGrants() {
         return (flags & (Supports.GRANT_USAGE_ON_SCHEMA | Supports.GRANT_SELECT_ON_TABLE))
@@ -204,33 +214,40 @@ public enum Dialect {
      * {@snippet lang="sql" :
      *     COMMENT ON SCHEMA metadata IS 'ISO 19115 metadata';
      *     }
+     *
+     * @return whether the database supports the {@code COMMENT} statement.
      */
     public final boolean supportsComment() {
         return (flags & Supports.COMMENT) != 0;
     }
 
     /**
-     * Whether the JDBC driver supports configuring read-only mode on connection instances.
+     * Whether the <abbr>JDBC</abbr> driver supports configuring read-only mode on connection instances.
      * This feature is not supported in SQLite.
+     *
+     * @return whether the database supports configuring read-only mode on connection instances.
      */
     public final boolean supportsReadOnlyUpdate() {
         return (flags & Supports.READ_ONLY_UPDATE) != 0;
     }
 
     /**
-     * Whether the JDBC driver supports concurrent transactions.
+     * Whether the <abbr>JDBC</abbr> driver supports concurrent transactions.
      * This feature is not well supported in SQLite.
+     *
+     * @return whether the database supports concurrent transactions.
      */
     public final boolean supportsConcurrency() {
         return (flags & Supports.CONCURRENCY) != 0;
     }
 
     /**
-     * Whether the JDBC driver supports conversions from objects to {@code java.time} API.
+     * Whether the <abbr>JDBC</abbr> driver supports conversions from objects to {@code java.time} API.
      * The JDBC 4.2 specification provides a mapping from {@link java.sql.Types} to temporal objects.
      * The specification suggests that {@link java.sql.ResultSet#getObject(int, Class)} should accept
      * those temporal types in the {@link Class} argument, but not all drivers support that.
      *
+     * @return whether the database supports conversions from objects to {@code java.time} <abbr>API</abbr>.
      * @see <a href="https://jcp.org/aboutJava/communityprocess/maintenance/jsr221/JDBC4.2MR-January2014.pdf">JDBC Maintenance Release 4.2</a>
      */
     public final boolean supportsJavaTime() {
@@ -239,13 +256,25 @@ public enum Dialect {
 
     /**
      * Whether the spatial extension supports <abbr>SRID</abbr> in {@code ST_*} functions.
+     *
+     * @return whether the database supports <abbr>SRID</abbr> in {@code ST_*} functions.
      */
     public final boolean supportsSRID() {
         return (flags & Supports.SRID) != 0;
     }
 
     /**
-     * Returns the presumed SQL dialect.
+     * Returns the keyword for a case-insensitive {@code LIKE}, or {@code null} if none.
+     * The default implementation returns {@code null} because {@code ILIKE} is not standard <abbr>SQL</abbr>.
+     *
+     * @return case-insensitive {@code LIKE}, or {@code null} if none.
+     */
+    public final String caseInsensitiveLike() {
+        return (flags & Supports.ILIKE) != 0 ? "ILIKE" : null;
+    }
+
+    /**
+     * Returns the presumed <abbr>SQL</abbr> dialect.
      * If this method cannot guess the dialect, than {@link #ANSI} is presumed.
      *
      * @param  metadata  the database metadata.

@@ -1419,7 +1419,7 @@ public class GridDerivation {
 
     /**
      * Returns the extent of the modified grid geometry, ignoring subsampling or changes in resolution.
-     * This is the intersection of the {@link #base} grid geometry with the (grid or geospatial) envelope
+     * This is the {@link #base} grid geometry intersected with the grid extent or geospatial) envelope
      * given to a {@link #subgrid(Envelope, double...) subgrid(…)} method,
      * expanded by the {@linkplain #margin(int...) specified margin} (if any)
      * and potentially with some {@linkplain GridExtent#getSize(int) grid sizes} set to 1

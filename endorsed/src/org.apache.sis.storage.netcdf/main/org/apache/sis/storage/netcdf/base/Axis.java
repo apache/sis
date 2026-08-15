@@ -910,18 +910,21 @@ public final class Axis extends NamedElement {
      * @throws DataStoreException if a logical error occurred.
      */
     final Vector read() throws IOException, DataStoreException {
-        final TransferFunction tr = coordinates.getTransferFunction();
-        if (tr.getType() == TransferFunctionType.LINEAR) {
-            Vector data = coordinates.read();
-            if (gridSizes != null) {
-                data = data.subList(0, getSizeProduct(0));              // Trim trailing NaN values.
+        RuntimeException cause = null;
+        try {
+            final TransferFunction tr = coordinates.getTransferFunction();
+            if (tr.getType() == TransferFunctionType.LINEAR) {
+                Vector data = coordinates.read();
+                if (gridSizes != null) {
+                    data = data.subList(0, getSizeProduct(0));              // Trim trailing NaN values.
+                }
+                return data.transform(tr.getScale(), tr.getOffset());       // Apply scale and offset attributes, if any.
             }
-            data = data.transform(tr.getScale(), tr.getOffset());       // Apply scale and offset attributes, if any.
-            return data;
-        } else {
-            throw new DataStoreException(coordinates.decoder.resources()
-                    .getString(Resources.Keys.CanNotUseAxis_1, getName()));
+        } catch (RuntimeException e) {
+            cause = e;
         }
+        throw new DataStoreException(coordinates.decoder.resources()
+                .getString(Resources.Keys.CanNotUseAxis_1, getName()), cause);
     }
 
     /**

@@ -45,8 +45,9 @@ import org.apache.sis.storage.base.PRJDataStore;
 import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.image.internal.shared.ColorModelFactory;
 import org.apache.sis.image.internal.shared.ColorModelBuilder;
-import org.apache.sis.image.internal.shared.ObservableImage;
+import org.apache.sis.image.internal.shared.WritableUntiledImage;
 import org.apache.sis.coverage.internal.shared.RangeArgument;
+import org.apache.sis.image.internal.shared.DeferredProperty;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.shared.Numerics;
@@ -436,6 +437,8 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
 
     /**
      * Creates the grid coverage resulting from a {@link #read(GridGeometry, int...)} operation.
+     * If the read operations has opportunistically computed statistics (e.g. when the values are
+     * decoded from an <abbr>ASCII</abbr> file), the statistics can be saved as a property.
      *
      * @param  domain  the effective domain after intersection and subsampling.
      * @param  range   indices of selected bands.
@@ -448,13 +451,13 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
                                         final WritableRaster data, final Statistics stats)
     {
         final SampleDimension[] bands = range.select(sampleDimensions);
-        Hashtable<String,Object> properties = null;
+        final var properties = new Hashtable<String, Object>();
+        DeferredProperty.addGridGeometry(properties, domain, null);
+        properties.put(PlanarImage.SAMPLE_DIMENSIONS_KEY, bands);
         if (stats != null) {
             final var as = new Statistics[range.getNumBands()];
             Arrays.fill(as, stats);
-            properties = new Hashtable<>();
             properties.put(PlanarImage.STATISTICS_KEY, as);
-            properties.put(PlanarImage.SAMPLE_DIMENSIONS_KEY, bands);
         }
         ColorModel cm = colorModel;
         if (!range.isIdentity()) {
@@ -464,7 +467,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
                 cm = ColorModelFactory.createGrayScale(data.getSampleModel(), VISIBLE_BAND, band.getSampleRange().orElse(null));
             }
         }
-        return new GridCoverage2D(domain, Arrays.asList(bands), new ObservableImage(cm, data, false, properties));
+        return new GridCoverage2D(domain, Arrays.asList(bands), new WritableUntiledImage(cm, data, false, properties));
     }
 
     /**

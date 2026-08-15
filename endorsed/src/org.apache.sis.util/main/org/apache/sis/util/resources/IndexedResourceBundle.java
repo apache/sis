@@ -479,13 +479,7 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
      * @throws IOException if an error occurred while writing to the given destination.
      */
     public final void appendLabel(final short key, final Appendable toAppendTo) throws IOException {
-        toAppendTo.append(getString(key));
-        final String colon = colon();
-        if (colon != null) {
-            toAppendTo.append(colon);
-        } else {
-            toAppendTo.append(':');
-        }
+        toAppendTo.append(getString(key)).append(colon());
     }
 
     /**
@@ -507,9 +501,7 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
      * @return localized string followed by a colon.
      */
     public final String getLabel(final short key) {
-        final String text = getString(key);
-        final String colon = colon();
-        return (colon != null) ? (text + colon) : (text + ':');
+        return toLabel(getString(key));
     }
 
     /**
@@ -518,7 +510,7 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
      * @todo Should be a localized resource by itself.
      */
     private String colon() {
-        return Locale.FRENCH.getLanguage().equals(getLocale().getLanguage()) ? "\u00A0:" : null;
+        return Locale.FRENCH.getLanguage().equals(getLocale().getLanguage()) ? "\u00A0:" : ":";
     }
 
     /**

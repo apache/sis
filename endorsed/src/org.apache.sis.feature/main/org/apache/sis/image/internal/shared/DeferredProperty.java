@@ -16,11 +16,14 @@
  */
 package org.apache.sis.image.internal.shared;
 
+import java.util.Map;
 import java.util.function.Function;
 import java.awt.image.RenderedImage;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -29,6 +32,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
  *
  * <ul>
  *   <li>{@link TiledImage#getProperty(String)}</li>
+ *   <li>{@link BatchComputedImage#getProperty(String)}</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -60,7 +64,7 @@ public final class DeferredProperty {
      * @param  image  the image for which to compute the property value.
      * @return the property value, or {@code null} if it cannot be computed.
      */
-    final synchronized Object compute(final RenderedImage image) {
+    final synchronized Object getOrCompute(final RenderedImage image) {
         if (value == null) {
             final Function<RenderedImage, ?> p = provider;
             if (p != null) {
@@ -73,17 +77,28 @@ public final class DeferredProperty {
 
     /**
      * Creates a deferred property for computing the value of {@link PlanarImage#GRID_GEOMETRY_KEY}.
+     * The given grid geometry can have any size and any translation compared to the image.
+     * It will be clipped and translated for consistency with the image coordinates.
+     * The property is added to the given map.
      *
+     * <h4>Conservative usage</h4>
+     * It is not necessarily a good idea to add this property to every images created by Apache <abbr>SIS</abbr>.
+     * The problem is that there is a risk that some derived images blindly copy this property from their source,
+     * and that value may be wrong when applied to the derived image. We may progressively add this information
+     * to more and more images, but not necessarily to all of them.
+     *
+     * @param  properties  the map where to add the deferred image property.
      * @param  grid        the grid geometry of the grid coverage rendered as an image.
-     * @param  dimensions  the dimensions to keep from the coverage grid geometry.
-     * @return a deferred property for computing the grid geometry of an image.
+     * @param  dimensions  the dimensions to keep from the coverage grid geometry, or {@code null} for 0 and 1.
      */
-    public static DeferredProperty forGridGeometry(final GridGeometry grid, final int[] dimensions) {
-        return new DeferredProperty(new ImageGeometry(grid, dimensions));
+    public static void addGridGeometry(final Map<String, Object> properties, final GridGeometry grid, final int[] dimensions) {
+        properties.put(PlanarImage.GRID_GEOMETRY_KEY, new DeferredProperty(new ImageGeometry(grid, dimensions)));
     }
 
     /**
      * A deferred property for computing the value of {@link PlanarImage#GRID_GEOMETRY_KEY}.
+     * The source grid geometry can have any size and any translation compared to the image.
+     * It will be clipped and translated for consistency with the image coordinates.
      */
     private static final class ImageGeometry implements Function<RenderedImage, GridGeometry> {
         /** The grid geometry of the grid coverage rendered as an image. */
@@ -96,12 +111,17 @@ public final class DeferredProperty {
          * Creates a deferred property for an image grid geometry.
          *
          * @param grid        the grid geometry of the grid coverage rendered as an image.
-         * @param dimensions  the dimensions to keep from the coverage grid geometry.
+         * @param dimensions  the dimensions to keep from the coverage grid geometry, or {@code null} for 0 and 1.
          */
-        public ImageGeometry(final GridGeometry grid, final int[] dimensions) {
+        ImageGeometry(final GridGeometry grid, final int[] dimensions) {
             this.grid = grid;
-            this.dimX = dimensions[0];
-            this.dimY = dimensions[1];
+            if (dimensions != null) {
+                dimX = dimensions[0];
+                dimY = dimensions[1];
+            } else {
+                dimX = 0;
+                dimY = 1;
+            }
         }
 
         /**
@@ -111,13 +131,20 @@ public final class DeferredProperty {
          *
          * @param  image  the image for which to compute the property.
          * @return the grid geometry property computed for the given image.
+         * @throws ArithmeticException if the grid geometry cannot be translated.
          */
         @Override
         public GridGeometry apply(final RenderedImage image) {
             final GridExtent extent = grid.getExtent();
-            return grid.selectDimensions(dimX, dimY).shiftGrid(
+            GridGeometry shifted = grid.selectDimensions(dimX, dimY).shiftGrid(
                     Math.subtractExact(image.getMinX(), extent.getLow(dimX)),
                     Math.subtractExact(image.getMinY(), extent.getLow(dimY)));
+            try {
+                shifted = shifted.relocate(new GridExtent(ImageUtilities.getBounds(image)));
+            } catch (TransformException e) {
+                Logging.recoverableException(ImageUtilities.LOGGER, image.getClass(), "getProperty", e);
+            }
+            return shifted;
         }
     }
 }

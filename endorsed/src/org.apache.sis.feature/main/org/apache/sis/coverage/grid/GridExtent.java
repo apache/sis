@@ -55,7 +55,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.WeakValueHashMap;
-import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.internal.shared.Numerics;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.internal.shared.DoubleDouble;
@@ -69,6 +68,7 @@ import org.apache.sis.referencing.internal.shared.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.math.MathFunctions;
@@ -279,7 +279,9 @@ public class GridExtent implements Serializable, LenientComparable {
      */
     public GridExtent(final Rectangle bounds) {
         this(bounds.width, bounds.height);
-        translate2D(bounds.x, bounds.y);
+        for (int i = coordinates.length; --i >= 0;) {
+            coordinates[i] += ((i & 1) == 0) ? bounds.x : bounds.y;
+        }
     }
 
     /**
@@ -298,30 +300,6 @@ public class GridExtent implements Serializable, LenientComparable {
         coordinates[2] = width  - 1;
         coordinates[3] = height - 1;
         types = DEFAULT_TYPES;
-    }
-
-    /**
-     * Creates a new grid extent for an image of the given size and location. This constructor
-     * is for internal usage: argument meanings differ from conventions in public constructors.
-     *
-     * @param  xmin    column index of the first cell.
-     * @param  ymin    row index of the first cell.
-     * @param  width   number of pixels in each row.
-     * @param  height  number of pixels in each column.
-     */
-    GridExtent(final int xmin, final int ymin, final int width, final int height) {
-        this(width, height);
-        translate2D(xmin, ymin);
-    }
-
-    /**
-     * Completes a {@link GridExtent} construction with a final translation.
-     * Shall be invoked for two-dimensional extents only.
-     */
-    private void translate2D(final long xmin, final long ymin) {
-        for (int i=coordinates.length; --i >= 0;) {
-            coordinates[i] += ((i & 1) == 0) ? xmin : ymin;
-        }
     }
 
     /**
@@ -913,6 +891,25 @@ public class GridExtent implements Serializable, LenientComparable {
     }
 
     /**
+     * Returns the product of each dimension size in this grid extent.
+     *
+     * @return number of lattice points contained inside this grid extent.
+     * @throws ArithmeticException if the count is too large for the {@code long} primitive type.
+     *
+     * @see #latticePointStream(boolean)
+     * @since 1.7
+     */
+    public long getLatticePointCount() {
+        final int dimension = getDimension();
+        if (dimension == 0) return 0;
+        long n = getSize(0);
+        for (int i = 1; i < dimension; i++) {
+            n = Math.multiplyExact(n, getSize(i));
+        }
+        return n;
+    }
+
+    /**
      * A comparator of grid extent sizes where each dimension is compared in increasing index order.
      * For a given pair of {@code GridExtent} instances, the comparison begins with the
      * {@linkplain #getSize(int) size} of each extent in the first dimension (index 0):
@@ -1266,6 +1263,8 @@ public class GridExtent implements Serializable, LenientComparable {
     /**
      * Transforms this grid extent to a "real world" envelope using the given transform.
      * The given transform shall map <em>cell corners</em> to real world coordinates.
+     * The returned envelope is not associated to any <abbr>CRS</abbr> since the target
+     * of the given transform is unknown.
      *
      * @param  cornerToCRS  a transform from <em>cell corners</em> to real world coordinates.
      * @return this grid extent in real world coordinates. Upper coordinate values are exclusive.
@@ -1278,13 +1277,48 @@ public class GridExtent implements Serializable, LenientComparable {
      */
     public GeneralEnvelope toEnvelope(final MathTransform cornerToCRS) throws TransformException {
         ArgumentChecks.ensureNonNull("cornerToCRS", cornerToCRS);
-        final GeneralEnvelope envelope = toEnvelope(cornerToCRS, false, cornerToCRS, null);
-        try {
-            final Matrix derivative = derivativeAtPOI(cornerToCRS, PixelInCell.CELL_CORNER);
-            final var builder = new GridCRSBuilder();
-            builder.forExtentAlone(derivative, getAxisTypes()).ifPresent(envelope::setCoordinateReferenceSystem);
-        } catch (FactoryException | TransformException e) {
-            Logging.ignorableException(LOGGER, GridExtent.class, "toEnvelope", e);
+        return toEnvelope(cornerToCRS, false, cornerToCRS, null);
+    }
+
+    /**
+     * Transforms this grid extent to an envelope using the given transform.
+     * The transform shall map grid <em>cell corners</em> to envelope coordinates.
+     *
+     * <h4>Envelope coordinate reference system</h4>
+     * If and only if the {@code datum} argument is non-null, the returned envelope is
+     * assigned an {@link EngineeringCRS} with an engineering datum of the given name.
+     * Coordinate operations between two <abbr>CRS</abbr>s created by this method will
+     * be possible only if they were created with the same {@code name} argument.
+     * It is recommended to use an identifier which is, on a best effort basis, unique for the grid.
+     * It may be, for example, derived from the
+     * {@linkplain org.apache.sis.storage.GridCoverageResource#getIdentifier() resource identifier}.
+     *
+     * <p>This method can be used when no "grid to <abbr>CRS</abbr>" information is available.
+     * Otherwise, {@link GridGeometry} methods should be preferred.</p>
+     *
+     * @param  cornerToCRS  a transform from <em>cell corners</em> to real world coordinates.
+     * @param  datum        name of the engineering datum, or {@code null} for not creating a <abbr>CRS</abbr>.
+     * @return this grid extent in real world coordinates. Upper coordinate values are exclusive.
+     * @throws TransformException if the envelope cannot be computed with the given transform.
+     *
+     * @see GridGeometry#createGridCRS(Identifier, PixelInCell)
+     *
+     * @since 1.7
+     */
+    public GeneralEnvelope toEnvelope(final MathTransform cornerToCRS, final Identifier datum)
+            throws TransformException
+    {
+        final GeneralEnvelope envelope = toEnvelope(cornerToCRS);
+        if (datum != null) try {
+            envelope.setCoordinateReferenceSystem(new GridCRSBuilder().forExtent(
+                    getAxisTypes(),
+                    cornerToCRS.getTargetDimensions(),
+                    derivativeAtPOI(cornerToCRS, PixelInCell.CELL_CORNER),
+                    cornerToCRS instanceof LinearTransform,
+                    datum));
+        } catch (FactoryException e) {
+            // Should never happen because `GridCRSBuilder` uses known implementations.
+            Logging.recoverableException(LOGGER, GridExtent.class, "toEnvelope", e);
         }
         return envelope;
     }
@@ -1340,7 +1374,7 @@ public class GridExtent implements Serializable, LenientComparable {
 
     /**
      * Returns the coordinates of this grid extent in an envelope.
-     * The returned envelope has no CRS.
+     * The returned envelope has no <abbr>CRS</abbr>.
      *
      * @param  isHighIncluded  whether the upper coordinate values should be inclusive instead of exclusive.
      * @return an envelope with the coordinates of this grid extent, optionally with exclusive upper values.
@@ -1745,7 +1779,7 @@ public class GridExtent implements Serializable, LenientComparable {
             if (s > 1) {
                 final int j = i + m;
                 long low  = coordinates[i];
-                long size = coordinates[j] - low + 1;                      // Result is an unsigned number.
+                long size = coordinates[j] - low + 1;       // Result handled as an unsigned number.
                 if (size == 0) {
                     throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Long.SIZE));
                 }
@@ -2178,6 +2212,8 @@ public class GridExtent implements Serializable, LenientComparable {
      *
      * @param  parallel  whether to return a parallel stream.
      * @return stream of lattice points inside this grid extent.
+     *
+     * @see #getLatticePointCount()
      * @since 1.7
      */
     public Stream<long[]> latticePointStream(final boolean parallel) {
@@ -2313,34 +2349,6 @@ public class GridExtent implements Serializable, LenientComparable {
     }
 
     /**
-     * Creates a coordinate reference system for cell indices in this extent.
-     * The {@code name} argument will be the name of the engineering datum.
-     * Coordinate operations between two <abbr>CRS</abbr>s created by this method
-     * will be possible only if they were created with the same {@code name} argument.
-     * It is recommended to use an identifier which is unique for the grid. It may be, for example, derived
-     * from the {@linkplain org.apache.sis.storage.GridCoverageResource#getIdentifier() resource identifier}.
-     *
-     * <p>This engineering <abbr>CRS</abbr> may be used when no "grid to <abbr>CRS</abbr>" information is available.
-     * Otherwise, {@link GridGeometry#createGridCRS(Identifier, PixelInCell)} should be preferred.</p>
-     *
-     * @param  name  name of the engineering datum.
-     * @return an engineering <abbr>CRS</abbr> for cell indices associated to this grid extent.
-     *
-     * @see GridGeometry#createGridCRS(Identifier, PixelInCell)
-     *
-     * @since 1.7
-     */
-    public EngineeringCRS createGridCRS(final Identifier name) {
-        ArgumentChecks.ensureNonNull("name", name);
-        try {
-            return new GridCRSBuilder().forExtent(name, getDimension(), this);
-        } catch (FactoryException e) {
-            // Should never happen because `GridCRSBuilder` uses known implementations.
-            throw new BackingStoreException(e);
-        }
-    }
-
-    /**
      * Compares the specified object with this grid extent for equality.
      * This method delegates to {@code equals(object, ComparisonMode.STRICT)}.
      *
@@ -2434,7 +2442,7 @@ public class GridExtent implements Serializable, LenientComparable {
             final long lower = coordinates[i];
             final long upper = coordinates[i + dimension];
             table.setCellAlignment(TableAppender.ALIGN_LEFT);
-            table.append(name).append(": ").nextColumn();
+            table.append(vocabulary.toLabel(name)).append(' ').nextColumn();
             table.append('[').nextColumn();
             table.setCellAlignment(TableAppender.ALIGN_RIGHT);
             table.append(Long.toString(lower)).append(" … ").nextColumn();

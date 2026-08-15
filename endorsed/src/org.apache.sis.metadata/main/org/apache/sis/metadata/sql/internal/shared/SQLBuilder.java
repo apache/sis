@@ -29,7 +29,7 @@ import org.apache.sis.util.internal.shared.Strings;
 
 
 /**
- * Utility methods for building SQL statements.
+ * Utility methods for building <abbr>SQL</abbr> statements.
  * This class is for internal purpose only and may change or be removed in any future SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -55,6 +55,11 @@ public class SQLBuilder extends Syntax {
      * where we start to write a SQL statement using a builder.
      */
     public static final String DELETE = "DELETE FROM ";
+
+    /**
+     * The {@value} keyword.
+     */
+    public static final String NULL = "NULL";
 
     /**
      * The buffer where the SQL query is created.
@@ -148,7 +153,7 @@ public class SQLBuilder extends Syntax {
 
     /**
      * Appends the given text verbatim.
-     * The text should be SQL keywords like {@code "SELECT * FROM"}.
+     * The text should be <abbr>SQL</abbr> keywords like {@code "SELECT * FROM"}.
      *
      * @param  keyword  the keyword to append verbatim.
      * @return this builder, for method call chaining.
@@ -253,7 +258,7 @@ public class SQLBuilder extends Syntax {
      * @return this builder, for method call chaining.
      */
     public final SQLBuilder appendValue(final String value) {
-        return (value == null) ? append("NULL") : append('\'').append(value.replace("'", "''")).append('\'');
+        return (value == null) ? append(NULL) : append('\'').append(value.replace("'", "''")).append('\'');
     }
 
     /**

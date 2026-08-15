@@ -73,7 +73,7 @@ import org.apache.sis.coverage.CannotEvaluateException;
  *
  * <p><b>Design note:</b> {@code TiledGridCoverage} uses the same cell coordinates as the originating
  * {@link TiledGridCoverageResource} (when no subsampling) because those two classes use {@code long} integers.
- * There is no integer overflow to avoid, contrarily to tile indices described below.</p>
+ * There is no integer overflow to avoid, contrarily to tile matrix indices described below.</p>
  *
  * <h2>Tile matrix coordinate (<abbr>TMC</abbr>)</h2>
  * In each {@code TiledGridCoverage}, indices of tiles starts at (0, 0, …).
@@ -131,12 +131,12 @@ public abstract class TiledGridCoverage extends GridCoverage {
      *
      * <h4>What is a "virtual" size</h4>
      * The tile size stored in this field is usually the size of tiles used by the binary encoding of the file
-     * which is read by {@link TiledGridCoverageResource}. However, this tile size may differ in two circumstances.
-     * In such case, this tile size is said "virtual".
+     * which is read by {@link TiledGridCoverageResource}. However, this tile size may differ in circumstances
+     * described below. In these cases, this tile size is said "virtual".
      *
      * <h5>Tiles coalescence</h5>
      * The first circumstance is when the {@link TiledGridCoverageResource} subclass
-     * decided to coalesce many tiles from the file in bigger tiles in memory.
+     * decided to coalesce many small tiles from the file into bigger tiles in memory.
      * This is sometime useful when a sub-sampling is applied,
      * for avoiding that the sub-sampled tiles become too small.
      * This strategy may be convenient when coalescing tiles is easy for the subclass.
@@ -628,7 +628,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
             }
             final var iterator = new TileIterator(tileLower, tileUpper, offsetAOI, dimension, xDimension, yDimension, eventContext);
             final var properties = new HashMap<String, Object>(4);
-            properties.put(PlanarImage.GRID_GEOMETRY_KEY, DeferredProperty.forGridGeometry(gridGeometry, selectedDimensions));
+            DeferredProperty.addGridGeometry(properties, gridGeometry, selectedDimensions);
             if (name != null) {
                 properties.put(PlanarImage.SOURCE_NAME_KEY, name.toFullyQualifiedName());
             }

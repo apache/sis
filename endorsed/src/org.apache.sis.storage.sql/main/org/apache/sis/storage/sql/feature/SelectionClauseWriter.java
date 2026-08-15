@@ -47,7 +47,7 @@ import org.apache.sis.pending.geoapi.filter.BetweenComparisonOperator;
 
 
 /**
- * Converter from filters/expressions to the {@code WHERE} part of SQL statement.
+ * Converter from filters/expressions to the {@code WHERE} part of <abbr>SQL</abbr> statement.
  * This base class handles ANSI compliant SQL. Subclasses can add database-specific syntax.
  *
  * <p>As soon as a filter or expression is not supported by this interpreter, the writing
@@ -71,7 +71,7 @@ public class SelectionClauseWriter extends Visitor<AbstractFeature, SelectionCla
     protected static final SelectionClauseWriter DEFAULT = new SelectionClauseWriter();
 
     /**
-     * Creates a new converter from filters/expressions to SQL.
+     * Creates a new converter from filters/expressions to <abbr>SQL</abbr>.
      */
     private SelectionClauseWriter() {
         setFilterHandler(LogicalOperatorName.AND, new Logic(" AND ", false));
@@ -83,7 +83,7 @@ public class SelectionClauseWriter extends Visitor<AbstractFeature, SelectionCla
         setFilterHandler(ComparisonOperatorName.PROPERTY_IS_GREATER_THAN_OR_EQUAL_TO, new Comparison(" >= "));
         setFilterHandler(ComparisonOperatorName.PROPERTY_IS_LESS_THAN,                new Comparison(" < "));
         setFilterHandler(ComparisonOperatorName.PROPERTY_IS_LESS_THAN_OR_EQUAL_TO,    new Comparison(" <= "));
-        setFilterHandler(ComparisonOperatorName.PROPERTY_IS_BETWEEN, (f,sql) -> {
+        setFilterHandler(ComparisonOperatorName.PROPERTY_IS_BETWEEN, (f, sql) -> {
             final var filter = (BetweenComparisonOperator<AbstractFeature>) f;
             /* Nothing to append */  if (write(sql, filter.getExpression()))    return;
             sql.append(" BETWEEN "); if (write(sql, filter.getLowerBoundary())) return;

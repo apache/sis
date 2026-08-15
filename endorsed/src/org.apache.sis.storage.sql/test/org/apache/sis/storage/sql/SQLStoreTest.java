@@ -449,7 +449,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
         try (Stream<AbstractFeature> features = cities.subset(query).features(false)) {
             result = features.map(f -> f.getPropertyValue("native_name")).toArray();
         }
-        assertSetEquals(Arrays.asList("Montréal", "Québec"), Arrays.asList(result));
+        assertSetEquals(List.of("Montréal", "Québec"), Arrays.asList(result));
     }
 
     /**

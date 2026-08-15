@@ -622,7 +622,7 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
          * @param  builder  the builder where to add the property.
          * @return whether the property has been successfully added.
          * @throws InvalidFilterValueException if {@linkplain #expression} is invalid.
-         * @throws PropertyNotFoundException if the property was not found in {@code builder.source()}.
+         * @throws IllegalArgumentException if the property was not found in {@code builder.source()}.
          * @throws UnconvertibleObjectException if the property default value cannot be converted to the expected type.
          */
         final boolean addTo(final FeatureProjectionBuilder builder) {
@@ -788,7 +788,7 @@ public class FeatureQuery extends Query implements Cloneable, Emptiable, Seriali
      * @param  sourceType  the feature type to project.
      * @param  locale      locale for error messages, or {@code null} for the default locale.
      * @throws InvalidFilterValueException if an {@linkplain NamedExpression#expression expression} is invalid.
-     * @throws PropertyNotFoundException if a property referenced by an expression was not found in {@code sourceType}.
+     * @throws IllegalArgumentException if a property referenced by an expression was not found in {@code sourceType}.
      * @throws UnconvertibleObjectException if a property default value cannot be converted to the expected type.
      * @throws UnsupportedOperationException if there is an attempt to rename a property which is used by an operation.
      */

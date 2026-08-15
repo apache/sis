@@ -35,7 +35,6 @@ import static java.lang.Math.rint;
 import static java.lang.Math.floorDiv;
 import static java.lang.Math.toIntExact;
 import static java.lang.Math.multiplyFull;
-import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.system.Modules;
@@ -46,7 +45,7 @@ import static org.apache.sis.util.internal.shared.Numerics.COMPARISON_THRESHOLD;
 
 
 /**
- * Utility methods related to images and their color model or sample model.
+ * Utility methods related to images, their tiles, their color model and their sample model.
  * Those methods only fetch information, they do not create new rasters or sample/color models
  * (see {@code *Factory} classes for creating those objects).
  *
@@ -202,35 +201,6 @@ public final class ImageUtilities {
             }
         }
         return null;
-    }
-
-    /**
-     * Returns the key of a localizable text that describes the transparency.
-     * This method returns one of the following values:
-     * <ul>
-     *   <li>{@link Resources.Keys#ImageAllowsTransparency}</li>
-     *   <li>{@link Resources.Keys#ImageHasAlphaChannel}</li>
-     *   <li>{@link Resources.Keys#ImageIsOpaque}</li>
-     *   <li>0 if the transparency is unknown.</li>
-     * </ul>
-     *
-     * @param  cm  the color model from which to get the transparency, or {@code null}.
-     * @return a {@link Resources.Keys} value for the transparency, or 0 if unknown.
-     *
-     * @see #hasAlpha(RenderedImage)
-     */
-    public static short getTransparencyDescription(final ColorModel cm) {
-        if (cm != null) {
-            if (cm.hasAlpha()) {
-                return Resources.Keys.ImageHasAlphaChannel;
-            }
-            switch (cm.getTransparency()) {
-                case ColorModel.TRANSLUCENT:
-                case ColorModel.BITMASK: return Resources.Keys.ImageAllowsTransparency;
-                case ColorModel.OPAQUE:  return Resources.Keys.ImageIsOpaque;
-            }
-        }
-        return 0;
     }
 
     /**
@@ -503,7 +473,7 @@ public final class ImageUtilities {
      * @throws ArithmeticException if the result overflows 32 bits integer.
      */
     public static Rectangle pixelsToTiles(final RenderedImage image, final Rectangle pixels) {
-        final Rectangle r = new Rectangle();
+        final var r = new Rectangle();
         if (!pixels.isEmpty()) {
             int  size;
             long offset, shifted;
@@ -537,7 +507,7 @@ public final class ImageUtilities {
      * @throws ArithmeticException if the result overflows 32 bits integer.
      */
     public static Rectangle tilesToPixels(final RenderedImage image, final Rectangle tiles) {
-        final Rectangle r = new Rectangle();
+        final var r = new Rectangle();
         if (!tiles.isEmpty()) {
             int size, offset;
             size     = image.getTileWidth();

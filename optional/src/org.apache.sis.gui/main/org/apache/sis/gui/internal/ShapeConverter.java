@@ -124,6 +124,7 @@ public final class ShapeConverter {
             case PathIterator.WIND_EVEN_ODD: path.setFillRule(FillRule.EVEN_ODD); break;
             case PathIterator.WIND_NON_ZERO: path.setFillRule(FillRule.NON_ZERO); break;
         }
+        path.setManaged(false);
         return path;
     }
 
@@ -144,10 +145,12 @@ public final class ShapeConverter {
         if (tr != null) {
             tr.transform(coords, 0, coords, 0, 2);
         }
-        return new Rectangle(
+        final var path = new Rectangle(
                 Math.min(coords[0],  coords[2]),
                 Math.min(coords[1],  coords[3]),
                 Math.abs(coords[2] - coords[0]),
                 Math.abs(coords[3] - coords[1]));
+        path.setManaged(false);
+        return path;
     }
 }

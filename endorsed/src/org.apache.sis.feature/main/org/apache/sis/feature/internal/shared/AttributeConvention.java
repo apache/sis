@@ -284,7 +284,7 @@ public final class AttributeConvention {
      * @param  feature   the feature instance from which to get the <abbr>CRS</abbr> of an attribute.
      * @param  property  name of the property for which to get the <abbr>CRS</abbr>.
      * @return the Coordinate Reference System characteristic of the specified property, or {@code null} if none.
-     * @throws PropertyNotFoundException if the {@code property} argument is not the name of a property of the given feature.
+     * @throws IllegalArgumentException if the {@code property} argument is not the name of a property of the given feature.
      * @throws ClassCastException if {@link #CRS_CHARACTERISTIC} has been found but is associated
      *         to an object which is not a {@link CoordinateReferenceSystem} instance.
      *
@@ -332,7 +332,7 @@ public final class AttributeConvention {
      * @param  feature   the feature instance from which to get the maximal length of an attribute.
      * @param  property  the name of the property for which to get the maximal length.
      * @return the maximal length characteristic of the specified property, or {@code null} if none.
-     * @throws PropertyNotFoundException if the {@code property} argument is not the name of a property of the given feature.
+     * @throws IllegalArgumentException if the {@code property} argument is not the name of a property of the given feature.
      * @throws ClassCastException if {@link #MAXIMAL_LENGTH_CHARACTERISTIC} has been found but is associated
      *         to an object which is not an {@link Integer} instance.
      *
@@ -390,7 +390,7 @@ public final class AttributeConvention {
      * @param  property        name of the property for which to get the characteristic.
      * @param  characteristic  name of the characteristic from which to get the value or default value.
      * @return the value or default value of the specified characteristic in the specified property, or {@code null} if none.
-     * @throws PropertyNotFoundException if the {@code property} argument is not the name of a property of the given feature.
+     * @throws IllegalArgumentException if the {@code property} argument is not the name of a property of the given feature.
      */
     private static Object getCharacteristic(final AbstractFeature feature, final String property, final String characteristic) {
         return feature.getCharacteristicValue(property, characteristic).orElse(null);

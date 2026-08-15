@@ -55,26 +55,47 @@ import org.apache.sis.feature.internal.Resources;
  * <p>Instances of this class are immutable and thread-safe.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   1.5
  */
 public class ImageLayout {
     /**
-     * The minimum tile width or height. The {@link #toTileSize(int, int, boolean)} method will not
-     * suggest tiles smaller than this size. This size must be smaller than {@link #DEFAULT_TILE_SIZE}.
+     * The tentative minimum width and height of tiles suggested by {@code ImageLayout}.
+     * The {@link #suggestTileSize(int, int)} method tries to avoid (on a best effort basis) smaller tiles.
+     * This is currently set to {@value} pixels, but may change in any future Apache <abbr>SIS</abbr> version.
      *
-     * <p>Tiles of 180×180 pixels consume about 127 kB, assuming 4 bytes per pixel. This is about half
-     * the consumption of tiles of 256×256 pixels. We select a size which is a multiple of 90 because
-     * images are often used with a resolution of e.g. ½° per pixel.</p>
+     * <div class="note"><b>Note:</b> the minimum size is set to a multiple of 90 because
+     * images often have resolutions expressed in latitude or longitude degrees.</div>
      *
+     * @see #MAX_TILE_SIZE
      * @see #DEFAULT_TILE_SIZE
+     * @since 1.7
      */
     @Configuration
-    private static final int MIN_TILE_SIZE = 180;
+    public static final int MIN_TILE_SIZE = 180;
+
+    /**
+     * The tentative maximum width and height of tiles suggested by {@code ImageLayout}.
+     * The {@link #suggestTileSize(int, int)} method tries to avoid (on a best effort basis) larger tiles.
+     * This is also used in classes such as {@link org.apache.sis.storage.tiling.TiledGridCoverageResource}
+     * as a threshold for deciding whether to re-tile an image.
+     * This is currently set to {@value} pixels, but may change in any future Apache <abbr>SIS</abbr> version.
+     *
+     * @see #MIN_TILE_SIZE
+     * @see #DEFAULT_TILE_SIZE
+     * @since 1.7
+     */
+    @Configuration
+    public static final int MAX_TILE_SIZE = 8192;
 
     /**
      * Default width and height of tiles, in pixels.
      * This is currently set to {@value} pixels, but may change in any future Apache <abbr>SIS</abbr> version.
+     * However, the {@link #MIN_TILE_SIZE} ≤ {@code DEFAULT_TILE_SIZE} ≤ {@link #MAX_TILE_SIZE} relationship
+     * is guaranteed for all <abbr>SIS</abbr> versions.
+     *
+     * @see #MIN_TILE_SIZE
+     * @see #MAX_TILE_SIZE
      */
     @Configuration
     public static final int DEFAULT_TILE_SIZE = 256;
@@ -386,7 +407,8 @@ public class ImageLayout {
      * @return the suggested tile size, or {@code imageSize} if none.
      */
     private static int toTileSize(final int imageSize, final int preferredTileSize, final boolean allowPartialTiles) {
-        final int maxTileSize = 2*preferredTileSize;    // Factor 2 is arbitrary (may be revisited in future versions).
+        final int maxTileSize = Math.min(2*preferredTileSize, MAX_TILE_SIZE);
+        // Factor 2 is arbitrary (may be revisited in future versions).
         if (imageSize <= maxTileSize) {
             return imageSize;
         }

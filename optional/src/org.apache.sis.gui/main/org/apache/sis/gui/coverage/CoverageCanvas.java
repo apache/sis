@@ -20,9 +20,8 @@ import java.util.Map;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Queue;
+import java.util.Optional;
 import java.util.concurrent.Future;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.LogRecord;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,25 +34,16 @@ import java.awt.image.RenderedImage;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Rectangle2D;
-import javafx.scene.Node;
 import javafx.scene.image.Image;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Shape;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
 import javafx.beans.DefaultProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.animation.FadeTransition;
 import javafx.application.Platform;
-import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.util.Duration;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
@@ -82,7 +72,6 @@ import org.apache.sis.image.internal.shared.TileErrorHandler;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.base.StoreUtilities;
-import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.tiling.TileReadEvent;
 import org.apache.sis.gui.map.MapCanvas;
 import org.apache.sis.gui.map.MapCanvasAWT;
@@ -90,7 +79,6 @@ import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.map.coverage.RenderingWorkaround;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.internal.ExceptionReporter;
-import org.apache.sis.gui.internal.ShapeConverter;
 import org.apache.sis.gui.internal.GUIUtilities;
 import org.apache.sis.gui.internal.LogHandler;
 import org.apache.sis.util.ArraysExt;
@@ -220,7 +208,8 @@ public class CoverageCanvas extends MapCanvasAWT {
 
     /**
      * A subspace of the grid coverage extent where all dimensions except two have a size of 1 cell.
-     * May be {@code null} if the grid coverage has only two dimensions with a size greater than 1 cell.
+     * The property value may be {@code null} if the grid coverage has only two dimensions with a size
+     * greater than 1 cell, in which case it is unnecessary to specify a slice.
      *
      * @see #getSliceExtent()
      * @see #setSliceExtent(GridExtent)
@@ -350,6 +339,19 @@ public class CoverageCanvas extends MapCanvasAWT {
      */
     final Region getView() {
         return fixedPane;
+    }
+
+    /**
+     * Return an identifier derived from the resource identifier.
+     * This method returns an empty value if no worker has read the resource identifier yet.
+     * It may happen randomly depending on thread execution order.
+     *
+     * @return an identifier of the rendered coverage.
+     * @since 1.7
+     */
+    @Override
+    public Optional<Identifier> getContentIdentifier() {
+        return Optional.ofNullable(data.gridCrsName);
     }
 
     /**
@@ -534,7 +536,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         final GridCoverageResource resource = getResource();
         if (enabled) {
             if (tileReadListener == null) {
-                tileReadListener = new TileReadListener();
+                tileReadListener = new TileReadListener(this);
                 if (resource != null) {
                     resource.addListener(TileReadEvent.class, tileReadListener);
                 }
@@ -685,6 +687,9 @@ public class CoverageCanvas extends MapCanvasAWT {
                 /** Information about all bands. */
                 private List<SampleDimension> ranges;
 
+                /** Initial region to show, used only if the image is too large. */
+                private GridGeometry initialArea;
+
                 /**
                  * Fetches coverage domain and range. In some {@link GridCoverageResource} implementations,
                  * fetching the grid geometry is a costly operation. So we do it in a background thread and
@@ -723,7 +728,9 @@ public class CoverageCanvas extends MapCanvasAWT {
                              * loading of a large amount of data. We are better to limit the zoom to
                              * a small area.
                              */
-                            if (domain.isDefined(GridGeometry.ENVELOPE | GridGeometry.RESOLUTION)) {
+                            if (visibleArea != null) {
+                                initialArea = visibleArea;
+                            } else if (domain.isDefined(GridGeometry.ENVELOPE | GridGeometry.RESOLUTION)) {
                                 if (scales == null) {
                                     scales = domain.getResolution(true);
                                 }
@@ -738,11 +745,11 @@ public class CoverageCanvas extends MapCanvasAWT {
                                     final double out = (1 - ratio) / 2;      // Fraction of bounds to take out on each side.
                                     final var zoomArea = new GeneralEnvelope(bounds);
                                     for (int i=0; i<dimension; i++) {
-                                        final double margin = zoomArea.getSpan(i) * out;
-                                        zoomArea.setRange(i, zoomArea.getLower(i) + margin, zoomArea.getUpper(i) - margin);
+                                        final double margin = zoomArea.getSpan (i) * out;
+                                        zoomArea.setRange(i,  zoomArea.getLower(i) + margin,
+                                                              zoomArea.getUpper(i) - margin);
                                     }
-                                    // Pretend that the data domain is smaller than reality.
-                                    domain = domain.derive().subgrid(zoomArea, null).build();
+                                    initialArea = new GridGeometry(zoomArea);
                                 }
                             }
                         }
@@ -761,7 +768,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                 @Override protected void succeeded() {
                     runAfterRendering(() -> {
                         try {
-                            setNewSource(gridCrsName, getValue(), ranges, visibleArea);
+                            setNewSource(gridCrsName, getValue(), ranges, initialArea, visibleArea == null);
                             requestRepaint();                   // Cause `Worker` class to be executed.
                         } catch (RuntimeException ex) {         // Mostly for `BackingStoreException`.
                             clear();
@@ -811,20 +818,26 @@ public class CoverageCanvas extends MapCanvasAWT {
      *
      * <p>The {@code visibleArea} argument is used when we want to create a new canvas
      * initialized to the same viewing region and zoom level than an existing canvas.
-     * It should have a <abbr>CRS</abbr> compatible with the one of the data to show.</p>
+     * It should have a <abbr>CRS</abbr> compatible with the one of the data to show.
+     * In such case, {@code visibleArea} is already two-dimensional and therefore
+     * {@code reduceAreaDim} should be {@code false}.</p>
+     *
+     * <p>Alternatively, {@code visibleArea} can also be an initial zoom for avoiding to show the full image.
+     * Such initial zoom is usually derived from {@code domain}, which may have more than two dimensions.
+     * In such case, {@code reduceAreaDim} should be {@code true}.</p>
      *
      * <p>All arguments can be {@code null} for clearing the canvas.
      * This method is invoked in JavaFX thread.</p>
      *
-     * @param  gridCrsName  name of the grid <abbr>CRS</abbr>, derived from the resource identifier.
-     * @param  domain       the multi-dimensional grid geometry, or {@code null} if there is no data.
-     * @param  ranges       descriptions of bands, or {@code null} if there is no data.
-     * @param  visibleArea  initial "objective to display" transform to use, or {@code null} for automatic.
+     * @param  gridCrsName    name of the grid <abbr>CRS</abbr>, derived from the resource identifier.
+     * @param  domain         the multi-dimensional grid geometry, or {@code null} if there is no data.
+     * @param  ranges         descriptions of bands, or {@code null} if there is no data.
+     * @param  visibleArea    initial "objective to display" transform to use, or {@code null} for automatic.
+     * @param  reduceAreaDim  whether the number of dimensions of {@code visibleArea} may need to be reduced.
      */
-    private void setNewSource(final Identifier gridCrsName,
-                                    GridGeometry domain,
-                              final List<SampleDimension> ranges,
-                              final GridGeometry visibleArea)
+    private void setNewSource(final Identifier gridCrsName, GridGeometry domain,
+                              final List<SampleDimension> ranges, GridGeometry visibleArea,
+                              final boolean reduceAreaDim)
     {
         if (TRACE) {
             trace("setNewSource(…): the new domain of data is:%n\t%s", domain);
@@ -875,26 +888,13 @@ public class CoverageCanvas extends MapCanvasAWT {
                 }
             }
         }
+        if (visibleArea != null && reduceAreaDim) {
+            visibleArea = visibleArea.selectDimensions(xyDimensions);
+        }
         data.gridCrsName = gridCrsName;
         data.setImageSpace(domain, ranges, xyDimensions);
         initialize(visibleArea);
-        setObjectiveBounds(bounds);
-    }
-
-    /**
-     * Return a name of the grid <abbr>CRS</abbr>, derived from the resource identifier.
-     * This method returns {@code null} if no worker has read the resource identifier yet.
-     * It may happen randomly depending on thread execution order.
-     *
-     * <p>Note: do not fallback on an artificial name if the name is {@code null}.
-     * This method is used for building a grid <abbr>CRS</abbr> for cell indices.
-     * If this method returns an artificial name, it would cause an unusable menu
-     * item to appear in the menu that offers different <abbr>CRS</abbr>.</p>
-     *
-     * @see StoreUtilities#gridCrsName(GridCoverageResource, GridGeometry)
-     */
-    final Identifier gridCrsName() {
-        return data.gridCrsName;
+        setObjectiveBounds(bounds);     // Overwrite the objective bounds specified by `visibleArea`.
     }
 
     /**
@@ -1233,7 +1233,7 @@ public class CoverageCanvas extends MapCanvasAWT {
              */
             final TileReadListener tileReadListener = cc.tileReadListener;
             if (tileReadListener != null) {
-                tileReadListener.newStaticGraphics();
+                tileReadListener.newStaticGraphics(cc);
             }
             if (isolines != null) {
                 for (final IsolineController.Snapshot s : isolines) {
@@ -1356,119 +1356,6 @@ public class CoverageCanvas extends MapCanvasAWT {
 
 
     /**
-     * Object notified when a tile is about to be read. The notifications can be sent from any thread,
-     * typically a background thread which is reading the data. The tiles are enqueued for processing
-     * in another background thread for avoiding to slow down the thread that read the data.
-     */
-    private final class TileReadListener implements StoreListener<TileReadEvent>, EventHandler<ActionEvent> {
-        /**
-         * Colors of the tiles, using different colors for different resolutions (pyramid levels).
-         */
-        private static final Color[] TILE_COLORS = {
-            Color.VIOLET, Color.RED, Color.YELLOW, Color.CYAN, Color.PALEGREEN
-        };
-
-        /**
-         * Same colors, but with transparency.
-         */
-        private static final Color[] FILL_COLORS = new Color[TILE_COLORS.length];
-        static {
-            for (int i=0; i<FILL_COLORS.length; i++) {
-                final Color c = TILE_COLORS[i];
-                FILL_COLORS[i] = Color.color(c.getRed(), c.getGreen(), c.getBlue(), 0.5);
-            }
-        }
-
-        /**
-         * Time that tiles are visible before they fade away.
-         */
-        private static final Duration DURATION = new Duration(4000);
-
-        /**
-         * The JavaFX shapes (usually rectangles) for highlighting the tiles.
-         * This queue shall be thread-safe as it is read and written from different threads.
-         */
-        private final Queue<FadeTransition> tileShapes;
-
-        /**
-         * The transform from objective <abbr>CRS</abbr> to the display coordinate system of the canvas.
-         * This information is updated in the JavaFX thread after each rendering, so that creations of
-         * JavaFX shapes will use the information that reflects the image shown in the canvas.
-         */
-        volatile StaticGraphics snapshot;
-
-        /**
-         * Creates a new listener of tile read events.
-         * This constructor must be invoked from the JavaFX thread.
-         */
-        TileReadListener() {
-            tileShapes = new ConcurrentLinkedQueue<>();
-            newStaticGraphics();
-        }
-
-        /**
-         * Takes a snapshot of the objective <abbr>CRS</abbr> and transform to display coordinate system.
-         * This method should be invoked after each rendering, so that creations of JavaFX shapes will use
-         * the information that reflects the image shown in the canvas.
-         */
-        final void newStaticGraphics() {
-            snapshot = usingFixedTransform();
-        }
-
-        /**
-         * Invoked when a tile has been read. This method computes the JavaFX shape in a background thread.
-         * One thread is used for each shape (we do not collect the shapes in a queue) because that thread
-         * is likely to finish before the next tile has been read anyway.
-         */
-        @Override
-        @SuppressWarnings({"UseSpecificCatch", "LocalVariableHidesMemberVariable"})
-        public void eventOccured(final TileReadEvent event) {
-            BackgroundThreads.EXECUTOR.execute(() -> {
-                final StaticGraphics snapshot = TileReadListener.this.snapshot;
-                if (snapshot.objectiveToDisplay instanceof AffineTransform objectiveToDisplay) try {
-                    final Shape tile = ShapeConverter.convert(event.outline(snapshot.objectiveCRS), objectiveToDisplay);
-                    final int ic = event.getPyramidLevel() % TILE_COLORS.length;
-                    tile.setStroke(TILE_COLORS[ic]);
-                    tile.setFill(FILL_COLORS[ic]);
-                    tile.setOpacity(0.5);
-                    final var transition = new FadeTransition(DURATION, tile);
-                    transition.setFromValue(0.5);
-                    transition.setToValue(0);
-                    transition.setOnFinished(this);
-                    tileShapes.add(transition);
-                } catch (Exception e) {
-                    Logging.recoverableException(LOGGER, TileReadListener.class, "eventOccured", e);
-                }
-                Platform.runLater(() -> {
-                    FadeTransition transition = tileShapes.poll();
-                    if (transition != null) {
-                        final ObservableList<Node> children = snapshot.getChildren();
-                        do {
-                            children.add(transition.getNode());
-                            transition.play();
-                            transition = tileShapes.poll();
-                        } while (transition != null);
-                    }
-                });
-            });
-        }
-
-        /**
-         * Invoked when the animation on a tile is finished.
-         * This method removes the JavaFX geometry object that represented the tile outline.
-         */
-        @Override
-        public void handle(final ActionEvent event) {
-            final var transition = (FadeTransition) event.getSource();
-            final Node node = transition.getNode();
-            final Pane parent = (Pane) node.getParent();
-            if (parent != null && parent.getChildren().remove(node) && TRACE) {
-                trace("TileReadListener.removeChild");
-            }
-        }
-    }
-
-    /**
      * Invoked when an exception occurred while computing a transform but the painting process can continue.
      */
     private static void unexpectedException(final Exception e) {
@@ -1506,7 +1393,7 @@ public class CoverageCanvas extends MapCanvasAWT {
         } finally {
             isCoverageAdjusting = false;
         }
-        setNewSource(null, null, null, null);
+        setNewSource(null, null, null, null, false);
         super.clear();
     }
 

@@ -248,7 +248,7 @@ public class StoreListeners implements Localized {
          * @return the {@code done} map, created when first needed.
          * @throws ExecutionException if at least one listener failed to execute.
          */
-        final Map<StoreListener<?>,Boolean> eventOccured(final E event, Map<StoreListener<?>,Boolean> done)
+        final Map<StoreListener<?>,Boolean> eventOccurred(final E event, Map<StoreListener<?>,Boolean> done)
                 throws ExecutionException
         {
             RuntimeException error = null;
@@ -260,7 +260,7 @@ public class StoreListeners implements Localized {
                 for (final StoreListener<? super E> listener : list) {
                     if (event.isConsumed()) break;
                     if (done.put(listener, Boolean.TRUE) == null) try {
-                        listener.eventOccured(event);
+                        listener.eventOccurred(event);
                     } catch (RuntimeException ex) {
                         if (error == null) error = ex;
                         else error.addSuppressed(ex);
@@ -547,7 +547,7 @@ public class StoreListeners implements Localized {
      * the given record to one of the following destinations, in preference order:
      *
      * <ol>
-     *   <li><code>{@linkplain StoreListener#eventOccured StoreListener.eventOccured}(new
+     *   <li><code>{@link StoreListener#eventOccurred StoreListener.eventOccurred}(new
      *       {@linkplain WarningEvent}(source, record))</code> on all listeners registered for this kind of event.</li>
      *   <li><code>{@linkplain Filter#isLoggable(LogRecord) onUnhandled.isLoggable(description)}</code>
      *       if above step found no listener and the {@code onUnhandled} filter is non-null.</li>
@@ -610,7 +610,7 @@ public class StoreListeners implements Localized {
      * notifies listeners registered in parent {@code StoreListeners}s. Each listener will be
      * notified only once even if it has been registered many times.
      *
-     * <p>If one or many {@link StoreListener#eventOccured(StoreEvent)} implemetations throw a
+     * <p>If one or many {@link StoreListener#eventOccurred(StoreEvent)} implemetations throw a
      * {@link RuntimeException}, those exceptions will be collected and reported in a single
      * {@linkplain Logging#unexpectedException(Logger, Class, String, Throwable) log record}.
      * Runtime exceptions in listeners do not cause this method to fail.</p>
@@ -653,7 +653,7 @@ public class StoreListeners implements Localized {
      * @param  eventType  the type of the event to be fired.
      * @param  event      the event to fire.
      * @return {@code true} if the event has been sent to at least one listener.
-     * @throws ExecutionException if an exception is thrown inside {@link StoreListener#eventOccured(StoreEvent)}.
+     * @throws ExecutionException if an exception is thrown inside {@link StoreListener#eventOccurred(StoreEvent)}.
      *         All other listeners continue to receive the event before {@code ExecutionException} is thrown.
      */
     @SuppressWarnings("unchecked")
@@ -665,7 +665,7 @@ public class StoreListeners implements Localized {
         do {
             for (ForType<?> e = m.listeners; e != null; e = e.next) {
                 if (e.type.isAssignableFrom(eventType)) try {
-                    done = ((ForType<? super E>) e).eventOccured(event, done);
+                    done = ((ForType<? super E>) e).eventOccurred(event, done);
                 } catch (ExecutionException ex) {
                     if (error == null) error = ex;
                     else error.getCause().addSuppressed(ex.getCause());
@@ -712,7 +712,7 @@ public class StoreListeners implements Localized {
     /**
      * Registers a listener to notify when the specified kind of event occurs.
      * Registering a listener for a given {@code eventType} also register the listener for all event sub-types.
-     * The same listener can be registered many times, but its {@link StoreListener#eventOccured(StoreEvent)}
+     * The same listener can be registered many times, but its {@link StoreListener#eventOccurred(StoreEvent)}
      * method will be invoked only once per event. This filtering applies even if the listener is registered
      * on different resources in the same tree, for example a parent and its children.
      *
@@ -936,7 +936,7 @@ public class StoreListeners implements Localized {
      * Because listeners are discarded, invoking this method many times
      * on the same instance has no effect after the first invocation.
      *
-     * <p>If one or many {@link StoreListener#eventOccured(StoreEvent)} implementations throw
+     * <p>If one or many {@link StoreListener#eventOccurred(StoreEvent)} implementations throw
      * a {@link RuntimeException}, those exceptions will be collected and reported in a single
      * {@linkplain Logging#unexpectedException(Logger, Class, String, Throwable) log record}.
      * Runtime exceptions in listeners do not cause this method to fail.</p>

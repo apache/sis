@@ -466,12 +466,12 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
 
     /**
      * Registers a listener to notify when the specified kind of event occurs in this data store or in a resource.
-     * The data store will call the {@link StoreListener#eventOccured(StoreEvent)} method when new events matching
+     * The data store will call the {@link StoreListener#eventOccurred(StoreEvent)} method when new events matching
      * the {@code eventType} occur. An event may be a change in data store content or structure, or a warning that
      * occurred during a read or write operation.
      *
      * <p>Registering a listener for a given {@code eventType} also register the listener for all event sub-types.
-     * The same listener can be registered many times, but its {@link StoreListener#eventOccured(StoreEvent)}
+     * The same listener can be registered many times, but its {@link StoreListener#eventOccurred(StoreEvent)}
      * method will be invoked only once per event. This filtering applies even if the listener is registered
      * on individual resources of this data store.</p>
      *
