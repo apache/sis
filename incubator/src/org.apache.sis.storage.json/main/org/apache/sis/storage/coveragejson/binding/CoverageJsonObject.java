@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.sis.storage.json.DataTransferObject;
 
+
 /**
  * COPIED FROM OGC SPECIFICATION (TODO: ADAPT):
  * A CoverageJSON document can be extended with custom members and types in a

@@ -17,8 +17,9 @@
 package org.apache.sis.storage.geojson.binding;
 
 // Test dependencies
-import org.apache.sis.storage.json.AbstractBindingTest;
 import org.junit.jupiter.api.TestInstance;
+import org.apache.sis.storage.json.AbstractBindingTest;
+
 
 /**
  * Test geojson bindings.

@@ -78,6 +78,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.resources.Vocabulary;
@@ -85,7 +86,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
-import org.apache.sis.util.Exceptions;
 import org.apache.sis.math.NumberType;
 import org.apache.sis.measure.Units;
 

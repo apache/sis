@@ -21,8 +21,8 @@ import org.opengis.metadata.Metadata;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.MathTransform;
-import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
@@ -37,8 +37,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.storage.DataStoreTestCase;
 
 // Specific to the main branch:
-import org.apache.sis.storage.netcdf.base.TestData;
 import static org.apache.sis.coverage.grid.GridGeometryTest.assertExtentEquals;
+import org.apache.sis.storage.netcdf.base.TestData;
 
 
 /**

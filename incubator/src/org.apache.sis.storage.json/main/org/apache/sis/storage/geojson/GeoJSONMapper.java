@@ -24,11 +24,17 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.sis.feature.AbstractFeature;
-import org.apache.sis.feature.AbstractIdentifiedType;
-import org.apache.sis.feature.AbstractOperation;
-import org.apache.sis.feature.DefaultAttributeType;
-import org.apache.sis.feature.DefaultFeatureType;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.MultiPoint;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.feature.internal.shared.AttributeConvention;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.storage.DataStoreException;
@@ -43,17 +49,14 @@ import org.apache.sis.storage.geojson.binding.GeoJSONMultiPoint;
 import org.apache.sis.storage.geojson.binding.GeoJSONMultiPolygon;
 import org.apache.sis.storage.geojson.binding.GeoJSONPoint;
 import org.apache.sis.storage.geojson.binding.GeoJSONPolygon;
-import org.locationtech.jts.geom.CoordinateSequence;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryCollection;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.MultiLineString;
-import org.locationtech.jts.geom.MultiPoint;
-import org.locationtech.jts.geom.MultiPolygon;
-import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.Polygon;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+// Specific to the main branch:
+import org.apache.sis.feature.AbstractFeature;
+import org.apache.sis.feature.AbstractIdentifiedType;
+import org.apache.sis.feature.AbstractOperation;
+import org.apache.sis.feature.DefaultAttributeType;
+import org.apache.sis.feature.DefaultFeatureType;
+
 
 /**
  *

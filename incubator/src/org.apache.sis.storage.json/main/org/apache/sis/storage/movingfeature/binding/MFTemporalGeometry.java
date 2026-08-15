@@ -16,16 +16,17 @@
  */
 package org.apache.sis.storage.movingfeature.binding;
 
+import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import java.util.Objects;
 import org.apache.sis.storage.json.DataTransferObject;
 import static org.apache.sis.storage.movingfeature.binding.MFTemporalGeometry.PROPERTY_CRS;
 import static org.apache.sis.storage.movingfeature.binding.MFTemporalGeometry.PROPERTY_TRS;
+
 
 /**
  * Base of a Moving Features JSON (MF-JSON, OGC 16-140r1) 'temporalGeometry' member value.
