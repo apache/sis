@@ -303,10 +303,9 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
             }
         }
         /*
-         * We consider the operation method as metadata. One could argue that OperationMethod's `sourceDimension` and
-         * `targetDimension` are not metadata, but their values should be identical to the `sourceCRS` and `targetCRS`
-         * dimensions, already checked above. We could also argue that `OperationMethod.parameters` are not metadata,
-         * but their values should have been taken in account for the MathTransform creation, compared above.
+         * We consider the operation method and parameters as metadata. Conceptually, they are not metadata
+         * because a change of method or parameter value may change the result of coordinate operations.
+         * But Apache SIS implementation verifies equivalence by comparing the `MathTransform`s instead.
          *
          * Comparing the MathTransforms instead of parameters avoid the problem of implicit parameters. For example, in
          * a ProjectedCRS, the "semiMajor" and "semiMinor" axis lengths are sometimes provided as explicit parameters,
