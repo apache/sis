@@ -40,6 +40,23 @@ public final class ScriptRunnerTest extends TestCase {
     }
 
     /**
+     * Tests {@link ScriptRunner} with the default database engine used by Apache <abbr>SIS</abbr>.
+     * This method delegates its work to all other methods in this class that expect a {@link ScriptRunner} argument.
+     *
+     * @throws SQLException if an error occurred while executing the script runner.
+     */
+    @Test
+    public void testOnDefault() throws SQLException {
+        try (TestDatabase db = TestDatabase.create("ScriptRunner");
+             Connection c = db.source.getConnection())
+        {
+            final var sr = new ScriptRunner(c, null, 3);
+            testSupportedFlags(sr);
+            testRegularExpressions(sr);
+        }
+    }
+
+    /**
      * Tests {@link ScriptRunner} with an in-memory Derby database.
      * This method delegates its work to all other methods in this class that expect a {@link ScriptRunner} argument.
      *
@@ -47,10 +64,10 @@ public final class ScriptRunnerTest extends TestCase {
      */
     @Test
     public void testOnDerby() throws SQLException {
-        try (TestDatabase db = TestDatabase.create("ScriptRunner");
+        try (TestDatabase db = TestDatabase.createOnDerby("ScriptRunner");
              Connection c = db.source.getConnection())
         {
-            final ScriptRunner sr = new ScriptRunner(c, null, 3);
+            final var sr = new ScriptRunner(c, null, 3);
             testSupportedFlags(sr);
             testRegularExpressions(sr);
         }

@@ -113,6 +113,7 @@ public class TestDatabase implements AutoCloseable {
      * The SQL flavor used by the database, or {@code ANSI} if unspecified.
      * May be used for identifying the database software.
      */
+    @SuppressWarnings("exports")
     public final Dialect dialect;
 
     /**
@@ -124,21 +125,34 @@ public class TestDatabase implements AutoCloseable {
     }
 
     /**
-     * Creates a temporary database. This method creates a Derby in-memory database by default,
-     * but this default can be changed by setting the {@link #TEST_DATABASE} hard-coded value.
+     * Creates a temporary database using the default database engine.
+     * This default can be changed by setting the {@link #TEST_DATABASE} hard-coded value.
      * See class javadoc if there is a need to inspect content of that in-memory database.
      *
      * <p>The given database name shall be unique, for allowing parallel execution of tests.
      * This is often the name of the test class without the {@code Test} suffix.</p>
      *
      * @param  name  the database name (without {@code "memory:"} prefix).
-     * @return connection to the test database (usually on Apache Derby).
+     * @return connection to the test database.
      * @throws SQLException if an error occurred while creating the database.
      */
     public static TestDatabase create(final String name) throws SQLException {
         if (TEST_DATABASE != null) {
             return new TestDatabase(TEST_DATABASE, Dialect.ANSI);
         }
+        return createOnHSQLDB(name, false);
+    }
+
+    /**
+     * Creates a temporary in-memory database using Derby.
+     * The given database name shall be unique, for allowing parallel execution of tests.
+     * This is often the name of the test class without the {@code Test} suffix.
+     *
+     * @param  name  the database name (without {@code "memory:"} prefix).
+     * @return connection to the test database on Apache Derby.
+     * @throws SQLException if an error occurred while creating the database.
+     */
+    public static TestDatabase createOnDerby(final String name) throws SQLException {
         final var ds = new EmbeddedDataSource();
         ds.setDatabaseName("memory:" + name);
         ds.setDataSourceName("Apache SIS test database");

@@ -62,6 +62,14 @@ public enum Dialect {
                  | Supports.JAVA_TIME),
 
     /**
+     * The database uses H2 syntax. It supports a set of features similar to {@link #HSQL}.
+     */
+    H2("h2", Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
+                 | Supports.READ_ONLY_UPDATE
+                 | Supports.CONCURRENCY
+                 | Supports.JAVA_TIME),
+
+    /**
      * The database uses PostgreSQL syntax. This is ANSI, but provided an a separated
      * enumeration value because it allows a few additional commands like {@code VACUUM}.
      */
