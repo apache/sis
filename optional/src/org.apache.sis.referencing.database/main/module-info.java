@@ -16,7 +16,7 @@
  */
 
 /**
- * Embedded EPSG geodetic dataset.
+ * Embedded <abbr>EPSG</abbr> geodetic dataset.
  * This module contains the data of the {@code org.apache.sis.referencing.epsg} module,
  * but in a form that does not require the installation of a local database.
  *
@@ -28,12 +28,12 @@
  * see <a href="https://sis.apache.org/epsg.html">How to use EPSG geodetic dataset</a> on the <abbr>SIS</abbr> web site.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   0.7
  */
 module org.apache.sis.referencing.database {
     requires transitive org.apache.sis.referencing;
-    requires            org.apache.derby.tools;
+    requires            org.hsqldb;
 
     exports org.apache.sis.resources.embedded;
 

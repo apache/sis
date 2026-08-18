@@ -87,7 +87,7 @@ public class TestDatabase implements AutoCloseable {
 
     /**
      * Data source for connection to an alternative database for testing purpose.
-     * If {@code null}, an in-memory Derby database will be used.
+     * If {@code null}, a {@linkplain #create(String) default in-memory database} will be used.
      *
      * This field is occasionally set to a non-null value (e.g. a connection to a PostgreSQL database) only for
      * debugging purpose. In such case, it is developer responsibility to ensure that the appropriate driver is
@@ -337,7 +337,7 @@ public class TestDatabase implements AutoCloseable {
     }
 
     /**
-     * Drops the test schema (PostgreSQL) or the test database (Derby) after usage.
+     * Drops the test schema (PostgreSQL) or the test database (HSQL, H2, Derby) after usage.
      *
      * @throws SQLException if an error occurred while dropping the test data.
      */

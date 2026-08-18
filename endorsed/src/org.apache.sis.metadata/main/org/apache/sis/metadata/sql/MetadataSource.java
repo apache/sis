@@ -325,14 +325,14 @@ public class MetadataSource implements AutoCloseable {
             } catch (Exception e) {
                 ms = MetadataFallback.INSTANCE;
                 /*
-                 * Derby sometimes wraps SQLException into another SQLException.  For making the stack strace a
+                 * Drivers sometimes wrap SQLException into another SQLException. For making the stack strace a
                  * little bit simpler, keep only the root cause provided that the exception type is compatible.
-                 * If the Derby driver was not found at all, reduce the logging level since Derby is optional.
+                 * If the driver was not found at all, reduce the logging level since databases are optional.
                  */
                 warning = Errors.forLocale(null).createLogRecord(Level.WARNING, Errors.Keys.CanNotConnectTo_1, Initializer.JNDI);
                 warning.setThrown(Exceptions.unwrap(e));
                 if (e instanceof ClassNotFoundException) {
-                    warning.setLevel(Level.CONFIG);                         // Derby driver not on the module path.
+                    warning.setLevel(Level.CONFIG);         // Driver not on the module path.
                 }
                 /*
                  * If the error is transient or has a transient cause, we will not save MetadataFallback.INSTANCE

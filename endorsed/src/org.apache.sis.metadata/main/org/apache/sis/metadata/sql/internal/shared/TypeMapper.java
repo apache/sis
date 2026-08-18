@@ -28,10 +28,10 @@ import java.sql.JDBCType;
 final class TypeMapper {
     /**
      * A list of Java classes to be mapped to SQL types. We do not want to map every SQL types,
-     * but only the ones which are of interest for the Apache SIS metadata implementation.
+     * but only the ones which are of interest for the Apache <abbr>SIS</abbr> metadata implementation.
      * The types will be tested in the order they are declared, so the last declarations are fallbacks.
      *
-     * <p>The types declared here matches both the Derby and PostgreSQL mapping.</p>
+     * <p>The types declared here matches both the PostgreSQL and Derby mapping.</p>
      */
     private static final TypeMapper[] TYPES = {
         new TypeMapper(Boolean.class, JDBCType.BOOLEAN),

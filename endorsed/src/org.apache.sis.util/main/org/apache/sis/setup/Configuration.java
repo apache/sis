@@ -57,7 +57,7 @@ import org.apache.sis.util.internal.shared.MetadataServices;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   1.0
  */
 public final class Configuration {
@@ -84,21 +84,27 @@ public final class Configuration {
     }
 
     /**
-     * Returns the data source for the SIS-wide "SpatialMetadata" database.
+     * Returns the data source for the <abbr>SIS</abbr>-wide "SpatialMetadata" database.
      * This method returns the first of the following steps that succeed:
      *
-     * <ol>
-     *   <li>If a JNDI context exists, use the data source registered under the {@code "jdbc/SpatialMetadata"} name.</li>
-     *   <li>Otherwise if a default data source {@linkplain #setDatabase has been supplied}, use that data source.</li>
-     *   <li>Otherwise if the {@code SIS_DATA} environment variable is defined,
-     *       use the data source for {@code "jdbc:derby:$SIS_DATA/Databases/SpatialMetadata"}.
+     * <ol class="verbose">
+     *   <li>If a <abbr>JNDI</abbr> context exists,
+     *       use the data source registered under the {@code "jdbc/SpatialMetadata"} name.</li>
+     *   <li>Otherwise, if a default data source {@linkplain #setDatabase has been supplied}, use that data source.</li>
+     *   <li>Otherwise, if the {@code SIS_DATA} environment variable is defined, use the following data sources
+     *      if the corresponding database driver is found, in preference order:
+     *       <ol>
+     *         <li>{@code "jdbc:hsqldb:file:$SIS_DATA/Databases/SpatialMetadata"} (<abbr>HSQL</abbr>),</li>
+     *         <li>{@code "jdbc:derby:$SIS_DATA/Databases/SpatialMetadata"} (Derby).</li>
+     *       </ol>
      *       That database will be created if it does not exist. Note that this is the only case where
      *       Apache SIS may create the database since it is located in the directory managed by Apache SIS.</li>
-     *   <li>Otherwise if the {@code org.apache.sis.referencing.database} module is present on the module path,
+     *   <li>Otherwise, if the {@code org.apache.sis.referencing.database} module is present on the module path,
      *       use the embedded database.</li>
-     *   <li>Otherwise if the "{@systemProperty derby.system.home}" property is defined,
-     *       use the data source for {@code "jdbc:derby:SpatialMetadata"} database.
+     *   <li>Otherwise, if the Derby driver is present and the {@code "derby.system.home"} property is defined,
+     *       use the data source for {@code "jdbc:derby:SpatialMetadata"}.
      *       This database will <strong>not</strong> be created if it does not exist.</li>
+     *   <li>Otherwise, (no <abbr>JNDI</abbr>, no environment variable, no Derby property set), empty.</li>
      * </ol>
      *
      * @return the data source for the {@code "SpatialMetadata"} database.
@@ -163,7 +169,7 @@ public final class Configuration {
      * This method may be useful in embedded environments that do not allow the use of shutdown hooks,
      * or when waiting for the <abbr>JVM</abbr> shutdown is overly conservative.
      *
-     * <h4>Complete shutdown</h4>
+     * <h4>Complete shutdown of Derby</h4>
      * This method shutdowns only the databases used by Apache <abbr>SIS</abbr>.
      * If Apache Derby is used for the <abbr>EPSG</abbr> database, some Derby daemon threads may still be running.
      * Those daemons can be ignored in standalone applications, but may need to be stopped in embedded environments.

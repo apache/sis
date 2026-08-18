@@ -69,8 +69,7 @@ dependencies {
     compileOnly(libs.guava)
     compileOnly(libs.aws.s3)
     compileOnly(drivers.postgres)
-    runtimeOnly(drivers.derby.core)
-    runtimeOnly(drivers.derby.tools)
+    runtimeOnly(drivers.hsql)
 
     // Test dependencies
     testImplementation(tests.junit5)
@@ -138,7 +137,7 @@ fun addExport(args : MutableList<String>, module : String, pkg : String, consume
  * The same options are required for both compiling and executing the tests.
  */
 fun addExportForTests(args : MutableList<String>) {
-    addRead(args, "org.apache.sis.metadata",    "org.apache.derby.tools,com.h2database,org.hsqldb")
+    addRead(args, "org.apache.sis.metadata",    "org.hsqldb,com.h2database,org.apache.derby.tools")
     addRead(args, "org.apache.sis.referencing", "jama,GeographicLib.Java")
     addRead(args, "org.apache.sis.storage",     "esri.geometry.api")
     addRead(args, "org.apache.sis.storage.xml", "esri.geometry.api")

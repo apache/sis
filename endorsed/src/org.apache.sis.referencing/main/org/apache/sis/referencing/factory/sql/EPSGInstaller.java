@@ -16,16 +16,17 @@
  */
 package org.apache.sis.referencing.factory.sql;
 
-import java.util.Locale;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.io.BufferedReader;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
@@ -47,7 +48,8 @@ import org.apache.sis.setup.InstallationResources;
 final class EPSGInstaller extends ScriptRunner {
     /**
      * The quoted identifiers to replace, or an empty map if none.
-     * Used for replacing enumeration types when not supported by the target database.
+     * Used for replacing enumeration types and custom collections
+     * when not supported by the target database.
      */
     private final Map<String, String> identifierReplacements;
 
@@ -68,15 +70,17 @@ final class EPSGInstaller extends ScriptRunner {
      */
     public EPSGInstaller(final Connection connection, final String schema) throws SQLException {
         super(connection, schema == null ? Constants.EPSG : schema.isEmpty() ? null : schema, 100);
-        if (isEnumTypeSupported) {
-            identifierReplacements = Map.of();
-        } else {
-            identifierReplacements = Map.of(
+        identifierReplacements = new HashMap<>();
+        if (!isEnumTypeSupported) {
+            identifierReplacements.putAll(Map.of(
                     "Datum Kind",        "VARCHAR(16)",    // Original: VARCHAR(24) for column "datum_type".
                     "CRS Kind",          "VARCHAR(13)",    // Original: VARCHAR(24) for column "coord_ref_sys_kind".
                     "CS Kind",           "VARCHAR(15)",    // Original: VARCHAR(24) for column "coord_sys_type".
                     "Supersession Type", "VARCHAR(12)",    // Original: VARCHAR(50) for column "supersession_type".
-                    "Table Name",        "VARCHAR(36)");   // Original: VARCHAR(80) for columns "object_table_name".
+                    "Table Name",        "VARCHAR(36)"));  // Original: VARCHAR(80) for columns "object_table_name".
+        }
+        if (!canCreateCollations) {
+            identifierReplacements.put("Ignore Accent and Case", "\"English 0\"");
         }
     }
 
@@ -180,6 +184,8 @@ final class EPSGInstaller extends ScriptRunner {
                 Messages.Keys.InsertDuration_2,
                 numRows,
                 time / (float) Constants.NANOS_PER_SECOND));
+
+        keepCreatedSchema();
         return true;
     }
 

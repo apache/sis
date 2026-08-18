@@ -51,7 +51,7 @@ final class UnoPkg extends ZipWriter.JDK {
     static final String MODULE = "org.apache.sis.openoffice";
 
     /**
-     * Module to decompress. We inflate the {@value} module because Derby is much slower
+     * Module to decompress. We inflate the {@value} module because queries may be slow
      * when using an embedded database in a compressed ZIP file compared to flat storage.
      * Since the JAR files are distributed in a ZIP file anyway, inflating that file has
      * little impact on the final ZIP file size.
