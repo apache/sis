@@ -102,7 +102,7 @@ public final class Generator {
     private final EnumMap<Element,String> info;
 
     /**
-     * The required dependencies as JPMS module name.
+     * The required dependencies as Java Module name.
      * Values are whether the dependency is optional.
      */
     private final Map<String,Boolean> requires;
@@ -260,7 +260,7 @@ public final class Generator {
      * Reads and rewrites the {@code pom.xml} file content.
      *
      * @param  project      the project to be published.
-     * @param  subProjects  the sub-projects, which also need to be included as dependencies across JPMS modules.
+     * @param  subProjects  the sub-projects, which also need to be included as dependencies across Java Modules.
      * @param  pub          configuration of the artifact to publish in Maven format.
      * @param  xml          provider of the original content, and where to write the result.
      */
@@ -271,7 +271,7 @@ public final class Generator {
         g.addLicensesIfEPSG();
         try {
             g.findUsedDependencies(pub.getArtifacts());
-            g.addDependencies(Dependency.jpms(project, subProjects));
+            g.addDependencies(Dependency.javaModules(project, subProjects));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

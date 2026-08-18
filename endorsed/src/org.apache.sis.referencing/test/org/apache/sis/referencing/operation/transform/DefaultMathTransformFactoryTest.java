@@ -90,7 +90,7 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
     /**
      * Tests the correction for a Java 8 bug. In Java 8, {@link ServiceLoader} didn't supported
      * the usage of two {@link Iterator} instances before the first iteration is finished.
-     * This problem has been fixed with Java Platform Module System (JPMS) implementation.
+     * This problem has been fixed with Java Module (Jigsaw) implementation.
      */
     @Test
     public void testServiceLoaderIterator() {

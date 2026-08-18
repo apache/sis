@@ -27,7 +27,7 @@ import org.apache.sis.buildtools.maven.Generator;
 
 /**
  * Extension to Gradle Maven publishing tasks.
- * The publication name must be the JPMS module name without the {@code org.apache.sis} prefix.
+ * The publication name must be the Java Module name without the {@code org.apache.sis} prefix.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -39,12 +39,12 @@ final class ModularPublishing {
 
     /**
      * The publications to handle as dependencies for other publications.
-     * Keys are JPMS module names.
+     * Keys are Java Module names.
      *
      * @todo It should not be a static field. But I didn't found another way
      *       to get the compilation results of other sub-projects.
      */
-    private static final Map<String,Dependency> publications = new HashMap<>();
+    private static final Map<String, Dependency> publications = new HashMap<>();
 
     /**
      * Creates a helper instance.

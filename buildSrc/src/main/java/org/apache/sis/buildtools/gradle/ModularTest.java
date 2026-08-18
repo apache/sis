@@ -235,7 +235,7 @@ final class ModularTest extends Conventions {
         var mainpath = task.getClasspath().filter((path) -> !path.getName().equals("test"));
         task.jvmArgs(List.of("--module-path", mainpath.getAsPath()));
         /*
-         * JPMS options.
+         * Java Module options.
          */
         final var t = new ModularTest(task.getProject());
         task.getTestClassesDirs().forEach((dir) -> {
