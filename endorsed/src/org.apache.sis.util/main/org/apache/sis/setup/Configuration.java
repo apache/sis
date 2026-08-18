@@ -184,7 +184,7 @@ public final class Configuration {
      *     }
      *     }
      *
-     * @see <a href="https://db.apache.org/derby/docs/10.15/devguide/tdevdvlp40464.html">Shutting down Derby</a>
+     * @see <a href="https://db.apache.org/derby/docs/10.17/devguide/tdevdvlp40464.html">Shutting down Derby</a>
      *
      * @since 1.5
      */

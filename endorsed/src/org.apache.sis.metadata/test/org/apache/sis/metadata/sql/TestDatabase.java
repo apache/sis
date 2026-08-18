@@ -61,7 +61,7 @@ import org.apache.sis.test.TestCase;
  *
  * <h2>References</h2>
  * <ul>
- *   <li><a href="http://db.apache.org/derby/docs/10.15/adminguide/radminembeddedserverex.html">Embedded server example</a></li>
+ *   <li><a href="http://db.apache.org/derby/docs/10.17/adminguide/radminembeddedserverex.html">Embedded server example</a></li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
