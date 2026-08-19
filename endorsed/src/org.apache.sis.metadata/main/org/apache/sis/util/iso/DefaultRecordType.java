@@ -464,6 +464,8 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
 
     /**
      * Returns a hash code value for this {@code RecordType}.
+     *
+     * @return a hash code value.
      */
     @Override
     public int hashCode() {

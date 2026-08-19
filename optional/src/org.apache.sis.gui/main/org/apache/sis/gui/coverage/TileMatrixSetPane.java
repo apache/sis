@@ -183,7 +183,6 @@ public class TileMatrixSetPane extends Widget {
         /**
          * Creates a new row for the given properties at the specified row index.
          */
-        @SuppressWarnings("this-escape")
         Row(final int row,
             final String[]   identifiers,
             final String[][] resolutions,

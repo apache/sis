@@ -177,7 +177,7 @@ public class GDALStore extends DataStore implements Aggregate {
      * @param  driver  name of the driver to use.
      * @throws DataStoreException if an error occurred while creating the data store for the given storage.
      */
-    @SuppressWarnings("this-escape")
+    @SuppressWarnings("LeakingThisInConstructor")
     GDALStore(final GDALStore parent, final String url, final String driver) throws DataStoreException {
         super(parent, parent.getProvider(), new StorageConnector(url), false);
         path     = parent.path;

@@ -189,7 +189,7 @@ final class IsolineController extends ItemController {
          *
          * @param  steps  the list of isoline levels to render.
          */
-        @SuppressWarnings("this-escape")
+        @SuppressWarnings("LeakingThisInConstructor")
         Band(final ObservableList<Step> steps) {
             this.steps = steps;
             addListeners(steps);

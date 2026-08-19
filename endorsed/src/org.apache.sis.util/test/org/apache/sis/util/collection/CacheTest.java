@@ -86,7 +86,7 @@ public final class CacheTest extends TestCaseWithGC {
     public void testPutAndUnlock() {
         final String key   = "The key";
         final String value = "The value";
-        final Cache<String,String> cache = new Cache<>();
+        final var cache = new Cache<String, String>();
         assertTrue(cache.isEmpty(), "No initial value expected.");
         assertNull(cache.peek(key), "No initial value expected.");
 
@@ -107,12 +107,13 @@ public final class CacheTest extends TestCaseWithGC {
      * @throws InterruptedException if the test has been interrupted.
      */
     @Test
+    @SuppressWarnings("UseSpecificCatch")
     public void testThreadBlocking() throws InterruptedException {
         final String    keyByMainThread =    "keyByMainThread";
         final String  valueByMainThread =  "valueByMainThread";
         final String   keyByOtherThread =   "keyByOtherThread";
         final String valueByOtherThread = "valueByOtherThread";
-        final Cache<String,String> cache = new Cache<>();
+        final var cache = new Cache<String, String>();
         final class OtherThread extends Thread {
             /**
              * If an error occurred, the cause. It may be an {@link AssertionError}.
@@ -133,7 +134,7 @@ public final class CacheTest extends TestCaseWithGC {
             @Override public void run() {
                 try {
                     final Cache.Handler<String> handler = cache.lock(keyByMainThread);
-                    assertTrue(handler instanceof Cache<?,?>.Work.Wait);
+                    assertInstanceOf(Cache.Work.Wait.class, handler);
                     assertSame(valueByMainThread, handler.peek());
                     handler.putAndUnlock(valueByMainThread);
                     assertSame(valueByMainThread, cache.peek(keyByMainThread));
@@ -142,7 +143,7 @@ public final class CacheTest extends TestCaseWithGC {
                 }
                 try {
                     final Cache.Handler<String> handler = cache.lock(keyByOtherThread);
-                    assertTrue(handler instanceof Cache<?,?>.Work);
+                    assertInstanceOf(Cache.Work.class, handler);
                     assertNull(handler.peek());
                     handler.putAndUnlock(valueByOtherThread);
                     assertSame(valueByOtherThread, cache.peek(keyByOtherThread));
@@ -160,8 +161,8 @@ public final class CacheTest extends TestCaseWithGC {
          * a value for the same key. The second thread shall block.
          */
         final Cache.Handler<String> handler = cache.lock(keyByMainThread);
-        assertTrue(handler instanceof Cache<?,?>.Work);
-        final OtherThread thread = new OtherThread();
+        assertInstanceOf(Cache.Work.class, handler);
+        final var thread = new OtherThread();
         thread.start();
         waitForBlockedState(thread);
         assertNull(cache.peek(keyByOtherThread), "The blocked thread shall not have added a value.");
@@ -204,7 +205,7 @@ public final class CacheTest extends TestCaseWithGC {
      */
     private static Statistics validateStressEntries(final String name, final Map<Integer,IntObject> cache) {
         final var statistics = new Statistics(name);
-        for (final Map.Entry<Integer,IntObject> entry : cache.entrySet()) {
+        for (final Map.Entry<Integer, IntObject> entry : cache.entrySet()) {
             final int key = entry.getKey();
             final IntObject value = entry.getValue();
             assertEquals(key*key, value.value);
@@ -222,6 +223,7 @@ public final class CacheTest extends TestCaseWithGC {
     @Test
     @Benchmark
     @Tag(Benchmark.TAG)
+    @SuppressWarnings({"UseSpecificCatch", "SleepWhileInLoop"})
     public void stress() throws InterruptedException {
         final int count = 5000;
         final var cache = new Cache<Integer, IntObject>();
