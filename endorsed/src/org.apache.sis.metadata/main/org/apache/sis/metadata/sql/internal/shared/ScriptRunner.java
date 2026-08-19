@@ -36,6 +36,7 @@ import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.resources.Errors;
 
@@ -176,7 +177,13 @@ public class ScriptRunner implements AutoCloseable {
      * Used for rolling back in case of failure. This is set to {@code null} after successful completion.
      * In principle, {@link Connection#rollback()} should be sufficient, but it appears to not be the case
      * with all databases.
+     *
+     * <p>This is a workaround for what seems to be a bug in <abbr>HSQLDB</abbr>, where
+     * {@link Connection#rollback()} does drop the schema created before the rollback.</p>
+     *
+     * @see <a href="https://sourceforge.net/p/hsqldb/bugs/1754/">Connection.rollback() does not remove schemas</a>
      */
+    @Workaround(library = "HSQLDB", version = "2.7.4")
     private String schemaToDelete;
 
     /**

@@ -450,6 +450,7 @@ public class MetadataSource implements AutoCloseable {
      *
      * Maintenance note: this method is invoked by reflection in the {@code org.apache.sis.referencing.database} module.
      * If we make this method public in a future Apache SIS version, then we can remove the reflection code.
+     * For a public method, {@code installIfAbsent()} would be a better name.
      *
      * @throws SQLException if an error occurred while inserting the metadata.
      */

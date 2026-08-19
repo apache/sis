@@ -355,12 +355,14 @@ public final class CommonCRSTest extends TestCase {
         final ProjectedCRS crs = CommonCRS.WGS84.universal(45, 3);   // UTM zone 31N.
         final IdentifiedObjectFinder finder = IdentifiedObjects.newFinder(Constants.EPSG);
         finder.setSearchDomain(IdentifiedObjectFinder.Domain.DECLARATION);
-        assertSame(crs, finder.findSingleton(crs));
         assertEquals(32631, IdentifiedObjects.lookupEPSG(crs));
+        assertSame(crs, finder.findSingleton(crs));
 
         final Conversion fromBase = crs.getConversionFromBase();
+        final Integer code = IdentifiedObjects.lookupEPSG(fromBase);
+        assumeConnectionToEPSG(code != null);
+        assertEquals(16031, code);
         assertEqualsIgnoreMetadata(fromBase, finder.findSingleton(fromBase));
-        assertEquals(16031, IdentifiedObjects.lookupEPSG(fromBase));
     }
 
     /**
