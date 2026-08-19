@@ -33,11 +33,24 @@ import org.apache.sis.storage.sql.feature.InfoStatementsTest;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class DataAccessTest extends TestCase {
     /**
      * Creates a new test case.
      */
     public DataAccessTest() {
+    }
+
+    /**
+     * Tests on the default database engine used by Apache <abbr>SIS</abbr>.
+     *
+     * @throws Exception if an error occurred while testing the database.
+     */
+    @Test
+    public void testOnDefault() throws Exception {
+        try (TestDatabase database = TestDatabase.create("SQL-DataAccess")) {
+            test(database);
+        }
     }
 
     /**
@@ -47,7 +60,7 @@ public final class DataAccessTest extends TestCase {
      */
     @Test
     public void testOnDerby() throws Exception {
-        try (TestDatabase database = TestDatabase.create("SQL-DataAccess")) {
+        try (TestDatabase database = TestDatabase.createOnDerby("SQL-DataAccess")) {
             test(database);
         }
     }
@@ -60,7 +73,7 @@ public final class DataAccessTest extends TestCase {
      */
     private void test(final TestDatabase database) throws Exception {
         database.executeSQL(List.of(InfoStatementsTest.createSpatialRefSys()));
-        try (SQLStore store = new SimpleFeatureStore(null, new StorageConnector(database.source), ResourceDefinition.table("%"));
+        try (var store = new SimpleFeatureStore(null, new StorageConnector(database.source), ResourceDefinition.table("%"));
              DataAccess dao = store.newDataAccess(true))
         {
             assertEquals(4326, dao.findSRID(HardCodedCRS.WGS84));

@@ -65,7 +65,8 @@ import static org.apache.sis.test.GeoapiAssert.assertBetween;
  */
 public final class TestFactorySource {
     /**
-     * Whether to use PostgreSQL instead of Derby for the tests. This field should be {@code false};
+     * Whether to use PostgreSQL instead of the default database for the tests.
+     * This field should be {@code false};
      * the {@code true} value is used only for temporarily debugging of PostgreSQL-specific features.
      * It is developer responsibility to setup a {@code "SpatialMetadata"} database on the local host.
      * This method differs from {@link org.apache.sis.metadata.sql.TestDatabase} by querying a permanent

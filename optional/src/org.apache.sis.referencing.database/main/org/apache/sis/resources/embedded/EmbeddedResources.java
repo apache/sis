@@ -23,7 +23,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import javax.sql.DataSource;
-import org.apache.derby.jdbc.EmbeddedDataSource;
+import org.hsqldb.jdbc.JDBCDataSource;
 import org.apache.sis.util.internal.shared.MetadataServices;
 import org.apache.sis.metadata.sql.internal.shared.Initializer;
 import org.apache.sis.setup.InstallationResources;
@@ -36,7 +36,7 @@ import org.apache.sis.util.resources.Errors;
  * which should be accepted by users before the EPSG dataset can be installed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   0.8
  *
  * @see <a href="https://epsg.org/">https://epsg.org/</a>
@@ -44,9 +44,9 @@ import org.apache.sis.util.resources.Errors;
 public class EmbeddedResources extends InstallationResources {
     /**
      * The root directory of data embedded in the <abbr>JAR</abbr> file.
-     * It must be an invalid package name, because otherwise the Java Platform Module System (JPMS) enforces
-     * encapsulation in the same way as non-exported packages, which makes the database inaccessible to Derby.
-     * This naming trick is part of <abbr>JPMS</abbr> specification, so it should be reliable.
+     * It must be an invalid package name, because otherwise the Java Module System enforces
+     * encapsulation in the same way as non-exported packages, which makes files inaccessible.
+     * This naming trick is part of Java Module specification, so it should be reliable.
      */
     static final String DIRECTORY = "SIS-DATA";
 
@@ -143,9 +143,9 @@ public class EmbeddedResources extends InstallationResources {
              * be the case when using a local build.
              */
             if (dataSource == null && EmbeddedResources.class.getResourceAsStream("LICENSE.txt") != null) {
-                final var ds = new EmbeddedDataSource();
-                ds.setDataSourceName(Initializer.DATABASE);
-                ds.setDatabaseName("classpath:" + DIRECTORY + "/Databases/" + Initializer.DATABASE);
+                final var ds = new JDBCDataSource();
+                ds.setDatabaseName(Initializer.DATABASE);
+                ds.setURL("jdbc:hsqldb:res:" + DIRECTORY + "/Databases/" + Initializer.DATABASE);
                 dataSource = ds;
             }
             return dataSource;

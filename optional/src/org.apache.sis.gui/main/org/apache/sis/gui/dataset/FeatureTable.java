@@ -105,7 +105,6 @@ public class FeatureTable extends TableView<AbstractFeature> {
      * @see #getFeatures()
      * @see #setFeatures(FeatureSet)
      */
-    @SuppressWarnings("this-escape")
     public final ObjectProperty<FeatureSet> featuresProperty = new SimpleObjectProperty<>(this, "features");
 
     /**

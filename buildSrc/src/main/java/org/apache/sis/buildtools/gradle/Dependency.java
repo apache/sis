@@ -98,7 +98,7 @@ public final class Dependency {
     private final String group, name, version;
 
     /**
-     * Name of the JPMS module of the dependency, or {@code null} if unspecified.
+     * Name of the Java Module of the dependency, or {@code null} if unspecified.
      */
     public final String module;
 
@@ -136,9 +136,9 @@ public final class Dependency {
     }
 
     /**
-     * Returns the name of the JPMS module of the dependency.
+     * Returns the name of the Java Module of the dependency.
      *
-     * @return JPMS module name, or {@code null} if unspecified.
+     * @return Java Module name, or {@code null} if unspecified.
      * @throws IOException if an I/O error occurred while reading the module description.
      */
     private String getModuleName() throws IOException {
@@ -182,15 +182,17 @@ public final class Dependency {
     }
 
     /**
-     * Returns the JPMS dependencies of the given project.
-     * Keys are JPMS module names are values are dependency descriptions.
+     * Returns the Java Module dependencies of the given project.
+     * Keys are Java Module names are values are dependency descriptions.
      *
      * @param  project      the project for which to find dependencies.
-     * @param  subProjects  the sub-projects, which also need to be included as dependencies across JPMS modules.
+     * @param  subProjects  the sub-projects, which also need to be included as dependencies across Java Modules.
      * @return dependencies of the specified project.
      * @throws IOException if an I/O error occurred while reading the module description.
      */
-    public static Map<String,Dependency> jpms(final Project project, final Collection<Dependency> subProjects) throws IOException {
+    public static Map<String, Dependency> javaModules(final Project project, final Collection<Dependency> subProjects)
+            throws IOException
+    {
         final var dependencies = new HashMap<String,Dependency>();
         final var warnings     = new HashSet<String>();
         final var sources      = find(project);

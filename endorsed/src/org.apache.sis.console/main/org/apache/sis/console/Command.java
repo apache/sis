@@ -181,13 +181,11 @@ public final class Command {
 
     /**
      * Loads the logging configuration file if not already done, then configures the monoline formatter.
-     * This method performs two main tasks:
+     * This method performs the following tasks:
      *
      * <ol>
      *   <li>If the {@value Initializer#CONFIG_FILE_PROPERTY} is <em>not</em> set, then try
      *       to set it to {@code $SIS_HOME/conf/logging.properties} and load that file.</li>
-     *   <li>If the {@code "derby.stream.error.file"} system property is not defined,
-     *       then try to set it to {@code $SIS_HOME/log/derby.log}.</li>
      *   <li>If the configuration file declares {@link MonolineFormatter} as the console formatter,
      *       ensures that the formatter is loaded and resets its colors depending on whether X364
      *       seems to be supported.</li>
@@ -204,11 +202,7 @@ public final class Command {
         final String value = System.getenv("SIS_HOME");
         if (value != null) {
             final Path home = Path.of(value).normalize();
-            Path file = home.resolve("log");
-            if (Files.isDirectory(file)) {
-                setPropertyIfAbsent("derby.stream.error.file", file.resolve("derby.log"));
-            }
-            file = home.resolve("conf").resolve("logging.properties");
+            Path file = home.resolve("conf").resolve("logging.properties");
             if (Files.isRegularFile(file)) {
                 if (setPropertyIfAbsent(Initializer.CONFIG_FILE_PROPERTY, file)) try {
                     Initializer.reload(file);

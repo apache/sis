@@ -19,7 +19,6 @@ package org.apache.sis.storage.sql.feature;
 import java.util.List;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.sql.SQLStoreProvider;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
@@ -40,7 +39,7 @@ import org.apache.sis.filter.Filter;
 
 
 /**
- * Tests the formatting of {@link Filter} as a SQL {@code WHERE} statement body.
+ * Tests the formatting of {@link Filter} as a <abbr>SQL</abbr> {@code WHERE} statement body.
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -57,10 +56,43 @@ public final class SelectionClauseWriterTest extends TestCase implements SchemaM
     private Table table;
 
     /**
+     * The catalog and schema where the tables are expected to be found.
+     */
+    private String expectedCatalog, expectedSchema;
+
+    /**
      * Creates a new test.
      */
     public SelectionClauseWriterTest() {
         FF = DefaultFilterFactory.forFeatures();
+    }
+
+    /**
+     * Tests on <abbr>H2</abbr> database.
+     *
+     * @throws Exception if an error occurred while testing the database.
+     */
+    @Test
+    public void testOnH2() throws Exception {
+        expectedCatalog = "SELECTIONCLAUSE";
+        expectedSchema  = "PUBLIC";
+        try (TestDatabase db = TestDatabase.createOnH2("SelectionClause")) {
+            run(db);
+        }
+    }
+
+    /**
+     * Tests on <abbr>HSQL</abbr> database.
+     *
+     * @throws Exception if an error occurred while testing the database.
+     */
+    @Test
+    public void testOnHSQLDB() throws Exception {
+        expectedCatalog = "PUBLIC";
+        expectedSchema  = "PUBLIC";
+        try (TestDatabase db = TestDatabase.createOnHSQLDB("SelectionClause", false)) {
+            run(db);
+        }
     }
 
     /**
@@ -70,16 +102,25 @@ public final class SelectionClauseWriterTest extends TestCase implements SchemaM
      */
     @Test
     public void testOnDerby() throws Exception {
-        try (TestDatabase db = TestDatabase.create("SelectionClause")) {
-            db.executeSQL(List.of("CREATE TABLE TEST (ALPHA INTEGER, BETA INTEGER, GAMMA INTEGER, PI FLOAT);"));
-            final var connector = new StorageConnector(db.source);
-            connector.setOption(SchemaModifier.OPTION_KEY, this);
-            try (DataStore store = new SQLStoreProvider().open(connector)) {
-                table = (Table) store.findResource("TEST");
-                testSimpleFilter();
-                testGeometricFilter();
-                testGeometricFilterWithTransform();
-            }
+        expectedCatalog = "";
+        expectedSchema  = "APP";
+        try (TestDatabase db = TestDatabase.createOnDerby("SelectionClause")) {
+            run(db);
+        }
+    }
+
+    /**
+     * Tests the creation of a table.
+     */
+    private void run(final TestDatabase db) throws Exception {
+        db.executeSQL(List.of("CREATE TABLE TEST (ALPHA INTEGER, BETA INTEGER, GAMMA INTEGER, PI FLOAT);"));
+        final var connector = new StorageConnector(db.source);
+        connector.setOption(SchemaModifier.OPTION_KEY, this);
+        try (var store = new SQLStoreProvider().open(connector)) {
+            table = assertInstanceOf(Table.class, store.findResource("TEST"));
+            testSimpleFilter();
+            testGeometricFilter();
+            testGeometricFilterWithTransform();
         }
     }
 
@@ -113,10 +154,10 @@ public final class SelectionClauseWriterTest extends TestCase implements SchemaM
      */
     @Override
     public DefaultFeatureType editFeatureType(final TableReference table, final FeatureTypeBuilder feature) {
-        assertEquals("",     table.catalog);
-        assertEquals("APP",  table.schema);
+        assertEquals(expectedCatalog, table.catalog);
+        assertEquals(expectedSchema,  table.schema);
         assertEquals("TEST", table.table);
-        ((AttributeTypeBuilder<?>) feature.getProperty("BETA")).setCRS(HardCodedCRS.WGS84);
+        assertInstanceOf(AttributeTypeBuilder.class, feature.getProperty("BETA")).setCRS(HardCodedCRS.WGS84);
         return feature.build();
     }
 

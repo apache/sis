@@ -108,7 +108,7 @@ public class IdentifiedObjectFinder {
         /**
          * Lookup based on declared identifiers and on non-deprecated objects known to the factory.
          * First, a fast lookup is performed as described in {@link #DECLARATION}.
-         * If the last lookup found some matches, those matches are returned without scanning the rest of the database.
+         * If the fast lookup found some matches, those matches are returned without scanning the rest of the database.
          * It may be an incomplete set compared to what {@link #EXHAUSTIVE_VALID_DATASET} would have returned.
          * If the fast lookup gave no result, only then an exhaustive search is performed by scanning
          * the content of the geodetic dataset.

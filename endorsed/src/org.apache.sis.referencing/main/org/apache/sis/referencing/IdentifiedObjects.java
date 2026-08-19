@@ -614,8 +614,9 @@ public final class IdentifiedObjects {
     }
 
     /**
-     * Looks up an EPSG code, such as {@code 4326}, of the specified object. This method searches in EPSG factories
-     * known to SIS for an object {@linkplain org.apache.sis.util.ComparisonMode#APPROXIMATE approximately equals}
+     * Looks up an <abbr>EPSG</abbr> code, such as {@code 4326}, of the specified object.
+     * This method searches in <abbr>EPSG</abbr> factories known to <abbr>SIS</abbr> for
+     * an object {@linkplain org.apache.sis.util.ComparisonMode#APPROXIMATE approximately equals}
      * to the specified object. If such an object is found, then its EPSG identifier is returned.
      * Otherwise or if there is ambiguity, this method returns {@code null}.
      *
@@ -635,7 +636,7 @@ public final class IdentifiedObjects {
      * @param  object  the object (usually a {@linkplain org.apache.sis.referencing.crs.AbstractCRS
      *         coordinate reference system}) whose EPSG code is to be found, or {@code null}.
      * @return the EPSG code, or {@code null} if none was found without ambiguity or if the given object was null.
-     * @throws UnavailableFactoryException if the EPSG factory is not available.
+     * @throws UnavailableFactoryException if the <abbr>EPSG</abbr> factory is not available.
      * @throws FactoryException if the lookup failed for another reason.
      *
      * @see #newFinder(String)

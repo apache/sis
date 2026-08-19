@@ -57,22 +57,26 @@ public final class MetadataWriterTest extends TestCase {
     }
 
     /**
+     * Runs all tests on the default database engine in the required order.
+     *
+     * @throws Exception if an error occurred while writing or reading the database.
+     */
+    @Test
+    public void testOnDefault() throws Exception {
+        try (final TestDatabase db = TestDatabase.create("MetadataWriter")) {
+            run(db, null);
+        }
+    }
+
+    /**
      * Runs all tests on Derby in the required order.
      *
      * @throws Exception if an error occurred while writing or reading the database.
      */
     @Test
-    public void testDerby() throws Exception {
-        try (final TestDatabase db = TestDatabase.create("MetadataWriter")) {
-            source = new MetadataWriter(MetadataStandard.ISO_19115, db.source, null, null);
-            try {
-                write();
-                search();
-                read();
-                readWriteDeprecated();
-            } finally {
-                source.close();
-            }
+    public void testOnDerby() throws Exception {
+        try (final TestDatabase db = TestDatabase.createOnDerby("MetadataWriter")) {
+            run(db, null);
         }
     }
 
@@ -85,17 +89,26 @@ public final class MetadataWriterTest extends TestCase {
     @Test
     @ResourceLock(TestDatabase.POSTGRESQL)
     @org.junit.jupiter.api.Disabled("Requires GeoAPI 3.1.")
-    public void testPostgreSQL() throws Exception {
+    public void testOnPostgreSQL() throws Exception {
         try (final TestDatabase db = TestDatabase.createOnPostgreSQL("MetadataWriter", true)) {
-            source = new MetadataWriter(MetadataStandard.ISO_19115, db.source, "MetadataWriter", null);
-            try {
-                write();
-                search();
-                read();
-                readWriteDeprecated();
-            } finally {
-                source.close();
-            }
+            run(db, "MetadataWriter");
+        }
+    }
+
+    /**
+     * Runs all tests in the required order.
+     *
+     * @throws Exception if an error occurred while writing or reading the database.
+     */
+    private void run(final TestDatabase db, final String schema) throws Exception {
+        source = new MetadataWriter(MetadataStandard.ISO_19115, db.source, schema, null);
+        try {
+            write();
+            search();
+            read();
+            readWriteDeprecated();
+        } finally {
+            source.close();
         }
     }
 

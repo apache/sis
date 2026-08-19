@@ -24,28 +24,28 @@
  *
  *
  * <h2>Connection to the database</h2>
- * Apache SIS uses the Apache Derby database by default. However, connection to the <abbr>EPSG</abbr>
- * dataset should work with any <abbr>SQL</abbr> compliant databases (tested on PostgreSQL and HSQL).
+ * Apache <abbr>SIS</abbr> uses the HSQLDB database by default. However, connection to the <abbr>EPSG</abbr>
+ * dataset should work with any <abbr>SQL</abbr> compliant databases (tested on PostgreSQL, H2 and Derby).
  * The database connection is obtained by the first of the following data sources which is found:
  *
  * <ol>
- *   <li>If a {@linkplain javax.naming.InitialContext JNDI context} exists,
+ *   <li>If a {@linkplain javax.naming.InitialContext <abbr>JNDI</abbr> context} exists,
  *       the {@link javax.sql.DataSource} registered under the {@code "java:comp/env/jdbc/SpatialMetadata"} name.</li>
  *   <li>If the {@code SIS_DATA} {@linkplain java.lang.System#getenv(String) environment variable} is defined,
- *       a JDBC connection for the {@code "jdbc:derby:$SIS_DATA/Databases/SpatialMetadata"} URL.</li>
- *   <li>If the {@code "derby.system.home"} {@linkplain java.lang.System#getProperty(String) property} is defined,
- *       a JDBC connection for the {@code "jdbc:derby:SpatialMetadata"} URL.</li>
+ *       a <abbr>JDBC</abbr> connection for the {@code "jdbc:hsqldb:file:$SIS_DATA/Databases/SpatialMetadata"} <abbr>URL</abbr>.</li>
+ *   <li>If Derby is used and the {@code "derby.system.home"} {@linkplain java.lang.System#getProperty(String) property}
+ *       is defined, a <abbr>JDBC</abbr> connection for the {@code "jdbc:derby:SpatialMetadata"} <abbr>URL</abbr>.</li>
  *   <li>If the {@code org.apache.sis.referencing.database} module is present on the module path,
  *       a read-only connection to the database in the JAR file.</li>
  * </ol>
  *
- * In choice 1, the JDBC driver must be provided by the application container (e.g. Apache Tomcat).
- * With other choices, an Apache Derby driver should be available on the module path.
+ * In choice 1, the <abbr>JDBC</abbr> driver must be provided by the application container (e.g. Apache Tomcat).
+ * With other choices, a <abbr>HSQLDB</abbr> or Apache Derby driver should be available on the module path.
  *
  *
- * <h2>The EPSG dataset</h2>
+ * <h2>The <abbr>EPSG</abbr> dataset</h2>
  * A widely-used factory is the <a href="https://epsg.org/">EPSG geodetic dataset</a>.
- * EPSG codes are numerical identifiers.
+ * <abbr>EPSG</abbr> codes are numerical identifiers.
  * For example, {@code "EPSG:4326"} is the EPSG identifier for the <q>WGS 84</q> geographic CRS.
  * As an extension, the Apache SIS implementation accepts names as well as numeric identifiers.
  * For example, the two following method calls fetch the same object:
@@ -83,7 +83,7 @@
  * @author  Jody Garnett (Refractions)
  * @author  Didier Richard (IGN)
  * @author  John Grange
- * @version 1.6
+ * @version 1.7
  *
  * @see org.apache.sis.metadata.sql
  *

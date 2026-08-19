@@ -18,15 +18,20 @@ package org.apache.sis.referencing.operation;
 
 import java.util.Map;
 import jakarta.xml.bind.annotation.XmlTransient;
+import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -78,6 +83,13 @@ public class DefiningConversion extends DefaultConversion {
      * defining conversion shall provide the fully-defined transform and no adjustments will be added.
      */
     private final boolean normalized;
+
+    /**
+     * Cached result of the call to {@code specialize(…)}.
+     *
+     * @see #specialize(CoordinateReferenceSystem, CoordinateReferenceSystem, MathTransformFactory)
+     */
+    private transient volatile Conversion cached;
 
     /**
      * Creates a defining conversion from the given transform and/or parameters.
@@ -159,5 +171,62 @@ public class DefiningConversion extends DefaultConversion {
     @Override
     public boolean normalized() {
         return normalized;
+    }
+
+    /**
+     * Returns a specialization of this conversion with non-null <abbr>CRS</abbr>s.
+     * This method should be invoked when more information become available about the conversion to create.
+     *
+     * @param  sourceCRS  the source <abbr>CRS</abbr>.
+     * @param  targetCRS  the target <abbr>CRS</abbr>.
+     * @param  factory    the factory to use for creating a transform from the parameters
+     *         or for performing axis changes, or {@code null} for the default factory.
+     * @return conversion which declares the given <abbr>CRS</abbr>s as the source and target.
+     * @throws FactoryException if the creation of a {@link MathTransform} from the {@linkplain #getParameterValues()
+     *         parameter values} failed.
+     */
+    @Override
+    public Conversion specialize(final CoordinateReferenceSystem sourceCRS,
+                                 final CoordinateReferenceSystem targetCRS,
+                                 MathTransformFactory factory) throws FactoryException
+    {
+        Conversion specialized;
+        final boolean cache = (factory == null) || (factory == DefaultMathTransformFactory.provider());
+        if (cache) {
+            specialized = cached;
+            if (specialized != null
+                    && specialized.getSourceCRS().equals(sourceCRS)
+                    && specialized.getTargetCRS().equals(targetCRS))
+            {
+                return specialized;
+            }
+        }
+        specialized = super.specialize(sourceCRS, targetCRS, factory);
+        if (cache) {
+            cached = specialized;
+        }
+        return specialized;
+    }
+
+    /**
+     * Returns a conversion which can be compared with the given object.
+     * IF {@code other} is not a defining conversion, then this method returns a fully-defined conversion
+     * resolved with the same source and target <abbr>CRS</abbr>s as {@code other}.
+     * This is necessary for allowing the comparison of {@link #getMathTransform()}.
+     *
+     * @param  other  the other operation which will be compared with this defining conversion.
+     * @return an operation which can be compared with {@code other}.
+     */
+    @Override
+    final CoordinateOperation comparableTo(final CoordinateOperation other) {
+        if (getSourceCRS() == null && getTargetCRS() == null) {     // Verified by precaution.
+            CoordinateReferenceSystem crs1, crs2;
+            if ((crs1 = other.getSourceCRS()) != null && (crs2 = other.getTargetCRS()) != null) try {
+                return specialize(crs1, crs2, null);
+            } catch (FactoryException e) {
+                Logging.ignorableException(LOGGER, DefiningConversion.class, "equals", e);
+            }
+        }
+        return this;
     }
 }

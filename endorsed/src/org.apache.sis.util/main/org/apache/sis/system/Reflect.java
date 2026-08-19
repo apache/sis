@@ -43,7 +43,7 @@ public final class Reflect implements Consumer<StackWalker.StackFrame> {
      * <p>The intent of this method is to ensure that {@link ServiceLoader#load(Class)} will find the
      * Apache SIS services even in an environment that defined an unsuitable context class loader.
      * Note that the call to {@code ServiceLoader.load(…)} must be done from the caller class.
-     * We cannot provide this convenience in this class because of JPMS encapsulation.</p>
+     * We cannot provide this convenience in this class because of Java Module encapsulation.</p>
      *
      * @return the context class loader if suitable, or another class loader otherwise.
      * @throws SecurityException if this method is not allowed to get the current thread

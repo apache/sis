@@ -165,7 +165,7 @@ import org.apache.sis.temporal.TemporalDate;
  * @author  Matthias Basler
  * @author  Andrea Aime (TOPP)
  * @author  Johann Sorel (Geomatys)
- * @version 1.6
+ * @version 1.7
  *
  * @see <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  *

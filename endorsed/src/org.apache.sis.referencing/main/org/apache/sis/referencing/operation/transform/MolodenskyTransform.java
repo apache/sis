@@ -276,6 +276,7 @@ public class MolodenskyTransform extends DatumShiftTransform {
      * @param isTarget3D     {@code true} if the new target coordinates shall have a height.
      * @param createInverse  whether to invoke {@link #redimension} for creating the inverse.
      */
+    @SuppressWarnings("LeakingThisInConstructor")
     private MolodenskyTransform(final MolodenskyTransform other,
             final boolean isSource3D, final boolean isTarget3D, final boolean createInverse)
     {
@@ -505,7 +506,7 @@ public class MolodenskyTransform extends DatumShiftTransform {
      * Transforms the (λ,φ) or (λ,φ,<var>h</var>) coordinates between two geographic CRS,
      * and optionally returns the derivative at that location.
      *
-     * @param  dstPts    the array into which the transformed coordinate is returned, or {@code null}.
+     * @param  srcPts    the array containing the source coordinates (cannot be {@code null}).
      * @param  srcOff    the offset to the point to be transformed in the source array.
      * @param  dstPts    the array into which the transformed coordinates is returned.
      * @param  dstOff    the offset to the location of the transformed point that is stored in the destination array.

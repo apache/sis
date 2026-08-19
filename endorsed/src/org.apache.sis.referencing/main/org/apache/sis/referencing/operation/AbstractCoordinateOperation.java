@@ -51,6 +51,7 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.UnsupportedImplementationException;
 import org.apache.sis.util.collection.Containers;
@@ -72,7 +73,6 @@ import org.apache.sis.metadata.internal.shared.ImplementationHelper;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.system.Loggers;
-import static org.apache.sis.util.Utilities.deepEquals;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.crs.GeneralDerivedCRS;
@@ -645,7 +645,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      *   <li>If at least one {@linkplain org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult quantitative
      *       result} is found with a linear unit, then returns the largest result value converted to metres.</li>
      *
-     *   <li>Otherwise if the operation is a {@linkplain DefaultConversion conversion},
+     *   <li>Otherwise if the operation is a {@linkplain Conversion conversion},
      *       then returns 0 since a conversion is by definition accurate up to rounding errors.</li>
      *
      *   <li>Otherwise if the operation is a {@linkplain DefaultTransformation transformation},
@@ -906,6 +906,18 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     }
 
     /**
+     * Returns a coordinate operation to substitute to this operation for comparison purposes.
+     * A substitution may be necessary for making possible to compare the {@link #transform}
+     * if one of the operations to compare is a defining operation.
+     *
+     * @param  other  the other operation which will be compared with this operation.
+     * @return an operation which can be compared with {@code other}.
+     */
+    CoordinateOperation comparableTo(final CoordinateOperation other) {
+        return this;
+    }
+
+    /**
      * Compares this coordinate operation with the specified object for equality. If the {@code mode} argument
      * is {@link ComparisonMode#STRICT} or {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then all available
      * properties are compared including the {@linkplain #getDomains() domains} and the accuracy.
@@ -942,37 +954,46 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                  *   - Scope, domain and accuracy properties only if NOT in "ignore metadata" mode.
                  *   - Interpolation CRS in all cases (regardless if ignoring metadata or not).
                  */
-                final var that = (CoordinateOperation) object;
+                CoordinateOperation that = (CoordinateOperation) object;
                 if ((mode.isIgnoringMetadata() ||
-                    (deepEquals(getCoordinateOperationAccuracy(), that.getCoordinateOperationAccuracy(), mode))) &&
-                     deepEquals(getInterpolationCRS().orElse(null), getInterpolationCRS(that), mode))
+                    (Utilities.deepEquals(getCoordinateOperationAccuracy(), that.getCoordinateOperationAccuracy(), mode))) &&
+                     Utilities.deepEquals(getInterpolationCRS().orElse(null), getInterpolationCRS(that), mode))
                 {
+                    /*
+                     * If one of the operation is a defining conversion, i.e. a conversion where the transform
+                     * has not yet been computed, while the other operation is a fully-defined conversion, then
+                     * we need to complete the defining operation before we can compare the transforms.
+                     */
+                    if (that instanceof AbstractCoordinateOperation) {
+                        that = ((AbstractCoordinateOperation) that).comparableTo(this);
+                    }
+                    final CoordinateOperation self = comparableTo(that);
                     /*
                      * At this point all metadata match or can be ignored. First, compare the targetCRS.
                      * We need to perform this comparison only if this `equals(…)` method is not invoked
-                     * from AbstractDerivedCRS, otherwise we would fall in an infinite recursive loop
-                     * (because targetCRS is the DerivedCRS, which in turn wants to compare this operation).
+                     * from `AbstractDerivedCRS.equals(…)`, otherwise the latter would call this method
+                     * again for comparing conversions and we would fall in an infinite recursive loop.
                      *
-                     * We also opportunistically use this "anti-recursion" check for another purpose.
-                     * The Semaphores.COMPARING flag should be set only when AbstractDerivedCRS is comparing
+                     * We also opportunistically use this anti-recursion check for another purpose.
+                     * The `Semaphores.COMPARING` flag should be set only when `AbstractDerivedCRS` is comparing
                      * its "from base" conversion. The flag should never be set in any other circumstance,
                      * since this is an internal Apache SIS mechanism. If we know that we are comparing the
-                     * AbstractDerivedCRS.fromBase conversion, then (in the way Apache SIS is implemented)
-                     * this.sourceCRS == AbstractDerivedCRS.baseCRS. Consequently, we can relax the check of
-                     * sourceCRS axis order if the mode is ComparisonMode.IGNORE_METADATA.
+                     * `AbstractDerivedCRS.fromBase` conversion, then (in the way Apache SIS is implemented)
+                     * `this.sourceCRS == AbstractDerivedCRS.baseCRS`. Consequently, we can relax the check
+                     * of `sourceCRS` axis order if the mode is `ComparisonMode.IGNORE_METADATA`.
                      */
                     boolean debug = false;
-                    if (Semaphores.COMPARING_CONVERSION_OR_DERIVED_CRS.set()) try {
-                        if (!deepEquals(getTargetCRS(), that.getTargetCRS(), mode)) {
-                            return false;
+                    if (Semaphores.COMPARING_CONVERSION_OR_DERIVED_CRS.set()) {
+                        try {
+                            if (!Utilities.deepEquals(self.getTargetCRS(), that.getTargetCRS(), mode)) {
+                                return false;
+                            }
+                        } finally {
+                            Semaphores.COMPARING_CONVERSION_OR_DERIVED_CRS.clear();
                         }
-                    } finally {
-                        Semaphores.COMPARING_CONVERSION_OR_DERIVED_CRS.clear();
-                    } else {
-                        if (mode.isIgnoringMetadata()) {
-                            debug = (mode == ComparisonMode.DEBUG);
-                            mode = ComparisonMode.ALLOW_VARIANT;
-                        }
+                    } else if (mode.isIgnoringMetadata()) {
+                        debug = (mode == ComparisonMode.DEBUG);
+                        mode  = ComparisonMode.ALLOW_VARIANT;
                     }
                     /*
                      * Now compare the sourceCRS, potentially with a relaxed ComparisonMode (see above comment).
@@ -980,29 +1001,45 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                      * need to take in account those difference before to compare the MathTransform. We proceed
                      * by modifying `tr2` as if it was a MathTransform with crs1 as the source instead of crs2.
                      */
-                    final CoordinateReferenceSystem crs1 = this.getSourceCRS();
+                    final CoordinateReferenceSystem crs1 = self.getSourceCRS();
                     final CoordinateReferenceSystem crs2 = that.getSourceCRS();
-                    if (deepEquals(crs1, crs2, mode)) {
-                        MathTransform tr1 = this.getMathTransform();
+                    if (Utilities.deepEquals(crs1, crs2, mode)) {
+                        MathTransform tr1 = self.getMathTransform();
                         MathTransform tr2 = that.getMathTransform();
-                        if (mode.ordinal() >= ComparisonMode.ALLOW_VARIANT.ordinal()) try {
-                            final MathTransform before = MathTransforms.linear(
-                                    CoordinateSystems.swapAndScaleAxes(crs1.getCoordinateSystem(),
-                                                                       crs2.getCoordinateSystem()));
-                            final MathTransform after = MathTransforms.linear(
-                                    CoordinateSystems.swapAndScaleAxes(that.getTargetCRS().getCoordinateSystem(),
-                                                                       this.getTargetCRS().getCoordinateSystem()));
-                            tr2 = MathTransforms.concatenate(before, tr2, after);
-                        } catch (IncommensurableException | RuntimeException e) {
-                            Logging.ignorableException(LOGGER, AbstractCoordinateOperation.class, "equals", e);
+                        if (tr2 != null && mode.ordinal() >= ComparisonMode.ALLOW_VARIANT.ordinal()) {
+                            final MathTransform before = swapAndScaleAxes(crs1, crs2);
+                            final MathTransform after  = swapAndScaleAxes(that.getTargetCRS(), self.getTargetCRS());
+                            if (before != null) tr2 = MathTransforms.concatenate(before, tr2);
+                            if (after  != null) tr2 = MathTransforms.concatenate(tr2, after);
                         }
-                        if (deepEquals(tr1, tr2, mode)) return true;
-                        assert !debug || deepEquals(tr1, tr2, ComparisonMode.DEBUG);        // For locating the mismatch.
+                        if (Utilities.deepEquals(tr1, tr2, mode)) {
+                            return true;
+                        } else if (debug) {
+                            // Try to identify the mismatched property.
+                            assert Utilities.deepEquals(tr1, tr2, ComparisonMode.DEBUG);
+                        }
                     }
                 }
             }
         }
         return false;
+    }
+
+    /**
+     * Returns a transform for applying a change of axis order and units of measurement between two <abbr>CRS</abbr>s.
+     * If any <abbr>CRS</abbr> is {@code null}, which may happen with defining operations, then returns {@code null}.
+     */
+    private static MathTransform swapAndScaleAxes(final CoordinateReferenceSystem crs1,
+                                                  final CoordinateReferenceSystem crs2)
+    {
+        if (crs1 != null && crs2 != null) try {
+            return MathTransforms.linear(CoordinateSystems.swapAndScaleAxes(crs1.getCoordinateSystem(),
+                                                                            crs2.getCoordinateSystem()));
+        } catch (IncommensurableException | RuntimeException e) {
+            // Declare `equals` as the source method becayse it is the public API.
+            Logging.ignorableException(LOGGER, AbstractCoordinateOperation.class, "equals", e);
+        }
+        return null;
     }
 
     /**

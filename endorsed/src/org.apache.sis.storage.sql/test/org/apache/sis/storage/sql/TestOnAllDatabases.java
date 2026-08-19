@@ -28,6 +28,7 @@ import org.apache.sis.metadata.sql.TestDatabase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public abstract class TestOnAllDatabases extends TestCase {
     /**
      * The schema where will be stored the features to test.
@@ -48,7 +49,7 @@ public abstract class TestOnAllDatabases extends TestCase {
     @Test
     @ResourceLock("SQLStore-Derby")
     public void testOnDerby() throws Exception {
-        try (TestDatabase database = TestDatabase.create("SQLStore")) {
+        try (TestDatabase database = TestDatabase.createOnDerby("SQLStore")) {
             test(database, true);
         }
     }

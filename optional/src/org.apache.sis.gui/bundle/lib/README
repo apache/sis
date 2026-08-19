@@ -3,7 +3,7 @@ together with the following dependencies:
 
   - JAXB API
   - JAXB implementation  (optional)
-  - Derby database       (optional)
+  - HSQL database        (optional)
 
 The following dependencies are not included
 but will be used if they are added by users:

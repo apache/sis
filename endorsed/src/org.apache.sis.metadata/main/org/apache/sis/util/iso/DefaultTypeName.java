@@ -143,6 +143,7 @@ import org.apache.sis.util.resources.Errors;
  */
 @XmlType(name = "TypeName_Type")
 @XmlRootElement(name = "TypeName")
+@SuppressWarnings("EqualsAndHashcode")
 public class DefaultTypeName extends DefaultLocalName implements TypeName {
     /**
      * Serial number for inter-operability with different versions.

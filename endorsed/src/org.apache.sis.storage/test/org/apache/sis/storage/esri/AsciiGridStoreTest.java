@@ -73,7 +73,7 @@ public final class AsciiGridStoreTest extends TestCase {
      */
     @Test
     public void testProbeContent() throws DataStoreException {
-        final AsciiGridStoreProvider p = new AsciiGridStoreProvider();
+        final var p = new AsciiGridStoreProvider();
         final ProbeResult r = p.probeContent(testData());
         assertTrue(r.isSupported());
         assertEquals("text/plain", r.getMimeType());
@@ -88,12 +88,12 @@ public final class AsciiGridStoreTest extends TestCase {
      */
     @Test
     public void testMetadata() throws DataStoreException {
-        try (AsciiGridStore store = new AsciiGridStore(null, testData(), true)) {
+        try (final var store = new AsciiGridStore(null, testData(), true)) {
             assertEquals("grid", store.getIdentifier().get().toString());
             final Metadata metadata = store.getMetadata();
             /*
              * Format information is hard-coded in "SpatialMetadata" database. Complete string should
-             * be "ESRI ArcInfo ASCII Grid format" but it depends on the presence of Derby dependency.
+             * be "ESRI ArcInfo ASCII Grid format" but it depends on the presence of metadata database.
              */
             final DataIdentification id = assertInstanceOf(
                     DataIdentification.class,
@@ -119,7 +119,7 @@ public final class AsciiGridStoreTest extends TestCase {
      */
     @Test
     public void testRead() throws DataStoreException {
-        try (AsciiGridStore store = new AsciiGridStore(null, testData(), true)) {
+        try (final var store = new AsciiGridStore(null, testData(), true)) {
             final List<Category> categories = assertSingleton(store.getSampleDimensions()).getCategories();
             assertEquals(2, categories.size());
             assertEquals(   -2, categories.get(0).getSampleRange().getMinDouble(), 1);
@@ -155,7 +155,7 @@ public final class AsciiGridStoreTest extends TestCase {
     @Test
     public void testFileSet() throws DataStoreException, IOException {
         AsciiGridStore.FileSet fileset;
-        try (AsciiGridStore store = new AsciiGridStore(null, testData(), true)) {
+        try (var store = new AsciiGridStore(null, testData(), true)) {
             fileset = store.getFileSet().orElseThrow();
         }
         final Path source = fileset.getPaths().iterator().next();
@@ -175,7 +175,7 @@ public final class AsciiGridStoreTest extends TestCase {
              * In order to test the delete operation, we need to open a new data store on the file
              * that we just copied. Otherwise, `fileset.delete()` would delete the original file.
              */
-            try (AsciiGridStore store = new AsciiGridStore(null,  new StorageConnector(target), true)) {
+            try (var store = new AsciiGridStore(null, new StorageConnector(target), true)) {
                 fileset = store.getFileSet().orElseThrow();
             }
             fileset.delete();

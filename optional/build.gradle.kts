@@ -68,8 +68,7 @@ dependencies {
     runtimeOnly   (files("${mainDepPath}/org.apache.sis.storage.geotiff"))
     runtimeOnly   (files("${mainDepPath}/org.apache.sis.storage.earthobservation"))
     api           (files("${mainDepPath}/org.apache.sis.portrayal"))
-    api           (drivers.derby.core)
-    api           (drivers.derby.tools)
+    api           (drivers.hsql)
 
     // Test dependencies
     testImplementation(drivers.postgres)
@@ -269,7 +268,7 @@ publishing {
             pom {
                 name        = "Data in embedded environment"
                 description = "Provides non-free data, including the EPSG geodetic dataset, in a single read-only JAR file. " +
-                              "This module contains a copy of EPSG geodetic dataset in an embedded Apache Derby database. " +
+                              "This module contains a copy of EPSG geodetic dataset in an embedded HSQLDB database. " +
                               "Having this artifact on the module path avoid the need to set the 'SIS_DATA' environment variable " +
                               "for using the Coordinate Reference Systems (CRS) and Coordinate Operations defined by EPSG. " +
                               "EPSG is maintained by the IOGP Surveying &amp; Positioning Committee and reproduced in this module " +

@@ -45,9 +45,9 @@ import java.util.Set;
  * {@code @version} Javadoc tags were put on all classes, public or not. It was a little bit misleading
  * because non-public classes can be moved, split, merged, <i>etc.</i>, making the meaning of "since"
  * confusing. The rule is that {@code @since} should tell when a class was first available in public API,
- * which is not necessarily when it was first created. Finally, with the use of JPMS exporting only some
- * chosen packages, the presence/absence of those tags is a useful way to remind whether or not a class
- * in process of being modified is part of public API.
+ * which is not necessarily when it was first created. Finally, with the use of Java Modules exporting
+ * only some chosen packages, the presence/absence of those tags is a useful way to remind whether or
+ * not a class in process of being modified is part of public API.
  *
  * <h2>Limitations</h2>
  * This class does only a gross analysis. It may sometime be wrong.
