@@ -30,15 +30,13 @@
         <dependency org="org.osgi"               name="osgi.core"               rev="8.0.0"/>
         <dependency org="org.junit.platform"     name="junit-platform-launcher" rev="1.10.3"/>
         <dependency org="org.junit.jupiter"      name="junit-jupiter-api"       rev="5.10.3"/>
-        <dependency org="org.apache.derby"       name="derby"                   rev="10.15.2.0"/>
-        <dependency org="org.apache.derby"       name="derbytools"              rev="10.15.2.0"/>
-        <dependency org="org.apache.derby"       name="derbyshared"             rev="10.15.2.0"/>
+        <dependency org="org.apache.derby"       name="derby"                   rev="10.17.1.0"/>
+        <dependency org="org.apache.derby"       name="derbytools"              rev="10.17.1.0"/>
+        <dependency org="org.apache.derby"       name="derbyshared"             rev="10.17.1.0"/>
         <dependency org="org.hsqldb"             name="hsqldb"                  rev="2.7.4"/>
-        <dependency org="com.h2database"         name="h2"                      rev="2.3.232"/>
+        <dependency org="com.h2database"         name="h2"                      rev="2.4.240"/>
         <dependency org="gov.nist.math"          name="jama"                    rev="1.0.3"/>
         <dependency org="net.sf.geographiclib"   name="GeographicLib-Java"      rev="2.0"/>
-        <dependency org="org.xerial"             name="sqlite-jdbc"             rev="3.45.1.0"/>
-        <dependency org="org.xerial"             name="sqlite-jdbc"             rev="3.45.1.0"/>
         <dependency org="org.xerial"             name="sqlite-jdbc"             rev="3.45.1.0"/>
         <dependency org="com.fasterxml.jackson.core" name="jackson-core"        rev="2.22.1"/>
         <dependency org="com.fasterxml.jackson.core" name="jackson-annotations" rev="2.22"/>

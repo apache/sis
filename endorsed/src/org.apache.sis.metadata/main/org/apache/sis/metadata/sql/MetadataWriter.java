@@ -214,7 +214,7 @@ public class MetadataWriter extends MetadataSource {
                     Errors.Keys.IllegalArgumentClass_2, "metadata", metadata.getClass()));
         } catch (SQLException e) {
             /*
-             * Derby sometimes wraps SQLException into another SQLException.  For making the stack strace a
+             * Drivers sometimes wrap SQLException into another SQLException. For making the stack strace a
              * little bit simpler, keep only the root cause provided that the exception type is compatible.
              */
             throw new MetadataStoreException(e.getLocalizedMessage(), Exceptions.unwrap(e));

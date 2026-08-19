@@ -17,7 +17,7 @@
 
 /**
  * Provides data, including the non-free <abbr>EPSG</abbr> geodetic dataset, in a single read-only <abbr>JAR</abbr> file.
- * This module contains a copy of the <abbr>EPSG</abbr> geodetic dataset in an embedded Apache Derby database.
+ * This module contains a copy of the <abbr>EPSG</abbr> geodetic dataset in an embedded <abbr>HSQL</abbr> database.
  * Having this module on the module-path avoid the need to set the {@code SIS_DATA} environment variable
  * for using the Coordinate Reference Systems (<abbr>CRS</abbr>) and Coordinate Operations defined by <abbr>EPSG</abbr>.
  *
@@ -29,7 +29,7 @@
  * see <a href="https://sis.apache.org/epsg.html">How to use EPSG geodetic dataset</a> on the <abbr>SIS</abbr> web site.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   0.8
  */
 package org.apache.sis.resources.embedded;

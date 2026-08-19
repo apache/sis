@@ -52,6 +52,19 @@ public final class MetadataSourceTest extends TestCase {
     }
 
     /**
+     * Tests {@link MetadataSource} with the default database engine used by Apache <abbr>SIS</abbr>.
+     * This method delegates its work to all other methods in this class that expect a {@link MetadataSource} argument.
+     *
+     * @throws Exception if an error occurred while executing the script runner.
+     */
+    @Test
+    public void testOnDefault() throws Exception {
+        try (TestDatabase db = TestDatabase.create("MetadataSource")) {
+            testAll(db);
+        }
+    }
+
+    /**
      * Tests {@link MetadataSource} with an in-memory Derby database.
      * This method delegates its work to all other methods in this class that expect a {@link MetadataSource} argument.
      *
@@ -59,7 +72,7 @@ public final class MetadataSourceTest extends TestCase {
      */
     @Test
     public void testOnDerby() throws Exception {
-        try (TestDatabase db = TestDatabase.create("MetadataSource")) {
+        try (TestDatabase db = TestDatabase.createOnDerby("MetadataSource")) {
             testAll(db);
         }
     }

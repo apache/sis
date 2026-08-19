@@ -103,7 +103,7 @@ public final class EPSGInstallerTest extends TestCaseWithLogs {
     public void testCreationOnDerby() throws Exception {
         assumeExtensiveTestsEnabled();
         final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
-        try (TestDatabase db = TestDatabase.create("EPSGInstaller")) {
+        try (TestDatabase db = TestDatabase.createOnDerby("EPSGInstaller")) {
             createAndTest(db.source, scripts);
             verifyParameterValues(db.source);
         }

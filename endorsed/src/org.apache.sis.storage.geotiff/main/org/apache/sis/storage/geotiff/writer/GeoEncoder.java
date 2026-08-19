@@ -63,6 +63,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.shared.Strings;
+import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -71,6 +72,7 @@ import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.referencing.internal.shared.CoordinateOperations;
@@ -242,9 +244,15 @@ public final class GeoEncoder {
     private int citationLengthIndex;
 
     /**
-     * Whether to disable attempts to write <abbr>EPSG</abbr> codes. This is set to {@code true} on the first
-     * failed attempt to use the <abbr>EPSG</abbr> database. This is used for avoiding many retries which will
-     * continue to fail.
+     * The object to use for searching for <abbr>EPSG</abbr> codes, of {@code null} if none.
+     * This is set to {@code null} on the first failed attempt to use the <abbr>EPSG</abbr>
+     * database in order to avoid many retries which will continue to fail.
+     */
+    private IdentifiedObjectFinder epsgCodeFinder;
+
+    /**
+     * Whether to temporarily disable the use of <abbr>EPSG</abbr> codes.
+     * This is used when {@link #isPseudoProjection} is {@code true}.
      */
     private boolean disableEPSG;
 
@@ -263,6 +271,11 @@ public final class GeoEncoder {
         keyDirectory[0] = 1;            // Directory version.
         keyDirectory[1] = 1;            // Revision major number. We implement GeoTIFF 1.1.
         keyDirectory[2] = 1;            // Revision minor number. We implement GeoTIFF 1.1.
+        try {
+            epsgCodeFinder = IdentifiedObjects.newFinder(Constants.EPSG);
+        } catch (FactoryException e) {
+            listeners.warning(e);
+        }
     }
 
     /**
@@ -423,11 +436,11 @@ public final class GeoEncoder {
      * @throws IncompatibleResourceException if a unit of measurement cannot be encoded.
      */
     private void writeCRS(final VerticalCRS crs) throws FactoryException, IncompatibleResourceException {
-        if (writeEPSG(GeoKeys.Vertical, crs)) {
+        if (writeEPSG(GeoKeys.Vertical, crs, true)) {
             writeName(GeoKeys.VerticalCitation, null, crs);
             addUnits(UnitKey.VERTICAL, crs.getCoordinateSystem());
             final VerticalDatum datum = DatumOrEnsemble.asDatum(crs);
-            if (writeEPSG(GeoKeys.VerticalDatum, datum)) {
+            if (writeEPSG(GeoKeys.VerticalDatum, datum, true)) {
                 /*
                  * OGC requirement 25.5 said "VerticalCitationGeoKey SHALL be populated."
                  * But how? Using the same multiple-names convention as for geodetic CRS?
@@ -471,7 +484,7 @@ public final class GeoEncoder {
          * Start writing GeoTIFF keys for the geodetic CRS.
          */
         writeModelType(isBaseCRS ? GeoCodes.ModelTypeProjected : type);
-        if (writeEPSG(GeoKeys.GeodeticCRS, crs)) {
+        if (writeEPSG(GeoKeys.GeodeticCRS, crs, true)) {
             writeName(GeoKeys.GeodeticCitation, "GCS Name", isPseudoProjection ? null : crs);
             writeDatum(DatumOrEnsemble.asDatum(crs));
         } else if (isBaseCRS) {
@@ -494,14 +507,13 @@ public final class GeoEncoder {
     private void writeDatum(final GeodeticDatum datum)
             throws FactoryException, IncommensurableException, IncompatibleResourceException
     {
-        if (writeEPSG(GeoKeys.GeodeticDatum, datum)) {
+        if (writeEPSG(GeoKeys.GeodeticDatum, datum, true)) {
             appendName(WKTKeywords.Datum, datum);
             final boolean previous = disableEPSG;
-            disableEPSG &= !isPseudoProjection;     // Re-enable the use of EPSG codes for the prime meridian.
-
+            disableEPSG = false;    // Re-enable the use of EPSG codes for the prime meridian.
             double longitude = 0;   // Means "do not write prime meridian".
             final PrimeMeridian primem = datum.getPrimeMeridian();
-            if (writeEPSG(GeoKeys.PrimeMeridian, primem)) {
+            if (writeEPSG(GeoKeys.PrimeMeridian, primem, true)) {
                 appendName(WKTKeywords.PrimeM, datum);
                 longitude = primem.getGreenwichLongitude();
             }
@@ -532,7 +544,7 @@ public final class GeoEncoder {
         final UnitConverter toLinear   = axisUnit.getConverterToAny(linearUnit != null ? linearUnit : axisUnit);
         writeUnit(UnitKey.LINEAR);     // Must be after the `units` map has been updated.
         writeUnit(UnitKey.ANGULAR);
-        if (writeEPSG(GeoKeys.Ellipsoid, ellipsoid)) {
+        if (writeEPSG(GeoKeys.Ellipsoid, ellipsoid, true)) {
             appendName(WKTKeywords.Ellipsoid, ellipsoid);
             double axisLength = toLinear.convert(ellipsoid.getSemiMajorAxis());
             writeDouble(GeoKeys.SemiMajorAxis, axisLength);
@@ -572,10 +584,10 @@ public final class GeoEncoder {
         disableEPSG = isPseudoProjection;
         writeCRS(crs.getBaseCRS(), true);
         disableEPSG = previous;
-        if (writeEPSG(GeoKeys.ProjectedCRS, crs)) {
+        if (writeEPSG(GeoKeys.ProjectedCRS, crs, true)) {
             writeName(GeoKeys.ProjectedCitation, null, crs);
             addUnits(UnitKey.PROJECTED, crs.getCoordinateSystem());
-            if (writeEPSG(GeoKeys.Projection, projection)) {
+            if (writeEPSG(GeoKeys.Projection, projection, false)) {
                 final short projCode = getGeoCode(0, method);
                 writeShort(GeoKeys.ProjMethod, projCode);
                 writeUnit(UnitKey.PROJECTED);
@@ -762,14 +774,25 @@ public final class GeoEncoder {
 
     /**
      * Writes the <abbr>EPSG</abbr> code of the given object, or {@value GeoCodes#userDefined} if none.
-     * Returns whether the caller should write user-defined object in replacement or in addition to EPSG code.
+     * Returns whether the caller should write user-defined object in addition or in replacement to the
+     * <abbr>EPSG</abbr> code.
+     *
+     * <p>The {@code search} argument specifies whether to search in the <abbr>EPSG</abbr> database
+     * if the given object does not declare a code or if its code seems incorrect. Search should be
+     * enabled for <abbr>CRS</abbr> and for datum, because datum name and code are the only ways to
+     * differentiate them. The search should be disabled for the projection parameters because they
+     * are usually implied by the projected <abbr>CRS</abbr> and the search for coordinate operation
+     * can be very expansive.</p>
      *
      * @param  key     the numeric identifier of the GeoTIFF key.
      * @param  object  the object for which to get the EPSG code.
+     * @param  search  whether to allow a potentially expensive search in the <abbr>EPSG</abbr> database.
      * @return whether the caller should write user-defined object.
      * @throws FactoryException if an error occurred while fetching the EPSG code.
      */
-    private boolean writeEPSG(final short key, final IdentifiedObject object) throws FactoryException {
+    private boolean writeEPSG(final short key, final IdentifiedObject object, final boolean search)
+            throws FactoryException
+    {
         if (object == null) {
             writeShort(key, GeoCodes.undefined);
             missingValue(key);
@@ -784,11 +807,18 @@ public final class GeoEncoder {
          * specifications become stricter, so we are already "strict" regarding usages of EPSG codes.
          */
         short epsg = GeoCodes.userDefined;
-        if (!disableEPSG) try {
-            epsg = toShortEPSG(IdentifiedObjects.lookupEPSG(object));
+        if (epsgCodeFinder != null && !disableEPSG) try {
+            epsgCodeFinder.setSearchDomain(search ? IdentifiedObjectFinder.Domain.VALID_DATASET
+                                                  : IdentifiedObjectFinder.Domain.DECLARATION);
+            Identifier id = IdentifiedObjects.getIdentifier(epsgCodeFinder.findSingleton(object), Citations.EPSG);
+            if (id != null) try {
+                epsg = toShortEPSG(Integer.valueOf(id.getCode()));
+            } catch (NumberFormatException e) {
+                listeners.warning(e);
+            }
         } catch (UnavailableFactoryException e) {
             listeners.warning(Level.FINE, null, e);
-            disableEPSG = true;
+            epsgCodeFinder = null;
         }
         writeShort(key, epsg);
         return REDUNDANT || (epsg == GeoCodes.userDefined);

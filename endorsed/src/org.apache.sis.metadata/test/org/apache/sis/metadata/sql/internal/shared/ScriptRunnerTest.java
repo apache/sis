@@ -40,31 +40,39 @@ public final class ScriptRunnerTest extends TestCase {
     }
 
     /**
-     * Tests {@link ScriptRunner} with an in-memory Derby database.
-     * This method delegates its work to all other methods in this class that expect a {@link ScriptRunner} argument.
+     * Tests {@link ScriptRunner} with the default database engine used by Apache <abbr>SIS</abbr>.
      *
      * @throws SQLException if an error occurred while executing the script runner.
      */
     @Test
-    public void testOnDerby() throws SQLException {
+    public void testOnDefault() throws SQLException {
         try (TestDatabase db = TestDatabase.create("ScriptRunner");
              Connection c = db.source.getConnection())
         {
-            final ScriptRunner sr = new ScriptRunner(c, null, 3);
-            testSupportedFlags(sr);
+            final var sr = new ScriptRunner(c, null, 3);
+            assertFalse(sr.isEnumTypeSupported);
+            assertFalse(sr.canCreateCollations);
+            assertTrue (sr.isCollationSupported);
             testRegularExpressions(sr);
         }
     }
 
     /**
-     * Verifies the values of {@code is*Supported} flags in the given script runner.
+     * Tests {@link ScriptRunner} with an in-memory Derby database.
      *
-     * @param  sr  the script runner for which to verify flag values.
+     * @throws SQLException if an error occurred while executing the script runner.
      */
-    @TestStep
-    public static void testSupportedFlags(final ScriptRunner sr) {
-        assertFalse(sr.isEnumTypeSupported);
-        assertFalse(sr.isCollationSupported);
+    @Test
+    public void testOnDerby() throws SQLException {
+        try (TestDatabase db = TestDatabase.createOnDerby("ScriptRunner");
+             Connection c = db.source.getConnection())
+        {
+            final var sr = new ScriptRunner(c, null, 3);
+            assertFalse(sr.isEnumTypeSupported);
+            assertFalse(sr.canCreateCollations);
+            assertFalse(sr.isCollationSupported);
+            testRegularExpressions(sr);
+        }
     }
 
     /**

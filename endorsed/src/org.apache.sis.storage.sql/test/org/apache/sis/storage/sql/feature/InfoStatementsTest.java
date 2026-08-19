@@ -56,7 +56,7 @@ import org.apache.sis.referencing.datum.HardCodedDatum;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class InfoStatementsTest extends TestCase {
     /**
-     * A in-memory database on Derby.
+     * A in-memory database using the default embedded database.
      */
     private final TestDatabase test;
 
@@ -101,7 +101,7 @@ public final class InfoStatementsTest extends TestCase {
     public void initialize() throws Exception {
         test.executeSQL(List.of(createSpatialRefSys()));
         connection = test.source.getConnection();
-        database = new Database<>(test.source, connection.getMetaData(), Dialect.DERBY,
+        database = new Database<>(test.source, connection.getMetaData(), Dialect.HSQL,
                                   Geometries.factory(GeometryLibrary.JAVA2D), null,
                                   new StoreListeners(null, new DataStoreMock("Unused")), null);
         /*
@@ -123,7 +123,7 @@ public final class InfoStatementsTest extends TestCase {
     @Test
     public void testFindSRID() throws Exception {
         final Connection c = connection;
-        try (InfoStatements info = new InfoStatements(database, c)) {
+        try (var info = new InfoStatements(database, c)) {
             c.setReadOnly(true);
             final CoordinateReferenceSystem crs = HardCodedCRS.WGS84;
             var e = assertThrows(DataStoreReferencingException.class, () -> info.findSRID(crs));

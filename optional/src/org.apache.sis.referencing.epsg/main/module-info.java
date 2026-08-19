@@ -15,9 +15,9 @@
  */
 
 /**
- * SQL scripts for EPSG geodetic data set installation.
+ * <abbr>SQL</abbr> scripts for <abbr>EPSG</abbr> geodetic data set installation.
  * This module provides the <abbr>EPSG</abbr> data of the {@code org.apache.sis.referencing.database} module,
- * but in a form that allows installation on <abbr>SQL</abbr> databases other than Apache Derby.
+ * but in a form that allows installation in different <abbr>SQL</abbr> databases.
  *
  * <h2>Licensing</h2>
  * EPSG is maintained by the <a href="https://www.iogp.org/">International Association of Oil and Gas Producers</a>

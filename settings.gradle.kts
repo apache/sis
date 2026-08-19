@@ -86,8 +86,7 @@ dependencyResolutionManagement {
         create("drivers") {
             version("derby") {
                 strictly("[10.0, 11.0[")
-                prefer("10.15.2.0")         // 10.15 is the last series compatible with JDK 11.
-                // If the derby version is updated, search for that version number in Javadoc.
+                prefer("10.17.1.0")
             }
             // Derby vulnerabiliy: https://nvd.nist.gov/vuln/detail/CVE-2022-46337
             // Fix would require an upgrade to Java 21.
@@ -95,7 +94,7 @@ dependencyResolutionManagement {
             library("derby.tools",   "org.apache.derby",       "derbytools") .versionRef("derby")
             library("postgres",      "org.postgresql",         "postgresql") .version {prefer("42.7.7")}
             library("hsql",          "org.hsqldb",             "hsqldb")     .version {strictly("[2.0, 3.0["); prefer("2.7.4")}
-            library("h2",            "com.h2database",         "h2")         .version {strictly("[2.0, 3.0["); prefer("2.3.232")}
+            library("h2",            "com.h2database",         "h2")         .version {strictly("[2.0, 3.0["); prefer("2.4.240")}
         }
     }
 }

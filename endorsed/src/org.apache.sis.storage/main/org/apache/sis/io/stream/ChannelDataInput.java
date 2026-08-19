@@ -1287,6 +1287,7 @@ loop:   while (hasRemaining()) {
      * position is valid for the new channel position.
      *
      * @param  takeOver  the {@link ChannelDataOutput} which will continue operations after this instance.
+     * @throws IOException if an error occurred while reading or writing bytes.
      *
      * @see ChannelDataOutput#ChannelDataOutput(ChannelDataInput)
      */

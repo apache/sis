@@ -58,7 +58,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
 
     /**
      * The database product to use.
-     * Currently supported values are {@link Dialect#DERBY} and {@link Dialect#HSQL}.
+     * Currently supported values are {@link Dialect#HSQL} and {@link Dialect#DERBY}.
      */
     private final Dialect dialect;
 
@@ -84,7 +84,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
      * the {@link #initialize()} method shall be invoked after construction,
      * unless the caller decides to discard this {@code LocalDataSource} instance.
      *
-     * @param  dialect  {@link Dialect#DERBY} or {@link Dialect#HSQL}.
+     * @param  dialect  {@link Dialect#HSQL} or {@link Dialect#DERBY}.
      * @param  dbFile   path to the database to open on the local file system.
      * @param  create   whether the database needs to be created.
      */
@@ -100,7 +100,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
      * to {@link #initialize()} after construction.
      *
      * @param  database  database name (usually {@value Initializer#DATABASE}).
-     * @param  dialects  {@link Dialect#DERBY} and/or {@link Dialect#HSQL}.
+     * @param  dialects  {@link Dialect#HSQL} and/or {@link Dialect#DERBY}.
      * @return the local data sources (not yet initialized), or {@code null} if none.
      *         If non-null, then the array is guaranteed to contain at least one element.
      */
@@ -122,8 +122,8 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
                  * SIS_DATA directory defined: will search only there (no search in the Derby home directory).
                  * If a "derby.system.home" property is set, we may be able to get a shorter path by making it
                  * relative to Derby home. The intent is to have a nicer URL like "jdbc:derby:SpatialMetadata"
-                 * instead of "jdbc:derby:/a/long/path/to/SIS/Data/Databases/SpatialMetadata".   In addition
-                 * to making loggings and EPSGDataAccess.getAuthority() output nicer, it also reduces the risk
+                 * instead of "jdbc:derby:/a/long/path/to/SIS/Data/Databases/SpatialMetadata". In addition to
+                 * making loggings and `EPSGDataAccess.getAuthority()` output nicer, it also reduces the risk
                  * of encoding issues if the path contains spaces or non-ASCII characters.
                  */
                 Path path = dir.resolve(database);
@@ -175,10 +175,10 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
     static DataSource wrap(final DataSource source) {
         final Dialect dialect;
         final String cn = source.getClass().getName();
-        if (cn.startsWith("org.apache.derby.")) {
-            dialect = Dialect.DERBY;
-        } else if (cn.startsWith("org.hsqldb.")) {
+        if (cn.startsWith("org.hsqldb.")) {
             dialect = Dialect.HSQL;
+        } else if (cn.startsWith("org.apache.derby.")) {
+            dialect = Dialect.DERBY;
         } else {
             return source;
         }

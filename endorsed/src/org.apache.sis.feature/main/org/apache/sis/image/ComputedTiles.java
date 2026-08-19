@@ -83,7 +83,7 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
      * @param  image  the image for which to release tiles on garbage-collection.
      * @param  ws     sources to observe for changes, or {@code null} if none.
      */
-    @SuppressWarnings("this-escape")
+    @SuppressWarnings("LeakingThisInConstructor")
     ComputedTiles(final ComputedImage image, final WritableRenderedImage[] ws) {
         super(image, ReferenceQueueConsumer.QUEUE);
         cachedTiles = new HashMap<>();

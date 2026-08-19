@@ -36,6 +36,7 @@ import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.resources.Errors;
 
@@ -60,7 +61,7 @@ public class ScriptRunner implements AutoCloseable {
      * this keyword must be last before the comma in the declaration of a column. Example:
      *
      * {@snippet lang="sql" :
-     * coord_sys_name VARCHAR(254) NOT NULL COLLATE "Ignore Accent and Case",
+     * coord_sys_name VARCHAR(254) COLLATE "Ignore Accent and Case" NOT NULL,
      * }
      *
      * @see #editTableCreation(StringBuilder)
@@ -125,7 +126,7 @@ public class ScriptRunner implements AutoCloseable {
      *
      * @see #addReplacement(String, String)
      */
-    private final Map<String,String> replacements;
+    private final Map<String, String> replacements;
 
     /**
      * The quote character for identifiers actually used in the database,
@@ -155,7 +156,7 @@ public class ScriptRunner implements AutoCloseable {
 
     /**
      * {@code true} if the database supports collations in the way used by Apache <abbr>SIS</abbr>.
-     * The way to use collations vary a lot between databases, so the "<abbr>SIS</abbr> way" is the
+     * The way to use collations varies a lot between databases, so the "<abbr>SIS</abbr> way" is the
      * PostgreSQL way for now. A value of {@code false} does not necessarily means that the database
      * does not support collations at all, but the database does not support {@code CREATE COLLATION}
      * statements and collations declared in column definitions.
@@ -165,9 +166,30 @@ public class ScriptRunner implements AutoCloseable {
     protected final boolean isCollationSupported;
 
     /**
+     * Whether the database supports the creation of user-defined collations.
+     * If {@code false} while {@link #isCollationSupported} is {@code true},
+     * then the database supports only a hard-coded list of collations.
+     */
+    protected final boolean canCreateCollations;
+
+    /**
+     * The schema which has been created and to delete in case of failure, or {@code null} if none.
+     * Used for rolling back in case of failure. This is set to {@code null} after successful completion.
+     * In principle, {@link Connection#rollback()} should be sufficient, but it appears to not be the case
+     * with all databases.
+     *
+     * <p>This is a workaround for what seems to be a bug in <abbr>HSQLDB</abbr>, where
+     * {@link Connection#rollback()} does drop the schema created before the rollback.</p>
+     *
+     * @see <a href="https://sourceforge.net/p/hsqldb/bugs/1754/">Connection.rollback() does not remove schemas</a>
+     */
+    @Workaround(library = "HSQLDB", version = "2.7.4")
+    private String schemaToDelete;
+
+    /**
      * The maximum number of rows allowed per {@code "INSERT"} statement.
      * This is 1 if the database does not support multi-rows insertion.
-     * For other database, this is set to an arbitrary "reasonable" value since attempts to insert
+     * For other database, this is set to an arbitrary reasonable value since attempts to insert
      * too many rows with a single statement on Derby database cause a {@link StackOverflowError}.
      */
     private final int maxRowsPerInsert;
@@ -184,7 +206,8 @@ public class ScriptRunner implements AutoCloseable {
      *
      * <ul>
      *   <li>{@link #isEnumTypeSupported} for {@code "CREATE TYPE …"} or {@code "CREATE CAST …"} statements.</li>
-     *   <li>{@link #isCollationSupported} for {@code "CREATE COLLATION …"} statements.</li>
+     *   <li>{@link #canCreateCollations} for {@code "CREATE COLLATION …"} statements.</li>
+     *   <li>{@link #isCollationSupported} for {@value #COLLATE} statements after column definitions.</li>
      *   <li>{@link Dialect#supportsGrantUsageOnSchema} for {@code "GRANT USAGE ON SCHEMA …"} statements.</li>
      *   <li>{@link Dialect#supportsGrantSelectOnTable} for {@code "GRANT SELECT ON TABLE …"} statements.</li>
      *   <li>{@link Dialect#supportsComment} for {@code "COMMENT ON …"} statements.</li>
@@ -244,19 +267,19 @@ public class ScriptRunner implements AutoCloseable {
         metadata         = connection.getMetaData();
         dialect          = Dialect.guess(metadata);
         identifierQuote  = metadata.getIdentifierQuoteString();
+        statement        = connection.createStatement();
         if (schemaToCreate != null && metadata.supportsSchemasInTableDefinitions()) {
-            try (Statement stmt = connection.createStatement()) {
-                stmt.executeUpdate("CREATE SCHEMA " + identifierQuote + schemaToCreate + identifierQuote);
-                if (dialect.supportsGrantUsageOnSchema()) {
-                    stmt.executeUpdate("GRANT USAGE ON SCHEMA " + identifierQuote + schemaToCreate + identifierQuote + " TO PUBLIC");
-                }
+            statement.executeUpdate("CREATE SCHEMA " + identifierQuote + schemaToCreate + identifierQuote);
+            if (dialect.supportsGrantUsageOnSchema()) {
+                statement.executeUpdate("GRANT USAGE ON SCHEMA " + identifierQuote + schemaToCreate + identifierQuote + " TO PUBLIC");
             }
+            schemaToDelete = schemaToCreate;
             connection.setSchema(schemaToCreate);   // Must be set before the next call to `createStatement()` below.
         }
-        statement = connection.createStatement();
         switch (dialect) {
             default: {
                 isEnumTypeSupported  = false;
+                canCreateCollations  = false;
                 isCollationSupported = false;
                 break;
             }
@@ -264,11 +287,13 @@ public class ScriptRunner implements AutoCloseable {
                 final int version = metadata.getDatabaseMajorVersion();
                 isEnumTypeSupported  = (version >=  9);
                 isCollationSupported = (version >= 18);     // ICU collation provider available since version 15, except LIKE support which is since 18.
+                canCreateCollations  = isCollationSupported;
                 break;
             }
             case HSQL: {
                 isEnumTypeSupported  = false;
-                isCollationSupported = false;
+                canCreateCollations  = false;
+                isCollationSupported = true;
                 /*
                  * HSQLDB stores tables in memory by default. For storing the tables on files, we have to
                  * use "CREATE CACHED TABLE" statement, which is HSQL-specific. For avoiding SQL dialect,
@@ -288,7 +313,7 @@ public class ScriptRunner implements AutoCloseable {
         if (!isEnumTypeSupported) {
             addStatementToSkip("CREATE\\s+(?:TYPE|CAST)\\s+.*");
         }
-        if (!isCollationSupported) {
+        if (!canCreateCollations) {
             addStatementToSkip("CREATE\\s+COLLATION\\s+.*");
         }
         if (!dialect.supportsAllGrants()) {
@@ -325,7 +350,8 @@ public class ScriptRunner implements AutoCloseable {
      *
      * <ul>
      *   <li>{@code "CREATE TYPE …"} or {@code "CREATE CAST …"} if {@link #isEnumTypeSupported} is {@code false}.</li>
-     *   <li>{@code "CREATE COLLATION …"} if {@link #isCollationSupported} is {@code false}.</li>
+     *   <li>{@code "CREATE COLLATION …"} if {@link #canCreateCollations} is {@code false}.</li>
+     *   <li>{@value #COLLATE} after column definitions if {@link #isCollationSupported} is  {@code false}.</li>
      *   <li>{@code "GRANT USAGE ON SCHEMA …"} if {@link Dialect#supportsGrantUsageOnSchema} is {@code false}.</li>
      *   <li>{@code "GRANT SELECT ON TABLE …"} if {@link Dialect#supportsGrantSelectOnTable} is {@code false}.</li>
      *   <li>{@code "COMMENT ON …"} if {@link Dialect#supportsComment} is {@code false}.</li>
@@ -689,7 +715,7 @@ parseLine:  while (pos < length) {
      * {@snippet lang="sql" :
      *   CREATE TABLE "Coordinate System" (
      *     coord_sys_code INTEGER NOT NULL,
-     *     coord_sys_name VARCHAR(254) NOT NULL COLLATE "Ignore Accent and Case",
+     *     coord_sys_name VARCHAR(254) COLLATE "Ignore Accent and Case" NOT NULL,
      *     CONSTRAINT pk_coordinatesystem PRIMARY KEY (coord_sys_code))
      *   }
      *
@@ -823,6 +849,15 @@ parseLine:  while (pos < length) {
     }
 
     /**
+     * Confirms that the schema specified at construction time should not be deleted.
+     * This method must be invoked before {@link #close()} if the script completed successfully,
+     * unless no schema was specified at construction time in which case invoking this method is optional.
+     */
+    public void keepCreatedSchema() {
+        schemaToDelete = null;
+    }
+
+    /**
      * Closes the statement used by this runner. Note that this method does not close the connection
      * given to the constructor; this connection still needs to be closed explicitly by the caller.
      *
@@ -830,6 +865,11 @@ parseLine:  while (pos < length) {
      */
     @Override
     public void close() throws SQLException {
+        final String schema = schemaToDelete;
+        if (schema != null) {
+            schemaToDelete = null;
+            statement.executeUpdate("DROP SCHEMA " + identifierQuote + schema + identifierQuote + " CASCADE");
+        }
         statement.close();
     }
 

@@ -26,6 +26,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.util.ArgumentChecks;
 
 

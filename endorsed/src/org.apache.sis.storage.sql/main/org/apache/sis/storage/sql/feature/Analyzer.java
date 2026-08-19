@@ -17,6 +17,7 @@
 package org.apache.sis.storage.sql.feature;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
@@ -105,17 +106,22 @@ public final class Analyzer {
     private final String[] tableTypes;
 
     /**
+     * Names of schemas to ignore.
+     */
+    private final Set<String> ignoredSchemas;
+
+    /**
      * Names of tables to ignore. This map includes at least the tables defined by the spatial
      * schema standard for storing geometry columns, spatial reference systems, <i>etc</i>.
      * The values tell whether the associated table exists in the database.
      */
-    private final Map<String,Boolean> ignoredTables;
+    private final Map<String, Boolean> ignoredTables;
 
     /**
      * All tables created by analysis of the database structure. A {@code null} value means that the table
      * is in process of being created. This may happen if there is cyclic dependencies between tables.
      */
-    private final Map<GenericName,Table> featureTables;
+    private final Map<GenericName, Table> featureTables;
 
     /**
      * Warnings found while analyzing a database structure. Duplicated warnings are omitted.
@@ -194,6 +200,10 @@ public final class Analyzer {
             case DUCKDB:     database = new DuckDB<>  (source, metadata, dialect, g, contentLocale, listeners, locks); break;
             default:         database = new Database<>(source, metadata, dialect, g, contentLocale, listeners, locks); break;
         }
+        switch (dialect) {
+            case H2: ignoredSchemas = Collections.singleton("INFORMATION_SCHEMA"); break;
+            default: ignoredSchemas = Collections.emptySet(); break;    // Need an implementation which accepts null.
+        }
         ignoredTables = database.detectSpatialSchema(metadata, tableTypes);
     }
 
@@ -233,6 +243,9 @@ public final class Analyzer {
             final String[] names = TableReference.splitName(tableName);
             try (ResultSet reflect = metadata.getTables(names[2], names[1], names[0], tableTypes)) {
                 while (reflect.next()) {
+                    if (ignoredSchemas.contains(reflect.getString(Reflection.TABLE_SCHEM))) {
+                        continue;
+                    }
                     final String table = getUniqueString(reflect, Reflection.TABLE_NAME);
                     if (ignoredTables.containsKey(table)) {
                         continue;

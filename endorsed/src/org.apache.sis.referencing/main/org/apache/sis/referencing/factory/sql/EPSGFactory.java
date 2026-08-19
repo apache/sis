@@ -57,7 +57,7 @@ import org.apache.sis.util.resources.Messages;
  *
  * <p>If no data source has been specified to the constructor, then {@code EPSGFactory} searches for a
  * default data source in JNDI, or in the directory given by the {@code SIS_DATA} environment variable,
- * or in the directory given by the {@code "derby.system.home"} property, in that order.
+ * or in the directory given by the {@code "derby.system.home"} property (if using Derby), in that order.
  * See the {@linkplain org.apache.sis.referencing.factory.sql package documentation} for more information.</p>
  *
  * <h2>EPSG dataset installation</h2>
@@ -74,7 +74,7 @@ import org.apache.sis.util.resources.Messages;
  * subclass.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  *
  * @see EPSGDataAccess
  * @see SQLTranslator
@@ -390,7 +390,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
             if (autoCommit) {
                 connection.setAutoCommit(false);
             }
-            try (EPSGInstaller installer = new EPSGInstaller(connection, schema)) {
+            try (var installer = new EPSGInstaller(connection, schema)) {
                 try {
                     success = installer.run(scriptProvider, locale);
                 } catch (IOException | SQLException e) {
@@ -422,7 +422,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                                           : Messages.Keys.NoDataSourceFound_1, Constants.EPSG);
             }
             /*
-             * Derby sometimes wraps SQLException into another SQLException.  For making the stack strace a
+             * Drivers sometimes wrap SQLException into another SQLException. For making the stack strace a
              * little bit simpler, keep only the root cause provided that the exception type is compatible.
              */
             var exception = new UnavailableFactoryException(message, Exceptions.unwrap(failure));
@@ -450,6 +450,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      *         This exception usually has a {@link SQLException} as its cause.
      */
     @Override
+    @SuppressWarnings("UseSpecificCatch")
     protected EPSGDataAccess newDataAccess() throws FactoryException {
         UnavailableFactoryException exception;
         Connection connection = null;
@@ -494,7 +495,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                 throw (FactoryException) e;
             }
             /*
-             * Derby sometimes wraps SQLException into another SQLException.  For making the stack strace a
+             * Drivers sometimes wraps SQLException into another SQLException. For making the stack strace a
              * little bit simpler, keep only the root cause provided that the exception type is compatible.
              */
             exception = new UnavailableFactoryException(canNotUse(e), Exceptions.unwrap(e));

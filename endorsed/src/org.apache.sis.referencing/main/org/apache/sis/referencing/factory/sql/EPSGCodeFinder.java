@@ -414,7 +414,14 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
                 new FloatCondition("SEMI_MAJOR_AXIS", ((Ellipsoid) object).getSemiMajorAxis())
             };
         } else try {
-            // Not a supported type. Returns all codes if not too expensive.
+            /*
+             * Not a CRS, Datum, Ellipsoid or other supported type. Returns the authority codes of all objects
+             * that may be of the same type as the object to search. The caller will need to filter these codes
+             * by instantiating them and comparing them with `object`. Note that this is particularly expensive
+             * in the case of `CoordinateOperation` which has thousands of entries. But it is difficult to find
+             * a SQL statement capable to filter `CoordinateOperation` definitions because the given object may
+             * use operation method and parameter values that ar different while equivalent to EPSG definitions.
+             */
             return dao.getAuthorityCodes(object, addTo);
         } catch (SQLException exception) {
             throw databaseFailure(exception);
