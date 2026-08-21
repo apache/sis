@@ -97,9 +97,10 @@ final class Inflater implements Runnable {
      */
     private void doInBackground() throws Exception {
         destination = wizard.javafxFinder.getDestinationDirectory();
+        final String filePrefix = destination.getCanonicalPath() + File.separator;
         final JProgressBar progressBar = wizard.inflateProgress;
         final byte[] buffer = new byte[65536];
-        try (ZipFile zip = new ZipFile(source)) {
+        try (final var zip = new ZipFile(source)) {
             final int size = zip.size();
             EventQueue.invokeAndWait(() -> progressBar.setMaximum(size));
             final Enumeration<? extends ZipEntry> entries = zip.entries();
@@ -107,6 +108,9 @@ final class Inflater implements Runnable {
             while (entries.hasMoreElements()) {
                 final ZipEntry entry = entries.nextElement();
                 final File file = new File(destination, entry.getName());
+                if (!file.getCanonicalPath().startsWith(filePrefix)) {
+                    throw new IOException("Entry outside of target directory: " + entry);
+                }
                 if (entry.isDirectory()) {
                     if (!file.isDirectory() && !file.mkdir()) {
                         throw new IOException("Directory cannot be created: " + file);
