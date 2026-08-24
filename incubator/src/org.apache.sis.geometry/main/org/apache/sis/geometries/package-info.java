@@ -37,18 +37,12 @@
  *   <li>SRID : replaced by getCoordinateReferenceSystem</li>
  *   <li>is3D : look at geometry CoordinateReferenceSystem instead</li>
  *   <li>isMeasured() : replaced by Attributive interface which holds more informations.</li>
- *   <li>Relation and query function have been moved to {@link  org.apache.sis.geometries.operation.GeometryOperations  GeometryOperations}</li>
- *   <li>Query3D interface is moved to {@link  org.apache.sis.geometries.operation.GeometryOperations#SpatialAnalysis3D  SpatialAnalysis3D}
- *       and {@link  org.apache.sis.geometries.operation.GeometryOperations#SpatialRelations3D  SpatialRelations3D}</li>
  * </ul>
  *
  * <h3>Key differences with ISO 19107</h3>
  * <ul>
+ *   <li>The TransfiniteSetOfDirectPositions interface is merged in Geometry, check the class javadoc for details</li>
  *   <li>Encoding interface is fused in Geometry interface</li>
- *   <li>Query2D interface is moved to {@link  org.apache.sis.geometries.operation.GeometryOperations#SpatialAnalysis2D  SpatialAnalysis2D}
- *       and {@link  org.apache.sis.geometries.operation.GeometryOperations#SpatialRelations2D  SpatialRelations2D}</li>
- *   <li>Query3D interface is moved to {@link  org.apache.sis.geometries.operation.GeometryOperations#SpatialAnalysis3D  SpatialAnalysis3D}
- *       and {@link  org.apache.sis.geometries.operation.GeometryOperations#SpatialRelations3D  SpatialRelations3D}</li>
  *   <li>Encoding.asGML has been removed since it is a large task to implement and multiple versions
  *       exists. GML support should be located in a different module</li>
  * </ul>

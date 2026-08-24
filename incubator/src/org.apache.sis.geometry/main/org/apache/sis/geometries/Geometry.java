@@ -18,6 +18,9 @@ package org.apache.sis.geometries;
 
 import java.util.List;
 import java.util.Map;
+import javax.measure.quantity.Length;
+import org.apache.sis.geometries.operation.GeometryProcessor;
+import org.apache.sis.geometries.operation.OperationException;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
@@ -37,10 +40,17 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *  <li>Khronos ANARI-1 - https://www.khronos.org/anari/</li>
  * </ul>
  *
+ * <p>
+ * Deviation from ISO-19107 :<br>
+ * A Geometry should be a sub type of TransfiniteSetOfDirectPositions (section 6.4.2)
+ * A TransfiniteSetOfDirectPositions exist to define a Geometry within the <b>Set theory</b>, it is a mathematical conceptual interface.
+ * But the interface has only a unique subtype and provide a single additional method contains(DirectPosition),
+ * therefor we merged TransfiniteSetOfDirectPositions in Geometry for simplicity state
+ *
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="Geometry", specification=ISO_19107) // section 6.4.4
-public interface Geometry extends TransfiniteSet {
+public interface Geometry {
 
     /**
      * Get geometry coordinate system.
@@ -280,6 +290,205 @@ public interface Geometry extends TransfiniteSet {
      */
     default Map<String,Object> userProperties() {
         return null;
+    }
+
+    // ////////////////////////////////////////////////////////////////////////
+    // ISO 19107 Query2D and Query3D interfaces and merged inside Geometry
+    // ////////////////////////////////////////////////////////////////////////
+
+    /**
+     * @see GeometryProcessor#buffer(org.apache.sis.geometries.Geometry, double)
+     */
+    public default Geometry buffer(double distance) throws OperationException {
+        return new GeometryProcessor().buffer(this, distance);
+    }
+
+    /**
+     * @see GeometryProcessor#buffer(org.apache.sis.geometries.Geometry, javax.measure.quantity.Length)
+     */
+    @UML(identifier="buffer", specification=ISO_19107) // section 6.4.4.24 and 6.4.8.3
+    //@UML(identifier="3Dbuffer", specification=ISO_19107) // section 6.4.9
+    public default Geometry buffer(Length radius) throws OperationException {
+        return new GeometryProcessor().buffer(this, radius);
+    }
+
+    /**
+     * @see GeometryProcessor#convexHull(org.apache.sis.geometries.Geometry)
+     */
+    //@UML(identifier="3DconvexHull", specification=ISO_19107) // section 6.4.9
+    public default Geometry convexHull() throws OperationException {
+        return new GeometryProcessor().convexHull(this);
+    }
+
+   /**
+     * @see GeometryProcessor#difference(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
+     */
+    @UML(identifier="difference", specification=ISO_19107) // section 6.4.4.30 and 6.4.8.5
+    //@UML(identifier="3Ddifference", specification=ISO_19107) // section 6.4.9
+    public default Geometry difference(Geometry other) throws OperationException {
+        return new GeometryProcessor().difference(this, other);
+    }
+
+    /**
+     * @see GeometryProcessor#distance(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
+     */
+    public default double distance(Geometry other) throws OperationException {
+        return new GeometryProcessor().distance(this, other);
+    }
+
+    /**
+     * @see GeometryProcessor#distance2(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
+     */
+    @UML(identifier="distance", specification=ISO_19107) // section 6.4.4.26 and 6.4.8.2
+    //@UML(identifier="3Ddistance", specification=ISO_19107) // section 6.4.9
+    public default Length distance2(Geometry other) throws OperationException {
+        return new GeometryProcessor().distance2(this, other);
+    }
+
+    /**
+     * @see GeometryProcessor#intersection(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
+     */
+    @UML(identifier="intersection", specification=ISO_19107) // section 6.4.4.30 and 6.4.8.4
+    //@UML(identifier="3Dintersection", specification=ISO_19107) // section 6.4.9
+    public default Geometry intersection(Geometry other) throws OperationException {
+        return new GeometryProcessor().intersection(this, other);
+    }
+
+    /**
+     * @see GeometryProcessor#symDifference(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
+     */
+    @UML(identifier="symDifference", specification=ISO_19107) // section 6.4.4.30 and 6.4.8.6
+    //@UML(identifier="3DsymDifference", specification=ISO_19107) // section 6.4.9
+    public default Geometry symDifference(Geometry other) throws OperationException {
+        return new GeometryProcessor().symDifference(this, other);
+    }
+
+    /**
+     * @see GeometryProcessor#union(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
+     */
+    @UML(identifier="union", specification=ISO_19107) // section 6.4.4.30 and 6.4.8.7
+    //@UML(identifier="3Dunion", specification=ISO_19107) // section 6.4.9
+    public default Geometry union(Geometry other) throws OperationException {
+        return new GeometryProcessor().union(this, other);
+    }
+
+    /**
+     * @see GeometryProcessor#contains(org.apache.sis.geometries.Geometry, org.opengis.geometry.DirectPosition)
+     */
+    @UML(identifier="contains", specification=ISO_19107) // section 6.4.4.30 ?
+    //@UML(identifier="3Dcontains", specification=ISO_19107) // section 6.4.9
+    public default boolean contains(DirectPosition element) throws OperationException {
+        return new GeometryProcessor().contains(this, element);
+    }
+
+    /**
+     * @see GeometryProcessor#contains(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
+     */
+    @UML(identifier="contains", specification=ISO_19107) // section 6.4.8.8, 6.4.4.2
+    public default boolean contains(Geometry other) throws OperationException {
+        return new GeometryProcessor().contains(this, other);
+    }
+
+    /**
+     * @see GeometryProcessor#crosses(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
+     */
+    @UML(identifier="crosses", specification=ISO_19107) // section 6.4.8.8
+    //@UML(identifier="3Dcrosses", specification=ISO_19107) // section 6.4.9
+    public default boolean crosses(Geometry other) throws OperationException {
+        return new GeometryProcessor().crosses(this, other);
+    }
+
+    /**
+     * @see GeometryProcessor#disjoint(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
+     */
+    @UML(identifier="disjoint", specification=ISO_19107) // section 6.4.8.8
+    //@UML(identifier="3Ddisjoint", specification=ISO_19107) // section 6.4.9
+    public default boolean disjoint(Geometry other) throws OperationException {
+        return new GeometryProcessor().disjoint(this, other);
+    }
+
+    /**
+     * @see GeometryProcessor#equal(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
+     */
+    @UML(identifier="equals", specification=ISO_19107) // section 6.4.8.8, 6.4.4.30
+    //@UML(identifier="3Dequals", specification=ISO_19107) // section 6.4.9
+    public default boolean equal(Geometry other) throws OperationException {
+        return new GeometryProcessor().equal(this, other);
+    }
+
+    /**
+     * @see GeometryProcessor#intersects(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
+     */
+    @UML(identifier="intersects", specification=ISO_19107) // section 6.4.8.8, 6.4.4.30
+    //@UML(identifier="3Dintersects", specification=ISO_19107) // section 6.4.9
+    public default boolean intersects(Geometry other) throws OperationException {
+        return new GeometryProcessor().intersects(this, other);
+    }
+
+    /**
+     * @see GeometryProcessor#locateAlong(org.apache.sis.geometries.Geometry, double)
+     */
+    public default Geometry locateAlong(double mValue) throws OperationException {
+        return new GeometryProcessor().locateAlong(this, mValue);
+    }
+
+    /**
+     * @see GeometryProcessor#contains(org.apache.sis.geometries.Geometry, double, double)
+     */
+    public default Geometry contains(double mStart, double mEnd) throws OperationException {
+        return new GeometryProcessor().contains(this, mStart, mEnd);
+    }
+
+    /**
+     * @see GeometryProcessor#overlaps(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
+     */
+    @UML(identifier="overlaps", specification=ISO_19107) // section 6.4.8.8
+    //@UML(identifier="3Doverlaps", specification=ISO_19107) // section 6.4.9
+    public default boolean overlaps(Geometry other) throws OperationException {
+        return new GeometryProcessor().overlaps(this, other);
+    }
+
+    /**
+     * @see GeometryProcessor#relate(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry, int)
+     */
+    public default boolean relate(Geometry other, int matrix) throws OperationException {
+        return new GeometryProcessor().relate(this, other, matrix);
+    }
+
+    /**
+     * @see GeometryProcessor#relate(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry, java.lang.String)
+     */
+    @UML(identifier="relate", specification=ISO_19107) // section 6.4.8.8
+    //@UML(identifier="3Drelate", specification=ISO_19107) // section 6.4.9
+    public default boolean relate(Geometry other, String matrix) throws OperationException {
+        return new GeometryProcessor().relate(this, other, matrix);
+    }
+
+    /**
+     * @see GeometryProcessor#touches(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
+     */
+    @UML(identifier="touches", specification=ISO_19107) // section 6.4.8.8
+    //@UML(identifier="3Dtouches", specification=ISO_19107) // section 6.4.9
+    public default boolean touches(Geometry other) throws OperationException {
+        return new GeometryProcessor().touches(this, other);
+    }
+
+    /**
+     * @see GeometryProcessor#within(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
+     */
+    @UML(identifier="within", specification=ISO_19107) // section 6.4.8.8
+    //@UML(identifier="3Dwithin", specification=ISO_19107) // section 6.4.9
+    public default boolean within(Geometry other) throws OperationException {
+        return new GeometryProcessor().within(this, other);
+    }
+
+    /**
+     * @see GeometryProcessor#withinDistance(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry, javax.measure.quantity.Length)
+     */
+    @UML(identifier="withinDistance", specification=ISO_19107) // section 6.4.8.8
+    //@UML(identifier="3DwithinDistance", specification=ISO_19107) // section 6.4.9
+    public default boolean withinDistance(Geometry other, Length distance) throws OperationException {
+        return new GeometryProcessor().withinDistance(this, other, distance);
     }
 
 }

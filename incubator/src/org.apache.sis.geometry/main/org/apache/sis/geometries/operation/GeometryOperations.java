@@ -74,6 +74,7 @@ import org.apache.sis.geometries.processor.Processor;
 /**
  *
  * @author Johann Sorel (Geomatys)
+ * @deprecated
  */
 public final class GeometryOperations {
 
