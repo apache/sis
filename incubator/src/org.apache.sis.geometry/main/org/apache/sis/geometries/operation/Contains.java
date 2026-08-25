@@ -14,16 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.processor.spatialrelations2d;
+package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.AttributesType;
-import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Polygon;
-import org.apache.sis.geometries.operation.OperationException;
-import org.apache.sis.geometries.processor.Processor;
-import org.apache.sis.geometries.processor.ProcessorUtils;
 import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.Vectors;
@@ -48,12 +44,12 @@ public final class Contains {
      * @param ring not null
      * @param point not null
      */
-    private static boolean contains(Array ring, Tuple point) {
+    private static boolean contains(Array ring, Tuple<?> point) {
         final Cursor cursor = ring.cursor();
 
         int windingNumber = 0;
-        Tuple current;
-        Tuple previous;
+        Tuple<?> current;
+        Tuple<?> previous;
         cursor.moveTo(0);
         current = cursor.samples();
         previous = Vectors.create(current.getSampleSystem(), current.getDataType());
@@ -85,54 +81,30 @@ public final class Contains {
     /**
      * Polygon contains Point test.
      */
-    public static class PolygonPoint implements Processor.Binary<org.apache.sis.geometries.operation.spatialrelations2d.Contains, Polygon, Point>{
+    public static boolean contains(Polygon polygon, Point candidate) throws OperationException {
+        ProcessorUtils.ensureSameCRS2D(polygon, candidate);
 
-        @Override
-        public Class<org.apache.sis.geometries.operation.spatialrelations2d.Contains> getOperationClass() {
-            return org.apache.sis.geometries.operation.spatialrelations2d.Contains.class;
+        { //check exterior
+            final Array coords = polygon.getExteriorRing().getPoints().getAttributeArray(AttributesType.ATT_POSITION);
+            if (!contains(coords, candidate.getPosition())) {
+                //point is outside the exterior ring
+                return false;
+            }
         }
 
-        @Override
-        public Class<Polygon> getGeometryClass() {
-            return Polygon.class;
-        }
-
-        @Override
-        public Class<Point> getRelatedClass() {
-            return Point.class;
-        }
-
-        @Override
-        public void process(org.apache.sis.geometries.operation.spatialrelations2d.Contains operation) throws OperationException {
-            ProcessorUtils.ensureSameCRS2D(operation.geometry, operation.other);
-            final Polygon polygon = (Polygon) operation.geometry;
-            final Point candidate = (Point) operation.other;
-
-
-            { //check exterior
-                final Array coords = polygon.getExteriorRing().getPoints().getAttributeArray(AttributesType.ATT_POSITION);
-                if (!contains(coords, candidate.getPosition())) {
-                    //point is outside the exterior ring
-                    operation.result = false;
-                    return;
+        { //check holes
+            for (int i = 0, n = polygon.getNumInteriorRing(); i < n; i++) {
+                final LineString hole = polygon.getInteriorRingN(i);
+                final Array coords = hole.getPoints().getAttributeArray(AttributesType.ATT_POSITION);
+                if (contains(coords, candidate.getPosition())) {
+                    //point is within a hole
+                    return false;
                 }
             }
-
-            { //check holes
-                for (int i = 0, n = polygon.getNumInteriorRing(); i < n; i++) {
-                    final LineString hole = polygon.getInteriorRingN(i);
-                    final Array coords = hole.getPoints().getAttributeArray(AttributesType.ATT_POSITION);
-                    if (contains(coords, candidate.getPosition())) {
-                        //point is within a hole
-                        operation.result = false;
-                        return;
-                    }
-                }
-            }
-
-            //point is inside polygon
-            operation.result = true;
         }
+
+        //point is inside polygon
+        return true;
     }
 
 }

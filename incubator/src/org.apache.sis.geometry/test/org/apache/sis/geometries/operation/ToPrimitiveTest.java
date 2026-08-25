@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.processor.spatialedition;
+package org.apache.sis.geometries.operation;
 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
@@ -31,7 +31,6 @@ import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Array;
-import org.apache.sis.geometries.operation.GeometryOperations;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
@@ -50,7 +49,7 @@ public class ToPrimitiveTest {
     @Test
     public void testPoint() {
         final Point point = GeometryFactory.createPoint(CRS2D, 1, 2);
-        final Geometry result = GeometryOperations.SpatialEdition.toPrimitive(point);
+        final Geometry result = new GeometryProcessor().toPrimitive(point);
         assertTrue(result instanceof MeshPrimitive);
         final MeshPrimitive primitive = (MeshPrimitive) result;
         assertEquals(MeshPrimitive.Type.POINTS, primitive.getType());
@@ -61,7 +60,7 @@ public class ToPrimitiveTest {
         final Array positions = NDArrays.of(CRS2D, new double[]{0,1,2,3});
         final PointSequence points = GeometryFactory.createSequence(positions);
         final LineString line = GeometryFactory.createLineString(points);
-        final Geometry result = GeometryOperations.SpatialEdition.toPrimitive(line);
+        final Geometry result = new GeometryProcessor().toPrimitive(line);
         assertTrue(result instanceof MeshPrimitive);
         final MeshPrimitive primitive = (MeshPrimitive) result;
         assertEquals(MeshPrimitive.Type.LINE_STRIP, primitive.getType());
@@ -73,7 +72,7 @@ public class ToPrimitiveTest {
         final PointSequence points = GeometryFactory.createSequence(positions);
         final LinearRing exterior = GeometryFactory.createLinearRing(points);
         final Polygon point = GeometryFactory.createPolygon(exterior, null);
-        final Geometry result = GeometryOperations.SpatialEdition.toPrimitive(point);
+        final Geometry result = new GeometryProcessor().toPrimitive(point);
         assertTrue(result instanceof MeshPrimitive);
         final MeshPrimitive primitive = (MeshPrimitive) result;
         assertEquals(MeshPrimitive.Type.TRIANGLES, primitive.getType());
@@ -92,7 +91,7 @@ public class ToPrimitiveTest {
 
             final MultiLineString mlines = GeometryFactory.createMultiLineString(line1, line2);
 
-            final Geometry result = GeometryOperations.SpatialEdition.toPrimitive(mlines);
+            final Geometry result = new GeometryProcessor().toPrimitive(mlines);
             assertTrue(result instanceof MultiMeshPrimitive);
             final MultiMeshPrimitive mp = (MultiMeshPrimitive) result;
             assertEquals(2, mp.getNumGeometries());
@@ -116,7 +115,7 @@ public class ToPrimitiveTest {
 
             final MultiLineString mlines = GeometryFactory.createMultiLineString(line1, line2);
 
-            final Geometry result = GeometryOperations.SpatialEdition.toPrimitive(mlines);
+            final Geometry result = new GeometryProcessor().toPrimitive(mlines);
             assertTrue(result instanceof MeshPrimitive.Lines);
             final MeshPrimitive.Lines mp = (MeshPrimitive.Lines) result;
             assertEquals(2, mp.getNumGeometries());
@@ -133,7 +132,7 @@ public class ToPrimitiveTest {
         final PointSequence points = GeometryFactory.createSequence(positions1);
         final MultiPoint mpoints = GeometryFactory.createMultiPoint(points);
 
-        final Geometry result = GeometryOperations.SpatialEdition.toPrimitive(mpoints);
+        final Geometry result = new GeometryProcessor().toPrimitive(mpoints);
         assertTrue(result instanceof MeshPrimitive);
         final MeshPrimitive primitive1 = (MeshPrimitive) result;
         assertEquals(MeshPrimitive.Type.POINTS, primitive1.getType());

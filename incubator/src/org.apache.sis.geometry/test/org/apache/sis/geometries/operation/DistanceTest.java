@@ -14,20 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.processor.spatialanalysis2d;
+package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.math.SampleSystem;
-import org.apache.sis.geometries.operation.GeometryOperations;
-import org.apache.sis.geometries.operation.OperationException;
-import org.apache.sis.geometries.operation.spatialanalysis2d.Distance;
 import org.apache.sis.referencing.CommonCRS;
-
-// Test dependencies
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.Test;
-
 
 /**
  *
@@ -47,7 +42,7 @@ public class DistanceTest {
             final Point point1 = GeometryFactory.createPoint(CommonCRS.WGS84.geographic());
             final Point point2 = GeometryFactory.createPoint(CommonCRS.WGS84.normalizedGeographic());
             try {
-                new Distance(point1, point2).eval();
+                double distance = new GeometryProcessor().distance(point1, point2);
                 fail("evaluation should fail");
             } catch (OperationException ex) {
                 //ok
@@ -57,13 +52,13 @@ public class DistanceTest {
         { //at same position
             final Point point1 = GeometryFactory.createPoint(CRS2D, 10.0, 5.0);
             final Point point2 = GeometryFactory.createPoint(CRS2D, 10.0, 5.0);
-            assertEquals(0.0, GeometryOperations.SpatialAnalysis2D.distance(point1, point2), 0.0);
+            assertEquals(0.0, new GeometryProcessor().distance(point1, point2), 0.0);
         }
 
         { //at 1.0 of distance
             final Point point1 = GeometryFactory.createPoint(CRS2D, 10, 5);
             final Point point2 = GeometryFactory.createPoint(CRS2D, 10, 6);
-            assertEquals(1.0, GeometryOperations.SpatialAnalysis2D.distance(point1, point2), 0.0);
+            assertEquals(1.0, new GeometryProcessor().distance(point1, point2), 0.0);
         }
     }
 

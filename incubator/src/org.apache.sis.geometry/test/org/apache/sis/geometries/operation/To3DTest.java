@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.processor.spatialedition;
+package org.apache.sis.geometries.operation;
 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.FactoryException;
@@ -22,7 +22,6 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.geometries.operation.GeometryOperations;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 
@@ -60,7 +59,7 @@ public class To3DTest {
                 6.0, 7.0
         ));
 
-        Geometry result = GeometryOperations.SpatialEdition.to3D(primitive, CRS3D, (Tuple t) -> t.set(2, 15));
+        Geometry result = new GeometryProcessor().to3D(primitive, CRS3D, (Tuple t) -> t.set(2, 15));
         assertTrue(result instanceof MeshPrimitive);
         assertEquals(CRS3D, result.getCoordinateReferenceSystem());
         MeshPrimitive p = (MeshPrimitive) result;

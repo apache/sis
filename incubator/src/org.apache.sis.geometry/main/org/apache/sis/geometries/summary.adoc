@@ -1,0 +1,761 @@
+= Geometry Types Summary
+
+Overview of the geometry types defined in the `org.apache.sis.geometry` module
+(package `org.apache.sis.geometries` and its sub-packages).
+
+[cols="2,3,2,2,2,2,2,6", options="header"]
+|===
+|Type |Package |OGC-SimpleFeature |GeoJSON |OGC-JSON-FG |Khronos-glTF |Khronos-ANARI |Description
+
+// --- Core / ISO 19107 base types --------------------------------------
+|Geometry
+|—
+|Geometry
+|—
+|—
+|—
+|Geometry
+|Root interface of every geometry, based on ISO 19107, OGC Simple Feature Access, glTF 2.0 and ANARI.
+
+|Primitive
+|—
+|—
+|—
+|—
+|—
+|—
+|Base type for non-decomposable geometries (`Point`, `Curve`, `Surface`, `Solid`).
+
+|Orientable
+|—
+|—
+|—
+|—
+|—
+|—
+|Primitive that carries an orientation sign and may expose an oppositely-oriented proxy.
+
+|Empty
+|—
+|—
+|—
+|—
+|—
+|—
+|The empty geometry, representing the empty set.
+
+|Point
+|—
+|Point
+|Point
+|Point
+|—
+|—
+|0-dimensional geometry representing a single location in coordinate space.
+
+|Curve
+|—
+|Curve
+|—
+|—
+|—
+|curve
+|1-dimensional geometry stored as a sequence of points, interpolated according to its subtype.
+
+|Surface
+|—
+|Surface
+|—
+|—
+|—
+|—
+|2-dimensional geometry, generalized by `Polygon` and `PolyhedralSurface`.
+
+|Solid
+|—
+|—
+|—
+|—
+|—
+|—
+|3-dimensional geometry bounded by one or more closed surfaces (shells).
+
+// --- Curves -------------------------------------------------------------
+8+| *Curves*
+
+|LineString
+|—
+|LineString
+|LineString
+|LineString
+|—
+|—
+|Curve with linear interpolation between consecutive points.
+
+|LinearRing
+|—
+|LinearRing
+|—
+|—
+|—
+|—
+|`LineString` that is both closed and simple.
+
+|CompoundCurve
+|—
+|—
+|—
+|CompoundCurve
+|—
+|—
+|Curve made of several connected curve segments, possibly of different subtypes.
+
+|OffsetCurve
+|—
+|—
+|—
+|—
+|—
+|—
+|Curve derived from a base curve by applying a lateral offset distance.
+
+|ProductCurve
+|—
+|—
+|—
+|—
+|—
+|—
+|Collection of curves treated as one continuous curve.
+
+|Ray
+|—
+|—
+|—
+|—
+|—
+|—
+|Semi-infinite line defined by an origin point and a direction.
+
+|Rhumb
+|—
+|—
+|—
+|—
+|—
+|—
+|Curve of constant bearing (loxodrome) crossing all meridians at the same angle.
+
+|Bearing
+|—
+|—
+|—
+|—
+|—
+|—
+|ISO 19107 bearing/direction primitive.
+
+|Geodesic
+|`geodesics`
+|—
+|—
+|—
+|—
+|—
+|Shortest path curve between two points on an ellipsoid or sphere.
+
+// --- Surfaces -------------------------------------------------------------
+8+| *Surfaces*
+
+|Polygon
+|—
+|Polygon
+|Polygon
+|Polygon
+|—
+|—
+|Planar surface defined by one exterior boundary and zero or more interior boundaries (holes).
+
+|CurvePolygon
+|—
+|—
+|—
+|CurvePolygon
+|—
+|—
+|Surface whose rings may be line strings, circular strings or compound curves.
+
+|PolyhedralSurface
+|—
+|PolyhedralSurface
+|—
+|—
+|—
+|—
+|Contiguous collection of polygon patches sharing common boundary segments.
+
+|TriangulatedSurface
+|—
+|—
+|—
+|—
+|—
+|—
+|`PolyhedralSurface` restricted to triangle patches.
+
+|TIN
+|—
+|TIN
+|—
+|—
+|—
+|—
+|Triangulated Irregular Network, a `PolyhedralSurface` made only of `Triangle` patches.
+
+|PreparedTIN
+|—
+|—
+|—
+|—
+|—
+|—
+|`TIN` decorated with an optimized spatial index for fast queries.
+
+|Triangle
+|—
+|Triangle
+|—
+|—
+|—
+|—
+|Polygon with exactly 3 distinct, non-collinear vertices and no interior boundary.
+
+|ParametricCurveSurface
+|—
+|—
+|—
+|—
+|—
+|—
+|Surface defined by a parametric function together with its own coordinate system.
+
+|BilinearGrid
+|—
+|—
+|—
+|—
+|—
+|—
+|Parametric surface interpolated bilinearly over a regular grid of points.
+
+|Prism
+|—
+|—
+|—
+|Prism
+|—
+|—
+|Surface or solid obtained by extruding a base shape between a lower and an upper limit.
+
+// --- Solids -------------------------------------------------------------
+8+| *Solids*
+
+|Polyhedron
+|—
+|—
+|—
+|Polyhedron
+|—
+|—
+|Solid whose bounding shells are each expressed as a multi-polygon.
+
+|ParametricCurveSolid
+|`griddedsolid`
+|—
+|—
+|—
+|—
+|—
+|Solid defined by a parametric function.
+
+|BSolidSpline
+|`griddedsolid`
+|—
+|—
+|—
+|—
+|—
+|`ParametricCurveSolid` defined by a B-spline volumetric representation.
+
+|ConstructiveSolidGeometry
+|`csg`
+|—
+|—
+|—
+|—
+|—
+|Placeholder type for boolean-combined solids (union, intersection, difference).
+
+// --- Oriented / analytic shapes ------------------------------------------
+8+| *Oriented / analytic shapes*
+
+|OrientedGeometry
+|—
+|—
+|—
+|—
+|—
+|—
+|Base type for named analytic shapes carrying their own rotation and translation.
+
+|Cylinder
+|—
+|—
+|—
+|—
+|—
+|cylinder, cone
+|Oriented geometry describing a tube shape with a radius and a height.
+
+|Sphere
+|—
+|—
+|—
+|—
+|—
+|sphere
+|Parametric surface made of the set of points equidistant from a center.
+
+|Frustrum
+|—
+|—
+|—
+|—
+|—
+|—
+|Oriented geometry describing a cone or pyramid with its top cut off.
+
+|Capsule
+|—
+|—
+|—
+|—
+|—
+|—
+|Oriented geometry describing a cylinder capped with two hemispherical ends.
+
+|Plane
+|—
+|—
+|—
+|—
+|—
+|quad
+|Oriented geometry describing a flat surface.
+
+|BBox
+|—
+|—
+|—
+|—
+|—
+|—
+|Axis-aligned bounding box exposed as a geometry.
+
+|OBBox
+|—
+|—
+|—
+|—
+|—
+|—
+|Oriented (rotated) bounding box.
+
+// --- Collections -------------------------------------------------------
+8+| *Collections*
+
+|GeometryCollection
+|—
+|GeometryCollection
+|GeometryCollection
+|GeometryCollection
+|—
+|—
+|Collection of an arbitrary number of geometric objects sharing the same spatial reference system.
+
+|MultiPoint
+|—
+|MultiPoint
+|MultiPoint
+|MultiPoint
+|—
+|—
+|0-dimensional `GeometryCollection` whose elements are restricted to `Point`.
+
+|MultiCurve
+|—
+|MultiCurve
+|—
+|MultiCurve
+|—
+|—
+|1-dimensional `GeometryCollection` whose elements are `Curve`.
+
+|MultiLineString
+|—
+|MultiLineString
+|MultiLineString
+|MultiLineString
+|—
+|—
+|`MultiCurve` whose elements are `LineString`.
+
+|MultiSurface
+|—
+|MultiSurface
+|—
+|MultiSurface
+|—
+|—
+|2-dimensional `GeometryCollection` whose elements are `Surface`.
+
+|MultiPolygon
+|—
+|MultiPolygon
+|MultiPolygon
+|MultiPolygon
+|—
+|—
+|`MultiSurface` whose elements are `Polygon`.
+
+|MultiPolyhedron
+|—
+|—
+|—
+|MultiPolyhedron
+|—
+|—
+|Arbitrary aggregation of `Polyhedron` solids.
+
+// --- Mesh -----------------------------------------------------------------
+8+| *Mesh*
+
+|MeshPrimitive
+|`mesh`
+|—
+|—
+|—
+|POINTS, LINES, LINE_LOOP, LINE_STRIP, TRIANGLES, TRIANGLE_FAN, TRIANGLE_STRIP;
+|triangle
+|GPU-like batch of simple geometries (points, lines or triangles), inspired by glTF 2.0.
+
+|MultiMeshPrimitive
+|`mesh`
+|—
+|—
+|—
+|Mesh
+|—
+|`GeometryCollection` of `MeshPrimitive` batches.
+
+// --- Regular polyhedra ------------------------------------------------
+8+| *Regular polyhedra*
+
+|Tetrahedron
+|`polyhedron`
+|—
+|—
+|—
+|—
+|—
+|Platonic solid with 4 triangular faces.
+
+|Hexahedron
+|`polyhedron`
+|—
+|—
+|—
+|—
+|—
+|Platonic solid with 6 square faces (cube).
+
+|Octahedron
+|`polyhedron`
+|—
+|—
+|—
+|—
+|—
+|Platonic solid with 8 triangular faces.
+
+|Dodecahedron
+|`polyhedron`
+|—
+|—
+|—
+|—
+|—
+|Platonic solid with 12 pentagonal faces.
+
+|Icosahedron
+|`polyhedron`
+|—
+|—
+|—
+|—
+|—
+|Platonic solid with 20 triangular faces.
+
+|RhombicTriacontahedron
+|`polyhedron`
+|—
+|—
+|—
+|—
+|—
+|Catalan solid with 30 rhombic faces.
+
+|TruncatedIcosahedron
+|`polyhedron`
+|—
+|—
+|—
+|—
+|—
+|Archimedean solid with 12 pentagonal and 20 hexagonal faces (soccer-ball shape).
+
+// --- Conics ---------------------------------------------------------------
+8+| *Conics*
+
+|Conic
+|`conics`
+|—
+|—
+|—
+|—
+|—
+|Curve defined by a conic section.
+
+|Arc
+|`conics`
+|—
+|—
+|—
+|—
+|—
+|Arc segment of a `Conic`.
+
+|Circle
+|`conics`
+|—
+|—
+|—
+|—
+|—
+|Circular arc, or full circle when start and end angles coincide.
+
+|CircularString
+|`conics`
+|—
+|—
+|CircularString
+|—
+|—
+|Curve interpolated using a sequence of circular arcs.
+
+|ConicArc
+|`conics`
+|—
+|—
+|—
+|—
+|—
+|Arc segment of a general conic curve.
+
+|Ellipse
+|`conics`
+|—
+|—
+|—
+|—
+|—
+|Elliptical conic curve.
+
+|EllipticArc
+|`conics`
+|—
+|—
+|—
+|—
+|—
+|Arc segment of an `Ellipse`.
+
+// --- Splines ----------------------------------------------------------
+8+| *Splines*
+
+|SplineCurve
+|`splines`
+|—
+|—
+|—
+|—
+|—
+|`PolynomialCurve` represented by a piecewise polynomial spline.
+
+|PolynomialSpline
+|`splines`
+|—
+|—
+|—
+|—
+|—
+|`SplineCurve` whose arcs are plain polynomial segments.
+
+|CubicSpline
+|`splines`
+|—
+|—
+|—
+|—
+|—
+|`PolynomialSpline` of degree 3.
+
+|BSplineCurve
+|`splines`
+|—
+|—
+|—
+|—
+|—
+|`SplineCurve` represented by a basis-spline (B-spline).
+
+|NURB
+|`splines`
+|—
+|—
+|—
+|—
+|—
+|Non-Uniform Rational B-Spline curve.
+
+|Bezier
+|`splines`
+|—
+|—
+|—
+|—
+|—
+|Spline curve defined by Bezier control points.
+
+|BSplineSurface
+|`splines`
+|—
+|—
+|—
+|—
+|—
+|`ParametricCurveSurface` represented by a basis-spline (B-spline).
+
+// --- Polynomial / function curves ---------------------------------------
+8+| *Polynomial / function curves*
+
+|FunctionArc
+|`polynomials`
+|—
+|—
+|—
+|—
+|—
+|Arc segment defined by a mathematical function.
+
+|FunctionCurve
+|`polynomials`
+|—
+|—
+|—
+|—
+|—
+|Curve made of a sequence of `FunctionArc` segments.
+
+|PolynomialArc
+|`polynomials`
+|—
+|—
+|—
+|—
+|—
+|`FunctionArc` whose function is a polynomial.
+
+|PolynomialCurve
+|`polynomials`
+|—
+|—
+|—
+|—
+|—
+|`FunctionCurve` made of `PolynomialArc` segments.
+
+// --- Spirals ----------------------------------------------------------
+8+| *Spirals*
+
+|Spiral
+|`spirals`
+|—
+|—
+|—
+|—
+|—
+|Curve whose curvature varies continuously along its length.
+
+|Clothoid
+|`spirals`
+|—
+|—
+|—
+|—
+|—
+|Euler spiral whose curvature varies linearly with arc length.
+
+// --- Spherical geometry -------------------------------------------------
+8+| *Spherical*
+
+|GreatCircleArc
+|`spherical`
+|—
+|—
+|—
+|—
+|—
+|Arc of a great circle on the surface of a sphere.
+
+|SphericalConvexPolygon
+|`spherical`
+|—
+|—
+|—
+|—
+|—
+|Convex polygon defined on the surface of a sphere.
+
+|SphericalTriangle
+|`spherical`
+|—
+|—
+|—
+|—
+|—
+|Triangle defined on the surface of a sphere.
+
+// --- Not available yet -------------------------------------------------
+8+| *Not available yet*
+
+|—
+|—
+|—
+|—
+|—
+|—
+|isosurface
+|Implicit surface extracted from a scalar field at given iso-values (marching-cubes style)
+
+|===

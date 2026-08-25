@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.processor.spatialedition;
+package org.apache.sis.geometries.operation;
 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -23,7 +23,6 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.geometries.operation.GeometryOperations;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 
@@ -117,14 +116,14 @@ public class TransformTest {
     @Test
     public void Primitive() throws FactoryException, TransformException {
         final MeshPrimitive primitive = createPrimitive();
-        final MeshPrimitive result = (MeshPrimitive) GeometryOperations.SpatialEdition.transform(primitive, CRS_TARGET, TRANSFORM);
+        final MeshPrimitive result = (MeshPrimitive) new GeometryProcessor().transform(primitive, CRS_TARGET, TRANSFORM);
         testPrimitive(result);
     }
 
     @Test
     public void MultiPrimitive() throws FactoryException, TransformException {
         final MultiMeshPrimitive mp = new MultiMeshPrimitive(createPrimitive());
-        final MultiMeshPrimitive result = (MultiMeshPrimitive) GeometryOperations.SpatialEdition.transform(mp, CRS_TARGET, TRANSFORM);
+        final MultiMeshPrimitive result = (MultiMeshPrimitive) new GeometryProcessor().transform(mp, CRS_TARGET, TRANSFORM);
         assertEquals(1, result.getNumGeometries());
         testPrimitive(result.getGeometryN(0));
     }

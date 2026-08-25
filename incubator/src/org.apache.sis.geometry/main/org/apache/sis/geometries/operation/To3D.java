@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.processor.spatialedition;
+package org.apache.sis.geometries.operation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,15 +23,16 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.LineString;
+import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Cursor;
 import org.apache.sis.geometries.math.Array;
-import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.internal.shared.ArraySequence;
-import org.apache.sis.geometries.processor.Processor;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 
@@ -117,75 +118,31 @@ public final class To3D {
     /**
      * Add Z axis to Point.
      */
-    public static class Point implements Processor<org.apache.sis.geometries.operation.spatialedition.To3D, org.apache.sis.geometries.Point>{
-
-        @Override
-        public Class<org.apache.sis.geometries.operation.spatialedition.To3D> getOperationClass() {
-            return org.apache.sis.geometries.operation.spatialedition.To3D.class;
-        }
-
-        @Override
-        public Class<org.apache.sis.geometries.Point> getGeometryClass() {
-            return org.apache.sis.geometries.Point.class;
-        }
-
-        @Override
-        public void process(org.apache.sis.geometries.operation.spatialedition.To3D operation) throws OperationException {
-            final org.apache.sis.geometries.Point base = (org.apache.sis.geometries.Point) operation.geometry;
-            final PointSequence copy3d = to3d(base.asPointSequence(), operation.crs3d, operation.Zeditor);
-            operation.result = GeometryFactory.createPoint(copy3d);
-        }
+    public static Point to3D(Point base, CoordinateReferenceSystem crs3d, Consumer<Tuple> zeditor) {
+        final PointSequence copy3d = to3d(base.asPointSequence(), crs3d, zeditor);
+        return GeometryFactory.createPoint(copy3d);
     }
 
     /**
      * Add Z axis to LineString.
      */
-    public static class LineString implements Processor<org.apache.sis.geometries.operation.spatialedition.To3D, org.apache.sis.geometries.LineString>{
-
-        @Override
-        public Class<org.apache.sis.geometries.operation.spatialedition.To3D> getOperationClass() {
-            return org.apache.sis.geometries.operation.spatialedition.To3D.class;
-        }
-
-        @Override
-        public Class<org.apache.sis.geometries.LineString> getGeometryClass() {
-            return org.apache.sis.geometries.LineString.class;
-        }
-
-        @Override
-        public void process(org.apache.sis.geometries.operation.spatialedition.To3D operation) throws OperationException {
-            final org.apache.sis.geometries.LineString base = (org.apache.sis.geometries.LineString) operation.geometry;
-            final PointSequence copy3d = to3d(base.getPoints(), operation.crs3d, operation.Zeditor);
-            operation.result = GeometryFactory.createLineString(copy3d);
-        }
+    public static LineString to3D(LineString base, CoordinateReferenceSystem crs3d, Consumer<Tuple> zeditor) {
+        final PointSequence copy3d = to3d(base.getPoints(), crs3d, zeditor);
+        return GeometryFactory.createLineString(copy3d);
     }
 
     /**
      * Add Z axis to Primitive.
      * Also works for ModelPrimitive.
      */
-    public static class Primitive implements Processor<org.apache.sis.geometries.operation.spatialedition.To3D, org.apache.sis.geometries.mesh.MeshPrimitive>{
+    public static MeshPrimitive to3D(MeshPrimitive base, CoordinateReferenceSystem crs3d, Consumer<Tuple> zeditor) {
+        final MeshPrimitive copy3d = base.deepCopy();
 
-        @Override
-        public Class<org.apache.sis.geometries.operation.spatialedition.To3D> getOperationClass() {
-            return org.apache.sis.geometries.operation.spatialedition.To3D.class;
-        }
+        Array positions = copy3d.getPositions();
+        positions = to3d(positions, crs3d, zeditor);
+        copy3d.setPositions(positions);
 
-        @Override
-        public Class<org.apache.sis.geometries.mesh.MeshPrimitive> getGeometryClass() {
-            return org.apache.sis.geometries.mesh.MeshPrimitive.class;
-        }
-
-        @Override
-        public void process(org.apache.sis.geometries.operation.spatialedition.To3D operation) throws OperationException {
-            final org.apache.sis.geometries.mesh.MeshPrimitive base = (org.apache.sis.geometries.mesh.MeshPrimitive) operation.geometry;
-            final org.apache.sis.geometries.mesh.MeshPrimitive copy3d = base.deepCopy();
-            operation.result = copy3d;
-
-            Array positions = copy3d.getPositions();
-            positions = to3d(positions, operation.crs3d, operation.Zeditor);
-            copy3d.setPositions(positions);
-        }
+        return copy3d;
     }
 
 }

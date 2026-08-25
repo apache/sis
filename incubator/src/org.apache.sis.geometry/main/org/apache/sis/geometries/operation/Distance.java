@@ -14,12 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.processor.spatialanalysis2d;
+package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.operation.OperationException;
-import org.apache.sis.geometries.processor.Processor;
-import org.apache.sis.geometries.processor.ProcessorUtils;
+import org.apache.sis.geometries.operation.ProcessorUtils;
 import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.Vectors;
@@ -142,30 +140,9 @@ public final class Distance {
     /**
      * Point to point distance.
      */
-    public static class PointPoint implements Processor.Binary<org.apache.sis.geometries.operation.spatialanalysis2d.Distance, Point, Point>{
-
-        @Override
-        public Class<org.apache.sis.geometries.operation.spatialanalysis2d.Distance> getOperationClass() {
-            return org.apache.sis.geometries.operation.spatialanalysis2d.Distance.class;
-        }
-
-        @Override
-        public Class<Point> getRelatedClass() {
-            return Point.class;
-        }
-
-        @Override
-        public Class<Point> getGeometryClass() {
-            return Point.class;
-        }
-
-        @Override
-        public void process(org.apache.sis.geometries.operation.spatialanalysis2d.Distance operation) throws OperationException {
-            ProcessorUtils.ensureSameCRS(operation.geometry, operation.other);
-            final Point p1 = (Point) operation.geometry;
-            final Point p2 = (Point) operation.other;
-            operation.result = distance(p1.getPosition(), p2.getPosition());
-        }
+    public static double distance(Point p1, Point p2) {
+        ProcessorUtils.ensureSameCRS(p1, p2);
+        return distance(p1.getPosition(), p2.getPosition());
     }
 
 }

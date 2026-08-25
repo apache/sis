@@ -27,7 +27,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.operation.GeometryOperations;
+import org.apache.sis.geometries.operation.GeometryProcessor;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.referencing.CRS;
@@ -184,7 +184,7 @@ public class DiscreteGlobalGridGeometry extends CodedGeometry {
         for (Object zid : candidates) {
             final Zone zo = hierarchy.getZone(zid);
             final Geometry geometry = DiscreteGlobalGridSystems.toSISPolygon(zo.getGeographicExtent());
-            final Geometry trsGeom = GeometryOperations.SpatialEdition.transform(geometry, crs, trs);
+            final Geometry trsGeom = new GeometryProcessor().transform(geometry, crs, trs);
             final Envelope env = trsGeom.getEnvelope();
             if (env != null) {
                 if (all == null) {

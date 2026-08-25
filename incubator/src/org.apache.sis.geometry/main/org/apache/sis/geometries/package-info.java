@@ -41,7 +41,7 @@
  *
  * <h3>Key differences with ISO 19107</h3>
  * <ul>
- *   <li>The TransfiniteSetOfDirectPositions interface is merged in Geometry, check the class javadoc for details</li>
+ *   <li>The TransfiniteSetOfDirectPositions interface has been merged in Geometry, check the class javadoc for details</li>
  *   <li>Encoding interface is fused in Geometry interface</li>
  *   <li>Encoding.asGML has been removed since it is a large task to implement and multiple versions
  *       exists. GML support should be located in a different module</li>

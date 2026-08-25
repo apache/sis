@@ -14,24 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.operation.spatialanalysis2d;
+package org.apache.sis.geometries.splines;
 
-import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.operation.Operation;
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
 
 
 /**
- * Returns a geometric object that represents the Point set union of this geometric object with anotherGeometry.
  *
- * @see OGC Simple Feature Access 1.2.1 - 6.1.2.4 Methods that support spatial analysis
  * @author Johann Sorel (Geomatys)
  */
-public final class Union extends Operation.ReversableBinary<Union> {
-
-    public Geometry result;
-
-    public Union(Geometry geom1, Geometry geom2) {
-        super(geom1, geom2);
-    }
-
+@UML(identifier="BSplineSurfaceForm", specification=ISO_19107) // section 8.7.3
+public enum BSplineSurfaceForm {
+    PLANAR,
+    CYLINDRICAL,
+    CONICAL,
+    SPHERICAL,
+    TOROIDAL,
+    UNSPECIFIED
 }

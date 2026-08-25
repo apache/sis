@@ -29,7 +29,6 @@ module org.apache.sis.geometry {
 
     exports org.apache.sis.geometries;
     exports org.apache.sis.geometries.operation;
-    exports org.apache.sis.geometries.processor;
     exports org.apache.sis.geometries.math;
     exports org.apache.sis.scene;
     exports org.apache.sis.scene.light;

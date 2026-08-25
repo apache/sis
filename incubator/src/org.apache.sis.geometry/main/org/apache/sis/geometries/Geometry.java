@@ -435,8 +435,8 @@ public interface Geometry {
     /**
      * @see GeometryProcessor#contains(org.apache.sis.geometries.Geometry, double, double)
      */
-    public default Geometry contains(double mStart, double mEnd) throws OperationException {
-        return new GeometryProcessor().contains(this, mStart, mEnd);
+    public default Geometry locateBetween(double mStart, double mEnd) throws OperationException {
+        return new GeometryProcessor().locateBetween(this, mStart, mEnd);
     }
 
     /**

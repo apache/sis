@@ -14,20 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.processor.spatialanalysis2d;
+package org.apache.sis.geometries.operation;
 
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Array;
-import org.apache.sis.geometries.operation.GeometryOperations;
+import org.apache.sis.geometries.math.NDArrays;
+import org.apache.sis.geometries.math.SampleSystem;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.referencing.CommonCRS;
-
-// Test dependencies
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
-
 
 /**
  *
@@ -35,7 +32,7 @@ import org.junit.jupiter.api.Test;
  */
 public class IntersectionTest {
 
-    private static final CoordinateReferenceSystem CRS2D = CommonCRS.WGS84.normalizedGeographic();
+    private static final SampleSystem CRS2D = SampleSystem.of(CommonCRS.WGS84.geographic());
 
     /**
      * Test primitives triangles against primitive points.
@@ -71,7 +68,7 @@ public class IntersectionTest {
                 0.5, 2.0
                 ));
 
-        final Geometry intersection = GeometryOperations.SpatialAnalysis2D.intersection(geom1, geom2);
+        final Geometry intersection = new GeometryProcessor().intersection(geom1, geom2);
         assertTrue(intersection instanceof MeshPrimitive.Points);
         final MeshPrimitive result = (MeshPrimitive) intersection;
         final Array positions = result.getPositions();
@@ -122,7 +119,7 @@ public class IntersectionTest {
                 3.0, 0.2,  4.0, 0.2  //outside
                 ));
 
-        final Geometry intersection = GeometryOperations.SpatialAnalysis2D.intersection(geom1, geom2);
+        final Geometry intersection = new GeometryProcessor().intersection(geom1, geom2);
         assertTrue(intersection instanceof MeshPrimitive.Lines);
         final MeshPrimitive.Lines result = (MeshPrimitive.Lines) intersection;
         final Array positions = result.getPositions();

@@ -18,7 +18,6 @@ package org.apache.sis.geometries.operation;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.sis.geometries.processor.spatialanalysis2d.Distance;
 import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.Vector;

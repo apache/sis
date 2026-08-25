@@ -16,11 +16,37 @@
  */
 package org.apache.sis.geometries.operation;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import javax.measure.quantity.Length;
+import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.LineString;
+import org.apache.sis.geometries.LinearRing;
+import org.apache.sis.geometries.MultiLineString;
+import org.apache.sis.geometries.MultiPoint;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.Polygon;
+import org.apache.sis.geometries.Triangle;
+import org.apache.sis.geometries.math.Array;
+import org.apache.sis.geometries.math.DataType;
+import org.apache.sis.geometries.math.NDArrays;
+import org.apache.sis.geometries.math.SampleSystem;
+import org.apache.sis.geometries.math.Tuple;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
+import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 
 /**
  * Geometry operation computation processor.
@@ -84,6 +110,12 @@ public final class GeometryProcessor {
      * the distance between these 2 points is the returned distance between their geometric objects.
      */
     public double distance(Geometry geom1, Geometry geom2) throws OperationException {
+        if (geom1 instanceof Point pt1) {
+            if (geom2 instanceof Point pt2) {
+                return Distance.distance(pt1, pt2);
+            }
+        }
+
         throw new UnsupportedOperationException();
     }
 
@@ -99,6 +131,15 @@ public final class GeometryProcessor {
     @UML(identifier="intersection", specification=ISO_19107) // section 6.4.4.30 and 6.4.8.4
     //@UML(identifier="3Dintersection", specification=ISO_19107) // section 6.4.9
     public Geometry intersection(Geometry geom1, Geometry geom2) throws OperationException {
+
+        if (geom1 instanceof MeshPrimitive.Triangles g1) {
+            if (geom2 instanceof MeshPrimitive.Points g2) {
+                return Intersection.intersection(g1, g2);
+            } else if (geom2 instanceof MeshPrimitive.Lines g2) {
+                return Intersection.intersection(g1, g2);
+            }
+        }
+
         throw new UnsupportedOperationException();
     }
 
@@ -132,6 +173,11 @@ public final class GeometryProcessor {
      */
     @UML(identifier="contains", specification=ISO_19107) // section 6.4.8.8, 6.4.4.2
     public boolean contains(Geometry geom1, Geometry geom2) throws OperationException {
+        if (geom1 instanceof Polygon polygon) {
+            if (geom2 instanceof Point pt) {
+                return Contains.contains(polygon, pt);
+            }
+        }
         throw new UnsupportedOperationException();
     }
 
@@ -174,6 +220,8 @@ public final class GeometryProcessor {
     /**
      * Returns a derived geometry collection value that matches the specified m coordinate value.
      * See Subclause 6.1.2.6 “Measures on Geometry” for more details.
+     *
+     * TODO : M has been replaced by attributes, change this method
      */
     public Geometry locateAlong(Geometry geom1, double mValue) throws OperationException {
         throw new UnsupportedOperationException();
@@ -182,8 +230,10 @@ public final class GeometryProcessor {
     /**
      * Returns a derived geometry collection value that matches the specified range of m coordinate values inclusively.
      * See Subclause 6.1.2.6 “Measures on Geometry” for more details.
+     *
+     * TODO : M has been replaced by attributes, change this method
      */
-    public Geometry contains(Geometry geom1, double mStart, double mEnd) throws OperationException {
+    public Geometry locateBetween(Geometry geom1, double mStart, double mEnd) throws OperationException {
         throw new UnsupportedOperationException();
     }
 
@@ -238,4 +288,171 @@ public final class GeometryProcessor {
         throw new UnsupportedOperationException();
     }
 
+    // ////////////////////////////////////////////////////////////////////////
+    // additional operations
+    // ////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Add a Z axis on the geometry and configure it's ordinates.
+     *
+     * @param geom geometry to transform, if it already has a 3D crs and given crs is null, geometry crs will be preserved.
+     * @param crs3d the result crs in 3d, if null an ellipsoid height is assumed
+     * @param zeditor called to configure the Z value on each position, if null, value 0.0 will be used
+     */
+    public Geometry to3D(Geometry geom, CoordinateReferenceSystem crs3d, Consumer<Tuple> zeditor) {
+        if (geom instanceof Point base) {
+            return To3D.to3D(base, crs3d, zeditor);
+        } else if (geom instanceof LineString base) {
+            return To3D.to3D(base, crs3d, zeditor);
+        } else if (geom instanceof MeshPrimitive base) {
+            return To3D.to3D(base, crs3d, zeditor);
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Create a new attribute or update an existing one.
+     *
+     * @param geom geometry to modify
+     * @param attributeName new attribute name
+     * @param attributeSystem new attribute system
+     * @param attributeType new attribute type
+     * @param valueGenerator function to generate attribute value
+     * @return new or modified geometry
+     */
+    public Geometry compute(Geometry geom, String attributeName, SampleSystem attributeSystem, DataType attributeType, Function<Point,Tuple> valueGenerator) {
+        if (geom instanceof MeshPrimitive mp) {
+            return ComputeAttribute.compute(mp, attributeName, attributeSystem, attributeType, valueGenerator);
+        } else if (geom instanceof MultiMeshPrimitive<?> mp) {
+            return ComputeAttribute.compute(mp, attributeName, attributeSystem, attributeType, valueGenerator);
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Convert this geometry to a Primitive geometry type.
+     * This method is provided as a conversion to GPU geometric model.
+     *
+     * @return equivalent primitive, all attributes are copied.
+     *  can be a Primitive or MultiPrimitive
+     */
+    public Geometry toPrimitive(Geometry geom) {
+        if (geom instanceof MeshPrimitive || geom instanceof MultiMeshPrimitive) {
+            //Does nothing, geometry is already a Primitive.
+            return geom;
+        } else if (geom instanceof Point cdt) {
+            return ToPrimitive.toPrimitive(cdt);
+        } else if (geom instanceof LineString cdt) {
+            return ToPrimitive.toPrimitive(cdt);
+        } else if (geom instanceof Polygon cdt) {
+            return ToPrimitive.toPrimitive(cdt);
+        } else if (geom instanceof MultiLineString cdt) {
+            return ToPrimitive.toPrimitive(cdt);
+        } else if (geom instanceof MultiPoint<?> cdt) {
+            return ToPrimitive.toPrimitive(cdt);
+        } else if (geom instanceof GeometryCollection<?> cdt) {
+            return ToPrimitive.toPrimitive(cdt);
+        }
+
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Returns a geometric object that represents a transformed version of the geometry.
+     *
+     * @param geom geometry to transform
+     * @param crs target CRS, if null geometry crs is unchanged but transform will still be applied
+     * @param transform transform to apply, if null, geometry crs to target crs will be used
+     * @return geometry of same type when possible
+     */
+    @UML(identifier="transform", specification=ISO_19107) // section 6.4.4.28
+    public Geometry transform(Geometry geom, CoordinateReferenceSystem crs, MathTransform transform) {
+
+        if (geom instanceof LinearRing cdt) {
+            return Transform.transform(cdt, crs, transform);
+        } else if (geom instanceof Polygon cdt) {
+            return Transform.transform(cdt, crs, transform);
+        } else if (geom instanceof MultiMeshPrimitive<?> cdt) {
+            return Transform.transform(cdt, crs, transform);
+        } else if (geom instanceof MeshPrimitive cdt) {
+            return Transform.transform(cdt, crs, transform);
+        } else if (geom instanceof Triangle cdt) {
+            return Transform.transform(cdt, crs, transform);
+        }
+
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Separate the points/lines/triangles in the given primitive.
+     * This ensure each point is used only once.
+     *
+     * @return equivalent primitive, all attributes are copied.
+     *  can be a Primitive or MultiPrimitive
+     */
+    public Geometry separateFaces(MeshPrimitive p) {
+
+        final AttributesType attributesType = p.getAttributesType();
+        final Map<String,List<Tuple<?>>> atts = new HashMap<>();
+
+        for (String name : attributesType.getAttributeNames()) {
+            atts.put(name, new ArrayList<>());
+        }
+
+        MeshPrimitiveVisitor pv = new MeshPrimitiveVisitor(p) {
+            @Override
+            protected void visit(Point candidate) {
+                for (Entry<String,List<Tuple<?>>> entry : atts.entrySet()) {
+                    entry.getValue().add(candidate.getAttribute(entry.getKey()));
+                }
+            }
+
+            @Override
+            protected void visit(LineString candidate) {
+                final Point p0 = candidate.getPointN(0);
+                final Point p1 = candidate.getPointN(1);
+                for (Entry<String,List<Tuple<?>>> entry : atts.entrySet()) {
+                    entry.getValue().add(p0.getAttribute(entry.getKey()));
+                    entry.getValue().add(p1.getAttribute(entry.getKey()));
+                }
+            }
+
+            @Override
+            protected void visit(Triangle candidate) {
+                final LinearRing ring = candidate.getExteriorRing();
+                final Point p0 = ring.getPointN(0);
+                final Point p1 = ring.getPointN(1);
+                final Point p2 = ring.getPointN(2);
+                for (Entry<String,List<Tuple<?>>> entry : atts.entrySet()) {
+                    entry.getValue().add(p0.getAttribute(entry.getKey()));
+                    entry.getValue().add(p1.getAttribute(entry.getKey()));
+                    entry.getValue().add(p2.getAttribute(entry.getKey()));
+                }
+            }
+
+            @Override
+            protected void visit(MeshPrimitive.Vertex vertex) {}
+        };
+        pv.visit();
+
+        //do not create an index, result elements
+        final MeshPrimitive.Type type;
+        switch (p.getType()) {
+            case POINTS : type = MeshPrimitive.Type.POINTS; break;
+            case LINES :
+            case LINE_LOOP :
+            case LINE_STRIP : type = MeshPrimitive.Type.LINES; break;
+            case TRIANGLES :
+            case TRIANGLE_FAN :
+            case TRIANGLE_STRIP :
+            default : type = MeshPrimitive.Type.TRIANGLES; break;
+        }
+        final MeshPrimitive sep = MeshPrimitive.create(type);
+        for (Entry<String,List<Tuple<?>>> entry : atts.entrySet()) {
+            final String name = entry.getKey();
+            final Array array = NDArrays.of(entry.getValue(), attributesType.getAttributeSystem(name), attributesType.getAttributeType(name));
+            sep.setAttribute(name, array);
+        }
+        return sep;
+    }
 }
