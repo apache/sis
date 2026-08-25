@@ -27,7 +27,7 @@
  * see <a href="https://sis.apache.org/epsg.html">How to use EPSG geodetic dataset</a> on the <abbr>SIS</abbr> web site.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   0.7
  */
 module org.apache.sis.referencing.epsg {

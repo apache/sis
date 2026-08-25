@@ -68,6 +68,10 @@ public final class DataScriptUpdater {
         {
             final var formatter = new DataScriptFormatter(c);
             /*
+             * Dates formatted in a way that we cannot parse.
+             */
+            formatter.addSpellingChange("Datum", null, "March\\s*2011", "2011-03");
+            /*
              * The version number noted in the history table is a copy-and-paste error.
              */
             formatter.addSpellingChange("Version History", "'8.9'",

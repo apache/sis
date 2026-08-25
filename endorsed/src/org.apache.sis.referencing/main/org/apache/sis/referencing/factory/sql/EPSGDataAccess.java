@@ -45,6 +45,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
@@ -1039,7 +1040,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     {
         try {
             return LenientDateFormat.parseBest(getOptionalString(result, columnIndex));
-        } catch (NumberFormatException exception) {
+        } catch (DateTimeParseException exception) {
             unexpectedException(caller, exception);          // Not a fatal error.
         }
         return null;
