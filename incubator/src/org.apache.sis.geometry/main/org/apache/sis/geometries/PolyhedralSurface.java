@@ -16,8 +16,12 @@
  */
 package org.apache.sis.geometries;
 
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
+import org.opengis.referencing.operation.TransformException;
 
 
 /**
@@ -72,6 +76,13 @@ public interface PolyhedralSurface<T extends Polygon> extends /*GeometryCollecti
      * @return polygon in this surface, the order is arbitrary
      */
     T getPatchN(int n);
+
+    @Override
+    public default double getArea() {
+        try (Stream<Surface> stream = IntStream.range(0, getNumPatches()).mapToObj(this::getPatchN)) {
+            return stream.collect(Collectors.summingDouble(Surface::getArea));
+        }
+    }
 
     /**
      * Returns the collection of polygons in this surface that bounds the given polygon “p” for any polygon “p” in the surface.

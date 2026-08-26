@@ -28,6 +28,7 @@ import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.internal.shared.ArraySequence;
+import org.apache.sis.geometries.internal.shared.DefaultEmpty;
 import org.apache.sis.geometries.internal.shared.DefaultGeometryCollection;
 import org.apache.sis.geometries.internal.shared.DefaultLineString;
 import org.apache.sis.geometries.internal.shared.DefaultLinearRing;
@@ -37,7 +38,9 @@ import org.apache.sis.geometries.internal.shared.DefaultMultiPolygon;
 import org.apache.sis.geometries.internal.shared.DefaultMultiSurface;
 import org.apache.sis.geometries.internal.shared.DefaultPoint;
 import org.apache.sis.geometries.internal.shared.DefaultPolygon;
+import org.apache.sis.geometries.internal.shared.DefaultRawMultiPoint;
 import org.apache.sis.geometries.internal.shared.DefaultTriangle;
+import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.spirals.Clothoid;
 import org.apache.sis.geometry.wrapper.Capability;
 import org.apache.sis.geometry.wrapper.Dimensions;
@@ -56,6 +59,16 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
 
     private GeometryFactory(){
         super(GeometryLibrary.SIS, Geometry.class, Point.class);
+    }
+
+    public static Empty createEmpty(CoordinateReferenceSystem crs) {
+        final AttributesType.Template attType = new AttributesType.Template();
+        attType.addOrReplaceAttribute(AttributesType.ATT_POSITION, SampleSystem.of(crs), DataType.DOUBLE);
+        return new DefaultEmpty(attType);
+    }
+
+    public static Empty createEmpty(AttributesType attType) {
+        return new DefaultEmpty(attType);
     }
 
     public static Point createPoint(CoordinateReferenceSystem crs) {
@@ -92,6 +105,10 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
 
     public static MultiPoint createMultiPoint(PointSequence sequence) {
         return new DefaultMultiPoint(sequence);
+    }
+
+    public static MultiPoint createMultiPoint(Point ... geometries) {
+        return new DefaultRawMultiPoint(geometries);
     }
 
     public static MultiLineString createMultiLineString(LineString ... geometries) {

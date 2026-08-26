@@ -25,6 +25,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.measure.quantity.Length;
 import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.LineString;
@@ -75,7 +76,9 @@ public final class GeometryProcessor {
      * but it should be near the resolution of the coordinates used.
      */
     public Geometry buffer(Geometry geom, double distance) throws OperationException {
-        throw new UnsupportedOperationException();
+
+        //TODO : fallback on JTS until implemented, this loss the attributes !
+        return Geometries.fromJTS(jts(geom).buffer(distance), true);
     }
 
     @UML(identifier="buffer", specification=ISO_19107) // section 6.4.4.24 and 6.4.8.3
@@ -91,7 +94,9 @@ public final class GeometryProcessor {
      */
     //@UML(identifier="3DconvexHull", specification=ISO_19107) // section 6.4.9
     public Geometry convexHull(Geometry geom) throws OperationException {
-        throw new UnsupportedOperationException();
+
+        //TODO : fallback on JTS until implemented, this loss the attributes !
+        return Geometries.fromJTS(jts(geom).convexHull(), true);
     }
 
     /**
@@ -100,7 +105,9 @@ public final class GeometryProcessor {
     @UML(identifier="difference", specification=ISO_19107) // section 6.4.4.30 and 6.4.8.5
     //@UML(identifier="3Ddifference", specification=ISO_19107) // section 6.4.9
     public Geometry difference(Geometry geom1, Geometry geom2) throws OperationException {
-        throw new UnsupportedOperationException();
+
+        //TODO : fallback on JTS until implemented, this loss the attributes !
+        return Geometries.fromJTS(jts(geom1).difference(jts(geom2)), true);
     }
 
     /**
@@ -140,7 +147,8 @@ public final class GeometryProcessor {
             }
         }
 
-        throw new UnsupportedOperationException();
+        //TODO : fallback on JTS until implemented, this loss the attributes !
+        return Geometries.fromJTS(jts(geom1).intersection(jts(geom2)), true);
     }
 
     /**
@@ -150,7 +158,9 @@ public final class GeometryProcessor {
     @UML(identifier="symDifference", specification=ISO_19107) // section 6.4.4.30 and 6.4.8.6
     //@UML(identifier="3DsymDifference", specification=ISO_19107) // section 6.4.9
     public Geometry symDifference(Geometry geom1, Geometry geom2) throws OperationException {
-        throw new UnsupportedOperationException();
+
+        //TODO : fallback on JTS until implemented, this loss the attributes !
+        return Geometries.fromJTS(jts(geom1).symDifference(jts(geom2)), true);
     }
 
     /**
@@ -159,7 +169,9 @@ public final class GeometryProcessor {
     @UML(identifier="union", specification=ISO_19107) // section 6.4.4.30 and 6.4.8.7
     //@UML(identifier="3Dunion", specification=ISO_19107) // section 6.4.9
     public Geometry union(Geometry geom1, Geometry geom2) throws OperationException {
-        throw new UnsupportedOperationException();
+
+        //TODO : fallback on JTS until implemented, this loss the attributes !
+        return Geometries.fromJTS(jts(geom1).union(jts(geom2)), true);
     }
 
     @UML(identifier="contains", specification=ISO_19107) // section 6.4.4.30 ?
@@ -178,7 +190,9 @@ public final class GeometryProcessor {
                 return Contains.contains(polygon, pt);
             }
         }
-        throw new UnsupportedOperationException();
+
+        //TODO : fallback on JTS until implemented
+        return jts(geom1).contains(jts(geom2));
     }
 
     /**
@@ -187,7 +201,8 @@ public final class GeometryProcessor {
     @UML(identifier="crosses", specification=ISO_19107) // section 6.4.8.8
     //@UML(identifier="3Dcrosses", specification=ISO_19107) // section 6.4.9
     public boolean crosses(Geometry geom1, Geometry geom2) throws OperationException {
-        throw new UnsupportedOperationException();
+        //TODO : fallback on JTS until implemented
+        return jts(geom1).crosses(jts(geom2));
     }
 
     /**
@@ -196,7 +211,8 @@ public final class GeometryProcessor {
     @UML(identifier="disjoint", specification=ISO_19107) // section 6.4.8.8
     //@UML(identifier="3Ddisjoint", specification=ISO_19107) // section 6.4.9
     public boolean disjoint(Geometry geom1, Geometry geom2) throws OperationException {
-        throw new UnsupportedOperationException();
+        //TODO : fallback on JTS until implemented
+        return jts(geom1).disjoint(jts(geom2));
     }
 
     /**
@@ -205,7 +221,8 @@ public final class GeometryProcessor {
     @UML(identifier="equals", specification=ISO_19107) // section 6.4.8.8, 6.4.4.30
     //@UML(identifier="3Dequals", specification=ISO_19107) // section 6.4.9
     public boolean equal(Geometry geom1, Geometry geom2) throws OperationException {
-        throw new UnsupportedOperationException();
+        //TODO : fallback on JTS until implemented
+        return jts(geom1).equals(jts(geom2));
     }
 
     /**
@@ -214,7 +231,8 @@ public final class GeometryProcessor {
     @UML(identifier="intersects", specification=ISO_19107) // section 6.4.8.8, 6.4.4.30
     //@UML(identifier="3Dintersects", specification=ISO_19107) // section 6.4.9
     public boolean intersects(Geometry geom1, Geometry geom2) throws OperationException {
-        throw new UnsupportedOperationException();
+        //TODO : fallback on JTS until implemented
+        return jts(geom1).intersects(jts(geom2));
     }
 
     /**
@@ -243,7 +261,8 @@ public final class GeometryProcessor {
     @UML(identifier="overlaps", specification=ISO_19107) // section 6.4.8.8
     //@UML(identifier="3Doverlaps", specification=ISO_19107) // section 6.4.9
     public boolean overlaps(Geometry geom1, Geometry geom2) throws OperationException {
-        throw new UnsupportedOperationException();
+        //TODO : fallback on JTS until implemented
+        return jts(geom1).overlaps(jts(geom2));
     }
 
     /**
@@ -261,7 +280,8 @@ public final class GeometryProcessor {
     @UML(identifier="relate", specification=ISO_19107) // section 6.4.8.8
     //@UML(identifier="3Drelate", specification=ISO_19107) // section 6.4.9
     public boolean relate(Geometry geom1, Geometry geom2, String matrix) throws OperationException {
-        throw new UnsupportedOperationException();
+        //TODO : fallback on JTS until implemented
+        return jts(geom1).relate(jts(geom2), matrix);
     }
 
     /**
@@ -270,7 +290,8 @@ public final class GeometryProcessor {
     @UML(identifier="touches", specification=ISO_19107) // section 6.4.8.8
     //@UML(identifier="3Dtouches", specification=ISO_19107) // section 6.4.9
     public boolean touches(Geometry geom1, Geometry geom2) throws OperationException {
-        throw new UnsupportedOperationException();
+        //TODO : fallback on JTS until implemented
+        return jts(geom1).touches(jts(geom2));
     }
 
     /**
@@ -279,7 +300,9 @@ public final class GeometryProcessor {
     @UML(identifier="within", specification=ISO_19107) // section 6.4.8.8
     //@UML(identifier="3Dwithin", specification=ISO_19107) // section 6.4.9
     public boolean within(Geometry geom1, Geometry geom2) throws OperationException {
-        throw new UnsupportedOperationException();
+
+        //TODO : fallback on JTS until implemented
+        return jts(geom1).within(jts(geom2));
     }
 
     @UML(identifier="withinDistance", specification=ISO_19107) // section 6.4.8.8
@@ -457,5 +480,12 @@ public final class GeometryProcessor {
             sep.setAttribute(name, array);
         }
         return sep;
+    }
+
+    /**
+     * TODO fallback on JTS until we implemetend all methods.
+     */
+    private static org.locationtech.jts.geom.Geometry jts(Geometry geom) {
+        return Geometries.asJTS(geom, false, null);
     }
 }

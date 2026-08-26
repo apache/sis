@@ -60,9 +60,7 @@ public interface Surface extends Orientable {
      * @return area of the surface.
      */
     @UML(identifier="area", specification=ISO_19107) // section 6.4.25.7
-    default double getArea() {
-        throw new UnsupportedOperationException();
-    }
+    double getArea();
 
     /**
      * The mathematical centroid for this Surface as a Point.

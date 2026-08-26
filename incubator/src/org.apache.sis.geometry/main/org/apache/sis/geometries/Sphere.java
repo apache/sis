@@ -88,6 +88,11 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
     }
 
     @Override
+    public double getArea() {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
     public void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
         if (cs.getCoordinateSystem().getDimension() != getCoordinateReferenceSystem().getCoordinateSystem().getDimension()) {
             throw new IllegalArgumentException("New CRS dimension must be the same as previous CRS");

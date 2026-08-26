@@ -24,6 +24,7 @@ import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.LinearRing;
 import org.apache.sis.geometries.Polygon;
+import org.locationtech.jts.geom.GeometryFactory;
 
 
 /**
@@ -80,6 +81,12 @@ public class DefaultPolygon extends AbstractGeometry implements Polygon {
     @Override
     public Envelope getEnvelope() {
         return getExteriorRing().getEnvelope();
+    }
+
+    @Override
+    public double getArea() {
+        //TODO : fallback on JTS until implemented
+        return Geometries.asJTS(this, false, new GeometryFactory()).getArea();
     }
 
 }

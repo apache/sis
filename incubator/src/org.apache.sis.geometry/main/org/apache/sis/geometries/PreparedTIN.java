@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.ToDoubleFunction;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.locationtech.jts.index.quadtree.Quadtree;
 import org.opengis.coverage.CannotEvaluateException;

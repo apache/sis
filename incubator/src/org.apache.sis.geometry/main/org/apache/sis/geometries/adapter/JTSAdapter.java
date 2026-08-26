@@ -88,11 +88,11 @@ public final class JTSAdapter {
             return GeometryFactory.createPolygon(exterior, interiors);
 
         } else if (jts instanceof org.locationtech.jts.geom.MultiPolygon cdt) {
-            final Surface[] geoms = new Surface[cdt.getNumGeometries()];
+            final Polygon[] geoms = new Polygon[cdt.getNumGeometries()];
             for (int i = 0; i < geoms.length; i++) {
-                geoms[i] = (Surface) fromJTS(cdt.getGeometryN(i), crs, copy);
+                geoms[i] = (Polygon) fromJTS(cdt.getGeometryN(i), crs, copy);
             }
-            return GeometryFactory.createMultiSurface(geoms);
+            return GeometryFactory.createMultiPolygon(geoms);
 
         } else if (jts instanceof org.locationtech.jts.geom.GeometryCollection cdt) {
             final Geometry[] geoms = new Geometry[cdt.getNumGeometries()];

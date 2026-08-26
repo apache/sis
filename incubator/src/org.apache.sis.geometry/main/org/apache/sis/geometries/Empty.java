@@ -27,8 +27,16 @@ import org.opengis.annotation.UML;
 @UML(identifier="Empty", specification=ISO_19107) // section 6.4.10
 public interface Empty extends Geometry{
 
+    public static final String TYPE = "EMPTY";
+
     @Override
     default boolean isEmpty() {
         return true;
     }
+
+    @Override
+    public default String getGeometryType() {
+        return TYPE;
+    }
+
 }

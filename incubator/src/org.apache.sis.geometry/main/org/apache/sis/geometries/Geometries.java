@@ -28,11 +28,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import javax.measure.Unit;
 import org.apache.sis.geometries.adapter.JTSAdapter;
 import org.apache.sis.geometries.adapter.ShapeAdapter;
+import org.apache.sis.geometries.adapter.ShapeConverter;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.IdentifiedObject;
 import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
@@ -75,6 +77,8 @@ import org.apache.sis.util.SimpleInternationalString;
  * @author Johann Sorel (Geomatys)
  */
 public final class Geometries {
+
+    private static final org.locationtech.jts.geom.GeometryFactory JTS_FACTORY = new org.locationtech.jts.geom.GeometryFactory();
 
     private static final CoordinateReferenceSystem UNDEFINED_CRS_1D = createUndefined(1);
     private static final CoordinateReferenceSystem UNDEFINED_CRS_2D = createUndefined(2);
@@ -722,10 +726,11 @@ public final class Geometries {
      * View a geometry as a JTS geometry.
      *
      * @param copy if true create a copy of the point sequence, otherwise create a view
+     * @param gf JTS factory or null for default
      * @return JTS equivalent
      */
     public static org.locationtech.jts.geom.Geometry asJTS(Geometry geom, boolean copy, org.locationtech.jts.geom.GeometryFactory gf) {
-        return JTSAdapter.asJTS(geom, copy, gf);
+        return JTSAdapter.asJTS(geom, copy, gf == null ? JTS_FACTORY : gf);
     }
 
     /**
@@ -737,5 +742,18 @@ public final class Geometries {
     public static Shape asShape(final Geometry geometry) {
         // Null value check in the invoked constructor.
         return new ShapeAdapter(geometry);
+    }
+
+    /**
+     * Converts a Java2D shape to a SIS geometry. If the given shape is a view created by {@link #asShape(Geometry)},
+     * then the original geometry is returned. Otherwise a new geometry is created with a copy (not a view) of the
+     * shape coordinates.
+     *
+     * @param  shape     the Java2D shape to convert. Cannot be {@code null}.
+     * @param  flatness  the maximum distance that line segments are allowed to deviate from curves.
+     * @return SIS geometry with shape coordinates. Never null but can be empty.
+     */
+    public static Geometry fromAWT(final Shape shape, final double flatness) {
+        return ShapeConverter.create(Objects.requireNonNull(shape), flatness);
     }
 }
