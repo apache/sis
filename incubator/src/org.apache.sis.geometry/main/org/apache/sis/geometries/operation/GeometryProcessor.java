@@ -370,13 +370,13 @@ public final class GeometryProcessor {
 
         if (geom instanceof LinearRing cdt) {
             return Transform.transform(cdt, crs, transform);
+        } else if (geom instanceof Triangle cdt) {
+            return Transform.transform(cdt, crs, transform);
         } else if (geom instanceof Polygon cdt) {
             return Transform.transform(cdt, crs, transform);
         } else if (geom instanceof MultiMeshPrimitive<?> cdt) {
             return Transform.transform(cdt, crs, transform);
         } else if (geom instanceof MeshPrimitive cdt) {
-            return Transform.transform(cdt, crs, transform);
-        } else if (geom instanceof Triangle cdt) {
             return Transform.transform(cdt, crs, transform);
         }
 

@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import javax.measure.Unit;
+import org.apache.sis.geometries.adapter.JTSAdapter;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.IdentifiedObject;
 import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
@@ -42,19 +43,16 @@ import org.opengis.referencing.datum.EngineeringDatum;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
-import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.math.Vector3D;
 import org.apache.sis.geometries.math.Vectors;
-import org.apache.sis.geometries.math.Cursor;
 import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.math.Matrix3D;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
-import org.apache.sis.geometries.internal.shared.ArraySequence;
 import org.apache.sis.geometry.wrapper.jts.JTS;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CRS;
@@ -712,87 +710,20 @@ public final class Geometries {
 
     /**
      * Convert given JTS geometry to SIS Geometry.
+     * @param copy if true create a copy of the coordinate sequence, otherwise create a view
      */
-    public static Geometry fromJTS(org.locationtech.jts.geom.Geometry jts) {
-        if (jts == null) {
-            return null;
-        }
-        CoordinateReferenceSystem crs = org.apache.sis.geometry.wrapper.Geometries.wrap(jts).get().getCoordinateReferenceSystem();
-        if (crs == null) crs = Geometries.getUndefinedCRS(2);
-        return fromJTS(jts, crs);
+    public static Geometry fromJTS(org.locationtech.jts.geom.Geometry jts, boolean copy) {
+        return JTSAdapter.fromJTS(jts, copy);
     }
 
     /**
-     * Convert given JTS geometry to SIS Geometry.
+     * View a geometry as a JTS geometry.
+     *
+     * @param copy if true create a copy of the point sequence, otherwise create a view
+     * @return JTS equivalent
      */
-    private static Geometry fromJTS(org.locationtech.jts.geom.Geometry jts, CoordinateReferenceSystem crs) {
-        if (jts == null) {
-            return null;
-        } else if (jts instanceof org.locationtech.jts.geom.Point cdt) {
-            return GeometryFactory.createPoint(toPointSequence(cdt.getCoordinateSequence(), crs));
-
-        } else if (jts instanceof org.locationtech.jts.geom.MultiPoint cdt) {
-            return GeometryFactory.createMultiPoint(toPointSequence(jts.getFactory().getCoordinateSequenceFactory().create(cdt.getCoordinates()), crs));
-
-        } else if (jts instanceof org.locationtech.jts.geom.LinearRing cdt) {
-            return GeometryFactory.createLinearRing(toPointSequence(cdt.getCoordinateSequence(), crs));
-
-        } else if (jts instanceof org.locationtech.jts.geom.LineString cdt) {
-            return GeometryFactory.createLineString(toPointSequence(cdt.getCoordinateSequence(), crs));
-
-        } else if (jts instanceof org.locationtech.jts.geom.MultiLineString cdt) {
-            final LineString[] strings = new LineString[cdt.getNumGeometries()];
-            for (int i = 0; i < strings.length; i++) {
-                strings[i] = (LineString) fromJTS(cdt.getGeometryN(i), crs);
-            }
-            return GeometryFactory.createMultiLineString(strings);
-        } else if (jts instanceof org.locationtech.jts.geom.Polygon cdt) {
-            final LinearRing exterior = (LinearRing) fromJTS(cdt.getExteriorRing(), crs);
-            final List<LinearRing> interiors = new ArrayList<>(cdt.getNumInteriorRing());
-            for (int i = 0, n = cdt.getNumInteriorRing(); i < n; i++) {
-                interiors.add((LinearRing) fromJTS(cdt.getInteriorRingN(i), crs));
-            }
-            return GeometryFactory.createPolygon(exterior, interiors);
-
-        } else if (jts instanceof org.locationtech.jts.geom.MultiPolygon cdt) {
-            final Surface[] geoms = new Surface[cdt.getNumGeometries()];
-            for (int i = 0; i < geoms.length; i++) {
-                geoms[i] = (Surface) fromJTS(cdt.getGeometryN(i), crs);
-            }
-            return GeometryFactory.createMultiSurface(geoms);
-
-        } else if (jts instanceof org.locationtech.jts.geom.GeometryCollection cdt) {
-            final Geometry[] geoms = new Geometry[cdt.getNumGeometries()];
-            for (int i = 0; i < geoms.length; i++) {
-                geoms[i] = fromJTS(cdt.getGeometryN(i), crs);
-            }
-            return GeometryFactory.createGeometryCollection(geoms);
-
-        } else {
-            throw new IllegalArgumentException("Unknown JTS geometry type");
-        }
-    }
-
-    /**
-     * Convert JTS coordinate sequence to SIS PointSequence.
-     */
-    private static PointSequence toPointSequence(CoordinateSequence cs, CoordinateReferenceSystem crs) {
-        final int size = cs.size();
-        final int dimension = crs.getCoordinateSystem().getDimension();
-        final Array positions = NDArrays.of(SampleSystem.of(crs), DataType.DOUBLE, size);
-        final Cursor cursor = positions.cursor();
-        int i = 0;
-        while (cursor.next()) {
-            final Tuple samples = cursor.samples();
-            samples.set(0, cs.getOrdinate(i, 0));
-            samples.set(1, cs.getOrdinate(i, 1));
-            if (dimension > 2) {
-                //JTS only goes up to 3 dimensions
-                samples.set(2, cs.getOrdinate(i, 2));
-            }
-            i++;
-        }
-        return new ArraySequence(positions);
+    public static org.locationtech.jts.geom.Geometry asJTS(Geometry geom, boolean copy, org.locationtech.jts.geom.GeometryFactory gf) {
+        return JTSAdapter.asJTS(geom, copy, gf);
     }
 
 }

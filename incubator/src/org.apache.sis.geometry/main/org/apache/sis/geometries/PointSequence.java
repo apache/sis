@@ -23,7 +23,6 @@ import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Array;
-import org.apache.sis.geometry.GeneralEnvelope;
 
 
 /**
@@ -86,7 +85,7 @@ public interface PointSequence {
      * @param index searched index
      * @return copy of the position
      */
-    Tuple getPosition(int index);
+    Tuple<?> getPosition(int index);
 
     /**
      * Set position attribute value.
@@ -94,7 +93,7 @@ public interface PointSequence {
      * @param index searched index
      * @param value new attribute value
      */
-    void setPosition(int index, Tuple value);
+    void setPosition(int index, Tuple<?> value);
 
     /**
      * Get attribute value.
@@ -103,7 +102,7 @@ public interface PointSequence {
      * @param name attribute name
      * @return copy of the attribute
      */
-    Tuple getAttribute(int index, String name);
+    Tuple<?> getAttribute(int index, String name);
 
     /**
      * Set attribute value.
@@ -112,7 +111,7 @@ public interface PointSequence {
      * @param name attribute name
      * @param value new attribute value
      */
-    void setAttribute(int index, String name, Tuple value);
+    void setAttribute(int index, String name, Tuple<?> value);
 
     /**
      * Get all attribute values as a TupleArray.
@@ -135,6 +134,7 @@ public interface PointSequence {
     /**
      * Get attribute values range
      *
+     * @param name
      * @return BBox in attribute sample system
      */
     default BBox getAttributeRange(String name) {
