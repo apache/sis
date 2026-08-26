@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,6 +32,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import javax.measure.Unit;
 import org.apache.sis.geometries.adapter.JTSAdapter;
+import org.apache.sis.geometries.adapter.ShapeAdapter;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.IdentifiedObject;
 import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
@@ -726,4 +728,14 @@ public final class Geometries {
         return JTSAdapter.asJTS(geom, copy, gf);
     }
 
+    /**
+     * Returns a view of the given SIS geometry as a Java2D shape.
+     *
+     * @param  geometry  the geometry to view as a shape, not {@code null}.
+     * @return the Java2D shape view.
+     */
+    public static Shape asShape(final Geometry geometry) {
+        // Null value check in the invoked constructor.
+        return new ShapeAdapter(geometry);
+    }
 }

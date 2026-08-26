@@ -22,6 +22,7 @@ import java.util.Objects;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.GenericName;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.Cache;
@@ -127,6 +128,10 @@ public final class SampleSystem {
         } catch (Exception ex) {
             throw new BackingStoreException(ex.getMessage(), ex);
         }
+    }
+
+    public static SampleSystem cartesian(int nbDim) {
+        return of(Geometries.getUndefinedCRS(nbDim));
     }
 
     /**

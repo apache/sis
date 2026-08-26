@@ -367,6 +367,9 @@ public final class GeometryProcessor {
      */
     @UML(identifier="transform", specification=ISO_19107) // section 6.4.4.28
     public Geometry transform(Geometry geom, CoordinateReferenceSystem crs, MathTransform transform) {
+        if (crs == null) {
+            crs = geom.getCoordinateReferenceSystem();
+        }
 
         if (geom instanceof LinearRing cdt) {
             return Transform.transform(cdt, crs, transform);
