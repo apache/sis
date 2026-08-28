@@ -236,11 +236,9 @@ public class MathsTest {
     }
 
     /**
-     * A known mathematical problem.
-     * TODO : find a more robust way to compute this operation.
+     * A known double precisions mathematical problem.
      */
     @Test
-    @Disabled
     public void testInCircle() {
 
         {
@@ -253,12 +251,21 @@ public class MathsTest {
             final double dx = 8.64685;
             final double dy = 41.7668;
 
-            System.out.println(Maths.inCircle(ax, ay, bx, by, dx, dy, cx, cy));
-            System.out.println(Maths.inCircle(bx, by, dx, dy, ax, ay, cx, cy));
-            System.out.println(Maths.inCircle(dx, dy, ax, ay, bx, by, cx, cy));
-            System.out.println(Maths.inCircle(ax, ay, dx, dy, cx, cy, bx, by));
-            System.out.println(Maths.inCircle(dx, dy, cx, cy, ax, ay, bx, by));
-            System.out.println(Maths.inCircle(cx, cy, ax, ay, dx, dy, bx, by));
+            //double precision arithmetic fails on this
+            assertTrue(Maths.inCircleFast(ax, ay, bx, by, dx, dy, cx, cy));
+            assertFalse(Maths.inCircleFast(bx, by, dx, dy, ax, ay, cx, cy));
+            assertFalse(Maths.inCircleFast(dx, dy, ax, ay, bx, by, cx, cy));
+            assertTrue(Maths.inCircleFast(ax, ay, dx, dy, cx, cy, bx, by));
+            assertTrue(Maths.inCircleFast(dx, dy, cx, cy, ax, ay, bx, by));
+            assertFalse(Maths.inCircleFast(cx, cy, ax, ay, dx, dy, bx, by));
+
+            //check the new method find the right answer
+            assertTrue(Maths.inCircle(ax, ay, bx, by, dx, dy, cx, cy));
+            assertTrue(Maths.inCircle(bx, by, dx, dy, ax, ay, cx, cy));
+            assertTrue(Maths.inCircle(dx, dy, ax, ay, bx, by, cx, cy));
+            assertTrue(Maths.inCircle(ax, ay, dx, dy, cx, cy, bx, by));
+            assertTrue(Maths.inCircle(dx, dy, cx, cy, ax, ay, bx, by));
+            assertTrue(Maths.inCircle(cx, cy, ax, ay, dx, dy, bx, by));
         }
 
         {
@@ -271,13 +278,39 @@ public class MathsTest {
             final double dx = 8.68772;
             final double dy = 41.90366;
 
-            System.out.println(Maths.inCircle(ax, ay, bx, by, dx, dy, cx, cy));
-            System.out.println(Maths.inCircle(bx, by, dx, dy, ax, ay, cx, cy));
-            System.out.println(Maths.inCircle(dx, dy, ax, ay, bx, by, cx, cy));
-            System.out.println(Maths.inCircle(ax, ay, dx, dy, cx, cy, bx, by));
-            System.out.println(Maths.inCircle(dx, dy, cx, cy, ax, ay, bx, by));
-            System.out.println(Maths.inCircle(cx, cy, ax, ay, dx, dy, bx, by));
+            //double precision arithmetic fails on this
+            assertTrue(Maths.inCircleFast(ax, ay, bx, by, dx, dy, cx, cy));
+            assertTrue(Maths.inCircleFast(bx, by, dx, dy, ax, ay, cx, cy));
+            assertTrue(Maths.inCircleFast(dx, dy, ax, ay, bx, by, cx, cy));
+            assertTrue(Maths.inCircleFast(ax, ay, dx, dy, cx, cy, bx, by));
+            assertFalse(Maths.inCircleFast(dx, dy, cx, cy, ax, ay, bx, by));
+            assertTrue(Maths.inCircleFast(cx, cy, ax, ay, dx, dy, bx, by));
+
+            //check the new method find the right answer
+            assertTrue(Maths.inCircle(ax, ay, bx, by, dx, dy, cx, cy));
+            assertTrue(Maths.inCircle(bx, by, dx, dy, ax, ay, cx, cy));
+            assertTrue(Maths.inCircle(dx, dy, ax, ay, bx, by, cx, cy));
+            assertTrue(Maths.inCircle(ax, ay, dx, dy, cx, cy, bx, by));
+            assertTrue(Maths.inCircle(dx, dy, cx, cy, ax, ay, bx, by));
+            assertTrue(Maths.inCircle(cx, cy, ax, ay, dx, dy, bx, by));
         }
+    }
+
+    /**
+     * Same ill-conditioned (nearly collinear) coordinates as
+     * {@code ShewchukPredicatesTest#testOrient2dRobustness()} : the naive
+     * {@link Maths#lineSideFast} collapses to exactly 0 (falsely reporting the points as
+     * collinear), while the robust {@link Maths#lineSide} must fall back and find the true,
+     * small but non-zero, signed area.
+     */
+    @Test
+    public void testLineSideRobust() {
+        final double ax = -2552049145.4853754, ay = 954889314.1911564;
+        final double bx = -8744220500.533537,  by = -8807976600.675346;
+        final double cx = -3827380787.3278,    cy = -1055857983.0624254;
+
+        assertEquals(0.0, Maths.lineSideFast(ax,ay, bx,by, cx,cy), 0.0);
+        assertEquals(126.54970229522473, Maths.lineSide(ax,ay, bx,by, cx,cy), 0.1);
     }
 
     /**

@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import static org.apache.sis.geometries.math.Vectors.*;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometries.operation.ShewchukPredicates;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.util.internal.shared.Numerics;
@@ -34,6 +35,29 @@ import org.apache.sis.util.internal.shared.Numerics;
 public final class Maths {
 
     private Maths(){}
+
+    /**
+     * Unit roundoff for {@code double} : the largest relative rounding error a single
+     * IEEE 754 double-precision operation can introduce. Used as the base unit for the
+     * static error-bound filters of {@link #lineSide} and {@link #inCircle}.
+     */
+    private static final double DOUBLE_EPSILON = 0x1.0p-53;
+
+    /**
+     * Safety factor applied to {@link #DOUBLE_EPSILON} in {@link #lineSide}'s error bound.
+     * Deliberately conservative (larger than strictly required) : a bound that is too small
+     * would silently trust a wrong sign, a bound that is too large only costs a few extra
+     * calls to {@link ShewchukPredicates#orient2d}.
+     */
+    private static final double ORIENTATION_ERROR_FACTOR = 8.0;
+
+    /**
+     * Safety factor applied to {@link #DOUBLE_EPSILON} in {@link #inCircle}'s error bound.
+     * Unlike {@link #ORIENTATION_ERROR_FACTOR}, this multiplies a "permanent" (see
+     * {@link #det33Abs}) rather than the raw intermediate terms, since those terms can
+     * themselves be the result of internal cancellation.
+     */
+    private static final double INCIRCLE_ERROR_FACTOR = 8.0;
 
     /**
      * Calculate normal of triangle made of given 3 points.
@@ -183,30 +207,48 @@ public final class Maths {
     }
 
     /**
-     * Test the side of a point compare to a line.
-     * Only X,Y ordinates are used.
+     * @see #lineSideFast(double, double, double, double, double, double)
+     */
+    public static double lineSideFast(ReadOnly.Tuple<?> a, ReadOnly.Tuple<?> b, ReadOnly.Tuple<?> c) {
+        return lineSideFast(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1));
+    }
+
+    /**
+     * @see #lineSideFast(double, double, double, double, double, double)
+     */
+    public static double lineSideFast(float[] a, float[] b, float[] c) {
+        return lineSideFast(a[0], a[1], b[0], b[1], c[0], c[1]);
+    }
+
+    /**
+     * Test the side of a point compare to a line.Only X,Y ordinates are used.
+     * Fast, naive {@code double} arithmetic : can give a wrong (or wrong-sign) result on
+     * nearly-collinear inputs. See {@link #lineSide(double, double, double, double, double, double)}
+     * for a robust equivalent.
      *
-     * @param a line start
-     * @param b line end
-     * @param c to test
+     * @param x1 line start X
+     * @param y1 line start Y
+     * @param x2 line end X
+     * @param y2 line end Y
+     * @param x point X
+     * @param y point Y
      * @return greater than 0 if point is on the left side
      *          equal 0 if point is on the line
      *          inferior than 0 if point is on the right side
+     */
+    public static double lineSideFast(double x1, double y1, double x2, double y2, double x, double y) {
+        return (x2 - x1) * (y - y1) - (x - x1) * (y2 - y1);
+    }
+
+    /**
+     * @see #lineSide(double, double, double, double, double, double)
      */
     public static double lineSide(ReadOnly.Tuple<?> a, ReadOnly.Tuple<?> b, ReadOnly.Tuple<?> c) {
         return lineSide(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1));
     }
 
     /**
-     * Test the side of a point compare to a line.
-     * Only X,Y ordinates are used.
-     *
-     * @param a line start
-     * @param b line end
-     * @param c to test
-     * @return greater than 0 if point is on the left side
-     *          equal 0 if point is on the line
-     *          inferior than 0 if point is on the right side
+     * @see #lineSide(double, double, double, double, double, double)
      */
     public static double lineSide(float[] a, float[] b, float[] c) {
         return lineSide(a[0], a[1], b[0], b[1], c[0], c[1]);
@@ -214,6 +256,8 @@ public final class Maths {
 
     /**
      * Test the side of a point compare to a line.Only X,Y ordinates are used.
+     * Robust variant : uses fast {@code double} arithmetic when it is provably safe to do so,
+     * and falls back on {@link ShewchukPredicates#orient2d} otherwise.
      *
      * @param x1 line start X
      * @param y1 line start Y
@@ -226,7 +270,13 @@ public final class Maths {
      *          inferior than 0 if point is on the right side
      */
     public static double lineSide(double x1, double y1, double x2, double y2, double x, double y) {
-        return (x2 - x1) * (y - y1) - (x - x1) * (y2 - y1);
+        final double left  = (x2 - x1) * (y  - y1);
+        final double right = (x  - x1) * (y2 - y1);
+        final double result = left - right;
+        if (Math.abs(result) > ORIENTATION_ERROR_FACTOR * DOUBLE_EPSILON * (Math.abs(left) + Math.abs(right))) {
+            return result;
+        }
+        return ShewchukPredicates.orient2d(x1, y1, x2, y2, x, y);
     }
 
     /**
@@ -448,11 +498,17 @@ public final class Maths {
         return new double[]{u, v, w};
     }
 
-    public static boolean inCircle(ReadOnly.Tuple<?> a, ReadOnly.Tuple<?> b, ReadOnly.Tuple<?> c, ReadOnly.Tuple<?> d) {
-        return inCircle(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1), d.get(0), d.get(1));
+    /**
+     * @see #inCircleFast(double, double, double, double, double, double, double, double)
+     */
+    public static boolean inCircleFast(ReadOnly.Tuple<?> a, ReadOnly.Tuple<?> b, ReadOnly.Tuple<?> c, ReadOnly.Tuple<?> d) {
+        return inCircleFast(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1), d.get(0), d.get(1));
     }
 
-    public static boolean inCircle(float[] a, float[] b, float[] c, float[] d) {
+    /**
+     * @see #inCircleFast(double, double, double, double, double, double, double, double)
+     */
+    public static boolean inCircleFast(float[] a, float[] b, float[] c, float[] d) {
         double t;
         double a2 = (t = a[0]) * t + (t = a[1]) * t;
         double b2 = (t = b[0]) * t + (t = b[1]) * t;
@@ -471,23 +527,91 @@ public final class Maths {
         return false;
     }
 
+    /**
+     * Fast, naive {@code double} arithmetic : can give a wrong result on nearly-cocircular
+     * inputs. See {@link #inCircle(double, double, double, double, double, double, double, double)}
+     * for a robust equivalent.
+     */
+    public static boolean inCircleFast(double ax, double ay, double bx, double by, double cx, double cy, double dx, double dy) {
+        return det44(ax, ay, bx, by, cx, cy, dx, dy) < 0;
+    }
+
+    /**
+     * @see #inCircle(double, double, double, double, double, double, double, double)
+     */
+    public static boolean inCircle(ReadOnly.Tuple<?> a, ReadOnly.Tuple<?> b, ReadOnly.Tuple<?> c, ReadOnly.Tuple<?> d) {
+        return inCircle(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1), d.get(0), d.get(1));
+    }
+
+    /**
+     * @see #inCircle(double, double, double, double, double, double, double, double) 
+     */
+    public static boolean inCircle(float[] a, float[] b, float[] c, float[] d) {
+        return inCircle(a[0], a[1], b[0], b[1], c[0], c[1], d[0], d[1]);
+    }
+
+    /**
+     * Robust variant : uses fast {@code double} arithmetic when it is provably safe to do so,
+     * and falls back on {@link ShewchukPredicates#inCircle} otherwise.
+     */
     public static boolean inCircle(double ax, double ay, double bx, double by, double cx, double cy, double dx, double dy) {
         final double a2 = ax*ax + ay*ay;
         final double b2 = bx*bx + by*by;
         final double c2 = cx*cx + cy*cy;
         final double d2 = dx*dx + dy*dy;
 
-        double det44 = (d2 * det33(ax, ay,  1, bx, by,  1, cx, cy,  1))
-                     - (dx * det33(a2, ay,  1, b2, by,  1, c2, cy,  1))
-                     + (dy * det33(a2, ax,  1, b2, bx,  1, c2, cx,  1))
-                     - ( 1 * det33(a2, ax, ay, b2, bx, by, c2, cx, cy));
-        return det44 < 0;
+        final double term1 =  d2 * det33(ax, ay, 1, bx, by, 1, cx, cy, 1);
+        final double term2 =  dx * det33(a2, ay, 1, b2, by, 1, c2, cy, 1);
+        final double term3 =  dy * det33(a2, ax, 1, b2, bx, 1, c2, cx, 1);
+        final double term4 =       det33(a2, ax, ay, b2, bx, by, c2, cx, cy);
+        final double det44 = term1 - term2 + term3 - term4;
+
+        //Each termN is itself a determinant that can suffer internal cancellation, so the
+        //error bound cannot simply be based on |term1|+..+|term4| (those can be deceptively
+        //small already). Instead use the "permanent" of the whole formula : the same formula,
+        //but with every subtraction turned into an addition of absolute values, which bounds
+        //the magnitude of every partial sum that could arise anywhere in the computation.
+        final double permanent = d2 * det33Abs(ax, ay, 1, bx, by, 1, cx, cy, 1)
+                + Math.abs(dx) * det33Abs(a2, ay, 1, b2, by, 1, c2, cy, 1)
+                + Math.abs(dy) * det33Abs(a2, ax, 1, b2, bx, 1, c2, cx, 1)
+                +                det33Abs(a2, ax, ay, b2, bx, by, c2, cx, cy);
+        final double bound = INCIRCLE_ERROR_FACTOR * DOUBLE_EPSILON * permanent;
+        if (Math.abs(det44) > bound) {
+            return det44 < 0;
+        }
+        //Maths' det44 sign convention is the negation of ShewchukPredicates.inCircle's.
+        return ShewchukPredicates.inCircle(ax, ay, bx, by, cx, cy, dx, dy) > 0;
+    }
+
+    private static double det44(double ax, double ay, double bx, double by, double cx, double cy, double dx, double dy) {
+        final double a2 = ax*ax + ay*ay;
+        final double b2 = bx*bx + by*by;
+        final double c2 = cx*cx + cy*cy;
+        final double d2 = dx*dx + dy*dy;
+
+        return (d2 * det33(ax, ay,  1, bx, by,  1, cx, cy,  1))
+             - (dx * det33(a2, ay,  1, b2, by,  1, c2, cy,  1))
+             + (dy * det33(a2, ax,  1, b2, bx,  1, c2, cx,  1))
+             - ( 1 * det33(a2, ax, ay, b2, bx, by, c2, cx, cy));
     }
 
     private static double det33(double... m) {
         return (m[0] * (m[4] * m[8] - m[5] * m[7]))
              - (m[1] * (m[3] * m[8] - m[5] * m[6]))
              + (m[2] * (m[3] * m[7] - m[4] * m[6]));
+    }
+
+    /**
+     * "Permanent" of {@link #det33} : the same cofactor expansion, but every subtraction
+     * replaced by an addition of absolute values. Bounds the magnitude of every partial sum
+     * that {@link #det33} could compute internally, which is what a static error-bound filter
+     * built on top of it must be based on (not on {@code det33}'s own, possibly-cancelled,
+     * result).
+     */
+    private static double det33Abs(double... m) {
+        return (Math.abs(m[0]) * (Math.abs(m[4]) * Math.abs(m[8]) + Math.abs(m[5]) * Math.abs(m[7])))
+             + (Math.abs(m[1]) * (Math.abs(m[3]) * Math.abs(m[8]) + Math.abs(m[5]) * Math.abs(m[6])))
+             + (Math.abs(m[2]) * (Math.abs(m[3]) * Math.abs(m[7]) + Math.abs(m[4]) * Math.abs(m[6])));
     }
 
     public static double dot2D(final float[] vector, final float[] other){

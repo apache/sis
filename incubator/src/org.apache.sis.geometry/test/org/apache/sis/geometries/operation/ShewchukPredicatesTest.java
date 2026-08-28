@@ -77,7 +77,7 @@ public class ShewchukPredicatesTest {
 
     /**
      * Ill-conditioned (nearly collinear) case where the naive double-precision
-     * {@link Maths#lineSide} formula collapses to exactly 0 (falsely reporting
+     * {@link Maths#lineSideFast} formula collapses to exactly 0 (falsely reporting
      * the points as collinear), while the true signed area is not zero.
      * {@link ShewchukPredicates#orient2d} must still find the correct sign.
      */
@@ -88,7 +88,7 @@ public class ShewchukPredicatesTest {
         final double cx = -3827380787.3278,    cy = -1055857983.0624254;
 
         //naive double arithmetic wrongly concludes the points are collinear
-        assertEquals(0.0, Maths.lineSide(ax,ay, bx,by, cx,cy), 0.0);
+        assertEquals(0.0, Maths.lineSideFast(ax,ay, bx,by, cx,cy), 0.0);
 
         //the robust predicate finds the true, small but non-zero, signed area
         assertEquals(126.54970229522473, ShewchukPredicates.orient2d(ax,ay, bx,by, cx,cy), 0.1);
@@ -97,7 +97,7 @@ public class ShewchukPredicatesTest {
 
     /**
      * Ill-conditioned (nearly cocircular) case where the naive double-precision
-     * {@link Maths#inCircle} formula flips sign due to cancellation and wrongly
+     * {@link Maths#inCircleFast} formula flips sign due to cancellation and wrongly
      * reports the point as inside the circle, while it is actually outside.
      * {@link ShewchukPredicates#inCircle} must still find the correct sign.
      */
@@ -109,7 +109,7 @@ public class ShewchukPredicatesTest {
         final double dx = -24494980.530095316, dy = -92015557.8766704;
 
         //naive double arithmetic wrongly concludes the point is inside the circle
-        assertTrue(Maths.inCircle(ax,ay, bx,by, cx,cy, dx,dy));
+        assertTrue(Maths.inCircleFast(ax,ay, bx,by, cx,cy, dx,dy));
 
         //the robust predicate finds the true, negative (outside) value
         assertEquals(-2243068334.102574, ShewchukPredicates.inCircle(ax,ay, bx,by, cx,cy, dx,dy), 100.0);
