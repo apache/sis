@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.image.internal;
+package org.apache.sis.images;
 
 import java.awt.Point;
 import java.awt.image.BandedSampleModel;
@@ -37,6 +37,7 @@ import org.apache.sis.image.internal.shared.WritableUntiledImage;
 
 
 /**
+ * Warning : will be moved to endorsed when reviewed.
  *
  * @author Johann Sorel (Geomatys)
  */

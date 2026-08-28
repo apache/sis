@@ -27,6 +27,7 @@ module org.apache.sis.geometry {
     requires transitive org.apache.sis.storage;
 
 
+    exports org.apache.sis.images;
     exports org.apache.sis.geometries;
     exports org.apache.sis.geometries.operation;
     exports org.apache.sis.geometries.math;

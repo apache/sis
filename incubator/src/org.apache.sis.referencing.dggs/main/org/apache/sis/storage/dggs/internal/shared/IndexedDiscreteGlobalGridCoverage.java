@@ -55,7 +55,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.storage.coverage.CoverageUtilities;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridSystems;
-import org.apache.sis.storage.image.internal.ImageBuilder;
+import org.apache.sis.images.ImageBuilder;
 import org.apache.sis.storage.rs.CodeIterator;
 
 
