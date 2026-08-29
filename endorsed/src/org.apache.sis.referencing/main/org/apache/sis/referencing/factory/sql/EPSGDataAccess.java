@@ -3863,7 +3863,11 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         boolean can = true;
         SQLException error = null;
         if (!authorityCodes.isEmpty()) {
-            System.gc();                // For cleaning as much weak references as we can before we check them.
+            /*
+             * We could invoke `System.gc()` here for clearing more weak references,
+             * which is needed for determining whether we can close the connection.
+             * But is causes too much overload in application with large heap.
+             */
             final Iterator<CloseableReference> it = authorityCodes.values().iterator();
             while (it.hasNext()) {
                 final CloseableReference reference = it.next();

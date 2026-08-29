@@ -131,14 +131,14 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *
      * @see #isDefault(Class)
      */
-    private final Map<Class<?>,Boolean> inherited = new IdentityHashMap<>();
+    private final Map<Class<?>, Boolean> inherited = new IdentityHashMap<>();
 
     /**
      * The pool of cached objects. Keys are (type, code) tuples; the type is stored because the same code
      * may be used for different kinds of objects. Values are usually instances of {@link IdentifiedObject},
      * but can also be instances of unrelated types such as {@link Extent}.
      */
-    private final Cache<Key,Object> cache;
+    private final Cache<Key, Object> cache;
 
     /**
      * The pool of objects identified by {@link Finder#find(IdentifiedObject)}.
@@ -753,6 +753,10 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *   <li>delegate to its {@link GeodeticAuthorityFactory#getAuthorityCodes(Class)} method,</li>
      *   <li>release the Data Access Object.</li>
      * </ol>
+     *
+     * For some implementations, the returned set maintains a live connection to a database.
+     * See {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess#getAuthorityCodes(Class)}
+     * for more information.
      *
      * @param  type  the spatial reference objects type (e.g. {@code ProjectedCRS.class}).
      * @return the set of authority codes for spatial reference objects of the given type.

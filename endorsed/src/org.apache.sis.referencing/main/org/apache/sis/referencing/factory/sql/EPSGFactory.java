@@ -19,7 +19,6 @@ package org.apache.sis.referencing.factory.sql;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -186,7 +185,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * Creates a factory using the given configuration. The properties recognized by this constructor
      * are listed in the table below. Any property not listed below will be ignored by this constructor.
      * All properties are optional and can {@code null} or omitted, in which case default values are used.
-     * Those default values are implementation-specific and may change in any future SIS version.
+     * Those default values are implementation-specific and may change in any future <abbr>SIS</abbr> version.
      *
      * <table class="sis">
      *  <caption>Recognized properties</caption>
@@ -295,7 +294,6 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
         crsFactory   = c.getCRSFactory();
         copFactory   = c.getCoordinateOperationFactory();
         mtFactory    = c.getMathTransformFactory();
-        super.setTimeout(10, TimeUnit.SECONDS);
     }
 
     /**
