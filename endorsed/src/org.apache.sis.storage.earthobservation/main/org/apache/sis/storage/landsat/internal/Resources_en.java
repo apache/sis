@@ -14,22 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.storage.landsat.internal;
+
 
 /**
- * Earth observation stores.
- *
- * @author  Rémi Maréchal (Geomatys)
- * @author  Thi Phuong Hao Nguyen (VNSC)
- * @author  Minh Chinh Vu (VNSC)
- * @author  Martin Desruisseaux (Geomatys)
- * @version 1.7
- * @since   0.8
+ * Resource in English language.
  */
-module org.apache.sis.storage.earthobservation {
-    requires transitive org.apache.sis.storage.geotiff;
-
-    provides org.apache.sis.storage.DataStoreProvider
-        with org.apache.sis.storage.landsat.LandsatStoreProvider;
-
-    exports org.apache.sis.storage.landsat;
+public class Resources_en extends Resources {
+    /**
+     * Constructs a new resource bundle loading data from
+     * the resource file of the same name as this class.
+     */
+    public Resources_en() {
+    }
 }

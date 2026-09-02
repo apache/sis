@@ -573,7 +573,7 @@ final class MetadataReader extends MetadataBuilder {
              * This parameter is only present if the band is included in the product.
              */
             case "FILE_NAME_BAND_": {
-                band(key, band).ifPresent((b) -> b.filename = value);
+                band(key, band).ifPresent((b) -> b.setFilename(value));
                 break;
             }
             /*
@@ -913,7 +913,7 @@ final class MetadataReader extends MetadataBuilder {
         final var content = (DefaultCoverageDescription) Containers.peekIfSingleton(result.getContentInfo());
         if (content != null) {
             final var groups = new EnumMap<BandGroupName,DefaultAttributeGroup>(BandGroupName.class);
-            for (final EnumMap.Entry<BandName,Band> entry : bands.entrySet()) {
+            for (final EnumMap.Entry<BandName, Band> entry : bands.entrySet()) {
                 final DefaultAttributeGroup g = groups.computeIfAbsent(entry.getKey().group, (k) -> {
                     var ag = new DefaultAttributeGroup(CoverageContentType.PHYSICAL_MEASUREMENT, null);
                     content.getAttributeGroups().add(ag);
@@ -952,7 +952,7 @@ final class MetadataReader extends MetadataBuilder {
         if (key != null) {
             String file = getFilename();
             if (reader instanceof LineNumberReader) {
-                file = file + ":" + ((LineNumberReader) reader).getLineNumber();
+                file = file + ':' + ((LineNumberReader) reader).getLineNumber();
             }
             key = errors().getString(Errors.Keys.CanNotReadPropertyInFile_2, toLongName(key), file);
         }

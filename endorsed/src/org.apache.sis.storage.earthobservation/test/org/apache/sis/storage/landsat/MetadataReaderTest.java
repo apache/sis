@@ -28,6 +28,7 @@ import static java.util.Map.entry;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import org.opengis.metadata.Metadata;
@@ -45,6 +46,7 @@ import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.util.FactoryException;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.event.StoreListeners;
 import org.opengis.test.dataset.ContentVerifier;
 
@@ -55,6 +57,7 @@ import org.opengis.test.dataset.ContentVerifier;
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class MetadataReaderTest extends TestCase {
     /**
      * Helper class for verifying metadata content.
@@ -99,7 +102,9 @@ public final class MetadataReaderTest extends TestCase {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(
                 MetadataReaderTest.class.getResourceAsStream("LandsatTest.txt"), "UTF-8")))
         {
-            final MetadataReader reader = new MetadataReader(null, "LandsatTest.txt", createListeners());
+            final var store = new LandsatStore(null, new StorageConnector(
+                    new StringReader("GROUP = LANDSAT_METADATA_FILE\nEND")));
+            final var reader = new MetadataReader(store, "LandsatTest.txt", createListeners());
             reader.read(in);
             actual = reader.getMetadata();
         }

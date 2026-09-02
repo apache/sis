@@ -16,20 +16,13 @@
  */
 
 /**
- * Earth observation stores.
+ * Shared classes for the implementation of Landsat reader.
  *
- * @author  Rémi Maréchal (Geomatys)
- * @author  Thi Phuong Hao Nguyen (VNSC)
- * @author  Minh Chinh Vu (VNSC)
+ * <STRONG>Do not use!</STRONG>
+ *
+ * This package is for internal use by Apache <abbr>SIS</abbr> only.
+ * Classes in this package may change in incompatible ways in any future version without notice.
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.7
- * @since   0.8
  */
-module org.apache.sis.storage.earthobservation {
-    requires transitive org.apache.sis.storage.geotiff;
-
-    provides org.apache.sis.storage.DataStoreProvider
-        with org.apache.sis.storage.landsat.LandsatStoreProvider;
-
-    exports org.apache.sis.storage.landsat;
-}
+package org.apache.sis.storage.landsat.internal;

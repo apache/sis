@@ -59,7 +59,7 @@ public class LandsatStoreProvider extends DataStoreProvider {
      *
      * @see #getLogger()
      */
-    private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.landsat");
+    static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.landsat");
 
     /**
      * The parameter descriptor to be returned by {@link #getOpenParameters()}.

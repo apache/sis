@@ -16,7 +16,15 @@
  */
 package org.apache.sis.storage.landsat;
 
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Files;
 import java.nio.charset.StandardCharsets;
+import org.apache.sis.storage.Resource;
+import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
@@ -24,8 +32,10 @@ import org.apache.sis.storage.DataStoreException;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertSingleton;
+import org.apache.sis.test.TestCaseWithLogs;
 
 
 /**
@@ -33,11 +43,13 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class LandsatStoreProviderTest extends TestCase {
+@SuppressWarnings("exports")
+public final class LandsatStoreProviderTest extends TestCaseWithLogs {
     /**
      * Creates a new test case.
      */
     public LandsatStoreProviderTest() {
+        super(LandsatStoreProvider.LOGGER);
     }
 
     /**
@@ -47,9 +59,65 @@ public final class LandsatStoreProviderTest extends TestCase {
      */
     @Test
     public void testProbeContentFromReader() throws DataStoreException {
-        final StorageConnector connector = new StorageConnector(MetadataReaderTest.class.getResourceAsStream("LandsatTest.txt"));
+        final var connector = new StorageConnector(MetadataReaderTest.class.getResourceAsStream("LandsatTest.txt"));
         connector.setOption(OptionKey.ENCODING, StandardCharsets.UTF_8);
-        final LandsatStoreProvider provider = new LandsatStoreProvider();
+        final var provider = new LandsatStoreProvider();
         assertEquals(ProbeResult.SUPPORTED, provider.probeContent(connector));
+        loggings.assertNoUnexpectedLog();
+    }
+
+    /**
+     * Creates a temporary file with one band and read it.
+     * The path of the image for the single band is returned.
+     *
+     * @param  tmpDir     temporary directory where to write a scene.
+     * @param  sceneName  name of the scene. Will be the sub-directory filename.
+     * @param  tiffFile   path of the <abbr>TIFF</abbr> file.
+     * @return paths of the file as provided by the resource.
+     * @throws IOException if an error occurred while writing the temporary file.
+     * @throws DataStoreException if an error occurred while reading the temporary file.
+     */
+    private static Collection<Path> readSingleBand(final Path tmpDir, final String sceneName, final String tiffFile)
+            throws IOException, DataStoreException
+    {
+        final Path sceneDir = Files.createDirectories(tmpDir.resolve(sceneName));
+        final Path sceneFile = sceneDir.resolve(sceneName + "_MTL.txt");
+        Files.write(sceneFile, Arrays.asList(
+                "GROUP = LANDSAT_METADATA_FILE",
+                "  GROUP = PRODUCT_CONTENTS",
+                "    FILE_NAME_BAND_1 = \"" + tiffFile + "\"",
+                "  END_GROUP = PRODUCT_CONTENTS",
+                "END_GROUP = LANDSAT_METADATA_FILE",
+                "END"));
+
+        final var paths = new ArrayList<Path>();
+        try (var store = new LandsatStore(null, new StorageConnector(sceneDir))) {
+            for (Resource component : store.components()) {
+                Aggregate group = assertInstanceOf(Aggregate.class, component);
+                Resource band = assertSingleton(group.components());
+                paths.addAll(band.getFileSet().orElseThrow().getPaths());
+            }
+        }
+        return paths;
+    }
+
+    /**
+     * Verifies that the Landsat reader detects when a band path is outside the scene directory.
+     *
+     * @param  tmpDir  temporary directory where to write a scene.
+     * @throws IOException if an error occurred while writing the temporary file.
+     * @throws DataStoreException if an error occurred while reading the temporary file.
+     */
+    @Test
+    public void testBandPathValidation(@TempDir final Path tmpDir)
+            throws IOException, DataStoreException
+    {
+        final Path expected = tmpDir.resolve("valid", "B1.TIFF");
+        final Path actual = assertSingleton(readSingleBand(tmpDir, "valid", "B1.TIFF"));
+        assertEquals(expected.toAbsolutePath(), actual.toAbsolutePath());
+        loggings.assertNoUnexpectedLog();
+        assertTrue(readSingleBand(tmpDir, "invalid", "../outside/secret.tiff").isEmpty());
+        loggings.assertNextLogContains("../outside/secret.tiff", "Coastal Aerosol");
+        loggings.assertNoUnexpectedLog();
     }
 }

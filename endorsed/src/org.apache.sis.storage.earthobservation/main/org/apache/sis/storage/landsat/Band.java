@@ -23,6 +23,7 @@ import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.content.CoverageContentType;
+import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
@@ -39,6 +40,7 @@ import org.apache.sis.metadata.iso.content.DefaultBand;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.storage.landsat.internal.Resources;
 
 
 /**
@@ -67,11 +69,11 @@ final class Band extends GridResourceWrapper implements CoverageModifier {
     LocalName identifier;
 
     /**
-     * Filename of the file to read for band data.
-     * This is relative to {@link LandsatStore#directory}.
+     * Path to the file to read for getting the band data.
+     * This is resolved against {@link LandsatStore#directory}.
      * Should not be modified after the end of metadata parsing.
      */
-    String filename;
+    private Path storage;
 
     /**
      * Metadata about the band.
@@ -114,7 +116,7 @@ final class Band extends GridResourceWrapper implements CoverageModifier {
      */
     @Override
     protected GridCoverageResource createSource() throws DataStoreException {
-        final StorageConnector connector = new StorageConnector(getDataPath());
+        final var connector = new StorageConnector(storage);
         connector.setOption(OptionKey.COVERAGE_MODIFIER, this);
         return new GeoTiffStore(parent, parent.getProvider(), connector, true).components().get(0);
     }
@@ -223,17 +225,29 @@ final class Band extends GridResourceWrapper implements CoverageModifier {
      */
     @Override
     public Optional<FileSet> getFileSet() throws DataStoreException {
-        return Optional.of(new FileSet(getDataPath()));
+        return Optional.of(new FileSet(storage));
     }
 
     /**
-     * Resolves path to image file.
+     * Sets the filename if it was not already set.
+     * The filename is rejected if not inside the scene directory.
      */
-    private Path getDataPath() {
-        if (parent.directory != null) {
-            return parent.directory.resolve(filename);
-        } else {
-            return Path.of(filename);
+    final void setFilename(final String value) {
+        if (storage == null) {
+            final Path base = parent.directory;
+            final Path file = (base != null ? base.resolve(value) : Path.of(value)).normalize();
+            if (base != null ? file.startsWith(base) : IOUtilities.isRelativeInsideDirectory(file)) {
+                storage = file;
+            } else {
+                parent.warning(Resources.format(Resources.Keys.BandOutsideSceneDirectory_2, band.title, value));
+            }
         }
+    }
+
+    /**
+     * Returns whether the mandatory properties have been defined on this band.
+     */
+    final boolean isValid() {
+        return storage != null;
     }
 }
