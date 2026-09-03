@@ -32,10 +32,17 @@ public interface Orientable extends Primitive {
         NEGATIVE
     }
 
+    /**
+     * Returns whether this geometry is traversed in the direction of its underlying primitive
+     * ({@link Sign#POSITIVE}) or in the opposite direction ({@link Sign#NEGATIVE}).
+     *
+     * <p>The default is {@link Sign#POSITIVE}, which is what a geometry defined directly by its own
+     * coordinates is: only a geometry that stands for the reverse of another one reports
+     * {@link Sign#NEGATIVE}.</p>
+     */
     @UML(identifier="orientation", specification=ISO_19107) // section 6.4.15.2
     default Sign getOrientationSign(){
-        //TODO
-        throw new UnsupportedOperationException();
+        return Sign.POSITIVE;
     }
 
     @UML(identifier="proxy", specification=ISO_19107) // section 6.4.15.3

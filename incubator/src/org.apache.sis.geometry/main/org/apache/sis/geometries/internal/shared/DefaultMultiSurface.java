@@ -25,39 +25,14 @@ import org.apache.sis.geometries.Surface;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultMultiSurface<T extends Surface> extends AbstractGeometry implements MultiSurface<T> {
-
-    private final T[] surfaces;
+public class DefaultMultiSurface<T extends Surface> extends DefaultGeometryCollection<T> implements MultiSurface<T> {
 
     public DefaultMultiSurface(T[] geometries) {
-        this.surfaces = geometries;
+        this(null, geometries);
     }
 
-    @Override
-    public String getGeometryType() {
-        return "MULTISURFACE";
-    }
-
-    @Override
-    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return surfaces[0].getCoordinateReferenceSystem();
-    }
-
-    @Override
-    public void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
-        for (T c : surfaces) {
-            c.setCoordinateReferenceSystem(cs);
-        }
-    }
-
-    @Override
-    public int getNumGeometries() {
-        return surfaces.length;
-    }
-
-    @Override
-    public T getGeometryN(int n) {
-        return surfaces[n];
+    public DefaultMultiSurface(CoordinateReferenceSystem fallbackCRS, T[] geometries) {
+        super(fallbackCRS, geometries);
     }
 
 }

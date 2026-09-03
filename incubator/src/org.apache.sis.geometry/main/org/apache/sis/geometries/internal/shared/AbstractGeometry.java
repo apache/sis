@@ -23,6 +23,8 @@ import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.Cursor;
 import org.apache.sis.geometries.math.Array;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.opengis.geometry.Envelope;
 
 
 /**
@@ -77,5 +79,33 @@ public abstract class AbstractGeometry implements Geometry {
             }
             toText(sb, array.getPosition(i));
         }
+    }
+
+    /**
+     * Returns the union of the envelopes of the given geometries,
+     * or {@code null} if there is nothing to compute a union of.
+     */
+    protected static Envelope envUnion(final Geometry... geometries) {
+        GeneralEnvelope union = null;
+        for (final Geometry geometry : geometries) {
+            union = add(union, geometry);
+        }
+        return union;
+    }
+
+    /**
+     * Adds the envelope of the given geometry to the given union, creating it if needed.
+     * Geometries with no envelope at all (an empty one, typically) are skipped.
+     */
+    private static GeneralEnvelope add(GeneralEnvelope union, final Geometry geometry) {
+        final Envelope envelope = geometry.getEnvelope();
+        if (envelope != null) {
+            if (union == null) {
+                union = new GeneralEnvelope(envelope);
+            } else {
+                union.add(envelope);
+            }
+        }
+        return union;
     }
 }

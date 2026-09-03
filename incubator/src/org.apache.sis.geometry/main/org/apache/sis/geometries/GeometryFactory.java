@@ -28,18 +28,28 @@ import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.internal.shared.ArraySequence;
+import org.apache.sis.geometries.internal.shared.DefaultCircularString;
+import org.apache.sis.geometries.internal.shared.DefaultCompoundCurve;
+import org.apache.sis.geometries.internal.shared.DefaultCurvePolygon;
 import org.apache.sis.geometries.internal.shared.DefaultEmpty;
 import org.apache.sis.geometries.internal.shared.DefaultGeometryCollection;
 import org.apache.sis.geometries.internal.shared.DefaultLineString;
 import org.apache.sis.geometries.internal.shared.DefaultLinearRing;
+import org.apache.sis.geometries.internal.shared.DefaultMultiCurve;
 import org.apache.sis.geometries.internal.shared.DefaultMultiLineString;
 import org.apache.sis.geometries.internal.shared.DefaultMultiPoint;
 import org.apache.sis.geometries.internal.shared.DefaultMultiPolygon;
+import org.apache.sis.geometries.internal.shared.DefaultMultiPolyhedron;
 import org.apache.sis.geometries.internal.shared.DefaultMultiSurface;
 import org.apache.sis.geometries.internal.shared.DefaultPoint;
 import org.apache.sis.geometries.internal.shared.DefaultPolygon;
+import org.apache.sis.geometries.internal.shared.DefaultPolyhedralSurface;
+import org.apache.sis.geometries.internal.shared.DefaultPolyhedron;
 import org.apache.sis.geometries.internal.shared.DefaultRawMultiPoint;
+import org.apache.sis.geometries.internal.shared.DefaultReversedCurve;
+import org.apache.sis.geometries.internal.shared.DefaultReversedSurface;
 import org.apache.sis.geometries.internal.shared.DefaultTriangle;
+import org.apache.sis.geometries.internal.shared.DefaultTriangulatedSurface;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.spirals.Clothoid;
 import org.apache.sis.geometry.wrapper.Capability;
@@ -115,6 +125,10 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
         return new DefaultMultiLineString(geometries);
     }
 
+    public static <T extends Curve> MultiCurve<T> createMultiCurve(T ... geometries) {
+        return new DefaultMultiCurve<>(geometries);
+    }
+
     public static MultiPolygon createMultiPolygon(Polygon ... geometries) {
         return new DefaultMultiPolygon(geometries);
     }
@@ -125,6 +139,103 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
 
     public static <T extends Geometry> GeometryCollection<T> createGeometryCollection(T ... geometries) {
         return new DefaultGeometryCollection<>(geometries);
+    }
+
+    /*
+     * Variants taking an explicit coordinate reference system, used when the collection may be
+     * empty. An aggregate normally reports the CRS of its first element; with no element there is
+     * nothing to report, so the CRS has to be supplied by the caller.
+     */
+
+    public static MultiPoint createMultiPoint(CoordinateReferenceSystem crs, Point ... geometries) {
+        return new DefaultRawMultiPoint(crs, geometries);
+    }
+
+    public static MultiLineString createMultiLineString(CoordinateReferenceSystem crs, LineString ... geometries) {
+        return new DefaultMultiLineString(crs, geometries);
+    }
+
+    public static <T extends Curve> MultiCurve<T> createMultiCurve(CoordinateReferenceSystem crs, T ... geometries) {
+        return new DefaultMultiCurve<>(crs, geometries);
+    }
+
+    public static MultiPolygon createMultiPolygon(CoordinateReferenceSystem crs, Polygon ... geometries) {
+        return new DefaultMultiPolygon(crs, geometries);
+    }
+
+    public static <T extends Surface> MultiSurface<T> createMultiSurface(CoordinateReferenceSystem crs, T ... geometries) {
+        return new DefaultMultiSurface<>(crs, geometries);
+    }
+
+    public static <T extends Geometry> GeometryCollection<T> createGeometryCollection(CoordinateReferenceSystem crs, T ... geometries) {
+        return new DefaultGeometryCollection<>(crs, geometries);
+    }
+
+    /*
+     * Curves and surfaces beyond the linear ones, and solids. These are what the GML 3 constructs
+     * `gml:Curve`, `gml:CompositeCurve`, `gml:Ring`, `gml:ArcString`, `gml:Surface`,
+     * `gml:CompositeSurface`, `gml:Solid`, `gml:CompositeSolid` and the two `gml:Orientable*`
+     * elements map onto.
+     */
+
+    public static CompoundCurve createCompoundCurve(Curve ... curves) {
+        return new DefaultCompoundCurve(curves);
+    }
+
+    public static CompoundCurve createCompoundCurve(CoordinateReferenceSystem crs, Curve ... curves) {
+        return new DefaultCompoundCurve(crs, curves);
+    }
+
+    public static CircularString createCircularString(PointSequence sequence) {
+        return new DefaultCircularString(sequence);
+    }
+
+    public static CurvePolygon createCurvePolygon(Curve exterior, List<Curve> interiors) {
+        return new DefaultCurvePolygon(exterior, interiors);
+    }
+
+    public static <T extends Polygon> PolyhedralSurface<T> createPolyhedralSurface(T ... patches) {
+        return new DefaultPolyhedralSurface<>(null, patches);
+    }
+
+    public static <T extends Polygon> PolyhedralSurface<T> createPolyhedralSurface(CoordinateReferenceSystem crs, T[] patches) {
+        return new DefaultPolyhedralSurface<>(crs, patches);
+    }
+
+    public static TIN createTIN(Triangle ... patches) {
+        return new DefaultTriangulatedSurface(patches);
+    }
+
+    public static TIN createTIN(CoordinateReferenceSystem crs, Triangle[] patches) {
+        return new DefaultTriangulatedSurface(crs, patches);
+    }
+
+    public static Polyhedron createPolyhedron(MultiPolygon exteriorShell, List<MultiPolygon> interiorShells) {
+        return new DefaultPolyhedron(exteriorShell, interiorShells);
+    }
+
+    public static MultiPolyhedron createMultiPolyhedron(Polyhedron ... solids) {
+        return new DefaultMultiPolyhedron(solids);
+    }
+
+    public static MultiPolyhedron createMultiPolyhedron(CoordinateReferenceSystem crs, Polyhedron ... solids) {
+        return new DefaultMultiPolyhedron(crs, solids);
+    }
+
+    /**
+     * Returns a curve traversed in the opposite direction to the given one.
+     * This is what a GML {@code gml:OrientableCurve} with {@code orientation="-"} describes.
+     */
+    public static Curve createReversed(Curve base) {
+        return new DefaultReversedCurve(base);
+    }
+
+    /**
+     * Returns a surface whose up-normal points the opposite way to the given one's.
+     * This is what a GML {@code gml:OrientableSurface} with {@code orientation="-"} describes.
+     */
+    public static Surface createReversed(Surface base) {
+        return new DefaultReversedSurface(base);
     }
 
     public static PointSequence createSequence(Array positions) {

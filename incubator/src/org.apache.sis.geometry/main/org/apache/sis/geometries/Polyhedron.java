@@ -33,7 +33,7 @@ import java.util.List;
  * @author Johann Sorel (Geomatys)
  * @see https://docs.ogc.org/DRAFTS/21-045r1.html#polyhedron
  */
-public interface Polyhedron extends Geometry {
+public interface Polyhedron extends Solid {
 
     public static final String TYPE = "POLYHEDRON";
 

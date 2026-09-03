@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.MultiLineString;
 
@@ -28,6 +29,10 @@ public class DefaultMultiLineString extends DefaultMultiCurve<LineString> implem
 
     public DefaultMultiLineString(LineString... geometries) {
         super(geometries);
+    }
+
+    public DefaultMultiLineString(CoordinateReferenceSystem fallbackCRS, LineString... geometries) {
+        super(fallbackCRS, geometries);
     }
 
 }

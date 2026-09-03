@@ -17,22 +17,24 @@
 package org.apache.sis.geometries.internal.shared;
 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.Curve;
-import org.apache.sis.geometries.MultiCurve;
+import org.apache.sis.geometries.MultiPolyhedron;
+import org.apache.sis.geometries.Polyhedron;
 
 
 /**
+ * A collection of solids, each defined by its bounding shells.
  *
  * @author Johann Sorel (Geomatys)
+ * @see GML CompositeSolid, MultiSolid
  */
-public class DefaultMultiCurve<T extends Curve> extends DefaultGeometryCollection<T> implements MultiCurve<T> {
+public class DefaultMultiPolyhedron extends DefaultGeometryCollection<Polyhedron> implements MultiPolyhedron {
 
-    public DefaultMultiCurve(T[] geometries) {
-        this(null, geometries);
+    public DefaultMultiPolyhedron(Polyhedron... solids) {
+        this(null, solids);
     }
 
-    public DefaultMultiCurve(CoordinateReferenceSystem fallbackCRS, T[] geometries) {
-        super(fallbackCRS, geometries);
+    public DefaultMultiPolyhedron(CoordinateReferenceSystem fallbackCRS, Polyhedron... solids) {
+        super(fallbackCRS, solids);
     }
 
 }

@@ -17,22 +17,38 @@
 package org.apache.sis.geometries.internal.shared;
 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.Curve;
-import org.apache.sis.geometries.MultiCurve;
+import org.apache.sis.geometries.TIN;
+import org.apache.sis.geometries.Triangle;
 
 
 /**
+ * A surface made entirely of triangular patches.
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultMultiCurve<T extends Curve> extends DefaultGeometryCollection<T> implements MultiCurve<T> {
+public class DefaultTriangulatedSurface extends DefaultPolyhedralSurface<Triangle> implements TIN {
 
-    public DefaultMultiCurve(T[] geometries) {
-        this(null, geometries);
+    public DefaultTriangulatedSurface(Triangle... patches) {
+        super(null, patches);
     }
 
-    public DefaultMultiCurve(CoordinateReferenceSystem fallbackCRS, T[] geometries) {
-        super(fallbackCRS, geometries);
+    public DefaultTriangulatedSurface(CoordinateReferenceSystem fallbackCRS, Triangle[] patches) {
+        super(fallbackCRS, patches);
     }
 
+    /**
+     * Returns {@value TIN#TYPE}, not {@code "POLYHEDRALSURFACE"}.
+     */
+    @Override
+    public String getGeometryType() {
+        return TIN.TYPE;
+    }
+
+    /**
+     * Delegates to {@link TIN#asText()}, which formats the triangles as a WKT {@code TIN}.
+     */
+    @Override
+    public String asText() {
+        return TIN.super.asText();
+    }
 }

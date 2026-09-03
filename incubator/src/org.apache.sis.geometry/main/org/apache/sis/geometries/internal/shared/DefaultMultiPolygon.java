@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.MultiPolygon;
 import org.apache.sis.geometries.Polygon;
 
@@ -28,6 +29,10 @@ public class DefaultMultiPolygon extends DefaultMultiSurface<Polygon> implements
 
     public DefaultMultiPolygon(Polygon[] geometries) {
         super(geometries);
+    }
+
+    public DefaultMultiPolygon(CoordinateReferenceSystem fallbackCRS, Polygon[] geometries) {
+        super(fallbackCRS, geometries);
     }
 
 }

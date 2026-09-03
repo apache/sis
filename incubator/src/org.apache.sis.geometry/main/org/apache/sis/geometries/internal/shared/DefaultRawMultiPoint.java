@@ -25,34 +25,14 @@ import org.apache.sis.geometries.Point;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultRawMultiPoint extends AbstractGeometry implements MultiPoint<Point> {
-
-    private final Point[] geometries;
+public class DefaultRawMultiPoint extends DefaultGeometryCollection<Point> implements MultiPoint<Point> {
 
     public DefaultRawMultiPoint(Point[] geometries) {
-        this.geometries = geometries;
+        this(null, geometries);
     }
 
-    @Override
-    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return geometries[0].getCoordinateReferenceSystem();
-    }
-
-    @Override
-    public void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
-        for (Point c : geometries) {
-            c.setCoordinateReferenceSystem(cs);
-        }
-    }
-
-    @Override
-    public int getNumGeometries() {
-        return geometries.length;
-    }
-
-    @Override
-    public Point getGeometryN(int n) {
-        return geometries[n];
+    public DefaultRawMultiPoint(CoordinateReferenceSystem fallbackCRS, Point[] geometries) {
+        super(fallbackCRS, geometries);
     }
 
 }

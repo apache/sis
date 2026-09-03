@@ -29,19 +29,36 @@ public class DefaultGeometryCollection<T extends Geometry> extends AbstractGeome
 
     private final T[] geometries;
 
+    /**
+     * The coordinate reference system to report when this collection is empty.
+     * Ignored when at least one geometry is present, in which case the first
+     * geometry is authoritative. May be {@code null}.
+     */
+    private CoordinateReferenceSystem fallbackCRS;
+
     public DefaultGeometryCollection(T[] geometries) {
-        this.geometries = geometries;
+        this(null, geometries);
+    }
+
+    /**
+     * Creates a collection which reports the given coordinate reference system
+     * when {@code geometries} is empty.
+     */
+    public DefaultGeometryCollection(CoordinateReferenceSystem fallbackCRS, T[] geometries) {
+        this.geometries  = geometries;
+        this.fallbackCRS = fallbackCRS;
     }
 
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return geometries[0].getCoordinateReferenceSystem();
+        return (geometries.length != 0) ? geometries[0].getCoordinateReferenceSystem() : fallbackCRS;
     }
 
     @Override
-    public void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
+    public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) throws IllegalArgumentException {
+        fallbackCRS = crs;
         for (T c : geometries) {
-            c.setCoordinateReferenceSystem(cs);
+            c.setCoordinateReferenceSystem(crs);
         }
     }
 

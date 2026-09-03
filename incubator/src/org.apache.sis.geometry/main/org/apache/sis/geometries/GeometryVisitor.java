@@ -32,9 +32,9 @@ public class GeometryVisitor {
 
         else if (geometry instanceof Triangle candidate) visit(candidate);
         else if (geometry instanceof Polygon candidate) visit(candidate);
-        else if (geometry instanceof Surface candidate) visit(candidate);
         else if (geometry instanceof TIN candidate) visit(candidate);
         else if (geometry instanceof PolyhedralSurface candidate) visit(candidate);
+        else if (geometry instanceof Surface candidate) visit(candidate);
 
         else if (geometry instanceof MultiPolygon candidate) visit(candidate);
         else if (geometry instanceof MultiLineString candidate) visit(candidate);

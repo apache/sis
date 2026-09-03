@@ -36,6 +36,13 @@ package org.apache.sis.geometries;
  */
 public interface MultiSurface<T extends Surface> extends GeometryCollection<T>{
 
+    public static final String TYPE = "MULTISURFACE";
+
+    @Override
+    public default String getGeometryType() {
+        return TYPE;
+    }
+
     /**
      * The area of this MultiSurface, as measured in the spatial reference system of this MultiSurface.
      *
@@ -45,7 +52,7 @@ public interface MultiSurface<T extends Surface> extends GeometryCollection<T>{
     default double getArea() {
         double area = 0.0;
         for (int i = 0, n = getNumGeometries(); i < n; i++) {
-            area += getGeometryN(n).getArea();
+            area += getGeometryN(i).getArea();
         }
         return area;
     }

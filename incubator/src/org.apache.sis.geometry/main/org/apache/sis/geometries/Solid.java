@@ -31,25 +31,47 @@ import org.opengis.geometry.DirectPosition;
 @UML(identifier="Solid", specification=ISO_19107) // section 6.4.28
 public interface Solid extends Primitive {
 
+    /**
+     * Returns 3: a polyhedron bounds a volume.
+     */
+    @Override
+    public default int getTopologicDimension() {
+        return 3;
+    }
+
     @UML(identifier="boundary", specification=ISO_19107) // section 6.4.28.2
-    Geometry getBoundary();
+    default Geometry getBoundary() {
+        throw new UnsupportedOperationException();
+    }
 
     @UML(identifier="area", specification=ISO_19107) // section 6.4.28.3
-    Area getArea();
+    default Area getArea() {
+        throw new UnsupportedOperationException();
+    }
 
     @UML(identifier="volume", specification=ISO_19107) // section 6.4.28.4
-    Volume getVolume();
+    default Volume getVolume() {
+        throw new UnsupportedOperationException();
+    }
 
     @UML(identifier="dataPoint", specification=ISO_19107) // section 6.4.28.5
-    List<DirectPosition> getDataPoints();
+    default List<DirectPosition> getDataPoints() {
+        throw new UnsupportedOperationException();
+    }
 
     @UML(identifier="controlPoint", specification=ISO_19107) // section 6.4.28.6
-    List<DirectPosition> getControlPoints();
+    default List<DirectPosition> getControlPoints() {
+        throw new UnsupportedOperationException();
+    }
 
     @UML(identifier="interpolation", specification=ISO_19107) // section 6.4.28.7
-    SolidInterpolation getInterpolation();
+    default SolidInterpolation getInterpolation() {
+        throw new UnsupportedOperationException();
+    }
 
     @UML(identifier="knot", specification=ISO_19107) // section 6.4.28.8
-    List<Knot> getKnots();
+    default List<Knot> getKnots() {
+        throw new UnsupportedOperationException();
+    }
 
 }
