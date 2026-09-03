@@ -17,14 +17,24 @@
 package org.apache.sis.util.internal.shared;
 
 import java.lang.reflect.Array;
+import java.text.FieldPosition;
+import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.Formatter;
 import java.util.FormattableFlags;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+import java.util.function.Consumer;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.internal.AutoMessageFormat;
 import org.apache.sis.pending.jdk.JDK15;
+import org.apache.sis.system.Modules;
 
 
 /**
@@ -457,5 +467,73 @@ public final class Strings {
             args = new Object[] {value};
         }
         formatter.format(format, args);
+    }
+
+    /**
+     * Returns the localized message from the given log record.
+     * This is the implementation of {@link org.apache.sis.util.logging.MonolineFormatter#formatMessage(LogRecord)}.
+     * See the javadoc of that method for more information.
+     *
+     * <h4>Source</h4>
+     * This method does the same work as {@link java.util.logging.Formatter#formatMessage(LogRecord)} except for the
+     * synchronization lock, the reuse of existing {@link MessageFormat} and {@link StringBuffer} instances, and not
+     * catching formatting exceptions (we want to know if our messages have a problem).
+     *
+     * @param  record  the log record from which to get a localized message.
+     * @param  locale  the desired locale, or {@code null} for the default.
+     * @param  buffer  a preexisting buffer to reuse, or {@code null} if none.
+     * @param  format  a preexisting formatter to reuse, or {@code null} if none.
+     * @param  cache   where to cache new {@link AutoMessageFormat}, of {@code null} if none.
+     * @return the localized message.
+     */
+    public static String formatMessage(final LogRecord record, final Locale locale,
+            StringBuffer buffer, AutoMessageFormat format, Consumer<AutoMessageFormat> cache)
+    {
+        String message = record.getMessage();
+        ResourceBundle resources = null;
+        if (locale != null) {
+            final String baseName = record.getResourceBundleName();
+            if (baseName != null) try {
+                resources = ResourceBundle.getBundle(baseName, locale);
+            } catch (MissingResourceException e) {
+                Logging.ignorableException(Logger.getLogger(Modules.UTILITIES), null, null, e);
+            }
+        }
+        if (resources == null) {
+            resources = record.getResourceBundle();
+        }
+        if (resources != null) {
+            message = resources.getString(message);
+        }
+        final Object[] parameters = record.getParameters();
+        if (parameters != null && parameters.length != 0) {
+            int i = message.indexOf('{');
+            if (i >= 0 && ++i < message.length()) {
+                final char c = message.charAt(i);
+                if (c >= '0' && c <= '9') {
+                    if (buffer == null) {
+                        buffer = new StringBuffer();
+                    }
+                    synchronized (buffer) {
+                        if (format != null) {
+                            format.applyPattern(message);
+                        } else {
+                            format = new AutoMessageFormat(message);
+                            if (cache != null) {
+                                cache.accept(format);
+                            }
+                        }
+                        final int base = buffer.length();
+                        try {
+                            format.configure(parameters);
+                            message = format.format(parameters, buffer, new FieldPosition(0)).substring(base);
+                        } finally {
+                            buffer.setLength(base);
+                        }
+                    }
+                }
+            }
+        }
+        return message;
     }
 }

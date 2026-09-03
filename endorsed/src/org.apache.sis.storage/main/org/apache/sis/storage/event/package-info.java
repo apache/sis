@@ -35,7 +35,7 @@
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   1.7
- * @version 1.0
+ * @version 1.7
+ * @since   1.0
  */
 package org.apache.sis.storage.event;

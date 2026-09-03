@@ -38,6 +38,13 @@ public final class AutoMessageFormat extends MessageFormat {
     private transient NumberFormat[] formatsToConfigure;
 
     /**
+     * Value of the last call to {@link MessageFormat#applyPattern(String)}. Saved in order to avoid
+     * calling {@code super.applyPattern(String)} in the common case where the same message is logged
+     * many times with different arguments.
+     */
+    private transient String currentPattern;
+
+    /**
      * Whether the {@link #formatsToConfigure} needs to be updated.
      */
     private transient boolean update;
@@ -49,6 +56,7 @@ public final class AutoMessageFormat extends MessageFormat {
      */
     public AutoMessageFormat(final String pattern) {
         super(pattern);
+        currentPattern = pattern;
     }
 
     /**
@@ -59,17 +67,23 @@ public final class AutoMessageFormat extends MessageFormat {
      */
     public AutoMessageFormat(final String pattern, final Locale locale) {
         super(pattern, locale);
+        currentPattern = pattern;
     }
 
     /**
      * Modifies the pattern used by this message format.
+     * This method does nothing if this formatter is already applying the given pattern.
      *
      * @param pattern the new pattern for this message format
      */
     @Override
     public void applyPattern(final String pattern) {
-        super.applyPattern(pattern);
-        update = true;
+        if (!pattern.equals(currentPattern)) {
+            currentPattern = null;
+            super.applyPattern(pattern);
+            currentPattern = pattern;
+            update = true;
+        }
     }
 
     /**
@@ -82,7 +96,7 @@ public final class AutoMessageFormat extends MessageFormat {
         if (update) {
             formatsToConfigure = null;
             final Format[] fc = getFormatsByArgumentIndex();
-            for (int i=fc.length; --i >= 0;) {
+            for (int i = fc.length; --i >= 0;) {
                 final Format c = fc[i];
                 if (c instanceof NumberFormat) {
                     if (formatsToConfigure == null) {
@@ -93,7 +107,7 @@ public final class AutoMessageFormat extends MessageFormat {
             }
         }
         if (formatsToConfigure != null) {
-            for (int i=Math.min(formatsToConfigure.length, arguments.length); --i >= 0;) {
+            for (int i = Math.min(formatsToConfigure.length, arguments.length); --i >= 0;) {
                 final NumberFormat f = formatsToConfigure[i];
                 if (f != null) {
                     final Object value = arguments[i];

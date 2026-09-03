@@ -29,13 +29,15 @@ import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.event.StoreListener;
+import org.apache.sis.storage.event.WarningEvent;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertSingleton;
-import org.apache.sis.test.TestCaseWithLogs;
+import org.apache.sis.test.TestCase;
 
 
 /**
@@ -44,12 +46,16 @@ import org.apache.sis.test.TestCaseWithLogs;
  * @author  Martin Desruisseaux (Geomatys)
  */
 @SuppressWarnings("exports")
-public final class LandsatStoreProviderTest extends TestCaseWithLogs {
+public final class LandsatStoreProviderTest extends TestCase implements StoreListener<WarningEvent> {
+    /**
+     * Whether a warning is expected.
+     */
+    private boolean isWarningExpected;
+
     /**
      * Creates a new test case.
      */
     public LandsatStoreProviderTest() {
-        super(LandsatStoreProvider.LOGGER);
     }
 
     /**
@@ -63,7 +69,6 @@ public final class LandsatStoreProviderTest extends TestCaseWithLogs {
         connector.setOption(OptionKey.ENCODING, StandardCharsets.UTF_8);
         final var provider = new LandsatStoreProvider();
         assertEquals(ProbeResult.SUPPORTED, provider.probeContent(connector));
-        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -77,7 +82,7 @@ public final class LandsatStoreProviderTest extends TestCaseWithLogs {
      * @throws IOException if an error occurred while writing the temporary file.
      * @throws DataStoreException if an error occurred while reading the temporary file.
      */
-    private static Collection<Path> readSingleBand(final Path tmpDir, final String sceneName, final String tiffFile)
+    private Collection<Path> readSingleBand(final Path tmpDir, final String sceneName, final String tiffFile)
             throws IOException, DataStoreException
     {
         final Path sceneDir = Files.createDirectories(tmpDir.resolve(sceneName));
@@ -92,6 +97,7 @@ public final class LandsatStoreProviderTest extends TestCaseWithLogs {
 
         final var paths = new ArrayList<Path>();
         try (var store = new LandsatStore(null, new StorageConnector(sceneDir))) {
+            store.addListener(WarningEvent.class, this);
             for (Resource component : store.components()) {
                 Aggregate group = assertInstanceOf(Aggregate.class, component);
                 Resource band = assertSingleton(group.components());
@@ -109,15 +115,27 @@ public final class LandsatStoreProviderTest extends TestCaseWithLogs {
      * @throws DataStoreException if an error occurred while reading the temporary file.
      */
     @Test
-    public void testBandPathValidation(@TempDir final Path tmpDir)
-            throws IOException, DataStoreException
-    {
+    public void testBandPathValidation(@TempDir final Path tmpDir) throws IOException, DataStoreException {
         final Path expected = tmpDir.resolve("valid", "B1.TIFF");
         final Path actual = assertSingleton(readSingleBand(tmpDir, "valid", "B1.TIFF"));
         assertEquals(expected.toAbsolutePath(), actual.toAbsolutePath());
-        loggings.assertNoUnexpectedLog();
+        isWarningExpected = true;
         assertTrue(readSingleBand(tmpDir, "invalid", "../outside/secret.tiff").isEmpty());
-        loggings.assertNextLogContains("../outside/secret.tiff", "Coastal Aerosol");
-        loggings.assertNoUnexpectedLog();
+        assertFalse(isWarningExpected, "Warning should have been emitted.");
+    }
+
+    /**
+     * Invoked when a warning is emitted.
+     * Verifies if the warning was expected, and if so, if it contains the expected message.
+     *
+     * @param  event  the warning.
+     */
+    @Override
+    public void eventOccurred(final WarningEvent event) {
+        final String message = event.getMessage(null);
+        assertTrue(isWarningExpected, message);
+        assertTrue(message.contains("../outside/secret.tiff"), "../outside/secret.tiff");
+        assertTrue(message.contains("Coastal Aerosol"), "Coastal Aerosol");
+        isWarningExpected = false;
     }
 }
