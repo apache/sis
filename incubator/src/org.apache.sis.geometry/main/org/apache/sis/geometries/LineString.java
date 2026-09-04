@@ -22,8 +22,7 @@ import org.opengis.annotation.UML;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -75,6 +74,19 @@ public interface LineString extends Curve {
      */
     default Point getPointN(int n) {
         return getPoints().getPoint(n);
+    }
+
+    @Override
+    public default Array getDataPoints() {
+        return getPoints().getAttributeArray(AttributesType.ATT_POSITION);
+    }
+
+    /**
+     * @return null, a LineString has no control points
+     */
+    @Override
+    public default Array getControlPoints() {
+        return null;
     }
 
     @Override

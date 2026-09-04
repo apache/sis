@@ -22,6 +22,7 @@ import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PointSequence;
+import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.math.Vector;
 
 
@@ -71,6 +72,19 @@ public interface ArcByBulge extends Curve {
      * @return the normal to the chord, never null.
      */
     Vector<?> getNormal();
+
+    @Override
+    public default Array getDataPoints() {
+        return getPoints().getAttributeArray(AttributesType.ATT_POSITION);
+    }
+
+    /**
+     * @return null, a ArcByBulge has no control points
+     */
+    @Override
+    public default Array getControlPoints() {
+        return null;
+    }
 
     /**
      * Returns {@link CurveInterpolation#CIRCULAR}.

@@ -22,6 +22,7 @@ import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PointSequence;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -65,6 +66,19 @@ public interface CircularString extends Curve {
     @Override
     default CurveInterpolation getInterpolation() {
         return CurveInterpolation.CIRCULAR;
+    }
+
+    @Override
+    public default Array getDataPoints() {
+        return getPoints().getAttributeArray(AttributesType.ATT_POSITION);
+    }
+
+    /**
+     * @return null, a CircularString has no control points
+     */
+    @Override
+    public default Array getControlPoints() {
+        return null;
     }
 
     @Override

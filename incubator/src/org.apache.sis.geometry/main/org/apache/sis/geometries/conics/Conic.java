@@ -16,11 +16,10 @@
  */
 package org.apache.sis.geometries.conics;
 
-import java.util.List;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
-import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -32,11 +31,11 @@ public interface Conic extends Curve {
 
     @UML(identifier="controlPoints", specification=ISO_19107) // section 7.9.5.2
     @Override
-    List<DirectPosition> getControlPoints();
+    Array getControlPoints();
 
     @UML(identifier="dataPoints", specification=ISO_19107) // section 7.9.5.2
     @Override
-    List<DirectPosition> getDataPoints();
+    Array getDataPoints();
 
     @UML(identifier="isCycle", specification=ISO_19107) // section 7.9.5.2
     boolean isCycle();

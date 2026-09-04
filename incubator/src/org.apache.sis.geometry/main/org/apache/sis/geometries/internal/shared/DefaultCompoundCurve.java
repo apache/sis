@@ -21,6 +21,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.CompoundCurve;
 import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -102,5 +103,15 @@ public class DefaultCompoundCurve extends AbstractGeometry implements CompoundCu
             sb.append(curves[i].asText());
         }
         return sb.append(')').toString();
+    }
+
+    @Override
+    public Array getControlPoints() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Array getDataPoints() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

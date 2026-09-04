@@ -18,6 +18,7 @@ package org.apache.sis.geometries;
 
 import java.util.List;
 import javax.measure.quantity.Length;
+import org.apache.sis.geometries.math.Array;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
@@ -90,16 +91,10 @@ public interface Curve extends Orientable {
     }
 
     @UML(identifier="controlPoint", specification=ISO_19107) // section 6.4.18.2
-    default List<DirectPosition> getControlPoints() {
-        //TODO
-        throw new UnsupportedOperationException();
-    }
+    Array getControlPoints();
 
     @UML(identifier="dataPoint", specification=ISO_19107) // section 6.4.18.3
-    default List<DirectPosition> getDataPoints() {
-        //TODO
-        throw new UnsupportedOperationException();
-    }
+    Array getDataPoints();
 
     @UML(identifier="knot", specification=ISO_19107) // section 6.4.18.4
     default List<Knot> getKnots() {

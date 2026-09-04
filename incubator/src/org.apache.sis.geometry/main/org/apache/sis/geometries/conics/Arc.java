@@ -17,9 +17,9 @@
 package org.apache.sis.geometries.conics;
 
 import java.util.List;
+import org.apache.sis.geometries.math.Array;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
-import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometries.math.Vector;
 
 
@@ -35,15 +35,13 @@ public interface Arc extends Conic {
 
     @UML(identifier="controlPoints", specification=ISO_19107) // section 7.9.2.3
     @Override
-    List<DirectPosition> getControlPoints();
+    Array getControlPoints();
 
     @UML(identifier="dataPoints", specification=ISO_19107) // section 7.9.2.4
     @Override
-    List<DirectPosition> getDataPoints();
+    Array getDataPoints();
 
     @UML(identifier="radius", specification=ISO_19107) // section 7.9.2.5
     List<Vector> getRadius();
-
-
 
 }

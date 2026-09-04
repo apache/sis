@@ -22,6 +22,7 @@ import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.math.Array;
 
 
 /**
@@ -99,6 +100,19 @@ public interface ArcByCenterPoint extends Curve {
     @Override
     default CurveInterpolation getInterpolation() {
         return CurveInterpolation.CIRCULAR;
+    }
+
+    @Override
+    public default Array getDataPoints() {
+        throw new UnsupportedOperationException("Not supported yet");
+    }
+
+    /**
+     * @return null, a ArcByCenterPoint has no control points
+     */
+    @Override
+    public default Array getControlPoints() {
+        return null;
     }
 
     @Override
