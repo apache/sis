@@ -90,6 +90,28 @@ final class GML3Tags {
     public static final String CIRCLE_BY_CENTER_POINT = "CircleByCenterPoint";
     public static final String ARC_BY_CENTER_POINT    = "ArcByCenterPoint";
     public static final String ARC_BY_BULGE           = "ArcByBulge";
+
+    // parameters of the ArcByCenterPoint and ArcByBulge curve segments
+    public static final String POINT_PROPERTY = "pointProperty";
+    public static final String RADIUS         = "radius";
+    public static final String START_ANGLE    = "startAngle";
+    public static final String END_ANGLE      = "endAngle";
+    public static final String BULGE          = "bulge";
+    public static final String NORMAL         = "normal";
+
+    /**
+     * Attribute naming the unit of measurement of a {@code gml:radius}, {@code gml:startAngle}
+     * or {@code gml:endAngle} value.
+     */
+    public static final String UOM = "uom";
+
+    /**
+     * Value of the {@code uom} attribute written for the angles of a {@code gml:ArcByCenterPoint}.
+     * Those are always kept in decimal degrees by
+     * {@link org.apache.sis.geometries.conics.ArcByCenterPoint}.
+     */
+    public static final String UOM_DEGREE = "deg";
+
     public static final String CUBIC_SPLINE           = "CubicSpline";
     public static final String BSPLINE                = "BSpline";
     public static final String BEZIER                 = "Bezier";

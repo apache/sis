@@ -29,8 +29,11 @@ import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.LinearRing;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PointSequence;
+import org.apache.sis.geometries.curve.ArcByCenterPoint;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.SampleSystem;
+import org.apache.sis.geometries.math.Vector;
+import org.apache.sis.geometries.math.Vectors;
 import org.apache.sis.referencing.CRS;
 
 // Test dependencies
@@ -257,6 +260,57 @@ public final class GML3WriterTest extends TestCase {
     @Test
     public void testCurveArcRoundTrip() throws Exception {
         assertRoundTrip(TestData.CURVE_ARC);
+    }
+
+    /**
+     * Tests that a {@code gml:ArcByCenterPoint} survives a full read/write cycle, centre, radius,
+     * bearings and units included.
+     */
+    @Test
+    public void testArcByCenterPointRoundTrip() throws Exception {
+        assertRoundTrip(TestData.CURVE_ARC_BY_CENTER);
+    }
+
+    /**
+     * Tests that a {@code gml:ArcByBulge} survives a full read/write cycle, bulge and normal
+     * included.
+     */
+    @Test
+    public void testArcByBulgeRoundTrip() throws Exception {
+        assertRoundTrip(TestData.CURVE_ARC_BY_BULGE);
+    }
+
+    /**
+     * Tests that an arc built with no radius unit is written with no {@code uom} attribute on its
+     * {@code gml:radius}, rather than with a unit the caller never supplied. The angles always
+     * carry {@code uom="deg"}, since {@link ArcByCenterPoint} keeps them in degrees.
+     */
+    @Test
+    public void testArcByCenterPointWithoutRadiusUnit() throws Exception {
+        final Geometry g = GeometryFactory.createArcByCenterPoint(
+                GeometryFactory.createPoint(sequence(10.0, 20.0)), 5.0, null,0.0, 90.0);
+        final String xml = write(g);
+        assertTrue(xml.contains("ArcByCenterPoint"), () -> "Expected a gml:ArcByCenterPoint in: " + xml);
+        assertTrue(xml.contains("<gml:radius>5.0</gml:radius>")
+                || xml.contains("<radius>5.0</radius>"),
+                () -> "Expected a radius with no uom attribute in: " + xml);
+        assertEquals(2, countOccurrences(xml, "uom=\"deg\""), () -> "Expected both angles in degrees in: " + xml);
+    }
+
+    /**
+     * Tests that an arc by bulge is written as a {@code gml:Curve} holding a
+     * {@code gml:ArcByBulge}, with its two end points, its bulge and its normal.
+     */
+    @Test
+    public void testArcByBulge() throws Exception {
+        final Vector<?> normal = Vectors.createDouble(2);
+        normal.set(new double[] {0, 1});
+        final Geometry g = GeometryFactory.createArcByBulge(sequence(0.0, 0.0, 10.0, 0.0), 2.0, normal);
+        final String xml = write(g);
+        assertTrue(xml.contains("ArcByBulge"), () -> "Expected a gml:ArcByBulge in: " + xml);
+        assertTrue(xml.contains("0.0 0.0 10.0 0.0"), () -> "Expected the two end points in: " + xml);
+        assertTrue(xml.contains("2.0"), () -> "Expected the bulge in: " + xml);
+        assertTrue(xml.contains("0.0 1.0"), () -> "Expected the normal in: " + xml);
     }
 
     /**

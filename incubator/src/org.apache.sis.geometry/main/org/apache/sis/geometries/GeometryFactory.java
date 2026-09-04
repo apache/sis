@@ -21,13 +21,19 @@ import java.nio.DoubleBuffer;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import javax.measure.Unit;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.curve.ArcByBulge;
+import org.apache.sis.geometries.curve.ArcByCenterPoint;
 import org.apache.sis.geometries.conics.Circle;
 import org.apache.sis.geometries.conics.CircularString;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Array;
+import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.internal.shared.ArraySequence;
+import org.apache.sis.geometries.internal.shared.DefaultArcByBulge;
+import org.apache.sis.geometries.internal.shared.DefaultArcByCenterPoint;
 import org.apache.sis.geometries.internal.shared.DefaultCircularString;
 import org.apache.sis.geometries.internal.shared.DefaultCompoundCurve;
 import org.apache.sis.geometries.internal.shared.DefaultCurvePolygon;
@@ -188,6 +194,34 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
 
     public static CircularString createCircularString(PointSequence sequence) {
         return new DefaultCircularString(sequence);
+    }
+
+    /**
+     * Creates a circular arc from the centre of its circle, that circle's radius expressed in the
+     * given unit, and the bearings at which the arc starts and ends.
+     *
+     * @param  center      centre of the circle the arc is a part of.
+     * @param  radius      radius of that circle, expressed in {@code radiusUnit}. Must be greater than zero.
+     * @param  radiusUnit  unit of {@code radius}, or {@code null} for the units of the coordinate system axes.
+     * @param  startAngle  bearing at which the arc starts, in decimal degrees.
+     * @param  endAngle    bearing at which the arc ends, in decimal degrees.
+     */
+    public static ArcByCenterPoint createArcByCenterPoint(Point center, double radius, Unit<?> radiusUnit,
+            double startAngle, double endAngle)
+    {
+        return new DefaultArcByCenterPoint(center, radius, radiusUnit, startAngle, endAngle);
+    }
+
+    /**
+     * Creates a circular arc from its two end points, the distance by which it bulges away from the
+     * chord joining them, and the direction of that bulge.
+     *
+     * @param  points  the start point followed by the end point. Its size must be exactly 2.
+     * @param  bulge   distance from the midpoint of the chord to the arc, along {@code normal}.
+     * @param  normal  direction the arc bulges towards, perpendicular to the chord.
+     */
+    public static ArcByBulge createArcByBulge(PointSequence points, double bulge, Vector<?> normal) {
+        return new DefaultArcByBulge(points, bulge, normal);
     }
 
     public static CurvePolygon createCurvePolygon(Curve exterior, List<Curve> interiors) {

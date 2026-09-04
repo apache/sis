@@ -18,6 +18,7 @@ package org.apache.sis.gml;
 
 import java.io.OutputStream;
 import java.util.function.IntFunction;
+import javax.measure.Unit;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -43,6 +44,8 @@ import org.apache.sis.geometries.PolyhedralSurface;
 import org.apache.sis.geometries.Polyhedron;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.TIN;
+import org.apache.sis.geometries.curve.ArcByBulge;
+import org.apache.sis.geometries.curve.ArcByCenterPoint;
 import org.apache.sis.geometries.conics.CircularString;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.storage.DataStoreContentException;
@@ -275,14 +278,6 @@ public final class GML3Writer extends AbstractGMLWriter {
 
     /**
      * Writes the curve, surface and solid kinds that GML 3 can express and GML 2.0 cannot.
-     *
-     * <p>The order of the tests matters for the same reason it does in
-     * {@link AbstractGMLWriter#writeGeometryElement writeGeometryElement(…)}: a reversed
-     * orientation is checked first because it may wrap any curve or surface, then each type before
-     * its supertypes ({@code CircularString} and {@code CompoundCurve} before {@code Curve};
-     * {@code TIN} before {@code PolyhedralSurface} before {@code Surface}). {@code MultiPolyhedron}
-     * has to be claimed here rather than left to the collection catch-all, because it extends
-     * {@code GeometryCollection}.</p>
      */
     @Override
     protected boolean writeExtendedGeometry(final Geometry geometry, final String srsName, final boolean declareNamespace)
@@ -294,6 +289,10 @@ public final class GML3Writer extends AbstractGMLWriter {
             writeOriented(GML3Tags.ORIENTABLE_SURFACE, GML3Tags.BASE_SURFACE, s.getPrimitive(), srsName, declareNamespace);
         } else if (geometry instanceof CircularString g) {           // Before Curve.
             writeCircularString(g, srsName, declareNamespace);
+        } else if (geometry instanceof ArcByCenterPoint g) {         // Before Curve.
+            writeArcByCenterPoint(g, srsName, declareNamespace);
+        } else if (geometry instanceof ArcByBulge g) {               // Before Curve.
+            writeArcByBulge(g, srsName, declareNamespace);
         } else if (geometry instanceof CompoundCurve g) {            // Before Curve.
             writeCompoundCurve(g, srsName, declareNamespace);
         } else if (geometry instanceof CurvePolygon g) {             // Before Surface.
@@ -349,6 +348,66 @@ public final class GML3Writer extends AbstractGMLWriter {
     private void writeArcSegment(final CircularString g) throws XMLStreamException {
         writer.writeStartElement((g.getNumArcs() == 1) ? GML3Tags.ARC : GML3Tags.ARC_STRING);
         writePosList(g.getPoints());
+        writer.writeEndElement();
+    }
+
+    /**
+     * Writes a centre-point arc as a {@code <gml:Curve>} whose single segment is a
+     * {@code <gml:ArcByCenterPoint>}, which is the element it was read from and the only GML
+     * spelling of this parameterisation.
+     */
+    private void writeArcByCenterPoint(final ArcByCenterPoint g, final String srsName, final boolean declareNamespace)
+            throws XMLStreamException
+    {
+        writeStart(GML3Tags.CURVE, srsName, declareNamespace);
+        writer.writeStartElement(GML3Tags.SEGMENTS);
+        writer.writeStartElement(GML3Tags.ARC_BY_CENTER_POINT);
+        writePos(GML3Tags.POS, g.getCenter().getPosition());
+        final Unit<?> unit = g.getRadiusUnit();
+        writeMeasure(GML3Tags.RADIUS, g.getRadius(), (unit != null) ? unit.toString() : null);
+        writeMeasure(GML3Tags.START_ANGLE, g.getStartAngle(), GML3Tags.UOM_DEGREE);
+        writeMeasure(GML3Tags.END_ANGLE,   g.getEndAngle(),   GML3Tags.UOM_DEGREE);
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeEndElement();
+    }
+
+    /**
+     * Writes a bulge arc as a {@code <gml:Curve>} whose single segment is a
+     * {@code <gml:ArcByBulge>}.
+     */
+    private void writeArcByBulge(final ArcByBulge g, final String srsName, final boolean declareNamespace)
+            throws XMLStreamException
+    {
+        writeStart(GML3Tags.CURVE, srsName, declareNamespace);
+        writer.writeStartElement(GML3Tags.SEGMENTS);
+        writer.writeStartElement(GML3Tags.ARC_BY_BULGE);
+        writePosList(g.getPoints());
+        writeMeasure(GML3Tags.BULGE, g.getBulge(), null);
+        writePos(GML3Tags.NORMAL, g.getNormal());
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeEndElement();
+    }
+
+    /**
+     * Writes an element holding a single number, with a {@code uom} attribute when a unit is known.
+     * The attribute is omitted for an unknown unit rather than filled in with a guess: GML then
+     * means the units of the coordinate system axes, which is exactly what a value with no unit of
+     * its own is.
+     *
+     * <p>The attribute is derived from the unit itself, so a document that spelled it as an
+     * authority code — {@code uom="urn:ogc:def:uom:EPSG::9001"} — comes back with the symbol
+     * ({@code uom="m"}). The unit is the same one; only the spelling is normalised.</p>
+     *
+     * @param  uom  the unit of measurement to declare, or {@code null} to omit the attribute.
+     */
+    private void writeMeasure(final String tagName, final double value, final String uom) throws XMLStreamException {
+        writer.writeStartElement(tagName);
+        if (uom != null) {
+            writer.writeAttribute(GML3Tags.UOM, uom);
+        }
+        writer.writeCharacters(String.valueOf(value));
         writer.writeEndElement();
     }
 

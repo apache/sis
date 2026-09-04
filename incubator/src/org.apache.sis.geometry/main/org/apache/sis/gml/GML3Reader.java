@@ -19,6 +19,8 @@ package org.apache.sis.gml;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import javax.measure.Unit;
+import javax.measure.format.MeasurementParseException;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -40,6 +42,11 @@ import org.apache.sis.geometries.Polyhedron;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.TIN;
 import org.apache.sis.geometries.Triangle;
+import org.apache.sis.geometries.curve.ArcByBulge;
+import org.apache.sis.geometries.curve.ArcByCenterPoint;
+import org.apache.sis.geometries.math.Vector;
+import org.apache.sis.geometries.math.Vectors;
+import org.apache.sis.measure.Units;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
 
@@ -149,7 +156,7 @@ public final class GML3Reader extends AbstractGMLReader {
     /**
      * Returns the error message for a curve or surface kind whose Apache SIS interface exists but
      * has no implementation, and whose parameterisation is a design question in its own right
-     * (splines, clothoids, centre-point arcs, offset curves, gridded surfaces).
+     * (splines, clothoids, whole circles, offset curves, gridded surfaces).
      *
      * <p>The wording says <em>deferred</em>, not impossible: nothing here is beyond the model, it
      * simply has not been built. What is never done is silently substituting an approximation —
@@ -717,18 +724,16 @@ public final class GML3Reader extends AbstractGMLReader {
                             addTo.add(GeometryFactory.createCircularString(parseCoordinateSequence(segment, crs).build(crs)));
                             break;
                         }
-                        /*
-                         * gml:Circle is deliberately NOT read as a circular string. Its three
-                         * control points describe a whole closed circle, whereas the same three
-                         * points in an arc string describe only the arc that passes through them --
-                         * at most half the circle. Reading it as an arc string would therefore
-                         * return a different geometry, not an approximation of the right one, and
-                         * `conics.Circle` has no implementation to return instead.
-                         */
+                        case GML3Tags.ARC_BY_CENTER_POINT: {
+                            addTo.add(parseArcByCenterPoint(crs));
+                            break;
+                        }
+                        case GML3Tags.ARC_BY_BULGE: {
+                            addTo.add(parseArcByBulge(crs));
+                            break;
+                        }
                         case GML3Tags.CIRCLE:
                         case GML3Tags.CIRCLE_BY_CENTER_POINT:
-                        case GML3Tags.ARC_BY_CENTER_POINT:
-                        case GML3Tags.ARC_BY_BULGE:
                         case GML3Tags.CUBIC_SPLINE:
                         case GML3Tags.BSPLINE:
                         case GML3Tags.BEZIER:
@@ -749,6 +754,219 @@ public final class GML3Reader extends AbstractGMLReader {
                 case END_DOCUMENT: throw new DataStoreContentException(endOfDocument());
             }
         }
+    }
+
+    /**
+     * Parses a {@code <gml:ArcByCenterPoint>} curve segment: the centre of a circle, that circle's
+     * radius, and the bearings at which the arc starts and ends. The cursor must be on the
+     * element's {@link #START_ELEMENT} event, and is left on its matching {@link #END_ELEMENT}.
+     *
+     * <p>The centre may be given either as a coordinate-carrying child ({@code gml:pos} and,
+     * tolerantly, the GML 2.0 encodings) or as a {@code gml:pointProperty} holding a
+     * {@code gml:Point}. The {@code numArc} and {@code interpolation} attributes are ignored: the
+     * schema fixes both, so they carry no information.</p>
+     *
+     * <p>Both angles are required here even though the schema makes them optional, because an arc
+     * with no angular extent is not an arc. The element that means <q>the whole circle</q> is
+     * {@code gml:CircleByCenterPoint}, which is a different element and is reported as deferred.</p>
+     */
+    private ArcByCenterPoint parseArcByCenterPoint(final CoordinateReferenceSystem crs)
+            throws XMLStreamException, DataStoreContentException, DataStoreReferencingException
+    {
+        final PositionListBuilder coordinates = new PositionListBuilder();
+        Point center     = null;
+        double radius    = Double.NaN;
+        Unit<?> unit     = null;
+        double startAngle = Double.NaN;
+        double endAngle   = Double.NaN;
+        while (true) {
+            switch (reader.next()) {
+                case START_ELEMENT: {
+                    switch (reader.getLocalName()) {
+                        case GML3Tags.POINT_PROPERTY: {
+                            center = parseMember(Point.class, GML3Tags.POINT_PROPERTY, crs);
+                            break;
+                        }
+                        case GML3Tags.RADIUS: {
+                            unit   = unitOfMeasure();       // Before `measure(…)`, which consumes the element.
+                            radius = measure(GML3Tags.RADIUS);
+                            break;
+                        }
+                        case GML3Tags.START_ANGLE: startAngle = angle(GML3Tags.START_ANGLE); break;
+                        case GML3Tags.END_ANGLE:   endAngle   = angle(GML3Tags.END_ANGLE);   break;
+                        default: {
+                            if (!parseCoordinateElement(coordinates, crs)) {
+                                skipUntilEnd();
+                            }
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case END_ELEMENT: {
+                    if (GML3Tags.ARC_BY_CENTER_POINT.equals(reader.getLocalName())) {
+                        if (center == null) {
+                            if (coordinates.size() != 1) {
+                                throw new DataStoreContentException("A GML 3 ArcByCenterPoint must give its"
+                                        + " centre as either a pointProperty or exactly one coordinate tuple,"
+                                        + " but " + coordinates.size() + " tuples were found.");
+                            }
+                            center = GeometryFactory.createPoint(coordinates.build(crs));
+                        }
+                        if (Double.isNaN(radius)) {
+                            throw new DataStoreContentException("A GML 3 ArcByCenterPoint must contain a radius element.");
+                        }
+                        if (Double.isNaN(startAngle) || Double.isNaN(endAngle)) {
+                            throw new DataStoreContentException("A GML 3 ArcByCenterPoint must contain both a"
+                                    + " startAngle and an endAngle element.");
+                        }
+                        try {
+                            return GeometryFactory.createArcByCenterPoint(center, radius, unit, startAngle, endAngle);
+                        } catch (IllegalArgumentException e) {
+                            throw new DataStoreContentException(e.getMessage(), e);
+                        }
+                    }
+                    break;
+                }
+                case END_DOCUMENT: throw new DataStoreContentException(endOfDocument());
+            }
+        }
+    }
+
+    /**
+     * Parses a {@code <gml:ArcByBulge>} curve segment: the two end points of an arc, the distance
+     * by which it bulges away from the chord joining them, and the direction of that bulge. The
+     * cursor must be on the element's {@link #START_ELEMENT} event, and is left on its matching
+     * {@link #END_ELEMENT}.
+     *
+     * <p>The {@code gml:normal} is required, as the schema requires it: without it the two arcs
+     * joining the end points cannot be told apart, and picking one would be a coin toss dressed up
+     * as a geometry. The {@code numArc} and {@code interpolation} attributes are ignored, both
+     * being fixed by the schema.</p>
+     */
+    private ArcByBulge parseArcByBulge(final CoordinateReferenceSystem crs)
+            throws XMLStreamException, DataStoreContentException, DataStoreReferencingException
+    {
+        final PositionListBuilder coordinates = new PositionListBuilder();
+        double bulge = Double.NaN;
+        double[] normal = null;
+        while (true) {
+            switch (reader.next()) {
+                case START_ELEMENT: {
+                    switch (reader.getLocalName()) {
+                        case GML3Tags.BULGE:  bulge  = measure(GML3Tags.BULGE);         break;
+                        case GML3Tags.NORMAL: normal = ordinates(GML3Tags.NORMAL);      break;
+                        default: {
+                            if (!parseCoordinateElement(coordinates, crs)) {
+                                skipUntilEnd();
+                            }
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case END_ELEMENT: {
+                    if (GML3Tags.ARC_BY_BULGE.equals(reader.getLocalName())) {
+                        if (coordinates.size() != 2) {
+                            throw new DataStoreContentException("A GML 3 ArcByBulge must contain exactly two"
+                                    + " coordinate tuples, its start and its end, but " + coordinates.size()
+                                    + " were found.");
+                        }
+                        if (Double.isNaN(bulge)) {
+                            throw new DataStoreContentException("A GML 3 ArcByBulge must contain a bulge element.");
+                        }
+                        if (normal == null) {
+                            throw new DataStoreContentException("A GML 3 ArcByBulge must contain a normal element.");
+                        }
+                        final Vector<?> direction = Vectors.createDouble(normal.length);
+                        direction.set(normal);
+                        try {
+                            return GeometryFactory.createArcByBulge(coordinates.build(crs), bulge, direction);
+                        } catch (IllegalArgumentException e) {
+                            throw new DataStoreContentException(e.getMessage(), e);
+                        }
+                    }
+                    break;
+                }
+                case END_DOCUMENT: throw new DataStoreContentException(endOfDocument());
+            }
+        }
+    }
+
+    /**
+     * Returns the unit declared by the {@code uom} attribute of the element the cursor is on, or
+     * {@code null} if the attribute is absent or empty. An absent unit is not an error: GML
+     * documents in the wild routinely omit it, and it then means the units of the coordinate
+     * system axes.
+     */
+    private Unit<?> unitOfMeasure() throws DataStoreContentException {
+        final String uom = reader.getAttributeValue(null, GML3Tags.UOM);
+        if (uom == null || uom.isBlank()) {
+            return null;
+        }
+        try {
+            return Units.valueOf(uom.trim());
+        } catch (MeasurementParseException e) {
+            throw new DataStoreContentException("Cannot interpret \"" + uom + "\" as the unit of measurement"
+                    + " of a GML 3 <" + reader.getLocalName() + "> element.", e);
+        }
+    }
+
+    /**
+     * Reads the text content of the element the cursor is on as a single number. The cursor must be
+     * on the element's {@link #START_ELEMENT} event, and is left on its matching
+     * {@link #END_ELEMENT}.
+     */
+    private double measure(final String tagName) throws XMLStreamException, DataStoreContentException {
+        final String text = reader.getElementText().trim();
+        try {
+            return Double.parseDouble(text);
+        } catch (NumberFormatException e) {
+            throw new DataStoreContentException("A GML 3 <" + tagName + "> element must contain a number,"
+                    + " but contains \"" + text + "\".", e);
+        }
+    }
+
+    /**
+     * Reads an angle-valued element, converted to the decimal degrees that
+     * {@link ArcByCenterPoint} reports. The cursor must be on the element's
+     * {@link #START_ELEMENT} event, and is left on its matching {@link #END_ELEMENT}.
+     */
+    private double angle(final String tagName) throws XMLStreamException, DataStoreContentException {
+        final Unit<?> unit = unitOfMeasure();        // Before `measure(…)`, which consumes the element.
+        final double value = measure(tagName);
+        if (unit == null || Units.DEGREE.equals(unit)) {
+            return value;
+        }
+        try {
+            return Units.ensureAngular(unit).getConverterTo(Units.DEGREE).convert(value);
+        } catch (IllegalArgumentException e) {
+            throw new DataStoreContentException("The unit \"" + unit + "\" declared by a GML 3 <" + tagName
+                    + "> element is not an angular unit.", e);
+        }
+    }
+
+    /**
+     * Reads the text content of the element the cursor is on as a whitespace-separated list of
+     * numbers, such as the {@code gml:normal} of an arc by bulge. The cursor must be on the
+     * element's {@link #START_ELEMENT} event, and is left on its matching {@link #END_ELEMENT}.
+     */
+    private double[] ordinates(final String tagName) throws XMLStreamException, DataStoreContentException {
+        final String text = reader.getElementText().trim();
+        if (text.isEmpty()) {
+            throw new DataStoreContentException("A GML 3 <" + tagName + "> element must contain at least one number.");
+        }
+        final String[] tokens = text.split("\\s+");
+        final double[] values = new double[tokens.length];
+        for (int i = 0; i < tokens.length; i++) {
+            try {
+                values[i] = Double.parseDouble(tokens[i]);
+            } catch (NumberFormatException e) {
+                throw new DataStoreContentException("A GML 3 <" + tagName + "> element must contain only"
+                        + " numbers, but contains \"" + tokens[i] + "\".", e);
+            }
+        }
+        return values;
     }
 
     /**

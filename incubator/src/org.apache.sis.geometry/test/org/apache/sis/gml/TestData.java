@@ -65,6 +65,8 @@ public enum TestData {
     static final String TOLERANCE_LEGACY_STYLE_NEW_NAMESPACE = "tolerance_legacy_style_new_namespace.gml";
     static final String CURVE                = "curve.gml";
     static final String CURVE_ARC            = "curve_arc.gml";
+    static final String CURVE_ARC_BY_CENTER  = "curve_arcbycenterpoint.gml";
+    static final String CURVE_ARC_BY_BULGE   = "curve_arcbybulge.gml";
     static final String SURFACE              = "surface.gml";
     static final String RING                 = "ring.gml";
     static final String COMPOSITE_CURVE      = "compositecurve.gml";

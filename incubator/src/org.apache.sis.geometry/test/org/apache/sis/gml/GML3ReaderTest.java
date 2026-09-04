@@ -43,9 +43,12 @@ import org.apache.sis.geometries.PolyhedralSurface;
 import org.apache.sis.geometries.Polyhedron;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.TIN;
+import org.apache.sis.geometries.curve.ArcByBulge;
+import org.apache.sis.geometries.curve.ArcByCenterPoint;
 import org.apache.sis.geometries.conics.CircularString;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.SampleSystem;
+import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
@@ -424,6 +427,152 @@ public final class GML3ReaderTest {
         assertEquals(3, arc.getPoints().size());
         assertEquals(CurveInterpolation.CIRCULAR, arc.getInterpolation());
         assertCRS(wgs84, g);
+    }
+
+    /**
+     * Tests that a {@code <gml:ArcByCenterPoint>} segment becomes an {@link ArcByCenterPoint},
+     * keeping the centre, radius and bearings the document actually stated rather than being
+     * evaluated into points on the arc.
+     */
+    @Test
+    public void testArcByCenterPoint() throws Exception {
+        final Geometry g = read(TestData.V3, TestData.CURVE_ARC_BY_CENTER);
+        final ArcByCenterPoint arc = assertInstanceOf(ArcByCenterPoint.class, g);
+        assertEquals(10.0, arc.getCenter().getPosition().get(0), GeometryAssert.TOLERANCE, "centre x");
+        assertEquals(20.0, arc.getCenter().getPosition().get(1), GeometryAssert.TOLERANCE, "centre y");
+        assertEquals( 5.0, arc.getRadius(),     GeometryAssert.TOLERANCE, "radius");
+        assertEquals( 0.0, arc.getStartAngle(), GeometryAssert.TOLERANCE, "start angle");
+        assertEquals(90.0, arc.getEndAngle(),   GeometryAssert.TOLERANCE, "end angle");
+        assertEquals(Units.METRE, arc.getRadiusUnit(), "radius unit");
+        assertEquals(CurveInterpolation.CIRCULAR, arc.getInterpolation());
+        assertCRS(wgs84, g);
+    }
+
+    /**
+     * Tests that the centre of an arc may be given as a {@code gml:pointProperty} instead of a
+     * {@code gml:pos}, and that a radius declaring no {@code uom} is reported with no unit —
+     * meaning the units of the coordinate system axes — rather than with an invented one.
+     */
+    @Test
+    public void testArcByCenterPointProperty() throws Exception {
+        final String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<gml:Curve xmlns:gml=\"http://www.opengis.net/gml/3.2\" srsName=\"EPSG:4326\"><gml:segments>"
+                + "<gml:ArcByCenterPoint numArc=\"1\">"
+                + "<gml:pointProperty><gml:Point><gml:pos>10.0 20.0</gml:pos></gml:Point></gml:pointProperty>"
+                + "<gml:radius>5.0</gml:radius>"
+                + "<gml:startAngle>0.0</gml:startAngle>"
+                + "<gml:endAngle>90.0</gml:endAngle>"
+                + "</gml:ArcByCenterPoint>"
+                + "</gml:segments></gml:Curve>";
+        final ArcByCenterPoint arc = assertInstanceOf(ArcByCenterPoint.class, readInline(xml));
+        assertEquals(10.0, arc.getCenter().getPosition().get(0), GeometryAssert.TOLERANCE, "centre x");
+        assertEquals( 5.0, arc.getRadius(), GeometryAssert.TOLERANCE, "radius");
+        assertNull(arc.getRadiusUnit(), "A radius with no uom must not be given an invented unit.");
+    }
+
+    /**
+     * Tests that angles declared in a unit other than degrees are converted, since
+     * {@link ArcByCenterPoint} reports them in decimal degrees.
+     */
+    @Test
+    public void testArcByCenterPointAngleUnits() throws Exception {
+        final String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<gml:Curve xmlns:gml=\"http://www.opengis.net/gml/3.2\"><gml:segments>"
+                + "<gml:ArcByCenterPoint>"
+                + "<gml:pos>0 0</gml:pos>"
+                + "<gml:radius uom=\"m\">5</gml:radius>"
+                + "<gml:startAngle uom=\"rad\">0</gml:startAngle>"
+                + "<gml:endAngle uom=\"rad\">" + (Math.PI / 2) + "</gml:endAngle>"
+                + "</gml:ArcByCenterPoint>"
+                + "</gml:segments></gml:Curve>";
+        final ArcByCenterPoint arc = assertInstanceOf(ArcByCenterPoint.class, readInline(xml));
+        assertEquals( 0.0, arc.getStartAngle(), GeometryAssert.TOLERANCE, "start angle in degrees");
+        assertEquals(90.0, arc.getEndAngle(),   GeometryAssert.TOLERANCE, "end angle in degrees");
+    }
+
+    /**
+     * Tests that an arc missing its radius is reported, rather than read as an arc of some
+     * default radius.
+     */
+    @Test
+    public void testArcByCenterPointWithoutRadiusRejected() {
+        final String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<gml:Curve xmlns:gml=\"http://www.opengis.net/gml/3.2\"><gml:segments>"
+                + "<gml:ArcByCenterPoint>"
+                + "<gml:pos>0 0</gml:pos>"
+                + "<gml:startAngle>0</gml:startAngle>"
+                + "<gml:endAngle>90</gml:endAngle>"
+                + "</gml:ArcByCenterPoint>"
+                + "</gml:segments></gml:Curve>";
+        assertThrows(DataStoreContentException.class, () -> readInline(xml));
+    }
+
+    /**
+     * Tests that an arc missing its angles is reported. The element meaning <q>the whole
+     * circle</q> is {@code gml:CircleByCenterPoint}, not an angle-less {@code gml:ArcByCenterPoint}.
+     */
+    @Test
+    public void testArcByCenterPointWithoutAnglesRejected() {
+        final String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<gml:Curve xmlns:gml=\"http://www.opengis.net/gml/3.2\"><gml:segments>"
+                + "<gml:ArcByCenterPoint>"
+                + "<gml:pos>0 0</gml:pos>"
+                + "<gml:radius uom=\"m\">5</gml:radius>"
+                + "</gml:ArcByCenterPoint>"
+                + "</gml:segments></gml:Curve>";
+        assertThrows(DataStoreContentException.class, () -> readInline(xml));
+    }
+
+    /**
+     * Tests that a {@code <gml:ArcByBulge>} segment becomes an {@link ArcByBulge}, keeping its two
+     * end points, its bulge and its normal.
+     */
+    @Test
+    public void testArcByBulge() throws Exception {
+        final Geometry g = read(TestData.V3, TestData.CURVE_ARC_BY_BULGE);
+        final ArcByBulge arc = assertInstanceOf(ArcByBulge.class, g);
+        assertEquals(2, arc.getPoints().size(), "number of points");
+        assertEquals( 0.0, arc.getPoints().getPosition(0).get(0), GeometryAssert.TOLERANCE, "start x");
+        assertEquals(10.0, arc.getPoints().getPosition(1).get(0), GeometryAssert.TOLERANCE, "end x");
+        assertEquals( 2.0, arc.getBulge(), GeometryAssert.TOLERANCE, "bulge");
+        assertEquals(2, arc.getNormal().getDimension(), "normal dimension");
+        assertEquals(0.0, arc.getNormal().get(0), GeometryAssert.TOLERANCE, "normal x");
+        assertEquals(1.0, arc.getNormal().get(1), GeometryAssert.TOLERANCE, "normal y");
+        assertEquals(CurveInterpolation.CIRCULAR, arc.getInterpolation());
+        assertCRS(wgs84, g);
+    }
+
+    /**
+     * Tests that an arc by bulge with no {@code gml:normal} is reported. Without the normal, the
+     * two arcs joining the end points cannot be told apart, and picking one would be a guess.
+     */
+    @Test
+    public void testArcByBulgeWithoutNormalRejected() {
+        final String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<gml:Curve xmlns:gml=\"http://www.opengis.net/gml/3.2\"><gml:segments>"
+                + "<gml:ArcByBulge>"
+                + "<gml:posList srsDimension=\"2\">0 0 10 0</gml:posList>"
+                + "<gml:bulge>2.0</gml:bulge>"
+                + "</gml:ArcByBulge>"
+                + "</gml:segments></gml:Curve>";
+        assertThrows(DataStoreContentException.class, () -> readInline(xml));
+    }
+
+    /**
+     * Tests that an arc by bulge with more than two coordinate tuples is reported. Three or more
+     * points with one bulge each is {@code gml:ArcStringByBulge}, a different element.
+     */
+    @Test
+    public void testArcByBulgeWithTooManyPointsRejected() {
+        final String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<gml:Curve xmlns:gml=\"http://www.opengis.net/gml/3.2\"><gml:segments>"
+                + "<gml:ArcByBulge>"
+                + "<gml:posList srsDimension=\"2\">0 0 10 0 20 0</gml:posList>"
+                + "<gml:bulge>2.0</gml:bulge>"
+                + "<gml:normal>0 1</gml:normal>"
+                + "</gml:ArcByBulge>"
+                + "</gml:segments></gml:Curve>";
+        assertThrows(DataStoreContentException.class, () -> readInline(xml));
     }
 
     /**
