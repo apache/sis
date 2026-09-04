@@ -794,7 +794,7 @@ public interface MeshPrimitive extends Geometry {
 
                 @Override
                 protected void visit(Triangle candidate) {
-                    final PointSequence points = candidate.getExteriorRing().getPoints();
+                    final PointSequence points = candidate.getExteriorRing().getDataPoints();
                     long idx0 = ((MeshPrimitive.Vertex)points.getPoint(0)).getIndex();
                     long idx1 = ((MeshPrimitive.Vertex)points.getPoint(1)).getIndex();
                     long idx2 = ((MeshPrimitive.Vertex)points.getPoint(2)).getIndex();
@@ -828,7 +828,7 @@ public interface MeshPrimitive extends Geometry {
 
                 @Override
                 protected void visit(LineString candidate) {
-                    final PointSequence points = candidate.getPoints();
+                    final PointSequence points = candidate.getDataPoints();
                     long idx0 = ((MeshPrimitive.Vertex)points.getPoint(0)).getIndex();
                     long idx1 = ((MeshPrimitive.Vertex)points.getPoint(1)).getIndex();
                     positions.get(idx0, pos0);
@@ -1159,7 +1159,7 @@ public interface MeshPrimitive extends Geometry {
         }
 
         @Override
-        public PointSequence getPoints() {
+        public PointSequence getDataPoints() {
             //select all points, duplicate first point as last
             int[] indices;
             if (index == null) {
@@ -1181,7 +1181,7 @@ public interface MeshPrimitive extends Geometry {
         }
 
         @Override
-        public PointSequence getPoints() {
+        public PointSequence getDataPoints() {
             final int[] indices;
             if (index == null) {
                 indices = new int[Math.toIntExact(getPositions().getLength())];

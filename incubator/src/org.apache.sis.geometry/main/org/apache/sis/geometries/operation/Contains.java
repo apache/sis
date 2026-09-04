@@ -85,7 +85,7 @@ public final class Contains {
         ProcessorUtils.ensureSameCRS2D(polygon, candidate);
 
         { //check exterior
-            final Array coords = polygon.getExteriorRing().getPoints().getAttributeArray(AttributesType.ATT_POSITION);
+            final Array coords = polygon.getExteriorRing().getDataPoints().getAttributeArray(AttributesType.ATT_POSITION);
             if (!contains(coords, candidate.getPosition())) {
                 //point is outside the exterior ring
                 return false;
@@ -95,7 +95,7 @@ public final class Contains {
         { //check holes
             for (int i = 0, n = polygon.getNumInteriorRing(); i < n; i++) {
                 final LineString hole = polygon.getInteriorRingN(i);
-                final Array coords = hole.getPoints().getAttributeArray(AttributesType.ATT_POSITION);
+                final Array coords = hole.getDataPoints().getAttributeArray(AttributesType.ATT_POSITION);
                 if (contains(coords, candidate.getPosition())) {
                     //point is within a hole
                     return false;

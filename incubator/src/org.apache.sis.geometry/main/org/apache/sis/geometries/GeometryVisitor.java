@@ -56,7 +56,7 @@ public class GeometryVisitor {
     }
 
     public void visit(LineString geometry) {
-        visit(geometry.getPoints());
+        visit(geometry.getDataPoints());
     }
 
     public void visit(Polygon geometry) {
@@ -69,7 +69,7 @@ public class GeometryVisitor {
     }
 
     public void visit(LinearRing geometry) {
-        visit(geometry.getPoints());
+        visit(geometry.getDataPoints());
     }
 
     public void visit(TIN geometry) {

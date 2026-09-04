@@ -94,12 +94,12 @@ public interface CurvePolygon extends Surface {
     @Override
     default String asText() {
         final StringBuilder sb = new StringBuilder("POLYGON ((");
-        AbstractGeometry.toText(sb,  getExteriorRing().asLine(null, null).getPoints());
+        AbstractGeometry.toText(sb,  getExteriorRing().asLine(null, null).getDataPoints());
         sb.append(')');
         for (int i = 0, n = getNumInteriorRing(); i < n; i++) {
             if (i != 0) sb.append(',');
             sb.append('(');
-            AbstractGeometry.toText(sb, getInteriorRingN(i).asLine(null, null).getPoints());
+            AbstractGeometry.toText(sb, getInteriorRingN(i).asLine(null, null).getDataPoints());
             sb.append(')');
         }
         sb.append(')');

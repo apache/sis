@@ -178,7 +178,7 @@ final class PathIteratorAdapter implements PathIterator {
     private static Iterator<PointSequence> iterator(final Geometry geometry) {
         final Collection<PointSequence> sequences;
         if (geometry instanceof LineString) {
-            sequences = List.of(((LineString) geometry).getPoints());
+            sequences = List.of(((LineString) geometry).getDataPoints());
         } else if (geometry instanceof Point) {
             sequences = List.of(((Point) geometry).asPointSequence());
         } else if (geometry instanceof Polygon) {
@@ -223,7 +223,7 @@ final class PathIteratorAdapter implements PathIterator {
                 current = polygon.getInteriorRingN(interior);
             }
             interior++;
-            return current.getPoints();
+            return current.getDataPoints();
         }
     }
 

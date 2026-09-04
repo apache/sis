@@ -71,7 +71,7 @@ public final class ToPrimitive {
      */
     public static MeshPrimitive.LineStrip toPrimitive(LineString geometry) throws OperationException {
         final MeshPrimitive.LineStrip primitive = new MeshPrimitive.LineStrip();
-        final ArraySequence array = toArraySequence(geometry.getPoints());
+        final ArraySequence array = toArraySequence(geometry.getDataPoints());
         for (String name : array.getAttributeNames()) {
             primitive.setAttribute(name, array.getAttribute(name));
         }
@@ -90,7 +90,7 @@ public final class ToPrimitive {
      * Transform MultiPoint to Primitive.
      */
     public static MeshPrimitive.Points toPrimitive(MultiPoint geometry) throws OperationException {
-        final ArraySequence array = toArraySequence(geometry.asPointSequence());
+        final ArraySequence array = toArraySequence(geometry.asDataPoints());
         final MeshPrimitive.Points primitive = new MeshPrimitive.Points();
         for (String name : array.getAttributeNames()) {
             primitive.setAttribute(name, array.getAttribute(name));
@@ -118,7 +118,7 @@ public final class ToPrimitive {
 
             for (int i = 0, k = 0; i < numGeometries; i++, k += 2) {
                 final org.apache.sis.geometries.LineString line = geometry.getGeometryN(i);
-                final PointSequence points = line.getPoints();
+                final PointSequence points = line.getDataPoints();
                 for (String name : attributesType.getAttributeNames()) {
                     Array att = primitive.getAttribute(name);
                     att.set(k, points.getAttribute(0, name));

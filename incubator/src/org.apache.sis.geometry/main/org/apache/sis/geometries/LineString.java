@@ -29,7 +29,7 @@ import org.apache.sis.geometries.math.Array;
  * A LineString is a Curve with linear interpolation between Points.
  * Each consecutive pair of Points defines a Line segment.
  *
- * A Line is a LineString with exactly 2 Points.
+ * Note : ISO-19107 name this class a Line, even if it has more then 2 points.
  *
  * @author Johann Sorel (Geomatys)
  */
@@ -49,8 +49,6 @@ public interface LineString extends Curve {
         return CurveInterpolation.LINEAR;
     }
 
-    PointSequence getPoints();
-
     @Override
     public default LineString asLine(Length spacing, Length offset) {
         return this;
@@ -63,7 +61,7 @@ public interface LineString extends Curve {
      * @return number of Points in this LineString.
      */
     default int getNumPoints() {
-        return getPoints().size();
+        return getDataPoints().size();
     }
 
     /**
@@ -73,12 +71,7 @@ public interface LineString extends Curve {
      * @return the specified Point N in this LineString.
      */
     default Point getPointN(int n) {
-        return getPoints().getPoint(n);
-    }
-
-    @Override
-    public default Array getDataPoints() {
-        return getPoints().getAttributeArray(AttributesType.ATT_POSITION);
+        return getDataPoints().getPoint(n);
     }
 
     /**
@@ -91,17 +84,17 @@ public interface LineString extends Curve {
 
     @Override
     default CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return getPoints().getCoordinateReferenceSystem();
+        return getDataPoints().getCoordinateReferenceSystem();
     }
 
     @Override
     default void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
-        getPoints().setCoordinateReferenceSystem(cs);
+        getDataPoints().setCoordinateReferenceSystem(cs);
     }
 
     @Override
     public default AttributesType getAttributesType() {
-        return getPoints().getAttributesType();
+        return getDataPoints().getAttributesType();
     }
 
     /**
@@ -110,12 +103,12 @@ public interface LineString extends Curve {
      * @return true if lineString is a line.
      */
     default boolean isLine() {
-        return getPoints().size() == 2;
+        return getDataPoints().size() == 2;
     }
 
     @Override
     default Envelope getEnvelope() {
-        PointSequence points = getPoints();
+        PointSequence points = getDataPoints();
         if (points.isEmpty()) {
             return null;
         }
@@ -125,7 +118,7 @@ public interface LineString extends Curve {
     @Override
     default String asText() {
         final StringBuilder sb = new StringBuilder("LINESTRING (");
-        final PointSequence points = getPoints();
+        final PointSequence points = getDataPoints();
         AbstractGeometry.toText(sb, points);
         sb.append(')');
         return sb.toString();

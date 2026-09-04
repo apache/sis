@@ -36,6 +36,22 @@ import org.apache.sis.geometries.math.Vector;
 public interface Curve extends Orientable {
 
     /**
+     * Contains a list of points on the curve.
+     * The first point is the curve starting point.
+     * The last point is the curve last point.
+     *
+     * <p>
+     * Difference with ISO-19107 : The type has been changed from
+     * a list of direct positions to a PointSequence.
+     * This change allows to accomodate addition attributes like in GLTF or GPU models.
+     * </p>
+     *
+     * @return curve data points.
+     */
+    @UML(identifier="dataPoint", specification=ISO_19107) // section 6.4.18.3
+    PointSequence getDataPoints();
+
+    /**
      * The length of this Curve in its associated spatial reference.
      *
      * @see OGC Simple Feature Access 1.2.1 - 6.1.6.2
@@ -54,7 +70,9 @@ public interface Curve extends Orientable {
      */
     @UML(identifier="startPoint", specification=ISO_19107) // section 6.4.18.6
     default Point getStartPoint() {
-        throw new UnsupportedOperationException();
+        final PointSequence points = getDataPoints();
+        if (points.isEmpty()) return null;
+        return points.getPoint(0);
     }
 
     /**
@@ -65,7 +83,9 @@ public interface Curve extends Orientable {
      */
     @UML(identifier="endPoint", specification=ISO_19107) // section 6.4.18.7
     default Point getEndPoint() {
-        throw new UnsupportedOperationException();
+        final PointSequence points = getDataPoints();
+        if (points.isEmpty()) return null;
+        return points.getPoint(points.size()-1);
     }
 
     /**
@@ -93,8 +113,6 @@ public interface Curve extends Orientable {
     @UML(identifier="controlPoint", specification=ISO_19107) // section 6.4.18.2
     Array getControlPoints();
 
-    @UML(identifier="dataPoint", specification=ISO_19107) // section 6.4.18.3
-    Array getDataPoints();
 
     @UML(identifier="knot", specification=ISO_19107) // section 6.4.18.4
     default List<Knot> getKnots() {

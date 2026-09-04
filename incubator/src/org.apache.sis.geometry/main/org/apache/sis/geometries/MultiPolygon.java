@@ -50,12 +50,12 @@ public interface MultiPolygon extends MultiSurface<Polygon> {
             if (k > 0) sb.append(',');
             final Polygon polygon = getGeometryN(k);
             sb.append("((");
-            AbstractGeometry.toText(sb,  polygon.getExteriorRing().asLine(null, null).getPoints());
+            AbstractGeometry.toText(sb,  polygon.getExteriorRing().asLine(null, null).getDataPoints());
             sb.append(')');
             for (int i = 0, n = polygon.getNumInteriorRing(); i < n; i++) {
                 if (i != 0) sb.append(',');
                 sb.append('(');
-                AbstractGeometry.toText(sb, polygon.getInteriorRingN(i).getPoints());
+                AbstractGeometry.toText(sb, polygon.getInteriorRingN(i).getDataPoints());
                 sb.append(')');
             }
             sb.append(')');

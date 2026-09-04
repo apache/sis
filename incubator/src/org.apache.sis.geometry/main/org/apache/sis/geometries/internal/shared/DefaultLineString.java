@@ -38,7 +38,7 @@ public class DefaultLineString extends AbstractGeometry implements LineString {
     }
 
     @Override
-    public PointSequence getPoints() {
+    public PointSequence getDataPoints() {
         return points;
     }
 

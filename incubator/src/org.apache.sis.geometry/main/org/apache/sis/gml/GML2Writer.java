@@ -98,7 +98,7 @@ public final class GML2Writer extends AbstractGMLWriter {
     @Override
     protected void writeLineString(final LineString g, final String srsName, final boolean declareNamespace) throws XMLStreamException {
         writeStart(GML2Tags.LINE_STRING, srsName, declareNamespace);
-        writeCoordinates(g.getPoints());
+        writeCoordinates(g.getDataPoints());
         writer.writeEndElement();
     }
 
@@ -108,7 +108,7 @@ public final class GML2Writer extends AbstractGMLWriter {
     @Override
     protected void writeLinearRing(final LinearRing g, final String srsName, final boolean declareNamespace) throws XMLStreamException {
         writeStart(GML2Tags.LINEAR_RING, srsName, declareNamespace);
-        writeCoordinates(g.getPoints());
+        writeCoordinates(g.getDataPoints());
         writer.writeEndElement();
     }
 

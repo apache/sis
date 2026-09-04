@@ -115,7 +115,7 @@ public final class GML3Writer extends AbstractGMLWriter {
     @Override
     protected void writeLineString(final LineString g, final String srsName, final boolean declareNamespace) throws XMLStreamException {
         writeStart(GML2Tags.LINE_STRING, srsName, declareNamespace);
-        writePosList(g.getPoints());
+        writePosList(g.getDataPoints());
         writer.writeEndElement();
     }
 
@@ -125,7 +125,7 @@ public final class GML3Writer extends AbstractGMLWriter {
     @Override
     protected void writeLinearRing(final LinearRing g, final String srsName, final boolean declareNamespace) throws XMLStreamException {
         writeStart(GML2Tags.LINEAR_RING, srsName, declareNamespace);
-        writePosList(g.getPoints());
+        writePosList(g.getDataPoints());
         writer.writeEndElement();
     }
 
@@ -347,7 +347,7 @@ public final class GML3Writer extends AbstractGMLWriter {
      */
     private void writeArcSegment(final CircularString g) throws XMLStreamException {
         writer.writeStartElement((g.getNumArcs() == 1) ? GML3Tags.ARC : GML3Tags.ARC_STRING);
-        writePosList(g.getPoints());
+        writePosList(g.getDataPoints());
         writer.writeEndElement();
     }
 
@@ -382,7 +382,7 @@ public final class GML3Writer extends AbstractGMLWriter {
         writeStart(GML3Tags.CURVE, srsName, declareNamespace);
         writer.writeStartElement(GML3Tags.SEGMENTS);
         writer.writeStartElement(GML3Tags.ARC_BY_BULGE);
-        writePosList(g.getPoints());
+        writePosList(g.getDataPoints());
         writeMeasure(GML3Tags.BULGE, g.getBulge(), null);
         writePos(GML3Tags.NORMAL, g.getNormal());
         writer.writeEndElement();

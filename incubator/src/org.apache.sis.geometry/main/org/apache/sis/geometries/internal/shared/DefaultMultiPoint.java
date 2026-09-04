@@ -67,7 +67,7 @@ public class DefaultMultiPoint extends AbstractGeometry implements MultiPoint<Po
     }
 
     @Override
-    public PointSequence asPointSequence() {
+    public PointSequence asDataPoints() {
         return points;
     }
 

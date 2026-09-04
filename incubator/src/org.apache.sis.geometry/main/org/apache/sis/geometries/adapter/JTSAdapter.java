@@ -122,13 +122,13 @@ public final class JTSAdapter {
             final CoordinateSequence cs = toCoordinateSequence(cdt.asPointSequence(), copy, gf);
             jts = new org.locationtech.jts.geom.Point(cs, gf);
         } else if (geom instanceof MultiPoint cdt) {
-            final CoordinateSequence cs = toCoordinateSequence(cdt.asPointSequence(), copy, gf);
+            final CoordinateSequence cs = toCoordinateSequence(cdt.asDataPoints(), copy, gf);
             jts = gf.createMultiPoint(cs);
         } else if (geom instanceof LinearRing cdt) {
-            final CoordinateSequence cs = toCoordinateSequence(cdt.getPoints(), copy, gf);
+            final CoordinateSequence cs = toCoordinateSequence(cdt.getDataPoints(), copy, gf);
             jts = new org.locationtech.jts.geom.LinearRing(cs, gf);
         } else if (geom instanceof LineString cdt) {
-            final CoordinateSequence cs = toCoordinateSequence(cdt.getPoints(), copy, gf);
+            final CoordinateSequence cs = toCoordinateSequence(cdt.getDataPoints(), copy, gf);
             jts = new org.locationtech.jts.geom.LineString(cs, gf);
         } else if (geom instanceof MultiLineString cdt) {
             final org.locationtech.jts.geom.LineString[] children = new org.locationtech.jts.geom.LineString[cdt.getNumGeometries()];

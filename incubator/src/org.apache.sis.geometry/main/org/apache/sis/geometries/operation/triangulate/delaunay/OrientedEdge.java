@@ -181,7 +181,7 @@ final class OrientedEdge extends AbstractGeometry implements LineString, PointSe
     }
 
     @Override
-    public PointSequence getPoints() {
+    public PointSequence getDataPoints() {
         return this;
     }
 

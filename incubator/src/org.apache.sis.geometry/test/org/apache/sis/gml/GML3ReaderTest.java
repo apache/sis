@@ -322,8 +322,8 @@ public final class GML3ReaderTest {
                 + "<gml:posList>0.0 0.0 0.0 10.0 0.0 0.0 10.0 10.0 0.0</gml:posList>"
                 + "</gml:LineString>";
         final LineString g = assertInstanceOf(LineString.class, readInline(xml));
-        assertEquals(3, g.getPoints().getDimension(), "inferred tuple width");
-        assertEquals(3, g.getPoints().size(), "number of points");
+        assertEquals(3, g.getDataPoints().getDimension(), "inferred tuple width");
+        assertEquals(3, g.getDataPoints().size(), "number of points");
         assertEquals(3, g.getCoordinateReferenceSystem().getCoordinateSystem().getDimension(),
                      "The two-dimensional srsName should have been promoted to three dimensions.");
     }
@@ -351,8 +351,8 @@ public final class GML3ReaderTest {
                 + "<gml:posList srsDimension=\"4\">0 0 0 0 1 1 1 1</gml:posList>"
                 + "</gml:LineString>";
         final LineString g = assertInstanceOf(LineString.class, readInline(xml));
-        assertEquals(4, g.getPoints().getDimension());
-        assertEquals(2, g.getPoints().size());
+        assertEquals(4, g.getDataPoints().getDimension());
+        assertEquals(2, g.getDataPoints().size());
         assertUndefinedCRS(g);
     }
 
@@ -424,7 +424,7 @@ public final class GML3ReaderTest {
         final Geometry g = read(TestData.V3, TestData.CURVE_ARC);
         final CircularString arc = assertInstanceOf(CircularString.class, g);
         assertEquals(1, arc.getNumArcs());
-        assertEquals(3, arc.getPoints().size());
+        assertEquals(3, arc.getDataPoints().size());
         assertEquals(CurveInterpolation.CIRCULAR, arc.getInterpolation());
         assertCRS(wgs84, g);
     }
@@ -531,9 +531,9 @@ public final class GML3ReaderTest {
     public void testArcByBulge() throws Exception {
         final Geometry g = read(TestData.V3, TestData.CURVE_ARC_BY_BULGE);
         final ArcByBulge arc = assertInstanceOf(ArcByBulge.class, g);
-        assertEquals(2, arc.getPoints().size(), "number of points");
-        assertEquals( 0.0, arc.getPoints().getPosition(0).get(0), GeometryAssert.TOLERANCE, "start x");
-        assertEquals(10.0, arc.getPoints().getPosition(1).get(0), GeometryAssert.TOLERANCE, "end x");
+        assertEquals(2, arc.getDataPoints().size(), "number of points");
+        assertEquals( 0.0, arc.getDataPoints().getPosition(0).get(0), GeometryAssert.TOLERANCE, "start x");
+        assertEquals(10.0, arc.getDataPoints().getPosition(1).get(0), GeometryAssert.TOLERANCE, "end x");
         assertEquals( 2.0, arc.getBulge(), GeometryAssert.TOLERANCE, "bulge");
         assertEquals(2, arc.getNormal().getDimension(), "normal dimension");
         assertEquals(0.0, arc.getNormal().get(0), GeometryAssert.TOLERANCE, "normal x");

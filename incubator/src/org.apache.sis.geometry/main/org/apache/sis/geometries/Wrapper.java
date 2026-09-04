@@ -337,9 +337,9 @@ public final class Wrapper extends GeometryWrapper {
         if (geometry instanceof Point cdt){
             jts = gf.createPoint(new JTSSequence(cdt.asPointSequence()));
         } else if (geometry instanceof LinearRing cdt) {
-            jts = gf.createLinearRing(new JTSSequence(cdt.getPoints()));
+            jts = gf.createLinearRing(new JTSSequence(cdt.getDataPoints()));
         } else if (geometry instanceof LineString cdt) {
-            jts = gf.createLineString(new JTSSequence(cdt.getPoints()));
+            jts = gf.createLineString(new JTSSequence(cdt.getDataPoints()));
         } else if (geometry instanceof Polygon cdt) {
             final org.locationtech.jts.geom.LinearRing exterior = (org.locationtech.jts.geom.LinearRing) asJTS(cdt.getExteriorRing(), gf);
             final org.locationtech.jts.geom.LinearRing[] inners = new org.locationtech.jts.geom.LinearRing[cdt.getNumInteriorRing()];
@@ -348,7 +348,7 @@ public final class Wrapper extends GeometryWrapper {
             }
             jts = gf.createPolygon(exterior, inners);
         } else if (geometry instanceof MultiPoint<?> cdt) {
-            jts = gf.createMultiPoint(new JTSSequence(cdt.asPointSequence()));
+            jts = gf.createMultiPoint(new JTSSequence(cdt.asDataPoints()));
         } else if (geometry instanceof MultiLineString cdt) {
             final org.locationtech.jts.geom.LineString[] children = new org.locationtech.jts.geom.LineString[cdt.getNumGeometries()];
             for (int i = 0; i < children.length; i++) {

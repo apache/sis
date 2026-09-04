@@ -45,18 +45,10 @@ public interface CircularString extends Curve {
     }
 
     /**
-     * Returns the control points of this circular string: for each arc, its start point, a point
-     * on the arc and its end point, with consecutive arcs sharing a point.
-     *
-     * @return the control points, never null. Its size is odd and at least 3, or 0 if empty.
-     */
-    PointSequence getPoints();
-
-    /**
      * Returns the number of arcs this circular string is made of.
      */
     default int getNumArcs() {
-        final int size = getPoints().size();
+        final int size = getDataPoints().size();
         return (size == 0) ? 0 : (size - 1) / 2;
     }
 
@@ -68,10 +60,14 @@ public interface CircularString extends Curve {
         return CurveInterpolation.CIRCULAR;
     }
 
+    /**
+     * Returns the control points of this circular string: for each arc, its start point, a point
+     * on the arc and its end point, with consecutive arcs sharing a point.
+     *
+     * @return the control points, never null. Its size is odd and at least 3, or 0 if empty.
+     */
     @Override
-    public default Array getDataPoints() {
-        return getPoints().getAttributeArray(AttributesType.ATT_POSITION);
-    }
+    PointSequence getDataPoints();
 
     /**
      * @return null, a CircularString has no control points
@@ -83,37 +79,37 @@ public interface CircularString extends Curve {
 
     @Override
     default CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return getPoints().getCoordinateReferenceSystem();
+        return getDataPoints().getCoordinateReferenceSystem();
     }
 
     @Override
     default void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
-        getPoints().setCoordinateReferenceSystem(cs);
+        getDataPoints().setCoordinateReferenceSystem(cs);
     }
 
     @Override
     default AttributesType getAttributesType() {
-        return getPoints().getAttributesType();
+        return getDataPoints().getAttributesType();
     }
 
     @Override
     default boolean isEmpty() {
-        return getPoints().isEmpty();
+        return getDataPoints().isEmpty();
     }
 
     @Override
     default Point getStartPoint() {
-        return getPoints().getPoint(0);
+        return getDataPoints().getPoint(0);
     }
 
     @Override
     default Point getEndPoint() {
-        return getPoints().getPoint(getPoints().size() - 1);
+        return getDataPoints().getPoint(getDataPoints().size() - 1);
     }
 
     @Override
     default boolean isClosed() {
-        final PointSequence points = getPoints();
+        final PointSequence points = getDataPoints();
         final int size = points.size();
         if (size == 0) {
             return false;

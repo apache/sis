@@ -43,7 +43,7 @@ public interface MultiPoint<T extends Point> extends GeometryCollection<T>{
     /**
      * View this multipoint as a point sequence
      */
-    default PointSequence asPointSequence() {
+    default PointSequence asDataPoints() {
         return new PointSequence() {
             @Override
             public CoordinateReferenceSystem getCoordinateReferenceSystem() {

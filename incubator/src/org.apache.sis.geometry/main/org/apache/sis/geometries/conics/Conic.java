@@ -19,6 +19,7 @@ package org.apache.sis.geometries.conics;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.math.Array;
 
 
@@ -29,13 +30,13 @@ import org.apache.sis.geometries.math.Array;
 @UML(identifier="Conic", specification=ISO_19107) // section 7.9.5
 public interface Conic extends Curve {
 
+    @UML(identifier="dataPoints", specification=ISO_19107) // section 7.9.5.2
+    @Override
+    PointSequence getDataPoints();
+    
     @UML(identifier="controlPoints", specification=ISO_19107) // section 7.9.5.2
     @Override
     Array getControlPoints();
-
-    @UML(identifier="dataPoints", specification=ISO_19107) // section 7.9.5.2
-    @Override
-    Array getDataPoints();
 
     @UML(identifier="isCycle", specification=ISO_19107) // section 7.9.5.2
     boolean isCycle();

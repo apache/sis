@@ -54,7 +54,8 @@ public interface ArcByBulge extends Curve {
      *
      * @return the start and end points, never null and always of size 2.
      */
-    PointSequence getPoints();
+    @Override
+    PointSequence getDataPoints();
 
     /**
      * Returns the distance from the midpoint of the chord joining the two end points to the arc,
@@ -72,11 +73,6 @@ public interface ArcByBulge extends Curve {
      * @return the normal to the chord, never null.
      */
     Vector<?> getNormal();
-
-    @Override
-    public default Array getDataPoints() {
-        return getPoints().getAttributeArray(AttributesType.ATT_POSITION);
-    }
 
     /**
      * @return null, a ArcByBulge has no control points
@@ -96,32 +92,22 @@ public interface ArcByBulge extends Curve {
 
     @Override
     default CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return getPoints().getCoordinateReferenceSystem();
+        return getDataPoints().getCoordinateReferenceSystem();
     }
 
     @Override
     default void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
-        getPoints().setCoordinateReferenceSystem(cs);
+        getDataPoints().setCoordinateReferenceSystem(cs);
     }
 
     @Override
     default AttributesType getAttributesType() {
-        return getPoints().getAttributesType();
+        return getDataPoints().getAttributesType();
     }
 
     @Override
     default boolean isEmpty() {
-        return getPoints().isEmpty();
-    }
-
-    @Override
-    default Point getStartPoint() {
-        return getPoints().getPoint(0);
-    }
-
-    @Override
-    default Point getEndPoint() {
-        return getPoints().getPoint(getPoints().size() - 1);
+        return getDataPoints().isEmpty();
     }
 
     /**

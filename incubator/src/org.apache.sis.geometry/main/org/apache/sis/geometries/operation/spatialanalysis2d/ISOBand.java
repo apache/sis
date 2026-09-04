@@ -79,7 +79,7 @@ public final class ISOBand {
         final MeshPrimitiveVisitor visitor = new MeshPrimitiveVisitor(triangles) {
             @Override
             protected void visit(Triangle candidate) {
-                final PointSequence points = candidate.getExteriorRing().getPoints();
+                final PointSequence points = candidate.getExteriorRing().getDataPoints();
                 Tuple t0 = points.getPosition(0);
                 Tuple t1 = points.getPosition(1);
                 Tuple t2 = points.getPosition(2);

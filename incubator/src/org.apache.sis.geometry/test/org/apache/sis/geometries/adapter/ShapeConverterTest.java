@@ -97,7 +97,7 @@ public final class ShapeConverterTest {
         } else if (geom instanceof Point pt) {
             lst.add(new Vector2D.Double(pt.getPosition().toArrayDouble()));
         } else if (geom instanceof LineString ls) {
-            PointSequence ps = ls.getPoints();
+            PointSequence ps = ls.getDataPoints();
             for (int i = 0, n = ps.size(); i < n; i++) {
                 lst.add(new Vector2D.Double(ps.getPosition(i).toArrayDouble()));
             }

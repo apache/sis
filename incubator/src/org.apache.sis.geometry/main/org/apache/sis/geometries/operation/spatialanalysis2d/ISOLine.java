@@ -55,7 +55,7 @@ public final class ISOLine {
         final MeshPrimitiveVisitor visitor = new MeshPrimitiveVisitor(triangles) {
             @Override
             protected void visit(Triangle candidate) {
-                final PointSequence points = candidate.getExteriorRing().getPoints();
+                final PointSequence points = candidate.getExteriorRing().getDataPoints();
                 final double[] p0 = points.getPosition(0).toArrayDouble();
                 final double[] p1 = points.getPosition(1).toArrayDouble();
                 final double[] p2 = points.getPosition(2).toArrayDouble();

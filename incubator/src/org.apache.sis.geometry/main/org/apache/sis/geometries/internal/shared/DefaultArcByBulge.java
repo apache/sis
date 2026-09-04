@@ -59,7 +59,7 @@ public class DefaultArcByBulge extends AbstractGeometry implements ArcByBulge {
     }
 
     @Override
-    public PointSequence getPoints() {
+    public PointSequence getDataPoints() {
         return points;
     }
 

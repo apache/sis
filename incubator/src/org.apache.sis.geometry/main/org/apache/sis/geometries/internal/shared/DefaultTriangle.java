@@ -34,7 +34,7 @@ public class DefaultTriangle extends DefaultPolygon implements Triangle {
      */
     public DefaultTriangle(LinearRing exterior) {
         super(exterior);
-        final PointSequence points = exterior.getPoints();
+        final PointSequence points = exterior.getDataPoints();
         final int size = points.size();
         switch (size) {
             case 0: //empty triangle

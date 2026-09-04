@@ -24,6 +24,7 @@ import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.Orientable;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Primitive;
 import org.apache.sis.geometries.math.Array;
 
@@ -137,7 +138,7 @@ public class DefaultReversedCurve extends AbstractGeometry implements Curve {
     }
 
     @Override
-    public Array getDataPoints() {
+    public PointSequence getDataPoints() {
         return base.getDataPoints();
     }
 }

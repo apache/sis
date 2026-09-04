@@ -196,10 +196,10 @@ public final class MeshPrimitiveComparator {
             final LineString e1 = (LineString) expected;
             final LineString e2 = (LineString) candidate;
 
-            final Vertex e1v0 = (Vertex) e1.getPoints().getPoint(0);
-            final Vertex e1v1 = (Vertex) e1.getPoints().getPoint(1);
-            final Vertex e2v0 = (Vertex) e2.getPoints().getPoint(0);
-            final Vertex e2v1 = (Vertex) e2.getPoints().getPoint(1);
+            final Vertex e1v0 = (Vertex) e1.getDataPoints().getPoint(0);
+            final Vertex e1v1 = (Vertex) e1.getDataPoints().getPoint(1);
+            final Vertex e2v0 = (Vertex) e2.getDataPoints().getPoint(0);
+            final Vertex e2v1 = (Vertex) e2.getDataPoints().getPoint(1);
             return (compareVertex(e1v0, e2v0) && compareVertex(e1v1, e2v1))
                 || (compareVertex(e1v0, e2v1) && compareVertex(e1v1, e2v0));
 
@@ -208,12 +208,12 @@ public final class MeshPrimitiveComparator {
             final LineString e1 = ((Triangle) expected).getExteriorRing();
             final LineString e2 = ((Triangle) candidate).getExteriorRing();
 
-            final Vertex e1v0 = (Vertex) e1.getPoints().getPoint(0);
-            final Vertex e1v1 = (Vertex) e1.getPoints().getPoint(1);
-            final Vertex e1v2 = (Vertex) e1.getPoints().getPoint(2);
-            final Vertex e2v0 = (Vertex) e2.getPoints().getPoint(0);
-            final Vertex e2v1 = (Vertex) e2.getPoints().getPoint(1);
-            final Vertex e2v2 = (Vertex) e2.getPoints().getPoint(2);
+            final Vertex e1v0 = (Vertex) e1.getDataPoints().getPoint(0);
+            final Vertex e1v1 = (Vertex) e1.getDataPoints().getPoint(1);
+            final Vertex e1v2 = (Vertex) e1.getDataPoints().getPoint(2);
+            final Vertex e2v0 = (Vertex) e2.getDataPoints().getPoint(0);
+            final Vertex e2v1 = (Vertex) e2.getDataPoints().getPoint(1);
+            final Vertex e2v2 = (Vertex) e2.getDataPoints().getPoint(2);
             return (compareVertex(e1v0, e2v0) && compareVertex(e1v1, e2v1) && compareVertex(e1v2, e2v2))
                 || (compareVertex(e1v0, e2v1) && compareVertex(e1v1, e2v2) && compareVertex(e1v2, e2v0))
                 || (compareVertex(e1v0, e2v2) && compareVertex(e1v1, e2v0) && compareVertex(e1v2, e2v1));
@@ -254,12 +254,12 @@ public final class MeshPrimitiveComparator {
     private static boolean isDegenerated(Object candidate) {
         if (candidate instanceof LineString) {
             final LineString cdt = (LineString) candidate;
-            final PointSequence points = cdt.getPoints();
+            final PointSequence points = cdt.getDataPoints();
             return points.getPosition(0).equals(points.getPosition(1));
 
         } else if (candidate instanceof Triangle) {
             final Triangle cdt = (Triangle) candidate;
-            final PointSequence points = cdt.getExteriorRing().getPoints();
+            final PointSequence points = cdt.getExteriorRing().getDataPoints();
             final Tuple c0 = points.getPosition(0);
             final Tuple c1 = points.getPosition(1);
             final Tuple c2 = points.getPosition(2);

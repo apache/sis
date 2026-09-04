@@ -121,8 +121,8 @@ public class ToPrimitiveTest {
             assertEquals(2, mp.getNumGeometries());
             LineString l1 = mp.getGeometryN(0);
             LineString l2 = mp.getGeometryN(1);
-            assertArrayEquals(new double[]{0,1,2,3}, l1.getPoints().getAttributeArray(AttributesType.ATT_POSITION).toArrayDouble(), 0.0);
-            assertArrayEquals(new double[]{3,4,5,6}, l2.getPoints().getAttributeArray(AttributesType.ATT_POSITION).toArrayDouble(), 0.0);
+            assertArrayEquals(new double[]{0,1,2,3}, l1.getDataPoints().getAttributeArray(AttributesType.ATT_POSITION).toArrayDouble(), 0.0);
+            assertArrayEquals(new double[]{3,4,5,6}, l2.getDataPoints().getAttributeArray(AttributesType.ATT_POSITION).toArrayDouble(), 0.0);
         }
     }
 

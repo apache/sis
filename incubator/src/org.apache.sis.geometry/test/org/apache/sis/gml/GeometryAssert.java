@@ -87,7 +87,7 @@ final class GeometryAssert {
             assertSequenceEquals(e.asPointSequence(), a.asPointSequence(), tolerance);
         } else if (expected instanceof LineString e) {                  // Also covers LinearRing.
             final LineString a = (LineString) actual;
-            assertSequenceEquals(e.getPoints(), a.getPoints(), tolerance);
+            assertSequenceEquals(e.getDataPoints(), a.getDataPoints(), tolerance);
         } else if (expected instanceof Polygon e) {                     // Also covers Triangle.
             final Polygon a = (Polygon) actual;
             assertEquals(e.getNumInteriorRing(), a.getNumInteriorRing(), "number of interior rings");

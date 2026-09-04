@@ -46,7 +46,7 @@ public class DefaultCircularString extends AbstractGeometry implements CircularS
     }
 
     @Override
-    public PointSequence getPoints() {
+    public PointSequence getDataPoints() {
         return points;
     }
 

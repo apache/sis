@@ -21,6 +21,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.CompoundCurve;
 import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.math.Array;
 
 
@@ -111,7 +112,7 @@ public class DefaultCompoundCurve extends AbstractGeometry implements CompoundCu
     }
 
     @Override
-    public Array getDataPoints() {
+    public PointSequence getDataPoints() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 }

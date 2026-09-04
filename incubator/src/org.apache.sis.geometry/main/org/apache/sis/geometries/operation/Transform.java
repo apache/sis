@@ -79,7 +79,7 @@ public final class Transform {
 
     public static LinearRing transform(LinearRing r, CoordinateReferenceSystem crs, MathTransform transform) throws OperationException {
 
-        PointSequence ps = r.getPoints();
+        PointSequence ps = r.getDataPoints();
         final Array reference = ps.getAttributeArray(AttributesType.ATT_POSITION);
         final Array positions = transform(reference, crs, transform);
         final ArraySequence cp = new ArraySequence(positions);
@@ -186,7 +186,7 @@ public final class Transform {
     }
 
     public static Triangle transform(Triangle p, CoordinateReferenceSystem crs, MathTransform transform) throws OperationException {
-        final PointSequence ps = p.getExteriorRing().getPoints();
+        final PointSequence ps = p.getExteriorRing().getDataPoints();
 
         final Array reference = ps.getAttributeArray(AttributesType.ATT_POSITION);
         final Array positions = transform(reference, crs, transform);

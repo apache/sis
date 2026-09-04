@@ -41,7 +41,7 @@ public interface MultiLineString extends MultiCurve<LineString> {
             if (k > 0) sb.append(',');
             sb.append('(');
             final LineString line = getGeometryN(k);
-            final PointSequence points = line.getPoints();
+            final PointSequence points = line.getDataPoints();
             for (int i = 0, n = points.size() ; i < n; i++) {
                 final Tuple pos = points.getPosition(i);
                 if (i > 0) sb.append(',');

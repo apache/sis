@@ -204,7 +204,7 @@ public abstract class MeshPrimitiveVisitor {
      * Override this method to process a triangle.
      */
     protected void visit(Triangle candidate) {
-        final PointSequence points = candidate.getExteriorRing().getPoints();
+        final PointSequence points = candidate.getExteriorRing().getDataPoints();
         visit((MeshPrimitive.Vertex) points.getPoint(0));
         visit((MeshPrimitive.Vertex) points.getPoint(1));
         visit((MeshPrimitive.Vertex) points.getPoint(2));
@@ -214,7 +214,7 @@ public abstract class MeshPrimitiveVisitor {
      * Override this method to process a line.
      */
     protected void visit(LineString candidate) {
-        final PointSequence points = candidate.getPoints();
+        final PointSequence points = candidate.getDataPoints();
         visit((MeshPrimitive.Vertex) points.getPoint(0));
         visit((MeshPrimitive.Vertex) points.getPoint(1));
     }

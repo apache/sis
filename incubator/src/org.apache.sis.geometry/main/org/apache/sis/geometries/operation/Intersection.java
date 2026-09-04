@@ -154,7 +154,7 @@ public final class Intersection {
         final List<LineString> segments = new ArrayList<>();
         for (int i = 0, n = lines.getNumGeometries(); i < n; i++) {
             final LineString line = lines.getGeometryN(i);
-            final Array segment = line.getPoints().getAttributeArray(AttributesType.ATT_POSITION);
+            final Array segment = line.getDataPoints().getAttributeArray(AttributesType.ATT_POSITION);
             final Tuple s1 = segment.get(0);
             final Tuple s2 = segment.get(1);
 
@@ -163,7 +163,7 @@ public final class Intersection {
 
                 while (iterator.hasNext()) {
                     final Triangle triangle = iterator.next();
-                    final Array corners = triangle.getExteriorRing().getPoints().getAttributeArray(AttributesType.ATT_POSITION);
+                    final Array corners = triangle.getExteriorRing().getDataPoints().getAttributeArray(AttributesType.ATT_POSITION);
                     final Tuple c0 = corners.get(0);
                     final Tuple c1 = corners.get(1);
                     final Tuple c2 = corners.get(2);

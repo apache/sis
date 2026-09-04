@@ -32,7 +32,7 @@ final class TinDistance implements BiFunction<Tuple,Triangle,Double> {
 
     @Override
     public Double apply(Tuple pt, Triangle triangle) {
-        final PointSequence points = triangle.getExteriorRing().getPoints();
+        final PointSequence points = triangle.getExteriorRing().getDataPoints();
         final Tuple p0 = points.getPosition(0);
         final Tuple p1 = points.getPosition(1);
         final Tuple p2 = points.getPosition(2);

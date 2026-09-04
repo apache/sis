@@ -187,7 +187,7 @@ public abstract class AbstractDggrsTest {
                 final Polygon geometry = (Polygon) DiscreteGlobalGridSystems.toSISPolygon(z.getGeographicExtent());
                 final DirectPosition center = z.getPosition();
                 final LinearRing exterior = (LinearRing) geometry.getExteriorRing();
-                final PointSequence ps = exterior.getPoints();
+                final PointSequence ps = exterior.getDataPoints();
                 for (int i = 0; i < ps.size(); i++) {
                     final Tuple corner = ps.getPosition(i);
 

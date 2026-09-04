@@ -127,7 +127,7 @@ public final class To3D {
      * Add Z axis to LineString.
      */
     public static LineString to3D(LineString base, CoordinateReferenceSystem crs3d, Consumer<Tuple> zeditor) {
-        final PointSequence copy3d = to3d(base.getPoints(), crs3d, zeditor);
+        final PointSequence copy3d = to3d(base.getDataPoints(), crs3d, zeditor);
         return GeometryFactory.createLineString(copy3d);
     }
 
