@@ -90,6 +90,18 @@ public interface Vector<T extends Vector<T>> extends Tuple<T>, ReadOnly.Vector<T
         return (T) this;
     }
 
+    /**
+     * Linear interpolation from this vector to the other vector : (1-ratio)*this + ratio*other.
+     *
+     * @param other vector to interpolate toward
+     * @param ratio interpolation factor, zero for this vector and one for the other vector
+     * @return this vector
+     */
+    default T lerp(ReadOnly.Tuple<?> other, double ratio) {
+        set( Vectors.lerp(toArrayDouble(), other.toArrayDouble(), ratio));
+        return (T) this;
+    }
+
     @Override
     public T copy();
 

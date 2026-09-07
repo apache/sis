@@ -313,6 +313,61 @@ public final class Matrices {
     }
 
     /**
+     * Solves the linear system {@code A} · x = {@code b} by Gaussian elimination
+     * with partial pivoting, for a square matrix of any size.
+     *
+     * <p>Neither {@code A} nor {@code b} is modified, the elimination being done on a copy.</p>
+     *
+     * @param A square matrix of the system, size N × N
+     * @param b right hand side of the system, size N
+     * @return the solution x of size N, or null if the matrix is singular
+     */
+    public static double[] solve(double[][] A, double[] b) {
+        final int n = b.length;
+
+        // Work matrix M = [ A | b ]
+        final double[][] M = new double[n][n + 1];
+        for (int i = 0; i < n; i++) {
+            System.arraycopy(A[i], 0, M[i], 0, n);
+            M[i][n] = b[i];
+        }
+
+        // Forward elimination, using the largest available pivot of each column
+        for (int col = 0; col < n; col++) {
+            int pivot = col;
+            for (int row = col + 1; row < n; row++) {
+                if (Math.abs(M[row][col]) > Math.abs(M[pivot][col])) {
+                    pivot = row;
+                }
+            }
+            if (Math.abs(M[pivot][col]) < 1e-14) {
+                return null;
+            }
+            final double[] tmp = M[col];
+            M[col] = M[pivot];
+            M[pivot] = tmp;
+
+            for (int row = col + 1; row < n; row++) {
+                final double factor = M[row][col] / M[col][col];
+                for (int k = col; k <= n; k++) {
+                    M[row][k] -= factor * M[col][k];
+                }
+            }
+        }
+
+        // Back substitution
+        final double[] x = new double[n];
+        for (int row = n - 1; row >= 0; row--) {
+            double sum = M[row][n];
+            for (int k = row + 1; k < n; k++) {
+                sum -= M[row][k] * x[k];
+            }
+            x[row] = sum / M[row][row];
+        }
+        return x;
+    }
+
+    /**
      * Matrices dot product.
      *
      * @param m1 first matrix
