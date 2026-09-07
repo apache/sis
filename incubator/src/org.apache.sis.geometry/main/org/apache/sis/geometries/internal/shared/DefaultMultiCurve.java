@@ -16,9 +16,9 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
-import org.apache.sis.geometries.MultiCurve;
+import org.apache.sis.geometries.curve.MultiCurve;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

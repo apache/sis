@@ -17,14 +17,13 @@
 package org.apache.sis.geometries.curve;
 
 import javax.measure.Unit;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.maths.Array;
-import org.apache.sis.geometries.DataPoints;
-
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * A single circular arc described by the centre of its circle, the radius of that circle and the

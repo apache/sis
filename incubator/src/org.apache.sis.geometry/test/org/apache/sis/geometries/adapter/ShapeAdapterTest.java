@@ -22,7 +22,7 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.Polygon;
+import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;

@@ -16,9 +16,9 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.MultiPoint;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.point.MultiPoint;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

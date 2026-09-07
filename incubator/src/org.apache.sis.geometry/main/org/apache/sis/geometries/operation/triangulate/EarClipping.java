@@ -23,14 +23,14 @@ import java.util.List;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.Polygon;
-import org.apache.sis.maths.Maths;
-import org.apache.sis.maths.Tuple;
-import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.Vector2D;
-import org.apache.sis.maths.Array;
-import static org.apache.sis.maths.Vectors.*;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Maths;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector2D;
+import static org.apache.sis.maths.Vectors.*;
 import org.apache.sis.util.ArraysExt;
 
 

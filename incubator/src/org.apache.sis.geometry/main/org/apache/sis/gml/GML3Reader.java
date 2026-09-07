@@ -25,32 +25,30 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import org.apache.sis.geometries.BBox;
-import org.apache.sis.geometries.CompoundCurve;
 import org.apache.sis.geometries.Curve;
-import org.apache.sis.geometries.CurvePolygon;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.MultiPoint;
-import org.apache.sis.geometries.MultiPolygon;
-import org.apache.sis.geometries.MultiPolyhedron;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.Polygon;
-import org.apache.sis.geometries.PolyhedralSurface;
-import org.apache.sis.geometries.Polyhedron;
 import org.apache.sis.geometries.Surface;
-import org.apache.sis.geometries.TIN;
-import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.curve.ArcByBulge;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
+import org.apache.sis.geometries.curve.CompoundCurve;
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.curve.LinearRing;
+import org.apache.sis.geometries.point.MultiPoint;
+import org.apache.sis.geometries.solid.MultiPolyhedron;
+import org.apache.sis.geometries.solid.Polyhedron;
+import org.apache.sis.geometries.surface.CurvePolygon;
+import org.apache.sis.geometries.surface.MultiPolygon;
+import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.geometries.surface.PolyhedralSurface;
+import org.apache.sis.geometries.surface.TIN;
+import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.measure.Units;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
@@ -527,8 +525,8 @@ public final class GML3Reader extends AbstractGMLReader {
      * {@code <gml:MultiLineString>}. Both the per-member ({@code curveMember},
      * {@code lineStringMember}) and the compact ({@code curveMembers}) forms are accepted.
      *
-     * <p>The result is a {@link org.apache.sis.geometries.MultiLineString} when every member is a
-     * {@link LineString}, and the more general {@link org.apache.sis.geometries.MultiCurve}
+     * <p>The result is a {@link org.apache.sis.geometries.curve.MultiLineString} when every member is a
+     * {@link LineString}, and the more general {@link org.apache.sis.geometries.curve.MultiCurve}
      * otherwise. The cursor must be on the element's {@link #START_ELEMENT} event.</p>
      */
     private Geometry parseMultiCurve(final CoordinateReferenceSystem crs, final String enclosingTagName)
@@ -567,8 +565,8 @@ public final class GML3Reader extends AbstractGMLReader {
      * {@code <gml:MultiPolygon>}. Both the per-member ({@code surfaceMember},
      * {@code polygonMember}) and the compact ({@code surfaceMembers}) forms are accepted.
      *
-     * <p>The result is a {@link org.apache.sis.geometries.MultiPolygon} when every member is a
-     * {@link Polygon}, and the more general {@link org.apache.sis.geometries.MultiSurface}
+     * <p>The result is a {@link org.apache.sis.geometries.surface.MultiPolygon} when every member is a
+     * {@link Polygon}, and the more general {@link org.apache.sis.geometries.surface.MultiSurface}
      * otherwise. The cursor must be on the element's {@link #START_ELEMENT} event.</p>
      */
     private Geometry parseMultiSurface(final CoordinateReferenceSystem crs, final String enclosingTagName)
@@ -973,7 +971,7 @@ public final class GML3Reader extends AbstractGMLReader {
      * Parses a {@code <gml:CompositeCurve>} element, whose {@code curveMember} children are joined
      * end to end into a single curve. Unlike {@code gml:MultiCurve}, the members of a composite
      * curve are contiguous, which is why this becomes a {@link CompoundCurve} and not a
-     * {@link org.apache.sis.geometries.MultiCurve}.
+     * {@link org.apache.sis.geometries.curve.MultiCurve}.
      */
     private CompoundCurve parseCompositeCurve(final CoordinateReferenceSystem crs)
             throws XMLStreamException, DataStoreContentException, DataStoreReferencingException
@@ -1027,7 +1025,7 @@ public final class GML3Reader extends AbstractGMLReader {
      * <p>The result is the most specific type the patches allow: a lone planar patch is returned as
      * a {@link Polygon} on its own, all-triangular patches become a {@link TIN}, other planar
      * patches a {@link PolyhedralSurface}. A patch with a non-linear boundary forces a
-     * {@link org.apache.sis.geometries.MultiSurface} instead, because
+     * {@link org.apache.sis.geometries.surface.MultiSurface} instead, because
      * {@code PolyhedralSurface<T extends Polygon>} cannot hold a {@link CurvePolygon} — and with it
      * the guarantee that the patches are contiguous is lost. That is a real degradation, not a
      * relabelling, and the writer consequently emits {@code gml:MultiSurface} for such a surface.</p>
@@ -1136,7 +1134,7 @@ public final class GML3Reader extends AbstractGMLReader {
      * Parses a {@code <gml:CompositeSurface>} element, whose {@code surfaceMember} children are
      * contiguous and together form one surface — the same contract as
      * {@link PolyhedralSurface}, which is therefore what this becomes. A
-     * {@link org.apache.sis.geometries.MultiSurface} would be the wrong choice: it explicitly
+     * {@link org.apache.sis.geometries.surface.MultiSurface} would be the wrong choice: it explicitly
      * places no contiguity constraint on its members, discarding the strongest thing the document
      * says.
      */

@@ -16,14 +16,14 @@
  */
 package org.apache.sis.geometries;
 
+import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.internal.shared.AbstractGeometry;
-import org.apache.sis.maths.Tuple;
-import org.apache.sis.maths.Vector;
 
 
 /**

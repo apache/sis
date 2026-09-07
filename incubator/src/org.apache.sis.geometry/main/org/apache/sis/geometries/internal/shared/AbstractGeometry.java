@@ -18,13 +18,13 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.sis.geometries.Geometry;
-import org.apache.sis.maths.Tuple;
-import org.apache.sis.maths.Cursor;
-import org.apache.sis.maths.Array;
-import org.apache.sis.geometry.GeneralEnvelope;
-import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Cursor;
+import org.apache.sis.maths.Tuple;
+import org.opengis.geometry.Envelope;
 
 
 /**

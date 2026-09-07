@@ -16,14 +16,11 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.apache.sis.geometries.Bearing;
+import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.CurveInterpolation;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
-import org.apache.sis.geometries.Curve;
-import org.apache.sis.geometries.CurveInterpolation;
-import org.apache.sis.geometries.Bearing;
-import org.apache.sis.geometries.Bearing;
-import org.apache.sis.geometries.Curve;
-import org.apache.sis.geometries.CurveInterpolation;
 
 
 /**

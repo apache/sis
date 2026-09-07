@@ -17,12 +17,12 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Orientable;
 import org.apache.sis.geometries.Primitive;
 import org.apache.sis.geometries.Surface;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

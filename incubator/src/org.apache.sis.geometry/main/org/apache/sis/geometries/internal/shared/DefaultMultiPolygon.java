@@ -16,9 +16,9 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.apache.sis.geometries.surface.MultiPolygon;
+import org.apache.sis.geometries.surface.Polygon;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.MultiPolygon;
-import org.apache.sis.geometries.Polygon;
 
 
 /**

@@ -16,13 +16,13 @@
  */
 package org.apache.sis.geometries.curve;
 
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.maths.Array;
-import org.apache.sis.geometries.DataPoints;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

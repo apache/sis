@@ -25,11 +25,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Vector1D;
-import org.apache.sis.maths.Cursor;
-import org.apache.sis.maths.Array;
 
 
 /**

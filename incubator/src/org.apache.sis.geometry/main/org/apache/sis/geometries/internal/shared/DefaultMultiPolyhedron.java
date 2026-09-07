@@ -16,9 +16,9 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.apache.sis.geometries.solid.MultiPolyhedron;
+import org.apache.sis.geometries.solid.Polyhedron;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.MultiPolyhedron;
-import org.apache.sis.geometries.Polyhedron;
 
 
 /**

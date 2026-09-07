@@ -21,18 +21,18 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import org.apache.sis.geometries.BBox;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Empty;
 import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.MultiCurve;
-import org.apache.sis.geometries.MultiPoint;
-import org.apache.sis.geometries.MultiSurface;
-import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.Polygon;
+import org.apache.sis.geometries.curve.MultiCurve;
+import org.apache.sis.geometries.point.MultiPoint;
+import org.apache.sis.geometries.surface.MultiSurface;
+import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
-import org.apache.sis.geometries.DataPoints;
 
 
 /**

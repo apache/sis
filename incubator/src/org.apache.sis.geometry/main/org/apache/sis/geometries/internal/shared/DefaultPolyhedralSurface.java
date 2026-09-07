@@ -16,11 +16,11 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.AttributesType;
-import org.apache.sis.geometries.Polygon;
-import org.apache.sis.geometries.PolyhedralSurface;
 
 
 /**

@@ -16,11 +16,11 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.maths.Array;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
-import org.apache.sis.geometries.Curve;
-import org.apache.sis.maths.Array;
-import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -33,7 +33,7 @@ public interface Conic extends Curve {
     @UML(identifier="dataPoints", specification=ISO_19107) // section 7.9.5.2
     @Override
     DataPoints getDataPoints();
-    
+
     @UML(identifier="controlPoints", specification=ISO_19107) // section 7.9.5.2
     @Override
     Array getControlPoints();

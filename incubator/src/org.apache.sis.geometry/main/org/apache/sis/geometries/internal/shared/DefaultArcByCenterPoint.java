@@ -17,9 +17,9 @@
 package org.apache.sis.geometries.internal.shared;
 
 import javax.measure.Unit;
-import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
+import org.opengis.geometry.Envelope;
 
 
 /**

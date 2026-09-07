@@ -249,12 +249,12 @@ public final class DiscreteGlobalGridSystems {
         return S2.toJTSPolygon(toS2Polygon(extent));
     }
 
-    public static org.apache.sis.geometries.Polygon toSISPolygon(GeographicExtent extent) {
+    public static org.apache.sis.geometries.surface.Polygon toSISPolygon(GeographicExtent extent) {
         return toSISPolygon(toS2Polygon(extent));
 
     }
 
-    public static org.apache.sis.geometries.Polygon toSISPolygon(S2Polygon s2) {
+    public static org.apache.sis.geometries.surface.Polygon toSISPolygon(S2Polygon s2) {
         if (s2 == null) return null;
         final double[] coords = S2.toArray(s2.loop(0));
         final Array positions = NDArrays.of(CommonCRS.WGS84.normalizedGeographic(), coords);

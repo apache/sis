@@ -16,24 +16,23 @@
  */
 package org.apache.sis.geometries;
 
-import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.curve.LineString;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.measure.Unit;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.curve.ArcByBulge;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
 import org.apache.sis.geometries.curve.Circle;
 import org.apache.sis.geometries.curve.CircularString;
+import org.apache.sis.geometries.curve.Clothoid;
+import org.apache.sis.geometries.curve.CompoundCurve;
 import org.apache.sis.geometries.curve.Geodesic;
-import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.Array;
-import org.apache.sis.maths.Vector;
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.curve.LinearRing;
+import org.apache.sis.geometries.curve.MultiCurve;
+import org.apache.sis.geometries.curve.MultiLineString;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultArcByBulge;
 import org.apache.sis.geometries.internal.shared.DefaultArcByCenterPoint;
@@ -60,13 +59,27 @@ import org.apache.sis.geometries.internal.shared.DefaultReversedCurve;
 import org.apache.sis.geometries.internal.shared.DefaultReversedSurface;
 import org.apache.sis.geometries.internal.shared.DefaultTriangle;
 import org.apache.sis.geometries.internal.shared.DefaultTriangulatedSurface;
-import org.apache.sis.maths.DataType;
-import org.apache.sis.geometries.curve.Clothoid;
+import org.apache.sis.geometries.point.MultiPoint;
+import org.apache.sis.geometries.solid.MultiPolyhedron;
+import org.apache.sis.geometries.solid.Polyhedron;
+import org.apache.sis.geometries.surface.CurvePolygon;
+import org.apache.sis.geometries.surface.MultiPolygon;
+import org.apache.sis.geometries.surface.MultiSurface;
+import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.geometries.surface.PolyhedralSurface;
+import org.apache.sis.geometries.surface.TIN;
+import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.geometry.wrapper.Capability;
 import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.setup.GeometryLibrary;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

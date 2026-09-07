@@ -16,7 +16,7 @@
  */
 package org.apache.sis.geometries.spherical;
 
-import org.apache.sis.geometries.Sphere;
+import org.apache.sis.geometries.solid.Sphere;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector3D;

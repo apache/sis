@@ -17,20 +17,20 @@
 package org.apache.sis.geometries.operation.triangulate.delaunay;
 
 import java.awt.geom.Point2D;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
-import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.Triangle;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
-import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.operation.OperationException;
+import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.referencing.internal.shared.ShapeUtilities;
-import org.apache.sis.geometries.DataPoints;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

@@ -21,7 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.MultiLineString;
+import org.apache.sis.geometries.curve.MultiLineString;
 
 import org.apache.sis.storage.DataStoreContentException;
 

@@ -18,11 +18,11 @@ package org.apache.sis.geometries.operation;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.sis.geometries.Geometry;
+import org.apache.sis.referencing.CRS;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.FactoryException;
-import org.apache.sis.geometries.Geometry;
-import org.apache.sis.referencing.CRS;
 
 
 /**

@@ -16,9 +16,8 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.DataPoints;
-
+import org.apache.sis.geometries.curve.LinearRing;
 
 /**
  * TODO : add linear ring constraints.

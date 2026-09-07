@@ -21,15 +21,15 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.Triangle;
-import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
-import org.apache.sis.maths.Tuple;
-import org.apache.sis.maths.Array;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
+import org.apache.sis.geometries.surface.Triangle;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.referencing.CRS;
 
 
 /**

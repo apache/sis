@@ -20,6 +20,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
+import static org.apache.sis.geometries.operation.spatialanalysis2d.ISOLine.interpolateToArray;
+import org.apache.sis.geometries.surface.Triangle;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.measure.NumberRange;
+import org.apache.sis.util.ArgumentChecks;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -28,14 +36,6 @@ import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequence;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory;
 import org.opengis.util.FactoryException;
-import org.apache.sis.geometries.Triangle;
-import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
-import static org.apache.sis.geometries.operation.spatialanalysis2d.ISOLine.interpolateToArray;
-import org.apache.sis.maths.Tuple;
-import org.apache.sis.measure.NumberRange;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.geometries.DataPoints;
 
 
 /**

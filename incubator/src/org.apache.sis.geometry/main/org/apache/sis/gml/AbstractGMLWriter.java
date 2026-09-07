@@ -20,24 +20,22 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Empty;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.MultiCurve;
-import org.apache.sis.geometries.MultiPoint;
-import org.apache.sis.geometries.MultiSurface;
-import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.Polygon;
-import org.apache.sis.geometries.Surface;
+import org.apache.sis.geometries.curve.MultiCurve;
+import org.apache.sis.geometries.point.MultiPoint;
+import org.apache.sis.geometries.surface.MultiSurface;
+import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -115,7 +113,7 @@ abstract class AbstractGMLWriter implements GMLGeometryWriter {
      * approximating anything.
      *
      * <p>This hook is consulted <em>before</em> the {@link GeometryCollection} catch-all, because
-     * {@link org.apache.sis.geometries.MultiPolyhedron} extends {@code GeometryCollection} and would
+     * {@link org.apache.sis.geometries.solid.MultiPolyhedron} extends {@code GeometryCollection} and would
      * otherwise be swallowed by it. An implementation must therefore return {@code false} for a
      * plain {@code GeometryCollection} it does not specifically recognise, or collections would
      * never reach {@link #writeMultiGeometry writeMultiGeometry(…)}.</p>

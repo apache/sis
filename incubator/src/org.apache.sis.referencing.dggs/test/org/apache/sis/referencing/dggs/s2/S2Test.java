@@ -19,7 +19,7 @@ package org.apache.sis.referencing.dggs.s2;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.geometries.Polygon;
+import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.referencing.dggs.Zone;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridSystems;
 

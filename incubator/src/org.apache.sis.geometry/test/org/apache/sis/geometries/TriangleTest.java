@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Array;

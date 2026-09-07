@@ -16,10 +16,10 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import org.opengis.geometry.Envelope;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.ArcByBulge;
 import org.apache.sis.maths.Vector;
-import org.apache.sis.geometries.DataPoints;
+import org.opengis.geometry.Envelope;
 
 
 /**

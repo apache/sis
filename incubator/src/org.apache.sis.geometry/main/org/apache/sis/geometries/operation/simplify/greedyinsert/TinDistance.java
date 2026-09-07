@@ -17,11 +17,11 @@
 package org.apache.sis.geometries.operation.simplify.greedyinsert;
 
 import java.util.function.BiFunction;
-import org.apache.sis.geometries.Triangle;
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector;
-import org.apache.sis.geometries.DataPoints;
 
 
 /**

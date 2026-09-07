@@ -17,12 +17,11 @@
 package org.apache.sis.geometries;
 
 import java.util.Objects;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

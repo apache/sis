@@ -18,16 +18,16 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.List;
 import java.util.Objects;
+import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.surface.CurvePolygon;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.Curve;
-import org.apache.sis.geometries.CurvePolygon;
-import org.apache.sis.geometries.Geometries;
 
 
 /**
  * A planar surface whose boundary rings may use any interpolation, not only the linear one that a
- * {@link org.apache.sis.geometries.Polygon} is restricted to.
+ * {@link org.apache.sis.geometries.surface.Polygon} is restricted to.
  *
  * @author Johann Sorel (Geomatys)
  */

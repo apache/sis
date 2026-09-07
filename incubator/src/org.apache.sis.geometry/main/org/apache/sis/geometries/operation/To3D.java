@@ -19,22 +19,22 @@ package org.apache.sis.geometries.operation;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Tuple;
-import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.Cursor;
-import org.apache.sis.maths.Array;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Cursor;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.maths.Tuple;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.geometries.DataPoints;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.util.FactoryException;
 
 
 /**

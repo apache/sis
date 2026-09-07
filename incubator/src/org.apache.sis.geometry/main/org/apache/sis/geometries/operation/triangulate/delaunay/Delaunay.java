@@ -23,19 +23,19 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opengis.geometry.Envelope;
+import org.apache.sis.geometries.index.KdTree;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
-import org.apache.sis.geometries.index.KdTree;
-import org.apache.sis.maths.Maths;
-import org.apache.sis.maths.Tuple;
-import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.Vector;
-import org.apache.sis.maths.Vectors;
-import org.apache.sis.maths.Array;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Maths;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vectors;
 import org.apache.sis.util.ArgumentChecks;
+import org.opengis.geometry.Envelope;
 
 
 /**

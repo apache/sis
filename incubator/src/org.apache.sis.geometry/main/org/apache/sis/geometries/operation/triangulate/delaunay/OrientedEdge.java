@@ -17,16 +17,16 @@
 package org.apache.sis.geometries.operation.triangulate.delaunay;
 
 import java.util.Iterator;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
-import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.Tuple;
-import org.apache.sis.geometries.DataPoints;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

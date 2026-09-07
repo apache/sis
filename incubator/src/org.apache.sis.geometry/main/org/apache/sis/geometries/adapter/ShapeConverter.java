@@ -17,23 +17,23 @@
 package org.apache.sis.geometries.adapter;
 
 import java.awt.Shape;
-import java.util.List;
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.awt.geom.PathIterator;
 import java.awt.geom.IllegalPathStateException;
+import java.awt.geom.PathIterator;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Surface;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.referencing.internal.shared.AbstractShape;
-import org.apache.sis.geometries.DataPoints;
 
 
 /**

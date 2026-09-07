@@ -139,7 +139,7 @@ public final class GML3WriterTest extends TestCase {
     }
 
     /**
-     * Tests writing a {@link org.apache.sis.geometries.MultiLineString} as a
+     * Tests writing a {@link org.apache.sis.geometries.curve.MultiLineString} as a
      * {@code <gml:MultiCurve>} element (the non-deprecated GML 3.2 spelling).
      */
     @Test
@@ -151,7 +151,7 @@ public final class GML3WriterTest extends TestCase {
     }
 
     /**
-     * Tests writing a {@link org.apache.sis.geometries.MultiPolygon} as a
+     * Tests writing a {@link org.apache.sis.geometries.surface.MultiPolygon} as a
      * {@code <gml:MultiSurface>} element (the non-deprecated GML 3.2 spelling).
      */
     @Test

@@ -20,20 +20,20 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
-import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.MultiLineString;
-import org.apache.sis.geometries.MultiPoint;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.Polygon;
-import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.Array;
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.curve.MultiLineString;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.operation.triangulate.EarClipping;
-import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.point.MultiPoint;
+import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.NDArrays;
 
 
 /**

@@ -16,9 +16,17 @@
  */
 package org.apache.sis.geometries;
 
-import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.curve.LineString;
-
+import org.apache.sis.geometries.curve.LinearRing;
+import org.apache.sis.geometries.curve.MultiCurve;
+import org.apache.sis.geometries.curve.MultiLineString;
+import org.apache.sis.geometries.point.MultiPoint;
+import org.apache.sis.geometries.surface.MultiPolygon;
+import org.apache.sis.geometries.surface.MultiSurface;
+import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.geometries.surface.PolyhedralSurface;
+import org.apache.sis.geometries.surface.TIN;
+import org.apache.sis.geometries.surface.Triangle;
 
 /**
  *

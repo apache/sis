@@ -34,9 +34,9 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.MultiPolygon;
+import org.apache.sis.geometries.surface.MultiPolygon;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.Polygon;
+import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector2D;
 

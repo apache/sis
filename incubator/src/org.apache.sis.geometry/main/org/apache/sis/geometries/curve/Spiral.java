@@ -17,11 +17,10 @@
 package org.apache.sis.geometries.curve;
 
 import java.util.List;
+import org.apache.sis.geometries.Curve;
+import org.apache.sis.maths.Vector;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
-import org.apache.sis.geometries.Curve;
-import org.apache.sis.geometries.polynomials.RealFunction;
-import org.apache.sis.maths.Vector;
 
 
 /**

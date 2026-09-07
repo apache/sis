@@ -17,9 +17,9 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
-import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.curve.LinearRing;
+import org.apache.sis.geometries.surface.Triangle;
 
 
 /**

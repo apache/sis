@@ -23,12 +23,12 @@ import javax.measure.quantity.Area;
 import javax.measure.quantity.Volume;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.Knot;
+import org.apache.sis.geometries.SolidInterpolation;
+import org.apache.sis.geometries.solid.Polyhedron;
+import org.apache.sis.geometries.surface.MultiPolygon;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.MultiPolygon;
-import org.apache.sis.geometries.Polyhedron;
-import org.apache.sis.geometries.SolidInterpolation;
-import org.opengis.geometry.DirectPosition;
 
 
 /**

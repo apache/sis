@@ -17,7 +17,7 @@
 package org.apache.sis.geometries.spherical;
 
 import java.util.List;
-import org.apache.sis.geometries.Sphere;
+import org.apache.sis.geometries.solid.Sphere;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;

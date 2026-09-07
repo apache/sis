@@ -23,33 +23,33 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import org.apache.sis.geometries.BBox;
-import org.apache.sis.geometries.CompoundCurve;
 import org.apache.sis.geometries.Curve;
-import org.apache.sis.geometries.CurvePolygon;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Empty;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
-import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.MultiCurve;
-import org.apache.sis.geometries.MultiPoint;
-import org.apache.sis.geometries.MultiPolygon;
-import org.apache.sis.geometries.MultiPolyhedron;
-import org.apache.sis.geometries.MultiSurface;
 import org.apache.sis.geometries.Orientable;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.Polygon;
-import org.apache.sis.geometries.PolyhedralSurface;
-import org.apache.sis.geometries.Polyhedron;
 import org.apache.sis.geometries.Surface;
-import org.apache.sis.geometries.TIN;
 import org.apache.sis.geometries.curve.ArcByBulge;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
 import org.apache.sis.geometries.curve.CircularString;
+import org.apache.sis.geometries.curve.CompoundCurve;
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.curve.LinearRing;
+import org.apache.sis.geometries.curve.MultiCurve;
+import org.apache.sis.geometries.point.MultiPoint;
+import org.apache.sis.geometries.solid.MultiPolyhedron;
+import org.apache.sis.geometries.solid.Polyhedron;
+import org.apache.sis.geometries.surface.CurvePolygon;
+import org.apache.sis.geometries.surface.MultiPolygon;
+import org.apache.sis.geometries.surface.MultiSurface;
+import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.geometries.surface.PolyhedralSurface;
+import org.apache.sis.geometries.surface.TIN;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
-import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -191,7 +191,7 @@ public final class GML3Writer extends AbstractGMLWriter {
     /**
      * Writes a {@code <gml:MultiCurve>} element, with its {@code curveMember} children.
      * This is the non-deprecated GML 3.2 spelling; the legacy {@code MultiLineString} is never
-     * emitted, even for a {@link org.apache.sis.geometries.MultiLineString}.
+     * emitted, even for a {@link org.apache.sis.geometries.curve.MultiLineString}.
      */
     @Override
     protected void writeMultiCurve(final MultiCurve<?> g, final String srsName, final boolean declareNamespace)
@@ -203,7 +203,7 @@ public final class GML3Writer extends AbstractGMLWriter {
     /**
      * Writes a {@code <gml:MultiSurface>} element, with its {@code surfaceMember} children.
      * This is the non-deprecated GML 3.2 spelling; the legacy {@code MultiPolygon} is never
-     * emitted, even for a {@link org.apache.sis.geometries.MultiPolygon}.
+     * emitted, even for a {@link org.apache.sis.geometries.surface.MultiPolygon}.
      */
     @Override
     protected void writeMultiSurface(final MultiSurface<?> g, final String srsName, final boolean declareNamespace)

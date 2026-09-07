@@ -16,14 +16,14 @@
  */
 package org.apache.sis.geometries;
 
-import org.apache.sis.geometries.curve.LineString;
 import java.util.List;
 import javax.measure.quantity.Length;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Vector;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
-import org.apache.sis.maths.Vector;
 
 
 /**

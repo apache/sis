@@ -22,23 +22,23 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Geometries;
-import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.MultiLineString;
-import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PreparedTIN;
-import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.curve.MultiLineString;
 import org.apache.sis.geometries.internal.shared.DefaultDataPoints;
-import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
-import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.maths.Tuple;
-import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.Cursor;
+import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
+import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
+import org.apache.sis.geometries.surface.PreparedTIN;
+import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Cursor;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.Tuple;
+import org.opengis.referencing.operation.TransformException;
 
 
 /**

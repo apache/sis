@@ -16,30 +16,28 @@
  */
 package org.apache.sis.geometries;
 
-import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.curve.LineString;
 import java.awt.Shape;
 import java.util.Iterator;
 import java.util.OptionalInt;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.CoordinateSequence;
-import org.locationtech.jts.geom.Envelope;
-import org.opengis.util.FactoryException;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.filter.SpatialOperatorName;
-import org.opengis.filter.DistanceOperatorName;
 import org.apache.sis.filter.sqlmm.SQLMM;
-import org.apache.sis.maths.Tuple;
-import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
+import org.apache.sis.geometries.adapter.JTSAdapter;
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.curve.LinearRing;
+import org.apache.sis.geometries.curve.MultiLineString;
+import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.util.Debug;
+import org.opengis.filter.DistanceOperatorName;
+import org.opengis.filter.SpatialOperatorName;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
 
 
 /**
@@ -334,136 +332,6 @@ public final class Wrapper extends GeometryWrapper {
      */
     public static org.locationtech.jts.geom.Geometry asJTS(Geometry geometry, org.locationtech.jts.geom.GeometryFactory gf) {
         if (gf == null) gf = new org.locationtech.jts.geom.GeometryFactory();
-        final org.locationtech.jts.geom.Geometry jts;
-
-        if (geometry instanceof Point cdt){
-            jts = gf.createPoint(new JTSSequence(cdt.asDataPoint()));
-        } else if (geometry instanceof LinearRing cdt) {
-            jts = gf.createLinearRing(new JTSSequence(cdt.getDataPoints()));
-        } else if (geometry instanceof LineString cdt) {
-            jts = gf.createLineString(new JTSSequence(cdt.getDataPoints()));
-        } else if (geometry instanceof Polygon cdt) {
-            final org.locationtech.jts.geom.LinearRing exterior = (org.locationtech.jts.geom.LinearRing) asJTS(cdt.getExteriorRing(), gf);
-            final org.locationtech.jts.geom.LinearRing[] inners = new org.locationtech.jts.geom.LinearRing[cdt.getNumInteriorRing()];
-            for (int i = 0; i < inners.length; i++) {
-                inners[i] = (org.locationtech.jts.geom.LinearRing) asJTS(cdt.getInteriorRingN(i), gf);
-            }
-            jts = gf.createPolygon(exterior, inners);
-        } else if (geometry instanceof MultiPoint<?> cdt) {
-            jts = gf.createMultiPoint(new JTSSequence(cdt.asDataPoints()));
-        } else if (geometry instanceof MultiLineString cdt) {
-            final org.locationtech.jts.geom.LineString[] children = new org.locationtech.jts.geom.LineString[cdt.getNumGeometries()];
-            for (int i = 0; i < children.length; i++) {
-                children[i] = (org.locationtech.jts.geom.LineString) asJTS(cdt.getGeometryN(i), gf);
-            }
-            jts = gf.createMultiLineString(children);
-        } else if (geometry instanceof MultiPolygon cdt) {
-            final org.locationtech.jts.geom.Polygon[] children = new org.locationtech.jts.geom.Polygon[cdt.getNumGeometries()];
-            for (int i = 0; i < children.length; i++) {
-                children[i] = (org.locationtech.jts.geom.Polygon) asJTS(cdt.getGeometryN(i), gf);
-            }
-            jts = gf.createMultiPolygon(children);
-        } else if (geometry instanceof MultiPolygon cdt) {
-            final org.locationtech.jts.geom.Geometry[] children = new org.locationtech.jts.geom.Geometry[cdt.getNumGeometries()];
-            for (int i = 0; i < children.length; i++) {
-                children[i] = (org.locationtech.jts.geom.Geometry) asJTS(cdt.getGeometryN(i), gf);
-            }
-            jts = gf.createGeometryCollection(children);
-        } else {
-            throw new UnsupportedOperationException("Geometry type " + geometry.getClass().getName() + " has no match in JTS library");
-        }
-
-        jts.setUserData(geometry.getCoordinateReferenceSystem());
-        return jts;
+        return JTSAdapter.asJTS(geometry, false, gf);
     }
-    /**
-     * Decorate a DataPoint as a JTS CoordinateSequence
-     */
-    private static class JTSSequence implements CoordinateSequence {
-
-        private final DataPoints ps;
-
-        public JTSSequence(DataPoints ps) {
-            this.ps = ps;
-        }
-
-        @Override
-        public int getDimension() {
-            return ps.getDimension();
-        }
-
-        @Override
-        public Coordinate getCoordinate(int i) {
-            return getCoordinateCopy(i);
-        }
-
-        @Override
-        public Coordinate getCoordinateCopy(int i) {
-            final Coordinate crd = createCoordinate();
-            getCoordinate(i, crd);
-            return crd;
-        }
-
-        @Override
-        public void getCoordinate(int idx, Coordinate crdnt) {
-            Tuple tuple = ps.getPosition(idx);
-            for (int i = 0; i < tuple.getDimension(); i++) {
-                crdnt.setOrdinate(i, tuple.get(i));
-            }
-        }
-
-        @Override
-        public double getX(int i) {
-            return ps.getPosition(i).get(0);
-        }
-
-        @Override
-        public double getY(int i) {
-            return ps.getPosition(i).get(1);
-        }
-
-        @Override
-        public double getOrdinate(int i, int i1) {
-            return ps.getPosition(i).get(i1);
-        }
-
-        @Override
-        public int size() {
-            return ps.size();
-        }
-
-        @Override
-        public void setOrdinate(int i, int i1, double d) {
-            Tuple position = ps.getPosition(i);
-            position.set(i1, d);
-            ps.setPosition(i, position);
-        }
-
-        @Override
-        public Coordinate[] toCoordinateArray() {
-            final Coordinate[] coords = new Coordinate[ps.size()];
-            for (int i = 0;  i < coords.length; i++) {
-                coords[i] = getCoordinateCopy(i);
-            }
-            return coords;
-        }
-
-        @Override
-        public Envelope expandEnvelope(Envelope envlp) {
-            final org.opengis.geometry.Envelope env = ps.getEnvelope();
-            envlp.expandToInclude(new Envelope(env.getMinimum(0), env.getMaximum(0), env.getMinimum(1), env.getMaximum(1)));
-            return envlp;
-        }
-
-        @Override
-        public CoordinateSequence copy() {
-            final DataPoints cp = new ArrayDataPoints(ps.getAttributeArray(AttributesType.ATT_POSITION));
-            return new JTSSequence(cp);
-        }
-
-        public Object clone(){
-            return copy();
-        }
-    }
-
 }

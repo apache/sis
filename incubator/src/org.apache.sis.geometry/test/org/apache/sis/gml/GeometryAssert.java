@@ -23,7 +23,7 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.Polygon;
+import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.referencing.CRS;
 
 // Test dependencies

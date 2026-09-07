@@ -18,12 +18,12 @@ package org.apache.sis.geometries;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vectors;
 import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.maths.Tuple;
-import org.apache.sis.maths.Vectors;
-import org.apache.sis.geometry.GeneralEnvelope;
 
 
 /**
