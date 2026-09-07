@@ -27,6 +27,7 @@ import org.apache.sis.geometries.curve.ArcByBulge;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
 import org.apache.sis.geometries.conics.Circle;
 import org.apache.sis.geometries.conics.CircularString;
+import org.apache.sis.geometries.curve.Geodesic;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Array;
@@ -38,6 +39,7 @@ import org.apache.sis.geometries.internal.shared.DefaultCircularString;
 import org.apache.sis.geometries.internal.shared.DefaultCompoundCurve;
 import org.apache.sis.geometries.internal.shared.DefaultCurvePolygon;
 import org.apache.sis.geometries.internal.shared.DefaultEmpty;
+import org.apache.sis.geometries.internal.shared.DefaultGeodesic;
 import org.apache.sis.geometries.internal.shared.DefaultGeometryCollection;
 import org.apache.sis.geometries.internal.shared.DefaultLineString;
 import org.apache.sis.geometries.internal.shared.DefaultLinearRing;
@@ -105,6 +107,10 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
 
     public static LineString createLineString(DataPoints sequence) {
         return new DefaultLineString(sequence);
+    }
+
+    public static Geodesic createGeodesic(DataPoints sequence) {
+        return new DefaultGeodesic(sequence);
     }
 
     public static LinearRing createLinearRing(DataPoints sequence) {

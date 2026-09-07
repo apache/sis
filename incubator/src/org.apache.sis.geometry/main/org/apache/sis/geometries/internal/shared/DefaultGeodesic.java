@@ -14,24 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.geodesics;
+package org.apache.sis.geometries.internal.shared;
 
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
-import org.apache.sis.geometries.Curve;
-import org.apache.sis.geometries.CurveInterpolation;
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.curve.Geodesic;
+import org.opengis.geometry.Envelope;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-@UML(identifier="Geodesic", specification=ISO_19107) // section 7.3.2
-public interface Geodesic extends Curve {
+public class DefaultGeodesic extends AbstractGeometry implements Geodesic {
 
-    @UML(identifier="interpolation", specification=ISO_19107) // section 7.3.2.2
-    @Override
-    public default CurveInterpolation getInterpolation() {
-        return CurveInterpolation.GEODESIC;
+    private final DataPoints points;
+
+    public DefaultGeodesic(DataPoints points) {
+        this.points = points;
     }
+
+    @Override
+    public boolean isEmpty() {
+        return points.isEmpty();
+    }
+
+    @Override
+    public DataPoints getDataPoints() {
+        return points;
+    }
+
+    @Override
+    public Envelope getEnvelope() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }
