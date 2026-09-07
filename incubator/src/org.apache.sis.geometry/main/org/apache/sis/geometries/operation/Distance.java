@@ -18,9 +18,9 @@ package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.operation.ProcessorUtils;
-import org.apache.sis.geometries.math.Maths;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.Vectors;
+import org.apache.sis.maths.Maths;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vectors;
 
 
 /**

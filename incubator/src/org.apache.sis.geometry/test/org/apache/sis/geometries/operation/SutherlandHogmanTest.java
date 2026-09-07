@@ -17,10 +17,10 @@
 package org.apache.sis.geometries.operation;
 
 import java.util.List;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.geometries.math.Vector2D;
-import org.apache.sis.geometries.math.Array;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.Vector2D;
+import org.apache.sis.maths.Array;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;

@@ -29,10 +29,10 @@ import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
-import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.geometries.math.SampleSystem;
-import org.apache.sis.geometries.math.Vector;
-import org.apache.sis.geometries.math.Vectors;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vectors;
 import org.apache.sis.referencing.CRS;
 
 // Test dependencies

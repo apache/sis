@@ -27,9 +27,9 @@ import org.apache.sis.geometries.TIN;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
-import org.apache.sis.geometries.math.SampleSystem;
-import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.geometries.math.Vector3D;
+import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.Vector3D;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;

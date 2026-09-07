@@ -17,8 +17,8 @@
 package org.apache.sis.geometries.spherical;
 
 import org.apache.sis.geometries.Sphere;
-import org.apache.sis.geometries.math.ReadOnly;
-import org.apache.sis.geometries.math.Vector3D;
+import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.Vector3D;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;

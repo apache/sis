@@ -20,11 +20,11 @@ import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Polygon;
-import org.apache.sis.geometries.math.Maths;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.Vectors;
-import org.apache.sis.geometries.math.Cursor;
-import org.apache.sis.geometries.math.Array;
+import org.apache.sis.maths.Maths;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vectors;
+import org.apache.sis.maths.Cursor;
+import org.apache.sis.maths.Array;
 
 
 /**

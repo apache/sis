@@ -17,9 +17,9 @@
 package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.math.Array;
-import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.geometries.math.SampleSystem;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.referencing.CommonCRS;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;

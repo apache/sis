@@ -24,12 +24,12 @@ import org.opengis.annotation.UML;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
-import org.apache.sis.geometries.math.Maths;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.Vector;
-import org.apache.sis.geometries.math.Vector2D;
-import org.apache.sis.geometries.math.Vector3D;
-import org.apache.sis.geometries.math.Vectors;
+import org.apache.sis.maths.Maths;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vector2D;
+import org.apache.sis.maths.Vector3D;
+import org.apache.sis.maths.Vectors;
 
 
 /**

@@ -18,9 +18,9 @@ package org.apache.sis.geometries.operation.simplify.greedyinsert;
 
 import java.util.function.BiFunction;
 import org.apache.sis.geometries.Triangle;
-import org.apache.sis.geometries.math.Maths;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.Vector;
+import org.apache.sis.maths.Maths;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.geometries.DataPoints;
 
 

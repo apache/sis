@@ -22,9 +22,9 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import org.apache.sis.geometries.math.DataType;
-import org.apache.sis.geometries.math.SampleSystem;
-import org.apache.sis.geometries.math.Tuple;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.maths.Tuple;
 
 
 /**

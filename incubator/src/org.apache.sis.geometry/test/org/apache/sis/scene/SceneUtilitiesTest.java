@@ -16,8 +16,8 @@
  */
 package org.apache.sis.scene;
 
-import org.apache.sis.geometries.math.Similarity3D;
-import org.apache.sis.geometries.math.Vector3D;
+import org.apache.sis.maths.Similarity3D;
+import org.apache.sis.maths.Vector3D;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;

@@ -27,7 +27,7 @@ import com.google.common.geometry.S2Point;
 import com.google.common.geometry.S2Polygon;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.extent.BoundingPolygon;
-import org.apache.sis.geometries.math.SampleSystem;
+import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.dggs.RefinementLevel;

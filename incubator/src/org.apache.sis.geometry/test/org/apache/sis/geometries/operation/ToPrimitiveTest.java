@@ -28,8 +28,8 @@ import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
-import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.geometries.math.Array;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.Array;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies

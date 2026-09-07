@@ -24,8 +24,8 @@ import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.math.Maths;
-import org.apache.sis.geometries.math.Tuple;
+import org.apache.sis.maths.Maths;
+import org.apache.sis.maths.Tuple;
 import org.apache.sis.geometries.DataPoints;
 
 

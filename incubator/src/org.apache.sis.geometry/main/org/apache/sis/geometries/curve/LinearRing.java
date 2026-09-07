@@ -18,7 +18,7 @@ package org.apache.sis.geometries.curve;
 
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
-import org.apache.sis.geometries.math.Tuple;
+import org.apache.sis.maths.Tuple;
 
 
 /**

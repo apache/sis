@@ -20,7 +20,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.math.NDArrays;
+import org.apache.sis.maths.NDArrays;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;

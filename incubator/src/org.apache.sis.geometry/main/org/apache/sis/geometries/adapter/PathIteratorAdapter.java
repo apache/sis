@@ -26,7 +26,7 @@ import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Polygon;
-import org.apache.sis.geometries.math.Tuple;
+import org.apache.sis.maths.Tuple;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.geometries.DataPoints;

@@ -25,8 +25,8 @@ import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Polygon;
-import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.geometries.math.SampleSystem;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.referencing.CRS;
 
 import jakarta.xml.bind.JAXBContext;

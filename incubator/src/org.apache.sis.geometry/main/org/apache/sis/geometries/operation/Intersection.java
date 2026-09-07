@@ -35,10 +35,10 @@ import org.apache.sis.geometries.internal.shared.DefaultDataPoints;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.geometries.math.Cursor;
-import org.apache.sis.geometries.math.Array;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.Cursor;
+import org.apache.sis.maths.Array;
 
 
 /**

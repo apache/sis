@@ -17,7 +17,7 @@
 package org.apache.sis.geometries;
 
 import org.opengis.geometry.Envelope;
-import org.apache.sis.geometries.math.Similarity;
+import org.apache.sis.maths.Similarity;
 
 
 /**

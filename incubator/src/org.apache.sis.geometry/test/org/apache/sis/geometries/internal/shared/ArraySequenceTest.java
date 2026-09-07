@@ -21,11 +21,11 @@ import java.util.Map;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.math.SampleSystem;
-import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.geometries.math.Vector2D;
-import org.apache.sis.geometries.math.Vector3D;
-import org.apache.sis.geometries.math.Array;
+import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.Vector2D;
+import org.apache.sis.maths.Vector3D;
+import org.apache.sis.maths.Array;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies

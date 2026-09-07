@@ -25,7 +25,7 @@ import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.Orientable;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Primitive;
-import org.apache.sis.geometries.math.Array;
+import org.apache.sis.maths.Array;
 import org.apache.sis.geometries.DataPoints;
 
 

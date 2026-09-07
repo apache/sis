@@ -16,8 +16,8 @@
  */
 package org.apache.sis.geometries.operation.simplify.greedyinsert;
 
-import org.apache.sis.geometries.math.Maths;
-import org.apache.sis.geometries.math.Tuple;
+import org.apache.sis.maths.Maths;
+import org.apache.sis.maths.Tuple;
 
 
 /**

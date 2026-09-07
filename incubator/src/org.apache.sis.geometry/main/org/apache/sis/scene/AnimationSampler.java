@@ -17,7 +17,7 @@
 package org.apache.sis.scene;
 
 import java.util.Objects;
-import org.apache.sis.geometries.math.Array;
+import org.apache.sis.maths.Array;
 
 
 /**

@@ -37,8 +37,8 @@ import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.MultiPolygon;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Polygon;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.Vector2D;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector2D;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

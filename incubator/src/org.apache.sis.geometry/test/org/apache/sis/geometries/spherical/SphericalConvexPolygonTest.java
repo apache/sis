@@ -18,10 +18,10 @@ package org.apache.sis.geometries.spherical;
 
 import java.util.List;
 import org.apache.sis.geometries.Sphere;
-import org.apache.sis.geometries.math.Array;
-import org.apache.sis.geometries.math.DataType;
-import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.geometries.math.Vector3D;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.Vector3D;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;

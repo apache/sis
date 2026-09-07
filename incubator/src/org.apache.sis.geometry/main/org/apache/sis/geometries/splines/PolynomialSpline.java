@@ -18,7 +18,7 @@ package org.apache.sis.geometries.splines;
 
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
-import org.apache.sis.geometries.math.Vector;
+import org.apache.sis.maths.Vector;
 
 
 /**

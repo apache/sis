@@ -20,10 +20,10 @@ import java.util.Objects;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.math.SampleSystem;
-import org.apache.sis.geometries.math.DataType;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.NDArrays;
+import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.NDArrays;
 import org.apache.sis.geometries.DataPoints;
 
 

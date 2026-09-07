@@ -21,8 +21,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.sis.geometries.math.SampleSystem;
-import org.apache.sis.geometries.math.DataType;
+import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.maths.DataType;
 
 
 /**

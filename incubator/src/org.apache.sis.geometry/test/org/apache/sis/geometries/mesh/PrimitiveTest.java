@@ -19,7 +19,7 @@ package org.apache.sis.geometries.mesh;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.sis.geometries.Geometries;
-import org.apache.sis.geometries.math.NDArrays;
+import org.apache.sis.maths.NDArrays;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;

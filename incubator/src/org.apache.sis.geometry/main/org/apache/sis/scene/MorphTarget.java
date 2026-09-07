@@ -20,9 +20,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import org.apache.sis.geometries.AttributesType;
-import org.apache.sis.geometries.math.Array;
-import org.apache.sis.geometries.math.DataType;
-import org.apache.sis.geometries.math.SampleSystem;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.SampleSystem;
 
 
 /**

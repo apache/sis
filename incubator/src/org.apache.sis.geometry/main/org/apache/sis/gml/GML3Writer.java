@@ -46,7 +46,7 @@ import org.apache.sis.geometries.TIN;
 import org.apache.sis.geometries.curve.ArcByBulge;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
 import org.apache.sis.geometries.curve.CircularString;
-import org.apache.sis.geometries.math.Tuple;
+import org.apache.sis.maths.Tuple;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.geometries.DataPoints;

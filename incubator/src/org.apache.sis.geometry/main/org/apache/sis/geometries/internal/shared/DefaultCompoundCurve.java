@@ -21,7 +21,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.CompoundCurve;
 import org.apache.sis.geometries.Curve;
-import org.apache.sis.geometries.math.Array;
+import org.apache.sis.maths.Array;
 import org.apache.sis.geometries.DataPoints;
 
 

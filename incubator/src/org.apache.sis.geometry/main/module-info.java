@@ -33,7 +33,7 @@ module org.apache.sis.geometry {
     exports org.apache.sis.geometries;
     exports org.apache.sis.geometries.curve;
     exports org.apache.sis.geometries.operation;
-    exports org.apache.sis.geometries.math;
+    exports org.apache.sis.maths;
     exports org.apache.sis.scene;
     exports org.apache.sis.scene.light;
     exports org.apache.sis.scene.material;

@@ -17,10 +17,10 @@
 package org.apache.sis.geometries.polyhedron;
 
 import org.apache.sis.geometries.Polygon;
-import org.apache.sis.geometries.math.Array;
-import org.apache.sis.geometries.math.ArrayFactoryJava;
-import org.apache.sis.geometries.math.DataType;
-import org.apache.sis.geometries.math.ReadOnly;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.ArrayFactoryJava;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.ReadOnly;
 
 
 /**

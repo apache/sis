@@ -31,7 +31,7 @@ import org.apache.sis.geometries.MultiSurface;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.geometries.Surface;
-import org.apache.sis.geometries.math.Tuple;
+import org.apache.sis.maths.Tuple;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
 

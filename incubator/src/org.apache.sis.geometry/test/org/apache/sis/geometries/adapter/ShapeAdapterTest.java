@@ -24,8 +24,8 @@ import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
-import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.geometries.math.SampleSystem;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.geometry.wrapper.j2d.DecimatedShape;
 
 // Test dependencies

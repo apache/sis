@@ -32,7 +32,7 @@ import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import static org.apache.sis.geometries.operation.spatialanalysis2d.ISOLine.interpolateToArray;
-import org.apache.sis.geometries.math.Tuple;
+import org.apache.sis.maths.Tuple;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.geometries.DataPoints;

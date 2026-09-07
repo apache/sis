@@ -16,7 +16,7 @@
  */
 package org.apache.sis.geometries.operation;
 
-import org.apache.sis.geometries.math.Maths;
+import org.apache.sis.maths.Maths;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;

@@ -29,9 +29,9 @@ import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
-import org.apache.sis.geometries.math.Array;
-import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.geometries.math.SampleSystem;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.referencing.internal.shared.AbstractShape;
 import org.apache.sis.geometries.DataPoints;
 

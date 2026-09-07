@@ -28,7 +28,7 @@ import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.operation.OperationException;
-import org.apache.sis.geometries.math.Tuple;
+import org.apache.sis.maths.Tuple;
 import org.apache.sis.referencing.internal.shared.ShapeUtilities;
 import org.apache.sis.geometries.DataPoints;
 

@@ -18,9 +18,9 @@ package org.apache.sis.gml;
 
 import java.util.Arrays;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.math.DataType;
-import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.geometries.math.SampleSystem;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
 
@@ -37,7 +37,7 @@ import org.apache.sis.geometries.DataPoints;
  * ordinates, which is the layout that {@link NDArrays#of(SampleSystem, double...)} expects. The
  * tuple width is <em>not</em> known in advance: it is fixed by the first tuple appended and then
  * enforced for every subsequent one, because an Apache SIS
- * {@link org.apache.sis.geometries.math.Array} is strictly rectangular — there is no per-tuple
+ * {@link org.apache.sis.maths.Array} is strictly rectangular — there is no per-tuple
  * width, and no convention by which a missing ordinate could be marked absent. A GML coordinate
  * list mixing 2-D and 3-D tuples is therefore rejected rather than padded: padding with {@code 0}
  * would invent coordinates, and padding with {@link Double#NaN} would silently poison every

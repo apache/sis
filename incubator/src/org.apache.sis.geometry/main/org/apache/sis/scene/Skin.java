@@ -18,7 +18,7 @@ package org.apache.sis.scene;
 
 import java.util.List;
 import java.util.Objects;
-import org.apache.sis.geometries.math.Matrix4D;
+import org.apache.sis.maths.Matrix4D;
 
 
 /**

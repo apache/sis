@@ -21,7 +21,7 @@ import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometries.Bearing;
-import org.apache.sis.geometries.math.Vector;
+import org.apache.sis.maths.Vector;
 
 
 /**

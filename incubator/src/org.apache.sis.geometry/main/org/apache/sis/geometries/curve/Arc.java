@@ -17,10 +17,10 @@
 package org.apache.sis.geometries.curve;
 
 import java.util.List;
-import org.apache.sis.geometries.math.Array;
+import org.apache.sis.maths.Array;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
-import org.apache.sis.geometries.math.Vector;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.geometries.DataPoints;
 
 

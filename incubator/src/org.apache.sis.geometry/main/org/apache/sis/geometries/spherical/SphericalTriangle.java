@@ -17,8 +17,8 @@
 package org.apache.sis.geometries.spherical;
 
 import org.apache.sis.geometries.Sphere;
-import org.apache.sis.geometries.math.Maths;
-import org.apache.sis.geometries.math.ReadOnly;
+import org.apache.sis.maths.Maths;
+import org.apache.sis.maths.ReadOnly;
 
 
 /**
