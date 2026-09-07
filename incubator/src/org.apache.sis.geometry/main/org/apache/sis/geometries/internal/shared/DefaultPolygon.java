@@ -22,7 +22,7 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.Geometries;
-import org.apache.sis.geometries.LinearRing;
+import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.Polygon;
 import org.locationtech.jts.geom.GeometryFactory;
 

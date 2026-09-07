@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.conics;
+package org.apache.sis.geometries.curve;
 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;

@@ -14,28 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries;
+package org.apache.sis.geometries.curve;
 
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
-import org.apache.sis.geometries.Curve;
-import org.apache.sis.geometries.CurveInterpolation;
-import org.apache.sis.geometries.Bearing;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-@UML(identifier="Rhumb", specification=ISO_19107) // section 7.5.1
-public interface Rhumb extends Curve {
+@UML(identifier="Circle", specification=ISO_19107) // section 7.9.4
+public interface Circle extends Arc{
 
-    @UML(identifier="interpolation", specification=ISO_19107) // section 7.5.2.1
-    @Override
-    public default CurveInterpolation getInterpolation() {
-        return CurveInterpolation.RHUMB;
-    }
-
-    //TODO in the UML but not in the spec
-    Bearing getBearing();
 }

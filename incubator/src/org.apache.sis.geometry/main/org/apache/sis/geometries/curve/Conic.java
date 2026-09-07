@@ -14,17 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.spirals;
+package org.apache.sis.geometries.curve;
 
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
+import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.math.Array;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-@UML(identifier="Clothoid", specification=ISO_19107) // section 7.11.3
-public interface Clothoid extends Spiral {
+@UML(identifier="Conic", specification=ISO_19107) // section 7.9.5
+public interface Conic extends Curve {
+
+    @UML(identifier="dataPoints", specification=ISO_19107) // section 7.9.5.2
+    @Override
+    DataPoints getDataPoints();
+    
+    @UML(identifier="controlPoints", specification=ISO_19107) // section 7.9.5.2
+    @Override
+    Array getControlPoints();
+
+    @UML(identifier="isCycle", specification=ISO_19107) // section 7.9.5.2
+    boolean isCycle();
+
 
 }

@@ -26,7 +26,7 @@ import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.LinearRing;
+import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
 import org.apache.sis.geometries.math.NDArrays;

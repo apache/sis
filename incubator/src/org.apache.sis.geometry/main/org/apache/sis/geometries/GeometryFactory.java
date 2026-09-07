@@ -16,6 +16,8 @@
  */
 package org.apache.sis.geometries;
 
+import org.apache.sis.geometries.curve.LinearRing;
+import org.apache.sis.geometries.curve.LineString;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 import java.util.Collections;
@@ -25,8 +27,8 @@ import javax.measure.Unit;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.curve.ArcByBulge;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
-import org.apache.sis.geometries.conics.Circle;
-import org.apache.sis.geometries.conics.CircularString;
+import org.apache.sis.geometries.curve.Circle;
+import org.apache.sis.geometries.curve.CircularString;
 import org.apache.sis.geometries.curve.Geodesic;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.NDArrays;
@@ -59,7 +61,7 @@ import org.apache.sis.geometries.internal.shared.DefaultReversedSurface;
 import org.apache.sis.geometries.internal.shared.DefaultTriangle;
 import org.apache.sis.geometries.internal.shared.DefaultTriangulatedSurface;
 import org.apache.sis.geometries.math.DataType;
-import org.apache.sis.geometries.spirals.Clothoid;
+import org.apache.sis.geometries.curve.Clothoid;
 import org.apache.sis.geometry.wrapper.Capability;
 import org.apache.sis.geometry.wrapper.Dimensions;
 import org.apache.sis.geometry.wrapper.GeometryType;

@@ -23,7 +23,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.LineString;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.Tuple;

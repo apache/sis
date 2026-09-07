@@ -14,25 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.internal.shared;
+package org.apache.sis.geometries.curve;
 
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.MultiLineString;
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultMultiLineString extends DefaultMultiCurve<LineString> implements MultiLineString {
-
-    public DefaultMultiLineString(LineString... geometries) {
-        super(geometries);
-    }
-
-    public DefaultMultiLineString(CoordinateReferenceSystem fallbackCRS, LineString... geometries) {
-        super(fallbackCRS, geometries);
-    }
+@UML(identifier="EllipticArc", specification=ISO_19107) // section 7.9.6
+public interface EllipticArc extends Conic {
 
 }

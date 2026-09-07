@@ -19,7 +19,7 @@ package org.apache.sis.geometries.mesh;
 import java.util.HashSet;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.LineString;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.math.NDArrays;

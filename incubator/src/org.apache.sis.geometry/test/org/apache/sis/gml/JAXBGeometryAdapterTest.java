@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.LinearRing;
+import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.geometries.math.NDArrays;

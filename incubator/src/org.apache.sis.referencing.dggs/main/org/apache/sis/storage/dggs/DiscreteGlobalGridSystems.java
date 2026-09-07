@@ -37,7 +37,7 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
-import org.apache.sis.geometries.LinearRing;
+import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.math.NDArrays;

@@ -25,7 +25,7 @@ import java.awt.geom.IllegalPathStateException;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.LineString;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;

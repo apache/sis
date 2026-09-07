@@ -16,6 +16,8 @@
  */
 package org.apache.sis.geometries.adapter;
 
+import org.apache.sis.geometries.curve.LinearRing;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.*;
 import java.util.ArrayList;
 import java.util.List;

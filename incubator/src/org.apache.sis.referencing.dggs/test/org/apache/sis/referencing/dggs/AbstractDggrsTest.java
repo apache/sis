@@ -32,7 +32,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridOrientation;
-import org.apache.sis.geometries.LinearRing;
+import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.Vector2D;

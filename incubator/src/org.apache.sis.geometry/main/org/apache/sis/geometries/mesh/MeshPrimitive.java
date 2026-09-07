@@ -37,7 +37,7 @@ import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.LineString;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.MultiLineString;
 import org.apache.sis.geometries.MultiPoint;
 import org.apache.sis.geometries.Point;

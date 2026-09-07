@@ -23,7 +23,7 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.AffineTransform;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
-import org.apache.sis.geometries.LineString;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.geometries.math.Tuple;

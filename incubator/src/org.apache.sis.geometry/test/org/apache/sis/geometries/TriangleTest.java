@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Array;
 import org.apache.sis.referencing.CommonCRS;

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.conics;
+package org.apache.sis.geometries.curve;
 
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -24,7 +24,7 @@ import org.opengis.annotation.UML;
  *
  * @author Johann Sorel (Geomatys)
  */
-@UML(identifier="Circle", specification=ISO_19107) // section 7.9.4
-public interface Circle extends Arc{
+@UML(identifier="Clothoid", specification=ISO_19107) // section 7.11.3
+public interface Clothoid extends Spiral {
 
 }

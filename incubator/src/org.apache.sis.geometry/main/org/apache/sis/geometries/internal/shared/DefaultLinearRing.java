@@ -16,7 +16,7 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import org.apache.sis.geometries.LinearRing;
+import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.DataPoints;
 
 

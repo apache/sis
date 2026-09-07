@@ -14,32 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.conics;
+package org.apache.sis.geometries.curve;
 
+import javax.measure.quantity.Length;
+import org.apache.sis.geometries.Bearing;
+import org.apache.sis.geometries.Curve;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
-import org.apache.sis.geometries.Curve;
-import org.apache.sis.geometries.math.Array;
-import org.apache.sis.geometries.DataPoints;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-@UML(identifier="Conic", specification=ISO_19107) // section 7.9.5
-public interface Conic extends Curve {
+@UML(identifier="OffsetCurve", specification=ISO_19107) // section 6.4.20
+public interface OffsetCurve extends Curve{
 
-    @UML(identifier="dataPoints", specification=ISO_19107) // section 7.9.5.2
-    @Override
-    DataPoints getDataPoints();
-    
-    @UML(identifier="controlPoints", specification=ISO_19107) // section 7.9.5.2
-    @Override
-    Array getControlPoints();
+    @UML(identifier="distance", specification=ISO_19107) // section 6.4.20.2
+    Length getDistance();
 
-    @UML(identifier="isCycle", specification=ISO_19107) // section 7.9.5.2
-    boolean isCycle();
+    @UML(identifier="refDirection", specification=ISO_19107) // section 6.4.20.3
+    Bearing getRefDirection();
 
-
+    @UML(identifier="baseCurve", specification=ISO_19107) // section 6.4.20.4
+    Curve getBaseCurve();
 }

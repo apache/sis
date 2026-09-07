@@ -20,7 +20,7 @@ import java.awt.geom.Point2D;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
-import org.apache.sis.geometries.LinearRing;
+import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.GeometryFactory;

@@ -20,7 +20,7 @@ import java.util.Iterator;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
-import org.apache.sis.geometries.LineString;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.mesh.MeshPrimitive;

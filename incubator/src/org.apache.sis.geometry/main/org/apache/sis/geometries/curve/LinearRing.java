@@ -14,35 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.conics;
+package org.apache.sis.geometries.curve;
 
-import java.util.List;
-import org.apache.sis.geometries.math.Array;
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
-import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.math.Tuple;
 
 
 /**
+ * A LinearRing is a LineString that is both closed and simple.
  *
  * @author Johann Sorel (Geomatys)
  */
-@UML(identifier="Arc", specification=ISO_19107) // section 7.9.2
-public interface Arc extends Conic {
+public interface LinearRing extends LineString {
 
-    @UML(identifier="numArc", specification=ISO_19107) // section 7.9.2.2
-    int getNumArc();
+    public static final String TYPE = "LINEARRING";
 
-    @UML(identifier="controlPoints", specification=ISO_19107) // section 7.9.2.3
     @Override
-    Array getControlPoints();
+    public default String getGeometryType() {
+        return TYPE;
+    }
 
-    @UML(identifier="dataPoints", specification=ISO_19107) // section 7.9.2.4
     @Override
-    DataPoints getDataPoints();
-
-    @UML(identifier="radius", specification=ISO_19107) // section 7.9.2.5
-    List<Vector> getRadius();
-
+    default String asText() {
+        final StringBuilder sb = new StringBuilder("LINEARRING (");
+        final DataPoints points = getDataPoints();
+        for (int i = 0, n = points.size() ; i < n; i++) {
+            final Tuple pt = points.getPosition(i);
+            if (i > 0) sb.append(',');
+            AbstractGeometry.toText(sb, pt);
+        }
+        sb.append(')');
+        return sb.toString();
+    }
 }

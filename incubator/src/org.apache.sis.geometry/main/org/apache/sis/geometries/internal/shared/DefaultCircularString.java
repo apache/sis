@@ -16,7 +16,7 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import org.apache.sis.geometries.conics.CircularString;
+import org.apache.sis.geometries.curve.CircularString;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.DataPoints;
 

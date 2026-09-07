@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+import org.apache.sis.geometries.curve.LineString;
 import java.util.List;
 import javax.measure.quantity.Length;
 import org.apache.sis.geometries.math.Array;

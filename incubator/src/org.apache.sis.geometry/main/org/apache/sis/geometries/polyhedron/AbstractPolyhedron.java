@@ -20,7 +20,7 @@ import java.util.List;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.LinearRing;
+import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.MultiPolygon;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.geometries.Polyhedron;

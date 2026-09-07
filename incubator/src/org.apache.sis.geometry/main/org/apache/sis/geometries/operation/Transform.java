@@ -23,7 +23,7 @@ import java.util.Set;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.LinearRing;
+import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.math.SampleSystem;
@@ -95,7 +95,7 @@ public final class Transform {
 
         final LinearRing exterior = transform(p.getExteriorRing(), crs, transform);
 
-        final List<org.apache.sis.geometries.LinearRing> interiors = new ArrayList<>(p.getInteriorRings());
+        final List<org.apache.sis.geometries.curve.LinearRing> interiors = new ArrayList<>(p.getInteriorRings());
         for (int i = 0, n = interiors.size(); i < n; i++) {
             interiors.set(i, transform(interiors.get(i), crs, transform));
         }

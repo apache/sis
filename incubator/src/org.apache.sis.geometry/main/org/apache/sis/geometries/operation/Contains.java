@@ -17,7 +17,7 @@
 package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.AttributesType;
-import org.apache.sis.geometries.LineString;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.geometries.math.Maths;

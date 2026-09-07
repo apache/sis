@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.math.Tuple;
 

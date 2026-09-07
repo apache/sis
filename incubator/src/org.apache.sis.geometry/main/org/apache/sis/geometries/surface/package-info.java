@@ -14,26 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries;
-
-import javax.measure.quantity.Length;
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
-
 
 /**
+ * Package for all Surface subtypes.
  *
- * @author Johann Sorel (Geomatys)
+ * ISO-19107 separate them in different packages which result in packages with one or two classes.
+ * Grouping all types in a single package simplify management and search.
  */
-@UML(identifier="OffsetCurve", specification=ISO_19107) // section 6.4.20
-public interface OffsetCurve extends Curve{
-
-    @UML(identifier="distance", specification=ISO_19107) // section 6.4.20.2
-    Length getDistance();
-
-    @UML(identifier="refDirection", specification=ISO_19107) // section 6.4.20.3
-    Bearing getRefDirection();
-
-    @UML(identifier="baseCurve", specification=ISO_19107) // section 6.4.20.4
-    Curve getBaseCurve();
-}
+package org.apache.sis.geometries.surface;

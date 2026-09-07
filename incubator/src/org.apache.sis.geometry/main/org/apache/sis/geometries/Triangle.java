@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+import org.apache.sis.geometries.curve.LinearRing;
 import java.util.Collections;
 import java.util.List;
 import static org.opengis.annotation.Specification.ISO_19107;

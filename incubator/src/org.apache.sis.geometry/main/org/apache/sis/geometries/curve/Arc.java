@@ -14,17 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.conics;
+package org.apache.sis.geometries.curve;
 
+import java.util.List;
+import org.apache.sis.geometries.math.Array;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
+import org.apache.sis.geometries.math.Vector;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-@UML(identifier="EllipticArc", specification=ISO_19107) // section 7.9.6
-public interface EllipticArc extends Conic {
+@UML(identifier="Arc", specification=ISO_19107) // section 7.9.2
+public interface Arc extends Conic {
+
+    @UML(identifier="numArc", specification=ISO_19107) // section 7.9.2.2
+    int getNumArc();
+
+    @UML(identifier="controlPoints", specification=ISO_19107) // section 7.9.2.3
+    @Override
+    Array getControlPoints();
+
+    @UML(identifier="dataPoints", specification=ISO_19107) // section 7.9.2.4
+    @Override
+    DataPoints getDataPoints();
+
+    @UML(identifier="radius", specification=ISO_19107) // section 7.9.2.5
+    List<Vector> getRadius();
 
 }

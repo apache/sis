@@ -14,29 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.spirals;
-
-import java.util.List;
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
-import org.apache.sis.geometries.Curve;
-import org.apache.sis.geometries.polynomials.RealFunction;
-import org.apache.sis.geometries.math.Vector;
+package org.apache.sis.geometries.curve;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-@UML(identifier="Spiral", specification=ISO_19107) // section 7.11.2
-public interface Spiral extends Curve {
+public interface Ellipse {
 
-    @UML(identifier="curvature", specification=ISO_19107) // section 7.11.2.2
-    RealFunction getCurvature();
-
-    @UML(identifier="torsion", specification=ISO_19107) // section 7.11.2.3
-    RealFunction getTorsion();
-
-    @UML(identifier="startFrame", specification=ISO_19107) // section 7.11.2.4
-    List<Vector> getStartFrame();
 }

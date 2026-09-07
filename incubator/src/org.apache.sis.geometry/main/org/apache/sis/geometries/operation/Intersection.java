@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Geometries;
-import org.apache.sis.geometries.LineString;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.MultiLineString;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PreparedTIN;

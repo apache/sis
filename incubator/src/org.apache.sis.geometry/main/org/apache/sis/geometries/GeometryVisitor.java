@@ -16,6 +16,9 @@
  */
 package org.apache.sis.geometries;
 
+import org.apache.sis.geometries.curve.LinearRing;
+import org.apache.sis.geometries.curve.LineString;
+
 
 /**
  *

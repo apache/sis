@@ -26,7 +26,7 @@ import java.util.Objects;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.LinearRing;
+import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.math.DataType;

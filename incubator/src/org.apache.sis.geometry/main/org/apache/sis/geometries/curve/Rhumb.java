@@ -14,13 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.conics;
+package org.apache.sis.geometries.curve;
+
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
+import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.CurveInterpolation;
+import org.apache.sis.geometries.Bearing;
+import org.apache.sis.geometries.Bearing;
+import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.CurveInterpolation;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public interface ConicArc {
+@UML(identifier="Rhumb", specification=ISO_19107) // section 7.5.1
+public interface Rhumb extends Curve {
 
+    @UML(identifier="interpolation", specification=ISO_19107) // section 7.5.2.1
+    @Override
+    public default CurveInterpolation getInterpolation() {
+        return CurveInterpolation.RHUMB;
+    }
+
+    //TODO in the UML but not in the spec
+    Bearing getBearing();
 }

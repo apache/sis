@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.LineString;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;

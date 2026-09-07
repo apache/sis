@@ -22,7 +22,7 @@ import java.util.Map;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
-import org.apache.sis.geometries.LineString;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.MultiLineString;
 import org.apache.sis.geometries.MultiPoint;
 import org.apache.sis.geometries.Point;
@@ -117,7 +117,7 @@ public final class ToPrimitive {
             }
 
             for (int i = 0, k = 0; i < numGeometries; i++, k += 2) {
-                final org.apache.sis.geometries.LineString line = geometry.getGeometryN(i);
+                final org.apache.sis.geometries.curve.LineString line = geometry.getGeometryN(i);
                 final DataPoints points = line.getDataPoints();
                 for (String name : attributesType.getAttributeNames()) {
                     Array att = primitive.getAttribute(name);

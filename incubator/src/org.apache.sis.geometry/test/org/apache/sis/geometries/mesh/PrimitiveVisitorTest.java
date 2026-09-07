@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Geometries;
-import org.apache.sis.geometries.LineString;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.TIN;
 import org.apache.sis.geometries.Triangle;

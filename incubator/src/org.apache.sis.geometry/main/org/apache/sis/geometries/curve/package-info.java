@@ -14,25 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.internal.shared;
-
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.MultiLineString;
-
 
 /**
+ * Package for all Curve subtypes.
  *
- * @author Johann Sorel (Geomatys)
+ * ISO-19107 separate them in different packages which result in packages with one or two classes.
+ * Grouping all types in a single package simplify management and search.
  */
-public class DefaultMultiLineString extends DefaultMultiCurve<LineString> implements MultiLineString {
-
-    public DefaultMultiLineString(LineString... geometries) {
-        super(geometries);
-    }
-
-    public DefaultMultiLineString(CoordinateReferenceSystem fallbackCRS, LineString... geometries) {
-        super(fallbackCRS, geometries);
-    }
-
-}
+package org.apache.sis.geometries.curve;
