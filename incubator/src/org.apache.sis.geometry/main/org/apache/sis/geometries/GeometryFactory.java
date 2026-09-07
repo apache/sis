@@ -33,6 +33,7 @@ import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.curve.MultiCurve;
 import org.apache.sis.geometries.curve.MultiLineString;
+import org.apache.sis.geometries.curve.Rhumb;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultArcByBulge;
 import org.apache.sis.geometries.internal.shared.DefaultArcByCenterPoint;
@@ -57,6 +58,7 @@ import org.apache.sis.geometries.internal.shared.DefaultPolyhedron;
 import org.apache.sis.geometries.internal.shared.DefaultRawMultiPoint;
 import org.apache.sis.geometries.internal.shared.DefaultReversedCurve;
 import org.apache.sis.geometries.internal.shared.DefaultReversedSurface;
+import org.apache.sis.geometries.internal.shared.DefaultRhumb;
 import org.apache.sis.geometries.internal.shared.DefaultTriangle;
 import org.apache.sis.geometries.internal.shared.DefaultTriangulatedSurface;
 import org.apache.sis.geometries.point.MultiPoint;
@@ -126,6 +128,10 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
 
     public static Geodesic createGeodesic(DataPoints sequence) {
         return new DefaultGeodesic(sequence);
+    }
+
+    public static Rhumb createRhumb(DataPoints sequence) {
+        return new DefaultRhumb(sequence);
     }
 
     public static LinearRing createLinearRing(DataPoints sequence) {
