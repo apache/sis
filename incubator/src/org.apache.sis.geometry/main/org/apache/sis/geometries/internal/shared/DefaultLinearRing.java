@@ -17,7 +17,7 @@
 package org.apache.sis.geometries.internal.shared;
 
 import org.apache.sis.geometries.LinearRing;
-import org.apache.sis.geometries.PointSequence;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -27,7 +27,7 @@ import org.apache.sis.geometries.PointSequence;
  */
 public class DefaultLinearRing extends DefaultLineString implements LinearRing{
 
-    public DefaultLinearRing(PointSequence points) {
+    public DefaultLinearRing(DataPoints points) {
         super(points);
     }
 

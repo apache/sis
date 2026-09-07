@@ -21,28 +21,28 @@ import java.util.List;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
- * Point sequence backed by a list of Point.
+ * Datas points backed by a list of Point.
  * @author Johann Sorel (Geomatys)
  */
-public final class DefaultPointSequence implements PointSequence {
+public final class DefaultDataPoints implements DataPoints {
 
     private final List<Point> points;
 
     /**
      * @param points list will be used directly.
      */
-    public DefaultPointSequence(List<Point> points) {
+    public DefaultDataPoints(List<Point> points) {
         ArgumentChecks.ensureNonEmpty("points", points);
         this.points = points;
     }
 
-    public DefaultPointSequence(Point... points) {
+    public DefaultDataPoints(Point... points) {
         this(Arrays.asList(points));
     }
 

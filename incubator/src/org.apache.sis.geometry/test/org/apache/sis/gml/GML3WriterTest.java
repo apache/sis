@@ -28,7 +28,6 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.LinearRing;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.SampleSystem;
@@ -42,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -76,7 +76,7 @@ public final class GML3WriterTest extends TestCase {
     /**
      * Creates a point sequence in the {@link #wgs84} CRS from a flat list of ordinates.
      */
-    private PointSequence sequence(final double... ordinates) {
+    private DataPoints sequence(final double... ordinates) {
         return GeometryFactory.createSequence(NDArrays.of(SampleSystem.of(wgs84), ordinates));
     }
 

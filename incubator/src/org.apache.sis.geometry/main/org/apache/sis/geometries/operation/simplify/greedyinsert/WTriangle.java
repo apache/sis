@@ -23,13 +23,13 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.LinearRing;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.operation.OperationException;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -39,7 +39,7 @@ import org.apache.sis.geometries.operation.OperationException;
  */
 final class WTriangle extends AbstractGeometry implements Triangle {
 
-    private final LinearRing ring = GeometryFactory.createLinearRing(new PointSequence() {
+    private final LinearRing ring = GeometryFactory.createLinearRing(new DataPoints() {
         @Override
         public CoordinateReferenceSystem getCoordinateReferenceSystem() {
             return p0.getCoordinateReferenceSystem();
@@ -62,7 +62,7 @@ final class WTriangle extends AbstractGeometry implements Triangle {
 
         @Override
         public Point getPoint(final int index) {
-            final PointSequence ps = this;
+            final DataPoints ps = this;
             switch (index) {
                 case 0 :
                 case 1 :

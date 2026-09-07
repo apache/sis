@@ -72,7 +72,7 @@ public interface Triangle extends Polygon {
 
     @Override
     default Envelope getEnvelope() {
-        final PointSequence exterior = getExteriorRing().getDataPoints();
+        final DataPoints exterior = getExteriorRing().getDataPoints();
         final Tuple<?> first = exterior.getPosition(0);
         final BBox env = new BBox(first, first);
         env.add(exterior.getPosition(1));
@@ -83,7 +83,7 @@ public interface Triangle extends Polygon {
 
     @Override
     default double getArea() {
-        final PointSequence points = getExteriorRing().getDataPoints();
+        final DataPoints points = getExteriorRing().getDataPoints();
         final Tuple<?> a = points.getPosition(0);
         final Tuple<?> b = points.getPosition(1);
         final Tuple<?> c = points.getPosition(2);
@@ -101,7 +101,7 @@ public interface Triangle extends Polygon {
      * @return point distance to triangle
      */
     default double distance(Tuple pt) {
-        final PointSequence exterior = getExteriorRing().getDataPoints();
+        final DataPoints exterior = getExteriorRing().getDataPoints();
         final Tuple<?> p0 = exterior.getPosition(0);
         final Tuple<?> p1 = exterior.getPosition(1);
         final Tuple<?> p2 = exterior.getPosition(2);
@@ -214,7 +214,7 @@ public interface Triangle extends Polygon {
 
     @Override
     default String asText() {
-        final PointSequence exterior = getExteriorRing().getDataPoints();
+        final DataPoints exterior = getExteriorRing().getDataPoints();
         final StringBuilder sb = new StringBuilder("TRIANGLE ((");
         AbstractGeometry.toText(sb, exterior.getPosition(0));
         sb.append(',');
@@ -265,7 +265,7 @@ public interface Triangle extends Polygon {
 
         @Override
         public Tuple getPosition() {
-            final PointSequence points = triangle.getExteriorRing().getDataPoints();
+            final DataPoints points = triangle.getExteriorRing().getDataPoints();
             switch (cornerIdx) {
                 case -1 :
                     return interpolate(
@@ -286,7 +286,7 @@ public interface Triangle extends Polygon {
          */
         @Override
         public Tuple getAttribute(String name) {
-            final PointSequence points = triangle.getExteriorRing().getDataPoints();
+            final DataPoints points = triangle.getExteriorRing().getDataPoints();
             switch (cornerIdx) {
                 case -1 :
                     return interpolate(

@@ -24,12 +24,12 @@ import java.util.Objects;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.Array;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -254,12 +254,12 @@ public final class MeshPrimitiveComparator {
     private static boolean isDegenerated(Object candidate) {
         if (candidate instanceof LineString) {
             final LineString cdt = (LineString) candidate;
-            final PointSequence points = cdt.getDataPoints();
+            final DataPoints points = cdt.getDataPoints();
             return points.getPosition(0).equals(points.getPosition(1));
 
         } else if (candidate instanceof Triangle) {
             final Triangle cdt = (Triangle) candidate;
-            final PointSequence points = cdt.getExteriorRing().getDataPoints();
+            final DataPoints points = cdt.getExteriorRing().getDataPoints();
             final Tuple c0 = points.getPosition(0);
             final Tuple c1 = points.getPosition(1);
             final Tuple c2 = points.getPosition(2);

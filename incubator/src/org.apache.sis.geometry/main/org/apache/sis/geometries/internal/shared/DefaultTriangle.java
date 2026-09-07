@@ -18,8 +18,8 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
 import org.apache.sis.geometries.LinearRing;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Triangle;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -34,7 +34,7 @@ public class DefaultTriangle extends DefaultPolygon implements Triangle {
      */
     public DefaultTriangle(LinearRing exterior) {
         super(exterior);
-        final PointSequence points = exterior.getDataPoints();
+        final DataPoints points = exterior.getDataPoints();
         final int size = points.size();
         switch (size) {
             case 0: //empty triangle

@@ -21,12 +21,12 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.LineString;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.Tuple;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -35,7 +35,7 @@ import org.apache.sis.geometries.math.Tuple;
  *
  * @author Johann Sorel (Geomatys)
  */
-final class OrientedEdge extends AbstractGeometry implements LineString, PointSequence {
+final class OrientedEdge extends AbstractGeometry implements LineString, DataPoints {
 
     /**
      * Structure is shared by the two opposite directional edges.
@@ -181,7 +181,7 @@ final class OrientedEdge extends AbstractGeometry implements LineString, PointSe
     }
 
     @Override
-    public PointSequence getDataPoints() {
+    public DataPoints getDataPoints() {
         return this;
     }
 
@@ -197,7 +197,7 @@ final class OrientedEdge extends AbstractGeometry implements LineString, PointSe
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // PointSequence ///////////////////////////////////////////////////////////
+    // DataPoint ///////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
 
     @Override
@@ -222,7 +222,7 @@ final class OrientedEdge extends AbstractGeometry implements LineString, PointSe
      */
     @Override
     public Envelope getEnvelope() {
-        return PointSequence.super.getEnvelope();
+        return DataPoints.super.getEnvelope();
     }
 
     @Override

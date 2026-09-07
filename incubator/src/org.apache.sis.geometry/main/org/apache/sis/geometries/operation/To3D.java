@@ -25,16 +25,16 @@ import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Cursor;
 import org.apache.sis.geometries.math.Array;
-import org.apache.sis.geometries.internal.shared.ArraySequence;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -52,17 +52,17 @@ public final class To3D {
         }
     }
 
-    private static ArraySequence copy(PointSequence ps) {
+    private static ArrayDataPoints copy(DataPoints ps) {
         final Map<String,Array> attributes = new HashMap<>();
         for (String name : ps.getAttributesType().getAttributeNames()) {
             attributes.put(name, ps.getAttributeArray(name).copy());
         }
-        return new ArraySequence(attributes);
+        return new ArrayDataPoints(attributes);
     }
 
-    private static ArraySequence to3d(PointSequence base, CoordinateReferenceSystem crs3d, Consumer<Tuple> Zeditor) {
+    private static ArrayDataPoints to3d(DataPoints base, CoordinateReferenceSystem crs3d, Consumer<Tuple> Zeditor) {
 
-        final ArraySequence ps = copy(base);
+        final ArrayDataPoints ps = copy(base);
 
         if (Zeditor == null) {
             Zeditor = (Tuple t) -> t.set(2, 0.0);
@@ -119,7 +119,7 @@ public final class To3D {
      * Add Z axis to Point.
      */
     public static Point to3D(Point base, CoordinateReferenceSystem crs3d, Consumer<Tuple> zeditor) {
-        final PointSequence copy3d = to3d(base.asPointSequence(), crs3d, zeditor);
+        final DataPoints copy3d = to3d(base.asDataPoint(), crs3d, zeditor);
         return GeometryFactory.createPoint(copy3d);
     }
 
@@ -127,7 +127,7 @@ public final class To3D {
      * Add Z axis to LineString.
      */
     public static LineString to3D(LineString base, CoordinateReferenceSystem crs3d, Consumer<Tuple> zeditor) {
-        final PointSequence copy3d = to3d(base.getDataPoints(), crs3d, zeditor);
+        final DataPoints copy3d = to3d(base.getDataPoints(), crs3d, zeditor);
         return GeometryFactory.createLineString(copy3d);
     }
 

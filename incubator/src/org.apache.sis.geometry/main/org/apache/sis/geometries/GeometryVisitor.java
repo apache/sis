@@ -120,7 +120,7 @@ public class GeometryVisitor {
         }
     }
 
-    public void visit(PointSequence sequence) {
+    public void visit(DataPoints sequence) {
         for (int i = 0, n = sequence.size(); i < n; i++) {
             visit(sequence.getPoint(i));
         }

@@ -31,7 +31,7 @@ import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.math.Vector;
-import org.apache.sis.geometries.internal.shared.ArraySequence;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultArcByBulge;
 import org.apache.sis.geometries.internal.shared.DefaultArcByCenterPoint;
 import org.apache.sis.geometries.internal.shared.DefaultCircularString;
@@ -99,15 +99,15 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
         return new DefaultPoint(ss, position);
     }
 
-    public static Point createPoint(PointSequence sequence) {
+    public static Point createPoint(DataPoints sequence) {
         return new DefaultPoint(sequence);
     }
 
-    public static LineString createLineString(PointSequence sequence) {
+    public static LineString createLineString(DataPoints sequence) {
         return new DefaultLineString(sequence);
     }
 
-    public static LinearRing createLinearRing(PointSequence sequence) {
+    public static LinearRing createLinearRing(DataPoints sequence) {
         return new DefaultLinearRing(sequence);
     }
 
@@ -119,7 +119,7 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
         return new DefaultTriangle(exterior);
     }
 
-    public static MultiPoint createMultiPoint(PointSequence sequence) {
+    public static MultiPoint createMultiPoint(DataPoints sequence) {
         return new DefaultMultiPoint(sequence);
     }
 
@@ -192,7 +192,7 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
         return new DefaultCompoundCurve(crs, curves);
     }
 
-    public static CircularString createCircularString(PointSequence sequence) {
+    public static CircularString createCircularString(DataPoints sequence) {
         return new DefaultCircularString(sequence);
     }
 
@@ -220,7 +220,7 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
      * @param  bulge   distance from the midpoint of the chord to the arc, along {@code normal}.
      * @param  normal  direction the arc bulges towards, perpendicular to the chord.
      */
-    public static ArcByBulge createArcByBulge(PointSequence points, double bulge, Vector<?> normal) {
+    public static ArcByBulge createArcByBulge(DataPoints points, double bulge, Vector<?> normal) {
         return new DefaultArcByBulge(points, bulge, normal);
     }
 
@@ -272,12 +272,12 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
         return new DefaultReversedSurface(base);
     }
 
-    public static PointSequence createSequence(Array positions) {
+    public static DataPoints createSequence(Array positions) {
         return createSequence(Collections.singletonMap(AttributesType.ATT_POSITION, positions));
     }
 
-    public static PointSequence createSequence(Map<String, Array> attributes) {
-        return new ArraySequence(attributes);
+    public static DataPoints createSequence(Map<String, Array> attributes) {
+        return new ArrayDataPoints(attributes);
     }
 
     // ////////////////////////////////////////////////////////////////////////
@@ -362,21 +362,21 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
 
     @Override
     public Point createPoint(boolean isFloat, Dimensions dimensions, DoubleBuffer coordinates) {
-        final ArraySequence points;
+        final ArrayDataPoints points;
 
         if (!dimensions.hasZ) {
             final SampleSystem ss = SampleSystem.ofSize(2);
             if (isFloat) {
-                points = new ArraySequence(NDArrays.of(ss, (float) coordinates.get(0), (float) coordinates.get(1)));
+                points = new ArrayDataPoints(NDArrays.of(ss, (float) coordinates.get(0), (float) coordinates.get(1)));
             } else {
-                points = new ArraySequence(NDArrays.of(ss, coordinates.get(0), coordinates.get(1)));
+                points = new ArrayDataPoints(NDArrays.of(ss, coordinates.get(0), coordinates.get(1)));
             }
         } else {
             final SampleSystem ss = SampleSystem.ofSize(3);
             if (isFloat) {
-                points = new ArraySequence(NDArrays.of(ss, (float) coordinates.get(0), (float) coordinates.get(1), (float) coordinates.get(2)));
+                points = new ArrayDataPoints(NDArrays.of(ss, (float) coordinates.get(0), (float) coordinates.get(1), (float) coordinates.get(2)));
             } else {
-                points = new ArraySequence(NDArrays.of(ss, coordinates.get(0), coordinates.get(1), coordinates.get(2)));
+                points = new ArrayDataPoints(NDArrays.of(ss, coordinates.get(0), coordinates.get(1), coordinates.get(2)));
             }
         }
 

@@ -27,8 +27,7 @@ import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.LinearRing;
-import org.apache.sis.geometries.PointSequence;
-import org.apache.sis.geometries.internal.shared.ArraySequence;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.NDArrays;
@@ -37,6 +36,7 @@ import org.apache.sis.geometry.wrapper.j2d.EmptyShape;
 import org.apache.sis.referencing.internal.shared.AbstractShape;
 import org.apache.sis.referencing.internal.shared.IntervalRectangle;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -154,7 +154,7 @@ public final class ShapeAdapter extends AbstractShape {
             xmax, ymin,
             xmin, ymin
         });
-        final PointSequence ps = new ArraySequence(positions);
+        final DataPoints ps = new ArrayDataPoints(positions);
         final LinearRing ring = GeometryFactory.createLinearRing(ps);
         return GeometryFactory.createPolygon(ring, null);
     }

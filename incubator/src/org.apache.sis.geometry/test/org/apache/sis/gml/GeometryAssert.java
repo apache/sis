@@ -23,7 +23,6 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.referencing.CRS;
 
@@ -32,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -84,7 +84,7 @@ final class GeometryAssert {
 
         if (expected instanceof Point e) {
             final Point a = (Point) actual;
-            assertSequenceEquals(e.asPointSequence(), a.asPointSequence(), tolerance);
+            assertSequenceEquals(e.asDataPoint(), a.asDataPoint(), tolerance);
         } else if (expected instanceof LineString e) {                  // Also covers LinearRing.
             final LineString a = (LineString) actual;
             assertSequenceEquals(e.getDataPoints(), a.getDataPoints(), tolerance);
@@ -111,7 +111,7 @@ final class GeometryAssert {
      * tolerance. Delegates to {@code Array.equals(Array, double)}, which also compares the tuple
      * width and the sample system, and therefore the coordinate reference system.
      */
-    private static void assertSequenceEquals(final PointSequence expected, final PointSequence actual,
+    private static void assertSequenceEquals(final DataPoints expected, final DataPoints actual,
             final double tolerance)
     {
         assertEquals(expected.size(), actual.size(), "number of points");

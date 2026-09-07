@@ -22,8 +22,8 @@ import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.math.Array;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -104,7 +104,7 @@ public interface ArcByCenterPoint extends Curve {
     }
 
     @Override
-    public default PointSequence getDataPoints() {
+    public default DataPoints getDataPoints() {
         throw new UnsupportedOperationException("Not supported yet");
     }
 

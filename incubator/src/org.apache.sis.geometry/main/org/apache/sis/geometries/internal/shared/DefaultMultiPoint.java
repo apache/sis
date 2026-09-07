@@ -21,7 +21,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.MultiPoint;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -30,9 +30,9 @@ import org.apache.sis.geometries.PointSequence;
  */
 public class DefaultMultiPoint extends AbstractGeometry implements MultiPoint<Point> {
 
-    private final PointSequence points;
+    private final DataPoints points;
 
-    public DefaultMultiPoint(PointSequence points) {
+    public DefaultMultiPoint(DataPoints points) {
         this.points = points;
     }
 
@@ -67,7 +67,7 @@ public class DefaultMultiPoint extends AbstractGeometry implements MultiPoint<Po
     }
 
     @Override
-    public PointSequence asDataPoints() {
+    public DataPoints asDataPoints() {
         return points;
     }
 

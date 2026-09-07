@@ -21,9 +21,9 @@ import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.math.Vector;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -55,7 +55,7 @@ public interface ArcByBulge extends Curve {
      * @return the start and end points, never null and always of size 2.
      */
     @Override
-    PointSequence getDataPoints();
+    DataPoints getDataPoints();
 
     /**
      * Returns the distance from the midpoint of the chord joining the two end points to the arc,

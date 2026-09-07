@@ -108,7 +108,7 @@ public interface LineString extends Curve {
 
     @Override
     default Envelope getEnvelope() {
-        PointSequence points = getDataPoints();
+        DataPoints points = getDataPoints();
         if (points.isEmpty()) {
             return null;
         }
@@ -118,7 +118,7 @@ public interface LineString extends Curve {
     @Override
     default String asText() {
         final StringBuilder sb = new StringBuilder("LINESTRING (");
-        final PointSequence points = getDataPoints();
+        final DataPoints points = getDataPoints();
         AbstractGeometry.toText(sb, points);
         sb.append(')');
         return sb.toString();

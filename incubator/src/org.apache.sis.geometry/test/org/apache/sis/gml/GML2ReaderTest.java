@@ -31,7 +31,6 @@ import org.apache.sis.geometries.MultiLineString;
 import org.apache.sis.geometries.MultiPoint;
 import org.apache.sis.geometries.MultiPolygon;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.SampleSystem;
@@ -48,6 +47,7 @@ import static org.apache.sis.gml.GeometryAssert.assertUndefinedCRS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -93,7 +93,7 @@ public final class GML2ReaderTest {
     /**
      * Creates a point sequence in the {@link #wgs84} CRS from a flat list of ordinates.
      */
-    private PointSequence sequence(final double... ordinates) {
+    private DataPoints sequence(final double... ordinates) {
         return GeometryFactory.createSequence(NDArrays.of(SampleSystem.of(wgs84), ordinates));
     }
 

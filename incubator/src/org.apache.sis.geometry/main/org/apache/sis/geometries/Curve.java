@@ -42,14 +42,14 @@ public interface Curve extends Orientable {
      *
      * <p>
      * Difference with ISO-19107 : The type has been changed from
-     * a list of direct positions to a PointSequence.
+     * a list of direct positions to DataPoints.
      * This change allows to accomodate addition attributes like in GLTF or GPU models.
      * </p>
      *
      * @return curve data points.
      */
     @UML(identifier="dataPoint", specification=ISO_19107) // section 6.4.18.3
-    PointSequence getDataPoints();
+    DataPoints getDataPoints();
 
     /**
      * The length of this Curve in its associated spatial reference.
@@ -70,7 +70,7 @@ public interface Curve extends Orientable {
      */
     @UML(identifier="startPoint", specification=ISO_19107) // section 6.4.18.6
     default Point getStartPoint() {
-        final PointSequence points = getDataPoints();
+        final DataPoints points = getDataPoints();
         if (points.isEmpty()) return null;
         return points.getPoint(0);
     }
@@ -83,7 +83,7 @@ public interface Curve extends Orientable {
      */
     @UML(identifier="endPoint", specification=ISO_19107) // section 6.4.18.7
     default Point getEndPoint() {
-        final PointSequence points = getDataPoints();
+        final DataPoints points = getDataPoints();
         if (points.isEmpty()) return null;
         return points.getPoint(points.size()-1);
     }

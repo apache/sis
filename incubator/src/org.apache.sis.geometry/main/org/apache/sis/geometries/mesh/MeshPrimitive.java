@@ -41,7 +41,6 @@ import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.MultiLineString;
 import org.apache.sis.geometries.MultiPoint;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.TIN;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.math.DataType;
@@ -58,6 +57,7 @@ import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -794,7 +794,7 @@ public interface MeshPrimitive extends Geometry {
 
                 @Override
                 protected void visit(Triangle candidate) {
-                    final PointSequence points = candidate.getExteriorRing().getDataPoints();
+                    final DataPoints points = candidate.getExteriorRing().getDataPoints();
                     long idx0 = ((MeshPrimitive.Vertex)points.getPoint(0)).getIndex();
                     long idx1 = ((MeshPrimitive.Vertex)points.getPoint(1)).getIndex();
                     long idx2 = ((MeshPrimitive.Vertex)points.getPoint(2)).getIndex();
@@ -828,7 +828,7 @@ public interface MeshPrimitive extends Geometry {
 
                 @Override
                 protected void visit(LineString candidate) {
-                    final PointSequence points = candidate.getDataPoints();
+                    final DataPoints points = candidate.getDataPoints();
                     long idx0 = ((MeshPrimitive.Vertex)points.getPoint(0)).getIndex();
                     long idx1 = ((MeshPrimitive.Vertex)points.getPoint(1)).getIndex();
                     positions.get(idx0, pos0);
@@ -1051,7 +1051,7 @@ public interface MeshPrimitive extends Geometry {
         }
     }
 
-    public static final class Sequence implements PointSequence {
+    public static final class Sequence implements DataPoints {
 
         private final Abs primitive;
         public final int[] index;
@@ -1159,7 +1159,7 @@ public interface MeshPrimitive extends Geometry {
         }
 
         @Override
-        public PointSequence getDataPoints() {
+        public DataPoints getDataPoints() {
             //select all points, duplicate first point as last
             int[] indices;
             if (index == null) {
@@ -1181,7 +1181,7 @@ public interface MeshPrimitive extends Geometry {
         }
 
         @Override
-        public PointSequence getDataPoints() {
+        public DataPoints getDataPoints() {
             final int[] indices;
             if (index == null) {
                 indices = new int[Math.toIntExact(getPositions().getLength())];

@@ -43,8 +43,8 @@ public interface MultiPoint<T extends Point> extends GeometryCollection<T>{
     /**
      * View this multipoint as a point sequence
      */
-    default PointSequence asDataPoints() {
-        return new PointSequence() {
+    default DataPoints asDataPoints() {
+        return new DataPoints() {
             @Override
             public CoordinateReferenceSystem getCoordinateReferenceSystem() {
                 return MultiPoint.this.getCoordinateReferenceSystem();

@@ -14,32 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.conics;
-
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
-import org.apache.sis.geometries.Curve;
-import org.apache.sis.geometries.math.Array;
-import org.apache.sis.geometries.DataPoints;
-
+package org.apache.sis.geometries;
 
 /**
+ * Defines how geometry attribute should be transformed on the curves, surfaces or in volumes.
+ * This information will be used by geometry transforming operations.
+ *
+ * TODO : experimentale but needed
  *
  * @author Johann Sorel (Geomatys)
  */
-@UML(identifier="Conic", specification=ISO_19107) // section 7.9.5
-public interface Conic extends Curve {
+public enum AttributeTransformation {
 
-    @UML(identifier="dataPoints", specification=ISO_19107) // section 7.9.5.2
-    @Override
-    DataPoints getDataPoints();
-    
-    @UML(identifier="controlPoints", specification=ISO_19107) // section 7.9.5.2
-    @Override
-    Array getControlPoints();
-
-    @UML(identifier="isCycle", specification=ISO_19107) // section 7.9.5.2
-    boolean isCycle();
-
+    /**
+     * Value remains unchanged.
+     */
+    NONE,
+    /**
+     * Any coordinate transformation applies to the attribute values.
+     */
+    TRANSFORM,
+    /**
+     * The value should be rotated using the rotation matrix of the transform at the given point.
+     */
+    ROTATE
 
 }

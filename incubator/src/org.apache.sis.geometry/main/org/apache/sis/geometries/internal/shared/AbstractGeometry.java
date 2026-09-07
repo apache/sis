@@ -19,12 +19,12 @@ package org.apache.sis.geometries.internal.shared;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.Cursor;
 import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -69,7 +69,7 @@ public abstract class AbstractGeometry implements Geometry {
         }
     }
 
-    public static void toText(StringBuilder sb, PointSequence array) {
+    public static void toText(StringBuilder sb, DataPoints array) {
         final int size = array.size();
         if (size == 0) return;
 

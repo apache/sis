@@ -26,14 +26,14 @@ import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.MultiLineString;
 import org.apache.sis.geometries.MultiPoint;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Array;
-import org.apache.sis.geometries.internal.shared.ArraySequence;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.operation.triangulate.EarClipping;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -44,12 +44,12 @@ public final class ToPrimitive {
 
     private ToPrimitive(){}
 
-    private static ArraySequence toArraySequence(PointSequence points) {
+    private static ArrayDataPoints toArraySequence(DataPoints points) {
         final Map<String,Array> attributes = new HashMap<>();
         for (String name : points.getAttributesType().getAttributeNames()) {
             attributes.put(name, points.getAttributeArray(name));
         }
-        return new ArraySequence(attributes);
+        return new ArrayDataPoints(attributes);
     }
 
     /**
@@ -71,7 +71,7 @@ public final class ToPrimitive {
      */
     public static MeshPrimitive.LineStrip toPrimitive(LineString geometry) throws OperationException {
         final MeshPrimitive.LineStrip primitive = new MeshPrimitive.LineStrip();
-        final ArraySequence array = toArraySequence(geometry.getDataPoints());
+        final ArrayDataPoints array = toArraySequence(geometry.getDataPoints());
         for (String name : array.getAttributeNames()) {
             primitive.setAttribute(name, array.getAttribute(name));
         }
@@ -90,7 +90,7 @@ public final class ToPrimitive {
      * Transform MultiPoint to Primitive.
      */
     public static MeshPrimitive.Points toPrimitive(MultiPoint geometry) throws OperationException {
-        final ArraySequence array = toArraySequence(geometry.asDataPoints());
+        final ArrayDataPoints array = toArraySequence(geometry.asDataPoints());
         final MeshPrimitive.Points primitive = new MeshPrimitive.Points();
         for (String name : array.getAttributeNames()) {
             primitive.setAttribute(name, array.getAttribute(name));
@@ -118,7 +118,7 @@ public final class ToPrimitive {
 
             for (int i = 0, k = 0; i < numGeometries; i++, k += 2) {
                 final org.apache.sis.geometries.LineString line = geometry.getGeometryN(i);
-                final PointSequence points = line.getDataPoints();
+                final DataPoints points = line.getDataPoints();
                 for (String name : attributesType.getAttributeNames()) {
                     Array att = primitive.getAttribute(name);
                     att.set(k, points.getAttribute(0, name));

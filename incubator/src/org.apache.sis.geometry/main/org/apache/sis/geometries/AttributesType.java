@@ -71,6 +71,24 @@ public interface AttributesType {
     DataType getAttributeType(String name);
 
     /**
+     * Get how values should be interpolation in geometric operations.
+     *
+     * TODO : experimentale but needed
+     */
+    default AttributeInterpolation getAttributeInterpolation(String name) {
+        return AttributeInterpolation.NEAREST;
+    }
+
+    /**
+     * Get how values should be transformed in geometric operations.
+     *
+     * TODO : experimentale but needed
+     */
+    default AttributeTransformation getAttributeTransformation(String name) {
+        return AttributeTransformation.NONE;
+    }
+
+    /**
      * Returns attribute names.
      *
      * @return names, never null, can be empty

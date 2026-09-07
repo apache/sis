@@ -23,7 +23,7 @@ import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.LinearRing;
 import org.apache.sis.geometries.Polygon;
-import org.apache.sis.geometries.internal.shared.ArraySequence;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometry.wrapper.j2d.DecimatedShape;
@@ -108,7 +108,7 @@ public final class ShapeAdapterTest {
      */
     @Test
     public void testLineString() {
-        initialize(GeometryFactory.createLineString(new ArraySequence(NDArrays.of(CARTESIAN_2D, new double[]{
+        initialize(GeometryFactory.createLineString(new ArrayDataPoints(NDArrays.of(CARTESIAN_2D, new double[]{
             3,1,
             7,6,
             5,2
@@ -124,11 +124,11 @@ public final class ShapeAdapterTest {
      */
     @Test
     public void testMultiLineString() {
-        final LineString line1 = GeometryFactory.createLineString(new ArraySequence(NDArrays.of(CARTESIAN_2D, new double[]{
+        final LineString line1 = GeometryFactory.createLineString(new ArrayDataPoints(NDArrays.of(CARTESIAN_2D, new double[]{
             10, 12,
             5, 2
         })));
-        final LineString line2 = GeometryFactory.createLineString(new ArraySequence(NDArrays.of(CARTESIAN_2D, new double[]{
+        final LineString line2 = GeometryFactory.createLineString(new ArrayDataPoints(NDArrays.of(CARTESIAN_2D, new double[]{
             3, 1,
             7, 6,
             5, 2
@@ -147,7 +147,7 @@ public final class ShapeAdapterTest {
      */
     @Test
     public void testPolygon() {
-        final LinearRing ring = GeometryFactory.createLinearRing(new ArraySequence(NDArrays.of(CARTESIAN_2D, new double[]{
+        final LinearRing ring = GeometryFactory.createLinearRing(new ArrayDataPoints(NDArrays.of(CARTESIAN_2D, new double[]{
             3, 1,
             7, 6,
             5, 2,
@@ -166,13 +166,13 @@ public final class ShapeAdapterTest {
      */
     @Test
     public void testMultiPolygon() {
-        final LinearRing ring1 = GeometryFactory.createLinearRing(new ArraySequence(NDArrays.of(CARTESIAN_2D, new double[]{
+        final LinearRing ring1 = GeometryFactory.createLinearRing(new ArrayDataPoints(NDArrays.of(CARTESIAN_2D, new double[]{
             3, 1,
             7, 6,
             5, 2,
             3, 1
         })));
-        final LinearRing ring2 = GeometryFactory.createLinearRing(new ArraySequence(NDArrays.of(CARTESIAN_2D, new double[]{
+        final LinearRing ring2 = GeometryFactory.createLinearRing(new ArrayDataPoints(NDArrays.of(CARTESIAN_2D, new double[]{
             12, 3,
             1, 9,
             4, 6,
@@ -201,7 +201,7 @@ public final class ShapeAdapterTest {
      */
     @Test
     public void testAsDecimatedShapeLineString() {
-        final LineString line = GeometryFactory.createLineString(new ArraySequence(NDArrays.of(CARTESIAN_2D, new double[]{
+        final LineString line = GeometryFactory.createLineString(new ArrayDataPoints(NDArrays.of(CARTESIAN_2D, new double[]{
             0, 0,
             1, 0,
             2, 0

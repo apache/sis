@@ -17,11 +17,11 @@
 package org.apache.sis.geometries.operation.simplify.greedyinsert;
 
 import java.util.function.BiFunction;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.math.Maths;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.Vector;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -32,7 +32,7 @@ final class TinDistance implements BiFunction<Tuple,Triangle,Double> {
 
     @Override
     public Double apply(Tuple pt, Triangle triangle) {
-        final PointSequence points = triangle.getExteriorRing().getDataPoints();
+        final DataPoints points = triangle.getExteriorRing().getDataPoints();
         final Tuple p0 = points.getPosition(0);
         final Tuple p1 = points.getPosition(1);
         final Tuple p2 = points.getPosition(2);

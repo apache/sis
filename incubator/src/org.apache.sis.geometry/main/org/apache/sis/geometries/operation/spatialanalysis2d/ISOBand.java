@@ -28,7 +28,6 @@ import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequence;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory;
 import org.opengis.util.FactoryException;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
@@ -36,6 +35,7 @@ import static org.apache.sis.geometries.operation.spatialanalysis2d.ISOLine.inte
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -79,7 +79,7 @@ public final class ISOBand {
         final MeshPrimitiveVisitor visitor = new MeshPrimitiveVisitor(triangles) {
             @Override
             protected void visit(Triangle candidate) {
-                final PointSequence points = candidate.getExteriorRing().getDataPoints();
+                final DataPoints points = candidate.getExteriorRing().getDataPoints();
                 Tuple t0 = points.getPosition(0);
                 Tuple t1 = points.getPosition(1);
                 Tuple t2 = points.getPosition(2);

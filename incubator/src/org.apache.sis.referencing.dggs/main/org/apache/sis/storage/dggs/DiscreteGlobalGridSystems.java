@@ -38,8 +38,7 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.LinearRing;
-import org.apache.sis.geometries.PointSequence;
-import org.apache.sis.geometries.internal.shared.ArraySequence;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometry.Envelopes;
@@ -66,6 +65,7 @@ import org.apache.sis.storage.rs.CodedResource;
 import org.apache.sis.storage.rs.internal.shared.CodedCoverageAsFeatureSet;
 import org.apache.sis.storage.rs.internal.shared.s2.Factory;
 import org.apache.sis.storage.rs.internal.shared.s2.S2;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -258,7 +258,7 @@ public final class DiscreteGlobalGridSystems {
         if (s2 == null) return null;
         final double[] coords = S2.toArray(s2.loop(0));
         final Array positions = NDArrays.of(CommonCRS.WGS84.normalizedGeographic(), coords);
-        final PointSequence sequence = new ArraySequence(positions);
+        final DataPoints sequence = new ArrayDataPoints(positions);
         final LinearRing exterior = org.apache.sis.geometries.GeometryFactory.createLinearRing(sequence);
         return org.apache.sis.geometries.GeometryFactory.createPolygon(exterior, null);
     }

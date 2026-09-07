@@ -21,8 +21,8 @@ import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.math.Array;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -67,7 +67,7 @@ public interface CircularString extends Curve {
      * @return the control points, never null. Its size is odd and at least 3, or 0 if empty.
      */
     @Override
-    PointSequence getDataPoints();
+    DataPoints getDataPoints();
 
     /**
      * @return null, a CircularString has no control points
@@ -109,7 +109,7 @@ public interface CircularString extends Curve {
 
     @Override
     default boolean isClosed() {
-        final PointSequence points = getDataPoints();
+        final DataPoints points = getDataPoints();
         final int size = points.size();
         if (size == 0) {
             return false;

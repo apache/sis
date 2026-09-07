@@ -32,7 +32,7 @@ import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.DistanceOperatorName;
 import org.apache.sis.filter.sqlmm.SQLMM;
 import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.internal.shared.ArraySequence;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
@@ -308,7 +308,7 @@ public final class Wrapper extends GeometryWrapper {
     /**
      * View SIS Geometry as a JTS Geometry.
      * Only the matching JTS geometry types are supported.
-     * The created geometry references the original geometry PointSequences, so modifications
+     * The created geometry references the original geometry DataPoints, so modifications
      * are forwarded to the original but all metadata change, like the CRS, will not be preserved if changed
      * after the JTS view has been made.
      *
@@ -322,7 +322,7 @@ public final class Wrapper extends GeometryWrapper {
     /**
      * View SIS Geometry as a JTS Geometry.
      * Only the matching JTS geometry types are supported.
-     * The created geometry references the original geometry PointSequences, so modifications
+     * The created geometry references the original geometry DataPoints, so modifications
      * are forwarded to the original but all metadata change, like the CRS, will not be preserved if changed
      * after the JTS view has been made.
      *
@@ -335,7 +335,7 @@ public final class Wrapper extends GeometryWrapper {
         final org.locationtech.jts.geom.Geometry jts;
 
         if (geometry instanceof Point cdt){
-            jts = gf.createPoint(new JTSSequence(cdt.asPointSequence()));
+            jts = gf.createPoint(new JTSSequence(cdt.asDataPoint()));
         } else if (geometry instanceof LinearRing cdt) {
             jts = gf.createLinearRing(new JTSSequence(cdt.getDataPoints()));
         } else if (geometry instanceof LineString cdt) {
@@ -375,13 +375,13 @@ public final class Wrapper extends GeometryWrapper {
         return jts;
     }
     /**
-     * Decorate a PointSequence as a JTS CoordinateSequence
+     * Decorate a DataPoint as a JTS CoordinateSequence
      */
     private static class JTSSequence implements CoordinateSequence {
 
-        private final PointSequence ps;
+        private final DataPoints ps;
 
-        public JTSSequence(PointSequence ps) {
+        public JTSSequence(DataPoints ps) {
             this.ps = ps;
         }
 
@@ -455,7 +455,7 @@ public final class Wrapper extends GeometryWrapper {
 
         @Override
         public CoordinateSequence copy() {
-            final PointSequence cp = new ArraySequence(ps.getAttributeArray(AttributesType.ATT_POSITION));
+            final DataPoints cp = new ArrayDataPoints(ps.getAttributeArray(AttributesType.ATT_POSITION));
             return new JTSSequence(cp);
         }
 

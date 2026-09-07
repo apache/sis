@@ -36,7 +36,6 @@ import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.LinearRing;
 import org.apache.sis.geometries.MultiPolygon;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.Vector2D;
@@ -45,6 +44,7 @@ import org.apache.sis.geometries.math.Vector2D;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -97,7 +97,7 @@ public final class ShapeConverterTest {
         } else if (geom instanceof Point pt) {
             lst.add(new Vector2D.Double(pt.getPosition().toArrayDouble()));
         } else if (geom instanceof LineString ls) {
-            PointSequence ps = ls.getDataPoints();
+            DataPoints ps = ls.getDataPoints();
             for (int i = 0, n = ps.size(); i < n; i++) {
                 lst.add(new Vector2D.Double(ps.getPosition(i).toArrayDouble()));
             }

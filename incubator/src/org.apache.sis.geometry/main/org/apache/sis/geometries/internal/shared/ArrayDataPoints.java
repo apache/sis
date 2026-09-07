@@ -21,12 +21,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.Tuple;
@@ -34,22 +32,23 @@ import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Cursor;
 import org.apache.sis.geometries.math.Array;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class ArraySequence implements PointSequence, AttributesType {
+public final class ArrayDataPoints implements DataPoints, AttributesType {
 
     private Array positions;
     private final Map<String,Array> attributes = new HashMap<>(1);
 
-    public ArraySequence(Array positions) {
+    public ArrayDataPoints(Array positions) {
         this(Collections.singletonMap(AttributesType.ATT_POSITION, positions));
     }
 
-    public ArraySequence(Map<String, Array> attributes) {
+    public ArrayDataPoints(Map<String, Array> attributes) {
         this.attributes.putAll(attributes);
         this.positions = attributes.get(AttributesType.ATT_POSITION);
         ArgumentChecks.ensureNonNull("positions", this.positions);
@@ -167,10 +166,10 @@ public final class ArraySequence implements PointSequence, AttributesType {
      */
     public static class Indexed implements Point {
 
-        private final ArraySequence parent;
+        private final ArrayDataPoints parent;
         private final int index;
 
-        public Indexed(ArraySequence geometry, int index) {
+        public Indexed(ArrayDataPoints geometry, int index) {
             this.parent = geometry;
             this.index = index;
         }

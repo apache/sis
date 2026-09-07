@@ -25,11 +25,11 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -49,13 +49,13 @@ final class PathIteratorAdapter implements PathIterator {
     /**
      * Provider of point sequences.
      */
-    private final Iterator<PointSequence> sequences;
+    private final Iterator<DataPoints> sequences;
 
     /**
      * The sequence of point tuples to return,
      * or {@code null} if the iteration is finished.
      */
-    private PointSequence coordinates;
+    private DataPoints coordinates;
 
     /**
      * Number of points to return in the sequence.
@@ -175,12 +175,12 @@ final class PathIteratorAdapter implements PathIterator {
      * @param  geometry  the geometry for which to get coordinate sequences.
      * @return coordinate sequences over the given geometry.
      */
-    private static Iterator<PointSequence> iterator(final Geometry geometry) {
-        final Collection<PointSequence> sequences;
+    private static Iterator<DataPoints> iterator(final Geometry geometry) {
+        final Collection<DataPoints> sequences;
         if (geometry instanceof LineString) {
             sequences = List.of(((LineString) geometry).getDataPoints());
         } else if (geometry instanceof Point) {
-            sequences = List.of(((Point) geometry).asPointSequence());
+            sequences = List.of(((Point) geometry).asDataPoint());
         } else if (geometry instanceof Polygon) {
             return new RingIterator((Polygon) geometry);
         } else if (geometry instanceof GeometryCollection) {
@@ -196,7 +196,7 @@ final class PathIteratorAdapter implements PathIterator {
      * The first coordinate sequence is the exterior ring and
      * all other sequences are interior rings.
      */
-    private static final class RingIterator implements Iterator<PointSequence> {
+    private static final class RingIterator implements Iterator<DataPoints> {
         /** The polygon for which to return rings. */
         private final Polygon polygon;
 
@@ -215,7 +215,7 @@ final class PathIteratorAdapter implements PathIterator {
         }
 
         /** Returns the coordinate sequence of the next ring. */
-        @Override public PointSequence next() {
+        @Override public DataPoints next() {
             final LineString current;
             if (interior < 0) {
                 current = polygon.getExteriorRing();
@@ -230,7 +230,7 @@ final class PathIteratorAdapter implements PathIterator {
     /**
      * An iterator over the coordinate sequences of a geometry collection.
      */
-    private static final class GeomIterator implements Iterator<PointSequence> {
+    private static final class GeomIterator implements Iterator<DataPoints> {
         /** The collection for which to return geometries. */
         private final GeometryCollection collection;
 
@@ -238,7 +238,7 @@ final class PathIteratorAdapter implements PathIterator {
         private int index;
 
         /** Coordinate sequences of the current geometry. */
-        private Iterator<PointSequence> current;
+        private Iterator<DataPoints> current;
 
         /** Created a new iterator for the given collection. */
         GeomIterator(final GeometryCollection collection) {
@@ -262,7 +262,7 @@ final class PathIteratorAdapter implements PathIterator {
         }
 
         /** Returns the coordinate sequence of the next geometry. */
-        @Override public PointSequence next() {
+        @Override public DataPoints next() {
             return current.next();
         }
     }

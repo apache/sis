@@ -29,10 +29,10 @@ import org.apache.sis.geometries.MultiCurve;
 import org.apache.sis.geometries.MultiPoint;
 import org.apache.sis.geometries.MultiSurface;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -88,7 +88,7 @@ public final class GML2Writer extends AbstractGMLWriter {
     @Override
     protected void writePoint(final Point g, final String srsName, final boolean declareNamespace) throws XMLStreamException {
         writeStart(GML2Tags.POINT, srsName, declareNamespace);
-        writeCoordinates(g.asPointSequence());
+        writeCoordinates(g.asDataPoint());
         writer.writeEndElement();
     }
 
@@ -251,7 +251,7 @@ public final class GML2Writer extends AbstractGMLWriter {
      * Writes a {@code <gml:coordinates>} element containing the given coordinate tuples, using the
      * GML 2.0 default separators (a comma between the ordinates of a tuple, a space between tuples).
      */
-    private void writeCoordinates(final PointSequence points) throws XMLStreamException {
+    private void writeCoordinates(final DataPoints points) throws XMLStreamException {
         final StringBuilder sb = new StringBuilder();
         for (int i=0, n=points.size(); i<n; i++) {
             if (i != 0) sb.append(GML2Tags.DEFAULT_TS);

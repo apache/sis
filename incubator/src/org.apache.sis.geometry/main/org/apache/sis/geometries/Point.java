@@ -56,8 +56,8 @@ public interface Point extends Primitive {
     /**
      * View this point as a single point sequence
      */
-    default PointSequence asPointSequence() {
-        return new PointSequence() {
+    default DataPoints asDataPoint() {
+        return new DataPoints() {
             @Override
             public CoordinateReferenceSystem getCoordinateReferenceSystem() {
                 return Point.this.getCoordinateReferenceSystem();

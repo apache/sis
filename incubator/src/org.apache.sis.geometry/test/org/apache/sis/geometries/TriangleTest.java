@@ -38,7 +38,7 @@ public class TriangleTest {
     public void constructorTest() {
 
         final Array positions = NDArrays.of(CommonCRS.WGS84.normalizedGeographic(), new double[]{0,0, 1,0, 0,1, 0,0});
-        final PointSequence points = GeometryFactory.createSequence(positions);
+        final DataPoints points = GeometryFactory.createSequence(positions);
         final LinearRing exterior = GeometryFactory.createLinearRing(points);
         final Triangle triangle = GeometryFactory.createTriangle(exterior);
 

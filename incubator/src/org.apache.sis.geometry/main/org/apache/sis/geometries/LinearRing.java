@@ -37,7 +37,7 @@ public interface LinearRing extends LineString {
     @Override
     default String asText() {
         final StringBuilder sb = new StringBuilder("LINEARRING (");
-        final PointSequence points = getDataPoints();
+        final DataPoints points = getDataPoints();
         for (int i = 0, n = points.size() ; i < n; i++) {
             final Tuple pt = points.getPosition(i);
             if (i > 0) sb.append(',');

@@ -30,7 +30,7 @@ import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.math.Vectors;
 import org.apache.sis.geometries.math.Cursor;
 import org.apache.sis.geometries.math.Array;
-import org.apache.sis.geometries.internal.shared.ArraySequence;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.locationtech.jts.geom.CoordinateXY;
 
 
@@ -62,16 +62,16 @@ public final class JTSAdapter {
         if (jts == null) {
             return null;
         } else if (jts instanceof org.locationtech.jts.geom.Point cdt) {
-            return GeometryFactory.createPoint(toPointSequence(cdt.getCoordinateSequence(), crs, copy));
+            return GeometryFactory.createPoint(toDataPoints(cdt.getCoordinateSequence(), crs, copy));
 
         } else if (jts instanceof org.locationtech.jts.geom.MultiPoint cdt) {
-            return GeometryFactory.createMultiPoint(toPointSequence(jts.getFactory().getCoordinateSequenceFactory().create(cdt.getCoordinates()), crs, copy));
+            return GeometryFactory.createMultiPoint(toDataPoints(jts.getFactory().getCoordinateSequenceFactory().create(cdt.getCoordinates()), crs, copy));
 
         } else if (jts instanceof org.locationtech.jts.geom.LinearRing cdt) {
-            return GeometryFactory.createLinearRing(toPointSequence(cdt.getCoordinateSequence(), crs, copy));
+            return GeometryFactory.createLinearRing(toDataPoints(cdt.getCoordinateSequence(), crs, copy));
 
         } else if (jts instanceof org.locationtech.jts.geom.LineString cdt) {
-            return GeometryFactory.createLineString(toPointSequence(cdt.getCoordinateSequence(), crs, copy));
+            return GeometryFactory.createLineString(toDataPoints(cdt.getCoordinateSequence(), crs, copy));
 
         } else if (jts instanceof org.locationtech.jts.geom.MultiLineString cdt) {
             final LineString[] strings = new LineString[cdt.getNumGeometries()];
@@ -119,7 +119,7 @@ public final class JTSAdapter {
         if (geom == null) {
             return null;
         } else if (geom instanceof Point cdt) {
-            final CoordinateSequence cs = toCoordinateSequence(cdt.asPointSequence(), copy, gf);
+            final CoordinateSequence cs = toCoordinateSequence(cdt.asDataPoint(), copy, gf);
             jts = new org.locationtech.jts.geom.Point(cs, gf);
         } else if (geom instanceof MultiPoint cdt) {
             final CoordinateSequence cs = toCoordinateSequence(cdt.asDataPoints(), copy, gf);
@@ -165,10 +165,10 @@ public final class JTSAdapter {
     }
 
     /**
-     * Convert JTS coordinate sequence to SIS PointSequence.
+     * Convert JTS coordinate sequence to SIS DataPoints.
      * @param copy if true create a copy of the coordinate sequence, otherwise create a view
      */
-    private static PointSequence toPointSequence(CoordinateSequence cs, CoordinateReferenceSystem crs, boolean copy) {
+    private static DataPoints toDataPoints(CoordinateSequence cs, CoordinateReferenceSystem crs, boolean copy) {
         final int size = cs.size();
         final int dimension = crs.getCoordinateSystem().getDimension();
 
@@ -186,13 +186,13 @@ public final class JTSAdapter {
                 }
                 i++;
             }
-            return new ArraySequence(positions);
+            return new ArrayDataPoints(positions);
         } else {
-            return new JTSSequence(cs, crs);
+            return new JTSDataPoints(cs, crs);
         }
     }
 
-    private static CoordinateSequence toCoordinateSequence(PointSequence ps, boolean copy, org.locationtech.jts.geom.GeometryFactory gf) {
+    private static CoordinateSequence toCoordinateSequence(DataPoints ps, boolean copy, org.locationtech.jts.geom.GeometryFactory gf) {
         final CoordinateReferenceSystem crs = ps.getCoordinateReferenceSystem();
         final int dimension = ps.getDimension();
         if (copy) {
@@ -211,14 +211,14 @@ public final class JTSAdapter {
         }
     }
 
-    private static class JTSSequence implements PointSequence {
+    private static class JTSDataPoints implements DataPoints {
 
         private final CoordinateSequence jts;
         private final CoordinateReferenceSystem crs;
         private final int dim;
         private final AttributesType type;
 
-        private JTSSequence(CoordinateSequence jts, CoordinateReferenceSystem crs) {
+        private JTSDataPoints(CoordinateSequence jts, CoordinateReferenceSystem crs) {
             this.jts = jts;
             this.crs = crs;
             this.dim = jts.getDimension();
@@ -293,10 +293,10 @@ public final class JTSAdapter {
      */
     private static class JTSPoint implements Point {
 
-        private final JTSSequence parent;
+        private final JTSDataPoints parent;
         private final int index;
 
-        public JTSPoint(JTSSequence geometry, int index) {
+        public JTSPoint(JTSDataPoints geometry, int index) {
             this.parent = geometry;
             this.index = index;
         }
@@ -346,9 +346,9 @@ public final class JTSAdapter {
 
     private static class SISSequence implements CoordinateSequence {
 
-        private final PointSequence points;
+        private final DataPoints points;
 
-        public SISSequence(PointSequence points) {
+        public SISSequence(DataPoints points) {
             this.points = points;
         }
 

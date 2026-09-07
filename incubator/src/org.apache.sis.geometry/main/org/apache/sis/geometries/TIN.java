@@ -51,7 +51,7 @@ public interface TIN extends TriangulatedSurface<Triangle> {
                 sb.append(',');
             }
             sb.append("((");
-            final PointSequence points = triangle.getExteriorRing().getDataPoints();
+            final DataPoints points = triangle.getExteriorRing().getDataPoints();
             corner = points.getPosition(0);
             AbstractGeometry.toText(sb, corner);
 

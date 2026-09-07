@@ -31,7 +31,7 @@ import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.PreparedTIN;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.internal.shared.DefaultPointSequence;
+import org.apache.sis.geometries.internal.shared.DefaultDataPoints;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
@@ -182,7 +182,7 @@ public final class Intersection {
                         final double[] bary2 = Triangle.getBarycentricValue2D(x1, y1, x2, y2, x3, y3, p2.get(0), p2.get(1), 0.0, false);
                         final Point point1 = triangle.interpolate(bary1);
                         final Point point2 = triangle.interpolate(bary2);
-                        segments.add(GeometryFactory.createLineString(new DefaultPointSequence(point1, point2)));
+                        segments.add(GeometryFactory.createLineString(new DefaultDataPoints(point1, point2)));
                     }
                 }
             } catch (TransformException ex) {

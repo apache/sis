@@ -24,7 +24,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.LinearRing;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.math.SampleSystem;
@@ -32,12 +31,13 @@ import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Vector;
 import org.apache.sis.geometries.math.Vectors;
 import org.apache.sis.geometries.math.Array;
-import org.apache.sis.geometries.internal.shared.ArraySequence;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -79,10 +79,10 @@ public final class Transform {
 
     public static LinearRing transform(LinearRing r, CoordinateReferenceSystem crs, MathTransform transform) throws OperationException {
 
-        PointSequence ps = r.getDataPoints();
+        DataPoints ps = r.getDataPoints();
         final Array reference = ps.getAttributeArray(AttributesType.ATT_POSITION);
         final Array positions = transform(reference, crs, transform);
-        final ArraySequence cp = new ArraySequence(positions);
+        final ArrayDataPoints cp = new ArrayDataPoints(positions);
         for (String name : ps.getAttributesType().getAttributeNames()) {
             if (!AttributesType.ATT_POSITION.equals(name)) {
                 cp.setAttribute(name, ps.getAttributeArray(name).copy());
@@ -186,11 +186,11 @@ public final class Transform {
     }
 
     public static Triangle transform(Triangle p, CoordinateReferenceSystem crs, MathTransform transform) throws OperationException {
-        final PointSequence ps = p.getExteriorRing().getDataPoints();
+        final DataPoints ps = p.getExteriorRing().getDataPoints();
 
         final Array reference = ps.getAttributeArray(AttributesType.ATT_POSITION);
         final Array positions = transform(reference, crs, transform);
-        final ArraySequence cp = new ArraySequence(positions);
+        final ArrayDataPoints cp = new ArrayDataPoints(positions);
         for (String name : ps.getAttributesType().getAttributeNames()) {
             if (!AttributesType.ATT_POSITION.equals(name)) {
                 cp.setAttribute(name, ps.getAttributeArray(name).copy());

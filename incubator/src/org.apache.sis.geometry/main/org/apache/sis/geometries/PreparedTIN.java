@@ -341,7 +341,7 @@ public interface PreparedTIN extends TIN {
                 final Iterator<Triangle> iterator = triangles.iterator();
                 while (iterator.hasNext()) {
                     final Triangle triangle = iterator.next();
-                    final PointSequence points = triangle.getExteriorRing().getDataPoints();
+                    final DataPoints points = triangle.getExteriorRing().getDataPoints();
                     final Tuple a = points.getPosition(0);
                     final Tuple b = points.getPosition(1);
                     final Tuple c = points.getPosition(2);

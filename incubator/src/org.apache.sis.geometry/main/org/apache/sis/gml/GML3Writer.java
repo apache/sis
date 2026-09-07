@@ -38,7 +38,6 @@ import org.apache.sis.geometries.MultiPolyhedron;
 import org.apache.sis.geometries.MultiSurface;
 import org.apache.sis.geometries.Orientable;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.geometries.PolyhedralSurface;
 import org.apache.sis.geometries.Polyhedron;
@@ -50,6 +49,7 @@ import org.apache.sis.geometries.conics.CircularString;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -267,7 +267,7 @@ public final class GML3Writer extends AbstractGMLWriter {
      * Writes a {@code <gml:posList>} element containing the given coordinate tuples, with an
      * explicit {@code srsDimension} attribute taken from the width of the sequence itself.
      */
-    private void writePosList(final PointSequence points) throws XMLStreamException {
+    private void writePosList(final DataPoints points) throws XMLStreamException {
         writer.writeStartElement(GML3Tags.POS_LIST);
         writer.writeAttribute(GML3Tags.SRS_DIMENSION, String.valueOf(points.getDimension()));
         final StringBuilder sb = new StringBuilder();

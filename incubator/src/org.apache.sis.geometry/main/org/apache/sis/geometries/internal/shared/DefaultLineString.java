@@ -17,7 +17,7 @@
 package org.apache.sis.geometries.internal.shared;
 
 import org.apache.sis.geometries.LineString;
-import org.apache.sis.geometries.PointSequence;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -26,9 +26,9 @@ import org.apache.sis.geometries.PointSequence;
  */
 public class DefaultLineString extends AbstractGeometry implements LineString {
 
-    private final PointSequence points;
+    private final DataPoints points;
 
-    public DefaultLineString(PointSequence points) {
+    public DefaultLineString(DataPoints points) {
         this.points = points;
     }
 
@@ -38,7 +38,7 @@ public class DefaultLineString extends AbstractGeometry implements LineString {
     }
 
     @Override
-    public PointSequence getDataPoints() {
+    public DataPoints getDataPoints() {
         return points;
     }
 

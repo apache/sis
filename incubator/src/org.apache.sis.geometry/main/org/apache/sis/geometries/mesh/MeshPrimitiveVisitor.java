@@ -21,12 +21,12 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.Cursor;
 import org.apache.sis.geometries.math.Array;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -204,7 +204,7 @@ public abstract class MeshPrimitiveVisitor {
      * Override this method to process a triangle.
      */
     protected void visit(Triangle candidate) {
-        final PointSequence points = candidate.getExteriorRing().getDataPoints();
+        final DataPoints points = candidate.getExteriorRing().getDataPoints();
         visit((MeshPrimitive.Vertex) points.getPoint(0));
         visit((MeshPrimitive.Vertex) points.getPoint(1));
         visit((MeshPrimitive.Vertex) points.getPoint(2));
@@ -214,7 +214,7 @@ public abstract class MeshPrimitiveVisitor {
      * Override this method to process a line.
      */
     protected void visit(LineString candidate) {
-        final PointSequence points = candidate.getDataPoints();
+        final DataPoints points = candidate.getDataPoints();
         visit((MeshPrimitive.Vertex) points.getPoint(0));
         visit((MeshPrimitive.Vertex) points.getPoint(1));
     }

@@ -29,7 +29,6 @@ import org.apache.sis.geometries.MultiCurve;
 import org.apache.sis.geometries.MultiPoint;
 import org.apache.sis.geometries.MultiSurface;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.math.Tuple;
@@ -38,6 +37,7 @@ import org.apache.sis.storage.DataStoreReferencingException;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -257,7 +257,7 @@ abstract class AbstractGMLWriter implements GMLGeometryWriter {
     /**
      * Appends every tuple of the given sequence to the given buffer, all separated by spaces.
      */
-    protected static void appendSequence(final StringBuilder sb, final PointSequence points) {
+    protected static void appendSequence(final StringBuilder sb, final DataPoints points) {
         for (int i = 0, n = points.size(); i < n; i++) {
             if (i != 0) sb.append(' ');
             appendTuple(sb, points.getPosition(i));

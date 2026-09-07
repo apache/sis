@@ -17,9 +17,9 @@
 package org.apache.sis.geometries.internal.shared;
 
 import org.opengis.geometry.Envelope;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.curve.ArcByBulge;
 import org.apache.sis.geometries.math.Vector;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -28,7 +28,7 @@ import org.apache.sis.geometries.math.Vector;
  */
 public class DefaultArcByBulge extends AbstractGeometry implements ArcByBulge {
 
-    private final PointSequence points;
+    private final DataPoints points;
     private final double bulge;
     private final Vector<?> normal;
 
@@ -41,7 +41,7 @@ public class DefaultArcByBulge extends AbstractGeometry implements ArcByBulge {
      * @throws IllegalArgumentException if the number of points is not 2, if the bulge is not a
      *         real number, or if no normal is given.
      */
-    public DefaultArcByBulge(final PointSequence points, final double bulge, final Vector<?> normal) {
+    public DefaultArcByBulge(final DataPoints points, final double bulge, final Vector<?> normal) {
         if (points == null || points.size() != 2) {
             throw new IllegalArgumentException("An arc by bulge is defined by exactly 2 points"
                     + " (its start and its end), but got " + ((points != null) ? points.size() : 0) + '.');
@@ -59,7 +59,7 @@ public class DefaultArcByBulge extends AbstractGeometry implements ArcByBulge {
     }
 
     @Override
-    public PointSequence getDataPoints() {
+    public DataPoints getDataPoints() {
         return points;
     }
 

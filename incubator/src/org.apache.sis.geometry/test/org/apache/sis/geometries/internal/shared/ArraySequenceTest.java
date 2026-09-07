@@ -46,7 +46,7 @@ public class ArraySequenceTest {
     public void constructorNoCrsTest() {
         final Array positions = NDArrays.of(2, new double[]{0,0, 1,0, 0,1, 0,0});
         assertThrows(NullPointerException.class, ()->{
-            ArraySequence array = new ArraySequence(positions);
+            ArrayDataPoints array = new ArrayDataPoints(positions);
         });
     }
 
@@ -56,7 +56,7 @@ public class ArraySequenceTest {
     @Test
     public void constructorCrsTest() {
         final Array positions = NDArrays.of(CommonCRS.WGS84.normalizedGeographic(), new double[]{0,0, 1,0, 0,1, 0,0});
-        ArraySequence array = new ArraySequence(positions);
+        ArrayDataPoints array = new ArrayDataPoints(positions);
     }
 
     /**
@@ -68,7 +68,7 @@ public class ArraySequenceTest {
         final Map<String,Array> attributes = new HashMap<>();
         attributes.put(AttributesType.ATT_NORMAL, normals);
         assertThrows(NullPointerException.class, ()->{
-            ArraySequence array = new ArraySequence(attributes);
+            ArrayDataPoints array = new ArrayDataPoints(attributes);
         });
     }
 
@@ -82,7 +82,7 @@ public class ArraySequenceTest {
         final Map<String,Array> attributes = new HashMap<>();
         attributes.put(AttributesType.ATT_POSITION, positions);
         attributes.put(AttributesType.ATT_NORMAL, normals);
-        ArraySequence array = new ArraySequence(attributes);
+        ArrayDataPoints array = new ArrayDataPoints(attributes);
     }
 
     /**
@@ -97,7 +97,7 @@ public class ArraySequenceTest {
         final Map<String,Array> attributes = new HashMap<>();
         attributes.put(AttributesType.ATT_POSITION, positions);
         attributes.put(AttributesType.ATT_NORMAL, normals);
-        final ArraySequence array = new ArraySequence(attributes);
+        final ArrayDataPoints array = new ArrayDataPoints(attributes);
 
         assertEquals(CommonCRS.WGS84.normalizedGeographic(), array.getCoordinateReferenceSystem());
         assertEquals(2, array.getDimension());

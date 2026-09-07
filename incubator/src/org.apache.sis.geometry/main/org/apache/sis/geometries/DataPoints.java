@@ -26,10 +26,23 @@ import org.apache.sis.geometries.math.Array;
 
 
 /**
+ * Enriched version of ISO-19107 DataPoints with multiple attributes capabilities.
+ *
+ * <p>
+ * ISO-19107 defines DataPoints on Curves as a List of DirectPosition.
+ * We extent this list with additional property support.
+ * By doing this we can store the old 'M' value as a properly separated information
+ * but also all 'normal','color','tangent','wight'.... informations which exist
+ * in other specifications.
+ * </p>
+ *
+ * <p>
+ * The ISO-19107 DirectPosition becomes the POSITION attribute.
+ * </p>
  *
  * @author Johann Sorel (Geomatys)
  */
-public interface PointSequence {
+public interface DataPoints {
 
     /**
      * Get geometry coordinate system.

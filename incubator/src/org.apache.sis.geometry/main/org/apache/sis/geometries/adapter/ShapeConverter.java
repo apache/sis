@@ -27,13 +27,13 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Surface;
-import org.apache.sis.geometries.internal.shared.ArraySequence;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.SampleSystem;
 import org.apache.sis.referencing.internal.shared.AbstractShape;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -154,13 +154,13 @@ public abstract class ShapeConverter {
         }
 
         /** Returns a copy of current coordinate values as a SIS coordinate sequence. */
-        @Override PointSequence toSequence(final boolean close) {
+        @Override DataPoints toSequence(final boolean close) {
             if (close && !Arrays.equals(buffer, 0, 2, buffer, length - 2, length)) {
                 addPoint(buffer);
             }
 
             final Array array = NDArrays.of(SampleSystem.cartesian(2), Arrays.copyOf(buffer, length));
-            return new ArraySequence(array);
+            return new ArrayDataPoints(array);
         }
     }
 
@@ -202,12 +202,12 @@ public abstract class ShapeConverter {
         }
 
         /** Returns a copy of current coordinate values as a SIS coordinate sequence. */
-        @Override PointSequence toSequence(final boolean close) {
+        @Override DataPoints toSequence(final boolean close) {
             if (close && !Arrays.equals(buffer, 0, 2, buffer, length - 2, length)) {
                 addPoint(buffer);
             }
             final Array array = NDArrays.of(SampleSystem.cartesian(2), Arrays.copyOf(buffer, length));
-            return new ArraySequence(array);
+            return new ArrayDataPoints(array);
         }
     }
 
@@ -231,7 +231,7 @@ public abstract class ShapeConverter {
      * @param  close  whether to ensure that the first point is repeated as the last point.
      * @return a SIS coordinate sequence containing a copy of current coordinate values.
      */
-    abstract PointSequence toSequence(boolean close);
+    abstract DataPoints toSequence(boolean close);
 
     /**
      * Iterates over all coordinates given by the {@link #iterator} and stores them in a SIS geometry.

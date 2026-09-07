@@ -16,9 +16,9 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.conics.CircularString;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.geometries.DataPoints;
 
 /**
  * A curve made of circular arcs, each defined by three of the control points.
@@ -27,7 +27,7 @@ import org.opengis.geometry.Envelope;
  */
 public class DefaultCircularString extends AbstractGeometry implements CircularString {
 
-    private final PointSequence points;
+    private final DataPoints points;
 
     /**
      * Creates a circular string from the given control points.
@@ -36,7 +36,7 @@ public class DefaultCircularString extends AbstractGeometry implements CircularS
      *                 point. Its size must be odd and at least 3, or 0 for an empty circular string.
      * @throws IllegalArgumentException if the number of points cannot describe a whole number of arcs.
      */
-    public DefaultCircularString(PointSequence points) {
+    public DefaultCircularString(DataPoints points) {
         final int size = points.size();
         if (size != 0 && (size < 3 || (size % 2) == 0)) {
             throw new IllegalArgumentException("A circular string needs an odd number of at least 3 points "
@@ -46,7 +46,7 @@ public class DefaultCircularString extends AbstractGeometry implements CircularS
     }
 
     @Override
-    public PointSequence getDataPoints() {
+    public DataPoints getDataPoints() {
         return points;
     }
 

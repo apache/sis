@@ -33,7 +33,6 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridOrientation;
 import org.apache.sis.geometries.LinearRing;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Polygon;
 import org.apache.sis.geometries.math.Tuple;
 import org.apache.sis.geometries.math.Vector2D;
@@ -51,6 +50,7 @@ import org.apache.sis.storage.rs.CodeIterator;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -187,7 +187,7 @@ public abstract class AbstractDggrsTest {
                 final Polygon geometry = (Polygon) DiscreteGlobalGridSystems.toSISPolygon(z.getGeographicExtent());
                 final DirectPosition center = z.getPosition();
                 final LinearRing exterior = (LinearRing) geometry.getExteriorRing();
-                final PointSequence ps = exterior.getDataPoints();
+                final DataPoints ps = exterior.getDataPoints();
                 for (int i = 0; i < ps.size(); i++) {
                     final Tuple corner = ps.getPosition(i);
 

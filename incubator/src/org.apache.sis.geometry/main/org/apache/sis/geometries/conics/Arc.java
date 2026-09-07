@@ -17,11 +17,11 @@
 package org.apache.sis.geometries.conics;
 
 import java.util.List;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.math.Array;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.apache.sis.geometries.math.Vector;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -40,7 +40,7 @@ public interface Arc extends Conic {
 
     @UML(identifier="dataPoints", specification=ISO_19107) // section 7.9.2.4
     @Override
-    PointSequence getDataPoints();
+    DataPoints getDataPoints();
 
     @UML(identifier="radius", specification=ISO_19107) // section 7.9.2.5
     List<Vector> getRadius();

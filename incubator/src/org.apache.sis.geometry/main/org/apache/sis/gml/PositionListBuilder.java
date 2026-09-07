@@ -18,7 +18,6 @@ package org.apache.sis.gml;
 
 import java.util.Arrays;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.math.DataType;
 import org.apache.sis.geometries.math.NDArrays;
 import org.apache.sis.geometries.math.SampleSystem;
@@ -27,11 +26,12 @@ import org.apache.sis.storage.DataStoreReferencingException;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
  * Accumulator of coordinate tuples read from a GML document, and factory of the
- * {@link PointSequence} that the Apache SIS geometry model is built upon.
+ * {@link DataPoints} that the Apache SIS geometry model is built upon.
  *
  * <p>Coordinates are accumulated as a single flat {@code double[]} of {@code size() × dimension()}
  * ordinates, which is the layout that {@link NDArrays#of(SampleSystem, double...)} expects. The
@@ -170,7 +170,7 @@ final class PositionListBuilder {
      * @throws DataStoreContentException if the accumulated tuple width contradicts {@code inScope}.
      * @throws DataStoreReferencingException if the CRS needed to reconcile the two cannot be created.
      */
-    final PointSequence build(final CoordinateReferenceSystem inScope)
+    final DataPoints build(final CoordinateReferenceSystem inScope)
             throws DataStoreContentException, DataStoreReferencingException
     {
         /*

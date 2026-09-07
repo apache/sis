@@ -22,7 +22,6 @@ import java.util.List;
 import org.locationtech.jts.geom.Coordinate;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.FactoryException;
-import org.apache.sis.geometries.PointSequence;
 import org.apache.sis.geometries.Triangle;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
@@ -34,6 +33,7 @@ import org.apache.sis.geometries.math.Vectors;
 import org.apache.sis.geometries.math.Array;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.geometries.DataPoints;
 
 
 /**
@@ -55,7 +55,7 @@ public final class ISOLine {
         final MeshPrimitiveVisitor visitor = new MeshPrimitiveVisitor(triangles) {
             @Override
             protected void visit(Triangle candidate) {
-                final PointSequence points = candidate.getExteriorRing().getDataPoints();
+                final DataPoints points = candidate.getExteriorRing().getDataPoints();
                 final double[] p0 = points.getPosition(0).toArrayDouble();
                 final double[] p1 = points.getPosition(1).toArrayDouble();
                 final double[] p2 = points.getPosition(2).toArrayDouble();
