@@ -116,7 +116,7 @@ public interface Curve extends Orientable {
 
 
     @UML(identifier="knot", specification=ISO_19107) // section 6.4.18.4
-    default List<Knot> getKnots() {
+    default double[] getKnots() {
         //TODO
         throw new UnsupportedOperationException();
     }

@@ -70,7 +70,7 @@ public interface Solid extends Primitive {
     }
 
     @UML(identifier="knot", specification=ISO_19107) // section 6.4.28.8
-    default List<Knot> getKnots() {
+    default double[] getKnots() {
         throw new UnsupportedOperationException();
     }
 

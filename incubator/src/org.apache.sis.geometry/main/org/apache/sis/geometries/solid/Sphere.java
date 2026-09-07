@@ -22,7 +22,6 @@ import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryType;
-import org.apache.sis.geometries.Knot;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.surface.ParametricCurveSurface;
 import org.apache.sis.maths.Tuple;
@@ -189,7 +188,7 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
     }
 
     @Override
-    public List<Knot> getKnots() {
+    public double[] getKnots() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

@@ -19,7 +19,6 @@ package org.apache.sis.geometries.surface;
 import java.util.List;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.GeometryType;
-import org.apache.sis.geometries.Knot;
 import org.apache.sis.geometries.Surface;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -55,7 +54,7 @@ public interface ParametricCurveSurface extends Surface, ReferenceSystem {
     GeometryType getVerticalCurveType();
 
     @Override
-    List<Knot> getKnots();
+    double[] getKnots();
 
     @UML(identifier="horizontalCurve", specification=ISO_19107) // section 8.3.2.9
     Curve getHorizontalCurve(double v);

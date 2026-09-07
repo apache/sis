@@ -128,7 +128,7 @@ public interface Surface extends Orientable {
     }
 
     @UML(identifier="knot", specification=ISO_19107) // section 6.4.25.10
-    default List<Knot> getKnots() {
+    default double[] getKnots() {
         //TODO
         throw new UnsupportedOperationException();
     }

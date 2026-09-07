@@ -16,9 +16,7 @@
  */
 package org.apache.sis.geometries.surface;
 
-import java.util.List;
 import org.apache.sis.geometries.GeometryType;
-import org.apache.sis.geometries.Knot;
 import org.apache.sis.geometries.curve.KnotType;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -36,7 +34,7 @@ public interface BSplineSurface extends ParametricCurveSurface {
 
     @UML(identifier="knot", specification=ISO_19107) // section 8.7.2.3
     @Override
-    public List<Knot> getKnots();
+    double[] getKnots();
 
     @UML(identifier="knotSpec", specification=ISO_19107) // section 8.7.2.5
     KnotType getKnotSpec();

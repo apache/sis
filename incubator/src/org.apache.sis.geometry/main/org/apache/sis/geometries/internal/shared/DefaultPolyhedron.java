@@ -22,7 +22,6 @@ import java.util.Objects;
 import javax.measure.quantity.Area;
 import javax.measure.quantity.Volume;
 import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.Knot;
 import org.apache.sis.geometries.SolidInterpolation;
 import org.apache.sis.geometries.solid.Polyhedron;
 import org.apache.sis.geometries.surface.MultiPolygon;
@@ -131,7 +130,7 @@ public class DefaultPolyhedron extends AbstractGeometry implements Polyhedron {
     }
 
     @Override
-    public List<Knot> getKnots() {
+    public double[] getKnots() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 }

@@ -45,8 +45,12 @@
  *   <li>Encoding interface is fused in Geometry interface</li>
  *   <li>Encoding.asGML has been removed since it is a large task to implement and multiple versions
  *       exists. GML support should be located in a different module</li>
+ *   <li>Knot pdf sections 6.4.17.2 and 6.4.17.3 : two notations exist :
+ *     one using a repetition of values in a single knot list,
+ *     and a second using 2 lists, one for distinct values and one for multiplicity.
+ *     SIS makes use of the first one, which is the most used in online references.
+ *   </li>
  * </ul>
- *
  *
  * <h2>Remaining work to be done</h2>
  *

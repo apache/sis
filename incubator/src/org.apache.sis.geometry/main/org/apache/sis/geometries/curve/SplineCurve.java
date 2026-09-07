@@ -16,8 +16,6 @@
  */
 package org.apache.sis.geometries.curve;
 
-import java.util.List;
-import org.apache.sis.geometries.Knot;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
@@ -34,7 +32,7 @@ public interface SplineCurve extends PolynomialCurve {
 
     @UML(identifier="knot", specification=ISO_19107) // section 7.13.4.3
     @Override
-    List<Knot> getKnots();
+    double[] getKnots();
 
     @UML(identifier="degree", specification=ISO_19107) // section 7.13.4.4
     @Override
