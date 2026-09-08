@@ -25,7 +25,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultMultiPolygon extends DefaultMultiSurface<Polygon> implements MultiPolygon {
+public non-sealed class DefaultMultiPolygon extends DefaultMultiSurface<Polygon> implements MultiPolygon {
 
     public DefaultMultiPolygon(Polygon[] geometries) {
         super(geometries);

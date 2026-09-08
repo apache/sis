@@ -3,6 +3,320 @@
 Overview of the geometry types defined in the `org.apache.sis.geometry` module
 (package `org.apache.sis.geometries` and its sub-packages).
 
+== Interface hierarchy
+
+The 56 interfaces of the `Geometry` hierarchy are shown below, split by theme.
+`Geometry` and most of its subtypes are `sealed`, so their permitted subtypes are fixed
+at compile time and a `switch` over them can be exhaustive.
+Implementation classes are omitted; see the `internal.shared` package.
+
+Colours: white is a `sealed` type; *yellow* is `non-sealed`, still open for extension
+because it has no implementation yet; *blue-grey* is a type detailed in another diagram
+here, repeated only to anchor it; *grey* is a type declared outside this module.
+
+=== Core types
+
+The spine of the hierarchy. `Geometry` splits into a single `Primitive`, a `GeometryCollection` of geometries, an analytic `OrientedGeometry`, the `Empty` set, an extruded `Prism` and a GPU-oriented `MeshPrimitive` batch. Each leaf below is detailed in one of the following diagrams.
+
+[plantuml,geometry-core,svg]
+....
+@startuml
+hide empty members
+skinparam shadowing false
+skinparam interface {
+    BackgroundColor #FDFDFD
+    BorderColor #4A6785
+}
+skinparam interface<<open>> {
+    BackgroundColor #FFF6E0
+    BorderColor #C9A227
+}
+skinparam interface<<context>> {
+    BackgroundColor #EEF3F8
+    BorderColor #93A9C0
+}
+skinparam interface<<external>> {
+    BackgroundColor #F0F0F0
+    BorderColor #999999
+}
+
+interface Curve
+interface Empty
+interface Geometry
+interface "GeometryCollection<T extends Geometry>" as GeometryCollection
+interface MeshPrimitive
+interface Orientable
+interface OrientedGeometry
+interface Point
+interface Primitive
+interface Prism <<open>>
+interface Solid
+interface Surface
+
+Geometry <|-- Empty
+Geometry <|-- GeometryCollection
+Geometry <|-- MeshPrimitive
+Geometry <|-- OrientedGeometry
+Geometry <|-- Primitive
+Geometry <|-- Prism
+Orientable <|-- Curve
+Orientable <|-- Surface
+Primitive <|-- Orientable
+Primitive <|-- Point
+Primitive <|-- Solid
+@enduml
+....
+
+=== Curves
+
+Subtypes of `Curve` that interpolate a stored sequence of points, plus the conic family.
+
+[plantuml,geometry-curves,svg]
+....
+@startuml
+hide empty members
+skinparam shadowing false
+skinparam interface {
+    BackgroundColor #FDFDFD
+    BorderColor #4A6785
+}
+skinparam interface<<open>> {
+    BackgroundColor #FFF6E0
+    BorderColor #C9A227
+}
+skinparam interface<<context>> {
+    BackgroundColor #EEF3F8
+    BorderColor #93A9C0
+}
+skinparam interface<<external>> {
+    BackgroundColor #F0F0F0
+    BorderColor #999999
+}
+
+interface Arc
+interface ArcByBulge
+interface ArcByCenterPoint
+interface Circle <<open>>
+interface CircularString
+interface Clothoid <<open>>
+interface CompoundCurve
+interface Conic
+interface Curve <<context>>
+interface EllipticArc <<open>>
+interface Geodesic
+interface LineString
+interface LinearRing
+interface OffsetCurve <<open>>
+interface Rhumb
+interface Spiral
+
+Arc <|-- Circle
+Conic <|-- Arc
+Conic <|-- EllipticArc
+Curve <|-- ArcByBulge
+Curve <|-- ArcByCenterPoint
+Curve <|-- CircularString
+Curve <|-- CompoundCurve
+Curve <|-- Conic
+Curve <|-- Geodesic
+Curve <|-- LineString
+Curve <|-- OffsetCurve
+Curve <|-- Rhumb
+Curve <|-- Spiral
+LineString <|-- LinearRing
+Spiral <|-- Clothoid
+@enduml
+....
+
+=== Spline and function curves
+
+Subtypes of `Curve` defined by a mathematical function rather than by interpolation.
+
+[plantuml,geometry-splines,svg]
+....
+@startuml
+hide empty members
+skinparam shadowing false
+skinparam interface {
+    BackgroundColor #FDFDFD
+    BorderColor #4A6785
+}
+skinparam interface<<open>> {
+    BackgroundColor #FFF6E0
+    BorderColor #C9A227
+}
+skinparam interface<<context>> {
+    BackgroundColor #EEF3F8
+    BorderColor #93A9C0
+}
+skinparam interface<<external>> {
+    BackgroundColor #F0F0F0
+    BorderColor #999999
+}
+
+interface BSplineCurve
+interface Bezier <<open>>
+interface CubicSpline <<open>>
+interface Curve <<context>>
+interface "FunctionCurve<T extends FunctionArc>" as FunctionCurve
+interface NurbCurve
+interface "PolynomialCurve<PolynomialArc>" as PolynomialCurve
+interface PolynomialSpline
+interface SplineCurve
+
+BSplineCurve <|-- Bezier
+BSplineCurve <|-- NurbCurve
+Curve <|-- FunctionCurve
+FunctionCurve <|-- PolynomialCurve
+PolynomialCurve <|-- SplineCurve
+PolynomialSpline <|-- Bezier
+PolynomialSpline <|-- CubicSpline
+SplineCurve <|-- BSplineCurve
+SplineCurve <|-- PolynomialSpline
+@enduml
+....
+
+=== Surfaces
+
+Subtypes of `Surface`: polygonal, patch-based and parametric.
+
+[plantuml,geometry-surfaces,svg]
+....
+@startuml
+hide empty members
+skinparam shadowing false
+skinparam interface {
+    BackgroundColor #FDFDFD
+    BorderColor #4A6785
+}
+skinparam interface<<open>> {
+    BackgroundColor #FFF6E0
+    BorderColor #C9A227
+}
+skinparam interface<<context>> {
+    BackgroundColor #EEF3F8
+    BorderColor #93A9C0
+}
+skinparam interface<<external>> {
+    BackgroundColor #F0F0F0
+    BorderColor #999999
+}
+
+interface BSplineSurface
+interface BilinearGrid <<open>>
+interface CurvePolygon
+interface NurbSurface
+interface ParametricCurveSurface
+interface Polygon
+interface "PolyhedralSurface<T extends Polygon>" as PolyhedralSurface
+interface PreparedTIN
+interface Surface <<context>>
+interface TIN
+interface Triangle
+interface "TriangulatedSurface<T extends Polygon>" as TriangulatedSurface
+
+interface ReferenceSystem <<external>>
+
+BSplineSurface <|-- NurbSurface
+ParametricCurveSurface <|-- BSplineSurface
+ParametricCurveSurface <|-- BilinearGrid
+Polygon <|-- Triangle
+PolyhedralSurface <|-- TriangulatedSurface
+ReferenceSystem <|-- ParametricCurveSurface
+Surface <|-- CurvePolygon
+Surface <|-- ParametricCurveSurface
+Surface <|-- Polygon
+Surface <|-- PolyhedralSurface
+TIN <|-- PreparedTIN
+TriangulatedSurface <|-- TIN : Triangle
+@enduml
+....
+
+=== Solids
+
+Subtypes of `Solid`.
+
+[plantuml,geometry-solids,svg]
+....
+@startuml
+hide empty members
+skinparam shadowing false
+skinparam interface {
+    BackgroundColor #FDFDFD
+    BorderColor #4A6785
+}
+skinparam interface<<open>> {
+    BackgroundColor #FFF6E0
+    BorderColor #C9A227
+}
+skinparam interface<<context>> {
+    BackgroundColor #EEF3F8
+    BorderColor #93A9C0
+}
+skinparam interface<<external>> {
+    BackgroundColor #F0F0F0
+    BorderColor #999999
+}
+
+interface BSolidSpline <<open>>
+interface ParametricCurveSolid
+interface Polyhedron
+interface Solid <<context>>
+
+ParametricCurveSolid <|-- BSolidSpline
+Solid <|-- ParametricCurveSolid
+Solid <|-- Polyhedron
+@enduml
+....
+
+=== Collections
+
+Subtypes of `GeometryCollection`, each restricting its elements to one geometry kind. `ProductCurve` appears here because it is both a collection and a `Curve`.
+
+[plantuml,geometry-collections,svg]
+....
+@startuml
+hide empty members
+skinparam shadowing false
+skinparam interface {
+    BackgroundColor #FDFDFD
+    BorderColor #4A6785
+}
+skinparam interface<<open>> {
+    BackgroundColor #FFF6E0
+    BorderColor #C9A227
+}
+skinparam interface<<context>> {
+    BackgroundColor #EEF3F8
+    BorderColor #93A9C0
+}
+skinparam interface<<external>> {
+    BackgroundColor #F0F0F0
+    BorderColor #999999
+}
+
+interface Curve <<context>>
+interface "GeometryCollection<T extends Geometry>" as GeometryCollection <<context>>
+interface "MultiCurve<T extends Curve>" as MultiCurve
+interface MultiLineString
+interface "MultiPoint<T extends Point>" as MultiPoint
+interface MultiPolygon
+interface MultiPolyhedron
+interface "MultiSurface<T extends Surface>" as MultiSurface
+interface ProductCurve <<open>>
+
+Curve <|-- ProductCurve
+GeometryCollection <|-- MultiCurve
+GeometryCollection <|-- MultiPoint
+GeometryCollection <|-- MultiPolyhedron : Polyhedron
+GeometryCollection <|-- MultiSurface
+GeometryCollection <|-- ProductCurve : Curve
+MultiCurve <|-- MultiLineString : LineString
+MultiSurface <|-- MultiPolygon : Polygon
+@enduml
+....
+== Format mapping
+
 [cols="2,3,2,2,2,2,2,6", options="header"]
 |===
 |Type |Package |OGC-SimpleFeature |GeoJSON |OGC-JSON-FG |Khronos-glTF |Khronos-ANARI |Description
@@ -84,7 +398,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 8+| *Curves*
 
 |LineString
-|—
+|`curve`
 |LineString
 |LineString
 |LineString
@@ -93,7 +407,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Curve with linear interpolation between consecutive points.
 
 |LinearRing
-|—
+|`curve`
 |LinearRing
 |—
 |—
@@ -102,7 +416,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |`LineString` that is both closed and simple.
 
 |CompoundCurve
-|—
+|`curve`
 |—
 |—
 |CompoundCurve
@@ -111,7 +425,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Curve made of several connected curve segments, possibly of different subtypes.
 
 |OffsetCurve
-|—
+|`curve`
 |—
 |—
 |—
@@ -120,7 +434,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Curve derived from a base curve by applying a lateral offset distance.
 
 |ProductCurve
-|—
+|`curve`
 |—
 |—
 |—
@@ -138,7 +452,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Semi-infinite line defined by an origin point and a direction.
 
 |Rhumb
-|—
+|`curve`
 |—
 |—
 |—
@@ -156,7 +470,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |ISO 19107 bearing/direction primitive.
 
 |Geodesic
-|`geodesics`
+|`curve`
 |—
 |—
 |—
@@ -168,7 +482,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 8+| *Surfaces*
 
 |Polygon
-|—
+|`surface`
 |Polygon
 |Polygon
 |Polygon
@@ -177,7 +491,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Planar surface defined by one exterior boundary and zero or more interior boundaries (holes).
 
 |CurvePolygon
-|—
+|`surface`
 |—
 |—
 |CurvePolygon
@@ -186,7 +500,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Surface whose rings may be line strings, circular strings or compound curves.
 
 |PolyhedralSurface
-|—
+|`surface`
 |PolyhedralSurface
 |—
 |—
@@ -195,7 +509,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Contiguous collection of polygon patches sharing common boundary segments.
 
 |TriangulatedSurface
-|—
+|`surface`
 |—
 |—
 |—
@@ -204,7 +518,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |`PolyhedralSurface` restricted to triangle patches.
 
 |TIN
-|—
+|`surface`
 |TIN
 |—
 |—
@@ -213,7 +527,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Triangulated Irregular Network, a `PolyhedralSurface` made only of `Triangle` patches.
 
 |PreparedTIN
-|—
+|`surface`
 |—
 |—
 |—
@@ -222,7 +536,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |`TIN` decorated with an optimized spatial index for fast queries.
 
 |Triangle
-|—
+|`surface`
 |Triangle
 |—
 |—
@@ -231,7 +545,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Polygon with exactly 3 distinct, non-collinear vertices and no interior boundary.
 
 |ParametricCurveSurface
-|—
+|`surface`
 |—
 |—
 |—
@@ -240,7 +554,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Surface defined by a parametric function together with its own coordinate system.
 
 |BilinearGrid
-|—
+|`surface`
 |—
 |—
 |—
@@ -261,7 +575,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 8+| *Solids*
 
 |Polyhedron
-|—
+|`solid`
 |—
 |—
 |Polyhedron
@@ -270,7 +584,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Solid whose bounding shells are each expressed as a multi-polygon.
 
 |ParametricCurveSolid
-|`griddedsolid`
+|`solid`
 |—
 |—
 |—
@@ -279,7 +593,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Solid defined by a parametric function.
 
 |BSolidSpline
-|`griddedsolid`
+|`solid`
 |—
 |—
 |—
@@ -309,7 +623,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Base type for named analytic shapes carrying their own rotation and translation.
 
 |Cylinder
-|—
+|`solid`
 |—
 |—
 |—
@@ -318,7 +632,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Oriented geometry describing a tube shape with a radius and a height.
 
 |Sphere
-|—
+|`solid`
 |—
 |—
 |—
@@ -327,7 +641,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Parametric surface made of the set of points equidistant from a center.
 
 |Frustrum
-|—
+|`solid`
 |—
 |—
 |—
@@ -336,7 +650,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Oriented geometry describing a cone or pyramid with its top cut off.
 
 |Capsule
-|—
+|`solid`
 |—
 |—
 |—
@@ -352,6 +666,15 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |—
 |quad
 |Oriented geometry describing a flat surface.
+
+|HyperPlane
+|—
+|—
+|—
+|—
+|—
+|—
+|Oriented geometry dividing the coordinate space in two half-spaces.
 
 |BBox
 |—
@@ -384,7 +707,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Collection of an arbitrary number of geometric objects sharing the same spatial reference system.
 
 |MultiPoint
-|—
+|`point`
 |MultiPoint
 |MultiPoint
 |MultiPoint
@@ -393,7 +716,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |0-dimensional `GeometryCollection` whose elements are restricted to `Point`.
 
 |MultiCurve
-|—
+|`curve`
 |MultiCurve
 |—
 |MultiCurve
@@ -402,7 +725,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |1-dimensional `GeometryCollection` whose elements are `Curve`.
 
 |MultiLineString
-|—
+|`curve`
 |MultiLineString
 |MultiLineString
 |MultiLineString
@@ -411,7 +734,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |`MultiCurve` whose elements are `LineString`.
 
 |MultiSurface
-|—
+|`surface`
 |MultiSurface
 |—
 |MultiSurface
@@ -420,7 +743,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |2-dimensional `GeometryCollection` whose elements are `Surface`.
 
 |MultiPolygon
-|—
+|`surface`
 |MultiPolygon
 |MultiPolygon
 |MultiPolygon
@@ -429,7 +752,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |`MultiSurface` whose elements are `Polygon`.
 
 |MultiPolyhedron
-|—
+|`solid`
 |—
 |—
 |MultiPolyhedron
@@ -462,7 +785,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 8+| *Regular polyhedra*
 
 |Tetrahedron
-|`polyhedron`
+|`solid.polyhedron`
 |—
 |—
 |—
@@ -471,7 +794,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Platonic solid with 4 triangular faces.
 
 |Hexahedron
-|`polyhedron`
+|`solid.polyhedron`
 |—
 |—
 |—
@@ -480,7 +803,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Platonic solid with 6 square faces (cube).
 
 |Octahedron
-|`polyhedron`
+|`solid.polyhedron`
 |—
 |—
 |—
@@ -489,7 +812,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Platonic solid with 8 triangular faces.
 
 |Dodecahedron
-|`polyhedron`
+|`solid.polyhedron`
 |—
 |—
 |—
@@ -498,7 +821,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Platonic solid with 12 pentagonal faces.
 
 |Icosahedron
-|`polyhedron`
+|`solid.polyhedron`
 |—
 |—
 |—
@@ -507,7 +830,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Platonic solid with 20 triangular faces.
 
 |RhombicTriacontahedron
-|`polyhedron`
+|`solid.polyhedron`
 |—
 |—
 |—
@@ -516,7 +839,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Catalan solid with 30 rhombic faces.
 
 |TruncatedIcosahedron
-|`polyhedron`
+|`solid.polyhedron`
 |—
 |—
 |—
@@ -528,7 +851,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 8+| *Conics*
 
 |Conic
-|`conics`
+|`curve`
 |—
 |—
 |—
@@ -537,7 +860,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Curve defined by a conic section.
 
 |Arc
-|`conics`
+|`curve`
 |—
 |—
 |—
@@ -546,7 +869,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Arc segment of a `Conic`.
 
 |Circle
-|`conics`
+|`curve`
 |—
 |—
 |—
@@ -555,7 +878,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Circular arc, or full circle when start and end angles coincide.
 
 |CircularString
-|`conics`
+|`curve`
 |—
 |—
 |CircularString
@@ -563,8 +886,26 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |—
 |Curve interpolated using a sequence of circular arcs.
 
+|ArcByBulge
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|Single circular arc given by its two end points and how far it bulges away from their chord.
+
+|ArcByCenterPoint
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|Single circular arc given by the centre and radius of its circle and its start/end bearings.
+
 |ConicArc
-|`conics`
+|`curve`
 |—
 |—
 |—
@@ -573,7 +914,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Arc segment of a general conic curve.
 
 |Ellipse
-|`conics`
+|`curve`
 |—
 |—
 |—
@@ -582,7 +923,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Elliptical conic curve.
 
 |EllipticArc
-|`conics`
+|`curve`
 |—
 |—
 |—
@@ -594,7 +935,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 8+| *Splines*
 
 |SplineCurve
-|`splines`
+|`curve`
 |—
 |—
 |—
@@ -603,7 +944,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |`PolynomialCurve` represented by a piecewise polynomial spline.
 
 |PolynomialSpline
-|`splines`
+|`curve`
 |—
 |—
 |—
@@ -612,7 +953,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |`SplineCurve` whose arcs are plain polynomial segments.
 
 |CubicSpline
-|`splines`
+|`curve`
 |—
 |—
 |—
@@ -621,7 +962,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |`PolynomialSpline` of degree 3.
 
 |BSplineCurve
-|`splines`
+|`curve`
 |—
 |—
 |—
@@ -629,8 +970,8 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |—
 |`SplineCurve` represented by a basis-spline (B-spline).
 
-|NURB
-|`splines`
+|NurbCurve
+|`curve`
 |—
 |—
 |—
@@ -639,7 +980,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Non-Uniform Rational B-Spline curve.
 
 |Bezier
-|`splines`
+|`curve`
 |—
 |—
 |—
@@ -648,7 +989,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Spline curve defined by Bezier control points.
 
 |BSplineSurface
-|`splines`
+|`surface`
 |—
 |—
 |—
@@ -656,11 +997,20 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |—
 |`ParametricCurveSurface` represented by a basis-spline (B-spline).
 
+|NurbSurface
+|`surface`
+|—
+|—
+|—
+|—
+|—
+|Non-Uniform Rational B-Spline surface.
+
 // --- Polynomial / function curves ---------------------------------------
 8+| *Polynomial / function curves*
 
 |FunctionArc
-|`polynomials`
+|`curve`
 |—
 |—
 |—
@@ -669,7 +1019,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Arc segment defined by a mathematical function.
 
 |FunctionCurve
-|`polynomials`
+|`curve`
 |—
 |—
 |—
@@ -678,7 +1028,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Curve made of a sequence of `FunctionArc` segments.
 
 |PolynomialArc
-|`polynomials`
+|`curve`
 |—
 |—
 |—
@@ -687,7 +1037,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |`FunctionArc` whose function is a polynomial.
 
 |PolynomialCurve
-|`polynomials`
+|`curve`
 |—
 |—
 |—
@@ -699,7 +1049,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 8+| *Spirals*
 
 |Spiral
-|`spirals`
+|`curve`
 |—
 |—
 |—
@@ -708,7 +1058,7 @@ Overview of the geometry types defined in the `org.apache.sis.geometry` module
 |Curve whose curvature varies continuously along its length.
 
 |Clothoid
-|`spirals`
+|`curve`
 |—
 |—
 |—

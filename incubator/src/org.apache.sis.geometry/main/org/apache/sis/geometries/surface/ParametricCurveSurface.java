@@ -21,6 +21,7 @@ import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
+import org.apache.sis.geometries.solid.Sphere;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
@@ -32,7 +33,11 @@ import org.opengis.referencing.ReferenceSystem;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="ParametricCurveSurface", specification=ISO_19107) // section 8.3.2
-public interface ParametricCurveSurface extends Surface, ReferenceSystem {
+public sealed interface ParametricCurveSurface extends Surface, ReferenceSystem
+        permits BilinearGrid,
+                BSplineSurface,
+                Sphere
+{
 
     @UML(identifier="rows", specification=ISO_19107) // section 8.3.2.3
     int getRows();

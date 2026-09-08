@@ -25,6 +25,6 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="BilinearGrid", specification=ISO_19107) // section 8.3.4
-public interface BilinearGrid extends ParametricCurveSurface{
+public non-sealed interface BilinearGrid extends ParametricCurveSurface {
 
 }

@@ -26,7 +26,7 @@ import org.apache.sis.measure.NumberRange;
  * @author Johann Sorel (Geomatys)
  * @see https://docs.ogc.org/DRAFTS/21-045r1.html#prism
  */
-public interface Prism extends Geometry {
+public non-sealed interface Prism extends Geometry {
 
     public static final String TYPE = "PRISM";
 

@@ -16,9 +16,9 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.apache.sis.maths.Vector;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
-import org.apache.sis.maths.Vector;
 
 
 /**
@@ -26,7 +26,10 @@ import org.apache.sis.maths.Vector;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="PolynomialSpline", specification=ISO_19107) // section 7.13.5
-public interface PolynomialSpline extends SplineCurve {
+public sealed interface PolynomialSpline extends SplineCurve
+        permits CubicSpline,
+                Bezier
+{
 
     @UML(identifier="derivativeAtStart", specification=ISO_19107) // section 7.13.5.2
     Vector getDerivativeAtStart();

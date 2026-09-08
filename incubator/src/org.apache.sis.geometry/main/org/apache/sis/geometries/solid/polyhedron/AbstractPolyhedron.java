@@ -37,7 +37,15 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class AbstractPolyhedron extends AbstractGeometry implements Polyhedron{
+public abstract sealed class AbstractPolyhedron extends AbstractGeometry implements Polyhedron
+        permits Dodecahedron,
+                Hexahedron,
+                Icosahedron,
+                Octahedron,
+                RhombicTriacontahedron,
+                Tetrahedron,
+                TruncatedIcosahedron
+{
 
     /**
      * Golden ratio, used to build the latitude constants of the icosahedral-

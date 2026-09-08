@@ -25,7 +25,7 @@ import org.opengis.geometry.Envelope;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultCircularString extends AbstractGeometry implements CircularString {
+public non-sealed class DefaultCircularString extends AbstractGeometry implements CircularString {
 
     private final DataPoints points;
 

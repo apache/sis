@@ -48,7 +48,10 @@ import org.opengis.util.FactoryException;
  *
  * @author Johann Sorel (Geomatys)
  */
-public interface PreparedTIN extends TIN {
+public sealed interface PreparedTIN extends TIN
+        permits PreparedTIN.Single,
+                PreparedTIN.Multi
+{
 
     /**
      * Triangles intersecting given area.

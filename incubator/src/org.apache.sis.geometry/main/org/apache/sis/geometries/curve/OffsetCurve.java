@@ -28,7 +28,7 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="OffsetCurve", specification=ISO_19107) // section 6.4.20
-public interface OffsetCurve extends Curve{
+public non-sealed interface OffsetCurve extends Curve {
 
     @UML(identifier="distance", specification=ISO_19107) // section 6.4.20.2
     Length getDistance();

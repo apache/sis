@@ -28,7 +28,9 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="Spiral", specification=ISO_19107) // section 7.11.2
-public interface Spiral extends Curve {
+public sealed interface Spiral extends Curve
+        permits Clothoid
+{
 
     @UML(identifier="curvature", specification=ISO_19107) // section 7.11.2.2
     RealFunction getCurvature();

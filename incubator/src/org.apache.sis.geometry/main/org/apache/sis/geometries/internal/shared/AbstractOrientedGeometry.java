@@ -27,7 +27,7 @@ import org.opengis.geometry.Envelope;
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class AbstractOrientedGeometry extends AbstractGeometry implements OrientedGeometry{
+public abstract non-sealed class AbstractOrientedGeometry extends AbstractGeometry implements OrientedGeometry {
 
     protected final Similarity<?> transform;
 

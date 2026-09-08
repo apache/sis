@@ -31,7 +31,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultCurvePolygon extends AbstractGeometry implements CurvePolygon {
+public non-sealed class DefaultCurvePolygon extends AbstractGeometry implements CurvePolygon {
 
     protected final Curve exterior;
     protected final List<Curve> interiors;

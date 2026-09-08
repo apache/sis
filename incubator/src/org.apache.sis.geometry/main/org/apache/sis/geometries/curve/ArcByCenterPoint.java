@@ -22,6 +22,7 @@ import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.internal.shared.DefaultArcByCenterPoint;
 import org.apache.sis.maths.Array;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -42,7 +43,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Johann Sorel (Geomatys)
  * @see GML ArcByCenterPoint
  */
-public interface ArcByCenterPoint extends Curve {
+public sealed interface ArcByCenterPoint extends Curve
+        permits DefaultArcByCenterPoint
+{
 
     public static final String TYPE = "ARCBYCENTERPOINT";
 

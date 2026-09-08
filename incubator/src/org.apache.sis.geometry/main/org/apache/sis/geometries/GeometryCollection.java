@@ -17,6 +17,13 @@
 package org.apache.sis.geometries;
 
 import java.util.Set;
+import org.apache.sis.geometries.curve.MultiCurve;
+import org.apache.sis.geometries.curve.ProductCurve;
+import org.apache.sis.geometries.internal.shared.DefaultGeometryCollection;
+import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
+import org.apache.sis.geometries.point.MultiPoint;
+import org.apache.sis.geometries.solid.MultiPolyhedron;
+import org.apache.sis.geometries.surface.MultiSurface;
 import org.apache.sis.geometry.GeneralEnvelope;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -35,7 +42,15 @@ import org.opengis.geometry.Envelope;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="Collection", specification=ISO_19107) // section 6.4.31
-public interface GeometryCollection<T extends Geometry> extends Geometry {
+public sealed interface GeometryCollection<T extends Geometry> extends Geometry
+        permits MultiPoint,
+                MultiCurve,
+                MultiSurface,
+                MultiPolyhedron,
+                ProductCurve,
+                DefaultGeometryCollection,
+                MultiMeshPrimitive
+{
 
     public static final String TYPE = "GEOMETRYCOLLECTION";
 

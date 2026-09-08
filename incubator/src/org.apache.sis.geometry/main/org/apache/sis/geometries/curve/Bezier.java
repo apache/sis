@@ -24,6 +24,6 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="Bezier", specification=ISO_19107) // section 7.13.7
-public interface Bezier extends PolynomialSpline, BSplineCurve{
+public non-sealed interface Bezier extends PolynomialSpline, BSplineCurve {
 
 }

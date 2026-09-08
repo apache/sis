@@ -24,6 +24,9 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="BSplineCurve", specification=ISO_19107) // section 7.13.8
-public interface BSplineCurve extends SplineCurve{
+public sealed interface BSplineCurve extends SplineCurve
+        permits Bezier,
+                NurbCurve
+{
 
 }

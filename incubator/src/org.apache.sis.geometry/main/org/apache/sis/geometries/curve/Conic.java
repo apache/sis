@@ -28,7 +28,10 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="Conic", specification=ISO_19107) // section 7.9.5
-public interface Conic extends Curve {
+public sealed interface Conic extends Curve
+        permits Arc,
+                EllipticArc
+{
 
     @UML(identifier="dataPoints", specification=ISO_19107) // section 7.9.5.2
     @Override

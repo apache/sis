@@ -30,7 +30,9 @@ import org.opengis.geometry.DirectPosition;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="ParametricCurveSolid", specification=ISO_19107) // section 9.3.1
-public interface ParametricCurveSolid extends Solid {
+public sealed interface ParametricCurveSolid extends Solid
+        permits BSolidSpline
+{
 
     @UML(identifier="horizontalCurveType", specification=ISO_19107) // section 9.3.1.2
     GeometryType getHorizontalCurveType();

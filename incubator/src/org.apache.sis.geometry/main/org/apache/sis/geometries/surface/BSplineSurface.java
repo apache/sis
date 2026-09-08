@@ -29,7 +29,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="BSplineSurface", specification=ISO_19107) // section 8.7.2
-public interface BSplineSurface extends ParametricCurveSurface {
+public sealed interface BSplineSurface extends ParametricCurveSurface
+        permits NurbSurface
+{
 
     @UML(identifier="degree", specification=ISO_19107) // section 8.7.2.2
     int getDegree();

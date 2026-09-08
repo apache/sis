@@ -37,7 +37,7 @@ import org.apache.sis.maths.Vectors;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class DefaultNurbCurve extends AbstractGeometry implements NurbCurve {
+public non-sealed class DefaultNurbCurve extends AbstractGeometry implements NurbCurve {
 
     final DataPoints points;
     final Array controlPointsArray;

@@ -26,7 +26,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultEmpty extends AbstractGeometry implements Empty {
+public non-sealed class DefaultEmpty extends AbstractGeometry implements Empty {
 
     private final AttributesType attType;
 

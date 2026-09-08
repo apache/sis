@@ -25,7 +25,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultGeometryCollection<T extends Geometry> extends AbstractGeometry implements GeometryCollection<T> {
+public non-sealed class DefaultGeometryCollection<T extends Geometry> extends AbstractGeometry implements GeometryCollection<T> {
 
     private final T[] geometries;
 

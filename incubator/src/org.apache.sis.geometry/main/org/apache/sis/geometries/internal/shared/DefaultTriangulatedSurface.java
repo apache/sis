@@ -26,7 +26,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultTriangulatedSurface extends DefaultPolyhedralSurface<Triangle> implements TIN {
+public non-sealed class DefaultTriangulatedSurface extends DefaultPolyhedralSurface<Triangle> implements TIN {
 
     public DefaultTriangulatedSurface(Triangle... patches) {
         super(null, patches);

@@ -19,6 +19,8 @@ package org.apache.sis.geometries;
 import java.util.List;
 import javax.measure.quantity.Area;
 import javax.measure.quantity.Volume;
+import org.apache.sis.geometries.solid.ParametricCurveSolid;
+import org.apache.sis.geometries.solid.Polyhedron;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
@@ -29,7 +31,10 @@ import org.opengis.geometry.DirectPosition;
  * @author Johann Sorel (Geomatys
  */
 @UML(identifier="Solid", specification=ISO_19107) // section 6.4.28
-public interface Solid extends Primitive {
+public sealed interface Solid extends Primitive
+        permits ParametricCurveSolid,
+                Polyhedron
+{
 
     /**
      * Returns 3: a polyhedron bounds a volume.

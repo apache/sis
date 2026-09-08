@@ -72,7 +72,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-public interface MeshPrimitive extends Geometry {
+public sealed interface MeshPrimitive extends Geometry
+        permits MeshPrimitive.Abs
+{
 
     public static final Logger LOGGER = Logger.getLogger("org.apache.sis.geometries");
 
@@ -277,7 +279,15 @@ public interface MeshPrimitive extends Geometry {
      */
     void removeDuplicatesByPosition();
 
-    public static abstract class Abs implements MeshPrimitive, AttributesType {
+    public static abstract sealed class Abs implements MeshPrimitive, AttributesType
+            permits Points,
+                    Lines,
+                    LineLoop,
+                    LineStrip,
+                    Triangles,
+                    TriangleFan,
+                    TriangleStrip
+    {
 
         /**
          * Checks tuplearray change for position is in the same crs as the geometry.
@@ -970,7 +980,7 @@ public interface MeshPrimitive extends Geometry {
     /**
      * A vertex is a indexed point in a geometry.
      */
-    public static class Vertex implements Point {
+    public static final class Vertex implements Point {
 
         private final Abs parent;
         private long index;
@@ -1112,7 +1122,7 @@ public interface MeshPrimitive extends Geometry {
         }
     }
 
-    public static class Points extends Abs implements MultiPoint<Point>{
+    public static final class Points extends Abs implements MultiPoint<Point>{
         public Points() {
             super(Type.POINTS);
         }
@@ -1135,7 +1145,7 @@ public interface MeshPrimitive extends Geometry {
         }
     }
 
-    public static class Lines extends Abs implements MultiLineString {
+    public static final class Lines extends Abs implements MultiLineString {
         public Lines() {
             super(Type.LINES);
         }
@@ -1153,7 +1163,7 @@ public interface MeshPrimitive extends Geometry {
         }
     }
 
-    public static class LineLoop extends Abs implements LineString {
+    public static final class LineLoop extends Abs implements LineString {
         public LineLoop() {
             super(Type.LINE_LOOP);
         }
@@ -1175,7 +1185,7 @@ public interface MeshPrimitive extends Geometry {
         }
     }
 
-    public static class LineStrip extends Abs implements LineString {
+    public static final class LineStrip extends Abs implements LineString {
         public LineStrip() {
             super(Type.LINE_STRIP);
         }
@@ -1193,7 +1203,7 @@ public interface MeshPrimitive extends Geometry {
         }
     }
 
-    public static class Triangles extends Abs implements TIN {
+    public static final class Triangles extends Abs implements TIN {
         public Triangles() {
             super(Type.TRIANGLES);
         }
@@ -1219,7 +1229,7 @@ public interface MeshPrimitive extends Geometry {
         }
     }
 
-    public static class TriangleFan extends Abs implements TIN {
+    public static final class TriangleFan extends Abs implements TIN {
         public TriangleFan() {
             super(Type.TRIANGLE_FAN);
         }
@@ -1247,7 +1257,7 @@ public interface MeshPrimitive extends Geometry {
         }
     }
 
-    public static class TriangleStrip extends Abs implements TIN {
+    public static final class TriangleStrip extends Abs implements TIN {
         public TriangleStrip() {
             super(Type.TRIANGLE_STRIP);
         }

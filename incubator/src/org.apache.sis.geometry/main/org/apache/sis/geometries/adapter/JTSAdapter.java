@@ -30,6 +30,7 @@ import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.curve.MultiLineString;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
+import org.apache.sis.geometries.internal.shared.IndexedPoint;
 import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.surface.MultiPolygon;
 import org.apache.sis.geometries.surface.Polygon;
@@ -263,7 +264,7 @@ public final class JTSAdapter {
 
         @Override
         public Point getPoint(int index) {
-            return new JTSPoint(this, index);
+            return new IndexedPoint(this, index);
         }
 
         @Override
@@ -299,62 +300,6 @@ public final class JTSAdapter {
             }
         }
 
-    }
-
-    /**
-     * An indexed point in the jts sequence
-     */
-    private static class JTSPoint implements Point {
-
-        private final JTSDataPoints parent;
-        private final int index;
-
-        public JTSPoint(JTSDataPoints geometry, int index) {
-            this.parent = geometry;
-            this.index = index;
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return false;
-        }
-
-        @Override
-        public Tuple getPosition() {
-            return parent.getPosition(index);
-        }
-
-        /**
-         * @return index in the parent.
-         */
-        public int getIndex() {
-            return index;
-        }
-
-        @Override
-        public Tuple getAttribute(String key) {
-            return parent.getAttribute(index, key);
-        }
-
-        @Override
-        public void setAttribute(String name, Tuple tuple) {
-            parent.setAttribute(index, name, tuple);
-        }
-
-        @Override
-        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return parent.getCoordinateReferenceSystem();
-        }
-
-        @Override
-        public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) {
-            throw new UnsupportedOperationException("Not supported.");
-        }
-
-        @Override
-        public AttributesType getAttributesType() {
-            return parent.getAttributesType();
-        }
     }
 
     private static class SISSequence implements CoordinateSequence {

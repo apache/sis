@@ -31,7 +31,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultPolygon extends AbstractGeometry implements Polygon {
+public non-sealed class DefaultPolygon extends AbstractGeometry implements Polygon {
 
     protected final LinearRing exterior;
     protected final List<LinearRing> interiors;

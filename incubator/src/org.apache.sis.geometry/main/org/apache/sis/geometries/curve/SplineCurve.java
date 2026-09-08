@@ -25,7 +25,10 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="SplineCurve", specification=ISO_19107) // section 7.13.4
-public interface SplineCurve extends PolynomialCurve {
+public sealed interface SplineCurve extends PolynomialCurve
+        permits PolynomialSpline,
+                BSplineCurve
+{
 
     @UML(identifier="curveForm", specification=ISO_19107) // section 7.13.4.2
     SplineCurveForm getCurveForm();

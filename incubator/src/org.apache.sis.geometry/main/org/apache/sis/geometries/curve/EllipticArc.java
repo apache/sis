@@ -25,6 +25,6 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="EllipticArc", specification=ISO_19107) // section 7.9.6
-public interface EllipticArc extends Conic {
+public non-sealed interface EllipticArc extends Conic {
 
 }

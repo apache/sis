@@ -27,7 +27,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Johann Sorel (Geomatys)
  * @see GML CompositeSolid, MultiSolid
  */
-public class DefaultMultiPolyhedron extends DefaultGeometryCollection<Polyhedron> implements MultiPolyhedron {
+public non-sealed class DefaultMultiPolyhedron extends DefaultGeometryCollection<Polyhedron> implements MultiPolyhedron {
 
     public DefaultMultiPolyhedron(Polyhedron... solids) {
         this(null, solids);

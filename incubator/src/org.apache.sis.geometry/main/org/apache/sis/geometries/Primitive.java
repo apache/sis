@@ -26,7 +26,11 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="Primitive", specification=ISO_19107) // section 6.4.11
-public interface Primitive extends Geometry {
+public sealed interface Primitive extends Geometry
+        permits Point,
+                Orientable,
+                Solid
+{
 
     default List<Primitive> getSegments() {
         //TODO

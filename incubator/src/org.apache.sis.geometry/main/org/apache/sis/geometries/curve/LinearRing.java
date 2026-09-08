@@ -18,6 +18,7 @@ package org.apache.sis.geometries.curve;
 
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.DefaultLinearRing;
 import org.apache.sis.maths.Tuple;
 
 
@@ -26,7 +27,9 @@ import org.apache.sis.maths.Tuple;
  *
  * @author Johann Sorel (Geomatys)
  */
-public interface LinearRing extends LineString {
+public sealed interface LinearRing extends LineString
+        permits DefaultLinearRing
+{
 
     public static final String TYPE = "LINEARRING";
 

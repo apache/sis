@@ -25,6 +25,7 @@ import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.IndexedPoint;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Maths;
@@ -37,7 +38,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-final class WTriangle extends AbstractGeometry implements Triangle {
+public final class WTriangle extends AbstractGeometry implements Triangle {
 
     private final LinearRing ring = GeometryFactory.createLinearRing(new DataPoints() {
         @Override
@@ -62,49 +63,12 @@ final class WTriangle extends AbstractGeometry implements Triangle {
 
         @Override
         public Point getPoint(final int index) {
-            final DataPoints ps = this;
             switch (index) {
                 case 0 :
                 case 1 :
                 case 2 :
                 case 3 :
-                    return new Point() {
-                        @Override
-                        public Tuple getPosition() {
-                            return ps.getPosition(index);
-                        }
-
-                        @Override
-                        public Tuple getAttribute(String name) {
-                            return ps.getAttribute(index, name);
-                        }
-
-                        @Override
-                        public void setAttribute(String name, Tuple tuple) {
-                            ps.setAttribute(index, name, tuple);
-                        }
-
-                        @Override
-                        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-                            return p0.getCoordinateReferenceSystem();
-                        }
-
-                        @Override
-                        public void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
-                            throw new UnsupportedOperationException("Not supported.");
-                        }
-
-                        @Override
-                        public AttributesType getAttributesType() {
-                            return ps.getAttributesType();
-                        }
-
-                        @Override
-                        public boolean isEmpty() {
-                            return false;
-                        }
-
-                    };
+                    return new IndexedPoint(this, index);
                 default : throw new ArrayIndexOutOfBoundsException();
             }
         }

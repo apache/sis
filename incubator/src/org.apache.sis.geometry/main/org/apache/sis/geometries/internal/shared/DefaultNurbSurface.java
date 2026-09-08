@@ -37,13 +37,13 @@ import org.opengis.metadata.Identifier;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class DefaultNurbSurface extends AbstractGeometry implements NurbSurface {
+public non-sealed class DefaultNurbSurface extends AbstractGeometry implements NurbSurface {
 
-    public final Vector<?>[][] controlPoints;
-    public final double[][] weights;
-    public final double[] knotsU;
-    public final double[] knotsV;
-    public final int degree;
+    final Vector<?>[][] controlPoints;
+    final double[][] weights;
+    final double[] knotsU;
+    final double[] knotsV;
+    final int degree;
 
     public DefaultNurbSurface(final Vector<?>[][] controlPoints, final double[][] weights,
             final double[] knotsU, final double[] knotsV, final int degree) {

@@ -20,6 +20,7 @@ import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.DefaultNurbCurve;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -30,7 +31,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="NURB", specification=ISO_19107) // section 7.13.8
-public interface NurbCurve extends BSplineCurve {
+public sealed interface NurbCurve extends BSplineCurve
+        permits DefaultNurbCurve
+{
 
     public static final String TYPE = "NURBS";
 

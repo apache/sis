@@ -21,6 +21,7 @@ import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.DefaultCurvePolygon;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.coordinate.GriddedSurface;
@@ -39,7 +40,9 @@ import org.opengis.geometry.coordinate.GriddedSurface;
  * @see https://docs.ogc.org/DRAFTS/21-045r1.html#curve_polygon
  */
 @UML(identifier="Polygon", specification=ISO_19107) // section 8.1.2
-public interface CurvePolygon extends Surface {
+public sealed interface CurvePolygon extends Surface
+        permits DefaultCurvePolygon
+{
 
     public static final String TYPE = "CURVEPOLYGON";
 

@@ -34,7 +34,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultReversedCurve extends AbstractGeometry implements Curve {
+public non-sealed class DefaultReversedCurve extends AbstractGeometry implements Curve {
 
     private final Curve base;
 

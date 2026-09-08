@@ -24,6 +24,9 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.DefaultTriangle;
+import org.apache.sis.geometries.operation.simplify.greedyinsert.WTriangle;
+import org.apache.sis.geometries.operation.triangulate.delaunay.OrientedTriangle;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector;
@@ -44,7 +47,11 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="Triangle", specification=ISO_19107) // section 8.1.6
-public interface Triangle extends Polygon {
+public sealed interface Triangle extends Polygon
+        permits DefaultTriangle,
+                WTriangle,
+                OrientedTriangle
+{
 
     @Override
     default String getGeometryType() {

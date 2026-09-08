@@ -35,7 +35,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultPolyhedron extends AbstractGeometry implements Polyhedron {
+public non-sealed class DefaultPolyhedron extends AbstractGeometry implements Polyhedron {
 
     private final MultiPolygon exterior;
     private final List<MultiPolygon> interiors;

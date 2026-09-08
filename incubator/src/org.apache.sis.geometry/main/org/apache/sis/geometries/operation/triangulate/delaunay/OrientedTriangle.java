@@ -37,7 +37,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-final class OrientedTriangle extends AbstractGeometry implements Triangle, DataPoints {
+public final class OrientedTriangle extends AbstractGeometry implements Triangle, DataPoints {
 
     private final LinearRing ring = GeometryFactory.createLinearRing(this);
 

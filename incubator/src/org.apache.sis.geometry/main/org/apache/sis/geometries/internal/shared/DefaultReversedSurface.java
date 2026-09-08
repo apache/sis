@@ -30,7 +30,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultReversedSurface extends AbstractGeometry implements Surface {
+public non-sealed class DefaultReversedSurface extends AbstractGeometry implements Surface {
 
     private final Surface base;
 

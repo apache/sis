@@ -25,6 +25,6 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="Clothoid", specification=ISO_19107) // section 7.11.3
-public interface Clothoid extends Spiral {
+public non-sealed interface Clothoid extends Spiral {
 
 }

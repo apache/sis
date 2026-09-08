@@ -25,7 +25,9 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="PolynomialCurve", specification=ISO_19107) // section 7.7.9
-public interface PolynomialCurve<PolynomialArc> extends FunctionCurve {
+public sealed interface PolynomialCurve<PolynomialArc> extends FunctionCurve
+        permits SplineCurve
+{
 
     @UML(identifier="degree", specification=ISO_19107) // section 7.7.9.2
     int getDegree();

@@ -18,6 +18,8 @@ package org.apache.sis.geometries.curve;
 
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.DefaultMultiLineString;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.maths.Tuple;
 
 
@@ -26,7 +28,10 @@ import org.apache.sis.maths.Tuple;
  *
  * @author Johann Sorel (Geomatys)
  */
-public interface MultiLineString extends MultiCurve<LineString> {
+public sealed interface MultiLineString extends MultiCurve<LineString>
+        permits DefaultMultiLineString,
+                MeshPrimitive.Lines
+{
 
     public static final String TYPE = "MULTILINESTRING";
 

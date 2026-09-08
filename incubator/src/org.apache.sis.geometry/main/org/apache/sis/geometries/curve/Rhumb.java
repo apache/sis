@@ -23,6 +23,7 @@ import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.DefaultRhumb;
 import org.apache.sis.maths.Array;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -35,7 +36,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="Rhumb", specification=ISO_19107) // section 7.5.1
-public interface Rhumb extends Curve {
+public sealed interface Rhumb extends Curve
+        permits DefaultRhumb
+{
 
     public static final String TYPE = "RHUMB";
 

@@ -26,7 +26,7 @@ import org.opengis.geometry.Envelope;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultRhumb extends AbstractGeometry implements Rhumb {
+public non-sealed class DefaultRhumb extends AbstractGeometry implements Rhumb {
 
     private final DataPoints points;
 

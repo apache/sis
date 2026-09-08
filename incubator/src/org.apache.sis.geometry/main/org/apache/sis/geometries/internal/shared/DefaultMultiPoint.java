@@ -28,7 +28,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultMultiPoint extends AbstractGeometry implements MultiPoint<Point> {
+public non-sealed class DefaultMultiPoint extends AbstractGeometry implements MultiPoint<Point> {
 
     private final DataPoints points;
 

@@ -23,6 +23,9 @@ import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.DefaultLineString;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.operation.triangulate.delaunay.OrientedEdge;
 import org.apache.sis.maths.Array;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -39,7 +42,13 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="Line", specification=ISO_19107) // section 7.1.2
-public interface LineString extends Curve {
+public sealed interface LineString extends Curve
+        permits LinearRing,
+                DefaultLineString,
+                MeshPrimitive.LineLoop,
+                MeshPrimitive.LineStrip,
+                OrientedEdge
+{
 
     public static final String TYPE = "LINESTRING";
 

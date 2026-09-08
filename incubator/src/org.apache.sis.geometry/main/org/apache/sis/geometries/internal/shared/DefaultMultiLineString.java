@@ -25,7 +25,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultMultiLineString extends DefaultMultiCurve<LineString> implements MultiLineString {
+public non-sealed class DefaultMultiLineString extends DefaultMultiCurve<LineString> implements MultiLineString {
 
     public DefaultMultiLineString(LineString... geometries) {
         super(geometries);

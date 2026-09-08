@@ -24,7 +24,7 @@ import org.apache.sis.geometries.curve.LinearRing;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultLinearRing extends DefaultLineString implements LinearRing{
+public non-sealed class DefaultLinearRing extends DefaultLineString implements LinearRing{
 
     public DefaultLinearRing(DataPoints points) {
         super(points);

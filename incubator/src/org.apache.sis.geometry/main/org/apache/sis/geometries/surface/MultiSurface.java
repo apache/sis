@@ -19,6 +19,7 @@ package org.apache.sis.geometries.surface;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Surface;
+import org.apache.sis.geometries.internal.shared.DefaultMultiSurface;
 
 
 /**
@@ -38,7 +39,10 @@ import org.apache.sis.geometries.Surface;
  * @author Johann Sorel (Geomatys)
  * @see https://docs.ogc.org/DRAFTS/21-045r1.html#multi_surface
  */
-public interface MultiSurface<T extends Surface> extends GeometryCollection<T>{
+public sealed interface MultiSurface<T extends Surface> extends GeometryCollection<T>
+        permits MultiPolygon,
+                DefaultMultiSurface
+{
 
     public static final String TYPE = "MULTISURFACE";
 

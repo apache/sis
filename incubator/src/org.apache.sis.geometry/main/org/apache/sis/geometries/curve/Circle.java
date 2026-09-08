@@ -25,6 +25,6 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="Circle", specification=ISO_19107) // section 7.9.4
-public interface Circle extends Arc{
+public non-sealed interface Circle extends Arc {
 
 }

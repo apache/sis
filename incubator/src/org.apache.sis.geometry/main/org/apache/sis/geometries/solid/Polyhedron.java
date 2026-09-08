@@ -19,6 +19,8 @@ package org.apache.sis.geometries.solid;
 import java.util.List;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Solid;
+import org.apache.sis.geometries.internal.shared.DefaultPolyhedron;
+import org.apache.sis.geometries.solid.polyhedron.AbstractPolyhedron;
 import org.apache.sis.geometries.surface.MultiPolygon;
 
 
@@ -36,7 +38,10 @@ import org.apache.sis.geometries.surface.MultiPolygon;
  * @author Johann Sorel (Geomatys)
  * @see https://docs.ogc.org/DRAFTS/21-045r1.html#polyhedron
  */
-public interface Polyhedron extends Solid {
+public sealed interface Polyhedron extends Solid
+        permits AbstractPolyhedron,
+                DefaultPolyhedron
+{
 
     public static final String TYPE = "POLYHEDRON";
 

@@ -26,7 +26,7 @@ import org.opengis.geometry.Envelope;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultArcByBulge extends AbstractGeometry implements ArcByBulge {
+public non-sealed class DefaultArcByBulge extends AbstractGeometry implements ArcByBulge {
 
     private final DataPoints points;
     private final double bulge;

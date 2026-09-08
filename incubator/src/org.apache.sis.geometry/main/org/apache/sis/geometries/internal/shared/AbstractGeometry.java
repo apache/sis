@@ -32,7 +32,7 @@ import org.opengis.geometry.Envelope;
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class AbstractGeometry implements Geometry {
+public abstract non-sealed class AbstractGeometry implements Geometry {
 
     private Map<String,Object> properties;
 

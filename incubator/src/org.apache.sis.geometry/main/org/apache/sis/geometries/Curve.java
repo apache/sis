@@ -18,7 +18,19 @@ package org.apache.sis.geometries;
 
 import java.util.List;
 import javax.measure.quantity.Length;
+import org.apache.sis.geometries.curve.ArcByBulge;
+import org.apache.sis.geometries.curve.ArcByCenterPoint;
+import org.apache.sis.geometries.curve.CircularString;
+import org.apache.sis.geometries.curve.CompoundCurve;
+import org.apache.sis.geometries.curve.Conic;
+import org.apache.sis.geometries.curve.FunctionCurve;
+import org.apache.sis.geometries.curve.Geodesic;
 import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.curve.OffsetCurve;
+import org.apache.sis.geometries.curve.ProductCurve;
+import org.apache.sis.geometries.curve.Rhumb;
+import org.apache.sis.geometries.curve.Spiral;
+import org.apache.sis.geometries.internal.shared.DefaultReversedCurve;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Vector;
 import static org.opengis.annotation.Specification.ISO_19107;
@@ -34,7 +46,21 @@ import org.opengis.geometry.DirectPosition;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="Curve", specification=ISO_19107) // section 6.4.18
-public interface Curve extends Orientable {
+public sealed interface Curve extends Orientable
+        permits ArcByBulge,
+                ArcByCenterPoint,
+                CircularString,
+                CompoundCurve,
+                Conic,
+                FunctionCurve,
+                Geodesic,
+                LineString,
+                OffsetCurve,
+                ProductCurve,
+                Rhumb,
+                Spiral,
+                DefaultReversedCurve
+{
 
     /**
      * Contains a list of points on the curve.

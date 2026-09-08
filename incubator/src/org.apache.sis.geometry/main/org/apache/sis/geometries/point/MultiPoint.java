@@ -21,6 +21,9 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.DefaultMultiPoint;
+import org.apache.sis.geometries.internal.shared.DefaultRawMultiPoint;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.maths.Tuple;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -35,7 +38,11 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-public interface MultiPoint<T extends Point> extends GeometryCollection<T>{
+public sealed interface MultiPoint<T extends Point> extends GeometryCollection<T>
+        permits DefaultMultiPoint,
+                DefaultRawMultiPoint,
+                MeshPrimitive.Points
+{
 
     public static final String TYPE = "MULTIPOINT";
 

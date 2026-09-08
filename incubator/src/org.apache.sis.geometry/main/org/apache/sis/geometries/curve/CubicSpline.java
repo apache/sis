@@ -25,6 +25,6 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="CubicSpline", specification=ISO_19107) // section 7.13.6
-public interface CubicSpline extends PolynomialSpline {
+public non-sealed interface CubicSpline extends PolynomialSpline {
 
 }

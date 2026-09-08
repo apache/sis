@@ -21,6 +21,7 @@ import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.internal.shared.DefaultCircularString;
 import org.apache.sis.maths.Array;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -35,7 +36,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @see https://docs.ogc.org/DRAFTS/21-045r1.html#circular_string
  * @see GML ArcString
  */
-public interface CircularString extends Curve {
+public sealed interface CircularString extends Curve
+        permits DefaultCircularString
+{
 
     public static final String TYPE = "CIRCULARSTRING";
 

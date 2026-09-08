@@ -18,6 +18,8 @@ package org.apache.sis.geometries.surface;
 
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.DefaultTriangulatedSurface;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.maths.Tuple;
 
 
@@ -26,7 +28,13 @@ import org.apache.sis.maths.Tuple;
  *
  * @author Johann Sorel (Geomatys)
  */
-public interface TIN extends TriangulatedSurface<Triangle> {
+public sealed interface TIN extends TriangulatedSurface<Triangle>
+        permits PreparedTIN,
+                DefaultTriangulatedSurface,
+                MeshPrimitive.Triangles,
+                MeshPrimitive.TriangleFan,
+                MeshPrimitive.TriangleStrip
+{
 
     public static final String TYPE = "TIN";
 

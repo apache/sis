@@ -21,6 +21,7 @@ import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.DefaultPolygon;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
@@ -46,7 +47,10 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="Polygon", specification=ISO_19107) // section 8.1.2
-public interface Polygon extends Surface {
+public sealed interface Polygon extends Surface
+        permits Triangle,
+                DefaultPolygon
+{
 
     public static final String TYPE = "POLYGON";
 

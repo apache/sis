@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.surface;
 
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.DefaultMultiPolygon;
 
 
 /**
@@ -34,7 +35,9 @@ import org.apache.sis.geometries.internal.shared.AbstractGeometry;
  *
  * @author Johann Sorel (Geomatys)
  */
-public interface MultiPolygon extends MultiSurface<Polygon> {
+public sealed interface MultiPolygon extends MultiSurface<Polygon>
+        permits DefaultMultiPolygon
+{
 
     public static final String TYPE = "MULTIPOLYGON";
 

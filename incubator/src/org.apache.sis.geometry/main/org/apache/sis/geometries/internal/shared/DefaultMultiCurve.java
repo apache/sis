@@ -25,7 +25,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultMultiCurve<T extends Curve> extends DefaultGeometryCollection<T> implements MultiCurve<T> {
+public non-sealed class DefaultMultiCurve<T extends Curve> extends DefaultGeometryCollection<T> implements MultiCurve<T> {
 
     public DefaultMultiCurve(T[] geometries) {
         this(null, geometries);

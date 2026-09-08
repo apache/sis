@@ -18,6 +18,11 @@ package org.apache.sis.geometries;
 
 import java.util.List;
 import javax.measure.quantity.Length;
+import org.apache.sis.geometries.internal.shared.DefaultReversedSurface;
+import org.apache.sis.geometries.surface.CurvePolygon;
+import org.apache.sis.geometries.surface.ParametricCurveSurface;
+import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.maths.Vector;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -49,7 +54,13 @@ import org.opengis.geometry.DirectPosition;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="Surface", specification=ISO_19107) // section 6.4.25
-public interface Surface extends Orientable {
+public sealed interface Surface extends Orientable
+        permits CurvePolygon,
+                ParametricCurveSurface,
+                Polygon,
+                PolyhedralSurface,
+                DefaultReversedSurface
+{
 
     /**
      * The area of this Surface, as measured in the spatial reference system of this Surface.

@@ -29,7 +29,9 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="Arc", specification=ISO_19107) // section 7.9.2
-public interface Arc extends Conic {
+public sealed interface Arc extends Conic
+        permits Circle
+{
 
     @UML(identifier="numArc", specification=ISO_19107) // section 7.9.2.2
     int getNumArc();

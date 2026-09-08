@@ -29,7 +29,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Johann Sorel (Geomatys)
  * @see GML Surface patches PolygonPatch CompositeSurface
  */
-public class DefaultPolyhedralSurface<T extends Polygon> extends AbstractGeometry implements PolyhedralSurface<T> {
+public non-sealed class DefaultPolyhedralSurface<T extends Polygon> extends AbstractGeometry implements PolyhedralSurface<T> {
 
     private final T[] patches;
 

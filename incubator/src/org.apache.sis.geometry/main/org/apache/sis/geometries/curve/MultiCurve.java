@@ -18,6 +18,7 @@ package org.apache.sis.geometries.curve;
 
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.internal.shared.DefaultMultiCurve;
 
 
 /**
@@ -41,7 +42,10 @@ import org.apache.sis.geometries.GeometryCollection;
  * @author Johann Sorel (Geomatys)
  * @see https://docs.ogc.org/DRAFTS/21-045r1.html#multi_curve
  */
-public interface MultiCurve<T extends Curve> extends GeometryCollection<T>{
+public sealed interface MultiCurve<T extends Curve> extends GeometryCollection<T>
+        permits MultiLineString,
+                DefaultMultiCurve
+{
 
     public static final String TYPE = "MULTICURVE";
 

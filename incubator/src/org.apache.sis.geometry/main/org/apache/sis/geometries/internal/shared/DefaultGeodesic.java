@@ -25,7 +25,7 @@ import org.opengis.geometry.Envelope;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultGeodesic extends AbstractGeometry implements Geodesic {
+public non-sealed class DefaultGeodesic extends AbstractGeometry implements Geodesic {
 
     private final DataPoints points;
 

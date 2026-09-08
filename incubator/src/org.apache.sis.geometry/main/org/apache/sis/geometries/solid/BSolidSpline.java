@@ -25,6 +25,6 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="BSolidSpline", specification=ISO_19107) // section 9.3.2
-public interface BSolidSpline extends ParametricCurveSolid {
+public non-sealed interface BSolidSpline extends ParametricCurveSolid {
 
 }

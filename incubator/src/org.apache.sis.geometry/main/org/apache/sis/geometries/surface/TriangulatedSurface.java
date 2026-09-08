@@ -25,6 +25,8 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="TriangulatedSurface", specification=ISO_19107) // section 8.1.8
-public interface TriangulatedSurface<T extends Polygon> extends PolyhedralSurface<T> {
+public sealed interface TriangulatedSurface<T extends Polygon> extends PolyhedralSurface<T>
+        permits TIN
+{
 
 }

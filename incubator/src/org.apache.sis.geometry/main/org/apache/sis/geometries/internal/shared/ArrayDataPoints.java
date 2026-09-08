@@ -164,7 +164,7 @@ public final class ArrayDataPoints implements DataPoints, AttributesType {
     /**
      * An indexed point in the point sequence
      */
-    public static class Indexed implements Point {
+    public static non-sealed class Indexed implements Point {
 
         private final ArrayDataPoints parent;
         private final int index;

@@ -19,6 +19,8 @@ package org.apache.sis.geometries;
 import java.util.List;
 import java.util.Map;
 import javax.measure.quantity.Length;
+import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.operation.GeometryProcessor;
 import org.apache.sis.geometries.operation.OperationException;
 import static org.opengis.annotation.Specification.ISO_19107;
@@ -50,7 +52,16 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="Geometry", specification=ISO_19107) // section 6.4.4
-public interface Geometry {
+public sealed interface Geometry
+        permits Primitive,
+                GeometryCollection,
+                OrientedGeometry,
+                Empty,
+                Prism,
+                MeshPrimitive,
+                AbstractGeometry,
+                BBox
+{
 
     /**
      * Get geometry coordinate system.

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+import org.apache.sis.geometries.internal.shared.DefaultEmpty;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
@@ -25,7 +26,9 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="Empty", specification=ISO_19107) // section 6.4.10
-public interface Empty extends Geometry{
+public sealed interface Empty extends Geometry
+        permits DefaultEmpty
+{
 
     public static final String TYPE = "EMPTY";
 

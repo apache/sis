@@ -23,7 +23,7 @@ import org.apache.sis.geometries.curve.LineString;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultLineString extends AbstractGeometry implements LineString {
+public non-sealed class DefaultLineString extends AbstractGeometry implements LineString {
 
     private final DataPoints points;
 

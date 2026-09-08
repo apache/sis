@@ -26,7 +26,7 @@ import org.opengis.geometry.Envelope;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultArcByCenterPoint extends AbstractGeometry implements ArcByCenterPoint {
+public non-sealed class DefaultArcByCenterPoint extends AbstractGeometry implements ArcByCenterPoint {
 
     private final Point center;
     private final double radius;

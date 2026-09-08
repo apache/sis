@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.apache.sis.geometries.Surface;
+import org.apache.sis.geometries.internal.shared.DefaultPolyhedralSurface;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
@@ -47,7 +48,10 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="PolyhedralSurface", specification=ISO_19107) // section 8.1.4 TODO extends geometry collection is ISO 19107
-public interface PolyhedralSurface<T extends Polygon> extends /*GeometryCollection<org.apache.sis.geometries.Polygon>,*/ Surface {
+public sealed interface PolyhedralSurface<T extends Polygon> extends /*GeometryCollection<org.apache.sis.geometries.Polygon>,*/ Surface
+        permits TriangulatedSurface,
+                DefaultPolyhedralSurface
+{
 
     public static final String TYPE = "POLYHEDRALSURFACE";
 

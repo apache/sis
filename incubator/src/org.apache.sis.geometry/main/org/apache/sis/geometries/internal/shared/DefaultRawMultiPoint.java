@@ -25,7 +25,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultRawMultiPoint extends DefaultGeometryCollection<Point> implements MultiPoint<Point> {
+public non-sealed class DefaultRawMultiPoint extends DefaultGeometryCollection<Point> implements MultiPoint<Point> {
 
     public DefaultRawMultiPoint(Point[] geometries) {
         this(null, geometries);

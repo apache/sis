@@ -30,7 +30,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultCompoundCurve extends AbstractGeometry implements CompoundCurve {
+public non-sealed class DefaultCompoundCurve extends AbstractGeometry implements CompoundCurve {
 
     private final Curve[] curves;
 

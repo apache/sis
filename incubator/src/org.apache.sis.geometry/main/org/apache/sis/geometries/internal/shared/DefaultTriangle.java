@@ -27,7 +27,7 @@ import org.apache.sis.geometries.surface.Triangle;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultTriangle extends DefaultPolygon implements Triangle {
+public non-sealed class DefaultTriangle extends DefaultPolygon implements Triangle {
 
     /**
      * @param exterior exterior triangle ring

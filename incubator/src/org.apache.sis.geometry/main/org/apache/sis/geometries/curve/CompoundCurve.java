@@ -21,6 +21,7 @@ import java.util.List;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.internal.shared.DefaultCompoundCurve;
 
 /**
  * A curve made of several curves joined end to end, each of which may use a different
@@ -30,7 +31,9 @@ import org.apache.sis.geometries.Point;
  * @author Johann Sorel (Geomatys
  * @see https://docs.ogc.org/DRAFTS/21-045r1.html#compound_curve
  */
-public interface CompoundCurve extends Curve {
+public sealed interface CompoundCurve extends Curve
+        permits DefaultCompoundCurve
+{
 
     public static final String TYPE = "COMPOUNDCURVE";
 

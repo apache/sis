@@ -35,7 +35,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-final class OrientedEdge extends AbstractGeometry implements LineString, DataPoints {
+public final class OrientedEdge extends AbstractGeometry implements LineString, DataPoints {
 
     /**
      * Structure is shared by the two opposite directional edges.

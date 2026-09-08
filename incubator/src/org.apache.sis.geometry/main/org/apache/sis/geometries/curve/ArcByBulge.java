@@ -20,6 +20,7 @@ import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.internal.shared.DefaultArcByBulge;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Vector;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -39,7 +40,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Johann Sorel (Geomatys)
  * @see GML ArcByBulge
  */
-public interface ArcByBulge extends Curve {
+public sealed interface ArcByBulge extends Curve
+        permits DefaultArcByBulge
+{
 
     public static final String TYPE = "ARCBYBULGE";
 

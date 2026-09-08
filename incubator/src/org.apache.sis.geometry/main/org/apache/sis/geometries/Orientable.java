@@ -25,7 +25,10 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="Orientable", specification=ISO_19107) // section 6.4.15
-public interface Orientable extends Primitive {
+public sealed interface Orientable extends Primitive
+        permits Curve,
+                Surface
+{
 
     public static enum Sign {
         POSITIVE,

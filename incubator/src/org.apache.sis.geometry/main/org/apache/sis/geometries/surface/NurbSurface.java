@@ -16,13 +16,17 @@
  */
 package org.apache.sis.geometries.surface;
 
+import org.apache.sis.geometries.internal.shared.DefaultNurbSurface;
+
 /**
  * TODO : missing in ISO:19107 ? need to recheck this one.
  *
  *
  * @author Johann Sorel (Geomatys)
  */
-public interface NurbSurface extends BSplineSurface {
+public sealed interface NurbSurface extends BSplineSurface
+        permits DefaultNurbSurface
+{
 
     public static final String TYPE = "NURBSSURFACE";
 

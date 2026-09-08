@@ -16,8 +16,9 @@
  */
 package org.apache.sis.geometries;
 
-import org.opengis.geometry.Envelope;
+import org.apache.sis.geometries.internal.shared.AbstractOrientedGeometry;
 import org.apache.sis.maths.Similarity;
+import org.opengis.geometry.Envelope;
 
 
 /**
@@ -39,7 +40,9 @@ import org.apache.sis.maths.Similarity;
  *
  * @author Johann Sorel
  */
-public interface OrientedGeometry extends Geometry {
+public sealed interface OrientedGeometry extends Geometry
+        permits AbstractOrientedGeometry
+{
 
     /**
      * Get geometry transform.

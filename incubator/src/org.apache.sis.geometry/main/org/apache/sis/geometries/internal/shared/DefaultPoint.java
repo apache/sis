@@ -32,7 +32,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultPoint extends AbstractGeometry implements Point {
+public non-sealed class DefaultPoint extends AbstractGeometry implements Point {
 
     private final DataPoints points;
 

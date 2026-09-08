@@ -25,7 +25,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultMultiSurface<T extends Surface> extends DefaultGeometryCollection<T> implements MultiSurface<T> {
+public non-sealed class DefaultMultiSurface<T extends Surface> extends DefaultGeometryCollection<T> implements MultiSurface<T> {
 
     public DefaultMultiSurface(T[] geometries) {
         this(null, geometries);

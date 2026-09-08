@@ -17,6 +17,11 @@
 package org.apache.sis.geometries;
 
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
+import org.apache.sis.geometries.internal.shared.DefaultPoint;
+import org.apache.sis.geometries.internal.shared.IndexedPoint;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector;
 import static org.opengis.annotation.Specification.ISO_19107;
@@ -33,7 +38,13 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="Point", specification=ISO_19107) // section 6.4.13
-public interface Point extends Primitive {
+public sealed interface Point extends Primitive
+        permits DefaultPoint,
+                IndexedPoint,
+                ArrayDataPoints.Indexed,
+                MeshPrimitive.Vertex,
+                Triangle.InterpolatedPoint
+{
 
     public static final String TYPE = "POINT";
 

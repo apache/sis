@@ -30,7 +30,7 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="ProductCurve", specification=ISO_19107) // section 6.4.22
-public interface ProductCurve extends Curve, GeometryCollection<Curve> {
+public non-sealed interface ProductCurve extends Curve, GeometryCollection<Curve> {
 
     @UML(identifier="parameterRange", specification=ISO_19107) // section 6.4.22.2
     Range<?> getParameterRange();

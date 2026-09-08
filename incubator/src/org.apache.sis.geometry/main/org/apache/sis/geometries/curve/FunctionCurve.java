@@ -26,7 +26,9 @@ import org.opengis.annotation.UML;
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="FunctionCurve", specification=ISO_19107) // section 7.7.5
-public interface FunctionCurve<T extends FunctionArc> extends Curve{
+public sealed interface FunctionCurve<T extends FunctionArc> extends Curve
+        permits PolynomialCurve
+{
 
     @UML(identifier="numArc", specification=ISO_19107) // section 7.7.5.2
     Integer getNumArc();
