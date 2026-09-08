@@ -43,11 +43,11 @@ public final class SutherlandHodgman {
      * @return Sequence of tuple for the result polygon
      */
     public static List<Tuple> clip(List<Tuple> subject, List<Tuple> clip){
-        final List<Tuple> outputList = new ArrayList(subject);
+        final List<Tuple> outputList = new ArrayList<>(subject);
 
         for (int i = 0, n = clip.size() - 1; i < n; i++){
-            final Tuple clipEdgeStart = clip.get(i);
-            final Tuple clipEdgeEnd = clip.get(i + 1);
+            final Tuple<?> clipEdgeStart = clip.get(i);
+            final Tuple<?> clipEdgeEnd = clip.get(i + 1);
 
             final List<Tuple> inputList = new ArrayList<>(outputList);
             if (inputList.isEmpty()) break;
@@ -55,7 +55,7 @@ public final class SutherlandHodgman {
 
             Tuple start = inputList.get(inputList.size() - 1);
             for (int k = 0, kn = inputList.size(); k < kn; k++){
-                final Tuple end = (Tuple) inputList.get(k);
+                final Tuple<?> end = inputList.get(k);
 
                 if (isInside(clipEdgeStart, clipEdgeEnd, end)){
                     if (!isInside(clipEdgeStart, clipEdgeEnd, start)){
@@ -72,11 +72,11 @@ public final class SutherlandHodgman {
         return outputList;
     }
 
-    private static boolean isInside(Tuple edgeStart, Tuple edgeEnd, Tuple point){
+    private static boolean isInside(Tuple<?> edgeStart, Tuple<?> edgeEnd, Tuple<?> point){
         return Maths.lineSide(edgeStart, edgeEnd, point) > 0;
     }
 
-    private static Tuple computeIntersection(Tuple start1, Tuple end1, Tuple start2, Tuple end2){
+    private static Tuple computeIntersection(Tuple<?> start1, Tuple<?> end1, Tuple<?> start2, Tuple<?> end2){
         final double[] buffer1 = new double[start2.getDimension()];
         final double[] buffer2 = new double[start2.getDimension()];
         final double[] ratio = new double[2];

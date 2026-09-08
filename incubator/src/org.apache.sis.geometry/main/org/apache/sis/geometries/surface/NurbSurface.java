@@ -14,17 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.curve;
-
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
-
+package org.apache.sis.geometries.surface;
 
 /**
+ * TODO : missing in ISO:19107 ? need to recheck this one.
+ *
  *
  * @author Johann Sorel (Geomatys)
  */
-@UML(identifier="NURB", specification=ISO_19107) // section 7.13.8
-public interface NURB extends BSplineCurve {
+public interface NurbSurface extends BSplineSurface {
+
+    public static final String TYPE = "NURBSSURFACE";
+
+    @Override
+    default String getGeometryType() {
+        return TYPE;
+    }
 
 }

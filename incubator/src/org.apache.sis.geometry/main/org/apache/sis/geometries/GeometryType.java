@@ -21,6 +21,7 @@ import org.opengis.annotation.UML;
 
 
 /**
+ * NOTE : ISO:19107 define a short list, but in different part of the UML it refers to more accurate types.
  *
  * @author Johann Sorel (Geomatys)
  */
@@ -28,15 +29,23 @@ import org.opengis.annotation.UML;
 public enum GeometryType {
     EMPTY,
     GEOMETRY,
+    COLLECTION,
+
+    //point types
     POINT,
+
+    //curve types
     CURVE,
-    SURFACE,
     LINE,
     GEODESIC,
-    POLYGON,
-    COLLECTION,
+    RHUMB,
     SPLINECURVE,
+
+    //surface types
+    SURFACE,
+    POLYGON,
     SPLINESURFACE,
+
+    //solid types
     SPLINESOLID,
-    RHUMB
 }

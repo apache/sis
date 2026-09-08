@@ -43,6 +43,10 @@ public final class NDArrays {
         return of(vectors, SampleSystem.ofSize(dimension), dataType);
     }
 
+    public static <T extends ReadOnly.Tuple<?>> Array of(T[] vectors, int dimension, DataType dataType) {
+        return of(List.of(vectors), SampleSystem.ofSize(dimension), dataType);
+    }
+
     public static Array of(List<? extends ReadOnly.Tuple<?>> vectors, SampleSystem type, DataType dataType) {
         final int dimension = type.getSize();
         final Array array;

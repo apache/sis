@@ -16,6 +16,7 @@
  */
 package org.apache.sis.maths;
 
+import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -283,6 +284,22 @@ public interface Array extends NDArray {
             cursor.samples().toArrayDouble(array, i*dimension);
         }
         return array;
+    }
+
+    /**
+     * Extract all tuples as a Vector array.
+     */
+    default Vector<?>[] toArray() {
+        return toArray(0, getLength());
+    }
+
+    /**
+     * Extract all tuples as a Vector array.
+     */
+    default Vector<?>[] toArray(long offset, long nbTuple) {
+        return stream(false).skip(offset).limit(nbTuple)
+                .map((Tuple<?> t) -> Vectors.create(t.getSampleSystem(), t.getDataType()).set(t))
+                .toArray(Vector<?>[]::new);
     }
 
     /**

@@ -18,6 +18,7 @@ package org.apache.sis.geometries.surface;
 
 import java.util.List;
 import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
 import static org.opengis.annotation.Specification.ISO_19107;
@@ -45,7 +46,7 @@ public interface ParametricCurveSurface extends Surface, ReferenceSystem {
 
     @UML(identifier="dataPoints", specification=ISO_19107) // section 8.3.2.5
     @Override
-    List<DirectPosition> getDataPoints();
+    DataPoints getDataPoints();
 
     @UML(identifier="horizontalCurveType", specification=ISO_19107) // section 8.3.2.2, 8.3.2.7
     GeometryType getHorizontalCurveType();

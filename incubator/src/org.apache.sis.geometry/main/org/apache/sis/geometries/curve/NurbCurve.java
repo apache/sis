@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.surface;
+package org.apache.sis.geometries.curve;
 
 import org.apache.sis.geometries.AttributesType;
-import org.apache.sis.geometries.GeometryType;
-import org.apache.sis.geometries.curve.KnotType;
+import org.apache.sis.geometries.CurveInterpolation;
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -28,24 +29,21 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * @author Johann Sorel (Geomatys)
  */
-@UML(identifier="BSplineSurface", specification=ISO_19107) // section 8.7.2
-public interface BSplineSurface extends ParametricCurveSurface {
+@UML(identifier="NURB", specification=ISO_19107) // section 7.13.8
+public interface NurbCurve extends BSplineCurve {
 
-    @UML(identifier="degree", specification=ISO_19107) // section 8.7.2.2
-    int getDegree();
+    public static final String TYPE = "NURBS";
 
-    @UML(identifier="knot", specification=ISO_19107) // section 8.7.2.3
     @Override
-    double[] getKnots();
+    default String getGeometryType() {
+        return TYPE;
+    }
 
-    @UML(identifier="knotSpec", specification=ISO_19107) // section 8.7.2.5
-    KnotType getKnotSpec();
-
-    @UML(identifier="surfaceForm", specification=ISO_19107) // section 8.7.2.4
-    BSplineSurfaceForm getSurfaceForm();
-
-    @UML(identifier="isPolynomial", specification=ISO_19107) // section 8.7.2.6
-    boolean isPolynomial();
+    @UML(identifier="interpolation", specification=ISO_19107) // section 7.1.2.2
+    @Override
+    default CurveInterpolation getInterpolation() {
+        return CurveInterpolation.NURBS;
+    }
 
     @Override
     default CoordinateReferenceSystem getCoordinateReferenceSystem() {
@@ -68,12 +66,36 @@ public interface BSplineSurface extends ParametricCurveSurface {
     }
 
     @Override
-    default GeometryType getHorizontalCurveType() {
-        return GeometryType.SPLINECURVE;
+    default SplineCurveForm getCurveForm() {
+        return null;
     }
 
     @Override
-    default GeometryType getVerticalCurveType() {
-        return GeometryType.SPLINECURVE;
+    default KnotType getKnotSpec() {
+        return KnotType.NON_UNIFORM;
+    }
+
+    @Override
+    default boolean isRational() {
+        return true;
+    }
+
+    @Override
+    default Integer getNumArc() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    default FunctionArc getSegment(int idx) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    default String asText() {
+        final StringBuilder sb = new StringBuilder("NURBS (");
+        final DataPoints points = getDataPoints();
+        AbstractGeometry.toText(sb, points);
+        sb.append(')');
+        return sb.toString();
     }
 }

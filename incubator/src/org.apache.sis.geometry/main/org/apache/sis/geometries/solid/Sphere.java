@@ -20,6 +20,7 @@ import java.util.List;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
@@ -173,7 +174,7 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
     }
 
     @Override
-    public List<DirectPosition> getDataPoints() {
+    public DataPoints getDataPoints() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

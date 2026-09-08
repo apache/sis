@@ -116,7 +116,7 @@ public interface Surface extends Orientable {
     }
 
     @UML(identifier="dataPoint", specification=ISO_19107) // section 6.4.25.8
-    default List<DirectPosition> getDataPoints() {
+    default DataPoints getDataPoints() {
         //TODO
         throw new UnsupportedOperationException();
     }
