@@ -102,6 +102,28 @@ public interface Vector<T extends Vector<T>> extends Tuple<T>, ReadOnly.Vector<T
         return (T) this;
     }
 
+    /**
+     * Spherical linear interpolation from this vector to the other vector.
+     * <p>
+     * Where {@link #lerp(ReadOnly.Tuple, double) } moves along the straight line joining
+     * the two vectors, this moves along the arc joining them, sweeping the angle between
+     * them proportionally to the ratio. Both vectors having the same length, the result
+     * keeps it too, which makes this the interpolation to use for directions. When their
+     * lengths differ, the angle is still swept evenly and the length is interpolated
+     * linearly.
+     *
+     * @param other vector to interpolate toward
+     * @param ratio interpolation factor, zero for this vector and one for the other vector
+     * @return this vector
+     * @throws IllegalArgumentException if both vectors point in opposite directions, in
+     *         which case they define no unique arc to interpolate along
+     * @see Vectors#slerp(double[], double[], double, double[])
+     */
+    default T slerp(ReadOnly.Tuple<?> other, double ratio) {
+        set( Vectors.slerp(toArrayDouble(), other.toArrayDouble(), ratio));
+        return (T) this;
+    }
+
     @Override
     public T copy();
 

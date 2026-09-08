@@ -28,6 +28,7 @@ import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector3D;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -137,7 +138,7 @@ public abstract sealed class AbstractPolyhedron extends AbstractGeometry impleme
      * @return unit direction vector
      */
     protected static ReadOnly.Vector<?> fromLatLon(double latRad, double lonRad) {
-        return new Vector3D.Double().setFromLatLon(latRad, lonRad);
+        return new Vector3D.Double(SampleSystem.cartesian(3)).setFromLatLon(latRad, lonRad);
     }
 
     /**
@@ -150,7 +151,7 @@ public abstract sealed class AbstractPolyhedron extends AbstractGeometry impleme
      * @return direction vector
      */
     protected static ReadOnly.Vector<?> fromLatLon(double latRad, double lonRad, double radius) {
-        return new Vector3D.Double().setFromLatLon(latRad, lonRad).scale(radius);
+        return new Vector3D.Double(SampleSystem.cartesian(3)).setFromLatLon(latRad, lonRad).scale(radius);
     }
 
     /**

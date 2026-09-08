@@ -59,4 +59,54 @@ public class GreatCircleArcTest {
         assertEquals(0, emptyArc.getLength(), TOLERANCE);
     }
 
+    /**
+     * Interpolation must land on the arc ends, on the arc middle, and space the points
+     * evenly in angle along the way.
+     */
+    @Test
+    public void pointAtTest() {
+        final GreatCircleArc arc = new GreatCircleArc(new Sphere(3), a, b);
+
+        assertArrayEquals(a.toArrayDouble(), arc.pointAt(0).toArrayDouble(), TOLERANCE);
+        assertArrayEquals(b.toArrayDouble(), arc.pointAt(1).toArrayDouble(), TOLERANCE);
+        //fractions outside the range are clamped
+        assertArrayEquals(a.toArrayDouble(), arc.pointAt(-0.5).toArrayDouble(), TOLERANCE);
+        assertArrayEquals(b.toArrayDouble(), arc.pointAt(1.5).toArrayDouble(), TOLERANCE);
+
+        //the middle of a quarter circle is at 45 degrees
+        final double h = Math.sqrt(0.5);
+        assertArrayEquals(new double[] {h, h, 0}, arc.pointAt(0.5).toArrayDouble(), TOLERANCE);
+
+        //a third of the way is at 30 degrees, which a straight line interpolation would miss
+        final double third = Math.PI / 6;
+        assertArrayEquals(new double[] {Math.cos(third), Math.sin(third), 0},
+                          arc.pointAt(1.0 / 3).toArrayDouble(), TOLERANCE);
+
+        //every interpolated point must be a unit vector at the expected angle from the start
+        for (int i = 0; i <= 10; i++) {
+            final double fraction = i / 10.0;
+            final ReadOnly.Vector<?> point = arc.pointAt(fraction);
+            assertEquals(1, point.length(), TOLERANCE, "Interpolated points must be unit vectors");
+            assertEquals(fraction * Math.PI / 2, Math.acos(point.dot(a)), TOLERANCE,
+                         "Points must be evenly spaced in angle");
+        }
+    }
+
+    /**
+     * Coincident points interpolate to themselves, and antipodal points must be rejected
+     * rather than silently produce NaN : they do not define a unique great circle.
+     */
+    @Test
+    public void pointAtDegenerateTest() {
+        final GreatCircleArc coincident = new GreatCircleArc(new Sphere(3), a, a);
+        assertArrayEquals(a.toArrayDouble(), coincident.pointAt(0.0).toArrayDouble(), TOLERANCE);
+        assertArrayEquals(a.toArrayDouble(), coincident.pointAt(0.5).toArrayDouble(), TOLERANCE);
+        assertArrayEquals(a.toArrayDouble(), coincident.pointAt(1.0).toArrayDouble(), TOLERANCE);
+
+        final GreatCircleArc antipodal = new GreatCircleArc(new Sphere(3), a, new Vector3D.Double(-1, 0, 0));
+        //the ends themselves are still well defined
+        assertArrayEquals(a.toArrayDouble(), antipodal.pointAt(0.0).toArrayDouble(), TOLERANCE);
+        assertThrows(IllegalArgumentException.class, () -> antipodal.pointAt(0.5));
+        assertThrows(IllegalArgumentException.class, () -> antipodal.pointAt(0.25));
+    }
 }

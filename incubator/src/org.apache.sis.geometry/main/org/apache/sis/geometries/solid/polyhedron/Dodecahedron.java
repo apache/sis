@@ -73,6 +73,8 @@ public final class Dodecahedron extends AbstractPolyhedron{
         {15, 12, 11, 19, 14, 15}
     };
 
+    public Dodecahedron(){}
+
     @Override
     public int getFaceCount() {
         return FACES.length;

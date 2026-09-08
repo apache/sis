@@ -17,6 +17,7 @@
 package org.apache.sis.maths;
 
 import java.lang.foreign.SegmentAllocator;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -173,6 +174,15 @@ public interface ArrayFactory {
                         throw new IllegalArgumentException("Values iterable is not made of Tuple or primitive array");
                     }
                 }
+            } else if (values != null && values.getClass().isArray()) {
+                final Class<?> componentType = values.getClass().getComponentType();
+                if (ReadOnly.Tuple.class.isAssignableFrom(componentType)) {
+                    final int size = java.lang.reflect.Array.getLength(values);
+                    if (size != 0) {
+                        final ReadOnly.Tuple tuple = (ReadOnly.Tuple) java.lang.reflect.Array.get(values, 0);
+                        return tuple.getSampleSystem();
+                    }
+                }
             }
             return SampleSystem.ofSize(1);
         }
@@ -187,8 +197,13 @@ public interface ArrayFactory {
                 return nd.getShape();
             } else if (values != null && values.getClass().isArray()) {
                 final int size = java.lang.reflect.Array.getLength(values);
-                if ((size % nbSample) != 0) throw new IllegalArgumentException("Values size : " + size + "is not a multiple of sample system size : " + nbSample);
-                return new long[]{size / nbSample};
+                final Class<?> componentType = values.getClass().getComponentType();
+                if (ReadOnly.Tuple.class.isAssignableFrom(componentType)) {
+                    return new long[]{size};
+                } else {
+                    if ((size % nbSample) != 0) throw new IllegalArgumentException("Values size : " + size + " is not a multiple of sample system size : " + nbSample);
+                    return new long[]{size / nbSample};
+                }
             } else if (values instanceof Collection<?> col) {
                 return new long[]{col.size()};
             }
@@ -202,7 +217,15 @@ public interface ArrayFactory {
                 return nd.getDataType();
             } else if (values != null && values.getClass().isArray()) {
                 final Class<?> componentType = values.getClass().getComponentType();
-                return DataType.forPrimitiveType(componentType, false);
+                if (ReadOnly.Tuple.class.isAssignableFrom(componentType)) {
+                    final int size = java.lang.reflect.Array.getLength(values);
+                    if (size != 0) {
+                        final ReadOnly.Tuple tuple = (ReadOnly.Tuple) java.lang.reflect.Array.get(values, 0);
+                        return tuple.getDataType();
+                    }
+                } else {
+                    return DataType.forPrimitiveType(componentType, false);
+                }
             } else if (values instanceof Collection<?> col) {
                 final Iterator<?> ite = col.iterator();
                 if (ite.hasNext()) {
@@ -224,16 +247,27 @@ public interface ArrayFactory {
             final int nbDim = target.getSampleSystem().getSize();
 
             if (values != null) {
+                final Class<? extends Object> valueClass = values.getClass();
                 if (values instanceof Array array) {
                     target.set(0, array, 0, array.getLength());
-                } else if (values != null && values.getClass().isArray()) {
-                    int idx = 0;
-                    final Cursor cursor = target.cursor();
-                    while (cursor.next()) {
-                        final Tuple tuple = cursor.samples();
-                        for (int i = 0; i < nbDim; i++) {
-                            tuple.set(i, java.lang.reflect.Array.getDouble(values, idx));
-                            idx++;
+                } else if (values != null && valueClass.isArray()) {
+                    Class<?> componentType = valueClass.getComponentType();
+                    if (ReadOnly.Tuple.class.isAssignableFrom(componentType)) {
+                        int idx = 0;
+                        final Cursor cursor = target.cursor();
+                        while (cursor.next()) {
+                            final Tuple tuple = cursor.samples();
+                            tuple.set((ReadOnly.Tuple) java.lang.reflect.Array.get(values, idx));
+                        }
+                    } else {
+                        int idx = 0;
+                        final Cursor cursor = target.cursor();
+                        while (cursor.next()) {
+                            final Tuple tuple = cursor.samples();
+                            for (int i = 0; i < nbDim; i++) {
+                                tuple.set(i, java.lang.reflect.Array.getDouble(values, idx));
+                                idx++;
+                            }
                         }
                     }
                 } else if (values instanceof Collection<?> col) {

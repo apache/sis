@@ -73,6 +73,8 @@ public final class Icosahedron extends AbstractPolyhedron{
         {11,  5,  7, 11}
     };
 
+    public Icosahedron() {}
+
     @Override
     public int getFaceCount() {
         return FACES.length;

@@ -45,6 +45,8 @@ public final class Tetrahedron extends AbstractPolyhedron{
         {2, 1, 3, 2}
     };
 
+    public Tetrahedron(){}
+
     @Override
     public int getFaceCount() {
         return FACES.length;

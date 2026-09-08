@@ -124,4 +124,119 @@ public class VectorsTest {
         assertArrayEquals(new double[] {32767, 32767, 32767}, coord2.toArrayDouble(), DELTA);
 
     }
+
+    private static final double SLERP_TOLERANCE = 1e-12;
+
+    /**
+     * Spherical interpolation must sweep the angle evenly, and must keep the length of
+     * the vectors, which is what sets it apart from a linear interpolation.
+     */
+    @Test
+    public void slerpTest() {
+        final double[] start = {1, 0, 0};
+        final double[] end   = {0, 1, 0};
+
+        //the ends are returned as they are, and ratios outside the range are clamped
+        assertArrayEquals(start, Vectors.slerp(start, end, 0), SLERP_TOLERANCE);
+        assertArrayEquals(end,   Vectors.slerp(start, end, 1), SLERP_TOLERANCE);
+        assertArrayEquals(start, Vectors.slerp(start, end, -1), SLERP_TOLERANCE);
+        assertArrayEquals(end,   Vectors.slerp(start, end, 2), SLERP_TOLERANCE);
+
+        //the middle of a quarter circle is at 45 degrees, not at the middle of the chord
+        final double h = Math.sqrt(0.5);
+        assertArrayEquals(new double[] {h, h, 0}, Vectors.slerp(start, end, 0.5), SLERP_TOLERANCE);
+        //where a linear interpolation would fall short, inside the circle
+        assertEquals(Math.sqrt(0.5), Vectors.length(Vectors.lerp(start, end, 0.5)), SLERP_TOLERANCE);
+
+        //a third of the way is a third of the angle, so 30 degrees
+        assertArrayEquals(new double[] {Math.cos(Math.PI/6), Math.sin(Math.PI/6), 0},
+                          Vectors.slerp(start, end, 1.0/3), SLERP_TOLERANCE);
+
+        //the length is kept, and the angle grows proportionally to the ratio
+        for (int i = 0; i <= 10; i++) {
+            final double ratio = i / 10.0;
+            final double[] point = Vectors.slerp(start, end, ratio);
+            assertEquals(1, Vectors.length(point), SLERP_TOLERANCE, "Length must be kept");
+            assertEquals(ratio * Math.PI/2, Math.acos(Vectors.dot(point, start)), SLERP_TOLERANCE,
+                         "Angle must grow proportionally to the ratio");
+        }
+    }
+
+    /**
+     * Spherical interpolation must work in any dimension, and on vectors which are not
+     * unit vectors.
+     */
+    @Test
+    public void slerpOtherLengthsAndDimensionsTest() {
+        //2D vectors of length 3
+        final double[] start2D = {3, 0};
+        final double[] end2D   = {0, 3};
+        final double[] mid2D = Vectors.slerp(start2D, end2D, 0.5);
+        assertEquals(3, Vectors.length(mid2D), SLERP_TOLERANCE);
+        assertArrayEquals(new double[] {3*Math.sqrt(0.5), 3*Math.sqrt(0.5)}, mid2D, SLERP_TOLERANCE);
+
+        //4D vectors
+        final double[] start4D = {1, 0, 0, 0};
+        final double[] end4D   = {0, 0, 0, 1};
+        final double[] mid4D = Vectors.slerp(start4D, end4D, 0.5);
+        assertEquals(1, Vectors.length(mid4D), SLERP_TOLERANCE);
+        assertArrayEquals(new double[] {Math.sqrt(0.5), 0, 0, Math.sqrt(0.5)}, mid4D, SLERP_TOLERANCE);
+
+        //vectors of different lengths still sweep the angle evenly
+        final double[] shortV = {1, 0, 0};
+        final double[] longV  = {0, 4, 0};
+        final double[] mid = Vectors.slerp(shortV, longV, 0.5);
+        assertEquals(Math.PI/4, Math.acos(Vectors.dot(mid, shortV) / Vectors.length(mid)), SLERP_TOLERANCE);
+    }
+
+    /**
+     * Interpolating between aligned vectors : parallel vectors have no arc to sweep so a
+     * linear interpolation is used, and opposite vectors define no unique arc at all so
+     * they must be rejected rather than silently produce NaN.
+     */
+    @Test
+    public void slerpAlignedTest() {
+        final double[] a = {1, 0, 0};
+
+        //parallel vectors of the same length
+        assertArrayEquals(a, Vectors.slerp(a, a.clone(), 0.5), SLERP_TOLERANCE);
+        //parallel vectors of different lengths interpolate linearly
+        assertArrayEquals(new double[] {2, 0, 0}, Vectors.slerp(a, new double[] {3, 0, 0}, 0.5), SLERP_TOLERANCE);
+        //a vector of length zero has no direction, the interpolation stays linear
+        assertArrayEquals(new double[] {0.5, 0, 0}, Vectors.slerp(a, new double[] {0, 0, 0}, 0.5), SLERP_TOLERANCE);
+
+        //opposite vectors
+        final double[] opposite = {-1, 0, 0};
+        assertThrows(IllegalArgumentException.class, () -> Vectors.slerp(a, opposite, 0.5));
+        //but the ends themselves are still well defined
+        assertArrayEquals(a, Vectors.slerp(a, opposite, 0), SLERP_TOLERANCE);
+        assertArrayEquals(opposite, Vectors.slerp(a, opposite, 1), SLERP_TOLERANCE);
+    }
+
+    /**
+     * Vectors of different sizes cannot be interpolated, and a buffer must match.
+     */
+    @Test
+    public void slerpInvalidTest() {
+        final double[] v3 = {1, 0, 0};
+        final double[] v2 = {0, 1};
+        assertThrows(IllegalArgumentException.class, () -> Vectors.slerp(v3, v2, 0.5));
+        assertThrows(IllegalArgumentException.class, () -> Vectors.slerp(v3, v3.clone(), 0.5, new double[2]));
+    }
+
+    /**
+     * The interpolation must also be reachable from the vector itself, mutating it.
+     */
+    @Test
+    public void slerpOnVectorTest() {
+        final Vector3D.Double start = new Vector3D.Double(1, 0, 0);
+        final Vector3D.Double end   = new Vector3D.Double(0, 1, 0);
+        final Vector3D.Double result = start.slerp(end, 0.5);
+        //the vector is mutated in place and returned
+        assertSame(start, result);
+        final double h = Math.sqrt(0.5);
+        assertArrayEquals(new double[] {h, h, 0}, result.toArrayDouble(), SLERP_TOLERANCE);
+        //the other vector is left alone
+        assertArrayEquals(new double[] {0, 1, 0}, end.toArrayDouble(), SLERP_TOLERANCE);
+    }
 }

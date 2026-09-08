@@ -19,6 +19,7 @@ package org.apache.sis.geometries.spherical;
 import org.apache.sis.geometries.solid.Sphere;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -163,22 +164,67 @@ public final class SphericalTriangle {
      * @return regular 4 triangle subdivision
      */
     public SphericalTriangle[] quadSubdivide() {
-        final ReadOnly.Vector<?> vecAB = middle(vecA, vecB);
-        final ReadOnly.Vector<?> vecBC = middle(vecB, vecC);
-        final ReadOnly.Vector<?> vecCA = middle(vecC, vecA);
-        return new SphericalTriangle[]{
-            new SphericalTriangle(sphere, vecA, vecAB, vecCA),
-            new SphericalTriangle(sphere, vecAB, vecB, vecBC),
-            new SphericalTriangle(sphere, vecCA, vecBC, vecC),
-            new SphericalTriangle(sphere, vecAB, vecBC, vecCA)
-        };
+        return subdivide(2);
     }
 
     /**
-     * Get middle unit vector between two vectors.
+     * Subdivide triangle in {@code n*n} triangles perfectly overlapping this triangle.
+     * <p>
+     * Each edge is divided in {@code n} equal arcs, and the triangle is cut along the
+     * lines joining those divisions, following the same construction as
+     * {@link #quadSubdivide() } generalized to any ratio. All returned triangles
+     * keep the CCW order of this triangle.
+     * <p>
+     * The returned array lists the {@code n*(n+1)/2} triangles pointing the same way
+     * as this triangle first, ordered by rows starting at corner A and, within a row,
+     * from the A→B edge toward the A→C edge. The {@code n*(n-1)/2} triangles pointing
+     * the opposite way follow, in the same row order. For {@code n = 2} this yields
+     * corner A, corner B, corner C then the center triangle.
+     *
+     * @param n number of divisions of each edge, must be 1 or more
+     * @return regular {@code n*n} triangle subdivision
+     * @throws IllegalArgumentException if {@code n} is less than 1
      */
-    private static ReadOnly.Vector<?> middle(ReadOnly.Vector<?> p, ReadOnly.Vector<?> q) {
-        return p.copy().add(q).normalize();
+    public SphericalTriangle[] subdivide(final int n) {
+        ArgumentChecks.ensureStrictlyPositive("n", n);
+        if (n == 1) {
+            return new SphericalTriangle[]{this};
+        }
+        /*
+         * Build the triangular lattice of vertices. Row r, for r in [0 .. n], holds r+1
+         * vertices spread on the arc going from the A→B edge to the A→C edge at fraction
+         * r/n. Row 0 degenerates to corner A, row n is the B→C edge.
+         */
+        final ReadOnly.Vector<?>[][] lattice = new ReadOnly.Vector<?>[n+1][];
+        lattice[0] = new ReadOnly.Vector<?>[]{vecA};
+        for (int r = 1; r <= n; r++) {
+            //the last row ends on the original corners, keep them as they are
+            final ReadOnly.Vector<?> left  = (r == n) ? vecB : GreatCircleArc.interpolate(vecA, vecB, r / (double) n);
+            final ReadOnly.Vector<?> right = (r == n) ? vecC : GreatCircleArc.interpolate(vecA, vecC, r / (double) n);
+            final ReadOnly.Vector<?>[] row = new ReadOnly.Vector<?>[r+1];
+            row[0] = left;
+            row[r] = right;
+            for (int k = 1; k < r; k++) {
+                row[k] = GreatCircleArc.interpolate(left, right, k / (double) r);
+            }
+            lattice[r] = row;
+        }
+
+        final SphericalTriangle[] result = new SphericalTriangle[n*n];
+        int i = 0;
+        //triangles pointing the same way as this triangle
+        for (int r = 0; r < n; r++) {
+            for (int k = 0; k <= r; k++) {
+                result[i++] = new SphericalTriangle(sphere, lattice[r][k], lattice[r+1][k], lattice[r+1][k+1]);
+            }
+        }
+        //triangles pointing the opposite way
+        for (int r = 1; r < n; r++) {
+            for (int k = 0; k < r; k++) {
+                result[i++] = new SphericalTriangle(sphere, lattice[r][k], lattice[r+1][k+1], lattice[r][k+1]);
+            }
+        }
+        return result;
     }
 
 }

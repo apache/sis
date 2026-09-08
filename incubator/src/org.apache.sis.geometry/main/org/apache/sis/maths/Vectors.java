@@ -762,6 +762,19 @@ public final class Vectors {
         return lerp(start, end, ratio, null);
     }
 
+    /**
+     * Spherically interpolates between given vectors.
+     *
+     * @param start start vector (return value for ratio == 0.)
+     * @param end end vector (return value for ratio == 1.)
+     * @param ratio : 0 is close to start vector, 1 is on end vector
+     * @return the interpolated vector.
+     * @throws IllegalArgumentException if both vectors point in opposite directions
+     */
+    public static double[] slerp(final double[] start, final double[] end, final double ratio) {
+        return slerp(start, end, ratio, null);
+    }
+
     // /////////////////////////////////////////////////////////////////////////
     // OPERATIONS WITH BUFFER //////////////////////////////////////////////////
     // /////////////////////////////////////////////////////////////////////////
@@ -1188,6 +1201,94 @@ public final class Vectors {
 
         for(int i=0;i<start.length;i++){
             buffer[i] = (1-ratio)*start[i] + ratio * end[i];
+        }
+        return buffer;
+    }
+
+    /**
+     * Spherically interpolates between given vectors, result is stored in buffer.
+     * If buffer is null, a new vector is created.
+     * Vectors must have the same size.
+     * <p>
+     * Where {@link #lerp(double[], double[], double, double[]) } moves along the straight
+     * line joining the two vectors, this moves along the arc joining them, so the angle
+     * swept is proportional to the ratio. Both vectors keeping the same length, the result
+     * keeps it too, which makes this the interpolation to use for directions.
+     * <p>
+     * The direction follows the usual
+     * <var>sin((1-ratio)·Ω)/sin(Ω)·start + sin(ratio·Ω)/sin(Ω)·end</var>, where Ω is the
+     * angle between the two vectors, and the length is interpolated linearly. For vectors
+     * of equal length that is exactly the formula above ; for vectors of different lengths
+     * the angle is still swept evenly, which the plain formula would not do because it
+     * would let the longer vector pull the direction toward itself.
+     * <p>
+     * When the two vectors are nearly parallel the arc is indistinguishable from the
+     * straight line, and dividing by <var>sin(Ω)</var> would lose precision, so a linear
+     * interpolation is used instead. A vector of length zero has no direction, so that
+     * case is linear too.
+     *
+     * @param start start vector (return value for ratio == 0.)
+     * @param end end vector (return value for ratio == 1.)
+     * @param ratio : 0 is close to start vector, 1 is on end vector
+     * @param buffer must have same size as start and end vectors or be null.
+     * @return the interpolated vector, buffer if not null
+     * @throws IllegalArgumentException if both vectors point in opposite directions, in
+     *         which case they define no unique arc to interpolate along
+     */
+    public static double[] slerp(final double[] start, final double[] end, final double ratio, double[] buffer) {
+        if( start.length != end.length ) {
+            throw new IllegalArgumentException("Both vectors must have same length.");
+        }
+        if( buffer == null ){
+            buffer = new double[start.length];
+        } else if( start.length != buffer.length ) {
+                throw new IllegalArgumentException("Buffer must have same length as start and end vectors.");
+        }
+
+        if (ratio <= 0) {
+            System.arraycopy(start, 0, buffer, 0, start.length);
+            return buffer;
+        } else if (ratio >= 1) {
+            System.arraycopy(end, 0, buffer, 0, end.length);
+            return buffer;
+        }
+
+        /*
+         * Angle between the two directions. Dividing by the lengths keeps the angle right
+         * for vectors which are not unit vectors. A vector of length zero has no direction,
+         * which the parallel case below handles as a linear interpolation.
+         */
+        final double lengthStart = length(start);
+        final double lengthEnd = length(end);
+        final double lengths = lengthStart * lengthEnd;
+        final double cosAngle = (lengths > 0) ? Maths.clamp(dot(start, end) / lengths, -1, 1) : 1;
+        final double angle = Math.acos(cosAngle);
+        final double sinAngle = Math.sin(angle);
+
+        if (sinAngle < 1E-9) {
+            if (cosAngle < 0) {
+                throw new IllegalArgumentException("Cannot interpolate between vectors pointing in "
+                        + "opposite directions, they define no unique arc.");
+            }
+            //nearly parallel vectors, the arc is the straight line joining them
+            for(int i=0;i<start.length;i++){
+                buffer[i] = (1-ratio)*start[i] + ratio * end[i];
+            }
+            return buffer;
+        }
+
+        /*
+         * The ratios below sweep the angle evenly for vectors of length one, so they are
+         * applied to the directions rather than to the vectors, and the result is brought
+         * back to the interpolated length. Doing it on the vectors directly would let the
+         * longer one pull the direction toward itself.
+         */
+        final double ratioStart = Math.sin(angle * (1-ratio)) / sinAngle / lengthStart;
+        final double ratioEnd   = Math.sin(angle *    ratio ) / sinAngle / lengthEnd;
+        final double interpolatedLength = (1-ratio)*lengthStart + ratio * lengthEnd;
+
+        for(int i=0;i<start.length;i++){
+            buffer[i] = interpolatedLength * (ratioStart*start[i] + ratioEnd * end[i]);
         }
         return buffer;
     }

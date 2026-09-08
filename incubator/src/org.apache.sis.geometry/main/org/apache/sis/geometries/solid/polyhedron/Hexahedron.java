@@ -51,6 +51,8 @@ public final class Hexahedron extends AbstractPolyhedron{
         {6, 4, 5, 7, 6}
     };
 
+    public Hexahedron() {}
+
     @Override
     public int getFaceCount() {
         return FACES.length;

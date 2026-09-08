@@ -110,6 +110,8 @@ public final class RhombicTriacontahedron extends AbstractPolyhedron{
         { 9, 24, 11, 27,  9}
     };
 
+    public RhombicTriacontahedron() {}
+
     @Override
     public int getFaceCount() {
         return FACES.length;

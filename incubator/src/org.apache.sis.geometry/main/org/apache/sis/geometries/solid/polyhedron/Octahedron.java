@@ -51,6 +51,8 @@ public final class Octahedron extends AbstractPolyhedron{
         {3, 1, 5, 3}
     };
 
+    public Octahedron() {}
+
     @Override
     public int getFaceCount() {
         return FACES.length;

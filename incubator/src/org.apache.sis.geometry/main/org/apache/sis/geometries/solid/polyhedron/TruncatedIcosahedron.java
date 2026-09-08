@@ -159,6 +159,8 @@ public final class TruncatedIcosahedron extends AbstractPolyhedron{
         {47, 46, 42, 43, 54, 55, 47}
     };
 
+    public TruncatedIcosahedron() {}
+
     @Override
     public int getFaceCount() {
         return FACES.length;
