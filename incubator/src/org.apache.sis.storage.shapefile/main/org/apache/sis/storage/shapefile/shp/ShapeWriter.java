@@ -90,11 +90,16 @@ public final class ShapeWriter implements AutoCloseable{
     /**
      * Write a new record.
      *
+     * A record with a null geometry is written as a {@link ShapeType#NULL}.
+     *
      * @param record new record
      * @throws IOException If an I/O error occurs
      */
     public void writeRecord(ShapeRecord record) throws IOException {
         record.write(channel, io);
+        if (record.geometry == null) {
+            return;
+        }
         final GeneralEnvelope geomBox = io.getBoundingBox(record.geometry);
         if (bbox == null) {
             bbox = new GeneralEnvelope(geomBox.getDimension());

@@ -67,14 +67,17 @@ public final class ShapeRecord {
     /**
      * Read this shape record.
      *
+     * A record declaring the {@link ShapeType#NULL} type has no geometry,
+     * such record may be found in a file of any other shape type.
+     *
      * @param channel input channel, not null
-     * @param io geometry decoder
+     * @param io geometry decoder, not null
      * @param filter optional filter envelope to stop geometry decoding as soon as possible
      * @return true if geometry pass the filter or if there is no filter
      * @throws IOException if an error occurred while reading.
      */
     public boolean read(final ChannelDataInput channel, ShapeGeometryEncoder io, Rectangle2D.Double filter) throws IOException {
-        if (io == null && filter != null) throw new IllegalArgumentException("filter must be null if encoder is null");
+        if (io == null) throw new IllegalArgumentException("encoder must not be null");
 
         channel.buffer.order(ByteOrder.BIG_ENDIAN);
         recordNumber = channel.readInt();
@@ -82,7 +85,15 @@ public final class ShapeRecord {
         final long position = channel.getStreamPosition();
         channel.buffer.order(ByteOrder.LITTLE_ENDIAN);
         final int shapeType = channel.readInt();
-        final boolean match = io.decode(channel,this, filter);
+        final boolean match;
+        if (shapeType == ShapeType.NULL.getCode()) {
+            //this record has no geometry, it can never match a filter area
+            geometry = null;
+            bbox = null;
+            match = filter == null;
+        } else {
+            match = io.decode(channel,this, filter);
+        }
         //always move to record end, size is sometime larger then the geometry bytes
         channel.seek(position + byteSize);
         return match;
@@ -90,6 +101,9 @@ public final class ShapeRecord {
 
     /**
      * Write this shape record.
+     *
+     * If the geometry is null the record is written as a {@link ShapeType#NULL} shape.
+     *
      * @param channel output channel to write into, not null
      * @param io geometry encoder
      * @throws IOException if an error occurred while writing.
@@ -97,6 +111,12 @@ public final class ShapeRecord {
     public void write(ChannelDataOutput channel, ShapeGeometryEncoder io) throws IOException {
         channel.buffer.order(ByteOrder.BIG_ENDIAN);
         channel.writeInt(recordNumber);
+        if (geometry == null) {
+            channel.writeInt(2); // the record contains only the 4 bytes of the shape type, size is in 16bit words
+            channel.buffer.order(ByteOrder.LITTLE_ENDIAN);
+            channel.writeInt(ShapeType.NULL.getCode());
+            return;
+        }
         channel.writeInt((io.getEncodedLength(geometry) + 4) / 2); // +4 for shape type and /2 because size is in 16bit words
         channel.buffer.order(ByteOrder.LITTLE_ENDIAN);
         channel.writeInt(io.getShapeType().getCode());

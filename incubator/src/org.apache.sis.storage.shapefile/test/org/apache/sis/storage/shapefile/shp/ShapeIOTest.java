@@ -55,6 +55,13 @@ public class ShapeIOTest {
         return cdi;
     }
 
+    private ChannelDataInput openRead(Path path) throws DataStoreException {
+        final StorageConnector cnx = new StorageConnector(path);
+        final ChannelDataInput cdi = cnx.getStorageAs(ChannelDataInput.class);
+        cnx.closeAllExcept(cdi);
+        return cdi;
+    }
+
     private ChannelDataOutput openWrite(Path path) throws DataStoreException, IOException {
         final StorageConnector cnx = new StorageConnector(path);
         cnx.setOption(OptionKey.OPEN_OPTIONS, new OpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING});
@@ -347,5 +354,61 @@ public class ShapeIOTest {
         }
 
         testReadAndWrite(path);
+    }
+
+    /**
+     * Test writing and reading a null shape record.
+     */
+    @Test
+    public void testNullShape() throws Exception {
+        final String path = "/org/apache/sis/storage/shapefile/point.shp";
+        final ShapeHeader header;
+        final ShapeRecord record1;
+        final ShapeRecord record2;
+        try (ShapeReader reader = new ShapeReader(openRead(path), null)) {
+            header  = reader.getHeader();
+            record1 = reader.next();
+            record2 = reader.next();
+        }
+        record2.recordNumber = 3;
+
+        final Path tempFile = Files.createTempFile("tmp", ".shp");
+        try {
+            //insert a null shape between the two points
+            try (ShapeWriter writer = new ShapeWriter(openWrite(tempFile))) {
+                writer.writeHeader(header);
+                writer.writeRecord(record1);
+                writer.writeRecord(new ShapeRecord(2, null));
+                writer.writeRecord(record2);
+            }
+
+            try (ShapeReader reader = new ShapeReader(openRead(tempFile), null)) {
+                //a null shape does not contribute to the file bounding box
+                final ShapeHeader newHeader = reader.getHeader();
+                assertEquals(header.bbox.getMinimum(0), newHeader.bbox.getMinimum(0), 0.0001);
+                assertEquals(header.bbox.getMinimum(1), newHeader.bbox.getMinimum(1), 0.0001);
+                assertEquals(header.bbox.getMaximum(0), newHeader.bbox.getMaximum(0), 0.0001);
+                assertEquals(header.bbox.getMaximum(1), newHeader.bbox.getMaximum(1), 0.0001);
+
+                ShapeRecord record = reader.next();
+                assertEquals(1, record.recordNumber);
+                assertNotNull(record.geometry);
+
+                record = reader.next();
+                assertEquals(2, record.recordNumber);
+                assertNull(record.geometry);
+                assertNull(record.bbox);
+
+                //the record after the null shape must still be properly aligned
+                record = reader.next();
+                assertEquals(3, record.recordNumber);
+                assertEquals(((Point) record2.geometry).getX(), ((Point) record.geometry).getX(), 0.0001);
+
+                //no more records
+                assertNull(reader.next());
+            }
+        } finally {
+            Files.delete(tempFile);
+        }
     }
 }
