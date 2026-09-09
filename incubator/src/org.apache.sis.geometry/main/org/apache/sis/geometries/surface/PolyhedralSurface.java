@@ -16,11 +16,11 @@
  */
 package org.apache.sis.geometries.surface;
 
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
+import javax.measure.quantity.Area;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.internal.shared.DefaultPolyhedralSurface;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
@@ -81,11 +81,22 @@ public sealed interface PolyhedralSurface<T extends Polygon> extends /*GeometryC
      */
     T getPatchN(int n);
 
+    /**
+     * Returns the sum of the areas of the patches.
+     * The unit of measurement is the one of the first patch,
+     * or square metres if this surface has no patch.
+     */
     @Override
-    public default double getArea() {
-        try (Stream<Surface> stream = IntStream.range(0, getNumPatches()).mapToObj(this::getPatchN)) {
-            return stream.collect(Collectors.summingDouble(Surface::getArea));
+    public default Area getArea() {
+        final int n = getNumPatches();
+        if (n == 0) {
+            return Quantities.create(0, Units.SQUARE_METRE);
         }
+        Area area = getPatchN(0).getArea();
+        for (int i = 1; i < n; i++) {
+            area = Quantities.castOrCopy(area.add(getPatchN(i).getArea()));
+        }
+        return area;
     }
 
     /**

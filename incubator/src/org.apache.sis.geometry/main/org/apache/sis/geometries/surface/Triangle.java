@@ -18,6 +18,7 @@ package org.apache.sis.geometries.surface;
 
 import java.util.Collections;
 import java.util.List;
+import javax.measure.quantity.Area;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
@@ -33,6 +34,8 @@ import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vector2D;
 import org.apache.sis.maths.Vector3D;
 import org.apache.sis.maths.Vectors;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.Envelope;
@@ -94,7 +97,7 @@ public sealed interface Triangle extends Polygon
     }
 
     @Override
-    default double getArea() {
+    default Area getArea() {
         final DataPoints points = getExteriorRing().getDataPoints();
         final Tuple<?> a = points.getPosition(0);
         final Tuple<?> b = points.getPosition(1);
@@ -104,7 +107,7 @@ public sealed interface Triangle extends Polygon
                     + b.get(0) * (c.get(1) - a.get(1))
                     + c.get(0) * (a.get(1) - b.get(1))
                     ) / 2.0;
-        return Math.abs(area);
+        return Quantities.create(Math.abs(area), Units.SQUARE_METRE);
     }
 
     /**

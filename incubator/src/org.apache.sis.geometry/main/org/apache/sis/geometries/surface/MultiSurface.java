@@ -16,10 +16,13 @@
  */
 package org.apache.sis.geometries.surface;
 
+import javax.measure.quantity.Area;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.internal.shared.DefaultMultiSurface;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -57,10 +60,14 @@ public sealed interface MultiSurface<T extends Surface> extends GeometryCollecti
      * @see OGC Simple Feature Access 1.2.1 - 6.1.13.2
      * @return area of the surface.
      */
-    default double getArea() {
-        double area = 0.0;
-        for (int i = 0, n = getNumGeometries(); i < n; i++) {
-            area += getGeometryN(i).getArea();
+    default Area getArea() {
+        final int n = getNumGeometries();
+        if (n == 0) {
+            return Quantities.create(0, Units.SQUARE_METRE);
+        }
+        Area area = getGeometryN(0).getArea();
+        for (int i = 1; i < n; i++) {
+            area = Quantities.castOrCopy(area.add(getGeometryN(i).getArea()));
         }
         return area;
     }
@@ -83,7 +90,7 @@ public sealed interface MultiSurface<T extends Surface> extends GeometryCollecti
      * @see OGC Simple Feature Access 1.2.1 - 6.1.13.2
      * @return point guaranteed to be on this MultiSurface.
      */
-    default double getPointOnSurface() {
+    default Point getPointOnSurface() {
         throw new UnsupportedOperationException();
     }
 }

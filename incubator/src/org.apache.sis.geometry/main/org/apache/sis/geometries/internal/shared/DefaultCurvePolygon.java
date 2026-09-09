@@ -18,6 +18,7 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.List;
 import java.util.Objects;
+import javax.measure.quantity.Area;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.surface.CurvePolygon;
@@ -82,7 +83,7 @@ public non-sealed class DefaultCurvePolygon extends AbstractGeometry implements 
     }
 
     @Override
-    public double getArea() {
+    public Area getArea() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

@@ -18,6 +18,7 @@ package org.apache.sis.geometries.solid;
 
 import java.util.List;
 import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Solid;
 import static org.opengis.annotation.Specification.ISO_19107;
@@ -54,7 +55,7 @@ public sealed interface ParametricCurveSolid extends Solid
 
     @UML(identifier="dataPoints", specification=ISO_19107) // section 9.3.1.3
     @Override
-    List<DirectPosition> getDataPoints();
+    DataPoints getDataPoints();
 
     @UML(identifier="controlPoints", specification=ISO_19107) // section 9.3.1.3
     @Override

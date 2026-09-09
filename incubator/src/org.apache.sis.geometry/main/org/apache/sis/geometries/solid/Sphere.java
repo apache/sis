@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.solid;
 
 import java.util.List;
+import javax.measure.quantity.Area;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Curve;
@@ -93,7 +94,7 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
     }
 
     @Override
-    public double getArea() {
+    public Area getArea() {
         throw new UnsupportedOperationException("Not supported.");
     }
 
@@ -189,7 +190,7 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
     }
 
     @Override
-    public double[] getKnots() {
+    public List<double[]> getKnots() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

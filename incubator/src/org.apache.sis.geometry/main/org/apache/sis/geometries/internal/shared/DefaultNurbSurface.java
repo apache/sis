@@ -18,6 +18,7 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.Arrays;
 import java.util.List;
+import javax.measure.quantity.Area;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
@@ -316,7 +317,7 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
     }
 
     @Override
-    public double[] getKnots() {
+    public List<double[]> getKnots() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -336,7 +337,7 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
     }
 
     @Override
-    public double getArea() {
+    public Area getArea() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

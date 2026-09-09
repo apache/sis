@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
+import javax.measure.quantity.Area;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Orientable;
 import org.apache.sis.geometries.Primitive;
@@ -71,7 +72,7 @@ public non-sealed class DefaultReversedSurface extends AbstractGeometry implemen
      * Returns the area of the base surface. Area is unsigned, so the orientation does not affect it.
      */
     @Override
-    public double getArea() {
+    public Area getArea() {
         return base.getArea();
     }
 

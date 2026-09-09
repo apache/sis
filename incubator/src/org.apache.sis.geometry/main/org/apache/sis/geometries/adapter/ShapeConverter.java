@@ -286,8 +286,8 @@ public abstract class ShapeConverter {
          */
         // Sort by area, bigger geometries are the outter rings.
         geometries.sort((Geometry o1, Geometry o2) -> {
-                double area1 = (o1 instanceof Surface s) ? s.getArea() : 0.0;
-                double area2 = (o2 instanceof Surface s) ? s.getArea() : 0.0;
+                double area1 = (o1 instanceof Surface s) ? s.getArea().getValue().doubleValue() : 0.0;
+                double area2 = (o2 instanceof Surface s) ? s.getArea().getValue().doubleValue() : 0.0;
                 return java.lang.Double.compare(area2, area1);
             });
 

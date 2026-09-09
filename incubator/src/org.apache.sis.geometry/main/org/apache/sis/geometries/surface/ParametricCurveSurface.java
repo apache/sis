@@ -60,7 +60,7 @@ public sealed interface ParametricCurveSurface extends Surface, ReferenceSystem
     GeometryType getVerticalCurveType();
 
     @Override
-    double[] getKnots();
+    List<double[]> getKnots();
 
     @UML(identifier="horizontalCurve", specification=ISO_19107) // section 8.3.2.9
     Curve getHorizontalCurve(double v);

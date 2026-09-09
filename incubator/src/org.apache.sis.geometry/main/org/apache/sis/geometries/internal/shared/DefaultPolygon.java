@@ -18,10 +18,13 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.List;
 import java.util.Objects;
+import javax.measure.quantity.Area;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -84,9 +87,9 @@ public non-sealed class DefaultPolygon extends AbstractGeometry implements Polyg
     }
 
     @Override
-    public double getArea() {
+    public Area getArea() {
         //TODO : fallback on JTS until implemented
-        return Geometries.asJTS(this, false, new GeometryFactory()).getArea();
+        return Quantities.create(Geometries.asJTS(this, false, new GeometryFactory()).getArea(), Units.SQUARE_METRE);
     }
 
 }

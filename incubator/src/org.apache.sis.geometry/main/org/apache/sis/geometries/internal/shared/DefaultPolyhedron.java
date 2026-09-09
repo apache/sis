@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 import javax.measure.quantity.Area;
 import javax.measure.quantity.Volume;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.SolidInterpolation;
 import org.apache.sis.geometries.solid.Polyhedron;
@@ -115,7 +116,7 @@ public non-sealed class DefaultPolyhedron extends AbstractGeometry implements Po
     }
 
     @Override
-    public List<DirectPosition> getDataPoints() {
+    public DataPoints getDataPoints() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -130,7 +131,7 @@ public non-sealed class DefaultPolyhedron extends AbstractGeometry implements Po
     }
 
     @Override
-    public double[] getKnots() {
+    public List<double[]> getKnots() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 }
