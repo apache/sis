@@ -16,9 +16,11 @@
  */
 package org.apache.sis.geometries.operation;
 
+import javax.measure.quantity.Length;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CommonCRS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -42,7 +44,7 @@ public class DistanceTest {
             final Point point1 = GeometryFactory.createPoint(CommonCRS.WGS84.geographic());
             final Point point2 = GeometryFactory.createPoint(CommonCRS.WGS84.normalizedGeographic());
             try {
-                double distance = new GeometryProcessor().distance(point1, point2);
+                new GeometryProcessor().distance(point1, point2);
                 fail("evaluation should fail");
             } catch (OperationException ex) {
                 //ok
@@ -52,13 +54,17 @@ public class DistanceTest {
         { //at same position
             final Point point1 = GeometryFactory.createPoint(CRS2D, 10.0, 5.0);
             final Point point2 = GeometryFactory.createPoint(CRS2D, 10.0, 5.0);
-            assertEquals(0.0, new GeometryProcessor().distance(point1, point2), 0.0);
+            final Length distance = new GeometryProcessor().distance(point1, point2);
+            assertEquals(Units.METRE, distance.getUnit());
+            assertEquals(0.0, distance.getValue().doubleValue(), 0.0);
         }
 
         { //at 1.0 of distance
             final Point point1 = GeometryFactory.createPoint(CRS2D, 10, 5);
             final Point point2 = GeometryFactory.createPoint(CRS2D, 10, 6);
-            assertEquals(1.0, new GeometryProcessor().distance(point1, point2), 0.0);
+            final Length distance = new GeometryProcessor().distance(point1, point2);
+            assertEquals(Units.METRE, distance.getUnit());
+            assertEquals(1.0, distance.getValue().doubleValue(), 0.0);
         }
     }
 

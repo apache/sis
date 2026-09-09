@@ -63,7 +63,7 @@
  * <h3>TODO : ISO 19107 Complex (Section 6.4.34)</h3>
  * No interface or implementation yet.
  * This is special sub class of Collection with advance analysis capabilities.
- * Add methode getMaximalComplex on Geometry, see section 6.4.4.17
+ * Geometry.getMaximalComplex returns a Geometry until this interface exists.
  *
  * <h3>TODO : ISO 19107 Topology (Section 10)</h3>
  * No interface or implementation yet.

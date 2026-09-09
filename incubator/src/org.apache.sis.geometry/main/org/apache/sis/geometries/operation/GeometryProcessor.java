@@ -43,6 +43,8 @@ import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Tuple;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
@@ -115,20 +117,22 @@ public final class GeometryProcessor {
      * spatial reference system of this geometric object.
      * Because the geometries are closed, it is possible to find a point on each geometric object involved, such that
      * the distance between these 2 points is the returned distance between their geometric objects.
+     *
+     * <p>TODO / Limitation: the returned quantity is labelled in metres, but its magnitude is the plain
+     * Pythagorean distance computed in the units of the coordinate system axes. On a geographic
+     * coordinate reference system that magnitude is therefore an amount of degrees reported as
+     * metres. Computing a true geodesic distance on the reference surface, as required by
+     * ISO 19107 REQ. 11, remains to be done.</p>
      */
-    public double distance(Geometry geom1, Geometry geom2) throws OperationException {
+    @UML(identifier="distance", specification=ISO_19107) // section 6.4.4.26 and 6.4.8.2
+    //@UML(identifier="3Ddistance", specification=ISO_19107) // section 6.4.9
+    public Length distance(Geometry geom1, Geometry geom2) throws OperationException {
         if (geom1 instanceof Point pt1) {
             if (geom2 instanceof Point pt2) {
-                return Distance.distance(pt1, pt2);
+                return Quantities.create(Distance.distance(pt1, pt2), Units.METRE);
             }
         }
 
-        throw new UnsupportedOperationException();
-    }
-
-    @UML(identifier="distance", specification=ISO_19107) // section 6.4.4.26 and 6.4.8.2
-    //@UML(identifier="3Ddistance", specification=ISO_19107) // section 6.4.9
-    public Length distance2(Geometry geom1, Geometry geom2) throws OperationException {
         throw new UnsupportedOperationException();
     }
 
