@@ -19,6 +19,7 @@ package org.apache.sis.storage.shapefile;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -298,9 +299,118 @@ public class ShapefileStoreTest {
             Object[] result = store.features(false).toArray();
             assertEquals(1, result.length);
 
-            //because of incremental id, feature2 will now have sis:identifer=0
-            feature2.setPropertyValue(AttributeConvention.IDENTIFIER, "test.1");
+            //the deleted record is preserved in the files, feature2 keeps its identifier
             assertEquals(feature2, result[0]);
+        }
+    }
+
+    /**
+     * Test that removing a feature does not change the identifiers of the remaining features.
+     * The deleted record is flagged in the dbf file and keeps its slot in the files.
+     */
+    @Test
+    public void testRemovePreserveIdentifiers(@TempDir final Path folder) throws DataStoreException, IOException {
+        final Path temp = folder.resolve("test.shp");
+        try (final ShapefileStore store = create(temp)) {
+            store.updateType(createType());
+            final FeatureType type = store.getType();
+            store.add(List.of(createFeature1(type), createFeature2(type), createFeature3(type)).iterator());
+            final long dbfSize = Files.size(folder.resolve("test.dbf"));
+
+            //remove the feature in the middle
+            final FilterFactory<Feature, Object, Object> ff = DefaultFilterFactory.forFeatures();
+            store.removeIf(ff.equal(ff.property("id"), ff.literal(2)));
+
+            assertIdentifiers(store, "test.1", "test.3");
+            //the deleted record still occupies its slot in the dbf file
+            assertEquals(dbfSize, Files.size(folder.resolve("test.dbf")));
+        }
+
+        //reopen the files to verify the deleted flag has been written and not only kept in memory
+        try (final ShapefileStore store = create(temp)) {
+            assertIdentifiers(store, "test.1", "test.3");
+        }
+    }
+
+    /**
+     * Test that a feature added after a removal is appended and does not reuse
+     * the record number of the deleted feature.
+     */
+    @Test
+    public void testAddAfterRemove(@TempDir final Path folder) throws DataStoreException, IOException {
+        final Path temp = folder.resolve("test.shp");
+        try (final ShapefileStore store = create(temp)) {
+            store.updateType(createType());
+            FeatureType type = store.getType();
+            store.add(List.of(createFeature1(type), createFeature2(type), createFeature3(type)).iterator());
+
+            final FilterFactory<Feature, Object, Object> ff = DefaultFilterFactory.forFeatures();
+            store.removeIf(ff.equal(ff.property("id"), ff.literal(2)));
+
+            //the new feature must not take the place of the removed one
+            final Feature feature4 = createFeature1(type);
+            feature4.setPropertyValue("id", 4);
+            store.add(List.of(feature4).iterator());
+
+            assertIdentifiers(store, "test.1", "test.3", "test.4");
+        }
+    }
+
+    /**
+     * Test that replacing features preserves the identifiers and the deleted records.
+     */
+    @Test
+    public void testReplaceAfterRemove(@TempDir final Path folder) throws DataStoreException, IOException {
+        final Path temp = folder.resolve("test.shp");
+        try (final ShapefileStore store = create(temp)) {
+            store.updateType(createType());
+            final FeatureType type = store.getType();
+            store.add(List.of(createFeature1(type), createFeature2(type), createFeature3(type)).iterator());
+
+            final FilterFactory<Feature, Object, Object> ff = DefaultFilterFactory.forFeatures();
+            store.removeIf(ff.equal(ff.property("id"), ff.literal(2)));
+            store.replaceIf(ff.equal(ff.property("id"), ff.literal(3)), (Feature feature) -> {
+                feature.setPropertyValue("text", "modified");
+                return feature;
+            });
+
+            final Object[] result = store.features(false).toArray();
+            assertEquals(2, result.length);
+            assertEquals("test.1", ((Feature) result[0]).getPropertyValue(AttributeConvention.IDENTIFIER));
+            assertEquals("test.3", ((Feature) result[1]).getPropertyValue(AttributeConvention.IDENTIFIER));
+            assertEquals("modified", ((Feature) result[1]).getPropertyValue("text"));
+        }
+    }
+
+    /**
+     * Test compacting a shapefile, deleted records must be dropped
+     * and the remaining records renumbered.
+     */
+    @Test
+    public void testCompact(@TempDir final Path folder) throws DataStoreException, IOException {
+        final Path temp = folder.resolve("test.shp");
+        try (final ShapefileStore store = create(temp)) {
+            store.updateType(createType());
+            final FeatureType type = store.getType();
+            store.add(List.of(createFeature1(type), createFeature2(type), createFeature3(type)).iterator());
+
+            final FilterFactory<Feature, Object, Object> ff = DefaultFilterFactory.forFeatures();
+            store.removeIf(ff.equal(ff.property("id"), ff.literal(2)));
+
+            final long shpSize = Files.size(temp);
+            final long dbfSize = Files.size(folder.resolve("test.dbf"));
+
+            store.compact();
+
+            //deleted records are gone, remaining ones are renumbered
+            assertIdentifiers(store, "test.1", "test.2");
+            assertTrue(Files.size(temp) < shpSize, "shp file should be smaller after compaction");
+            assertTrue(Files.size(folder.resolve("test.dbf")) < dbfSize, "dbf file should be smaller after compaction");
+
+            //values must be preserved, only the identifiers change
+            final Object[] result = store.features(false).toArray();
+            assertEquals(1, ((Feature) result[0]).getPropertyValue("id"));
+            assertEquals(3, ((Feature) result[1]).getPropertyValue("id"));
         }
     }
 
@@ -363,6 +473,20 @@ public class ShapefileStoreTest {
 
     }
 
+    /**
+     * Verify the identifiers of all features in the given store, in order.
+     */
+    private static void assertIdentifiers(final ShapefileStore store, final String... expected) throws DataStoreException {
+        try (Stream<Feature> stream = store.features(false)) {
+            final Iterator<Feature> ite = stream.iterator();
+            for (final String id : expected) {
+                assertTrue(ite.hasNext(), "missing feature " + id);
+                assertEquals(id, ite.next().getPropertyValue(AttributeConvention.IDENTIFIER));
+            }
+            assertFalse(ite.hasNext(), "unexpected additional feature");
+        }
+    }
+
     private static FeatureType createType() {
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
         ftb.setName("test");
@@ -396,6 +520,18 @@ public class ShapefileStoreTest {
         feature.setPropertyValue("integer", 456);
         feature.setPropertyValue("float", 456.789);
         feature.setPropertyValue("date", LocalDate.of(2030, 6, 21));
+        return feature;
+    }
+
+    private static Feature createFeature3(FeatureType type) {
+        Feature feature = type.newInstance();
+        feature.setPropertyValue("geometry", GF.createPoint(new Coordinate(50,60)));
+        feature.setPropertyValue(AttributeConvention.IDENTIFIER, "test.3");
+        feature.setPropertyValue("id", 3);
+        feature.setPropertyValue("text", "some text 3");
+        feature.setPropertyValue("integer", 789);
+        feature.setPropertyValue("float", 789.123);
+        feature.setPropertyValue("date", LocalDate.of(2035, 7, 30));
         return feature;
     }
 }
