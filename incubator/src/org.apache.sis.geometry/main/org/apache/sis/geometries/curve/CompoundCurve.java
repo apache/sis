@@ -18,10 +18,13 @@ package org.apache.sis.geometries.curve;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.measure.quantity.Length;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.internal.shared.DefaultCompoundCurve;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
 
 /**
  * A curve made of several curves joined end to end, each of which may use a different
@@ -99,12 +102,18 @@ public sealed interface CompoundCurve extends Curve
 
     /**
      * Returns the sum of the lengths of the components.
+     * The unit of measurement is the one of the first component,
+     * or metres if this compound curve has no component.
      */
     @Override
-    default double getLength() {
-        double length = 0;
-        for (int i = 0, n = getNumCurves(); i < n; i++) {
-            length += getCurveN(i).getLength();
+    default Length getLength() {
+        final int n = getNumCurves();
+        if (n == 0) {
+            return Quantities.create(0, Units.METRE);
+        }
+        Length length = getCurveN(0).getLength();
+        for (int i = 1; i < n; i++) {
+            length = Quantities.castOrCopy(length.add(getCurveN(i).getLength()));
         }
         return length;
     }

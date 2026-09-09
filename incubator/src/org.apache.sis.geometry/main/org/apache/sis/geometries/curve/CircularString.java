@@ -100,23 +100,4 @@ public sealed interface CircularString extends Curve
         return getDataPoints().isEmpty();
     }
 
-    @Override
-    default Point getStartPoint() {
-        return getDataPoints().getPoint(0);
-    }
-
-    @Override
-    default Point getEndPoint() {
-        return getDataPoints().getPoint(getDataPoints().size() - 1);
-    }
-
-    @Override
-    default boolean isClosed() {
-        final DataPoints points = getDataPoints();
-        final int size = points.size();
-        if (size == 0) {
-            return false;
-        }
-        return points.getPosition(0).equals(points.getPosition(size - 1), 0);
-    }
 }
