@@ -72,6 +72,20 @@ public final class DBFWriter implements AutoCloseable{
     }
 
     /**
+     * Write a record marked as deleted.
+     *
+     * Field values are blanks, the deleted record is counted in the
+     * number of records written in the header.
+     *
+     * @throws IOException If an I/O error occurs
+     */
+    public void writeDeletedRecord() throws IOException {
+        channel.writeByte(DBFReader.TAG_DELETED);
+        channel.repeat(header.recordSize - 1, (byte) ' ');  //-1 for the delete tag
+        writtenNbRecord++;
+    }
+
+    /**
      * Write end of file tag, update written number of record and release resources.
      *
      * @throws IOException If an I/O error occurs
