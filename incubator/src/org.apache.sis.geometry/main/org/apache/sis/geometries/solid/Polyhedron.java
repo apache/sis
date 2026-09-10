@@ -43,15 +43,15 @@ public sealed interface Polyhedron extends Solid
                 DefaultPolyhedron
 {
 
-    public static final String TYPE = "POLYHEDRON";
+    static final String TYPE = "POLYHEDRON";
 
     @Override
-    public default String getGeometryType() {
+    default String getGeometryType() {
         return TYPE;
     }
 
     @Override
-    public default AttributesType getAttributesType() {
+    default AttributesType getAttributesType() {
         return getExteriorShell().getAttributesType();
     }
 

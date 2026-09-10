@@ -50,10 +50,10 @@ public sealed interface MultiCurve<T extends Curve> extends GeometryCollection<T
                 DefaultMultiCurve
 {
 
-    public static final String TYPE = "MULTICURVE";
+    static final String TYPE = "MULTICURVE";
 
     @Override
-    public default String getGeometryType() {
+    default String getGeometryType() {
         return TYPE;
     }
 

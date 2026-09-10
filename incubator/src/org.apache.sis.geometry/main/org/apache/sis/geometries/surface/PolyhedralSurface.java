@@ -67,7 +67,7 @@ public sealed interface PolyhedralSurface<T extends Polygon> extends /*GeometryC
     /**
      * Well-known text keyword of this geometry type.
      */
-    public static final String TYPE = "POLYHEDRALSURFACE";
+    static final String TYPE = "POLYHEDRALSURFACE";
 
     /**
      * Returns {@value #TYPE}.
@@ -75,7 +75,7 @@ public sealed interface PolyhedralSurface<T extends Polygon> extends /*GeometryC
      * @see ISO 19107:2019 - 6.4.4.23
      */
     @Override
-    public default String getGeometryType() {
+    default String getGeometryType() {
         return TYPE;
     }
 
@@ -117,7 +117,7 @@ public sealed interface PolyhedralSurface<T extends Polygon> extends /*GeometryC
      * @see ISO 19107:2019 - 6.4.25.7
      */
     @Override
-    public default Area getArea() {
+    default Area getArea() {
         final int n = getNumPatches();
         if (n == 0) {
             return Quantities.create(0, Units.SQUARE_METRE);

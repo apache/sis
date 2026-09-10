@@ -68,7 +68,7 @@ public sealed interface Point extends Primitive
     /**
      * Well-known text keyword of this geometry type.
      */
-    public static final String TYPE = "POINT";
+    static final String TYPE = "POINT";
 
     /**
      * Location of this point in its reference system.
@@ -78,7 +78,7 @@ public sealed interface Point extends Primitive
      * @see ISO 19107:2019 - 6.4.13.2
      */
     @UML(identifier="position", specification=ISO_19107)
-    Tuple getPosition();
+    Tuple<?> getPosition();
 
     /**
      * Returns tuple for given name.
@@ -86,7 +86,7 @@ public sealed interface Point extends Primitive
      * @param name seached attribute name
      * @return attribute or null.
      */
-    Tuple getAttribute(String name);
+    Tuple<?> getAttribute(String name);
 
     /**
      * Sets the value of the attribute of the given name.
@@ -94,7 +94,7 @@ public sealed interface Point extends Primitive
      * @param name  name of the attribute to set.
      * @param tuple new attribute value.
      */
-    void setAttribute(String name, Tuple tuple);
+    void setAttribute(String name, Tuple<?> tuple);
 
     /**
      * View this point as a single point sequence
@@ -131,7 +131,7 @@ public sealed interface Point extends Primitive
             }
 
             @Override
-            public void setPosition(int index, Tuple value) {
+            public void setPosition(int index, Tuple<?> value) {
                 if (index != 0) throw new IndexOutOfBoundsException();
                 Point.this.getPosition().set(value);
             }
@@ -143,7 +143,7 @@ public sealed interface Point extends Primitive
             }
 
             @Override
-            public void setAttribute(int index, String name, Tuple value) {
+            public void setAttribute(int index, String name, Tuple<?> value) {
                 if (index != 0) throw new IndexOutOfBoundsException();
                 Point.this.setAttribute(name, value);
             }
@@ -156,13 +156,13 @@ public sealed interface Point extends Primitive
     }
 
     @Override
-    public default String getGeometryType() {
+    default String getGeometryType() {
         return TYPE;
     }
 
     @Override
     default Envelope getEnvelope() {
-        final Tuple first = getPosition();
+        final Tuple<?> first = getPosition();
         final BBox env = new BBox(first, first);
         env.setCoordinateReferenceSystem(getCoordinateReferenceSystem());
         return env;
@@ -187,7 +187,7 @@ public sealed interface Point extends Primitive
      * @see ISO 19107:2019 - 6.4.13.4
      */
     @UML(identifier="vectorToPoint", specification=ISO_19107)
-    default Vector vectorToPoint(DirectPosition toPoint) {
+    default Vector<?> vectorToPoint(DirectPosition toPoint) {
         //TODO
         throw new UnsupportedOperationException();
     }
@@ -218,7 +218,7 @@ public sealed interface Point extends Primitive
      * @see ISO 19107:2019 - 6.4.13.6
      */
     @UML(identifier="pointAtDistance", specification=ISO_19107)
-    default DirectPosition pointAtDistance(Vector bearing){
+    default DirectPosition pointAtDistance(Vector<?> bearing){
         //TODO
         throw new UnsupportedOperationException();
     }

@@ -38,10 +38,10 @@ public sealed interface CompoundCurve extends Curve
         permits DefaultCompoundCurve
 {
 
-    public static final String TYPE = "COMPOUNDCURVE";
+    static final String TYPE = "COMPOUNDCURVE";
 
     @Override
-    public default String getGeometryType() {
+    default String getGeometryType() {
         return TYPE;
     }
 

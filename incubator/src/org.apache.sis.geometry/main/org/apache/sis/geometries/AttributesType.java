@@ -37,22 +37,22 @@ import org.apache.sis.maths.SampleSystem;
  */
 public interface AttributesType {
 
-    public static final String ATT_POSITION = "POSITION";
-    public static final String ATT_NORMAL = "NORMAL";
-    public static final String ATT_TANGENT = "TANGENT";
-    public static final String ATT_TEXCOORD_0 = "TEXCOORD_0";
+    static final String ATT_POSITION = "POSITION";
+    static final String ATT_NORMAL = "NORMAL";
+    static final String ATT_TANGENT = "TANGENT";
+    static final String ATT_TEXCOORD_0 = "TEXCOORD_0";
 
     //indexed attributes
-    public static final String ATT_TEXCOORD = "TEXCOORD";
-    public static final String ATT_COLOR = "COLOR";
-    public static final String ATT_JOINTS = "JOINTS";
-    public static final String ATT_WEIGHTS = "WEIGHTS";
+    static final String ATT_TEXCOORD = "TEXCOORD";
+    static final String ATT_COLOR = "COLOR";
+    static final String ATT_JOINTS = "JOINTS";
+    static final String ATT_WEIGHTS = "WEIGHTS";
 
     /**
      * Attribute from OGC 3D Tiles.
      * To link primitives to features/batch tables.
      */
-    public static final String ATT_BATCH_ID = "_BATCHID";
+    static final String ATT_BATCH_ID = "_BATCHID";
 
     /**
      * Returns attribute system for given name.
@@ -99,7 +99,7 @@ public interface AttributesType {
     /**
      * Empty attributes type.
      */
-    public static AttributesType EMPTY = new AttributesType() {
+    static AttributesType EMPTY = new AttributesType() {
         @Override
         public SampleSystem getAttributeSystem(String name) {
             return null;

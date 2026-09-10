@@ -36,10 +36,10 @@ public sealed interface TIN extends TriangulatedSurface<Triangle>
                 MeshPrimitive.TriangleStrip
 {
 
-    public static final String TYPE = "TIN";
+    static final String TYPE = "TIN";
 
     @Override
-    public default String getGeometryType() {
+    default String getGeometryType() {
         return TYPE;
     }
 

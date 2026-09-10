@@ -44,10 +44,10 @@ public sealed interface MultiPoint<T extends Point> extends GeometryCollection<T
                 MeshPrimitive.Points
 {
 
-    public static final String TYPE = "MULTIPOINT";
+    static final String TYPE = "MULTIPOINT";
 
     @Override
-    public default String getGeometryType() {
+    default String getGeometryType() {
         return TYPE;
     }
 

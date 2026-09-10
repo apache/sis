@@ -47,10 +47,10 @@ public sealed interface ArcByCenterPoint extends Curve
         permits DefaultArcByCenterPoint
 {
 
-    public static final String TYPE = "ARCBYCENTERPOINT";
+    static final String TYPE = "ARCBYCENTERPOINT";
 
     @Override
-    public default String getGeometryType() {
+    default String getGeometryType() {
         return TYPE;
     }
 
@@ -106,7 +106,7 @@ public sealed interface ArcByCenterPoint extends Curve
     }
 
     @Override
-    public default DataPoints getDataPoints() {
+    default DataPoints getDataPoints() {
         throw new UnsupportedOperationException("Not supported yet");
     }
 
@@ -114,7 +114,7 @@ public sealed interface ArcByCenterPoint extends Curve
      * @return null, a ArcByCenterPoint has no control points
      */
     @Override
-    public default Array getControlPoints() {
+    default Array getControlPoints() {
         return null;
     }
 

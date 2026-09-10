@@ -44,10 +44,10 @@ public sealed interface ArcByBulge extends Curve
         permits DefaultArcByBulge
 {
 
-    public static final String TYPE = "ARCBYBULGE";
+    static final String TYPE = "ARCBYBULGE";
 
     @Override
-    public default String getGeometryType() {
+    default String getGeometryType() {
         return TYPE;
     }
 
@@ -80,7 +80,7 @@ public sealed interface ArcByBulge extends Curve
      * @return null, a ArcByBulge has no control points
      */
     @Override
-    public default Array getControlPoints() {
+    default Array getControlPoints() {
         return null;
     }
 

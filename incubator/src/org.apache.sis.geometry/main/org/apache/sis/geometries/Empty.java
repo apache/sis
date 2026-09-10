@@ -55,7 +55,7 @@ public sealed interface Empty extends Geometry
     /**
      * Well-known text keyword of this geometry type.
      */
-    public static final String TYPE = "EMPTY";
+    static final String TYPE = "EMPTY";
 
     /**
      * Returns {@code true} since this geometry is the empty set.

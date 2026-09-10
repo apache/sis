@@ -67,7 +67,7 @@ public sealed interface Solid extends Primitive
      * @see ISO 19107:2019 - 6.4.4.22
      */
     @Override
-    public default int getTopologicDimension() {
+    default int getTopologicDimension() {
         return 3;
     }
 

@@ -59,7 +59,7 @@ public sealed interface CurvePolygon extends Surface
     /**
      * Well-known text keyword of this geometry type.
      */
-    public static final String TYPE = "CURVEPOLYGON";
+    static final String TYPE = "CURVEPOLYGON";
 
     /**
      * Returns {@value #TYPE}.
@@ -67,7 +67,7 @@ public sealed interface CurvePolygon extends Surface
      * @see ISO 19107:2019 - 6.4.4.23
      */
     @Override
-    public default String getGeometryType() {
+    default String getGeometryType() {
         return TYPE;
     }
 
@@ -75,7 +75,7 @@ public sealed interface CurvePolygon extends Surface
      * Returns the attributes of the exterior ring, which are the attributes of this surface.
      */
     @Override
-    public default AttributesType getAttributesType() {
+    default AttributesType getAttributesType() {
         return getExteriorRing().getAttributesType();
     }
 

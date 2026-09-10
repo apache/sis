@@ -183,7 +183,7 @@ public sealed interface Triangle extends Polygon
      * @param nullIfOutside return null if point is outside the triangle
      * @return [a,b,c] weights
      */
-    public static double[] getBarycentricValue2D(double x1, double y1, double x2, double y2, double x3, double y3, double x, double y, double epsilon, boolean nullIfOutside) {
+    static double[] getBarycentricValue2D(double x1, double y1, double x2, double y2, double x3, double y3, double x, double y, double epsilon, boolean nullIfOutside) {
         if (nullIfOutside) {
             if (!Maths.isPointInTriangle_BoundingBox(x1, y1, x2, y2, x3, y3, x, y, epsilon)) {
                 return null;
@@ -229,7 +229,7 @@ public sealed interface Triangle extends Polygon
         }
     }
 
-    public static Double interpolate2D(Vector3D.Double a, Vector3D.Double b, Vector3D.Double c, Vector2D.Double p){
+    static Double interpolate2D(Vector3D.Double a, Vector3D.Double b, Vector3D.Double c, Vector2D.Double p){
         final double v0x = b.x-a.x;
         final double v0y = b.y-a.y;
         final double v1x = c.x-a.x;

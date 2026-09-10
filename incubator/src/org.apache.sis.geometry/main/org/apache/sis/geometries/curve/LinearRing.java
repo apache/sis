@@ -31,10 +31,10 @@ public sealed interface LinearRing extends LineString
         permits DefaultLinearRing
 {
 
-    public static final String TYPE = "LINEARRING";
+    static final String TYPE = "LINEARRING";
 
     @Override
-    public default String getGeometryType() {
+    default String getGeometryType() {
         return TYPE;
     }
 

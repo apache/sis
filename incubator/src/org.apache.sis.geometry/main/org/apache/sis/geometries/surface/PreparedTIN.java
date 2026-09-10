@@ -60,11 +60,11 @@ public sealed interface PreparedTIN extends TIN
      */
     Stream<Triangle> getPatches(org.opengis.geometry.Envelope env) throws TransformException;
 
-    public static PreparedTIN create(Collection<TIN> tin) {
+    static PreparedTIN create(Collection<TIN> tin) {
         return create(tin.toArray(TIN[]::new));
     }
 
-    public static PreparedTIN create(TIN... tin) {
+    static PreparedTIN create(TIN... tin) {
         if (tin.length == 0) throw new IllegalArgumentException("At least one TIN must be provided");
         if (tin.length == 1) return new Single(tin[0]);
         final Single[] singles = new Single[tin.length];

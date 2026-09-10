@@ -568,7 +568,7 @@ public sealed interface Geometry
      *
      * @see GeometryProcessor#buffer(org.apache.sis.geometries.Geometry, double)
      */
-    public default Geometry buffer(double distance) throws OperationException {
+    default Geometry buffer(double distance) throws OperationException {
         return new GeometryProcessor().buffer(this, distance);
     }
 
@@ -595,7 +595,7 @@ public sealed interface Geometry
      */
     @UML(identifier="buffer", specification=ISO_19107)
     //@UML(identifier="3Dbuffer", specification=ISO_19107)
-    public default Geometry buffer(Length radius) throws OperationException {
+    default Geometry buffer(Length radius) throws OperationException {
         return new GeometryProcessor().buffer(this, radius);
     }
 
@@ -618,7 +618,7 @@ public sealed interface Geometry
      */
     @UML(identifier="convexHull", specification=ISO_19107)
     //@UML(identifier="3DconvexHull", specification=ISO_19107)
-    public default Geometry convexHull() throws OperationException {
+    default Geometry convexHull() throws OperationException {
         return new GeometryProcessor().convexHull(this);
     }
 
@@ -641,7 +641,7 @@ public sealed interface Geometry
      */
     @UML(identifier="difference", specification=ISO_19107)
     //@UML(identifier="3Ddifference", specification=ISO_19107)
-    public default Geometry difference(Geometry other) throws OperationException {
+    default Geometry difference(Geometry other) throws OperationException {
         return new GeometryProcessor().difference(this, other);
     }
 
@@ -665,7 +665,7 @@ public sealed interface Geometry
      */
     @UML(identifier="distance", specification=ISO_19107)
     //@UML(identifier="3Ddistance", specification=ISO_19107)
-    public default Length distance(Geometry other) throws OperationException {
+    default Length distance(Geometry other) throws OperationException {
         return new GeometryProcessor().distance(this, other);
     }
 
@@ -688,7 +688,7 @@ public sealed interface Geometry
      */
     @UML(identifier="intersection", specification=ISO_19107)
     //@UML(identifier="3Dintersection", specification=ISO_19107)
-    public default Geometry intersection(Geometry other) throws OperationException {
+    default Geometry intersection(Geometry other) throws OperationException {
         return new GeometryProcessor().intersection(this, other);
     }
 
@@ -712,7 +712,7 @@ public sealed interface Geometry
      */
     @UML(identifier="symDifference", specification=ISO_19107)
     //@UML(identifier="3DsymDifference", specification=ISO_19107)
-    public default Geometry symDifference(Geometry other) throws OperationException {
+    default Geometry symDifference(Geometry other) throws OperationException {
         return new GeometryProcessor().symDifference(this, other);
     }
 
@@ -735,7 +735,7 @@ public sealed interface Geometry
      */
     @UML(identifier="union", specification=ISO_19107)
     //@UML(identifier="3Dunion", specification=ISO_19107)
-    public default Geometry union(Geometry other) throws OperationException {
+    default Geometry union(Geometry other) throws OperationException {
         return new GeometryProcessor().union(this, other);
     }
 
@@ -760,7 +760,7 @@ public sealed interface Geometry
      * @see ISO 19107:2019 - 6.4.4.28
      */
     @UML(identifier="transform", specification=ISO_19107)
-    public default Geometry transform(CoordinateReferenceSystem crs) {
+    default Geometry transform(CoordinateReferenceSystem crs) {
         return new GeometryProcessor().transform(this, crs, null);
     }
 
@@ -778,7 +778,7 @@ public sealed interface Geometry
      */
     @UML(identifier="contains", specification=ISO_19107)
     //@UML(identifier="3Dcontains", specification=ISO_19107)
-    public default boolean contains(DirectPosition element) throws OperationException {
+    default boolean contains(DirectPosition element) throws OperationException {
         return new GeometryProcessor().contains(this, element);
     }
 
@@ -800,7 +800,7 @@ public sealed interface Geometry
      * @see ISO 19107:2019 - 6.4.4.30, 6.4.8.8, 10.8.6.3.2
      */
     @UML(identifier="contains", specification=ISO_19107)
-    public default boolean contains(Geometry other) throws OperationException {
+    default boolean contains(Geometry other) throws OperationException {
         return new GeometryProcessor().contains(this, other);
     }
 
@@ -823,7 +823,7 @@ public sealed interface Geometry
      */
     @UML(identifier="crosses", specification=ISO_19107)
     //@UML(identifier="3Dcrosses", specification=ISO_19107)
-    public default boolean crosses(Geometry other) throws OperationException {
+    default boolean crosses(Geometry other) throws OperationException {
         return new GeometryProcessor().crosses(this, other);
     }
 
@@ -845,7 +845,7 @@ public sealed interface Geometry
      */
     @UML(identifier="disjoint", specification=ISO_19107)
     //@UML(identifier="3Ddisjoint", specification=ISO_19107)
-    public default boolean disjoint(Geometry other) throws OperationException {
+    default boolean disjoint(Geometry other) throws OperationException {
         return new GeometryProcessor().disjoint(this, other);
     }
 
@@ -871,7 +871,7 @@ public sealed interface Geometry
      */
     @UML(identifier="equals", specification=ISO_19107)
     //@UML(identifier="3Dequals", specification=ISO_19107)
-    public default boolean equal(Geometry other) throws OperationException {
+    default boolean equal(Geometry other) throws OperationException {
         return new GeometryProcessor().equal(this, other);
     }
 
@@ -893,7 +893,7 @@ public sealed interface Geometry
      */
     @UML(identifier="intersects", specification=ISO_19107)
     //@UML(identifier="3Dintersects", specification=ISO_19107)
-    public default boolean intersects(Geometry other) throws OperationException {
+    default boolean intersects(Geometry other) throws OperationException {
         return new GeometryProcessor().intersects(this, other);
     }
 
@@ -909,7 +909,7 @@ public sealed interface Geometry
      *
      * @see GeometryProcessor#locateAlong(org.apache.sis.geometries.Geometry, double)
      */
-    public default Geometry locateAlong(double mValue) throws OperationException {
+    default Geometry locateAlong(double mValue) throws OperationException {
         return new GeometryProcessor().locateAlong(this, mValue);
     }
 
@@ -926,7 +926,7 @@ public sealed interface Geometry
      *
      * @see GeometryProcessor#contains(org.apache.sis.geometries.Geometry, double, double)
      */
-    public default Geometry locateBetween(double mStart, double mEnd) throws OperationException {
+    default Geometry locateBetween(double mStart, double mEnd) throws OperationException {
         return new GeometryProcessor().locateBetween(this, mStart, mEnd);
     }
 
@@ -949,7 +949,7 @@ public sealed interface Geometry
      */
     @UML(identifier="overlaps", specification=ISO_19107)
     //@UML(identifier="3Doverlaps", specification=ISO_19107)
-    public default boolean overlaps(Geometry other) throws OperationException {
+    default boolean overlaps(Geometry other) throws OperationException {
         return new GeometryProcessor().overlaps(this, other);
     }
 
@@ -967,7 +967,7 @@ public sealed interface Geometry
      *
      * @see GeometryProcessor#relate(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry, int)
      */
-    public default boolean relate(Geometry other, int matrix) throws OperationException {
+    default boolean relate(Geometry other, int matrix) throws OperationException {
         return new GeometryProcessor().relate(this, other, matrix);
     }
 
@@ -997,7 +997,7 @@ public sealed interface Geometry
      */
     @UML(identifier="relate", specification=ISO_19107)
     //@UML(identifier="3Drelate", specification=ISO_19107)
-    public default boolean relate(Geometry other, String matrix) throws OperationException {
+    default boolean relate(Geometry other, String matrix) throws OperationException {
         return new GeometryProcessor().relate(this, other, matrix);
     }
 
@@ -1020,7 +1020,7 @@ public sealed interface Geometry
      */
     @UML(identifier="touches", specification=ISO_19107)
     //@UML(identifier="3Dtouches", specification=ISO_19107)
-    public default boolean touches(Geometry other) throws OperationException {
+    default boolean touches(Geometry other) throws OperationException {
         return new GeometryProcessor().touches(this, other);
     }
 
@@ -1043,7 +1043,7 @@ public sealed interface Geometry
      */
     @UML(identifier="within", specification=ISO_19107)
     //@UML(identifier="3Dwithin", specification=ISO_19107)
-    public default boolean within(Geometry other) throws OperationException {
+    default boolean within(Geometry other) throws OperationException {
         return new GeometryProcessor().within(this, other);
     }
 
@@ -1065,7 +1065,7 @@ public sealed interface Geometry
      */
     @UML(identifier="withinDistance", specification=ISO_19107)
     //@UML(identifier="3DwithinDistance", specification=ISO_19107)
-    public default boolean withinDistance(Geometry other, Length distance) throws OperationException {
+    default boolean withinDistance(Geometry other, Length distance) throws OperationException {
         return new GeometryProcessor().withinDistance(this, other, distance);
     }
 

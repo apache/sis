@@ -28,15 +28,15 @@ import org.apache.sis.measure.NumberRange;
  */
 public non-sealed interface Prism extends Geometry {
 
-    public static final String TYPE = "PRISM";
+    static final String TYPE = "PRISM";
 
     @Override
-    public default String getGeometryType() {
+    default String getGeometryType() {
         return TYPE;
     }
 
     @Override
-    public default AttributesType getAttributesType() {
+    default AttributesType getAttributesType() {
         return getBase().getAttributesType();
     }
 

@@ -70,7 +70,7 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
     /**
      * Well-known text keyword of this geometry type.
      */
-    public static final String TYPE = "GEOMETRYCOLLECTION";
+    static final String TYPE = "GEOMETRYCOLLECTION";
 
     /**
      * Returns {@value #TYPE}.
@@ -78,7 +78,7 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
      * @see ISO 19107:2019 - 6.4.4.23
      */
     @Override
-    public default String getGeometryType() {
+    default String getGeometryType() {
         return TYPE;
     }
 
@@ -147,7 +147,7 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
     T getGeometryN(int n);
 
     @Override
-    public default Envelope getEnvelope() {
+    default Envelope getEnvelope() {
         GeneralEnvelope e = null;
         for (int i = 0, n = getNumGeometries(); i < n; i++) {
             T sn = getGeometryN(i);
@@ -168,7 +168,7 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
     }
 
     @Override
-    public default AttributesType getAttributesType() {
+    default AttributesType getAttributesType() {
         if (getNumGeometries() == 0) return null;
         return getGeometryN(0).getAttributesType();
     }

@@ -28,7 +28,7 @@ public sealed interface NurbSurface extends BSplineSurface
         permits DefaultNurbSurface
 {
 
-    public static final String TYPE = "NURBSSURFACE";
+    static final String TYPE = "NURBSSURFACE";
 
     @Override
     default String getGeometryType() {

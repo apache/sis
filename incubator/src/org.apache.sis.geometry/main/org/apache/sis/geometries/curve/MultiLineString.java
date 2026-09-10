@@ -33,10 +33,10 @@ public sealed interface MultiLineString extends MultiCurve<LineString>
                 MeshPrimitive.Lines
 {
 
-    public static final String TYPE = "MULTILINESTRING";
+    static final String TYPE = "MULTILINESTRING";
 
     @Override
-    public default String getGeometryType() {
+    default String getGeometryType() {
         return TYPE;
     }
 

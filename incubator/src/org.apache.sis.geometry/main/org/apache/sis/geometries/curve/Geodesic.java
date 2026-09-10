@@ -59,7 +59,7 @@ public sealed interface Geodesic extends Curve
     /**
      * Well-known text keyword of this geometry type.
      */
-    public static final String TYPE = "GEODESIC";
+    static final String TYPE = "GEODESIC";
 
     /**
      * Returns {@value #TYPE}.
@@ -67,7 +67,7 @@ public sealed interface Geodesic extends Curve
      * @see ISO 19107:2019 - 6.4.4.23
      */
     @Override
-    public default String getGeometryType() {
+    default String getGeometryType() {
         return TYPE;
     }
 
@@ -80,7 +80,7 @@ public sealed interface Geodesic extends Curve
      */
     @UML(identifier="interpolation", specification=ISO_19107)
     @Override
-    public default CurveInterpolation getInterpolation() {
+    default CurveInterpolation getInterpolation() {
         return CurveInterpolation.GEODESIC;
     }
 
@@ -110,7 +110,7 @@ public sealed interface Geodesic extends Curve
      * @see ISO 19107:2019 - 6.4.18.2
      */
     @Override
-    public default Array getControlPoints() {
+    default Array getControlPoints() {
         return null;
     }
 
@@ -125,7 +125,7 @@ public sealed interface Geodesic extends Curve
     }
 
     @Override
-    public default AttributesType getAttributesType() {
+    default AttributesType getAttributesType() {
         return getDataPoints().getAttributesType();
     }
 

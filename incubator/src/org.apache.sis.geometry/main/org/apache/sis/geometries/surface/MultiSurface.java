@@ -47,10 +47,10 @@ public sealed interface MultiSurface<T extends Surface> extends GeometryCollecti
                 DefaultMultiSurface
 {
 
-    public static final String TYPE = "MULTISURFACE";
+    static final String TYPE = "MULTISURFACE";
 
     @Override
-    public default String getGeometryType() {
+    default String getGeometryType() {
         return TYPE;
     }
 

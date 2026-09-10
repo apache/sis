@@ -66,7 +66,7 @@ public sealed interface LineString extends Curve
     /**
      * Well-known text keyword of this geometry type.
      */
-    public static final String TYPE = "LINESTRING";
+    static final String TYPE = "LINESTRING";
 
     /**
      * Returns {@value #TYPE}.
@@ -74,7 +74,7 @@ public sealed interface LineString extends Curve
      * @see ISO 19107:2019 - 6.4.4.23
      */
     @Override
-    public default String getGeometryType() {
+    default String getGeometryType() {
         return TYPE;
     }
 
@@ -85,7 +85,7 @@ public sealed interface LineString extends Curve
      */
     @UML(identifier="interpolation", specification=ISO_19107)
     @Override
-    public default CurveInterpolation getInterpolation() {
+    default CurveInterpolation getInterpolation() {
         return CurveInterpolation.LINEAR;
     }
 
@@ -95,7 +95,7 @@ public sealed interface LineString extends Curve
      * @see ISO 19107:2019 - 6.4.18.17
      */
     @Override
-    public default LineString asLine(Length spacing, Length offset) {
+    default LineString asLine(Length spacing, Length offset) {
         return this;
     }
 
@@ -125,7 +125,7 @@ public sealed interface LineString extends Curve
      * @see ISO 19107:2019 - 6.4.18.2
      */
     @Override
-    public default Array getControlPoints() {
+    default Array getControlPoints() {
         return null;
     }
 
@@ -140,7 +140,7 @@ public sealed interface LineString extends Curve
     }
 
     @Override
-    public default AttributesType getAttributesType() {
+    default AttributesType getAttributesType() {
         return getDataPoints().getAttributesType();
     }
 

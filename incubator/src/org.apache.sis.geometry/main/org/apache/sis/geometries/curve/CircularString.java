@@ -20,7 +20,6 @@ import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPoints;
-import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.internal.shared.DefaultCircularString;
 import org.apache.sis.maths.Array;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -40,10 +39,10 @@ public sealed interface CircularString extends Curve
         permits DefaultCircularString
 {
 
-    public static final String TYPE = "CIRCULARSTRING";
+    static final String TYPE = "CIRCULARSTRING";
 
     @Override
-    public default String getGeometryType() {
+    default String getGeometryType() {
         return TYPE;
     }
 
@@ -76,7 +75,7 @@ public sealed interface CircularString extends Curve
      * @return null, a CircularString has no control points
      */
     @Override
-    public default Array getControlPoints() {
+    default Array getControlPoints() {
         return null;
     }
 

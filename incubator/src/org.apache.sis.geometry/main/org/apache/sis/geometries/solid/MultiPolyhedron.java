@@ -32,10 +32,10 @@ public sealed interface MultiPolyhedron extends GeometryCollection<Polyhedron>
         permits DefaultMultiPolyhedron
 {
 
-    public static final String TYPE = "MULTIPOLYHEDRON";
+    static final String TYPE = "MULTIPOLYHEDRON";
 
     @Override
-    public default String getGeometryType() {
+    default String getGeometryType() {
         return TYPE;
     }
 

@@ -54,7 +54,7 @@ public sealed interface NurbCurve extends BSplineCurve
     /**
      * Well-known text keyword of this geometry type.
      */
-    public static final String TYPE = "NURBS";
+    static final String TYPE = "NURBS";
 
     /**
      * Returns {@value #TYPE}.
