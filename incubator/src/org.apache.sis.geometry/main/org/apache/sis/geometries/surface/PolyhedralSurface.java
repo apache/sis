@@ -26,58 +26,86 @@ import org.opengis.annotation.UML;
 
 
 /**
- * A PolyhedralSurface is a contiguous collection of polygons, which share common boundary segments.
+ * A surface made of polygons connected along their common boundary curves.
  *
- * For each pair of polygons that “touch”, the common boundary shall be expressible as a finite collection of LineStrings.
- * Each such LineString shall be part of the boundary of at most 2 Polygon patches.
- * A TIN (triangulated irregular network) is a PolyhedralSurface consisting only of Triangle patches.
- * For any two polygons that share a common boundary, the
- * “top” of the polygon shall be consistent. This means that when two LinearRings from these two Polygons traverse the
- * common boundary segment, they do so in opposite directions. Since the Polyhedral surface is contiguous, all polygons
- * will be thus consistently oriented. This means that a non-oriented surface (such as Möbius band) shall not have
- * single surface representations. They may be represented by a MultiSurface.
+ * <p>Constraints:</p>
+ * <ul>
+ *   <li>For each pair of polygons that touch, the common boundary is expressible as a finite
+ *       collection of line strings.</li>
+ *   <li>Each such line string is part of the boundary of at most 2 polygon patches.</li>
+ *   <li>The <cite>top</cite> of two polygons sharing a common boundary is consistent: when their
+ *       rings traverse the common boundary segment, they do so in opposite directions. Since the
+ *       surface is contiguous, all its polygons are therefore consistently oriented.</li>
+ *   <li>A non-orientable surface such as a Möbius band has no single surface representation; it can
+ *       only be represented by a {@link MultiSurface}.</li>
+ * </ul>
  *
- * If each such LineString is the boundary of exactly 2 Polygon patches, then the PolyhedralSurface is a simple, closed
- * polyhedron and is topologically isomorphic to the surface of a sphere. By the Jordan Surface Theorem
- * (Jordan’s Theorem for 2-spheres), such polyhedrons enclose a solid topologically isomorphic to the interior of a
- * sphere; the ball. In this case, the “top” of the surface will either point inward or outward of the enclosed finite
- * solid. If outward, the surface is the exterior boundary of the enclosed surface. If inward, the surface is the
- * interior of the infinite complement of the enclosed solid. A Ball with some number of voids (holes) inside can
- * thus be presented as one exterior boundary shell, and some number in interior boundary shells.
+ * <p>If each of those line strings is the boundary of exactly 2 polygon patches, then the surface is
+ * a simple closed polyhedron, topologically isomorphic to the surface of a sphere. By the Jordan
+ * surface theorem such a polyhedron encloses a solid topologically isomorphic to a ball, and the
+ * <cite>top</cite> of the surface points either outward, in which case the surface is the exterior
+ * boundary of that solid, or inward, in which case it bounds the infinite complement of that solid.
+ * A ball with voids inside is therefore presented as one exterior shell and a number of interior
+ * shells.</p>
+ *
+ * <p>Note: a {@link TIN} (triangulated irregular network) is a polyhedral surface consisting only of
+ * {@link Triangle} patches.</p>
+ *
+ * @param  <T>  type of the polygonal patches of this surface.
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see OGC Simple Feature Access 1.2.1 - 6.1.12
+ * @see ISO 19107:2019 - 8.1.4
  */
-@UML(identifier="PolyhedralSurface", specification=ISO_19107) // section 8.1.4 TODO extends geometry collection is ISO 19107
+@UML(identifier="PolyhedralSurface", specification=ISO_19107) // TODO extends geometry collection is ISO 19107
 public sealed interface PolyhedralSurface<T extends Polygon> extends /*GeometryCollection<org.apache.sis.geometries.Polygon>,*/ Surface
         permits TriangulatedSurface,
                 DefaultPolyhedralSurface
 {
 
+    /**
+     * Well-known text keyword of this geometry type.
+     */
     public static final String TYPE = "POLYHEDRALSURFACE";
 
+    /**
+     * Returns {@value #TYPE}.
+     *
+     * @see ISO 19107:2019 - 6.4.4.23
+     */
     @Override
     public default String getGeometryType() {
         return TYPE;
     }
 
-//    @UML(identifier="segment", specification=ISO_19107) // section 8.1.4.3
+//    @UML(identifier="segment", specification=ISO_19107)
 //    @Override
 //    public List<Primitive> getSegments();
 
     /**
      * Returns the number of including polygons
      *
-     * @see OGC Simple Feature Access 1.2.1 - 6.1.12.2
+     * <p>Constraints:</p>
+     * <ul>
+     *   <li>At least one patch, since the patches are the segments of this surface.</li>
+     * </ul>
+     *
      * @return number of including polygons
+     *
+     * @see OGC Simple Feature Access 1.2.1 - 6.1.12.2
+     * @see ISO 19107:2019 - 8.1.4.3
      */
     int getNumPatches();
 
     /**
      * Returns a polygon in this surface, the order is arbitrary
      *
-     * @see OGC Simple Feature Access 1.2.1 - 6.1.12.2
      * @param n patch index
      * @return polygon in this surface, the order is arbitrary
+     *
+     * @see OGC Simple Feature Access 1.2.1 - 6.1.12.2
+     * @see ISO 19107:2019 - 8.1.4.3
      */
     T getPatchN(int n);
 
@@ -85,6 +113,8 @@ public sealed interface PolyhedralSurface<T extends Polygon> extends /*GeometryC
      * Returns the sum of the areas of the patches.
      * The unit of measurement is the one of the first patch,
      * or square metres if this surface has no patch.
+     *
+     * @see ISO 19107:2019 - 6.4.25.7
      */
     @Override
     public default Area getArea() {

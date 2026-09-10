@@ -21,15 +21,34 @@ import org.opengis.annotation.UML;
 
 
 /**
+ * The portion of a {@link PolynomialCurve} corresponding to one interval of its knot space,
+ * each coordinate offset being defined by a polynomial.
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 7.7.7
  */
-@UML(identifier="PolynomialArc", specification=ISO_19107) // section 7.7.7
+@UML(identifier="PolynomialArc", specification=ISO_19107)
 public interface PolynomialArc extends FunctionArc{
 
-    @UML(identifier="degree", specification=ISO_19107) // section 7.7.7.1
+    /**
+     * Maximum degree among all the polynomials defining this arc.
+     *
+     * @return degree of this arc.
+     *
+     * @see ISO 19107:2019 - 7.7.7.1
+     */
+    @UML(identifier="degree", specification=ISO_19107)
     int getDegree();
 
-    @UML(identifier="function", specification=ISO_19107) // section 7.7.7.3
+    /**
+     * Returns the polynomial giving the value of the coordinate offset at the given index.
+     *
+     * @param  coordinateOffset  coordinate offset for which to return the polynomial.
+     * @return polynomial defining the given coordinate offset of this arc.
+     *
+     * @see ISO 19107:2019 - 7.7.7.3
+     */
+    @UML(identifier="function", specification=ISO_19107)
     RealPolynomial function(int coordinateOffset);
 }

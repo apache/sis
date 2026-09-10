@@ -21,10 +21,24 @@ import org.opengis.annotation.UML;
 
 
 /**
+ * A polyhedral surface whose patches are all triangles.
+ *
+ * <p>Constraints:</p>
+ * <ul>
+ *   <li>Every patch is a {@link Triangle}.</li>
+ *   <li>How the triangulation is derived is not restricted.</li>
+ * </ul>
+ *
+ * <p>Note: an implementation which only stores the positions and applies a specific triangulation
+ * technique to build the surface satisfies this interface just as well.</p>
+ *
+ * @param  <T>  type of the triangular patches of this surface.
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 8.1.8
  */
-@UML(identifier="TriangulatedSurface", specification=ISO_19107) // section 8.1.8
+@UML(identifier="TriangulatedSurface", specification=ISO_19107)
 public sealed interface TriangulatedSurface<T extends Polygon> extends PolyhedralSurface<T>
         permits TIN
 {

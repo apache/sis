@@ -32,12 +32,31 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
- * A Point is a 0-dimensional geometric object and represents a single location in coordinate space.
- * A Point has an x-coordinate value, a y-coordinate value.
+ * A 0-dimensional geometric primitive representing a single location in coordinate space.
+ *
+ * <p>Constraints:</p>
+ * <ul>
+ *   <li>The topological dimension is 0.</li>
+ *   <li>The boundary of a point is always the {@link Empty} geometry,
+ *       therefore a point is always a {@linkplain Geometry#isCycle() cycle}.</li>
+ *   <li>A point has no {@linkplain Primitive#getSegments() segment}.</li>
+ * </ul>
+ *
+ * <p>Note: OGC Simple Feature Access describes a point as having an x-coordinate value and a
+ * y-coordinate value.</p>
+ *
+ * <p>Difference with ISO 19107: a point differs from a {@link org.opengis.geometry.DirectPosition}
+ * in that it is an object with a system-provided identity, whereas a direct position is a data type
+ * whose only identity is its own value. This interface exposes the location as a {@link Tuple}
+ * instead of a direct position, in order to accommodate additional attributes like in GLTF or
+ * GPU models.</p>
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see OGC Simple Feature Access 1.2.1 - 6.1.4
+ * @see ISO 19107:2019 - 6.4.13
  */
-@UML(identifier="Point", specification=ISO_19107) // section 6.4.13
+@UML(identifier="Point", specification=ISO_19107)
 public sealed interface Point extends Primitive
         permits DefaultPoint,
                 IndexedPoint,
@@ -46,12 +65,19 @@ public sealed interface Point extends Primitive
                 Triangle.InterpolatedPoint
 {
 
+    /**
+     * Well-known text keyword of this geometry type.
+     */
     public static final String TYPE = "POINT";
 
     /**
+     * Location of this point in its reference system.
+     *
      * @return point coordinate
+     *
+     * @see ISO 19107:2019 - 6.4.13.2
      */
-    @UML(identifier="position", specification=ISO_19107) // section 6.4.13.2
+    @UML(identifier="position", specification=ISO_19107)
     Tuple getPosition();
 
     /**
@@ -62,10 +88,18 @@ public sealed interface Point extends Primitive
      */
     Tuple getAttribute(String name);
 
+    /**
+     * Sets the value of the attribute of the given name.
+     *
+     * @param name  name of the attribute to set.
+     * @param tuple new attribute value.
+     */
     void setAttribute(String name, Tuple tuple);
 
     /**
      * View this point as a single point sequence
+     *
+     * @return this point as a sequence of one data point.
      */
     default DataPoints asDataPoint() {
         return new DataPoints() {
@@ -143,19 +177,47 @@ public sealed interface Point extends Primitive
         return sb.toString();
     }
 
-    @UML(identifier="vectorToPoint", specification=ISO_19107) // section 6.4.13.4
+    /**
+     * Returns the vector, in the tangent space at this point, whose direction determines the
+     * geodesic curve reaching the given position and whose length is the distance to it.
+     *
+     * @param  toPoint  position to reach from this point.
+     * @return vector from this point to the given position.
+     *
+     * @see ISO 19107:2019 - 6.4.13.4
+     */
+    @UML(identifier="vectorToPoint", specification=ISO_19107)
     default Vector vectorToPoint(DirectPosition toPoint) {
         //TODO
         throw new UnsupportedOperationException();
     }
 
-    @UML(identifier="bearing", specification=ISO_19107) // section 6.4.13.5
+    /**
+     * Returns the direction from this point toward the given position, without the distance.
+     * This is {@link #vectorToPoint(DirectPosition)} reduced to its direction.
+     *
+     * @param  toPoint  position to reach from this point.
+     * @return bearing from this point to the given position.
+     *
+     * @see ISO 19107:2019 - 6.4.13.5
+     */
+    @UML(identifier="bearing", specification=ISO_19107)
     default Bearing bearing(DirectPosition toPoint) {
         //TODO
         throw new UnsupportedOperationException();
     }
 
-    @UML(identifier="pointAtDistance", specification=ISO_19107) // section 6.4.13.6
+    /**
+     * Returns the position reached from this point by following the geodesic curve in the direction
+     * of the given vector, over a distance equal to the length of that vector.
+     * This solves the first geodesic problem.
+     *
+     * @param  bearing  vector in the tangent space at this point, giving both a direction and a distance.
+     * @return position at the given bearing and distance from this point.
+     *
+     * @see ISO 19107:2019 - 6.4.13.6
+     */
+    @UML(identifier="pointAtDistance", specification=ISO_19107)
     default DirectPosition pointAtDistance(Vector bearing){
         //TODO
         throw new UnsupportedOperationException();

@@ -27,22 +27,51 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
+ * A rational b-spline curve, i.e. a b-spline whose control points carry a weight.
+ *
+ * <p>A NURBS performs exactly the same computations as a {@link BSplineCurve}, but on a homogeneous
+ * coordinate space, so that the interpolation is a quotient of polynomials. A correctly implemented
+ * b-spline able to handle homogeneous coordinates can produce a NURBS, and a NURBS with a constant
+ * weight can produce any b-spline.</p>
+ *
+ * <p>Constraints:</p>
+ * <ul>
+ *   <li>{@link #isRational()} is {@code true} and the control points are expressed in homogeneous
+ *       coordinates.</li>
+ * </ul>
+ *
+ * <p>Note: despite its name, a non-uniform rational b-spline may have a uniform knot sequence.</p>
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 7.13.8
  */
-@UML(identifier="NURB", specification=ISO_19107) // section 7.13.8
+@UML(identifier="NURB", specification=ISO_19107)
 public sealed interface NurbCurve extends BSplineCurve
         permits DefaultNurbCurve
 {
 
+    /**
+     * Well-known text keyword of this geometry type.
+     */
     public static final String TYPE = "NURBS";
 
+    /**
+     * Returns {@value #TYPE}.
+     *
+     * @see ISO 19107:2019 - 6.4.4.23
+     */
     @Override
     default String getGeometryType() {
         return TYPE;
     }
 
-    @UML(identifier="interpolation", specification=ISO_19107) // section 7.1.2.2
+    /**
+     * Returns {@link CurveInterpolation#NURBS}.
+     *
+     * @see ISO 19107:2019 - 6.4.24
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
     @Override
     default CurveInterpolation getInterpolation() {
         return CurveInterpolation.NURBS;
@@ -68,16 +97,31 @@ public sealed interface NurbCurve extends BSplineCurve
         return getDataPoints().isEmpty();
     }
 
+    /**
+     * Returns {@code null}, since a NURBS does not approximate any particular curve by default.
+     *
+     * @see ISO 19107:2019 - 7.13.4.2
+     */
     @Override
     default SplineCurveForm getCurveForm() {
         return null;
     }
 
+    /**
+     * Returns {@link KnotType#NON_UNIFORM}.
+     *
+     * @see ISO 19107:2019 - 7.13.4.5
+     */
     @Override
     default KnotType getKnotSpec() {
         return KnotType.NON_UNIFORM;
     }
 
+    /**
+     * Returns {@code true}, since a NURBS is rational by definition.
+     *
+     * @see ISO 19107:2019 - 7.13.4.6
+     */
     @Override
     default boolean isRational() {
         return true;

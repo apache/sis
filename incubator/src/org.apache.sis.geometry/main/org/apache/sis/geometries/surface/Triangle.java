@@ -43,19 +43,40 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
- * A triangle geometry.
+ * A planar polygon with linear edges defined by three corners.
+ *
+ * <p>Constraints:</p>
+ * <ul>
+ *   <li>The three corners are distinct and non-collinear.</li>
+ *   <li>A triangle has no interior ring, therefore no hole.</li>
+ *   <li>The exterior ring is a cycle: its first and last positions are identical, so it holds
+ *       4 positions for 3 corners.</li>
+ * </ul>
+ *
+ * <p>Note: a position of a triangle can be located by barycentric coordinates, three non-negative
+ * numbers <var>c</var><sub>1</sub>, <var>c</var><sub>2</sub>, <var>c</var><sub>3</sub> summing to 1,
+ * so that <var>P</var> = <var>c</var><sub>1</sub><var>P</var><sub>1</sub> +
+ * <var>c</var><sub>2</sub><var>P</var><sub>2</sub> + <var>c</var><sub>3</sub><var>P</var><sub>3</sub>.
+ * Triangles are the building blocks of {@link TriangulatedSurface}.</p>
  *
  * TODO : declare and implement all methods from OGC Simple Feature Access
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 8.1.6
  */
-@UML(identifier="Triangle", specification=ISO_19107) // section 8.1.6
+@UML(identifier="Triangle", specification=ISO_19107)
 public sealed interface Triangle extends Polygon
         permits DefaultTriangle,
                 WTriangle,
                 OrientedTriangle
 {
 
+    /**
+     * Returns {@code "TRIANGLE"}.
+     *
+     * @see ISO 19107:2019 - 6.4.4.23
+     */
     @Override
     default String getGeometryType() {
         return "TRIANGLE";
@@ -66,10 +87,17 @@ public sealed interface Triangle extends Polygon
      * First and last point are identical.
      *
      * @return empty if triangle is empty, or of size 4.
+     *
+     * @see ISO 19107:2019 - 8.1.6
      */
     @Override
     LinearRing getExteriorRing();
 
+    /**
+     * Returns an empty list, since a triangle has no hole.
+     *
+     * @see ISO 19107:2019 - 8.1.6
+     */
     @Override
     default List<LinearRing> getInteriorRings() {
         return Collections.emptyList();

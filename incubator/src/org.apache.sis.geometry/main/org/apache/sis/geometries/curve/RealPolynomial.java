@@ -25,27 +25,83 @@ import org.opengis.util.GenericName;
 
 
 /**
+ * A real function defined by a polynomial,
+ * <var>p</var>(<var>t</var>) = <var>c</var><sub>0</sub> + <var>c</var><sub>1</sub><var>t</var> + … +
+ * <var>c</var><sub><var>n</var></sub><var>t</var><sup><var>n</var></sup>.
+ *
+ * <p>Difference with ISO 19107, which declares this data type as implementing {@code RealFunction}:
+ * this interface does not extend {@link RealFunction} in Java, but declares the same members.</p>
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 7.7.6
  */
-@UML(identifier="RealPolynomial", specification=ISO_19107) // section 7.7.6
+@UML(identifier="RealPolynomial", specification=ISO_19107)
 public interface RealPolynomial {
 
-    @UML(identifier="name", specification=ISO_19107) // section 7.7.6.2
+    /**
+     * Locally defined identifier of this polynomial.
+     *
+     * @return name of this polynomial.
+     *
+     * @see ISO 19107:2019 - 7.7.6.2
+     */
+    @UML(identifier="name", specification=ISO_19107)
     GenericName getName();
 
-    @UML(identifier="domain", specification=ISO_19107) // section 7.7.6.2
+    /**
+     * Interval over which this polynomial is defined.
+     *
+     * @return domain of this polynomial.
+     *
+     * @see ISO 19107:2019 - 7.7.6.2
+     */
+    @UML(identifier="domain", specification=ISO_19107)
     Range getDomain();
 
-    @UML(identifier="metadata", specification=ISO_19107) // section 7.7.6.2
+    /**
+     * References to the documentation describing this polynomial.
+     *
+     * @return metadata of this polynomial, possibly empty.
+     *
+     * @see ISO 19107:2019 - 7.7.6.2
+     */
+    @UML(identifier="metadata", specification=ISO_19107)
     List<URI> getMetadata();
 
-    @UML(identifier="degree", specification=ISO_19107) // section 7.7.6.3
+    /**
+     * Degree of this polynomial, i.e. the highest power of the variable used.
+     *
+     * @return degree of this polynomial.
+     *
+     * @see ISO 19107:2019 - 7.7.6.3
+     */
+    @UML(identifier="degree", specification=ISO_19107)
     int getDegree();
 
-    @UML(identifier="c", specification=ISO_19107) // section 7.7.6.4
+    /**
+     * Coefficients of this polynomial, from the constant term to the term of highest degree.
+     *
+     * <p>Constraints:</p>
+     * <ul>
+     *   <li>The array length is {@link #getDegree()} + 1.</li>
+     * </ul>
+     *
+     * @return coefficients of this polynomial.
+     *
+     * @see ISO 19107:2019 - 7.7.6.4
+     */
+    @UML(identifier="c", specification=ISO_19107)
     double[] getC();
 
-    @UML(identifier="value", specification=ISO_19107) // section 7.7.6.5
+    /**
+     * Returns the value of this polynomial for the given real number.
+     *
+     * @param  r  value in the {@linkplain #getDomain() domain} of this polynomial.
+     * @return value of this polynomial at the given number.
+     *
+     * @see ISO 19107:2019 - 7.7.6.5
+     */
+    @UML(identifier="value", specification=ISO_19107)
     double value(double r);
 }

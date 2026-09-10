@@ -21,11 +21,31 @@ import org.opengis.annotation.UML;
 
 
 /**
+ * A direction at a point, expressed either as a set of angles or as a tangent vector.
+ *
+ * <p>In the angular form, the first angle is an azimuth measured in the tangent plane from a
+ * reference direction, and the second one is an altitude, positive above the horizontal and
+ * negative below it. In the vector form, the direction is a unit vector of the coordinate system at
+ * the point. Both forms carry the same information; only their interpretation differs, and that
+ * interpretation depends on a reference direction giving the zero offset and on a rotation
+ * direction.</p>
+ *
+ * <p>Constraints:</p>
+ * <ul>
+ *   <li>A bearing may be valid only at the point from which it is measured: transporting a vector
+ *       to another point is valid only if the geometric reference surface is planar.</li>
+ *   <li>A fixed reference direction such as true north allows some transport, but only where that
+ *       reference exists and is unique. True north does not exist at the North pole and is not
+ *       unique at the South pole.</li>
+ *   <li>The reference direction of a bearing shall not refer to that bearing transitively.</li>
+ *   <li>The magnitude of the vector has no effect: only its direction matters.</li>
+ * </ul>
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 6.2.22
  */
-@UML(identifier="Bearing", specification=ISO_19107) // section 6.2.22
+@UML(identifier="Bearing", specification=ISO_19107)
 public interface Bearing {
 
-    //TODO
 }

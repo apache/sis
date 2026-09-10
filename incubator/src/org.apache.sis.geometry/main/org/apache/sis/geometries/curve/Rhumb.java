@@ -32,32 +32,70 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * A curve on the ellipsoid following a constant bearing from one point to the next.
+ * Also called a loxodrome, it crosses all the meridians at the same angle.
+ *
+ * <p>Constraints:</p>
+ * <ul>
+ *   <li>A rhumb is a chain of rhumb segments, each of them covering two consecutive
+ *       data points at a constant azimuth.</li>
+ *   <li>Like a {@link LineString}, a rhumb passes through all the latitudes and longitudes of the
+ *       bounding box of any two consecutive data points.</li>
+ *   <li>The {@linkplain #getControlPoints() control points} and the
+ *       {@linkplain #getDataPoints() data points} are identical.</li>
+ * </ul>
+ *
+ * <p>Note: on a sphere or an ellipsoid, the only rhumb lines which are also geodesics are the
+ * equator and the meridians.</p>
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 7.5.1, 7.5.2
  */
-@UML(identifier="Rhumb", specification=ISO_19107) // section 7.5.1
+@UML(identifier="Rhumb", specification=ISO_19107)
 public sealed interface Rhumb extends Curve
         permits DefaultRhumb
 {
 
+    /**
+     * Well-known text keyword of this geometry type.
+     */
     public static final String TYPE = "RHUMB";
 
+    /**
+     * Returns {@value #TYPE}.
+     *
+     * @see ISO 19107:2019 - 6.4.4.23
+     */
     @Override
     public default String getGeometryType() {
         return TYPE;
     }
 
-    @UML(identifier="interpolation", specification=ISO_19107) // section 7.5.2.1
+    /**
+     * Returns {@link CurveInterpolation#RHUMB}.
+     *
+     * @see ISO 19107:2019 - 7.5.2.1
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
     @Override
     public default CurveInterpolation getInterpolation() {
         return CurveInterpolation.RHUMB;
     }
 
-    //TODO in the UML but not in the spec
+    /**
+     * Constant azimuth followed by this curve.
+     *
+     * <p>Note: this attribute appears in the ISO 19107 UML (figure 23) but not in its
+     * {@code Rhumb} clause.</p>
+     *
+     * @return constant bearing of this curve.
+     *
+     * @see ISO 19107:2019 - 7.5.1
+     */
     Bearing getBearing();
 
     /**
-     * The number of Points in this Geodesic.
+     * The number of Points in this Rhumb.
      *
      * @see OGC Simple Feature Access 1.2.1 - 6.1.7.2
      * @return number of Points in this Geodesic.
@@ -78,6 +116,8 @@ public sealed interface Rhumb extends Curve
 
     /**
      * @return null, a Rhumb has no control points
+     *
+     * @see ISO 19107:2019 - 6.4.18.2
      */
     @Override
     public default Array getControlPoints() {

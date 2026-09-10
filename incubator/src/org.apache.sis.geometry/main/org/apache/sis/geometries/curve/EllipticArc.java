@@ -21,10 +21,21 @@ import org.opengis.annotation.UML;
 
 
 /**
+ * A conic without a cross term, therefore an arc of ellipse.
+ *
+ * <p>Constraints:</p>
+ * <ul>
+ *   <li>Four data points determine each arc, instead of the five needed by a general
+ *       {@link Conic}, since the <var>xy</var> term is absent from the defining equation.</li>
+ *   <li>Ellipses are built in the tangent plane at the centre of the ellipse, then projected on
+ *       the geometric reference surface by the exponential map.</li>
+ * </ul>
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 7.9.6
  */
-@UML(identifier="EllipticArc", specification=ISO_19107) // section 7.9.6
+@UML(identifier="EllipticArc", specification=ISO_19107)
 public non-sealed interface EllipticArc extends Conic {
 
 }

@@ -23,15 +23,34 @@ import org.opengis.annotation.UML;
 
 
 /**
+ * The portion of a {@link FunctionCurve} corresponding to one interval of its knot space.
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 7.7.3
  */
-@UML(identifier="FunctionArc", specification=ISO_19107) // section 7.7.3
+@UML(identifier="FunctionArc", specification=ISO_19107)
 public interface FunctionArc {
 
-    @UML(identifier="domain", specification=ISO_19107) // section 7.7.3.2
+    /**
+     * Interval of the knot space over which this arc is defined.
+     *
+     * @return domain of this arc.
+     *
+     * @see ISO 19107:2019 - 7.7.3.2
+     */
+    @UML(identifier="domain", specification=ISO_19107)
     Range getDomain();
 
-    @UML(identifier="function", specification=ISO_19107) // section 7.7.4
+    /**
+     * Returns the function giving the value of one coordinate offset over this arc.
+     *
+     * @param  arc               arc for which to return the function.
+     * @param  coordinateOffset  coordinate offset for which to return the function.
+     * @return function defining the given coordinate offset of the given arc.
+     *
+     * @see ISO 19107:2019 - 7.7.4
+     */
+    @UML(identifier="function", specification=ISO_19107)
     RealFunction function(FunctionArc arc, Vector coordinateOffset);
 }

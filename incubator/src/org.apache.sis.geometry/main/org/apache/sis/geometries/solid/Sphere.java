@@ -40,12 +40,30 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * A sphere geometry defined by a center and a radius.
- * Even if it is called a Sphere this class can handle 2 to N dimensions.
  *
- * ISO 19107 : classified as a conic surface
+ * <p>As a conic surface, a sphere is a parametric curve surface given as a family of circles whose
+ * positions vary linearly along the axis of the sphere and whose radius varies with the cosine of
+ * the central angle. Its horizontal curves are therefore lines of constant latitude and its vertical
+ * curves lines of constant longitude.</p>
+ *
+ * <p>Constraints:</p>
+ * <ul>
+ *   <li>The up-normal is the outward normal when the control points are ordered by increasing
+ *       longitude and increasing latitude.</li>
+ *   <li>The radius is positive.</li>
+ * </ul>
+ *
+ * <p>Difference with ISO 19107, which defines a sphere in a 3-dimensional space: even if it is
+ * called a Sphere this class can handle 2 to N dimensions.</p>
+ *
+ * <p>Note: ISO 19107 classifies this geometry as a conic surface. It should not be confused with
+ * the sphere used as a geometric reference surface (ISO 19107:2019 - 6.2.3.4).</p>
+ *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 8.5.1, 8.5.2
  */
-@UML(identifier="Sphere", specification=ISO_19107) // section 8.5.2
+@UML(identifier="Sphere", specification=ISO_19107)
 public final class Sphere extends AbstractGeometry implements ParametricCurveSurface {
 
     private Tuple<?> center;

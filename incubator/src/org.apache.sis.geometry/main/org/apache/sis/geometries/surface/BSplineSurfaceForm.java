@@ -21,15 +21,39 @@ import org.opengis.annotation.UML;
 
 
 /**
+ * The kind of geometry which a particular {@link BSplineSurface} represents.
+ *
+ * <p>Note: this code list is given for information only, to convey the original intent, and should
+ * be consistent with the other properties of the spline surface.</p>
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 8.7.3
  */
-@UML(identifier="BSplineSurfaceForm", specification=ISO_19107) // section 8.7.3
+@UML(identifier="BSplineSurfaceForm", specification=ISO_19107)
 public enum BSplineSurfaceForm {
+    /**
+     * A bounded portion of a plane, represented by a b-spline surface of degree 1 in each parameter.
+     */
     PLANAR,
+    /**
+     * A bounded portion of a cylindrical surface.
+     */
     CYLINDRICAL,
+    /**
+     * A bounded portion of the surface of a right circular cone.
+     */
     CONICAL,
+    /**
+     * A bounded portion of a sphere, or a complete sphere.
+     */
     SPHERICAL,
+    /**
+     * A torus, or a portion of a torus.
+     */
     TOROIDAL,
+    /**
+     * No particular surface is approximated.
+     */
     UNSPECIFIED
 }

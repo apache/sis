@@ -18,8 +18,15 @@ package org.apache.sis.geometries.curve;
 
 
 /**
+ * A complete ellipse, i.e. an {@link EllipticArc} which closes on itself.
+ * It is to {@link EllipticArc} what {@link Circle} is to {@link Arc}.
+ *
+ * <p>Note: ISO 19107 declares this interface in the {@code Conics} requirements class
+ * (figures 21 and 22) without giving it a dedicated clause.</p>
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 7.9
  */
 public interface Ellipse {
 

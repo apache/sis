@@ -61,24 +61,6 @@ import org.opengis.geometry.DirectPosition;
  * <p>Note: the following describes the OGC Simple Feature Access point of view, where the only
  * instantiable subtypes are {@link Polygon} and {@link PolyhedralSurface}.</p>
  *
- * A simple Surface may consists of a single “patch” that is associated with one “exterior boundary” and 0 or more
- * “interior” boundaries. A single such Surface patch in 3-dimensional space is isometric to planar Surfaces,
- * by a simple affine rotation matrix that rotates the patch onto the plane z = 0. If the patch is not vertical, the
- * projection onto the same plane is an isomorphism, and can be represented as a linear transformation, i.e. an affine.
- *
- * Polyhedral Surfaces are formed by “stitching” together such simple Surfaces patches along their common boundaries.
- * Such polyhedral Surfaces in a 3-dimensional space may not be planar as a whole, depending on the orientation of
- * their planar normals (Reference [1], sections 3.12.9.1, and 3.12.9.3). If all the patches are in alignment
- * (their normals are parallel), then the whole stitched polyhedral surface is co-planar and can be represented
- * as a single patch if it is connected.
- *
- * The boundary of a simple Surface is the set of closed Curves corresponding to its “exterior” and “interior”
- * boundaries (Reference [1], section 3.12.9.4).
- *
- * A Polygon is a simple Surface that is planar. A PolyhedralSurface is a simple surface, consisting of some number
- * of Polygon patches or facets. If a PolyhedralSurface is closed, then it bounds a solid.
- * A MultiSurface containing a set of closed PolyhedralSurfaces can be used to represent a Solid object with holes.
- *
  * @author Johann Sorel (Geomatys)
  *
  * @see ISO 19107:2019 - 6.4.25

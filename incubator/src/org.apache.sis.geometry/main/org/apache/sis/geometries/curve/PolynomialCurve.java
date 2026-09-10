@@ -21,14 +21,39 @@ import org.opengis.annotation.UML;
 
 
 /**
+ * A function curve whose weights are polynomials.
+ *
+ * <p>Most polynomial curves are composites of a simple arc defined between each consecutive pair of
+ * knots: splines, Bézier splines, b-splines and, through homogeneous coordinates, NURBS. Their
+ * constructors usually take enough constraints to form a system of linear equations which can be
+ * solved for the polynomial coefficients.</p>
+ *
+ * @param  <PolynomialArc>  type of the arcs composing this curve.
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 7.7.9
  */
-@UML(identifier="PolynomialCurve", specification=ISO_19107) // section 7.7.9
+@UML(identifier="PolynomialCurve", specification=ISO_19107)
 public sealed interface PolynomialCurve<PolynomialArc> extends FunctionCurve
         permits SplineCurve
 {
 
-    @UML(identifier="degree", specification=ISO_19107) // section 7.7.9.2
+    /**
+     * Maximum degree of the real polynomials used by this curve, which is the order minus one.
+     *
+     * <p>Constraints:</p>
+     * <ul>
+     *   <li>The degree is generally one less than the number of control points: a line segment has
+     *       two control points and a degree of 1, a quadratic curve has three and a degree of 2.</li>
+     *   <li>In a composite curve, the degree gives local control: only the nearest
+     *       {@code degree} + 1 control points contribute to a given position.</li>
+     * </ul>
+     *
+     * @return degree of this curve.
+     *
+     * @see ISO 19107:2019 - 7.7.9.2
+     */
+    @UML(identifier="degree", specification=ISO_19107)
     int getDegree();
 }

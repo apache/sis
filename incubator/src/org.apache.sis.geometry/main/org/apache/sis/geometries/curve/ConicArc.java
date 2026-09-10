@@ -18,8 +18,14 @@ package org.apache.sis.geometries.curve;
 
 
 /**
+ * A single bounded arc of a conic section, as opposed to the chain of arcs of a {@link Conic}.
+ *
+ * <p>Note: ISO 19107 declares this interface in the {@code Conics} requirements class
+ * (figures 21 and 22) without giving it a dedicated clause.</p>
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 7.9
  */
 public interface ConicArc {
 

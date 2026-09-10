@@ -31,17 +31,32 @@ import org.opengis.geometry.Envelope;
 
 
 /**
- * A GeometryCollection is a geometric object that is a collection of some number of geometric objects.
- * All the elements in a GeometryCollection shall be in the same Spatial Reference System.
- * This is also the Spatial Reference System for the GeometryCollection.
- * GeometryCollection places no other constraints on its elements.
+ * A typed collection of geometric objects which behaves as the set union of its elements.
  *
- * Subclasses of GeometryCollection may restrict membership based on dimension and may also place
- * other constraints on the degree of spatial overlap between elements.
+ * <p>Constraints:</p>
+ * <ul>
+ *   <li>All the elements are in the same spatial reference system, which is also the reference
+ *       system of the collection.</li>
+ *   <li>Every element is an instance of one of the {@linkplain #getElementType() allowed types},
+ *       or of a subtype of one of them.</li>
+ *   <li>The topological dimension of the collection is the largest topological dimension among
+ *       its elements.</li>
+ *   <li>No other constraint is placed on the elements, but subtypes may restrict membership based
+ *       on dimension and may constrain the degree of spatial overlap between elements.</li>
+ * </ul>
+ *
+ * <p>Note: because a collection behaves as the union of its elements and not as a set of sets, an
+ * implementation which needs a genuine set of sets should use a plain array of geometries instead
+ * of this interface.</p>
+ *
+ * @param  <T>  type of the elements of this collection.
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see OGC Simple Feature Access 1.2.1 - 6.1.3
+ * @see ISO 19107:2019 - 6.4.31
  */
-@UML(identifier="Collection", specification=ISO_19107) // section 6.4.31
+@UML(identifier="Collection", specification=ISO_19107)
 public sealed interface GeometryCollection<T extends Geometry> extends Geometry
         permits MultiPoint,
                 MultiCurve,
@@ -52,19 +67,48 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
                 MultiMeshPrimitive
 {
 
+    /**
+     * Well-known text keyword of this geometry type.
+     */
     public static final String TYPE = "GEOMETRYCOLLECTION";
 
+    /**
+     * Returns {@value #TYPE}.
+     *
+     * @see ISO 19107:2019 - 6.4.4.23
+     */
     @Override
     public default String getGeometryType() {
         return TYPE;
     }
 
-    @UML(identifier="elementType", specification=ISO_19107) // section 6.4.31.2
+    /**
+     * Geometry types allowed in this collection, usually fixed at construction time
+     * according to the purpose of this particular collection.
+     *
+     * <p>Constraints:</p>
+     * <ul>
+     *   <li>Every element of this collection is an instance of one of the returned types,
+     *       or of a subtype of one of them.</li>
+     *   <li>An implementation may make this set read-only when the purpose of the collection
+     *       restricts the allowed types.</li>
+     * </ul>
+     *
+     * @return geometry types allowed in this collection.
+     *
+     * @see ISO 19107:2019 - 6.4.31.2
+     */
+    @UML(identifier="elementType", specification=ISO_19107)
     default Set<GeometryType> getElementType() {
         //TODO
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Returns whether this collection has no element.
+     *
+     * @see ISO 19107:2019 - 6.4.4.2
+     */
     @Override
     default boolean isEmpty() {
         return getNumGeometries() == 0;
@@ -72,25 +116,34 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
 
     /**
      * Returns the number of geometries in this GeometryCollection.
+     * It can only change by adding or removing elements.
+     *
+     * @return the number of geometries in this GeometryCollection.
      *
      * @see OGC Simple Feature Access 1.2.1 - 6.1.3.2
-     * @return the number of geometries in this GeometryCollection.
+     * @see ISO 19107:2019 - 6.4.31.3
      */
-    @UML(identifier="numElement", specification=ISO_19107) // section 6.4.31.3
+    @UML(identifier="numElement", specification=ISO_19107)
     int getNumGeometries();
 
     /**
      * Returns the Nth geometry in this GeometryCollection.
      *
-     * Difference with ISO 19107 :
-     * - for add as defined by ISO 19107, use GeometryOperations union operator.
-     * - for remove as defined by ISO 19107, use GeometryOperations difference operator.
+     * <p>Difference with ISO 19107:</p>
+     * <ul>
+     *   <li>for {@code add} as defined by ISO 19107, use the union operator of
+     *       {@link org.apache.sis.geometries.operation.GeometryProcessor};</li>
+     *   <li>for {@code remove} as defined by ISO 19107, use the difference operator of
+     *       {@link org.apache.sis.geometries.operation.GeometryProcessor}.</li>
+     * </ul>
      *
-     * @see OGC Simple Feature Access 1.2.1 - 6.1.3.2
      * @param n geometry index.
      * @return the Nth geometr in this GeometryCollection.
+     *
+     * @see OGC Simple Feature Access 1.2.1 - 6.1.3.2
+     * @see ISO 19107:2019 - 6.4.32, 6.4.32.2, 6.4.32.3
      */
-    @UML(identifier="element", specification=ISO_19107) // section 6.4.32
+    @UML(identifier="element", specification=ISO_19107)
     T getGeometryN(int n);
 
     @Override

@@ -21,13 +21,34 @@ import org.opengis.annotation.UML;
 
 
 /**
+ * The distribution of the knots in the parameter space of a spline.
+ *
+ * <p>Note: this code list is given for information only and should be consistent with the actual
+ * knot sequence of the spline.</p>
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 7.13.2
  */
-@UML(identifier="KnotType", specification=ISO_19107) // section 7.13.2
+@UML(identifier="KnotType", specification=ISO_19107)
 public enum KnotType {
+    /**
+     * Knots are evenly spaced and all of multiplicity 1.
+     */
     UNIFORM,
+    /**
+     * Knots have varying spacings and multiplicities.
+     */
     NON_UNIFORM,
+    /**
+     * Interior knots are evenly spaced with multiplicity 1, while the first and the last one have a
+     * multiplicity one more than the degree of the spline.
+     */
     QUASI_UNIFORM,
+    /**
+     * Knots are evenly spaced and interior knots have a multiplicity equal to the degree of the
+     * spline, the first and the last one having a multiplicity one more than that degree. Such a
+     * spline is a pure Bézier spline between its distinct knots.
+     */
     PIECEWISE_BEZIER
 }

@@ -34,14 +34,27 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
- * A LineString is a Curve with linear interpolation between Points.
- * Each consecutive pair of Points defines a Line segment.
+ * A curve using a linear interpolation between its data points,
+ * each consecutive pair of points defining a line segment.
  *
- * Note : ISO-19107 name this class a Line, even if it has more then 2 points.
+ * <p>Constraints:</p>
+ * <ul>
+ *   <li>At least two data points, the first one being the {@linkplain #getStartPoint() start point}
+ *       and the last one the {@linkplain #getEndPoint() end point}.</li>
+ *   <li>The position at the construction parameter <var>λ</var> between two consecutive data points
+ *       <var>P<sub>i</sub></var> and <var>P<sub>i+1</sub></var> is
+ *       (1 − <var>λ</var>)⋅<var>P<sub>i</sub></var> + <var>λ</var>⋅<var>P<sub>i+1</sub></var>
+ *       for <var>λ</var> ∈ [0 … 1].</li>
+ * </ul>
+ *
+ * <p>Note: ISO 19107 names this class a {@code Line}, even if it has more than 2 points.</p>
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see OGC Simple Feature Access 1.2.1 - 6.1.7
+ * @see ISO 19107:2019 - 7.1.2
  */
-@UML(identifier="Line", specification=ISO_19107) // section 7.1.2
+@UML(identifier="Line", specification=ISO_19107)
 public sealed interface LineString extends Curve
         permits LinearRing,
                 DefaultLineString,
@@ -50,19 +63,37 @@ public sealed interface LineString extends Curve
                 OrientedEdge
 {
 
+    /**
+     * Well-known text keyword of this geometry type.
+     */
     public static final String TYPE = "LINESTRING";
 
+    /**
+     * Returns {@value #TYPE}.
+     *
+     * @see ISO 19107:2019 - 6.4.4.23
+     */
     @Override
     public default String getGeometryType() {
         return TYPE;
     }
 
-    @UML(identifier="interpolation", specification=ISO_19107) // section 7.1.2.2
+    /**
+     * Returns {@link CurveInterpolation#LINEAR}.
+     *
+     * @see ISO 19107:2019 - 7.1.2.2
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
     @Override
     public default CurveInterpolation getInterpolation() {
         return CurveInterpolation.LINEAR;
     }
 
+    /**
+     * Returns {@code this}, since a line string is already a linear approximation of itself.
+     *
+     * @see ISO 19107:2019 - 6.4.18.17
+     */
     @Override
     public default LineString asLine(Length spacing, Length offset) {
         return this;
@@ -90,6 +121,8 @@ public sealed interface LineString extends Curve
 
     /**
      * @return null, a LineString has no control points
+     *
+     * @see ISO 19107:2019 - 6.4.18.2
      */
     @Override
     public default Array getControlPoints() {

@@ -73,7 +73,7 @@
  * No interface or implementation yet.
  *
  * <h3>TODO : ISO 19107 PointCloud (Section 11.2.2)</h3>
- * No interface or implementation yet.
+ * {@link org.apache.sis.geometries.point.PointCloud} declares the interface, no implementation yet.
  *
  * <h3>TODO : ISO 19107 PointCloud (Section 6.4.4.27)</h3>
  * Geometry has an equal method with a surface parameter.

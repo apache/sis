@@ -21,10 +21,25 @@ import org.opengis.annotation.UML;
 
 
 /**
+ * A polynomial spline of degree 3, made of a sequence of segments each defined by its own cubic
+ * polynomials, one per coordinate offset.
+ *
+ * <p>Constraints:</p>
+ * <ul>
+ *   <li>The {@linkplain #getDegree() degree} is 3.</li>
+ *   <li>The curve is C², i.e. its first and second derivatives are continuous everywhere, and it
+ *       passes through its data points in the given order.</li>
+ *   <li>The {@linkplain #getDerivativeAtStart() start} and
+ *       {@linkplain #getDerivativeAtEnd() end} derivatives reduce to a single tangent vector each.</li>
+ *   <li>Unlike a polyline, the arc length parameterization of a cubic spline is not necessarily
+ *       polynomial.</li>
+ * </ul>
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 7.13.6
  */
-@UML(identifier="CubicSpline", specification=ISO_19107) // section 7.13.6
+@UML(identifier="CubicSpline", specification=ISO_19107)
 public non-sealed interface CubicSpline extends PolynomialSpline {
 
 }

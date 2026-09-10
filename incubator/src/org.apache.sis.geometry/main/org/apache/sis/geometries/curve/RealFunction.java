@@ -25,21 +25,53 @@ import org.opengis.util.GenericName;
 
 
 /**
+ * A well-defined mapping from an interval of real numbers onto the real numbers.
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 7.7.2
  */
-@UML(identifier="RealFunction", specification=ISO_19107) // section 7.7.2
+@UML(identifier="RealFunction", specification=ISO_19107)
 public interface RealFunction {
 
-    @UML(identifier="name", specification=ISO_19107) // section 7.7.2.2
+    /**
+     * Locally defined identifier of this function.
+     *
+     * @return name of this function.
+     *
+     * @see ISO 19107:2019 - 7.7.2.2
+     */
+    @UML(identifier="name", specification=ISO_19107)
     GenericName getName();
 
-    @UML(identifier="domain", specification=ISO_19107) // section 7.7.2.3
+    /**
+     * Interval over which this function is defined.
+     *
+     * @return domain of this function.
+     *
+     * @see ISO 19107:2019 - 7.7.2.3
+     */
+    @UML(identifier="domain", specification=ISO_19107)
     Range getDomain();
 
-    @UML(identifier="metadata", specification=ISO_19107) // section 7.7.2.4
+    /**
+     * References to the documentation describing this function.
+     *
+     * @return metadata of this function, possibly empty.
+     *
+     * @see ISO 19107:2019 - 7.7.2.4
+     */
+    @UML(identifier="metadata", specification=ISO_19107)
     List<URI> getMetadata();
 
-    @UML(identifier="value", specification=ISO_19107) // section 7.7.2.5
+    /**
+     * Returns the value of this function for the given real number.
+     *
+     * @param  r  value in the {@linkplain #getDomain() domain} of this function.
+     * @return value of this function at the given number.
+     *
+     * @see ISO 19107:2019 - 7.7.2.5
+     */
+    @UML(identifier="value", specification=ISO_19107)
     double value(double r);
 }

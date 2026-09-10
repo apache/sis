@@ -30,23 +30,55 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
- * A curve between two point which is interpolated on the ellipsid.
+ * A curve following the shortest path between its data points on the geometric reference surface.
+ *
+ * <p>Where the reference surface is not flat, as on a geoid, an ellipsoid or a sphere, the shortest
+ * path between two positions is a geodesic curve rather than a straight {@link LineString}. Since
+ * the reference surface is embedded in a 3-dimensional Euclidean space, a geodesic is also a curve
+ * of that space.</p>
+ *
+ * <p>Constraints:</p>
+ * <ul>
+ *   <li>A geodesic is a chain of geodesic segments, each of them covering two consecutive
+ *       data points.</li>
+ *   <li>The curvature vector of a geodesic is normal to the reference surface, therefore its
+ *       tangential curvature is zero and it depends only on the surface and on its local radius.</li>
+ *   <li>The shortest path is not always unique: on an ellipsoid, two antipodal positions are joined
+ *       by several geodesics.</li>
+ * </ul>
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 7.3.2
  */
-@UML(identifier="Geodesic", specification=ISO_19107) // section 7.3.2
+@UML(identifier="Geodesic", specification=ISO_19107)
 public sealed interface Geodesic extends Curve
         permits DefaultGeodesic
 {
 
+    /**
+     * Well-known text keyword of this geometry type.
+     */
     public static final String TYPE = "GEODESIC";
 
+    /**
+     * Returns {@value #TYPE}.
+     *
+     * @see ISO 19107:2019 - 6.4.4.23
+     */
     @Override
     public default String getGeometryType() {
         return TYPE;
     }
 
-    @UML(identifier="interpolation", specification=ISO_19107) // section 7.3.2.2
+    /**
+     * Returns {@link CurveInterpolation#GEODESIC}.
+     * The interpolation between two data points is computed by the associated geometric coordinate
+     * system, from its distance, bearing and point-at-distance operations.
+     *
+     * @see ISO 19107:2019 - 7.3.2.2
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
     @Override
     public default CurveInterpolation getInterpolation() {
         return CurveInterpolation.GEODESIC;
@@ -74,6 +106,8 @@ public sealed interface Geodesic extends Curve
 
     /**
      * @return null, a Geodesic has no control points
+     *
+     * @see ISO 19107:2019 - 6.4.18.2
      */
     @Override
     public default Array getControlPoints() {

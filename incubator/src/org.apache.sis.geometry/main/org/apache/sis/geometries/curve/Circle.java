@@ -21,10 +21,26 @@ import org.opengis.annotation.UML;
 
 
 /**
+ * A complete circle, i.e. an {@link Arc} whose arcs share a single centre and close on themselves.
+ *
+ * <p>Constraints:</p>
+ * <ul>
+ *   <li>All the {@linkplain #getControlPoints() control points} are the same position,
+ *       the centre of the circle.</li>
+ *   <li>Because a single arc must stay below a full turn, at least two arcs and therefore two
+ *       control points are needed.</li>
+ *   <li>All the {@linkplain #getDataPoints() data points} are at the same distance from the centre,
+ *       and the first and last ones are equal.</li>
+ *   <li>By default the first data point, the centre and the second data point lie on a common
+ *       geodesic diameter; the curve turns from the first toward the second by the shorter of the
+ *       two arcs, then closes by the longer one.</li>
+ * </ul>
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 7.9.4
  */
-@UML(identifier="Circle", specification=ISO_19107) // section 7.9.4
+@UML(identifier="Circle", specification=ISO_19107)
 public non-sealed interface Circle extends Arc {
 
 }
