@@ -23,7 +23,6 @@ import javax.measure.quantity.Area;
 import javax.measure.quantity.Volume;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.SolidInterpolation;
 import org.apache.sis.geometries.solid.Polyhedron;
 import org.apache.sis.geometries.surface.MultiPolygon;
 import org.opengis.geometry.DirectPosition;
@@ -122,11 +121,6 @@ public non-sealed class DefaultPolyhedron extends AbstractGeometry implements Po
 
     @Override
     public List<DirectPosition> getControlPoints() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public SolidInterpolation getInterpolation() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

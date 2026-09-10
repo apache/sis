@@ -18,6 +18,7 @@ package org.apache.sis.geometries.solid;
 
 import java.util.List;
 import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.SolidInterpolation;
 import org.apache.sis.geometries.Solid;
 import org.apache.sis.geometries.internal.shared.DefaultPolyhedron;
 import org.apache.sis.geometries.solid.polyhedron.AbstractPolyhedron;
@@ -53,6 +54,17 @@ public sealed interface Polyhedron extends Solid
     @Override
     default AttributesType getAttributesType() {
         return getExteriorShell().getAttributesType();
+    }
+
+    /**
+     * Returns {@link SolidInterpolation#NONE}: a polyhedron is defined by its boundary shells,
+     * which leaves its interior unspecified.
+     *
+     * @see ISO 19107:2019 - 6.4.30
+     */
+    @Override
+    default SolidInterpolation getInterpolation() {
+        return SolidInterpolation.NONE;
     }
 
     /**

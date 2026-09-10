@@ -54,6 +54,18 @@ public sealed interface Primitive extends Geometry
 {
 
     /**
+     * Returns {@link BoundaryType#METRIC}: a primitive is not an aggregate,
+     * therefore its boundary is unambiguous and is the metric one.
+     *
+     * @see ISO 19107:2019 - 6.4.3, 10.8.3
+     */
+    @UML(identifier="boundaryType", specification=ISO_19107)
+    @Override
+    default BoundaryType getBoundaryType() {
+        return BoundaryType.METRIC;
+    }
+
+    /**
      * Smaller primitives of the same dimension contained in this primitive,
      * each of them defining a portion of it.
      *

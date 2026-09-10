@@ -16,6 +16,8 @@
  */
 package org.apache.sis.geometries.surface;
 
+import java.util.List;
+import org.apache.sis.geometries.SurfaceInterpolation;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
@@ -43,4 +45,14 @@ public sealed interface TriangulatedSurface<T extends Polygon> extends Polyhedra
         permits TIN
 {
 
+    /**
+     * Returns {@link SurfaceInterpolation#TRIANGULAR}: the patches of this surface are triangles.
+     *
+     * @see ISO 19107:2019 - 8.1.8
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
+    @Override
+    default List<SurfaceInterpolation> getInterpolation() {
+        return List.of(SurfaceInterpolation.TRIANGULAR);
+    }
 }

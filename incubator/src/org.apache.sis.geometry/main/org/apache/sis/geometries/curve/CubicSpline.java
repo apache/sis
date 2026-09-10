@@ -42,4 +42,14 @@ import org.opengis.annotation.UML;
 @UML(identifier="CubicSpline", specification=ISO_19107)
 public non-sealed interface CubicSpline extends PolynomialSpline {
 
+    /**
+     * Returns 3: a cubic spline is defined by polynomials of degree 3.
+     *
+     * @see ISO 19107:2019 - 7.13.6
+     */
+    @UML(identifier="degree", specification=ISO_19107)
+    @Override
+    default int getDegree() {
+        return 3;
+    }
 }

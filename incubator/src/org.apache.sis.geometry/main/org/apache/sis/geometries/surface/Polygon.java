@@ -19,6 +19,7 @@ package org.apache.sis.geometries.surface;
 import java.util.List;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Surface;
+import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.DefaultPolygon;
@@ -85,6 +86,17 @@ public sealed interface Polygon extends Surface
     @Override
     default AttributesType getAttributesType() {
         return getExteriorRing().getAttributesType();
+    }
+
+    /**
+     * Returns {@link SurfaceInterpolation#PLANAR}: a polygon and its boundary lie in a single plane.
+     *
+     * @see ISO 19107:2019 - 8.1.2
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
+    @Override
+    default List<SurfaceInterpolation> getInterpolation() {
+        return List.of(SurfaceInterpolation.PLANAR);
     }
 
     /**

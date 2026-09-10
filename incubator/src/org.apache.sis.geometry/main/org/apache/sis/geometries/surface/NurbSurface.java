@@ -16,6 +16,8 @@
  */
 package org.apache.sis.geometries.surface;
 
+import java.util.List;
+import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultNurbSurface;
 
 /**
@@ -33,6 +35,27 @@ public sealed interface NurbSurface extends BSplineSurface
     @Override
     default String getGeometryType() {
         return TYPE;
+    }
+
+    /**
+     * Returns {@code false}: a NURBS is expressed in homogeneous coordinates,
+     * therefore it is rational and not polynomial.
+     *
+     * @see ISO 19107:2019 - 8.7.2
+     */
+    @Override
+    default boolean isPolynomial() {
+        return false;
+    }
+
+    /**
+     * Returns {@link SurfaceInterpolation#NURBS}.
+     *
+     * @see ISO 19107:2019 - 6.4.27
+     */
+    @Override
+    default List<SurfaceInterpolation> getInterpolation() {
+        return List.of(SurfaceInterpolation.NURBS);
     }
 
 }

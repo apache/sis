@@ -16,9 +16,11 @@
  */
 package org.apache.sis.geometries.curve;
 
+import java.util.Set;
 import javax.measure.quantity.Length;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.internal.shared.DefaultMultiCurve;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
@@ -55,6 +57,16 @@ public sealed interface MultiCurve<T extends Curve> extends GeometryCollection<T
     @Override
     default String getGeometryType() {
         return TYPE;
+    }
+
+    /**
+     * Returns {@link GeometryType#CURVE}: all the elements of this collection are curves.
+     *
+     * @see ISO 19107:2019 - 6.4.31.2
+     */
+    @Override
+    default Set<GeometryType> getElementType() {
+        return Set.of(GeometryType.CURVE);
     }
 
     /**

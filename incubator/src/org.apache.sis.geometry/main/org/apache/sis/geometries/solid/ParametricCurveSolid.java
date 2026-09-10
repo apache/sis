@@ -21,6 +21,7 @@ import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Solid;
+import org.apache.sis.geometries.SolidInterpolation;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
@@ -47,6 +48,18 @@ import org.opengis.geometry.DirectPosition;
 public sealed interface ParametricCurveSolid extends Solid
         permits BSolidSpline
 {
+
+    /**
+     * Returns {@link SolidInterpolation#PARAMETRIC_CURVE}: this solid is defined by families of
+     * curves over a 3-dimensional parameter space.
+     *
+     * @see ISO 19107:2019 - 9.3.1
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
+    @Override
+    default SolidInterpolation getInterpolation() {
+        return SolidInterpolation.PARAMETRIC_CURVE;
+    }
 
     /**
      * Type of the curves used to traverse this solid horizontally.

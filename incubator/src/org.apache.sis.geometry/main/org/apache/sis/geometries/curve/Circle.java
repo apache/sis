@@ -43,4 +43,14 @@ import org.opengis.annotation.UML;
 @UML(identifier="Circle", specification=ISO_19107)
 public non-sealed interface Circle extends Arc {
 
+    /**
+     * Returns {@code true}: a circle is a complete curve closing on itself.
+     *
+     * @see ISO 19107:2019 - 7.9.4
+     */
+    @UML(identifier="isCycle", specification=ISO_19107)
+    @Override
+    default boolean isCycle() {
+        return true;
+    }
 }

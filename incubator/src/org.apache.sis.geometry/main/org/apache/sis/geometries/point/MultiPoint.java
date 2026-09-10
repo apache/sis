@@ -18,7 +18,9 @@ package org.apache.sis.geometries.point;
 
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.DataPoints;
+import java.util.Set;
 import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.DefaultMultiPoint;
@@ -49,6 +51,16 @@ public sealed interface MultiPoint<T extends Point> extends GeometryCollection<T
     @Override
     default String getGeometryType() {
         return TYPE;
+    }
+
+    /**
+     * Returns {@link GeometryType#POINT}: all the elements of this collection are points.
+     *
+     * @see ISO 19107:2019 - 6.4.31.2
+     */
+    @Override
+    default Set<GeometryType> getElementType() {
+        return Set.of(GeometryType.POINT);
     }
 
     /**

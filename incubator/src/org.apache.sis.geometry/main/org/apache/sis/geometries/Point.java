@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+import java.util.List;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultPoint;
@@ -158,6 +159,70 @@ public sealed interface Point extends Primitive
     @Override
     default String getGeometryType() {
         return TYPE;
+    }
+
+    /**
+     * Returns 0: a point is a single location.
+     *
+     * @see ISO 19107:2019 - 6.4.4.22
+     */
+    @Override
+    default int getTopologicDimension() {
+        return 0;
+    }
+
+    /**
+     * Returns an empty list: a point cannot be decomposed.
+     *
+     * @see ISO 19107:2019 - 6.4.11.2
+     */
+    @Override
+    default List<Primitive> getSegments() {
+        return List.of();
+    }
+
+    /**
+     * Returns {@code true}: the boundary of a point is empty, therefore a point closes on itself.
+     *
+     * @see ISO 19107:2019 - 6.4.4.14
+     */
+    @UML(identifier="isCycle", specification=ISO_19107)
+    @Override
+    default boolean isCycle() {
+        return true;
+    }
+
+    /**
+     * Returns {@code true}: a single location can neither self-intersect nor self-tangent.
+     *
+     * @see ISO 19107:2019 - 6.4.4.15
+     */
+    @UML(identifier="isSimple", specification=ISO_19107)
+    @Override
+    default boolean isSimple() {
+        return true;
+    }
+
+    /**
+     * Returns {@code this}: a point is its own centroid.
+     *
+     * @see ISO 19107:2019 - 6.4.4.8
+     */
+    @UML(identifier="centroid", specification=ISO_19107)
+    @Override
+    default Point getCentroid() {
+        return this;
+    }
+
+    /**
+     * Returns {@code this}: a point is interior to itself.
+     *
+     * @see ISO 19107:2019 - 6.4.4.19
+     */
+    @UML(identifier="representativePoint", specification=ISO_19107)
+    @Override
+    default Point getRepresentativePoint() {
+        return this;
     }
 
     @Override

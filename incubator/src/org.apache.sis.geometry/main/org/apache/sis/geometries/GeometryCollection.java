@@ -115,6 +115,21 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
     }
 
     /**
+     * Returns the largest topological dimension among the elements of this collection,
+     * or −1 if this collection is empty.
+     *
+     * @see ISO 19107:2019 - 6.4.4.22
+     */
+    @Override
+    default int getTopologicDimension() {
+        int dimension = -1;
+        for (int i = 0, n = getNumGeometries(); i < n; i++) {
+            dimension = Math.max(dimension, getGeometryN(i).getTopologicDimension());
+        }
+        return dimension;
+    }
+
+    /**
      * Returns the number of geometries in this GeometryCollection.
      * It can only change by adding or removing elements.
      *

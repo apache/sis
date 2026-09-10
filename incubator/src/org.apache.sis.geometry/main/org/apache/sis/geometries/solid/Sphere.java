@@ -24,6 +24,7 @@ import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.surface.ParametricCurveSurface;
 import org.apache.sis.maths.Tuple;
@@ -134,6 +135,17 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
     @Override
     public AttributesType getAttributesType() {
         return AttributesType.EMPTY;
+    }
+
+    /**
+     * Returns {@link SurfaceInterpolation#SPHERICAL}: this surface is a section of a sphere.
+     *
+     * @see ISO 19107:2019 - 8.5.2
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
+    @Override
+    public List<SurfaceInterpolation> getInterpolation() {
+        return List.of(SurfaceInterpolation.SPHERICAL);
     }
 
     /**

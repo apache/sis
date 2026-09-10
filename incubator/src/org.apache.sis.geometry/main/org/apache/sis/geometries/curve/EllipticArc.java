@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.apache.sis.geometries.CurveInterpolation;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
@@ -38,4 +39,14 @@ import org.opengis.annotation.UML;
 @UML(identifier="EllipticArc", specification=ISO_19107)
 public non-sealed interface EllipticArc extends Conic {
 
+    /**
+     * Returns {@link CurveInterpolation#ELLIPTICAL}.
+     *
+     * @see ISO 19107:2019 - 7.9.6
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
+    @Override
+    default CurveInterpolation getInterpolation() {
+        return CurveInterpolation.ELLIPTICAL;
+    }
 }

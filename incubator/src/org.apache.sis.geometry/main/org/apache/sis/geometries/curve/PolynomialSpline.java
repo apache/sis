@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.maths.Vector;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -47,6 +48,29 @@ public sealed interface PolynomialSpline extends SplineCurve
         permits CubicSpline,
                 Bezier
 {
+
+    /**
+     * Returns {@link CurveInterpolation#POLYNOMIAL_SPLINE}.
+     *
+     * @see ISO 19107:2019 - 7.13.5
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
+    @Override
+    default CurveInterpolation getInterpolation() {
+        return CurveInterpolation.POLYNOMIAL_SPLINE;
+    }
+
+    /**
+     * Returns {@code false}: coordinate offsets being fitted separately,
+     * an interpolant spline never uses homogeneous coordinates.
+     *
+     * @see ISO 19107:2019 - 7.13.5
+     */
+    @UML(identifier="isRational", specification=ISO_19107)
+    @Override
+    default boolean isRational() {
+        return false;
+    }
 
     /**
      * Derivative imposed at the start point of this spline.

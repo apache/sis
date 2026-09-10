@@ -222,17 +222,8 @@ public sealed interface Geometry
      */
     @UML(identifier="topologicalDimension", specification=ISO_19107)
     default int getTopologicDimension() {
-        if (this instanceof Empty) {
-            return -1;
-        } else if (this instanceof Point) {
-            return 0;
-        } else if (this instanceof Curve) {
-            return 1;
-        } else if (this instanceof Surface) {
-            return 2;
-        } else if (this instanceof Solid) {
-            return 3;
-        }
+        //TODO remove this method default when all classes implement it.
+        //Empty, Point, Curve, Surface, Solid and GeometryCollection already do.
         throw new UnsupportedOperationException();
     }
 

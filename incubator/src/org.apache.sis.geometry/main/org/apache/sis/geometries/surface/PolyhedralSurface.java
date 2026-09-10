@@ -16,8 +16,10 @@
  */
 package org.apache.sis.geometries.surface;
 
+import java.util.List;
 import javax.measure.quantity.Area;
 import org.apache.sis.geometries.Surface;
+import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultPolyhedralSurface;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
@@ -82,6 +84,17 @@ public sealed interface PolyhedralSurface<T extends Polygon> extends /*GeometryC
 //    @UML(identifier="segment", specification=ISO_19107)
 //    @Override
 //    public List<Primitive> getSegments();
+
+    /**
+     * Returns {@link SurfaceInterpolation#PLANAR}: every patch of this surface is a planar polygon.
+     *
+     * @see ISO 19107:2019 - 8.1.4
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
+    @Override
+    default List<SurfaceInterpolation> getInterpolation() {
+        return List.of(SurfaceInterpolation.PLANAR);
+    }
 
     /**
      * Returns the number of including polygons

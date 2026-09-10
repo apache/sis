@@ -16,7 +16,9 @@
  */
 package org.apache.sis.geometries.surface;
 
+import java.util.List;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.DefaultTriangulatedSurface;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
@@ -41,6 +43,17 @@ public sealed interface TIN extends TriangulatedSurface<Triangle>
     @Override
     default String getGeometryType() {
         return TYPE;
+    }
+
+    /**
+     * Returns {@link SurfaceInterpolation#TIN}: the triangulation of this surface is derived
+     * from its own data points.
+     *
+     * @see ISO 19107:2019 - 6.4.27
+     */
+    @Override
+    default List<SurfaceInterpolation> getInterpolation() {
+        return List.of(SurfaceInterpolation.TIN);
     }
 
     /**

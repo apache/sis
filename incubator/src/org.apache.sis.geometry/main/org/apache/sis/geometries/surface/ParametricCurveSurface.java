@@ -21,6 +21,7 @@ import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
+import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.solid.Sphere;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -65,6 +66,18 @@ public sealed interface ParametricCurveSurface extends Surface, ReferenceSystem
                 BSplineSurface,
                 Sphere
 {
+
+    /**
+     * Returns {@link SurfaceInterpolation#PARAMETRIC_CURVE}: this surface is defined by families
+     * of curves over a 2-dimensional parameter space.
+     *
+     * @see ISO 19107:2019 - 8.3.1
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
+    @Override
+    default List<SurfaceInterpolation> getInterpolation() {
+        return List.of(SurfaceInterpolation.PARAMETRIC_CURVE);
+    }
 
     /**
      * Number of rows in the parameter grid, therefore the number of

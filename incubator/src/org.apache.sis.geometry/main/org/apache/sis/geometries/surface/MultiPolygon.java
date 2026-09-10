@@ -16,6 +16,8 @@
  */
 package org.apache.sis.geometries.surface;
 
+import java.util.Set;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.DefaultMultiPolygon;
 
@@ -44,6 +46,16 @@ public sealed interface MultiPolygon extends MultiSurface<Polygon>
     @Override
     default String getGeometryType() {
         return TYPE;
+    }
+
+    /**
+     * Returns {@link GeometryType#POLYGON}: all the elements of this collection are polygons.
+     *
+     * @see ISO 19107:2019 - 6.4.31.2
+     */
+    @Override
+    default Set<GeometryType> getElementType() {
+        return Set.of(GeometryType.POLYGON);
     }
 
     @Override

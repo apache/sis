@@ -16,7 +16,9 @@
  */
 package org.apache.sis.geometries.curve;
 
+import java.util.Set;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.DefaultMultiLineString;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
@@ -38,6 +40,16 @@ public sealed interface MultiLineString extends MultiCurve<LineString>
     @Override
     default String getGeometryType() {
         return TYPE;
+    }
+
+    /**
+     * Returns {@link GeometryType#LINE}: all the elements of this collection are line strings.
+     *
+     * @see ISO 19107:2019 - 6.4.31.2
+     */
+    @Override
+    default Set<GeometryType> getElementType() {
+        return Set.of(GeometryType.LINE);
     }
 
     @Override

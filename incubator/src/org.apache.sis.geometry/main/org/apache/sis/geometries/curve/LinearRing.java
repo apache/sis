@@ -38,6 +38,36 @@ public sealed interface LinearRing extends LineString
         return TYPE;
     }
 
+    /**
+     * Returns {@code true}: a linear ring is closed by definition.
+     *
+     * @see OGC Simple Feature Access 1.2.1 - 6.1.6.2
+     */
+    @Override
+    default boolean isClosed() {
+        return true;
+    }
+
+    /**
+     * Returns {@code true}: a linear ring is simple by definition.
+     *
+     * @see ISO 19107:2019 - 6.4.4.15
+     */
+    @Override
+    default boolean isSimple() {
+        return true;
+    }
+
+    /**
+     * Returns {@code true}: a linear ring is both closed and simple, therefore a ring.
+     *
+     * @see ISO 19107:2019 - 6.4.18.8
+     */
+    @Override
+    default boolean isRing() {
+        return true;
+    }
+
     @Override
     default String asText() {
         final StringBuilder sb = new StringBuilder("LINEARRING (");

@@ -19,6 +19,7 @@ package org.apache.sis.geometries.surface;
 import java.util.List;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.curve.KnotType;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -155,5 +156,18 @@ public sealed interface BSplineSurface extends ParametricCurveSurface
     @Override
     default GeometryType getVerticalCurveType() {
         return GeometryType.SPLINECURVE;
+    }
+
+    /**
+     * Returns {@link SurfaceInterpolation#POLYNOMIAL_SPLINE} if this surface
+     * {@linkplain #isPolynomial() is polynomial}, {@link SurfaceInterpolation#NURBS} otherwise.
+     *
+     * @see ISO 19107:2019 - 8.7.2
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
+    @Override
+    default List<SurfaceInterpolation> getInterpolation() {
+        return List.of(isPolynomial() ? SurfaceInterpolation.POLYNOMIAL_SPLINE
+                                      : SurfaceInterpolation.NURBS);
     }
 }

@@ -81,6 +81,16 @@ public sealed interface Curve extends Orientable
 {
 
     /**
+     * Returns 1: a curve bounds a length.
+     *
+     * @see ISO 19107:2019 - 6.4.4.22
+     */
+    @Override
+    default int getTopologicDimension() {
+        return 1;
+    }
+
+    /**
      * Points lying on this curve, the first one being the start point and the last one the end point.
      *
      * <p>Difference with ISO 19107: the type has been changed from a list of direct positions
@@ -160,6 +170,18 @@ public sealed interface Curve extends Orientable
     }
 
     /**
+     * Returns whether this curve closes on itself,
+     * which for a curve means that its start point is its end point.
+     *
+     * @see ISO 19107:2019 - 6.4.4.14
+     */
+    @UML(identifier="isCycle", specification=ISO_19107)
+    @Override
+    default boolean isCycle() {
+        return isClosed();
+    }
+
+    /**
      * Returns whether this curve is both closed and simple,
      * in which case it is a valid boundary component of a surface.
      *
@@ -176,7 +198,7 @@ public sealed interface Curve extends Orientable
      */
     @UML(identifier="isRing", specification=ISO_19107)
     default boolean isRing() {
-        throw new UnsupportedOperationException();
+        return isCycle() && isSimple();
     }
 
     /**

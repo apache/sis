@@ -75,6 +75,16 @@ public sealed interface Surface extends Orientable
 {
 
     /**
+     * Returns 2: a surface bounds an area.
+     *
+     * @see ISO 19107:2019 - 6.4.4.22
+     */
+    @Override
+    default int getTopologicDimension() {
+        return 2;
+    }
+
+    /**
      * The area of this Surface, as measured in the spatial reference system of this Surface.
      *
      * <p>TODO / Limitation: implementations label the returned quantity in square metres, but its

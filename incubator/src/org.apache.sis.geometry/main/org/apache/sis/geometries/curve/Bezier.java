@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.apache.sis.geometries.CurveInterpolation;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
@@ -48,4 +49,16 @@ import org.opengis.annotation.UML;
 @UML(identifier="Bezier", specification=ISO_19107)
 public non-sealed interface Bezier extends PolynomialSpline, BSplineCurve {
 
+    /**
+     * Returns {@link CurveInterpolation#BEZIER_SPLINE}.
+     * This value takes precedence over the interpolations declared by the two parent interfaces,
+     * a Bézier curve being at the same time a polynomial spline and a b-spline.
+     *
+     * @see ISO 19107:2019 - 7.13.7
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
+    @Override
+    default CurveInterpolation getInterpolation() {
+        return CurveInterpolation.BEZIER_SPLINE;
+    }
 }

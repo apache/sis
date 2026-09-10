@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.curve;
 
 import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.maths.Array;
 import static org.opengis.annotation.Specification.ISO_19107;
@@ -50,6 +51,17 @@ public sealed interface Conic extends Curve
         permits Arc,
                 EllipticArc
 {
+
+    /**
+     * Returns {@link CurveInterpolation#CONIC}.
+     *
+     * @see ISO 19107:2019 - 7.9.5
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
+    @Override
+    default CurveInterpolation getInterpolation() {
+        return CurveInterpolation.CONIC;
+    }
 
     /**
      * Points lying on this conic, five of them being needed to determine each arc.

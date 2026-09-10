@@ -72,6 +72,18 @@ public sealed interface Solid extends Primitive
     }
 
     /**
+     * Returns {@code false}: a solid of finite size in a 3-dimensional coordinate space
+     * always has a boundary, therefore it never closes on itself.
+     *
+     * @see ISO 19107:2019 - 6.4.4.14
+     */
+    @UML(identifier="isCycle", specification=ISO_19107)
+    @Override
+    default boolean isCycle() {
+        return false;
+    }
+
+    /**
      * Shells bounding this solid, each of them a closed surface without boundary.
      *
      * <p>Constraints:</p>

@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.curve;
 
 import java.util.List;
+import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Vector;
@@ -36,6 +37,17 @@ import org.opengis.annotation.UML;
 public sealed interface Arc extends Conic
         permits Circle
 {
+
+    /**
+     * Returns {@link CurveInterpolation#CIRCULAR}.
+     *
+     * @see ISO 19107:2019 - 7.9.2
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
+    @Override
+    default CurveInterpolation getInterpolation() {
+        return CurveInterpolation.CIRCULAR;
+    }
 
     /**
      * Number of circular arcs in this chain.

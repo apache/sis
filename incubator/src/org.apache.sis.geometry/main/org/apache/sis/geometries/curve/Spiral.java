@@ -18,6 +18,7 @@ package org.apache.sis.geometries.curve;
 
 import java.util.List;
 import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.maths.Vector;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -48,6 +49,17 @@ import org.opengis.annotation.UML;
 public sealed interface Spiral extends Curve
         permits Clothoid
 {
+
+    /**
+     * Returns {@link CurveInterpolation#SPIRAL}.
+     *
+     * @see ISO 19107:2019 - 7.11.2
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
+    @Override
+    default CurveInterpolation getInterpolation() {
+        return CurveInterpolation.SPIRAL;
+    }
 
     /**
      * Curvature of this spiral as a function of arc length.

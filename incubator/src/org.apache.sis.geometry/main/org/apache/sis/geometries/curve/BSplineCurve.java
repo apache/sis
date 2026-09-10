@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.apache.sis.geometries.CurveInterpolation;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
@@ -48,4 +49,14 @@ public sealed interface BSplineCurve extends SplineCurve
                 NurbCurve
 {
 
+    /**
+     * Returns {@link CurveInterpolation#BSPLINE}.
+     *
+     * @see ISO 19107:2019 - 7.13.8
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
+    @Override
+    default CurveInterpolation getInterpolation() {
+        return CurveInterpolation.BSPLINE;
+    }
 }

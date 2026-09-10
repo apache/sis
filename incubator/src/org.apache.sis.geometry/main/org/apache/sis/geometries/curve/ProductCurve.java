@@ -17,8 +17,11 @@
 package org.apache.sis.geometries.curve;
 
 import java.util.List;
+import java.util.Set;
 import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.cs.Projection;
 import org.apache.sis.measure.Range;
 import static org.opengis.annotation.Specification.ISO_19107;
@@ -50,6 +53,40 @@ import org.opengis.annotation.UML;
  */
 @UML(identifier="ProductCurve", specification=ISO_19107)
 public non-sealed interface ProductCurve extends Curve, GeometryCollection<Curve> {
+
+    /**
+     * Returns {@link CurveInterpolation#PRODUCT_CURVE}: the interpolation of a product curve is
+     * not a single one, it is whatever each projection declares.
+     *
+     * @see ISO 19107:2019 - 6.4.22
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
+    @Override
+    default CurveInterpolation getInterpolation() {
+        return CurveInterpolation.PRODUCT_CURVE;
+    }
+
+    /**
+     * Returns 1: a product curve is a curve, not an aggregate of geometries of various dimensions.
+     * This value resolves the ambiguity between {@link Curve} and {@link GeometryCollection}.
+     *
+     * @see ISO 19107:2019 - 6.4.4.22
+     */
+    @Override
+    default int getTopologicDimension() {
+        return 1;
+    }
+
+    /**
+     * Returns {@link GeometryType#CURVE}: all the elements of a product curve are curves.
+     *
+     * @see ISO 19107:2019 - 6.4.31.2
+     */
+    @UML(identifier="elementType", specification=ISO_19107)
+    @Override
+    default Set<GeometryType> getElementType() {
+        return Set.of(GeometryType.CURVE);
+    }
 
     /**
      * Interval of the construction parameter shared by this curve and its projections,

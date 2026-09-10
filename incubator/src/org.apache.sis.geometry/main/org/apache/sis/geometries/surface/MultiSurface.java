@@ -16,8 +16,10 @@
  */
 package org.apache.sis.geometries.surface;
 
+import java.util.Set;
 import javax.measure.quantity.Area;
 import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.internal.shared.DefaultMultiSurface;
@@ -52,6 +54,16 @@ public sealed interface MultiSurface<T extends Surface> extends GeometryCollecti
     @Override
     default String getGeometryType() {
         return TYPE;
+    }
+
+    /**
+     * Returns {@link GeometryType#SURFACE}: all the elements of this collection are surfaces.
+     *
+     * @see ISO 19107:2019 - 6.4.31.2
+     */
+    @Override
+    default Set<GeometryType> getElementType() {
+        return Set.of(GeometryType.SURFACE);
     }
 
     /**

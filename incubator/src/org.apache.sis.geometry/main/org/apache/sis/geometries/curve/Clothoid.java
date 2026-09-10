@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.apache.sis.geometries.CurveInterpolation;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
@@ -47,4 +48,25 @@ import org.opengis.annotation.UML;
 @UML(identifier="Clothoid", specification=ISO_19107)
 public non-sealed interface Clothoid extends Spiral {
 
+    /**
+     * Returns {@link CurveInterpolation#CLOTHOID}.
+     *
+     * @see ISO 19107:2019 - 7.11.3
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
+    @Override
+    default CurveInterpolation getInterpolation() {
+        return CurveInterpolation.CLOTHOID;
+    }
+
+    /**
+     * Returns {@code null}: a clothoid is a planar spiral.
+     *
+     * @see ISO 19107:2019 - 7.11.3
+     */
+    @UML(identifier="torsion", specification=ISO_19107)
+    @Override
+    default RealFunction getTorsion() {
+        return null;
+    }
 }
