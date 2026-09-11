@@ -14,25 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.storage.internal.shared;
+
+import org.apache.sis.storage.Resource;
 
 /**
- * Shapefile store.
+ * Experimental event used to notify the content of the resource has change.
+ * For FeatureSet this implies features have been added, deleted or updated.
+ * For GridCoverageResource this implies the coverage samples have change.
  *
  * @author Johann Sorel (Geomatys)
  */
-module org.apache.sis.storage.shapefile {
-    requires esri.geometry.api;
-    requires transitive org.apache.sis.storage;
+public class ContentEvent extends StorageEvent {
 
-    exports org.apache.sis.storage.shapefile;
-    exports org.apache.sis.storage.shapefile.cpg;
-    exports org.apache.sis.storage.shapefile.dbf;
-    exports org.apache.sis.storage.shapefile.shp;
-    exports org.apache.sis.storage.shapefile.shx;
+    public ContentEvent(Resource resource) {
+        super(resource);
+    }
 
-    //todo : move this to endorsed when reviewed
-    exports org.apache.sis.storage.internal.shared;
+    @Override
+    public StorageEvent copy(Resource source) {
+        return new ContentEvent(source);
+    }
 
-    provides org.apache.sis.storage.DataStoreProvider
-            with org.apache.sis.storage.shapefile.ShapefileProvider;
 }
