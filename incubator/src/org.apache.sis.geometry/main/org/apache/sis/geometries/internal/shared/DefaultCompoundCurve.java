@@ -97,16 +97,6 @@ public non-sealed class DefaultCompoundCurve extends AbstractGeometry implements
     }
 
     @Override
-    public String asText() {
-        final StringBuilder sb = new StringBuilder(TYPE).append(" (");
-        for (int i = 0; i < curves.length; i++) {
-            if (i != 0) sb.append(", ");
-            sb.append(curves[i].asText());
-        }
-        return sb.append(')').toString();
-    }
-
-    @Override
     public Array getControlPoints() {
         throw new UnsupportedOperationException("Not supported yet.");
     }

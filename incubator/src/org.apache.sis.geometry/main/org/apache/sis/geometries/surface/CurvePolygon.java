@@ -20,7 +20,6 @@ import java.util.List;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.Surface;
-import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.DefaultCurvePolygon;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -150,21 +149,6 @@ public sealed interface CurvePolygon extends Surface
     default GriddedSurface getSpanningSurface() {
         //TODO
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    default String asText() {
-        final StringBuilder sb = new StringBuilder("POLYGON ((");
-        AbstractGeometry.toText(sb,  getExteriorRing().asLine(null, null).getDataPoints());
-        sb.append(')');
-        for (int i = 0, n = getNumInteriorRing(); i < n; i++) {
-            if (i != 0) sb.append(',');
-            sb.append('(');
-            AbstractGeometry.toText(sb, getInteriorRingN(i).asLine(null, null).getDataPoints());
-            sb.append(')');
-        }
-        sb.append(')');
-        return sb.toString();
     }
 
 }

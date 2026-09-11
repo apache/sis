@@ -87,12 +87,4 @@ public non-sealed class DefaultCurvePolygon extends AbstractGeometry implements 
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
-    public String asText() {
-        final StringBuilder sb = new StringBuilder(TYPE).append(" (").append(exterior.asText());
-        for (final Curve interior : interiors) {
-            sb.append(", ").append(interior.asText());
-        }
-        return sb.append(')').toString();
-    }
 }

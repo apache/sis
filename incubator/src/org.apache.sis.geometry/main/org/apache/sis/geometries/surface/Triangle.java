@@ -24,7 +24,6 @@ import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.DefaultTriangle;
 import org.apache.sis.geometries.operation.simplify.greedyinsert.WTriangle;
 import org.apache.sis.geometries.operation.triangulate.delaunay.OrientedTriangle;
@@ -72,14 +71,16 @@ public sealed interface Triangle extends Polygon
                 OrientedTriangle
 {
 
+    static final String TYPE = "TRIANGLE";
+
     /**
-     * Returns {@code "TRIANGLE"}.
+     * Returns {@value #TYPE}.
      *
      * @see ISO 19107:2019 - 6.4.4.23
      */
     @Override
     default String getGeometryType() {
-        return "TRIANGLE";
+        return TYPE;
     }
 
     /**
@@ -253,25 +254,6 @@ public sealed interface Triangle extends Polygon
                  + w * c.z;
          }
         return null;
-    }
-
-    @Override
-    default String asText() {
-        final DataPoints exterior = getExteriorRing().getDataPoints();
-        final StringBuilder sb = new StringBuilder("TRIANGLE ((");
-        AbstractGeometry.toText(sb, exterior.getPosition(0));
-        sb.append(',');
-        AbstractGeometry.toText(sb, exterior.getPosition(1));
-        sb.append(',');
-        AbstractGeometry.toText(sb, exterior.getPosition(2));
-        sb.append("))");
-        return sb.toString();
-    }
-
-    /**
-     */
-    default String asTextPolygon() {
-        return Polygon.super.asText();
     }
 
     public static final class InterpolatedPoint implements Point {

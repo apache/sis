@@ -427,7 +427,6 @@ public final class Delaunay {
      * @throws OperationException if an algorithm exception occurs
      */
     private OrientedEdge insertEdge(OrientedEdge A_B, Vertex Z, boolean isContraint) throws OperationException {
-//        System.out.println("ee " + A_B.getTriangle().asTextPolygon() +" LINESTRING(" + A_B.getStart().getPosition().get(0) +" "+  A_B.getStart().getPosition().get(1) + ", " + Z.getPosition().get(0) +" "+ Z.getPosition().get(1) + ")");
 
         //find the starting triangle
         /*

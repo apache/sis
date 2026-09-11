@@ -38,6 +38,16 @@ import org.apache.sis.maths.SampleSystem;
 public interface AttributesType {
 
     static final String ATT_POSITION = "POSITION";
+
+    /**
+     * The single ordinate that common GIS formats call <cite>M</cite>, the measure.
+     * It is a one dimensional attribute, kept apart from {@link #ATT_POSITION} because
+     * it is not a spatial ordinate: it takes part in no distance, area or transform.
+     * This is the attribute that the {@code M} and {@code ZM} flavors of Well-Known Text
+     * are read into and written from.
+     */
+    static final String ATT_M = "M";
+
     static final String ATT_NORMAL = "NORMAL";
     static final String ATT_TANGENT = "TANGENT";
     static final String ATT_TEXCOORD_0 = "TEXCOORD_0";

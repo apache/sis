@@ -17,7 +17,6 @@
 package org.apache.sis.geometries;
 
 import java.util.List;
-import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultPoint;
 import org.apache.sis.geometries.internal.shared.IndexedPoint;
@@ -231,15 +230,6 @@ public sealed interface Point extends Primitive
         final BBox env = new BBox(first, first);
         env.setCoordinateReferenceSystem(getCoordinateReferenceSystem());
         return env;
-    }
-
-    @Override
-    default String asText() {
-        final Tuple crd = getPosition();
-        final StringBuilder sb = new StringBuilder("POINT (");
-        AbstractGeometry.toText(sb, crd);
-        sb.append(')');
-        return sb.toString();
     }
 
     /**

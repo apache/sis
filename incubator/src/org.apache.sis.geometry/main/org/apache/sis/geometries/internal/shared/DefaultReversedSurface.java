@@ -101,8 +101,4 @@ public non-sealed class DefaultReversedSurface extends AbstractGeometry implemen
         return base.getEnvelope();
     }
 
-    @Override
-    public String asText() {
-        return base.asText();
-    }
 }

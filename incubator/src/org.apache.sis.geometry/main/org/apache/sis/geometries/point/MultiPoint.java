@@ -22,7 +22,6 @@ import java.util.Set;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.DefaultMultiPoint;
 import org.apache.sis.geometries.internal.shared.DefaultRawMultiPoint;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
@@ -113,19 +112,6 @@ public sealed interface MultiPoint<T extends Point> extends GeometryCollection<T
                 return MultiPoint.this.getAttributesType();
             }
         };
-    }
-
-    @Override
-    default String asText() {        int dimension = getDimension();
-        final StringBuilder sb = new StringBuilder(TYPE);
-        sb.append('(');
-        for (int i = 0, n = getNumGeometries(); i < n; i++) {
-            T point = getGeometryN(i);
-            if (i > 0) sb.append(',');
-            AbstractGeometry.toText(sb, point.getPosition());
-        }
-        sb.append(')');
-        return sb.toString();
     }
 
 }

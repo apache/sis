@@ -50,7 +50,7 @@ public class S2Test extends AbstractDggrsTest {
 
         final GeographicExtent extent = zone.getGeographicExtent();
         final Polygon polygon = DiscreteGlobalGridSystems.toSISPolygon(extent);
-        assertEquals("POLYGON ((-180.0 34.50852298766839, -180.0 22.619864948040426, -169.38034472384487 22.270575488008195, -169.38034472384487 34.04786296943431, -180.0 34.50852298766839))", polygon.asText());
+        assertEquals("POLYGON ((-180 34.50852298766839, -180 22.619864948040426, -169.38034472384487 22.270575488008195, -169.38034472384487 34.04786296943431, -180 34.50852298766839))", polygon.asText());
 
         final Envelope envelope = zone.getEnvelope();
         assertEquals(-180, envelope.getMinimum(0), 0.0);

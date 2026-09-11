@@ -129,11 +129,6 @@ public non-sealed class DefaultReversedCurve extends AbstractGeometry implements
     }
 
     @Override
-    public String asText() {
-        return base.asText();
-    }
-
-    @Override
     public Array getControlPoints() {
         return base.getControlPoints();
     }

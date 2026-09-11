@@ -97,15 +97,4 @@ public non-sealed class DefaultArcByCenterPoint extends AbstractGeometry impleme
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
-    public String asText() {
-        final StringBuilder sb = new StringBuilder(TYPE).append(" (");
-        toText(sb, center.getPosition());
-        sb.append(", RADIUS ").append(radius);
-        if (radiusUnit != null) {
-            sb.append(' ').append(radiusUnit);
-        }
-        sb.append(", ANGLES ").append(startAngle).append(' ').append(endAngle);
-        return sb.append(')').toString();
-    }
 }

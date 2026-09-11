@@ -16,10 +16,7 @@
  */
 package org.apache.sis.geometries.curve;
 
-import org.apache.sis.geometries.DataPoints;
-import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.DefaultLinearRing;
-import org.apache.sis.maths.Tuple;
 
 
 /**
@@ -68,16 +65,4 @@ public sealed interface LinearRing extends LineString
         return true;
     }
 
-    @Override
-    default String asText() {
-        final StringBuilder sb = new StringBuilder("LINEARRING (");
-        final DataPoints points = getDataPoints();
-        for (int i = 0, n = points.size() ; i < n; i++) {
-            final Tuple pt = points.getPosition(i);
-            if (i > 0) sb.append(',');
-            AbstractGeometry.toText(sb, pt);
-        }
-        sb.append(')');
-        return sb.toString();
-    }
 }

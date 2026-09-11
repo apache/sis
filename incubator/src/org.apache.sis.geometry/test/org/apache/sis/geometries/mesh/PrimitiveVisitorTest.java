@@ -117,10 +117,10 @@ public class PrimitiveVisitorTest {
                 9,10,11));
 
         final List<String> expected = Arrays.asList(
-                "LINESTRING (0.0 1.0 2.0, 3.0 4.0 5.0)",
+                "LINESTRING Z (0 1 2, 3 4 5)",
                 "V:0 POSITION[0.0, 1.0, 2.0]",
                 "V:1 POSITION[3.0, 4.0, 5.0]",
-                "LINESTRING (6.0 7.0 8.0, 9.0 10.0 11.0)",
+                "LINESTRING Z (6 7 8, 9 10 11)",
                 "V:2 POSITION[6.0, 7.0, 8.0]",
                 "V:3 POSITION[9.0, 10.0, 11.0]"
         );
@@ -129,8 +129,8 @@ public class PrimitiveVisitorTest {
 
         //test geometry collection
         assertEquals(2, geometry.getNumGeometries());
-        assertEquals("LINESTRING (0.0 1.0 2.0, 3.0 4.0 5.0)", geometry.getGeometryN(0).asText());
-        assertEquals("LINESTRING (6.0 7.0 8.0, 9.0 10.0 11.0)", geometry.getGeometryN(1).asText());
+        assertEquals("LINESTRING Z (0 1 2, 3 4 5)", geometry.getGeometryN(0).asText());
+        assertEquals("LINESTRING Z (6 7 8, 9 10 11)", geometry.getGeometryN(1).asText());
     }
 
     /**
@@ -148,13 +148,13 @@ public class PrimitiveVisitorTest {
         geometry.setIndex(NDArrays.ofUnsigned(1, 0, 1, 2, 3, 1, 3));
 
         final List<String> expected = Arrays.asList(
-                "LINESTRING (0.0 1.0 2.0, 3.0 4.0 5.0)",
+                "LINESTRING Z (0 1 2, 3 4 5)",
                 "V:0 POSITION[0.0, 1.0, 2.0]",
                 "V:1 POSITION[3.0, 4.0, 5.0]",
-                "LINESTRING (6.0 7.0 8.0, 9.0 10.0 11.0)",
+                "LINESTRING Z (6 7 8, 9 10 11)",
                 "V:2 POSITION[6.0, 7.0, 8.0]",
                 "V:3 POSITION[9.0, 10.0, 11.0]",
-                "LINESTRING (3.0 4.0 5.0, 9.0 10.0 11.0)",
+                "LINESTRING Z (3 4 5, 9 10 11)",
                 "V:1 POSITION[3.0, 4.0, 5.0]",
                 "V:3 POSITION[9.0, 10.0, 11.0]"
         );
@@ -163,9 +163,9 @@ public class PrimitiveVisitorTest {
 
         //test geometry collection
         assertEquals(3, geometry.getNumGeometries());
-        assertEquals("LINESTRING (0.0 1.0 2.0, 3.0 4.0 5.0)", geometry.getGeometryN(0).asText());
-        assertEquals("LINESTRING (6.0 7.0 8.0, 9.0 10.0 11.0)", geometry.getGeometryN(1).asText());
-        assertEquals("LINESTRING (3.0 4.0 5.0, 9.0 10.0 11.0)", geometry.getGeometryN(2).asText());
+        assertEquals("LINESTRING Z (0 1 2, 3 4 5)", geometry.getGeometryN(0).asText());
+        assertEquals("LINESTRING Z (6 7 8, 9 10 11)", geometry.getGeometryN(1).asText());
+        assertEquals("LINESTRING Z (3 4 5, 9 10 11)", geometry.getGeometryN(2).asText());
     }
 
     /**
@@ -182,13 +182,13 @@ public class PrimitiveVisitorTest {
                 9,10,11));
 
         final List<String> expected = Arrays.asList(
-                "LINESTRING (0.0 1.0 2.0, 3.0 4.0 5.0)",
+                "LINESTRING Z (0 1 2, 3 4 5)",
                 "V:0 POSITION[0.0, 1.0, 2.0]",
                 "V:1 POSITION[3.0, 4.0, 5.0]",
-                "LINESTRING (3.0 4.0 5.0, 6.0 7.0 8.0)",
+                "LINESTRING Z (3 4 5, 6 7 8)",
                 "V:1 POSITION[3.0, 4.0, 5.0]",
                 "V:2 POSITION[6.0, 7.0, 8.0]",
-                "LINESTRING (6.0 7.0 8.0, 9.0 10.0 11.0)",
+                "LINESTRING Z (6 7 8, 9 10 11)",
                 "V:2 POSITION[6.0, 7.0, 8.0]",
                 "V:3 POSITION[9.0, 10.0, 11.0]"
         );
@@ -196,7 +196,7 @@ public class PrimitiveVisitorTest {
 
         //test geometry as LineString
         assertTrue(geometry instanceof LineString);
-        assertEquals("LINESTRING (0.0 1.0 2.0, 3.0 4.0 5.0, 6.0 7.0 8.0, 9.0 10.0 11.0)", geometry.asText());
+        assertEquals("LINESTRING Z (0 1 2, 3 4 5, 6 7 8, 9 10 11)", geometry.asText());
     }
 
     /**
@@ -214,19 +214,19 @@ public class PrimitiveVisitorTest {
         geometry.setIndex(NDArrays.ofUnsigned(1, 0, 1, 2, 3, 0, 2));
 
         final List<String> expected = Arrays.asList(
-                "LINESTRING (0.0 1.0 2.0, 3.0 4.0 5.0)",
+                "LINESTRING Z (0 1 2, 3 4 5)",
                 "V:0 POSITION[0.0, 1.0, 2.0]",
                 "V:1 POSITION[3.0, 4.0, 5.0]",
-                "LINESTRING (3.0 4.0 5.0, 6.0 7.0 8.0)",
+                "LINESTRING Z (3 4 5, 6 7 8)",
                 "V:1 POSITION[3.0, 4.0, 5.0]",
                 "V:2 POSITION[6.0, 7.0, 8.0]",
-                "LINESTRING (6.0 7.0 8.0, 9.0 10.0 11.0)",
+                "LINESTRING Z (6 7 8, 9 10 11)",
                 "V:2 POSITION[6.0, 7.0, 8.0]",
                 "V:3 POSITION[9.0, 10.0, 11.0]",
-                "LINESTRING (9.0 10.0 11.0, 0.0 1.0 2.0)",
+                "LINESTRING Z (9 10 11, 0 1 2)",
                 "V:3 POSITION[9.0, 10.0, 11.0]",
                 "V:0 POSITION[0.0, 1.0, 2.0]",
-                "LINESTRING (0.0 1.0 2.0, 6.0 7.0 8.0)",
+                "LINESTRING Z (0 1 2, 6 7 8)",
                 "V:0 POSITION[0.0, 1.0, 2.0]",
                 "V:2 POSITION[6.0, 7.0, 8.0]"
         );
@@ -234,7 +234,7 @@ public class PrimitiveVisitorTest {
 
         //test geometry as LineString
         assertTrue(geometry instanceof LineString);
-        assertEquals("LINESTRING (0.0 1.0 2.0, 3.0 4.0 5.0, 6.0 7.0 8.0, 9.0 10.0 11.0, 0.0 1.0 2.0, 6.0 7.0 8.0)", geometry.asText());
+        assertEquals("LINESTRING Z (0 1 2, 3 4 5, 6 7 8, 9 10 11, 0 1 2, 6 7 8)", geometry.asText());
     }
 
     /**
@@ -253,11 +253,11 @@ public class PrimitiveVisitorTest {
                 15,16,17));
 
         final List<String> expected = Arrays.asList(
-                "TRIANGLE ((0.0 1.0 2.0,3.0 4.0 5.0,6.0 7.0 8.0))",
+                "TRIANGLE Z ((0 1 2, 3 4 5, 6 7 8, 0 1 2))",
                 "V:0 POSITION[0.0, 1.0, 2.0]",
                 "V:1 POSITION[3.0, 4.0, 5.0]",
                 "V:2 POSITION[6.0, 7.0, 8.0]",
-                "TRIANGLE ((9.0 10.0 11.0,12.0 13.0 14.0,15.0 16.0 17.0))",
+                "TRIANGLE Z ((9 10 11, 12 13 14, 15 16 17, 9 10 11))",
                 "V:3 POSITION[9.0, 10.0, 11.0]",
                 "V:4 POSITION[12.0, 13.0, 14.0]",
                 "V:5 POSITION[15.0, 16.0, 17.0]"
@@ -268,8 +268,8 @@ public class PrimitiveVisitorTest {
         //test geometry as TIN
         assertTrue(geometry instanceof TIN);
         assertEquals(2, geometry.getNumPatches());
-        assertEquals("TRIANGLE ((0.0 1.0 2.0,3.0 4.0 5.0,6.0 7.0 8.0))", geometry.getPatchN(0).asText());
-        assertEquals("TRIANGLE ((9.0 10.0 11.0,12.0 13.0 14.0,15.0 16.0 17.0))", geometry.getPatchN(1).asText());
+        assertEquals("TRIANGLE Z ((0 1 2, 3 4 5, 6 7 8, 0 1 2))", geometry.getPatchN(0).asText());
+        assertEquals("TRIANGLE Z ((9 10 11, 12 13 14, 15 16 17, 9 10 11))", geometry.getPatchN(1).asText());
     }
 
     /**
@@ -287,11 +287,11 @@ public class PrimitiveVisitorTest {
         geometry.setIndex(NDArrays.ofUnsigned(1, 0, 1, 2, 2, 3, 1));
 
         final List<String> expected = Arrays.asList(
-                "TRIANGLE ((0.0 1.0 2.0,3.0 4.0 5.0,6.0 7.0 8.0))",
+                "TRIANGLE Z ((0 1 2, 3 4 5, 6 7 8, 0 1 2))",
                 "V:0 POSITION[0.0, 1.0, 2.0]",
                 "V:1 POSITION[3.0, 4.0, 5.0]",
                 "V:2 POSITION[6.0, 7.0, 8.0]",
-                "TRIANGLE ((6.0 7.0 8.0,9.0 10.0 11.0,3.0 4.0 5.0))",
+                "TRIANGLE Z ((6 7 8, 9 10 11, 3 4 5, 6 7 8))",
                 "V:2 POSITION[6.0, 7.0, 8.0]",
                 "V:3 POSITION[9.0, 10.0, 11.0]",
                 "V:1 POSITION[3.0, 4.0, 5.0]"
@@ -302,8 +302,8 @@ public class PrimitiveVisitorTest {
         //test geometry as TIN
         assertTrue(geometry instanceof TIN);
         assertEquals(2, geometry.getNumPatches());
-        assertEquals("TRIANGLE ((0.0 1.0 2.0,3.0 4.0 5.0,6.0 7.0 8.0))", geometry.getPatchN(0).asText());
-        assertEquals("TRIANGLE ((6.0 7.0 8.0,9.0 10.0 11.0,3.0 4.0 5.0))", geometry.getPatchN(1).asText());
+        assertEquals("TRIANGLE Z ((0 1 2, 3 4 5, 6 7 8, 0 1 2))", geometry.getPatchN(0).asText());
+        assertEquals("TRIANGLE Z ((6 7 8, 9 10 11, 3 4 5, 6 7 8))", geometry.getPatchN(1).asText());
     }
 
     /**
@@ -333,19 +333,19 @@ public class PrimitiveVisitorTest {
                 0,-1,0));
 
         final List<String> expected = Arrays.asList(
-                "TRIANGLE ((0.0 0.0 0.0,0.0 1.0 0.0,1.0 1.0 0.0))",
+                "TRIANGLE Z ((0 0 0, 0 1 0, 1 1 0, 0 0 0))",
                 "V:0 POSITION[0.0, 0.0, 0.0]",
                 "V:1 POSITION[0.0, 1.0, 0.0]",
                 "V:2 POSITION[1.0, 1.0, 0.0]",
-                "TRIANGLE ((0.0 0.0 0.0,1.0 1.0 0.0,1.0 0.0 0.0))",
+                "TRIANGLE Z ((0 0 0, 1 1 0, 1 0 0, 0 0 0))",
                 "V:0 POSITION[0.0, 0.0, 0.0]",
                 "V:2 POSITION[1.0, 1.0, 0.0]",
                 "V:3 POSITION[1.0, 0.0, 0.0]",
-                "TRIANGLE ((0.0 0.0 0.0,1.0 0.0 0.0,1.0 -1.0 0.0))",
+                "TRIANGLE Z ((0 0 0, 1 0 0, 1 -1 0, 0 0 0))",
                 "V:0 POSITION[0.0, 0.0, 0.0]",
                 "V:3 POSITION[1.0, 0.0, 0.0]",
                 "V:4 POSITION[1.0, -1.0, 0.0]",
-                "TRIANGLE ((0.0 0.0 0.0,1.0 -1.0 0.0,0.0 -1.0 0.0))",
+                "TRIANGLE Z ((0 0 0, 1 -1 0, 0 -1 0, 0 0 0))",
                 "V:0 POSITION[0.0, 0.0, 0.0]",
                 "V:4 POSITION[1.0, -1.0, 0.0]",
                 "V:5 POSITION[0.0, -1.0, 0.0]"
@@ -356,10 +356,10 @@ public class PrimitiveVisitorTest {
         //test geometry as TIN
         assertTrue(geometry instanceof TIN);
         assertEquals(4, geometry.getNumPatches());
-        assertEquals("TRIANGLE ((0.0 0.0 0.0,0.0 1.0 0.0,1.0 1.0 0.0))", geometry.getPatchN(0).asText());
-        assertEquals("TRIANGLE ((0.0 0.0 0.0,1.0 1.0 0.0,1.0 0.0 0.0))", geometry.getPatchN(1).asText());
-        assertEquals("TRIANGLE ((0.0 0.0 0.0,1.0 0.0 0.0,1.0 -1.0 0.0))", geometry.getPatchN(2).asText());
-        assertEquals("TRIANGLE ((0.0 0.0 0.0,1.0 -1.0 0.0,0.0 -1.0 0.0))", geometry.getPatchN(3).asText());
+        assertEquals("TRIANGLE Z ((0 0 0, 0 1 0, 1 1 0, 0 0 0))", geometry.getPatchN(0).asText());
+        assertEquals("TRIANGLE Z ((0 0 0, 1 1 0, 1 0 0, 0 0 0))", geometry.getPatchN(1).asText());
+        assertEquals("TRIANGLE Z ((0 0 0, 1 0 0, 1 -1 0, 0 0 0))", geometry.getPatchN(2).asText());
+        assertEquals("TRIANGLE Z ((0 0 0, 1 -1 0, 0 -1 0, 0 0 0))", geometry.getPatchN(3).asText());
     }
 
     /**
@@ -391,23 +391,23 @@ public class PrimitiveVisitorTest {
                 0, 1, 2, 3, 4, 5, 2));
 
         final List<String> expected = Arrays.asList(
-                "TRIANGLE ((0.0 0.0 0.0,0.0 1.0 0.0,1.0 1.0 0.0))",
+                "TRIANGLE Z ((0 0 0, 0 1 0, 1 1 0, 0 0 0))",
                 "V:0 POSITION[0.0, 0.0, 0.0]",
                 "V:1 POSITION[0.0, 1.0, 0.0]",
                 "V:2 POSITION[1.0, 1.0, 0.0]",
-                "TRIANGLE ((0.0 0.0 0.0,1.0 1.0 0.0,1.0 0.0 0.0))",
+                "TRIANGLE Z ((0 0 0, 1 1 0, 1 0 0, 0 0 0))",
                 "V:0 POSITION[0.0, 0.0, 0.0]",
                 "V:2 POSITION[1.0, 1.0, 0.0]",
                 "V:3 POSITION[1.0, 0.0, 0.0]",
-                "TRIANGLE ((0.0 0.0 0.0,1.0 0.0 0.0,1.0 -1.0 0.0))",
+                "TRIANGLE Z ((0 0 0, 1 0 0, 1 -1 0, 0 0 0))",
                 "V:0 POSITION[0.0, 0.0, 0.0]",
                 "V:3 POSITION[1.0, 0.0, 0.0]",
                 "V:4 POSITION[1.0, -1.0, 0.0]",
-                "TRIANGLE ((0.0 0.0 0.0,1.0 -1.0 0.0,0.0 -1.0 0.0))",
+                "TRIANGLE Z ((0 0 0, 1 -1 0, 0 -1 0, 0 0 0))",
                 "V:0 POSITION[0.0, 0.0, 0.0]",
                 "V:4 POSITION[1.0, -1.0, 0.0]",
                 "V:5 POSITION[0.0, -1.0, 0.0]",
-                "TRIANGLE ((0.0 0.0 0.0,0.0 -1.0 0.0,1.0 1.0 0.0))",
+                "TRIANGLE Z ((0 0 0, 0 -1 0, 1 1 0, 0 0 0))",
                 "V:0 POSITION[0.0, 0.0, 0.0]",
                 "V:5 POSITION[0.0, -1.0, 0.0]",
                 "V:2 POSITION[1.0, 1.0, 0.0]"
@@ -418,11 +418,11 @@ public class PrimitiveVisitorTest {
         //test geometry as TIN
         assertTrue(geometry instanceof TIN);
         assertEquals(5, geometry.getNumPatches());
-        assertEquals("TRIANGLE ((0.0 0.0 0.0,0.0 1.0 0.0,1.0 1.0 0.0))", geometry.getPatchN(0).asText());
-        assertEquals("TRIANGLE ((0.0 0.0 0.0,1.0 1.0 0.0,1.0 0.0 0.0))", geometry.getPatchN(1).asText());
-        assertEquals("TRIANGLE ((0.0 0.0 0.0,1.0 0.0 0.0,1.0 -1.0 0.0))", geometry.getPatchN(2).asText());
-        assertEquals("TRIANGLE ((0.0 0.0 0.0,1.0 -1.0 0.0,0.0 -1.0 0.0))", geometry.getPatchN(3).asText());
-        assertEquals("TRIANGLE ((0.0 0.0 0.0,0.0 -1.0 0.0,1.0 1.0 0.0))", geometry.getPatchN(4).asText());
+        assertEquals("TRIANGLE Z ((0 0 0, 0 1 0, 1 1 0, 0 0 0))", geometry.getPatchN(0).asText());
+        assertEquals("TRIANGLE Z ((0 0 0, 1 1 0, 1 0 0, 0 0 0))", geometry.getPatchN(1).asText());
+        assertEquals("TRIANGLE Z ((0 0 0, 1 0 0, 1 -1 0, 0 0 0))", geometry.getPatchN(2).asText());
+        assertEquals("TRIANGLE Z ((0 0 0, 1 -1 0, 0 -1 0, 0 0 0))", geometry.getPatchN(3).asText());
+        assertEquals("TRIANGLE Z ((0 0 0, 0 -1 0, 1 1 0, 0 0 0))", geometry.getPatchN(4).asText());
     }
 
     /**
@@ -451,27 +451,27 @@ public class PrimitiveVisitorTest {
                 3,1,0));
 
         final List<String> expected = Arrays.asList(
-                "TRIANGLE ((0.0 0.0 0.0,0.0 1.0 0.0,1.0 0.0 0.0))",
+                "TRIANGLE Z ((0 0 0, 0 1 0, 1 0 0, 0 0 0))",
                 "V:0 POSITION[0.0, 0.0, 0.0]",
                 "V:1 POSITION[0.0, 1.0, 0.0]",
                 "V:2 POSITION[1.0, 0.0, 0.0]",
-                "TRIANGLE ((1.0 0.0 0.0,0.0 1.0 0.0,1.0 1.0 0.0))",
+                "TRIANGLE Z ((1 0 0, 0 1 0, 1 1 0, 1 0 0))",
                 "V:2 POSITION[1.0, 0.0, 0.0]",
                 "V:1 POSITION[0.0, 1.0, 0.0]",
                 "V:3 POSITION[1.0, 1.0, 0.0]",
-                "TRIANGLE ((1.0 0.0 0.0,1.0 1.0 0.0,2.0 0.0 0.0))",
+                "TRIANGLE Z ((1 0 0, 1 1 0, 2 0 0, 1 0 0))",
                 "V:2 POSITION[1.0, 0.0, 0.0]",
                 "V:3 POSITION[1.0, 1.0, 0.0]",
                 "V:4 POSITION[2.0, 0.0, 0.0]",
-                "TRIANGLE ((2.0 0.0 0.0,1.0 1.0 0.0,2.0 1.0 0.0))",
+                "TRIANGLE Z ((2 0 0, 1 1 0, 2 1 0, 2 0 0))",
                 "V:4 POSITION[2.0, 0.0, 0.0]",
                 "V:3 POSITION[1.0, 1.0, 0.0]",
                 "V:5 POSITION[2.0, 1.0, 0.0]",
-                "TRIANGLE ((2.0 0.0 0.0,2.0 1.0 0.0,3.0 0.0 0.0))",
+                "TRIANGLE Z ((2 0 0, 2 1 0, 3 0 0, 2 0 0))",
                 "V:4 POSITION[2.0, 0.0, 0.0]",
                 "V:5 POSITION[2.0, 1.0, 0.0]",
                 "V:6 POSITION[3.0, 0.0, 0.0]",
-                "TRIANGLE ((3.0 0.0 0.0,2.0 1.0 0.0,3.0 1.0 0.0))",
+                "TRIANGLE Z ((3 0 0, 2 1 0, 3 1 0, 3 0 0))",
                 "V:6 POSITION[3.0, 0.0, 0.0]",
                 "V:5 POSITION[2.0, 1.0, 0.0]",
                 "V:7 POSITION[3.0, 1.0, 0.0]"
@@ -482,12 +482,12 @@ public class PrimitiveVisitorTest {
         //test geometry as TIN
         assertTrue(geometry instanceof TIN);
         assertEquals(6, geometry.getNumPatches());
-        assertEquals("TRIANGLE ((0.0 0.0 0.0,0.0 1.0 0.0,1.0 0.0 0.0))", geometry.getPatchN(0).asText());
-        assertEquals("TRIANGLE ((1.0 0.0 0.0,0.0 1.0 0.0,1.0 1.0 0.0))", geometry.getPatchN(1).asText());
-        assertEquals("TRIANGLE ((1.0 0.0 0.0,1.0 1.0 0.0,2.0 0.0 0.0))", geometry.getPatchN(2).asText());
-        assertEquals("TRIANGLE ((2.0 0.0 0.0,1.0 1.0 0.0,2.0 1.0 0.0))", geometry.getPatchN(3).asText());
-        assertEquals("TRIANGLE ((2.0 0.0 0.0,2.0 1.0 0.0,3.0 0.0 0.0))", geometry.getPatchN(4).asText());
-        assertEquals("TRIANGLE ((3.0 0.0 0.0,2.0 1.0 0.0,3.0 1.0 0.0))", geometry.getPatchN(5).asText());
+        assertEquals("TRIANGLE Z ((0 0 0, 0 1 0, 1 0 0, 0 0 0))", geometry.getPatchN(0).asText());
+        assertEquals("TRIANGLE Z ((1 0 0, 0 1 0, 1 1 0, 1 0 0))", geometry.getPatchN(1).asText());
+        assertEquals("TRIANGLE Z ((1 0 0, 1 1 0, 2 0 0, 1 0 0))", geometry.getPatchN(2).asText());
+        assertEquals("TRIANGLE Z ((2 0 0, 1 1 0, 2 1 0, 2 0 0))", geometry.getPatchN(3).asText());
+        assertEquals("TRIANGLE Z ((2 0 0, 2 1 0, 3 0 0, 2 0 0))", geometry.getPatchN(4).asText());
+        assertEquals("TRIANGLE Z ((3 0 0, 2 1 0, 3 1 0, 3 0 0))", geometry.getPatchN(5).asText());
     }
 
     /**
@@ -518,27 +518,27 @@ public class PrimitiveVisitorTest {
                 0, 1, 2, 3, 4, 5, 6, 3));
 
         final List<String> expected = Arrays.asList(
-                "TRIANGLE ((0.0 0.0 0.0,0.0 1.0 0.0,1.0 0.0 0.0))",
+                "TRIANGLE Z ((0 0 0, 0 1 0, 1 0 0, 0 0 0))",
                 "V:0 POSITION[0.0, 0.0, 0.0]",
                 "V:1 POSITION[0.0, 1.0, 0.0]",
                 "V:2 POSITION[1.0, 0.0, 0.0]",
-                "TRIANGLE ((1.0 0.0 0.0,0.0 1.0 0.0,1.0 1.0 0.0))",
+                "TRIANGLE Z ((1 0 0, 0 1 0, 1 1 0, 1 0 0))",
                 "V:2 POSITION[1.0, 0.0, 0.0]",
                 "V:1 POSITION[0.0, 1.0, 0.0]",
                 "V:3 POSITION[1.0, 1.0, 0.0]",
-                "TRIANGLE ((1.0 0.0 0.0,1.0 1.0 0.0,2.0 0.0 0.0))",
+                "TRIANGLE Z ((1 0 0, 1 1 0, 2 0 0, 1 0 0))",
                 "V:2 POSITION[1.0, 0.0, 0.0]",
                 "V:3 POSITION[1.0, 1.0, 0.0]",
                 "V:4 POSITION[2.0, 0.0, 0.0]",
-                "TRIANGLE ((2.0 0.0 0.0,1.0 1.0 0.0,2.0 1.0 0.0))",
+                "TRIANGLE Z ((2 0 0, 1 1 0, 2 1 0, 2 0 0))",
                 "V:4 POSITION[2.0, 0.0, 0.0]",
                 "V:3 POSITION[1.0, 1.0, 0.0]",
                 "V:5 POSITION[2.0, 1.0, 0.0]",
-                "TRIANGLE ((2.0 0.0 0.0,2.0 1.0 0.0,3.0 0.0 0.0))",
+                "TRIANGLE Z ((2 0 0, 2 1 0, 3 0 0, 2 0 0))",
                 "V:4 POSITION[2.0, 0.0, 0.0]",
                 "V:5 POSITION[2.0, 1.0, 0.0]",
                 "V:6 POSITION[3.0, 0.0, 0.0]",
-                "TRIANGLE ((3.0 0.0 0.0,2.0 1.0 0.0,1.0 1.0 0.0))",
+                "TRIANGLE Z ((3 0 0, 2 1 0, 1 1 0, 3 0 0))",
                 "V:6 POSITION[3.0, 0.0, 0.0]",
                 "V:5 POSITION[2.0, 1.0, 0.0]",
                 "V:3 POSITION[1.0, 1.0, 0.0]"
@@ -549,12 +549,12 @@ public class PrimitiveVisitorTest {
         //test geometry as TIN
         assertTrue(geometry instanceof TIN);
         assertEquals(6, geometry.getNumPatches());
-        assertEquals("TRIANGLE ((0.0 0.0 0.0,0.0 1.0 0.0,1.0 0.0 0.0))", geometry.getPatchN(0).asText());
-        assertEquals("TRIANGLE ((1.0 0.0 0.0,0.0 1.0 0.0,1.0 1.0 0.0))", geometry.getPatchN(1).asText());
-        assertEquals("TRIANGLE ((1.0 0.0 0.0,1.0 1.0 0.0,2.0 0.0 0.0))", geometry.getPatchN(2).asText());
-        assertEquals("TRIANGLE ((2.0 0.0 0.0,1.0 1.0 0.0,2.0 1.0 0.0))", geometry.getPatchN(3).asText());
-        assertEquals("TRIANGLE ((2.0 0.0 0.0,2.0 1.0 0.0,3.0 0.0 0.0))", geometry.getPatchN(4).asText());
-        assertEquals("TRIANGLE ((3.0 0.0 0.0,2.0 1.0 0.0,1.0 1.0 0.0))", geometry.getPatchN(5).asText());
+        assertEquals("TRIANGLE Z ((0 0 0, 0 1 0, 1 0 0, 0 0 0))", geometry.getPatchN(0).asText());
+        assertEquals("TRIANGLE Z ((1 0 0, 0 1 0, 1 1 0, 1 0 0))", geometry.getPatchN(1).asText());
+        assertEquals("TRIANGLE Z ((1 0 0, 1 1 0, 2 0 0, 1 0 0))", geometry.getPatchN(2).asText());
+        assertEquals("TRIANGLE Z ((2 0 0, 1 1 0, 2 1 0, 2 0 0))", geometry.getPatchN(3).asText());
+        assertEquals("TRIANGLE Z ((2 0 0, 2 1 0, 3 0 0, 2 0 0))", geometry.getPatchN(4).asText());
+        assertEquals("TRIANGLE Z ((3 0 0, 2 1 0, 1 1 0, 3 0 0))", geometry.getPatchN(5).asText());
     }
 
     private void visit(MeshPrimitive geometry, List<String> exp) {

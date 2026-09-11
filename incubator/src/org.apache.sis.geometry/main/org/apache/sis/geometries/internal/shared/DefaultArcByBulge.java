@@ -78,13 +78,4 @@ public non-sealed class DefaultArcByBulge extends AbstractGeometry implements Ar
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
-    public String asText() {
-        final StringBuilder sb = new StringBuilder(TYPE).append(" (");
-        toText(sb, points);
-        sb.append(", BULGE ").append(bulge);
-        sb.append(", NORMAL ");
-        toText(sb, normal);
-        return sb.append(')').toString();
-    }
 }

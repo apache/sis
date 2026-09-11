@@ -31,6 +31,7 @@ module org.apache.sis.geometry {
 
     exports org.apache.sis.images;
     exports org.apache.sis.geometries;
+    exports org.apache.sis.geometries.adapter;
     exports org.apache.sis.geometries.curve;
     exports org.apache.sis.geometries.operation;
     exports org.apache.sis.geometries.point;

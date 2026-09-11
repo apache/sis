@@ -16,7 +16,6 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import javax.measure.quantity.Area;
@@ -84,19 +83,6 @@ public non-sealed class DefaultPolyhedron extends AbstractGeometry implements Po
     @Override
     public Envelope getEnvelope() {
         return exterior.getEnvelope();
-    }
-
-    @Override
-    public String asText() {
-        final List<MultiPolygon> shells = new ArrayList<>(interiors.size() + 1);
-        shells.add(exterior);
-        shells.addAll(interiors);
-        final StringBuilder sb = new StringBuilder(TYPE).append(" (");
-        for (int i = 0; i < shells.size(); i++) {
-            if (i != 0) sb.append(", ");
-            sb.append(shells.get(i).asText());
-        }
-        return sb.append(')').toString();
     }
 
     @Override

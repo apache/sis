@@ -55,11 +55,4 @@ public non-sealed class DefaultCircularString extends AbstractGeometry implement
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
-    public String asText() {
-        final StringBuilder sb = new StringBuilder(TYPE).append(" (");
-        toText(sb, points);
-        return sb.append(')').toString();
-    }
-
 }

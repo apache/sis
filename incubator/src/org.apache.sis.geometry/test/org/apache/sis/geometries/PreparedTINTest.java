@@ -93,9 +93,9 @@ public class PreparedTINTest {
         assertEquals(2, tin.getPatches(env).count());
 
         assertEquals(4, tin.getNumPatches());
-        assertEquals("TRIANGLE ((0.0 1.0 2.0,3.0 4.0 5.0,6.0 7.0 8.0))", tin.getPatchN(0).asText());
-        assertEquals("TRIANGLE ((6.0 7.0 8.0,9.0 10.0 11.0,3.0 4.0 5.0))", tin.getPatchN(1).asText());
-        assertEquals("TRIANGLE ((0.0 1.0 2.0,3.0 4.0 5.0,6.0 7.0 8.0))", tin.getPatchN(2).asText());
-        assertEquals("TRIANGLE ((6.0 7.0 8.0,9.0 10.0 11.0,3.0 4.0 5.0))", tin.getPatchN(3).asText());
+        assertEquals("TRIANGLE Z ((0 1 2, 3 4 5, 6 7 8, 0 1 2))", tin.getPatchN(0).asText());
+        assertEquals("TRIANGLE Z ((6 7 8, 9 10 11, 3 4 5, 6 7 8))", tin.getPatchN(1).asText());
+        assertEquals("TRIANGLE Z ((0 1 2, 3 4 5, 6 7 8, 0 1 2))", tin.getPatchN(2).asText());
+        assertEquals("TRIANGLE Z ((6 7 8, 9 10 11, 3 4 5, 6 7 8))", tin.getPatchN(3).asText());
     }
 }

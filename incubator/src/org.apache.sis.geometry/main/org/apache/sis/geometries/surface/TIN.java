@@ -17,12 +17,9 @@
 package org.apache.sis.geometries.surface;
 
 import java.util.List;
-import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.SurfaceInterpolation;
-import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.DefaultTriangulatedSurface;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.maths.Tuple;
 
 
 /**
@@ -40,6 +37,9 @@ public sealed interface TIN extends TriangulatedSurface<Triangle>
 
     static final String TYPE = "TIN";
 
+    /**
+     * Returns {@value #TYPE}.
+     */
     @Override
     default String getGeometryType() {
         return TYPE;
@@ -56,42 +56,4 @@ public sealed interface TIN extends TriangulatedSurface<Triangle>
         return List.of(SurfaceInterpolation.TIN);
     }
 
-    /**
-     * Produce a Well Known Text representation of this TIN.
-     *
-     * @return WKT string
-     */
-    default String asText() {
-        final StringBuilder sb = new StringBuilder("TIN(");
-        boolean first = true;
-        Tuple corner;
-        for (int i = 0, n = getNumPatches(); i < n; i++) {
-            Triangle triangle = getPatchN(i);
-            if (first) {
-                first = false;
-            } else {
-                sb.append(',');
-            }
-            sb.append("((");
-            final DataPoints points = triangle.getExteriorRing().getDataPoints();
-            corner = points.getPosition(0);
-            AbstractGeometry.toText(sb, corner);
-
-            sb.append(',');
-            corner = points.getPosition(1);
-            AbstractGeometry.toText(sb, corner);
-
-            sb.append(',');
-            corner = points.getPosition(2);
-            AbstractGeometry.toText(sb, corner);
-
-            sb.append(',');
-            corner = points.getPosition(0);
-            AbstractGeometry.toText(sb, corner);
-
-            sb.append("))");
-        }
-        sb.append(')');
-        return sb.toString();
-    }
 }

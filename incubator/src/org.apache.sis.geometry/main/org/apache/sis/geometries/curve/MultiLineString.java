@@ -17,12 +17,9 @@
 package org.apache.sis.geometries.curve;
 
 import java.util.Set;
-import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
-import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.DefaultMultiLineString;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.maths.Tuple;
 
 
 /**
@@ -52,22 +49,4 @@ public sealed interface MultiLineString extends MultiCurve<LineString>
         return Set.of(GeometryType.LINE);
     }
 
-    @Override
-    default String asText() {
-        final StringBuilder sb = new StringBuilder("MULTILINESTRING (");
-        for (int k = 0, kn = getNumGeometries(); k < kn; k++){
-            if (k > 0) sb.append(',');
-            sb.append('(');
-            final LineString line = getGeometryN(k);
-            final DataPoints points = line.getDataPoints();
-            for (int i = 0, n = points.size() ; i < n; i++) {
-                final Tuple pos = points.getPosition(i);
-                if (i > 0) sb.append(',');
-                AbstractGeometry.toText(sb, pos);
-            }
-            sb.append(')');
-        }
-        sb.append(')');
-        return sb.toString();
-    }
 }

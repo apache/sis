@@ -73,9 +73,4 @@ public non-sealed class DefaultTriangle extends DefaultPolygon implements Triang
         return 7 * exterior.hashCode();
     }
 
-    @Override
-    public String asText() {
-        return Triangle.super.asText();
-    }
-
 }

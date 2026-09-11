@@ -22,7 +22,6 @@ import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.DefaultLineString;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.operation.triangulate.delaunay.OrientedEdge;
@@ -162,12 +161,4 @@ public sealed interface LineString extends Curve
         return points.getEnvelope();
     }
 
-    @Override
-    default String asText() {
-        final StringBuilder sb = new StringBuilder("LINESTRING (");
-        final DataPoints points = getDataPoints();
-        AbstractGeometry.toText(sb, points);
-        sb.append(')');
-        return sb.toString();
-    }
 }

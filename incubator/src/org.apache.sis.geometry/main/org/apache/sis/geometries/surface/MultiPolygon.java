@@ -18,7 +18,6 @@ package org.apache.sis.geometries.surface;
 
 import java.util.Set;
 import org.apache.sis.geometries.GeometryType;
-import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.DefaultMultiPolygon;
 
 
@@ -58,24 +57,4 @@ public sealed interface MultiPolygon extends MultiSurface<Polygon>
         return Set.of(GeometryType.POLYGON);
     }
 
-    @Override
-    default String asText() {
-        final StringBuilder sb = new StringBuilder("MULTIPOLYGON (");
-        for (int k = 0, kn = getNumGeometries(); k < kn; k++){
-            if (k > 0) sb.append(',');
-            final Polygon polygon = getGeometryN(k);
-            sb.append("((");
-            AbstractGeometry.toText(sb,  polygon.getExteriorRing().asLine(null, null).getDataPoints());
-            sb.append(')');
-            for (int i = 0, n = polygon.getNumInteriorRing(); i < n; i++) {
-                if (i != 0) sb.append(',');
-                sb.append('(');
-                AbstractGeometry.toText(sb, polygon.getInteriorRingN(i).getDataPoints());
-                sb.append(')');
-            }
-            sb.append(')');
-        }
-        sb.append(')');
-        return sb.toString();
-    }
 }

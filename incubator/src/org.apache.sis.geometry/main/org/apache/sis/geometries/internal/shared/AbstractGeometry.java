@@ -18,12 +18,8 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.maths.Array;
-import org.apache.sis.maths.Cursor;
-import org.apache.sis.maths.Tuple;
 import org.opengis.geometry.Envelope;
 
 
@@ -47,38 +43,6 @@ public abstract non-sealed class AbstractGeometry implements Geometry {
     @Override
     public String toString() {
         return asText();
-    }
-
-    public static void toText(StringBuilder sb, Tuple tuple) {
-        sb.append(tuple.get(0));
-        for (int i = 1, n = tuple.getDimension(); i < n; i++) {
-            sb.append(' ');
-            sb.append(tuple.get(i));
-        }
-    }
-
-    public static void toText(StringBuilder sb, Array array) {
-        final Cursor cursor = array.cursor();
-        boolean first = true;
-        while (cursor.next()) {
-            if (!first) {
-                sb.append(", ");
-            }
-            toText(sb, cursor.samples());
-            first = false;
-        }
-    }
-
-    public static void toText(StringBuilder sb, DataPoints array) {
-        final int size = array.size();
-        if (size == 0) return;
-
-        for (int i = 0; i < size; i++) {
-            if (i != 0) {
-                sb.append(", ");
-            }
-            toText(sb, array.getPosition(i));
-        }
     }
 
     /**

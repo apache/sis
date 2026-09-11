@@ -14,33 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.internal.shared;
-
-import org.apache.sis.geometries.surface.TIN;
-import org.apache.sis.geometries.surface.Triangle;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
+package org.apache.sis.geometries.adapter;
 
 /**
- * A surface made entirely of triangular patches.
+ * TODO
  *
  * @author Johann Sorel (Geomatys)
  */
-public non-sealed class DefaultTriangulatedSurface extends DefaultPolyhedralSurface<Triangle> implements TIN {
+public final class WellKnownBinary {
 
-    public DefaultTriangulatedSurface(Triangle... patches) {
-        super(null, patches);
-    }
-
-    public DefaultTriangulatedSurface(CoordinateReferenceSystem fallbackCRS, Triangle[] patches) {
-        super(fallbackCRS, patches);
-    }
-
-    /**
-     * Returns {@value TIN#TYPE}, not {@code "POLYHEDRALSURFACE"}.
-     */
-    @Override
-    public String getGeometryType() {
-        return TIN.TYPE;
-    }
 }

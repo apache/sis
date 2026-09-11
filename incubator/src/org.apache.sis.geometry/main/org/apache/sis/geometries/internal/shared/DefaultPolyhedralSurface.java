@@ -95,13 +95,4 @@ public non-sealed class DefaultPolyhedralSurface<T extends Polygon> extends Abst
         return envUnion(patches);
     }
 
-    @Override
-    public String asText() {
-        final StringBuilder sb = new StringBuilder(PolyhedralSurface.TYPE).append(" (");
-        for (int i = 0; i < patches.length; i++) {
-            if (i != 0) sb.append(", ");
-            sb.append(patches[i].asText());
-        }
-        return sb.append(')').toString();
-    }
 }

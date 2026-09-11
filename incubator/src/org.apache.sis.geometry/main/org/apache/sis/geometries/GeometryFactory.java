@@ -414,7 +414,7 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
             } else {
                 marray = NDArrays.of(SampleSystem.ofSize(1), coordinates.get(dimensions.hasZ ? 3 : 2));
             }
-            points.setAttribute("m", marray);
+            points.setAttribute(AttributesType.ATT_M, marray);
         }
 
         return new DefaultPoint(points);

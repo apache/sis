@@ -19,9 +19,7 @@ package org.apache.sis.geometries.curve;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
-import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.DefaultGeodesic;
 import org.apache.sis.maths.Array;
 import static org.opengis.annotation.Specification.ISO_19107;
@@ -129,12 +127,4 @@ public sealed interface Geodesic extends Curve
         return getDataPoints().getAttributesType();
     }
 
-    @Override
-    default String asText() {
-        final StringBuilder sb = new StringBuilder("GEODESIC (");
-        final DataPoints points = getDataPoints();
-        AbstractGeometry.toText(sb, points);
-        sb.append(')');
-        return sb.toString();
-    }
 }
