@@ -487,7 +487,7 @@ public class ShapefileStoreTest {
         }
     }
 
-    private static FeatureType createType() {
+    static FeatureType createType() {
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
         ftb.setName("test");
         ftb.addAttribute(Integer.class).setName("id");
@@ -499,7 +499,7 @@ public class ShapefileStoreTest {
         return ftb.build();
     }
 
-    private static Feature createFeature1(FeatureType type) {
+    static Feature createFeature1(FeatureType type) {
         Feature feature = type.newInstance();
         feature.setPropertyValue("geometry", GF.createPoint(new Coordinate(10,20)));
         feature.setPropertyValue(AttributeConvention.IDENTIFIER, "test.1");
@@ -511,7 +511,7 @@ public class ShapefileStoreTest {
         return feature;
     }
 
-    private static Feature createFeature2(FeatureType type) {
+    static Feature createFeature2(FeatureType type) {
         Feature feature = type.newInstance();
         feature.setPropertyValue("geometry", GF.createPoint(new Coordinate(30,40)));
         feature.setPropertyValue(AttributeConvention.IDENTIFIER, "test.2");;
@@ -523,7 +523,7 @@ public class ShapefileStoreTest {
         return feature;
     }
 
-    private static Feature createFeature3(FeatureType type) {
+    static Feature createFeature3(FeatureType type) {
         Feature feature = type.newInstance();
         feature.setPropertyValue("geometry", GF.createPoint(new Coordinate(50,60)));
         feature.setPropertyValue(AttributeConvention.IDENTIFIER, "test.3");

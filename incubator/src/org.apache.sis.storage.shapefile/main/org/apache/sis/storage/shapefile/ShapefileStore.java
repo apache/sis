@@ -33,6 +33,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -95,6 +96,8 @@ import org.apache.sis.storage.WritableFeatureSet;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.storage.base.WarningAdapter;
+import org.apache.sis.storage.internal.shared.FeatureSetContentEvent;
+import org.apache.sis.storage.internal.shared.FeatureSetModelEvent;
 import org.apache.sis.storage.shapefile.cpg.CpgFiles;
 import org.apache.sis.storage.shapefile.dbf.DBFField;
 import org.apache.sis.storage.shapefile.dbf.DBFHeader;
@@ -121,9 +124,11 @@ import org.opengis.feature.AttributeType;
 import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.filter.Expression;
 import org.opengis.filter.Filter;
+import org.opengis.filter.FilterFactory;
 import org.opengis.filter.Literal;
 import org.opengis.filter.LogicalOperator;
 import org.opengis.filter.LogicalOperatorName;
+import org.opengis.filter.ResourceId;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.ValueReference;
 import org.apache.sis.geometry.wrapper.*;
@@ -871,6 +876,14 @@ public final class ShapefileStore extends URIDataStore implements WritableFeatur
             } finally {
                 lock.writeLock().unlock();
             }
+            /*
+             * The files did not exist before this call, so the feature type has been created
+             * rather than modified. The type sent to the listeners is the one read back from
+             * the files, which is the effective type: the shapefile format cannot store every
+             * property of the requested type.
+             */
+            ShapefileStore.this.listeners.fire(FeatureSetModelEvent.class,
+                    FeatureSetModelEvent.createAddEvent(ShapefileStore.this, getType()));
         }
 
         @Override
@@ -905,6 +918,11 @@ public final class ShapefileStore extends URIDataStore implements WritableFeatur
          * but replaced by a record marked as deleted, holding a null shape and blank fields.
          * New features are appended after the last record number.
          *
+         * <p>A {@link FeatureSetContentEvent} is sent for each kind of modification which actually
+         * happened, once the new files have replaced the old ones. Nothing is sent when the call
+         * modified nothing, which is the case of an empty iterator of new features or of a
+         * predicate matching no feature.</p>
+         *
          * @param remove predicate selecting the features to remove or to update, can be null
          * @param updater operator applied to the features matching the predicate, can be null
          *                to remove them. A null result also removes the feature.
@@ -932,6 +950,16 @@ public final class ShapefileStore extends URIDataStore implements WritableFeatur
                 // Ignore. Note: this is also the exception if id.getCode() is null.
             }
             final int geomSrid = srid;
+            /*
+             * Identifiers of the features modified by this call, collected while the new files are
+             * written and sent to the listeners once the write succeeded. They are recorded even
+             * when `generateId` is false, in which case they cannot designate anything and are
+             * dropped when the events are built, but their number still tells what happened.
+             */
+            final var added   = new ArrayList<String>();
+            final var updated = new ArrayList<String>();
+            final var removed = new ArrayList<String>();
+            int dropped = 0;
 
             final Writer writer = new Writer(charset);
             try {
@@ -952,12 +980,14 @@ public final class ShapefileStore extends URIDataStore implements WritableFeatur
                                     dbfRecord, header, geomSrid, generateId, baseId);
                             if (remove != null && remove.test(feature)) {
                                 feature = (updater == null) ? null : updater.apply(feature);
+                                (feature == null ? removed : updated).add(baseId + shpRecord.recordNumber);
                             }
                         }
 
                         if (feature == null) {
                             //record is deleted, keep its slot to preserve the following record numbers
-                            if (!dropDeleted) writer.writeDeleted(shpRecord.recordNumber);
+                            if (dropDeleted) dropped++;
+                            else writer.writeDeleted(shpRecord.recordNumber);
                         } else if (dropDeleted) {
                             writer.write(feature);
                         } else {
@@ -968,7 +998,7 @@ public final class ShapefileStore extends URIDataStore implements WritableFeatur
 
                 //append new features
                 while (newFeatures != null && newFeatures.hasNext()) {
-                    writer.write(newFeatures.next());
+                    added.add(baseId + writer.write(newFeatures.next()));
                 }
 
                 writer.finish(true);
@@ -983,6 +1013,48 @@ public final class ShapefileStore extends URIDataStore implements WritableFeatur
             //files have been replaced, number of records and bounding box have changed
             files.scan();
             reloadHeaders();
+
+            if (dropDeleted) {
+                /*
+                 * Compaction renumbers every surviving record, so the identifier of every feature
+                 * changed. Which new identifier replaces which old one cannot be expressed by a
+                 * filter, hence the null one. Nothing changed if no record had been deleted.
+                 */
+                if (dropped != 0) {
+                    ShapefileStore.this.listeners.fire(FeatureSetContentEvent.class,
+                            FeatureSetContentEvent.createUpdateEvent(ShapefileStore.this, null));
+                }
+            } else {
+                fireContentEvent(FeatureSetContentEvent.Type.ADD,    added,   generateId);
+                fireContentEvent(FeatureSetContentEvent.Type.UPDATE, updated, generateId);
+                fireContentEvent(FeatureSetContentEvent.Type.DELETE, removed, generateId);
+            }
+        }
+
+        /**
+         * Sends a content event for the given feature identifiers, if there is any.
+         *
+         * @param type         whether the features were added, updated or deleted.
+         * @param identifiers  identifiers of the modified features, empty if none were.
+         * @param usable       whether the feature type has an identifier property.
+         */
+        private void fireContentEvent(final FeatureSetContentEvent.Type type,
+                final List<String> identifiers, final boolean usable)
+        {
+            if (identifiers.isEmpty()) {
+                return;
+            }
+            Filter<Feature> ids = null;
+            if (usable) {
+                final FilterFactory<Feature,Object,Object> ff = DefaultFilterFactory.forFeatures();
+                final var rid = new LinkedHashSet<ResourceId>();
+                for (final String identifier : identifiers) {
+                    rid.add(ff.resourceId(identifier));
+                }
+                ids = FeatureSetContentEvent.resourceId(rid);
+            }
+            ShapefileStore.this.listeners.fire(FeatureSetContentEvent.class,
+                    new FeatureSetContentEvent(ShapefileStore.this, type, ids));
         }
 
         @Override
@@ -1305,9 +1377,13 @@ public final class ShapefileStore extends URIDataStore implements WritableFeatur
 
         /**
          * Write a feature, appended after the last written record.
+         *
+         * @return the record number given to the feature, which determines its identifier.
          */
-        private void write(Feature feature) throws IOException {
-            write(feature, lastRecordNumber + 1);
+        private int write(Feature feature) throws IOException {
+            final int recordNumber = lastRecordNumber + 1;
+            write(feature, recordNumber);
+            return recordNumber;
         }
 
         /**
