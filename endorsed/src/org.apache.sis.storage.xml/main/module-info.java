@@ -25,7 +25,6 @@
  */
 module org.apache.sis.storage.xml {
     requires jakarta.xml.bind;
-    requires static org.locationtech.jts;
     requires transitive org.apache.sis.storage;
 
     provides org.apache.sis.storage.DataStoreProvider
