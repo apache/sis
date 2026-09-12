@@ -198,6 +198,13 @@ public abstract class ChannelData implements Markable {
     }
 
     /**
+     * Returns the number of bytes up to the last valid byte in the buffer.
+     */
+    private long lengthOfBufferedData() {
+        return Math.addExact(bufferOffset, buffer.limit());
+    }
+
+    /**
      * Returns the length of the stream (in bytes), or -1 if unknown.
      * The length is relative to the position during the last call to {@link #relocateOrigin()}.
      * If the latter method has never been invoked, then the length is relative to the channel
@@ -211,10 +218,10 @@ public abstract class ChannelData implements Markable {
         if (channel instanceof SeekableByteChannel) {
             final long length = Math.subtractExact(((SeekableByteChannel) channel).size(), channelOffset);
             if (length >= 0) {
-                return Math.max(length, Math.addExact(bufferOffset, buffer.limit()));
+                return Math.max(length, lengthOfBufferedData());
             }
         } else if (isOpenedForAppend()) {
-            return Math.addExact(bufferOffset, buffer.limit());
+            return lengthOfBufferedData();
         }
         return -1;
     }

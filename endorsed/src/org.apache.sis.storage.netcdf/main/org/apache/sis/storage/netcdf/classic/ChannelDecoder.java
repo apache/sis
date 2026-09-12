@@ -270,7 +270,7 @@ public final class ChannelDecoder extends Decoder {
             if (tn != 0) {
                 final int tag = (int) (tn >>> Integer.SIZE);
                 final int nelems = (int) tn;
-                ensureNonNegative(nelems, tag);
+                ensureReasonableCount(nelems, tag);
                 try {
                     switch (tag) {
                         case DIMENSION: dimensions = readDimensions(nelems); break;
@@ -414,12 +414,25 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Ensures that {@code nelems} is not a negative value.
+     * Ensures that {@code nelems} is not a negative value and not too large.
+     * The upper bound is a conservative estimation. It can detect only unreasonable values.
+     * We assume that all elements will require the space of at least one 32 bit integer.
      */
-    private void ensureNonNegative(final int nelems, final int tag) throws DataStoreContentException {
+    private void ensureReasonableCount(final int nelems, final int tag) throws IOException, DataStoreContentException {
+        final short key;
+        final Object[] args;
         if (nelems < 0) {
-            throw new DataStoreContentException(errors().getString(Errors.Keys.NegativeArrayLength_1, tagPath(tagName(tag))));
+            key  = Errors.Keys.NegativeArrayLength_1;
+            args = new Object[1];
+        } else if (Math.multiplyFull(nelems, Integer.SIZE) > input.remaining()) {
+            key  = Errors.Keys.ExcessiveListSize_2;
+            args = new Object[2];
+            args[1] = nelems;
+        } else {
+            return;
         }
+        args[0] = tagPath(tagName(tag));
+        throw new DataStoreContentException(errors().getString(key, tagPath(tagName(tag))));
     }
 
     /**
@@ -568,7 +581,7 @@ public final class ChannelDecoder extends Decoder {
      * @return the dimensions in the order they are declared in the netCDF file.
      */
     private DimensionInfo[] readDimensions(final int nelems) throws IOException, DataStoreContentException {
-        final DimensionInfo[] dimensions = new DimensionInfo[nelems];
+        final var dimensions = new DimensionInfo[nelems];
         for (int i=0; i<nelems; i++) {
             final String name = readName();
             int length = input.readInt();
@@ -652,7 +665,7 @@ public final class ChannelDecoder extends Decoder {
         for (int j=0; j<nelems; j++) {
             final String name = readName();
             final int n = input.readInt();
-            final DimensionInfo[] varDims = new DimensionInfo[n];
+            final var varDims = new DimensionInfo[n];
             try {
                 for (int i=0; i<n; i++) {
                     varDims[i] = allDimensions[input.readInt()];
@@ -669,7 +682,7 @@ public final class ChannelDecoder extends Decoder {
             if (tn != 0) {
                 final int tag = (int) (tn >>> Integer.SIZE);
                 final int na  = (int) tn;
-                ensureNonNegative(na, tag);
+                ensureReasonableCount(na, tag);
                 switch (tag) {
                     // More cases may be added later if they appear to exist.
                     case ATTRIBUTE: {

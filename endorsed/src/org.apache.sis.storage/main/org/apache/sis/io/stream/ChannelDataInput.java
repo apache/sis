@@ -226,6 +226,24 @@ public class ChannelDataInput extends ChannelData implements DataInput {
     }
 
     /**
+     * Returns the remaining number of bytes, or {@code Long.MAX_VALUE} if unknown.
+     * This information is available only with instances of {@link SeekableByteChannel}.
+     * The {@link #hasRemaining()} method should be preferred when a count is not necessary.
+     *
+     * @return remaining number of bytes, or {@link Long#MAX_VALUE} if unknown.
+     * @throws IOException if an error occurred while fetching the channel length.
+     */
+    public final long remaining() throws IOException {
+        if (channel instanceof SeekableByteChannel) {
+            final long length = ((SeekableByteChannel) channel).size();
+            if (length >= 0) {
+                return length - Math.addExact(toSeekableByteChannelPosition(bufferOffset), buffer.position());
+            }
+        }
+        return Long.MAX_VALUE;
+    }
+
+    /**
      * Makes sure that the buffer contains at least <var>n</var> remaining bytes.
      * It is caller's responsibility to ensure that the given number of bytes is
      * not greater than the {@linkplain ByteBuffer#capacity() buffer capacity}.
