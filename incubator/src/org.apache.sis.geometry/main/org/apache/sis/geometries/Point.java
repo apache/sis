@@ -203,6 +203,29 @@ public sealed interface Point extends Primitive
     }
 
     /**
+     * Returns {@code true}: a single location satisfies every constraint a point can have.
+     *
+     * @see ISO 19107:2019 - 6.4.4.16
+     */
+    @UML(identifier="isValid", specification=ISO_19107)
+    @Override
+    default boolean isValid() {
+        return true;
+    }
+
+    /**
+     * Returns the empty geometry: the boundary of a point is the empty set.
+     *
+     * @see OGC Simple Feature Access 1.2.1 - 6.1.2.2
+     * @see ISO 19107:2019 - 6.4.4.7
+     */
+    @UML(identifier="boundary", specification=ISO_19107)
+    @Override
+    default Geometry boundary() {
+        return GeometryFactory.createEmpty(getCoordinateReferenceSystem());
+    }
+
+    /**
      * Returns {@code this}: a point is its own centroid.
      *
      * @see ISO 19107:2019 - 6.4.4.8

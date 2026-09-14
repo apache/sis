@@ -33,6 +33,8 @@ import org.apache.sis.geometries.curve.Spiral;
 import org.apache.sis.geometries.internal.shared.DefaultReversedCurve;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
@@ -202,6 +204,24 @@ public sealed interface Curve extends Orientable
     }
 
     /**
+     * Returns the two end points of this curve, or the empty geometry when this curve is
+     * {@linkplain #isClosed() closed} and therefore has no end.
+     *
+     * @return boundary of this curve.
+     *
+     * @see OGC Simple Feature Access 1.2.1 - 6.1.6.2
+     * @see ISO 19107:2019 - 6.4.4.7
+     */
+    @UML(identifier="boundary", specification=ISO_19107)
+    @Override
+    default Geometry boundary() {
+        if (isEmpty() || isClosed()) {
+            return GeometryFactory.createEmpty(getCoordinateReferenceSystem());
+        }
+        return GeometryFactory.createMultiPoint(getStartPoint(), getEndPoint());
+    }
+
+    /**
      * Positions used to build the geometry of this curve, the way they are used depending on the interpolation.
      *
      * <p>Control points do not necessarily lie on the curve. They use the same reference system as
@@ -314,8 +334,12 @@ public sealed interface Curve extends Orientable
      */
     @UML(identifier="startParam", specification=ISO_19107)
     default Length getStartParam() {
-        //TODO
-        throw new UnsupportedOperationException();
+        /*
+         * Zero, since the arc length parameterization of a curve spans [0 … length] as stated by
+         * `getLength()`. A curve which is a segment of another one, and which therefore starts
+         * where the preceding segment ended, has to override.
+         */
+        return Quantities.create(0, Units.METRE);
     }
 
     /**
@@ -334,8 +358,14 @@ public sealed interface Curve extends Orientable
      */
     @UML(identifier="endParam", specification=ISO_19107)
     default Length getEndParam() {
-        //TODO
-        throw new UnsupportedOperationException();
+        /*
+         * The constraint above: the difference with the start parameter is the length of the
+         * curve. This holds whatever the start parameter, so a segment which overrides
+         * `getStartParam()` gets the right answer without overriding this method.
+         */
+        final Length start = getStartParam();
+        final Length length = getLength();
+        return Quantities.castOrCopy(start.add(length));
     }
 
     /**
@@ -349,8 +379,7 @@ public sealed interface Curve extends Orientable
      */
     @UML(identifier="numDerivativesInterior", specification=ISO_19107)
     default Integer getNumDerivativesInterior() {
-        //TODO
-        throw new UnsupportedOperationException();
+        return 0;       // C⁰, which a curve always is since it is connected.
     }
 
     /**
@@ -364,8 +393,7 @@ public sealed interface Curve extends Orientable
      */
     @UML(identifier="numDerivativesStart", specification=ISO_19107)
     default Integer getNumDerivativesStart() {
-        //TODO
-        throw new UnsupportedOperationException();
+        return 0;       // C⁰, the weakest continuity, which is what a junction guarantees.
     }
 
     /**
@@ -379,8 +407,7 @@ public sealed interface Curve extends Orientable
      */
     @UML(identifier="numDerivativesEnd", specification=ISO_19107)
     default Integer getNumDerivativesEnd() {
-        //TODO
-        throw new UnsupportedOperationException();
+        return 0;       // C⁰, the weakest continuity, which is what a junction guarantees.
     }
 
     /**
@@ -395,8 +422,13 @@ public sealed interface Curve extends Orientable
     @UML(identifier="reverse", specification=ISO_19107)
     @Override
     default Curve getReverse() {
-        //TODO
-        throw new UnsupportedOperationException();
+        /*
+         * A view of this curve carrying the opposite orientation sign. It is a view and not a copy
+         * because reversing changes no coordinate: which end is the start one is an orientation,
+         * not a geometry. `DefaultReversedCurve` returns this curve back from its own `getReverse()`,
+         * so wrapping never nests.
+         */
+        return GeometryFactory.createReversed(this);
     }
 
     /**

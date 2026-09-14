@@ -125,13 +125,17 @@ public sealed interface Geometry
      * <p>Difference with ISO 19107: we return a single Metadata instead of a list of URI,
      * whose first element would point to the normative document describing this geometry.</p>
      *
-     * @return metadata about this geometry.
+     * @return metadata about this geometry, or {@code null} if none.
      *
      * @see ISO 19107:2019 - 6.4.4.18
      */
     @UML(identifier="metadata", specification=ISO_19107)
     default Metadata getMetadata() {
-        throw new UnsupportedOperationException();
+        /*
+         * Absent, which the standard defines as meaning that ISO 19107 itself is the applicable
+         * documentation. Implementations departing from the standard should say so here.
+         */
+        return null;
     }
 
     /**
@@ -176,6 +180,15 @@ public sealed interface Geometry
      */
     @UML(identifier="dimension", specification=ISO_19107)
     default int getDimension(DirectPosition point) {
+        if (point == null) {
+            /*
+             * The dimension of the whole geometry, which is what `getTopologicDimension()` returns.
+             * A position is needed only because an aggregate may mix components of different
+             * dimensions; every homogeneous geometry answers the same at every interior position,
+             * which is what `Primitive` relies on.
+             */
+            return getTopologicDimension();
+        }
         throw new UnsupportedOperationException();
     }
 
@@ -354,8 +367,12 @@ public sealed interface Geometry
      */
     @UML(identifier="closure", specification=ISO_19107)
     default Geometry getClosure() {
-        //TODO remove this method default when all classes implement it.
-        throw new UnsupportedOperationException();
+        /*
+         * Every geometry of this package is metrically closed, as stated in the constraints of
+         * this interface: a curve contains its end points, a surface its boundary curves and a
+         * solid its boundary surfaces. A geometry is therefore its own closure.
+         */
+        return this;
     }
 
     /**
@@ -375,8 +392,12 @@ public sealed interface Geometry
      */
     @UML(identifier="maximalComplex", specification=ISO_19107)
     default Geometry getMaximalComplex() {
-        //TODO remove this method default when all classes implement it.
-        throw new UnsupportedOperationException();
+        /*
+         * This package has no notion of complex: it declares no type for a set of geometries
+         * closed under the boundary operation, which is what ISO 19107 calls a complex.
+         * The standard defines null as the answer in that case.
+         */
+        return null;
     }
 
     /**

@@ -19,6 +19,7 @@ package org.apache.sis.geometries;
 import java.util.List;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
+import org.opengis.geometry.DirectPosition;
 
 
 /**
@@ -63,6 +64,23 @@ public sealed interface Primitive extends Geometry
     @Override
     default BoundaryType getBoundaryType() {
         return BoundaryType.METRIC;
+    }
+
+    /**
+     * Returns the {@linkplain #getTopologicDimension() topological dimension} of this primitive,
+     * whatever the given position: a primitive has a uniform dimension at each of its interior
+     * points, which is what makes it a primitive. Only an aggregate needs the position, because
+     * it may mix components of different dimensions.
+     *
+     * @param  point  ignored, since the answer is the same everywhere.
+     * @return topological dimension of this primitive.
+     *
+     * @see ISO 19107:2019 - 6.4.4.25
+     */
+    @UML(identifier="dimension", specification=ISO_19107)
+    @Override
+    default int getDimension(DirectPosition point) {
+        return getTopologicDimension();
     }
 
     /**
