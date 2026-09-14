@@ -25,10 +25,14 @@ import org.apache.sis.storage.Resource;
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class ModelEvent extends StorageEvent {
+public class ModelEvent extends StorageEvent {
 
     public ModelEvent(Resource resource) {
         super(resource);
     }
 
+    @Override
+    public ModelEvent copy(Resource source) {
+        return new ModelEvent(source);
+    }
 }

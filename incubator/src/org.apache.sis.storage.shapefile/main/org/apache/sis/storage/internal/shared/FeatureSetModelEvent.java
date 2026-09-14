@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.internal.shared;
 
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Resource;
 import static org.apache.sis.util.ArgumentChecks.*;
 import org.opengis.feature.FeatureType;
@@ -38,7 +39,7 @@ public class FeatureSetModelEvent extends ModelEvent {
     private final FeatureType oldType;
     private final FeatureType newType;
 
-    private FeatureSetModelEvent(final Resource source, final Type type, final FeatureType oldtype, final FeatureType newtype){
+    private FeatureSetModelEvent(final FeatureSet source, final Type type, final FeatureType oldtype, final FeatureType newtype){
         super(source);
 
         ensureNonNull("type", type);
@@ -79,18 +80,18 @@ public class FeatureSetModelEvent extends ModelEvent {
 
     @Override
     public FeatureSetModelEvent copy(Resource source) {
-        return new FeatureSetModelEvent(source, type, oldType, newType);
+        return new FeatureSetModelEvent((FeatureSet)source, type, oldType, newType);
     }
 
-    public static FeatureSetModelEvent createAddEvent(final Resource source, final FeatureType type){
+    public static FeatureSetModelEvent createAddEvent(final FeatureSet source, final FeatureType type){
         return new FeatureSetModelEvent(source, Type.ADD, null, type);
     }
 
-    public static FeatureSetModelEvent createUpdateEvent(final Resource source, final FeatureType oldType, final FeatureType newType){
+    public static FeatureSetModelEvent createUpdateEvent(final FeatureSet source, final FeatureType oldType, final FeatureType newType){
         return new FeatureSetModelEvent(source, Type.UPDATE, oldType, newType);
     }
 
-    public static FeatureSetModelEvent createDeleteEvent(final Resource source, final FeatureType type){
+    public static FeatureSetModelEvent createDeleteEvent(final FeatureSet source, final FeatureType type){
         return new FeatureSetModelEvent(source, Type.DELETE, type, null);
     }
 

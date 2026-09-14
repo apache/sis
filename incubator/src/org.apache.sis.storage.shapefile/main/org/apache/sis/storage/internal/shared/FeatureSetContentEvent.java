@@ -18,6 +18,7 @@ package org.apache.sis.storage.internal.shared;
 
 import java.util.Set;
 import org.apache.sis.filter.DefaultFilterFactory;
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Resource;
 import org.opengis.feature.Feature;
 import org.opengis.filter.Filter;
@@ -39,13 +40,13 @@ public class FeatureSetContentEvent extends ContentEvent {
     private final Type type;
     private Filter ids;
 
-    public FeatureSetContentEvent(final Resource source, final Type type, final Filter<Feature> identifiers) {
+    public FeatureSetContentEvent(final FeatureSet source, final Type type, final Filter<Feature> identifiers) {
         super(source);
         this.type = type;
         this.ids = identifiers;
     }
 
-    public FeatureSetContentEvent(final Resource source, final Type type, final Set<ResourceId> ids){
+    public FeatureSetContentEvent(final FeatureSet source, final Type type, final Set<ResourceId> ids){
         this(source, type, resourceId(ids));
     }
 
@@ -77,19 +78,20 @@ public class FeatureSetContentEvent extends ContentEvent {
         return ids;
     }
 
+    @Override
     public FeatureSetContentEvent copy(final Resource source){
-        return new FeatureSetContentEvent(source, type, ids);
+        return new FeatureSetContentEvent((FeatureSet)source, type, ids);
     }
 
-    public static FeatureSetContentEvent createAddEvent(final Resource source, final Filter<Feature> ids){
+    public static FeatureSetContentEvent createAddEvent(final FeatureSet source, final Filter<Feature> ids){
         return new FeatureSetContentEvent(source, Type.ADD, ids);
     }
 
-    public static FeatureSetContentEvent createUpdateEvent(final Resource source, final Filter<Feature> ids){
+    public static FeatureSetContentEvent createUpdateEvent(final FeatureSet source, final Filter<Feature> ids){
         return new FeatureSetContentEvent(source, Type.UPDATE, ids);
     }
 
-    public static FeatureSetContentEvent createDeleteEvent(final Resource source, final Filter<Feature> ids){
+    public static FeatureSetContentEvent createDeleteEvent(final FeatureSet source, final Filter<Feature> ids){
         return new FeatureSetContentEvent(source, Type.DELETE, ids);
     }
 
