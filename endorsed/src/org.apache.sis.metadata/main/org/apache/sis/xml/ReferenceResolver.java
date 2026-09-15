@@ -73,7 +73,7 @@ public class ReferenceResolver {
      *
      * @since 1.7
      */
-    public static final ReferenceResolver OPEN_EXTERNAL_DOCUMENTS = new ReferenceResolver();
+    public static final ReferenceResolver FOLLOW_EXTERNAL_XLINK = new ReferenceResolver();
 
     /**
      * Provider of sources to use for unmarshalling objects referenced by links to another document.
@@ -386,12 +386,12 @@ public class ReferenceResolver {
      * @param  document  the external document referenced in a {@code xlink:href}.
      * @return whether the given document can be opened.
      *
-     * @see #OPEN_EXTERNAL_DOCUMENTS
+     * @see #FOLLOW_EXTERNAL_XLINK
      *
      * @since 1.7
      */
     public boolean canOpenExternal(URI document) {
-        return this == OPEN_EXTERNAL_DOCUMENTS;
+        return this == FOLLOW_EXTERNAL_XLINK;
     }
 
     /**

@@ -78,7 +78,7 @@ public final class ReferenceResolverTest extends TestUsingFile implements Filter
         final var properties = new HashMap<String, Object>(4);
         assertNull(properties.put(XML.WARNING_FILTER, this));
         if (readExternal) {
-            assertNull(properties.put(XML.RESOLVER, ReferenceResolver.OPEN_EXTERNAL_DOCUMENTS));
+            assertNull(properties.put(XML.RESOLVER, ReferenceResolver.FOLLOW_EXTERNAL_XLINK));
         }
         final var data = assertInstanceOf(DataIdentification.class, XML.unmarshal(source, properties));
         assertEquals("Test the use of XLink to an external document.", data.getAbstract().toString());
