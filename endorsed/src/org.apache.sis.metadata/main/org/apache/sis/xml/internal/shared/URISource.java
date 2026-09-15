@@ -54,9 +54,10 @@ public final class URISource extends StreamSource {
      */
     URISource(URI source) throws URISyntaxException {
         source = source.normalize();
+        fragment = Strings.trimOrNull(source.getFragment());
         // Build a new URI unconditionally because it also decodes escaped characters.
-        URI c = new URI(source.getScheme(), source.getSchemeSpecificPart(), null);
-        if (c.isOpaque() && "file".equalsIgnoreCase(c.getScheme())) {
+        source = new URI(source.getScheme(), source.getSchemeSpecificPart(), null);
+        if (source.isOpaque() && "file".equalsIgnoreCase(source.getScheme())) {
             /*
              * If the URI is "file:something" without "/" or "///" characters, resolve as an absolute path.
              * This special case happens if `IOUtilities.toFileOrURI(String)` did not converted a string to
@@ -64,10 +65,9 @@ public final class URISource extends StreamSource {
              * we can now attempt this conversion again. The result will be an absolute path. This is needed
              * for `URI.resolve(URI)` to work.
              */
-            c = new File(c.getSchemeSpecificPart()).toURI();
+            source = new File(source.getSchemeSpecificPart()).toURI();
         }
-        document = source.equals(c) ? source : c;       // Share the existing instance if applicable.
-        fragment = Strings.trimOrNull(source.getFragment());
+        document = source;
     }
 
     /**
@@ -116,6 +116,8 @@ public final class URISource extends StreamSource {
 
     /**
      * Returns a string representation of this source for debugging purposes.
+     *
+     * @return string representation for debugging purposes.
      */
     @Override
     public String toString() {

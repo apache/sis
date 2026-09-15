@@ -68,6 +68,11 @@ public class Resources extends IndexedResourceBundle {
         }
 
         /**
+         * References to external documents are not followed without explicit authorization.
+         */
+        public static final short AuthorizationRequired = 10;
+
+        /**
          * Cannot handle `{1}` as a type derived from the {0} standard.
          */
         public static final short CannotHandleAsStandardType_2 = 9;

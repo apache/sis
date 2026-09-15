@@ -18,6 +18,7 @@ package org.apache.sis.xml;
 
 import java.net.URI;
 import java.util.UUID;
+import java.nio.file.AccessDeniedException;
 import java.lang.reflect.Proxy;
 import javax.xml.transform.Source;
 import javax.xml.transform.URIResolver;
@@ -46,20 +47,39 @@ import org.apache.sis.xml.internal.shared.XmlUtilities;
  * to a unmarshaller.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   0.3
  */
 public class ReferenceResolver {
     /**
-     * The default and thread-safe instance. This instance is used at unmarshalling time when
-     * no {@code ReferenceResolver} was explicitly set by the {@link XML#RESOLVER} property.
+     * The default resolved used at unmarshalling time when no resolver was explicitly set.
+     * This instance resolves {@code xlink:href} which are <abbr>URI</abbr> fragments relative
+     * to the current document, but does not accept to open references to external documents.
+     *
+     * @see XML#RESOLVER
      */
     public static final ReferenceResolver DEFAULT = new ReferenceResolver();
 
     /**
+     * A resolver which accepts to open all external documents referenced by {@code xlink:href}.
+     * By {@linkplain #DEFAULT default}, only <abbr>URI</abbr> fragments relative to the current document are opened.
+     * But if this resolver is specified as a {@link XML#RESOLVER} property, all <abbr>URI</abbr>s will be accepted.
+     *
+     * <p><b>Historical note:</b> this was the default behavior in Apache <abbr>SIS</abbr> 1.5 and 1.6, but
+     * <abbr>SIS</abbr> 1.7 reverted to not opening external document by default for security reasons.</p>
+     *
+     * @see XML#RESOLVER
+     * @see #canOpenExternal(URI)
+     *
+     * @since 1.7
+     */
+    public static final ReferenceResolver OPEN_EXTERNAL_DOCUMENTS = new ReferenceResolver();
+
+    /**
      * Provider of sources to use for unmarshalling objects referenced by links to another document.
      * It provides the {@code source} argument in {@link #resolveExternal(MarshalContext, Source)}.
-     * If {@code null}, a default resolution is done.
+     * If {@code null}, relative <abbr>URI</abbr>s will be {@linkplain URI#resolve(URI) resolved}
+     * against the <abbr>URI</abbr> of the document which contains the reference.
      *
      * @since 1.5
      */
@@ -255,7 +275,13 @@ public class ReferenceResolver {
      * </ul>
      * The resolved URL, if known, should be available in {@link Source#getSystemId()}.
      *
-     * <h4>Error handling</h4>
+     * <h4>Authorization to resolve {@code xlink:href}</h4>
+     * If the given {@code source} argument wraps an {@link URI}, then this method asks to
+     * {@link #canOpenExternal(URI)} whether this {@code ReferenceResolver} can open that <abbr>URI</abbr>.
+     * If {@code canOpenExternal(…)} returns {@code false}, then an {@link AccessDeniedException} is thrown.
+     * For security reasons, the default {@code canOpenExternal(…)} implementation returns always {@code false}.
+     *
+     * <h4>Error handling on failure to resolve {@code xlink:href}</h4>
      * The default implementation keeps a cache during the execution of an {@code XML.unmarshall(…)} method
      * (or actually, during a {@linkplain MarshallerPool pooled unmarshaller} method).
      * If an exception is thrown during the document unmarshalling, this failure is also recorded in the cache.
@@ -271,12 +297,16 @@ public class ReferenceResolver {
      *
      * @since 1.5
      */
+    @SuppressWarnings("UseSpecificCatch")
     protected Object resolveExternal(final MarshalContext context, final Source source) throws Exception {
         final Object document;
         final String fragment;
         final URI uri;
         if (source instanceof URISource) {
             final var s = (URISource) source;
+            if (!canOpenExternal(s.document)) {
+                throw new AccessDeniedException(s.document.toString());
+            }
             uri = s.getReadableURI();
             document = s.document;
             fragment = s.fragment;
@@ -348,8 +378,25 @@ public class ReferenceResolver {
     }
 
     /**
+     * Returns whether the given external document referenced in a {@code xlink:href} can be opened.
+     * If this method returns {@code false}, then {@link #resolveExternal(MarshalContext, Source)}
+     * while throw an {@link AccessDeniedException}.
+     * The {@linkplain #DEFAULT default} implementation returns {@code false}.
+     *
+     * @param  document  the external document referenced in a {@code xlink:href}.
+     * @return whether the given document can be opened.
+     *
+     * @see #OPEN_EXTERNAL_DOCUMENTS
+     *
+     * @since 1.7
+     */
+    public boolean canOpenExternal(URI document) {
+        return this == OPEN_EXTERNAL_DOCUMENTS;
+    }
+
+    /**
      * Returns {@code true} if the marshaller can use a {@code xlink:href="#id"} reference to the given object
-     * instead of writing the full XML element. This method is invoked by the marshaller when:
+     * instead of writing the full <abbr>XML</abbr> element. This method is invoked by the marshaller when:
      *
      * <ul>
      *   <li>The given object has already been marshalled in the same XML document.</li>
@@ -380,15 +427,16 @@ public class ReferenceResolver {
      *
      * @since 0.7
      */
-    public <T> boolean canSubstituteByReference(final MarshalContext context, final Class<T> type, final T object, final String id) {
+    public <T> boolean canSubstituteByReference(MarshalContext context, Class<T> type, T object, String id) {
         return true;
     }
 
     /**
      * Returns {@code true} if the marshaller can use a reference to the given object
-     * instead of writing the full XML element. This method is invoked when an object to
-     * be marshalled has a UUID identifier. Because those object may be defined externally,
-     * SIS cannot know if the object shall be fully marshalled or not.
+     * instead of writing the full <abbr>XML</abbr> element.
+     * This method is invoked when an object to be marshalled has a <abbr>UUID</abbr> identifier.
+     * Because those object may be defined externally,
+     * <abbr>SIS</abbr> cannot know if the object shall be fully marshalled or not.
      * Such information needs to be provided by the application.
      *
      * <p>The default implementation returns {@code true} in the following cases:</p>
@@ -407,7 +455,7 @@ public class ReferenceResolver {
      * @return {@code true} if the marshaller can use the {@code uuidref} attribute
      *         instead of marshalling the given object.
      */
-    public <T> boolean canSubstituteByReference(final MarshalContext context, final Class<T> type, final T object, final UUID uuid) {
+    public <T> boolean canSubstituteByReference(MarshalContext context, Class<T> type, T object, UUID uuid) {
         return (object instanceof NilObject) || (object instanceof Emptiable && ((Emptiable) object).isEmpty());
     }
 
@@ -434,7 +482,7 @@ public class ReferenceResolver {
      * @return {@code true} if the marshaller can use the {@code xlink:href} attribute
      *         instead of marshalling the given object.
      */
-    public <T> boolean canSubstituteByReference(final MarshalContext context, final Class<T> type, final T object, final XLink link) {
+    public <T> boolean canSubstituteByReference(MarshalContext context, Class<T> type, T object, XLink link) {
         return (object instanceof NilObject) || (object instanceof Emptiable && ((Emptiable) object).isEmpty());
     }
 
@@ -469,7 +517,7 @@ public class ReferenceResolver {
      * @param  text     the textual representation of the value for which to get the anchor.
      * @return the anchor for the given text, or {@code null} if none.
      */
-    public XLink anchor(final MarshalContext context, final Object value, final CharSequence text) {
+    public XLink anchor(MarshalContext context, Object value, CharSequence text) {
         return (text instanceof Anchor) ? (Anchor) text : null;
     }
 }

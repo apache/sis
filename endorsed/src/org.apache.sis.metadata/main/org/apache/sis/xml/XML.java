@@ -251,28 +251,32 @@ public final class XML {
     public static final String LENIENT_UNMARSHAL = "org.apache.sis.xml.lenient";
 
     /**
-     * Allows client code to replace {@code xlink} or {@code uuidref} attributes by the actual objects to use.
+     * Allows client code to replace {@code xlink} or {@code uuidref} attributes by the actual data.
      * The value for this property shall be an instance of {@link ReferenceResolver}.
-     *
-     * <p>If a property in a XML document is defined only by {@code xlink} or {@code uuidref} attributes,
-     * without any concrete definition, then the default behavior is as below:</p>
+     * The specified reference resolver (of if none, the {@linkplain ReferenceResolver#DEFAULT default} one)
+     * is used when a <abbr>XML</abbr> element is defined only by {@code xlink} or {@code uuidref} attributes,
+     * without any concrete definition. The typical choices are:
      *
      * <ul>
      *   <li>If the reference is of the form {@code xlink:href="#foo"} and an object with the {@code gml:id="foo"}
-     *       attribute was previously found in the same XML document, then that object will be used.</li>
-     *   <li>Otherwise, if {@code xlink:href} references an external document, that document is unmarshalled.
-     *       The URI resolution can be controlled with an {@link javax.xml.transform.URIResolver} specified
-     *       at construction time.</li>
+     *       attribute was previously found in the same <abbr>XML</abbr> document, then that object will be used.</li>
+     *   <li>Otherwise, if {@code xlink:href} references an external document and the resolver is
+     *       {@linkplain ReferenceResolver#canOpenExternal(java.net.URI) authorized to open external documents},
+     *       then that document is unmarshalled.</li>
      *   <li>Otherwise, an empty element containing only the values of the above-cited attributes is created.</li>
      * </ul>
      *
-     * Applications can sometimes do better by using some domain-specific knowledge, for example by searching in a
-     * database. Users can define their search algorithm by subclassing {@link ReferenceResolver} and configuring
+     * A custom {@code ReferenceResolver} can be specified for controlling {@code xlink:href} handling.
+     * For example, the resolution of <abbr>URI</abbr>s relatively to the base document can be controlled
+     * with an {@link javax.xml.transform.URIResolver} specified to the {@link ReferenceResolver} constructor.
+     * Other methods can also be overridden for using some domain-specific knowledge,
+     * for example by searching in a database the value associated to specific {@code xlink:href} values.
+     * Users can define their search algorithm by subclassing {@link ReferenceResolver} and configuring
      * a unmarshaller as below:
      *
      * {@snippet lang="java" :
-     *     ReferenceResolver  myResolver = ...;
-     *     Map<String,Object> properties = new HashMap<>();
+     *     var myResolver = new ReferenceResolver(...);
+     *     var properties = new HashMap<String, Object>();
      *     properties.put(XML.RESOLVER, myResolver);
      *     Object obj = XML.unmarshal(source, properties);
      *     }

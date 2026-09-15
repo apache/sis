@@ -18,7 +18,10 @@ package org.apache.sis.metadata.xml;
 
 import java.net.URL;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import javax.xml.transform.Source;
 import org.apache.sis.util.Version;
+import org.apache.sis.xml.internal.shared.URISource;
 
 // Test dependencies
 import org.apache.sis.xml.test.TestCase;
@@ -52,6 +55,17 @@ public abstract class TestUsingFile extends TestCase {
         private Format(final Version schemaVersion, final String directory) {
             this.schemaVersion = schemaVersion;
             this.directory = directory;
+        }
+
+        /**
+         * Returns the source to the specified XML file.
+         *
+         * @param  filename  the XML file in the directory represented by this enumeration.
+         * @return source for the specified file.
+         * @throws URISyntaxException if the URL to the file is not valid.
+         */
+        public final Source getSource(final String filename) throws URISyntaxException {
+            return URISource.create(null, getURL(filename).toURI());
         }
 
         /**

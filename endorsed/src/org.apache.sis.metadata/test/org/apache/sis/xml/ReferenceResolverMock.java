@@ -53,6 +53,7 @@ public final class ReferenceResolverMock extends ReferenceResolver {
      * @param  marshalling {@code true} for marshalling, or {@code false} for unmarshalling.
      * @return the (un)marshalling context.
      */
+    @SuppressWarnings("exports")
     public static Context begin(final boolean marshalling) {
         return new Context(marshalling ? Context.MARSHALLING : 0, null, null, null, null, null, null,
                 null, new ReferenceResolverMock(), null, null);

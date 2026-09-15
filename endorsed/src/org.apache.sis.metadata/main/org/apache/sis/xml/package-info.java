@@ -59,7 +59,7 @@
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.5
+ * @version 1.7
  * @since   0.3
  */
 package org.apache.sis.xml;
