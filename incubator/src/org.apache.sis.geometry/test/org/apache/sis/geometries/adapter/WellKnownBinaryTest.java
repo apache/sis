@@ -532,18 +532,13 @@ public final class WellKnownBinaryTest {
     }
 
     /**
-     * Verifies that the dialect which is not implemented yet says so instead of writing
-     * something else.
+     * Verifies that a dialect and a byte order are required when one is asked for.
      */
     @Test
-    public void testUnimplementedFlavor() {
-        final WellKnownBinary twkb = new WellKnownBinary(WellKnownBinary.Flavor.TWKB);
-        assertEquals(WellKnownBinary.Flavor.TWKB, twkb.getFlavor());
-        final Geometry geometry = wkt.decode("POINT (1 2)");
-        final byte[] bytes = wkb.encode(geometry);
-        assertThrows(UnsupportedOperationException.class, () -> twkb.encode(geometry));
-        assertThrows(UnsupportedOperationException.class, () -> twkb.decode(bytes));
+    public void testNullFlavor() {
         assertThrows(NullPointerException.class, () -> new WellKnownBinary((WellKnownBinary.Flavor) null));
+        assertThrows(NullPointerException.class, () -> new WellKnownBinary(null, ByteOrder.BIG_ENDIAN));
+        assertThrows(NullPointerException.class, () -> new WellKnownBinary(WellKnownBinary.Flavor.OGC, null));
     }
 
     /**

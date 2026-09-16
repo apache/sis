@@ -164,14 +164,7 @@ public final class WellKnownBinary {
          * are still understood, so a plain Well-Known Binary decodes unchanged. The converse does
          * not hold — the {@code OGC} dialect rejects the high order bits.</p>
          */
-        EWKB,
-
-        /**
-         * The <cite>Tiny Well-Known Binary</cite> of TWKB 1.0.
-         * Not implemented yet: {@link #encode encode(…)} and {@link #decode decode(…)} throw
-         * an {@link UnsupportedOperationException} for this flavor.
-         */
-        TWKB
+        EWKB
     }
 
     /**
@@ -289,17 +282,6 @@ public final class WellKnownBinary {
     }
 
     /**
-     * Verifies that the dialect of this codec is implemented.
-     *
-     * @throws UnsupportedOperationException if it is not.
-     */
-    private void ensureImplemented() {
-        if (flavor == Flavor.TWKB) {
-            throw new UnsupportedOperationException("The " + flavor + " flavor is not implemented yet.");
-        }
-    }
-
-    /**
      * Returns the Well-Known Binary of the given geometry.
      *
      * @param  geom  the geometry to encode, not null.
@@ -310,7 +292,6 @@ public final class WellKnownBinary {
      */
     public byte[] encode(final Geometry geom) {
         ArgumentChecks.ensureNonNull("geom", geom);
-        ensureImplemented();
         final Output out = new Output(byteOrder);
         if (flavor == Flavor.EWKB) {
             out.setSrid(Srid.of(geom.getCoordinateReferenceSystem()));
@@ -349,7 +330,6 @@ public final class WellKnownBinary {
      */
     public Geometry decode(final byte[] geom, final CoordinateReferenceSystem crs) {
         ArgumentChecks.ensureNonNull("geom", geom);
-        ensureImplemented();
         return new WellKnownBinaryParser(geom, crs, flavor).parse();
     }
 
