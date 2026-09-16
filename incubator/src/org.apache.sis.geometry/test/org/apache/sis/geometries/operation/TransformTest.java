@@ -20,6 +20,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.maths.NDArrays;
@@ -128,4 +129,42 @@ public class TransformTest {
         testPrimitive(result.getGeometryN(0));
     }
 
+    /**
+     * The inputs and expected result of a single test of {@code transform(Geometry, CoordinateReferenceSystem, MathTransform)}.
+     *
+     * @param input    the geometry on which the operation is invoked.
+     * @param crs      the target coordinate reference system.
+     * @param expected the expected result, or {@code null} if an exception is expected.
+     * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
+     */
+    private record Entry(Geometry input,
+                         CoordinateReferenceSystem crs,
+                         Geometry expected,
+                         Class<? extends Exception> error)
+    {
+    }
+
+    /**
+     * All test cases of {@code transform(Geometry, CoordinateReferenceSystem, MathTransform)}.
+     */
+    private static final Entry[] ENTRIES = {
+    };
+
+    /**
+     * Tests {@code transform(Geometry, CoordinateReferenceSystem, MathTransform)} on all declared test cases.
+     */
+    @Test
+    public void testTransform() {
+        for (final Entry entry : ENTRIES) {
+            try {
+                final Geometry result = new GeometryProcessor().transform(entry.input(), entry.crs(), null);
+                assertNull(entry.error(), "An exception was expected.");
+                assertEquals(entry.expected(), result);
+            } catch (Exception ex) {
+                if (entry.error() == null || !entry.error().isInstance(ex)) {
+                    throw new AssertionError("Unexpected exception for " + entry, ex);
+                }
+            }
+        }
+    }
 }

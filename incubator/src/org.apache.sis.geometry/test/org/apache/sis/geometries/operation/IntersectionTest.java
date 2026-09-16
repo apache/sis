@@ -23,6 +23,8 @@ import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.referencing.CommonCRS;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
@@ -138,5 +140,44 @@ public class IntersectionTest {
                 1.5, 3.9,
                 6.1, 7.3
         }, test.toArrayDouble(), 0.0001);
+    }
+
+    /**
+     * The inputs and expected result of a single test of {@code intersection(Geometry, Geometry)}.
+     *
+     * @param input    the geometry on which the operation is invoked.
+     * @param other    the other operand.
+     * @param expected the expected result, or {@code null} if an exception is expected.
+     * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
+     */
+    private record Entry(Geometry input,
+                         Geometry other,
+                         Geometry expected,
+                         Class<? extends Exception> error)
+    {
+    }
+
+    /**
+     * All test cases of {@code intersection(Geometry, Geometry)}.
+     */
+    private static final Entry[] ENTRIES = {
+    };
+
+    /**
+     * Tests {@code intersection(Geometry, Geometry)} on all declared test cases.
+     */
+    @Test
+    public void testIntersection() {
+        for (final Entry entry : ENTRIES) {
+            try {
+                final Geometry result = new GeometryProcessor().intersection(entry.input(), entry.other());
+                assertNull(entry.error(), "An exception was expected.");
+                assertEquals(entry.expected(), result);
+            } catch (Exception ex) {
+                if (entry.error() == null || !entry.error().isInstance(ex)) {
+                    throw new AssertionError("Unexpected exception for " + entry, ex);
+                }
+            }
+        }
     }
 }

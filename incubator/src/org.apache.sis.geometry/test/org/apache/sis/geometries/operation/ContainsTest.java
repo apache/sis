@@ -16,62 +16,62 @@
  */
 package org.apache.sis.geometries.operation;
 
-import javax.measure.quantity.Length;
 import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.Point;
-import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.measure.Units;
-import org.apache.sis.referencing.CommonCRS;
+import org.opengis.geometry.DirectPosition;
+
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.Test;
 
+
 /**
+ * Tests the {@code contains} operations of {@link GeometryProcessor}.
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DistanceTest {
-
-    private static final SampleSystem CRS2D = SampleSystem.of(CommonCRS.WGS84.geographic());
+public class ContainsTest {
+    /**
+     * The inputs and expected result of a single test of {@code contains(Geometry, DirectPosition)}.
+     *
+     * @param input    the geometry on which the operation is invoked.
+     * @param element  the position to test for inclusion.
+     * @param expected the expected result, or {@code null} if an exception is expected.
+     * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
+     */
+    private record PositionEntry(Geometry input,
+                                 DirectPosition element,
+                                 Boolean expected,
+                                 Class<? extends Exception> error)
+    {
+    }
 
     /**
-     * Test point to point distance.
+     * All test cases of {@code contains(Geometry, DirectPosition)}.
+     */
+    private static final PositionEntry[] POSITION_ENTRIES = {
+    };
+
+    /**
+     * Tests {@code contains(Geometry, DirectPosition)} on all declared test cases.
      */
     @Test
-    public void PointPoint() {
-
-        { //different CRS
-            final Point point1 = GeometryFactory.createPoint(CommonCRS.WGS84.geographic());
-            final Point point2 = GeometryFactory.createPoint(CommonCRS.WGS84.normalizedGeographic());
+    public void testContainsPosition() {
+        for (final PositionEntry entry : POSITION_ENTRIES) {
             try {
-                new GeometryProcessor().distance(point1, point2);
-                fail("evaluation should fail");
-            } catch (OperationException ex) {
-                //ok
+                final boolean result = new GeometryProcessor().contains(entry.input(), entry.element());
+                assertNull(entry.error(), "An exception was expected.");
+                assertEquals(entry.expected(), result);
+            } catch (Exception ex) {
+                if (entry.error() == null || !entry.error().isInstance(ex)) {
+                    throw new AssertionError("Unexpected exception for " + entry, ex);
+                }
             }
-        }
-
-        { //at same position
-            final Point point1 = GeometryFactory.createPoint(CRS2D, 10.0, 5.0);
-            final Point point2 = GeometryFactory.createPoint(CRS2D, 10.0, 5.0);
-            final Length distance = new GeometryProcessor().distance(point1, point2);
-            assertEquals(Units.METRE, distance.getUnit());
-            assertEquals(0.0, distance.getValue().doubleValue(), 0.0);
-        }
-
-        { //at 1.0 of distance
-            final Point point1 = GeometryFactory.createPoint(CRS2D, 10, 5);
-            final Point point2 = GeometryFactory.createPoint(CRS2D, 10, 6);
-            final Length distance = new GeometryProcessor().distance(point1, point2);
-            assertEquals(Units.METRE, distance.getUnit());
-            assertEquals(1.0, distance.getValue().doubleValue(), 0.0);
         }
     }
 
     /**
-     * The inputs and expected result of a single test of {@code distance(Geometry, Geometry)}.
+     * The inputs and expected result of a single test of {@code contains(Geometry, Geometry)}.
      *
      * @param input    the geometry on which the operation is invoked.
      * @param other    the other operand.
@@ -80,25 +80,25 @@ public class DistanceTest {
      */
     private record Entry(Geometry input,
                          Geometry other,
-                         Length expected,
+                         Boolean expected,
                          Class<? extends Exception> error)
     {
     }
 
     /**
-     * All test cases of {@code distance(Geometry, Geometry)}.
+     * All test cases of {@code contains(Geometry, Geometry)}.
      */
     private static final Entry[] ENTRIES = {
     };
 
     /**
-     * Tests {@code distance(Geometry, Geometry)} on all declared test cases.
+     * Tests {@code contains(Geometry, Geometry)} on all declared test cases.
      */
     @Test
-    public void testDistance() {
+    public void testContains() {
         for (final Entry entry : ENTRIES) {
             try {
-                final Length result = new GeometryProcessor().distance(entry.input(), entry.other());
+                final boolean result = new GeometryProcessor().contains(entry.input(), entry.other());
                 assertNull(entry.error(), "An exception was expected.");
                 assertEquals(entry.expected(), result);
             } catch (Exception ex) {
