@@ -19,6 +19,7 @@ package org.apache.sis.geometries;
 import java.util.List;
 import java.util.Map;
 import javax.measure.quantity.Length;
+import org.apache.sis.geometries.adapter.WellKnownBinary;
 import org.apache.sis.geometries.adapter.WellKnownText;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
@@ -428,15 +429,18 @@ public sealed interface Geometry
      * - this method is located on Encoding sub interface in the standard, it is placed
      *   on Geometry to match OGC SFA.</p>
      *
+     * <p>The encoding is delegated to {@link WellKnownBinary}, which documents the supported
+     * geometry types and the deviations from the format.</p>
+     *
      * @return this geometry in Well-known Binary
+     * @throws IllegalArgumentException if this geometry has no Well-known Binary representation.
      *
      * @see OGC Simple Feature Access 1.2.1 - 6.1.2.2
      * @see ISO 19107:2019 - 6.4.4.3, 6.4.7
      */
     @UML(identifier="asBinary", specification=ISO_19107)
     default byte[] asBinary() {
-        //TODO remove this method default when all classes implement it.
-        throw new UnsupportedOperationException();
+        return new WellKnownBinary().encode(this);
     }
 
     /**
