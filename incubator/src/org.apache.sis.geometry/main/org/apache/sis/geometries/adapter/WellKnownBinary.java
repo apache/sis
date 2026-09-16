@@ -154,6 +154,12 @@ public final class WellKnownBinary {
          * system it names is used unless the caller passed one of their own to
          * {@link #decode(byte[], CoordinateReferenceSystem)}.</p>
          *
+         * <p>An identifier usually names a two-dimensional system while the type code may have the
+         * {@code Z} flag. Such a geometry is read as positions above the ellipsoid of that system:
+         * an ellipsoidal height is added to it. The converse holds on writing, where the identifier
+         * of the {@linkplain org.apache.sis.referencing.CRS#getHorizontalComponent horizontal
+         * component} is written when the three-dimensional system has none of its own.</p>
+         *
          * <p>This dialect is a superset of {@link #OGC} on reading: the thousands of a type code
          * are still understood, so a plain Well-Known Binary decodes unchanged. The converse does
          * not hold — the {@code OGC} dialect rejects the high order bits.</p>

@@ -42,6 +42,7 @@ import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -474,10 +475,10 @@ public final class WellKnownBinaryTest {
         final CoordinateReferenceSystem crs = Geometries.getUndefinedCRS(2);
         assertSame(crs, ewkb.decode(bytes, crs).getCoordinateReferenceSystem());
         /*
-         * EPSG:4326 is two dimensional, so a Z geometry carrying it contradicts it.
-         * 0xA0000001 is the point type with the Z bit and the identifier bit.
+         * A three dimensional identifier cannot describe a two dimensional geometry.
+         * EPSG:4979 is the three dimensional WGS 84, and is 0x1373.
          */
-        assertExtendedMalformed("00" + "A0000001" + "000010E6" + ONE + TWO + THREE);
+        assertExtendedMalformed("00" + "20000001" + "00001373" + ONE + TWO);
         /*
          * An identifier which no authority defines. 999999 is 0xF423F.
          */
@@ -487,6 +488,38 @@ public final class WellKnownBinaryTest {
          */
         assertExtendedMalformed("00" + "20000004" + "000010E6" + "00000001"
                               + "00" + "20000001" + "00000F11" + ONE + TWO);
+    }
+
+    /**
+     * Verifies that a two dimensional identifier on a geometry which has the {@code Z} flag gives
+     * a three dimensional system, by adding an ellipsoidal height to the one the identifier names,
+     * and that writing such a geometry gives the identifier back.
+     */
+    @Test
+    public void testExtendedEllipsoidalHeight() {
+        final WellKnownBinary ewkb = new WellKnownBinary(WellKnownBinary.Flavor.EWKB);
+        /*
+         * 0xA0000001 is the point type with the Z bit and the identifier bit, and EPSG:4326 is
+         * two dimensional, so the height is the one that identifier implies.
+         */
+        final byte[] bytes = bytes("00" + "A0000001" + "000010E6" + ONE + TWO + THREE);
+        final Geometry geometry = ewkb.decode(bytes);
+        final CoordinateReferenceSystem crs = geometry.getCoordinateReferenceSystem();
+        assertEquals(3, crs.getCoordinateSystem().getDimension(), "Promoted to three dimensions");
+        assertNotNull(CRS.getVerticalComponent(crs, true), "Has a height");
+        assertEquals("POINT Z (1 2 3)", wkt.encode(geometry));
+        /*
+         * Writing gives the identifier back even though the three dimensional system carries
+         * none of its own, so the bytes round-trip unchanged.
+         */
+        assertArrayEquals(bytes, ewkb.encode(geometry));
+        /*
+         * An identifier which is already three dimensional is used as it is. EPSG:4979 is 0x1373.
+         */
+        final Geometry direct = ewkb.decode(bytes("00" + "A0000001" + "00001373" + ONE + TWO + THREE));
+        assertEquals("4979", IdentifiedObjects.getIdentifier(
+                direct.getCoordinateReferenceSystem(), Citations.EPSG).getCode());
+        assertEquals("00" + "A0000001" + "00001373" + ONE + TWO + THREE, hex(ewkb.encode(direct)));
     }
 
     /**

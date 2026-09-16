@@ -40,6 +40,7 @@ import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -353,10 +354,39 @@ public final class WellKnownTextTest {
         final CoordinateReferenceSystem crs = Geometries.getUndefinedCRS(2);
         assertSame(crs, ewkt.decode("SRID=4326;POINT (1 2)", crs).getCoordinateReferenceSystem());
         /*
-         * The system the prefix names must have as many dimensions as the text has ordinates.
-         * EPSG:4326 is two dimensional, so a Z geometry contradicts it.
+         * A three dimensional identifier cannot describe a two dimensional geometry: dropping the
+         * height would discard nothing here, but the converse of adding one is not defined.
+         * EPSG:4979 is the three dimensional WGS 84.
          */
-        assertThrows(IllegalArgumentException.class, () -> ewkt.decode("SRID=4326;POINT Z (1 2 3)"));
+        assertThrows(IllegalArgumentException.class, () -> ewkt.decode("SRID=4979;POINT (1 2)"));
+    }
+
+    /**
+     * Verifies that a two dimensional identifier on a geometry which has a <var>z</var> ordinate
+     * gives a three dimensional system, by adding an ellipsoidal height to the one the identifier
+     * names, and that writing such a geometry gives the identifier back.
+     */
+    @Test
+    public void testExtendedEllipsoidalHeight() {
+        final WellKnownText ewkt = new WellKnownText(WellKnownText.Flavor.EWKT);
+        final Geometry geometry = ewkt.decode("SRID=4326;POINT Z (1 2 3)");
+        final CoordinateReferenceSystem crs = geometry.getCoordinateReferenceSystem();
+        assertEquals(3, crs.getCoordinateSystem().getDimension(), "Promoted to three dimensions");
+        assertNotNull(CRS.getVerticalComponent(crs, true), "Has a height");
+        /*
+         * The height is the one the identifier implies, so writing the geometry gives the
+         * identifier back even though the three dimensional system carries none of its own.
+         */
+        assertEquals("SRID=4326;POINT Z (1 2 3)", ewkt.encode(geometry));
+        assertEquals("SRID=4326;LINESTRING Z (0 0 0, 1 1 1)",
+                     ewkt.encode(ewkt.decode("SRID=4326;LINESTRING Z (0 0 0, 1 1 1)")));
+        /*
+         * An identifier which is already three dimensional is used as it is.
+         */
+        final Geometry direct = ewkt.decode("SRID=4979;POINT Z (1 2 3)");
+        assertEquals("4979", IdentifiedObjects.getIdentifier(
+                direct.getCoordinateReferenceSystem(), Citations.EPSG).getCode());
+        assertEquals("SRID=4979;POINT Z (1 2 3)", ewkt.encode(direct));
     }
 
     /**

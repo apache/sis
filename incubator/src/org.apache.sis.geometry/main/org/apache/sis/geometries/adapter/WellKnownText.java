@@ -146,6 +146,13 @@ public final class WellKnownText {
          * the prefix is an ordinary Well-Known Text. On reading, the prefix is optional, and the
          * system it names is used unless the caller passed one of their own to
          * {@link #decode(String, CoordinateReferenceSystem)}.</p>
+         *
+         * <p>An identifier usually names a two-dimensional system while the text may carry a
+         * <var>z</var> ordinate, as in {@code SRID=4326;POINT Z (1 2 3)}. Such a text is read as a
+         * position above the ellipsoid of that system: an ellipsoidal height is added to it. The
+         * converse holds on writing, where the identifier of the
+         * {@linkplain org.apache.sis.referencing.CRS#getHorizontalComponent horizontal component}
+         * is written when the three-dimensional system has none of its own.</p>
          */
         EWKT
     }

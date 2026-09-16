@@ -120,6 +120,12 @@ final class WellKnownBinaryParser {
     private CoordinateReferenceSystem sridCRS;
 
     /**
+     * Number of dimensions {@link #sridCRS} was resolved for, since a two-dimensional identifier
+     * gives a different system depending on whether the positions carry a <var>z</var> ordinate.
+     */
+    private int sridDimension;
+
+    /**
      * Index in {@link #data} of the next byte to read.
      */
     private int pos;
@@ -515,26 +521,27 @@ final class WellKnownBinaryParser {
      */
     private CoordinateReferenceSystem crs() {
         final int dimension = positionDimension();
-        final CoordinateReferenceSystem declared;
-        final String source;
         if (userCRS != null) {
-            declared = userCRS;
-            source = "The given coordinate reference system";
-        } else if (srid != Srid.UNDEFINED) {
-            if (sridCRS == null) {
-                sridCRS = Srid.forCode(srid);
+            final int actual = userCRS.getCoordinateSystem().getDimension();
+            if (actual != dimension) {
+                throw error("The given coordinate reference system has " + actual + " dimensions,"
+                        + " but the bytes have " + dimension + " ordinates per position");
             }
-            declared = sridCRS;
-            source = "The coordinate reference system of SRID " + srid;
-        } else {
-            return Geometries.getUndefinedCRS(dimension);
+            return userCRS;
         }
-        final int actual = declared.getCoordinateSystem().getDimension();
-        if (actual != dimension) {
-            throw error(source + " has " + actual + " dimensions,"
-                    + " but the bytes have " + dimension + " ordinates per position");
+        if (srid != Srid.UNDEFINED) {
+            /*
+             * Srid.forCode(…) returns a system of exactly the requested number of dimensions,
+             * adding an ellipsoidal height to a two-dimensional one when the type code has the
+             * Z flag. The dimension is therefore part of the cache key.
+             */
+            if (sridCRS == null || sridDimension != dimension) {
+                sridCRS = Srid.forCode(srid, dimension);
+                sridDimension = dimension;
+            }
+            return sridCRS;
         }
-        return declared;
+        return Geometries.getUndefinedCRS(dimension);
     }
 
     /**
