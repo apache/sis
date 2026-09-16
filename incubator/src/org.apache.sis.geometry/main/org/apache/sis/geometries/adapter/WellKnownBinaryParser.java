@@ -71,6 +71,11 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * differ, so {@link #bigEndian} is re-read at the start of every element and applies until the next
  * one is read.
  *
+ * <h2>Spatial reference identifier</h2>
+ * The identifier belongs to the {@link WellKnownBinary.Flavor#EWKB} dialect alone, where a bit of
+ * the type code announces it. It describes the whole sequence rather than the element which
+ * carries it, so the outermost geometry is the one expected to hold it.
+ *
  * @author  Johann Sorel (Geomatys)
  */
 final class WellKnownBinaryParser {
@@ -91,10 +96,28 @@ final class WellKnownBinaryParser {
     private final byte[] data;
 
     /**
-     * The coordinate reference system given by the caller, or {@code null} for deriving an
-     * {@linkplain Geometries#getUndefinedCRS(int) undefined} one from the number of ordinates.
+     * The coordinate reference system given by the caller, or {@code null} for deriving one from
+     * the spatial reference identifier, or failing that from the number of ordinates.
      */
     private final CoordinateReferenceSystem userCRS;
+
+    /**
+     * The dialect being parsed, which decides how the dimension flags are read and whether a
+     * spatial reference identifier is allowed.
+     */
+    private final WellKnownBinary.Flavor flavor;
+
+    /**
+     * The spatial reference identifier the bytes carry, or {@link Srid#UNDEFINED} if they carry
+     * none. Always {@link Srid#UNDEFINED} in the {@code OGC} dialect, which has no field for it.
+     */
+    private int srid;
+
+    /**
+     * The coordinate reference system of {@link #srid}, resolved by the first call to
+     * {@link #crs()} which needs it. Null as long as it has not been resolved.
+     */
+    private CoordinateReferenceSystem sridCRS;
 
     /**
      * Index in {@link #data} of the next byte to read.
@@ -119,12 +142,16 @@ final class WellKnownBinaryParser {
     /**
      * Creates a parser for the given bytes.
      *
-     * @param  data  the Well-Known Binary to parse.
-     * @param  crs   the coordinate reference system to give to the geometries, or {@code null}.
+     * @param  data    the Well-Known Binary to parse.
+     * @param  crs     the coordinate reference system to give to the geometries, or {@code null}.
+     * @param  flavor  the dialect to parse.
      */
-    WellKnownBinaryParser(final byte[] data, final CoordinateReferenceSystem crs) {
+    WellKnownBinaryParser(final byte[] data, final CoordinateReferenceSystem crs,
+                          final WellKnownBinary.Flavor flavor)
+    {
         this.data = data;
         this.userCRS = crs;
+        this.flavor = flavor;
     }
 
     /**
@@ -149,18 +176,34 @@ final class WellKnownBinaryParser {
      */
     private Geometry parseGeometry() {
         readByteOrder();
-        final int code = readInt();
-        if (code < 0) {
+        final int type = readInt();
+        final boolean extended = (flavor == WellKnownBinary.Flavor.EWKB);
+        int code = type;
+        int flags = 0;
+        if (extended) {
+            /*
+             * The high order bits are the dimension flags and the presence of an identifier.
+             * The base which remains may still carry the thousands of the OGC dialect, which
+             * this dialect understands as well, so that a plain Well-Known Binary decodes here.
+             */
+            if ((type & WellKnownBinary.EWKB_Z) != 0) flags |= FLAG_Z;
+            if ((type & WellKnownBinary.EWKB_M) != 0) flags |= FLAG_M;
+            code = type & WellKnownBinary.EWKB_BASE_MASK;
+        } else if (code < 0) {
             throw error("Type code " + Integer.toUnsignedString(code) + " is out of range."
-                    + " The extended Well-Known Binary of some databases, which puts the dimension"
-                    + " flags in the high order bits, is not supported");
+                    + " The extended Well-Known Binary, which puts the dimension flags in the"
+                    + " high order bits, is read by the " + WellKnownBinary.Flavor.EWKB + " flavor");
         }
-        final int flags = code / 1000;
-        if (flags > 3) {
+        final int thousands = code / 1000;
+        if (thousands > 3) {
             throw error("Type code " + code + " has no dimension flag: the thousands must be"
                     + " 0 for XY, 1 for Z, 2 for M or 3 for ZM");
         }
+        flags |= thousands;
         applyFlags(flags);
+        if (extended && (type & WellKnownBinary.EWKB_SRID) != 0) {
+            readSrid();
+        }
         switch (code % 1000) {
             case WellKnownBinary.Codes.POINT:               return parsePoint();
             case WellKnownBinary.Codes.LINESTRING:          return GeometryFactory.createLineString(readPointList());
@@ -178,6 +221,24 @@ final class WellKnownBinaryParser {
             case WellKnownBinary.Codes.MULTISURFACE:        return parseMultiSurface();
             case WellKnownBinary.Codes.GEOMETRYCOLLECTION:  return parseGeometryCollection();
             default: throw error("Well-Known Binary defines no geometry type of code " + code);
+        }
+    }
+
+    /**
+     * Reads the spatial reference identifier which follows a type code whose
+     * {@link WellKnownBinary#EWKB_SRID} bit is set.
+     *
+     * <p>Only the outermost geometry is expected to carry one, but a nested geometry repeating it
+     * is accepted as long as it repeats the same value: the whole sequence describes positions in
+     * a single system, so two different identifiers would contradict each other.</p>
+     */
+    private void readSrid() {
+        final int declared = readInt();
+        if (srid == Srid.UNDEFINED) {
+            srid = declared;
+        } else if (srid != declared) {
+            throw error("A nested geometry declares the spatial reference identifier " + declared
+                    + " while the enclosing one declares " + srid);
         }
     }
 
@@ -454,15 +515,26 @@ final class WellKnownBinaryParser {
      */
     private CoordinateReferenceSystem crs() {
         final int dimension = positionDimension();
-        if (userCRS == null) {
+        final CoordinateReferenceSystem declared;
+        final String source;
+        if (userCRS != null) {
+            declared = userCRS;
+            source = "The given coordinate reference system";
+        } else if (srid != Srid.UNDEFINED) {
+            if (sridCRS == null) {
+                sridCRS = Srid.forCode(srid);
+            }
+            declared = sridCRS;
+            source = "The coordinate reference system of SRID " + srid;
+        } else {
             return Geometries.getUndefinedCRS(dimension);
         }
-        final int actual = userCRS.getCoordinateSystem().getDimension();
+        final int actual = declared.getCoordinateSystem().getDimension();
         if (actual != dimension) {
-            throw error("The given coordinate reference system has " + actual + " dimensions,"
+            throw error(source + " has " + actual + " dimensions,"
                     + " but the bytes have " + dimension + " ordinates per position");
         }
-        return userCRS;
+        return declared;
     }
 
     /**

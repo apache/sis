@@ -39,6 +39,8 @@ import org.apache.sis.geometries.surface.TIN;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 // Test dependencies
@@ -295,5 +297,92 @@ public final class WellKnownTextTest {
      */
     private void assertMalformed(final String text) {
         assertThrows(IllegalArgumentException.class, () -> wkt.decode(text), text);
+    }
+
+    /**
+     * Tests the {@code SRID=…;} prefix which the {@link WellKnownText.Flavor#EWKT} dialect adds.
+     */
+    @Test
+    public void testExtendedRoundTrip() {
+        final WellKnownText ewkt = new WellKnownText(WellKnownText.Flavor.EWKT);
+        assertEquals(WellKnownText.Flavor.EWKT, ewkt.getFlavor());
+        assertEquals(WellKnownText.Flavor.OGC,  wkt.getFlavor());
+        /*
+         * The prefix is read, kept in the coordinate reference system of the geometry,
+         * and written back.
+         */
+        final Geometry geometry = ewkt.decode("SRID=4326;POINT (1 2)");
+        assertEquals("4326", IdentifiedObjects.getIdentifier(
+                geometry.getCoordinateReferenceSystem(), Citations.EPSG).getCode());
+        assertEquals("SRID=4326;POINT (1 2)", ewkt.encode(geometry));
+        /*
+         * The prefix applies to the whole text, not to each member of a collection.
+         */
+        assertEquals("SRID=4326;GEOMETRYCOLLECTION (POINT (1 2), LINESTRING (0 0, 1 1))",
+                     ewkt.encode(ewkt.decode("SRID=4326;GEOMETRYCOLLECTION (POINT (1 2), LINESTRING (0 0, 1 1))")));
+        assertEquals("SRID=3857;MULTIPOINT ((1 2), (3 4))",
+                     ewkt.encode(ewkt.decode("SRID=3857;MULTIPOINT ((1 2), (3 4))")));
+    }
+
+    /**
+     * Verifies that the prefix is optional on both sides: a geometry whose system has no
+     * <abbr>EPSG</abbr> identifier is written without it, and a text without it is read.
+     */
+    @Test
+    public void testExtendedWithoutSRID() {
+        final WellKnownText ewkt = new WellKnownText(WellKnownText.Flavor.EWKT);
+        assertEquals("POINT (1 2)", ewkt.encode(wkt.decode("POINT (1 2)")));
+        assertEquals("POINT (1 2)", ewkt.encode(ewkt.decode("POINT (1 2)")));
+        assertEquals("POINT Z (1 2 3)", ewkt.encode(ewkt.decode("POINT Z (1 2 3)")));
+    }
+
+    /**
+     * Verifies that the prefix belongs to the extended dialect alone, and that the system it
+     * names yields to one the caller gives.
+     */
+    @Test
+    public void testExtendedPrecedence() {
+        final WellKnownText ewkt = new WellKnownText(WellKnownText.Flavor.EWKT);
+        /*
+         * The OGC dialect reads SRID as a geometry type name, and rejects it as unknown.
+         */
+        assertMalformed("SRID=4326;POINT (1 2)");
+        /*
+         * A system given by the caller wins over the one the text names.
+         */
+        final CoordinateReferenceSystem crs = Geometries.getUndefinedCRS(2);
+        assertSame(crs, ewkt.decode("SRID=4326;POINT (1 2)", crs).getCoordinateReferenceSystem());
+        /*
+         * The system the prefix names must have as many dimensions as the text has ordinates.
+         * EPSG:4326 is two dimensional, so a Z geometry contradicts it.
+         */
+        assertThrows(IllegalArgumentException.class, () -> ewkt.decode("SRID=4326;POINT Z (1 2 3)"));
+    }
+
+    /**
+     * Tests the rejection of malformed prefixes.
+     */
+    @Test
+    public void testExtendedMalformed() {
+        final WellKnownText ewkt = new WellKnownText(WellKnownText.Flavor.EWKT);
+        for (final String text : new String[] {
+                "SRID=;POINT (1 2)",            // No identifier.
+                "SRID 4326;POINT (1 2)",        // No '='.
+                "SRID=4326 POINT (1 2)",        // No ';'.
+                "SRID=-1;POINT (1 2)",          // Identifiers are unsigned.
+                "SRID=4326;",                   // No geometry.
+                "SRID=999999;POINT (1 2)"})     // Unknown identifier.
+        {
+            assertThrows(IllegalArgumentException.class, () -> ewkt.decode(text), text);
+        }
+    }
+
+    /**
+     * Verifies that a dialect is required when one is asked for.
+     */
+    @Test
+    public void testNullFlavor() {
+        assertThrows(NullPointerException.class, () -> new WellKnownText(null));
+        assertThrows(NullPointerException.class, () -> new WellKnownText(null, 3));
     }
 }

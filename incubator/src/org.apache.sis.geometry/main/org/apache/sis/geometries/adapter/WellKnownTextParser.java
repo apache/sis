@@ -68,6 +68,11 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * later element contradicting them is an error, and if no element states them at all they are
  * inferred from the width of the first coordinate tuple.
  *
+ * <h2>Spatial reference identifier</h2>
+ * The optional {@code SRID=…;} prefix belongs to the {@link WellKnownText.Flavor#EWKT} dialect
+ * alone, and precedes the whole text rather than any single element. In the {@code OGC} dialect
+ * the {@code SRID} keyword is read as a geometry type name, and therefore rejected as unknown.
+ *
  * @author  Johann Sorel (Geomatys)
  */
 final class WellKnownTextParser {
@@ -93,10 +98,28 @@ final class WellKnownTextParser {
     private final String text;
 
     /**
-     * The coordinate reference system given by the caller, or {@code null} for deriving an
-     * {@linkplain Geometries#getUndefinedCRS(int) undefined} one from the number of ordinates.
+     * The coordinate reference system given by the caller, or {@code null} for deriving one from
+     * the {@code SRID=…;} prefix, or failing that from the number of ordinates.
      */
     private final CoordinateReferenceSystem userCRS;
+
+    /**
+     * The dialect being parsed, which decides whether a {@code SRID=…;} prefix is allowed.
+     */
+    private final WellKnownText.Flavor flavor;
+
+    /**
+     * The spatial reference identifier of the {@code SRID=…;} prefix, or {@link Srid#UNDEFINED}
+     * if the text has no such prefix. Always {@link Srid#UNDEFINED} in the {@code OGC} flavor,
+     * where the prefix is not part of the grammar.
+     */
+    private int srid;
+
+    /**
+     * The coordinate reference system of {@link #srid}, resolved by the first call to
+     * {@link #crs()} which needs it. Null as long as it has not been resolved.
+     */
+    private CoordinateReferenceSystem sridCRS;
 
     /**
      * Index in {@link #text} of the next character to read.
@@ -117,12 +140,14 @@ final class WellKnownTextParser {
     /**
      * Creates a parser for the given text.
      *
-     * @param  text  the Well-Known Text to parse.
-     * @param  crs   the coordinate reference system to give to the geometries, or {@code null}.
+     * @param  text    the Well-Known Text to parse.
+     * @param  crs     the coordinate reference system to give to the geometries, or {@code null}.
+     * @param  flavor  the dialect to parse.
      */
-    WellKnownTextParser(final String text, final CoordinateReferenceSystem crs) {
+    WellKnownTextParser(final String text, final CoordinateReferenceSystem crs, final WellKnownText.Flavor flavor) {
         this.text = text;
         this.userCRS = crs;
+        this.flavor = flavor;
     }
 
     /**
@@ -131,12 +156,35 @@ final class WellKnownTextParser {
      * @throws IllegalArgumentException if the text is malformed or names an unsupported type.
      */
     Geometry parse() {
+        if (flavor == WellKnownText.Flavor.EWKT) {
+            readSrid();
+        }
         final Geometry geometry = parseGeometry();
         skipSpaces();
         if (pos < text.length()) {
             throw error("Unexpected text after the end of the geometry");
         }
         return geometry;
+    }
+
+    /**
+     * Consumes the {@code SRID=…;} prefix of an Extended Well-Known Text if there is one.
+     * The prefix is optional, so a text which does not start with the {@code SRID} keyword is
+     * left untouched; but a text which does start with it must carry a complete prefix.
+     */
+    private void readSrid() {
+        final int mark = pos;
+        if (!"SRID".equals(readWord())) {
+            pos = mark;
+            return;
+        }
+        if (!accept('=')) {
+            throw error("Expected '=' after the SRID keyword");
+        }
+        srid = readUnsignedInteger();
+        if (!accept(';')) {
+            throw error("Expected ';' after the spatial reference identifier");
+        }
     }
 
     // ////////////////////////////////////////////////////////////////////////
@@ -494,15 +542,26 @@ final class WellKnownTextParser {
      */
     private CoordinateReferenceSystem crs() {
         final int dimension = positionDimension();
-        if (userCRS == null) {
+        final CoordinateReferenceSystem declared;
+        final String source;
+        if (userCRS != null) {
+            declared = userCRS;
+            source = "The given coordinate reference system";
+        } else if (srid != Srid.UNDEFINED) {
+            if (sridCRS == null) {
+                sridCRS = Srid.forCode(srid);
+            }
+            declared = sridCRS;
+            source = "The coordinate reference system of SRID " + srid;
+        } else {
             return Geometries.getUndefinedCRS(dimension);
         }
-        final int actual = userCRS.getCoordinateSystem().getDimension();
+        final int actual = declared.getCoordinateSystem().getDimension();
         if (actual != dimension) {
-            throw error("The given coordinate reference system has " + actual + " dimensions,"
+            throw error(source + " has " + actual + " dimensions,"
                     + " but the text has " + dimension + " ordinates per position");
         }
-        return userCRS;
+        return declared;
     }
 
     /**
@@ -688,6 +747,24 @@ final class WellKnownTextParser {
         } catch (NumberFormatException e) {
             pos = start;
             throw error("\"" + token + "\" is not a number");
+        }
+    }
+
+    /**
+     * Reads a sequence of decimal digits, which the grammar uses only for a spatial reference
+     * identifier. Unlike {@link #readNumber()} it accepts neither a sign, nor a fractional part,
+     * nor an exponent, since none of those can appear in an identifier.
+     */
+    private int readUnsignedInteger() {
+        skipSpaces();
+        final int start = pos;
+        while (pos < text.length() && isDigit(text.charAt(pos))) pos++;
+        final String token = text.substring(start, pos);
+        try {
+            return Integer.parseInt(token);
+        } catch (NumberFormatException e) {
+            pos = start;
+            throw error("\"" + token + "\" is not a spatial reference identifier");
         }
     }
 

@@ -108,10 +108,11 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *       written back as {@code GEOMETRYCOLLECTION EMPTY}, and an empty point may not appear as a
  *       member of a {@code MULTIPOINT}. Every other type has a genuine empty form which
  *       round-trips unchanged.</li>
- *   <li>The coordinate reference system is neither written nor read: the {@code SRID=…;} prefix
- *       of the extended Well-Known Text of some databases is not part of the standard. Unless a
- *       system is given to {@link #decode(String, CoordinateReferenceSystem)}, decoded geometries
- *       use {@link org.apache.sis.geometries.Geometries#getUndefinedCRS(int)}.</li>
+ *   <li>In the {@link Flavor#OGC} flavor, the coordinate reference system is neither written nor
+ *       read: the {@code SRID=…;} prefix is not part of the standard. Unless a system is given to
+ *       {@link #decode(String, CoordinateReferenceSystem)}, decoded geometries use
+ *       {@link org.apache.sis.geometries.Geometries#getUndefinedCRS(int)}. The
+ *       {@link Flavor#EWKT} flavor writes and reads that prefix.</li>
  * </ul>
  *
  * <h2>Thread safety</h2>
@@ -121,6 +122,39 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Johann Sorel (Geomatys)
  */
 public final class WellKnownText {
+    /**
+     * The dialects of Well-Known Text which this class can be asked to read and write.
+     *
+     * @author Johann Sorel (Geomatys)
+     */
+    public enum Flavor {
+        /**
+         * The Well-Known Text of <cite>OGC Simple Feature Access 1.2.1</cite>, extended with the
+         * curved and surface-patch types of <cite>ISO 13249-3</cite>. This is the dialect the
+         * class javadoc describes, and the default.
+         */
+        OGC,
+
+        /**
+         * The <cite>Extended Well-Known Text</cite> of PostGIS, which is the {@link #OGC} dialect
+         * preceded by an optional spatial reference identifier:
+         *
+         * <blockquote><pre>SRID=4326;POINT (1 2)</pre></blockquote>
+         *
+         * <p>The prefix is written when the coordinate reference system of the geometry carries an
+         * <abbr>EPSG</abbr> identifier, and omitted otherwise — an Extended Well-Known Text without
+         * the prefix is an ordinary Well-Known Text. On reading, the prefix is optional, and the
+         * system it names is used unless the caller passed one of their own to
+         * {@link #decode(String, CoordinateReferenceSystem)}.</p>
+         */
+        EWKT
+    }
+
+    /**
+     * The dialect to read and write. Never null.
+     */
+    private final Flavor flavor;
+
     /**
      * Format of the ordinates, or {@code null} for writing the shortest text which parses back
      * to the same {@code double}. Not thread-safe, hence the warning in the class javadoc.
@@ -133,6 +167,18 @@ public final class WellKnownText {
      * {@code 2}, not {@code 2.0}.
      */
     public WellKnownText() {
+        this(Flavor.OGC);
+    }
+
+    /**
+     * Creates a codec for the given dialect, writing every ordinate as the shortest decimal text
+     * which parses back to the same {@code double} value.
+     *
+     * @param  flavor  the dialect to read and write, not null.
+     */
+    public WellKnownText(final Flavor flavor) {
+        ArgumentChecks.ensureNonNull("flavor", flavor);
+        this.flavor = flavor;
         format = null;
     }
 
@@ -144,11 +190,33 @@ public final class WellKnownText {
      * @param  decimalPrecision  maximal number of digits after the decimal separator, 0 or more.
      */
     public WellKnownText(final int decimalPrecision) {
+        this(Flavor.OGC, decimalPrecision);
+    }
+
+    /**
+     * Creates a codec for the given dialect, rounding every ordinate to at most the given number
+     * of fraction digits as {@link #WellKnownText(int)} does.
+     *
+     * @param  flavor            the dialect to read and write, not null.
+     * @param  decimalPrecision  maximal number of digits after the decimal separator, 0 or more.
+     */
+    public WellKnownText(final Flavor flavor, final int decimalPrecision) {
+        ArgumentChecks.ensureNonNull("flavor", flavor);
         ArgumentChecks.ensurePositive("decimalPrecision", decimalPrecision);
+        this.flavor = flavor;
         format = NumberFormat.getNumberInstance(Locale.ROOT);
         format.setGroupingUsed(false);
         format.setMaximumFractionDigits(decimalPrecision);
         format.setRoundingMode(RoundingMode.HALF_UP);       // Not the HALF_EVEN default, which surprises.
+    }
+
+    /**
+     * Returns the dialect this codec reads and writes.
+     *
+     * @return the dialect given to the constructor, or {@link Flavor#OGC} if none was.
+     */
+    public Flavor getFlavor() {
+        return flavor;
     }
 
     /**
@@ -163,6 +231,12 @@ public final class WellKnownText {
     public String encode(final Geometry geom) {
         ArgumentChecks.ensureNonNull("geom", geom);
         final StringBuilder sb = new StringBuilder();
+        if (flavor == Flavor.EWKT) {
+            final int srid = Srid.of(geom.getCoordinateReferenceSystem());
+            if (srid != Srid.UNDEFINED) {
+                sb.append("SRID=").append(srid).append(';');
+            }
+        }
         format(sb, geom);
         return sb.toString();
     }
@@ -181,19 +255,23 @@ public final class WellKnownText {
 
     /**
      * Returns the geometry described by the given Well-Known Text, in the given coordinate
-     * reference system. Well-Known Text carries no system of its own.
+     * reference system. The {@link Flavor#OGC} Well-Known Text carries no system of its own;
+     * an {@link Flavor#EWKT} one may carry a spatial reference identifier, which is used only
+     * when {@code crs} is null. The system which ends up being used, from either source, must
+     * have as many dimensions as the text has ordinates per position.
      *
      * @param  geom  the Well-Known Text to decode, not null.
      * @param  crs   the coordinate reference system of the coordinates in the text, or
-     *               {@code null}.
+     *               {@code null} for the one the text names, if any.
      * @return the decoded geometry.
      * @throws IllegalArgumentException if the text is malformed, names a geometry type which is
-     *         not in the table of this class javadoc, or has a number of ordinates which
-     *         contradicts the dimension of {@code crs}.
+     *         not in the table of this class javadoc, names a spatial reference identifier which
+     *         cannot be resolved, or has a number of ordinates which contradicts the dimension
+     *         of the coordinate reference system.
      */
     public Geometry decode(final String geom, final CoordinateReferenceSystem crs) {
         ArgumentChecks.ensureNonNull("geom", geom);
-        return new WellKnownTextParser(geom, crs).parse();
+        return new WellKnownTextParser(geom, crs, flavor).parse();
     }
 
     // ////////////////////////////////////////////////////////////////////////

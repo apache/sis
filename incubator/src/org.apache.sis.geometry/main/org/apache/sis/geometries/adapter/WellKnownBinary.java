@@ -110,11 +110,12 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *       {@code GeometryCollection}, and an empty point may not appear as a member of a
  *       {@code MultiPoint}. Every other type has a genuine empty form, a count of zero, which
  *       round-trips unchanged.</li>
- *   <li>The coordinate reference system is neither written nor read: the {@code SRID} field of the
- *       extended Well-Known Binary of some databases is not part of the standard, and neither are
- *       the high order type bits it uses for the dimension flags. Unless a system is given to
+ *   <li>In the {@link Flavor#OGC} flavor, the coordinate reference system is neither written nor
+ *       read: the {@code SRID} field is not part of the standard, and neither are the high order
+ *       type bits which carry it. Unless a system is given to
  *       {@link #decode(byte[], CoordinateReferenceSystem)}, decoded geometries use
- *       {@link org.apache.sis.geometries.Geometries#getUndefinedCRS(int)}.</li>
+ *       {@link org.apache.sis.geometries.Geometries#getUndefinedCRS(int)}. The
+ *       {@link Flavor#EWKB} flavor writes and reads that field.</li>
  * </ul>
  *
  * <h2>Thread safety</h2>
@@ -124,9 +125,62 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public final class WellKnownBinary {
     /**
+     * The dialects of Well-Known Binary which this class can be asked to read and write.
+     *
+     * @author Johann Sorel (Geomatys)
+     */
+    public enum Flavor {
+        /**
+         * The Well-Known Binary of <cite>OGC Simple Feature Access 1.2.1</cite>, extended with the
+         * curved and surface-patch types of <cite>ISO 13249-3</cite>. This is the dialect the
+         * class javadoc describes, and the default. The dimension flags are the thousands of the
+         * type code, and there is no place for a spatial reference identifier.
+         */
+        OGC,
+
+        /**
+         * The <cite>Extended Well-Known Binary</cite> of PostGIS, which moves the dimension flags
+         * into the high order bits of the type code and adds a spatial reference identifier:
+         *
+         * <blockquote><pre>
+         * byte    byteOrder;
+         * uint32  type;           // geometry type, OR 0x80000000 for Z, 0x40000000 for M, 0x20000000 for a SRID
+         * uint32  srid;           // present only if the 0x20000000 bit is set
+         * …                       // body, unchanged
+         * </pre></blockquote>
+         *
+         * <p>The identifier is written on the outermost geometry only, and only when the
+         * coordinate reference system carries an <abbr>EPSG</abbr> identifier. On reading, the
+         * system it names is used unless the caller passed one of their own to
+         * {@link #decode(byte[], CoordinateReferenceSystem)}.</p>
+         *
+         * <p>This dialect is a superset of {@link #OGC} on reading: the thousands of a type code
+         * are still understood, so a plain Well-Known Binary decodes unchanged. The converse does
+         * not hold — the {@code OGC} dialect rejects the high order bits.</p>
+         */
+        EWKB,
+
+        /**
+         * The <cite>Tiny Well-Known Binary</cite> of TWKB 1.0.
+         * Not implemented yet: {@link #encode encode(…)} and {@link #decode decode(…)} throw
+         * an {@link UnsupportedOperationException} for this flavor.
+         */
+        TWKB
+    }
+
+    /**
      * Value of the byte order flag for each of the two orders.
      */
     static final byte XDR = 0, NDR = 1;
+
+    /**
+     * Bits which the {@link Flavor#EWKB} dialect sets in the high order of a type code, and the
+     * mask which isolates the base code from them.
+     */
+    static final int EWKB_Z = 0x80000000, 
+                     EWKB_M = 0x40000000, 
+                     EWKB_SRID = 0x20000000,
+                     EWKB_BASE_MASK = 0x1FFFFFFF;
 
     /**
      * Type codes of the geometries which have one, shared by the encoder and the parser.
@@ -170,6 +224,11 @@ public final class WellKnownBinary {
     }
 
     /**
+     * The dialect to read and write. Never null.
+     */
+    private final Flavor flavor;
+
+    /**
      * Byte order of the written geometries. Never null. Both orders are read whatever this is.
      */
     private final ByteOrder byteOrder;
@@ -179,7 +238,7 @@ public final class WellKnownBinary {
      * order of the byte sequences of the standard. Both orders are read.
      */
     public WellKnownBinary() {
-        byteOrder = ByteOrder.BIG_ENDIAN;
+        this(Flavor.OGC, ByteOrder.BIG_ENDIAN);
     }
 
     /**
@@ -189,8 +248,49 @@ public final class WellKnownBinary {
      * @param  byteOrder  order of the multi-byte values to write, not null.
      */
     public WellKnownBinary(final ByteOrder byteOrder) {
+        this(Flavor.OGC, byteOrder);
+    }
+
+    /**
+     * Creates a codec for the given dialect, writing geometries in big endian order.
+     *
+     * @param  flavor  the dialect to read and write, not null.
+     */
+    public WellKnownBinary(final Flavor flavor) {
+        this(flavor, ByteOrder.BIG_ENDIAN);
+    }
+
+    /**
+     * Creates a codec for the given dialect, writing geometries in the given byte order.
+     *
+     * @param  flavor     the dialect to read and write, not null.
+     * @param  byteOrder  order of the multi-byte values to write, not null.
+     */
+    public WellKnownBinary(final Flavor flavor, final ByteOrder byteOrder) {
+        ArgumentChecks.ensureNonNull("flavor", flavor);
         ArgumentChecks.ensureNonNull("byteOrder", byteOrder);
+        this.flavor = flavor;
         this.byteOrder = byteOrder;
+    }
+
+    /**
+     * Returns the dialect this codec reads and writes.
+     *
+     * @return the dialect given to the constructor, or {@link Flavor#OGC} if none was.
+     */
+    public Flavor getFlavor() {
+        return flavor;
+    }
+
+    /**
+     * Verifies that the dialect of this codec is implemented.
+     *
+     * @throws UnsupportedOperationException if it is not.
+     */
+    private void ensureImplemented() {
+        if (flavor == Flavor.TWKB) {
+            throw new UnsupportedOperationException("The " + flavor + " flavor is not implemented yet.");
+        }
     }
 
     /**
@@ -204,7 +304,11 @@ public final class WellKnownBinary {
      */
     public byte[] encode(final Geometry geom) {
         ArgumentChecks.ensureNonNull("geom", geom);
+        ensureImplemented();
         final Output out = new Output(byteOrder);
+        if (flavor == Flavor.EWKB) {
+            out.setSrid(Srid.of(geom.getCoordinateReferenceSystem()));
+        }
         format(out, geom);
         return out.toArray();
     }
@@ -223,19 +327,24 @@ public final class WellKnownBinary {
 
     /**
      * Returns the geometry described by the given Well-Known Binary, in the given coordinate
-     * reference system. Well-Known Binary carries no system of its own.
+     * reference system. The {@link Flavor#OGC} Well-Known Binary carries no system of its own;
+     * an {@link Flavor#EWKB} one may carry a spatial reference identifier, which is used only
+     * when {@code crs} is null. The system which ends up being used, from either source, must
+     * have as many dimensions as the bytes have ordinates per position.
      *
      * @param  geom  the Well-Known Binary to decode, not null.
      * @param  crs   the coordinate reference system of the coordinates in the bytes, or
-     *               {@code null}.
+     *               {@code null} for the one the bytes name, if any.
      * @return the decoded geometry.
      * @throws IllegalArgumentException if the bytes are malformed, name a geometry type which is
-     *         not in the table of this class javadoc, or have a number of ordinates which
-     *         contradicts the dimension of {@code crs}.
+     *         not in the table of this class javadoc, carry a spatial reference identifier which
+     *         cannot be resolved, or have a number of ordinates which contradicts the dimension
+     *         of the coordinate reference system.
      */
     public Geometry decode(final byte[] geom, final CoordinateReferenceSystem crs) {
         ArgumentChecks.ensureNonNull("geom", geom);
-        return new WellKnownBinaryParser(geom, crs).parse();
+        ensureImplemented();
+        return new WellKnownBinaryParser(geom, crs, flavor).parse();
     }
 
     // ////////////////////////////////////////////////////////////////////////
@@ -426,7 +535,9 @@ public final class WellKnownBinary {
     }
 
     /**
-     * Writes the byte order flag and the type code of a geometry, the dimension flags included.
+     * Writes the byte order flag and the type code of a geometry, the dimension flags included,
+     * followed by the spatial reference identifier when the dialect carries one and this is the
+     * outermost geometry.
      *
      * @return whether the positions carry a measure, which the caller has to write as the
      *         ordinate following the position ones.
@@ -441,16 +552,33 @@ public final class WellKnownBinary {
         }
         final int dimension = crs.getCoordinateSystem().getDimension();
         final boolean hasM = hasMeasure(geometry);
-        final int flags;
+        final boolean hasZ;
         switch (dimension) {
-            case 2:  flags = hasM ? Codes.M_OFFSET : 0; break;
-            case 3:  flags = hasM ? Codes.Z_OFFSET + Codes.M_OFFSET : Codes.Z_OFFSET; break;
+            case 2:  hasZ = false; break;
+            case 3:  hasZ = true;  break;
             default: throw new IllegalArgumentException("Cannot write a " + geometry.getGeometryType()
                         + " in Well-Known Binary: its positions have " + dimension + " dimensions,"
                         + " but the format defines only 2 and 3.");
         }
+        /*
+         * The identifier is taken at most once per encoding, so only the outermost geometry
+         * carries it: every nested call gets Srid.UNDEFINED back.
+         */
+        final int srid = out.takeSrid();
+        int type = code;
+        if (flavor == Flavor.EWKB) {
+            if (hasZ) type |= EWKB_Z;
+            if (hasM) type |= EWKB_M;
+            if (srid != Srid.UNDEFINED) type |= EWKB_SRID;
+        } else {
+            if (hasZ) type += Codes.Z_OFFSET;
+            if (hasM) type += Codes.M_OFFSET;
+        }
         out.writeByteOrder();
-        out.writeInt(code + flags);
+        out.writeInt(type);
+        if (flavor == Flavor.EWKB && srid != Srid.UNDEFINED) {
+            out.writeInt(srid);
+        }
         return hasM;
     }
 
@@ -493,10 +621,34 @@ public final class WellKnownBinary {
         private final boolean bigEndian;
 
         /**
+         * The spatial reference identifier which the next header has to carry, or
+         * {@link Srid#UNDEFINED} if none has to. Held here rather than passed down the writing
+         * methods because only the outermost geometry carries it: {@link #takeSrid()} clears it.
+         */
+        private int srid;
+
+        /**
          * Creates an initially empty output writing in the given byte order.
          */
         Output(final ByteOrder byteOrder) {
             bigEndian = (byteOrder == ByteOrder.BIG_ENDIAN);
+        }
+
+        /**
+         * Sets the identifier which the first header written will carry.
+         */
+        void setSrid(final int srid) {
+            this.srid = srid;
+        }
+
+        /**
+         * Returns the identifier which the header being written has to carry, and clears it so
+         * that the nested geometries do not repeat it.
+         */
+        int takeSrid() {
+            final int value = srid;
+            srid = Srid.UNDEFINED;
+            return value;
         }
 
         /**

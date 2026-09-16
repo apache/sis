@@ -41,6 +41,9 @@ import org.apache.sis.geometries.surface.TIN;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 // Test dependencies
@@ -258,7 +261,7 @@ public final class WellKnownBinaryTest {
          */
         final byte[] mixed = concat(bytes("00" + "00000007" + "00000001"), littleEndian);
         assertEquals("GEOMETRYCOLLECTION (POINT (1 2))", wkt.encode(wkb.decode(mixed)));
-        assertThrows(NullPointerException.class, () -> new WellKnownBinary(null));
+        assertThrows(NullPointerException.class, () -> new WellKnownBinary((ByteOrder) null));
     }
 
     /**
@@ -352,6 +355,162 @@ public final class WellKnownBinaryTest {
      */
     private void assertMalformed(final byte[] data) {
         assertThrows(IllegalArgumentException.class, () -> wkb.decode(data), hex(data));
+    }
+
+    /**
+     * Bits of the ordinates used by the extended tests below.
+     */
+    private static final String ZERO = "0000000000000000", 
+                                ONE = "3FF0000000000000",
+                                TWO = "4000000000000000", 
+                                THREE = "4008000000000000", 
+                                FOUR = "4010000000000000";
+
+    /**
+     * Tests the spatial reference identifier which the {@link WellKnownBinary.Flavor#EWKB}
+     * dialect adds, and the high order bits which announce it.
+     */
+    @Test
+    public void testExtendedRoundTrip() {
+        final WellKnownBinary ewkb = new WellKnownBinary(WellKnownBinary.Flavor.EWKB);
+        assertEquals(WellKnownBinary.Flavor.EWKB, ewkb.getFlavor());
+        assertEquals(WellKnownBinary.Flavor.OGC,  wkb.getFlavor());
+        /*
+         * The 0x20000000 bit announces the identifier, which follows the type code.
+         * EPSG:4326 is 0x10E6.
+         */
+        final Geometry point = GeometryFactory.createPoint(CommonCRS.WGS84.geographic(), 1, 2);
+        final byte[] bytes = ewkb.encode(point);
+        assertEquals("00" + "20000001" + "000010E6" + ONE + TWO, hex(bytes));
+        /*
+         * Reading gives the geometry its system back, and writing it again gives the same bytes.
+         */
+        final Geometry back = ewkb.decode(bytes);
+        assertEquals("4326", IdentifiedObjects.getIdentifier(
+                back.getCoordinateReferenceSystem(), Citations.EPSG).getCode());
+        assertEquals("POINT (1 2)", wkt.encode(back));
+        assertArrayEquals(bytes, ewkb.encode(back));
+    }
+
+    /**
+     * Verifies that only the outermost geometry carries the identifier, the nested ones being
+     * written with a plain type code.
+     */
+    @Test
+    public void testExtendedIdentifierOnOutermostOnly() {
+        final WellKnownBinary ewkb = new WellKnownBinary(WellKnownBinary.Flavor.EWKB);
+        final CoordinateReferenceSystem crs = CommonCRS.WGS84.geographic();
+        final byte[] bytes = ewkb.encode(GeometryFactory.createMultiPoint(
+                GeometryFactory.createPoint(crs, 1, 2),
+                GeometryFactory.createPoint(crs, 3, 4)));
+        assertEquals("00" + "20000004" + "000010E6" + "00000002"
+                   + "00" + "00000001" + ONE   + TWO
+                   + "00" + "00000001" + THREE + FOUR, hex(bytes));
+        /*
+         * The identifier read on the outermost geometry reaches the members as well.
+         */
+        final MultiPoint<?> decoded = assertInstanceOf(MultiPoint.class, ewkb.decode(bytes));
+        assertEquals("MULTIPOINT ((1 2), (3 4))", wkt.encode(decoded));
+        assertEquals("4326", IdentifiedObjects.getIdentifier(
+                decoded.getGeometryN(0).getCoordinateReferenceSystem(), Citations.EPSG).getCode());
+    }
+
+    /**
+     * Tests the dimension flags of the extended dialect, which are high order bits rather than
+     * the thousands of the type code.
+     */
+    @Test
+    public void testExtendedDimensionFlags() {
+        final WellKnownBinary ewkb = new WellKnownBinary(WellKnownBinary.Flavor.EWKB);
+        assertEquals("00" + "80000001" + ONE + TWO + THREE,
+                     hex(ewkb.encode(wkt.decode("POINT Z (1 2 3)"))));
+        assertEquals("00" + "40000001" + ONE + TWO + THREE,
+                     hex(ewkb.encode(wkt.decode("POINT M (1 2 3)"))));
+        assertEquals("00" + "C0000001" + ONE + TWO + THREE + FOUR,
+                     hex(ewkb.encode(wkt.decode("POINT ZM (1 2 3 4)"))));
+        assertEquals("00" + "80000002" + "00000002" + ZERO + ZERO + ZERO + ONE + ONE + ONE,
+                     hex(ewkb.encode(wkt.decode("LINESTRING Z (0 0 0, 1 1 1)"))));
+        /*
+         * Every one of them reads back to the geometry it was written from.
+         */
+        for (final String text : new String[] {
+                "POINT Z (1 2 3)", "POINT M (1 2 3)", "POINT ZM (1 2 3 4)",
+                "LINESTRING Z (0 0 0, 1 1 1)", "POLYGON ZM ((0 0 0 5, 1 0 0 6, 1 1 0 7, 0 0 0 5))",
+                "GEOMETRYCOLLECTION Z (POINT Z (1 2 3))"})
+        {
+            assertEquals(text, wkt.encode(ewkb.decode(ewkb.encode(wkt.decode(text)))), text);
+        }
+    }
+
+    /**
+     * Verifies that the extended dialect is a superset of the standard one on reading, and that
+     * the converse does not hold.
+     */
+    @Test
+    public void testExtendedReadsPlainBinary() {
+        final WellKnownBinary ewkb = new WellKnownBinary(WellKnownBinary.Flavor.EWKB);
+        for (final String text : new String[] {
+                "POINT (1 2)", "POINT Z (1 2 3)", "POINT ZM (1 2 3 4)",
+                "POLYGON Z ((0 0 0, 1 0 0, 1 1 0, 0 0 0))",
+                "GEOMETRYCOLLECTION (POINT (1 2), LINESTRING (0 0, 1 1))"})
+        {
+            assertEquals(text, wkt.encode(ewkb.decode(wkb.encode(wkt.decode(text)))), text);
+        }
+        /*
+         * The standard dialect rejects the high order bits of the extended one.
+         */
+        assertMalformed(ewkb.encode(wkt.decode("POINT Z (1 2 3)")));
+        assertMalformed(ewkb.encode(GeometryFactory.createPoint(CommonCRS.WGS84.geographic(), 1, 2)));
+    }
+
+    /**
+     * Verifies that the system the bytes name yields to one the caller gives, and tests the
+     * rejection of the identifiers which cannot be used.
+     */
+    @Test
+    public void testExtendedPrecedenceAndErrors() {
+        final WellKnownBinary ewkb = new WellKnownBinary(WellKnownBinary.Flavor.EWKB);
+        final byte[] bytes = ewkb.encode(GeometryFactory.createPoint(CommonCRS.WGS84.geographic(), 1, 2));
+        final CoordinateReferenceSystem crs = Geometries.getUndefinedCRS(2);
+        assertSame(crs, ewkb.decode(bytes, crs).getCoordinateReferenceSystem());
+        /*
+         * EPSG:4326 is two dimensional, so a Z geometry carrying it contradicts it.
+         * 0xA0000001 is the point type with the Z bit and the identifier bit.
+         */
+        assertExtendedMalformed("00" + "A0000001" + "000010E6" + ONE + TWO + THREE);
+        /*
+         * An identifier which no authority defines. 999999 is 0xF423F.
+         */
+        assertExtendedMalformed("00" + "20000001" + "000F423F" + ONE + TWO);
+        /*
+         * Two geometries of the same sequence cannot name two different systems. 3857 is 0xF11.
+         */
+        assertExtendedMalformed("00" + "20000004" + "000010E6" + "00000001"
+                              + "00" + "20000001" + "00000F11" + ONE + TWO);
+    }
+
+    /**
+     * Verifies that the given hexadecimal bytes are rejected by the extended dialect.
+     */
+    private void assertExtendedMalformed(final String text) {
+        final WellKnownBinary ewkb = new WellKnownBinary(WellKnownBinary.Flavor.EWKB);
+        final byte[] data = bytes(text);
+        assertThrows(IllegalArgumentException.class, () -> ewkb.decode(data), text);
+    }
+
+    /**
+     * Verifies that the dialect which is not implemented yet says so instead of writing
+     * something else.
+     */
+    @Test
+    public void testUnimplementedFlavor() {
+        final WellKnownBinary twkb = new WellKnownBinary(WellKnownBinary.Flavor.TWKB);
+        assertEquals(WellKnownBinary.Flavor.TWKB, twkb.getFlavor());
+        final Geometry geometry = wkt.decode("POINT (1 2)");
+        final byte[] bytes = wkb.encode(geometry);
+        assertThrows(UnsupportedOperationException.class, () -> twkb.encode(geometry));
+        assertThrows(UnsupportedOperationException.class, () -> twkb.decode(bytes));
+        assertThrows(NullPointerException.class, () -> new WellKnownBinary((WellKnownBinary.Flavor) null));
     }
 
     /**
