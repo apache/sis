@@ -17,7 +17,8 @@
 package org.apache.sis.geometries.surface;
 
 import java.util.Set;
-import javax.measure.quantity.Area;
+import javax.measure.Quantity;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
@@ -68,18 +69,20 @@ public sealed interface MultiSurface<T extends Surface> extends GeometryCollecti
 
     /**
      * The area of this MultiSurface, as measured in the spatial reference system of this MultiSurface.
+     * The unit of measurement is the one of the first element,
+     * or dimensionless if this MultiSurface has no element.
      *
      * @see OGC Simple Feature Access 1.2.1 - 6.1.13.2
      * @return area of the surface.
      */
-    default Area getArea() {
+    default Quantity<?> getArea() {
         final int n = getNumGeometries();
         if (n == 0) {
-            return Quantities.create(0, Units.SQUARE_METRE);
+            return Quantities.create(0, Units.UNITY);
         }
-        Area area = getGeometryN(0).getArea();
+        Quantity<?> area = getGeometryN(0).getArea();
         for (int i = 1; i < n; i++) {
-            area = Quantities.castOrCopy(area.add(getGeometryN(i).getArea()));
+            area = Geometries.add(area, getGeometryN(i).getArea());
         }
         return area;
     }

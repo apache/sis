@@ -18,7 +18,7 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.List;
 import java.util.Objects;
-import javax.measure.quantity.Area;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.KnotType;
@@ -178,7 +178,7 @@ public non-sealed class DefaultBSplineSurface extends AbstractGeometry implement
     }
 
     @Override
-    public Area getArea() {
+    public Quantity<?> getArea() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

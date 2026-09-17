@@ -16,7 +16,7 @@
  */
 package org.apache.sis.geometries.operation;
 
-import javax.measure.quantity.Length;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.Geometry;
 
 // Test dependencies
@@ -42,14 +42,14 @@ public class WithinDistanceTest {
      */
     private record Entry(Geometry input,
                          Geometry other,
-                         Length distance,
+                         Quantity<?> distance,
                          Boolean expected,
                          Class<? extends Exception> error)
     {
     }
 
     /**
-     * All test cases of {@code withinDistance(Geometry, Geometry, Length)}.
+     * All test cases of {@code withinDistance(Geometry, Geometry, Quantity)}.
      */
     private static final Entry[] ENTRIES = {
     };

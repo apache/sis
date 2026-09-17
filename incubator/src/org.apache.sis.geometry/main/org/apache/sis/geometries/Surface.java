@@ -17,8 +17,7 @@
 package org.apache.sis.geometries;
 
 import java.util.List;
-import javax.measure.quantity.Area;
-import javax.measure.quantity.Length;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.internal.shared.DefaultReversedSurface;
 import org.apache.sis.geometries.surface.CurvePolygon;
 import org.apache.sis.geometries.surface.ParametricCurveSurface;
@@ -93,13 +92,16 @@ public sealed interface Surface extends Orientable
      * metres. Computing a true area on the reference surface, as required by ISO 19107 REQ. 11,
      * remains to be done.</p>
      *
+     * <p>Difference with ISO-19107, the Area type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
+     *
      * @return area of the surface.
      *
      * @see OGC Simple Feature Access 1.2.1 - 6.1.10.2
      * @see ISO 19107:2019 - 6.4.25.7
      */
     @UML(identifier="area", specification=ISO_19107)
-    Area getArea();
+    Quantity<?> getArea();
 
     /**
      * The mathematical centroid for this Surface as a Point.
@@ -209,12 +211,15 @@ public sealed interface Surface extends Orientable
     /**
      * Sum of the lengths of all the boundary curves of this surface.
      *
+     * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
+     *
      * @return perimeter of this surface.
      *
      * @see ISO 19107:2019 - 6.4.25.6
      */
     @UML(identifier="perimeter", specification=ISO_19107)
-    default Length getPerimeter() {
+    default Quantity<?> getPerimeter() {
         //TODO
         throw new UnsupportedOperationException();
     }

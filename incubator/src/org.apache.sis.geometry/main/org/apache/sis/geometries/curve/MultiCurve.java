@@ -17,8 +17,9 @@
 package org.apache.sis.geometries.curve;
 
 import java.util.Set;
-import javax.measure.quantity.Length;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.internal.shared.DefaultMultiCurve;
@@ -87,19 +88,19 @@ public sealed interface MultiCurve<T extends Curve> extends GeometryCollection<T
     /**
      * The Length of this MultiCurve which is equal to the sum of the lengths of the element Curves.
      * The unit of measurement is the one of the first element,
-     * or metres if this MultiCurve has no element.
+     * or dimensionless if this MultiCurve has no element.
      *
      * @see OGC Simple Feature Access 1.2.1 - 6.1.8.2
      * @return length of the multicurve.
      */
-    default Length getLength() {
+    default Quantity<?> getLength() {
         final int n = getNumGeometries();
         if (n == 0) {
-            return Quantities.create(0, Units.METRE);
+            return Quantities.create(0, Units.UNITY);
         }
-        Length length = getGeometryN(0).getLength();
+        Quantity<?> length = getGeometryN(0).getLength();
         for (int i = 1; i < n; i++) {
-            length = Quantities.castOrCopy(length.add(getGeometryN(i).getLength()));
+            length = Geometries.add(length, getGeometryN(i).getLength());
         }
         return length;
     }

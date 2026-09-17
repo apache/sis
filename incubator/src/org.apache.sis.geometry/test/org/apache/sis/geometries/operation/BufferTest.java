@@ -16,7 +16,7 @@
  */
 package org.apache.sis.geometries.operation;
 
-import javax.measure.quantity.Length;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.Geometry;
 
 // Test dependencies
@@ -71,7 +71,7 @@ public class BufferTest {
     }
 
     /**
-     * The inputs and expected result of a single test of {@code buffer(Geometry, Length)}.
+     * The inputs and expected result of a single test of {@code buffer(Geometry, Quantity)}.
      *
      * @param input    the geometry on which the operation is invoked.
      * @param radius   the buffer radius.
@@ -79,14 +79,14 @@ public class BufferTest {
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
     private record RadiusEntry(Geometry input,
-                               Length radius,
+                               Quantity<?> radius,
                                Geometry expected,
                                Class<? extends Exception> error)
     {
     }
 
     /**
-     * All test cases of {@code buffer(Geometry, Length)}.
+     * All test cases of {@code buffer(Geometry, Quantity)}.
      */
     private static final RadiusEntry[] RADIUS_ENTRIES = {
     };

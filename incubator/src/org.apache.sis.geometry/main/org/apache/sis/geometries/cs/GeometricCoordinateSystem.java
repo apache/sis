@@ -16,7 +16,7 @@
  */
 package org.apache.sis.geometries.cs;
 
-import javax.measure.quantity.Length;
+import javax.measure.Quantity;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
@@ -56,7 +56,7 @@ public interface GeometricCoordinateSystem {
     Number csDistance(DirectPosition p1, DirectPosition p2);
 
     @UML(identifier="distance", specification=ISO_19107) // section 6.2.8.10
-    Length distance(DirectPosition p1, DirectPosition p2);
+    Quantity<?> distance(DirectPosition p1, DirectPosition p2);
 
     @UML(identifier="pointAtDistance", specification=ISO_19107) // section 6.2.8.11
     DirectPosition pointAtDistance(DirectPosition center, Vector vector);

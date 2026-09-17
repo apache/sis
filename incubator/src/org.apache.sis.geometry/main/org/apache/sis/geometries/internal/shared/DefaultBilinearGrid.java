@@ -18,7 +18,7 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.List;
 import java.util.Objects;
-import javax.measure.quantity.Area;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
@@ -162,7 +162,7 @@ public non-sealed class DefaultBilinearGrid extends AbstractGeometry implements 
     }
 
     @Override
-    public Area getArea() {
+    public Quantity<?> getArea() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

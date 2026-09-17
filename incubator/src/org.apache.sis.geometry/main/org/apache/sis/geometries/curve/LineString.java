@@ -16,7 +16,7 @@
  */
 package org.apache.sis.geometries.curve;
 
-import javax.measure.quantity.Length;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
@@ -94,7 +94,7 @@ public sealed interface LineString extends Curve
      * @see ISO 19107:2019 - 6.4.18.17
      */
     @Override
-    default LineString asLine(Length spacing, Length offset) {
+    default LineString asLine(Quantity<?> spacing, Quantity<?> offset) {
         return this;
     }
 

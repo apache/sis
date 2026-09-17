@@ -17,7 +17,8 @@
 package org.apache.sis.geometries.surface;
 
 import java.util.List;
-import javax.measure.quantity.Area;
+import javax.measure.Quantity;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultPolyhedralSurface;
@@ -125,19 +126,19 @@ public sealed interface PolyhedralSurface<T extends Polygon> extends /*GeometryC
     /**
      * Returns the sum of the areas of the patches.
      * The unit of measurement is the one of the first patch,
-     * or square metres if this surface has no patch.
+     * or dimensionless if this surface has no patch.
      *
      * @see ISO 19107:2019 - 6.4.25.7
      */
     @Override
-    default Area getArea() {
+    default Quantity<?> getArea() {
         final int n = getNumPatches();
         if (n == 0) {
-            return Quantities.create(0, Units.SQUARE_METRE);
+            return Quantities.create(0, Units.UNITY);
         }
-        Area area = getPatchN(0).getArea();
+        Quantity<?> area = getPatchN(0).getArea();
         for (int i = 1; i < n; i++) {
-            area = Quantities.castOrCopy(area.add(getPatchN(i).getArea()));
+            area = Geometries.add(area, getPatchN(i).getArea());
         }
         return area;
     }

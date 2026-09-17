@@ -18,7 +18,7 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.List;
 import java.util.Objects;
-import javax.measure.quantity.Area;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.curve.LinearRing;
@@ -87,7 +87,7 @@ public non-sealed class DefaultPolygon extends AbstractGeometry implements Polyg
     }
 
     @Override
-    public Area getArea() {
+    public Quantity<?> getArea() {
         //TODO : fallback on JTS until implemented
         return Quantities.create(Geometries.asJTS(this, false, new GeometryFactory()).getArea(), Units.SQUARE_METRE);
     }

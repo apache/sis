@@ -16,7 +16,7 @@
  */
 package org.apache.sis.geometries;
 
-import javax.measure.quantity.Length;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.internal.shared.DefaultEmpty;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
@@ -174,7 +174,7 @@ public sealed interface Empty extends Geometry
      */
     @UML(identifier="buffer", specification=ISO_19107)
     @Override
-    default Geometry buffer(Length radius) {
+    default Geometry buffer(Quantity<?> radius) {
         return this;
     }
 
@@ -202,13 +202,14 @@ public sealed interface Empty extends Geometry
 
     /**
      * Returns an infinite distance: no position of this geometry can come close to another geometry.
+     * The returned quantity is dimensionless, the empty set having no measurement unit to report.
      *
      * @see ISO 19107:2019 - 6.4.4.26
      */
     @UML(identifier="distance", specification=ISO_19107)
     @Override
-    default Length distance(Geometry other) {
-        return Quantities.create(Double.POSITIVE_INFINITY, Units.METRE);
+    default Quantity<?> distance(Geometry other) {
+        return Quantities.create(Double.POSITIVE_INFINITY, Units.UNITY);
     }
 
     /**

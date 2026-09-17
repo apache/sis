@@ -17,7 +17,7 @@
 package org.apache.sis.geometries;
 
 import java.util.List;
-import javax.measure.quantity.Length;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.curve.ArcByBulge;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
 import org.apache.sis.geometries.curve.CircularString;
@@ -111,7 +111,10 @@ public sealed interface Curve extends Orientable
      * The arc length parameterization of this curve therefore spans the [0 … length] interval.
      *
      * <p>Difference with OGC Simple Feature Access, which returns a {@code double}:
-     * the length is returned as a {@link Length} quantity in order to carry its unit of measurement.</p>
+     * the length is returned as a {@link Quantity} in order to carry its unit of measurement.</p>
+     *
+     * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
      *
      * @return length of the curve.
      *
@@ -119,7 +122,7 @@ public sealed interface Curve extends Orientable
      * @see ISO 19107:2019 - 6.4.18.9
      */
     @UML(identifier="length", specification=ISO_19107)
-    default Length getLength() {
+    default Quantity<?> getLength() {
         throw new UnsupportedOperationException();
     }
 
@@ -322,24 +325,33 @@ public sealed interface Curve extends Orientable
      *
      * <p>Constraints:</p>
      * <ul>
-     *   <li>{@link #param(Length)} applied to this value gives the start point.</li>
+     *   <li>{@link #param(Quantity)} applied to this value gives the start point.</li>
      *   <li>For a curve which is not a segment of another curve, this value is usually zero.</li>
      *   <li>For a segment other than the first one, this value is the
      *       {@linkplain #getEndParam() end parameter} of the preceding segment.</li>
      * </ul>
+     *
+     * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
      *
      * @return arc length parameter of the start point.
      *
      * @see ISO 19107:2019 - 6.4.18.13
      */
     @UML(identifier="startParam", specification=ISO_19107)
-    default Length getStartParam() {
+    default Quantity<?> getStartParam() {
         /*
          * Zero, since the arc length parameterization of a curve spans [0 … length] as stated by
          * `getLength()`. A curve which is a segment of another one, and which therefore starts
          * where the preceding segment ended, has to override.
+         *
+         * The unit is dimensionless rather than metres: this default knows nothing of the curve,
+         * so it cannot know whether the arc length is a distance at all — a temporal or crs-less
+         * curve measures its length in something else. Zero being the neutral element of the
+         * addition, the unit does not matter here; `getEndParam()` takes care of not letting this
+         * dimensionless zero drag the unit of the length down with it.
          */
-        return Quantities.create(0, Units.METRE);
+        return Quantities.create(0, Units.UNITY);
     }
 
     /**
@@ -347,25 +359,38 @@ public sealed interface Curve extends Orientable
      *
      * <p>Constraints:</p>
      * <ul>
-     *   <li>{@link #param(Length)} applied to this value gives the end point.</li>
+     *   <li>{@link #param(Quantity)} applied to this value gives the end point.</li>
      *   <li>The difference with the {@linkplain #getStartParam() start parameter} is the
      *       {@linkplain #getLength() length} of this curve.</li>
      * </ul>
+     *
+     * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
      *
      * @return arc length parameter of the end point.
      *
      * @see ISO 19107:2019 - 6.4.18.13
      */
     @UML(identifier="endParam", specification=ISO_19107)
-    default Length getEndParam() {
+    default Quantity<?> getEndParam() {
         /*
          * The constraint above: the difference with the start parameter is the length of the
          * curve. This holds whatever the start parameter, so a segment which overrides
          * `getStartParam()` gets the right answer without overriding this method.
          */
-        final Length start = getStartParam();
-        final Length length = getLength();
-        return Quantities.castOrCopy(start.add(length));
+        final Quantity<?> start = getStartParam();
+        final Quantity<?> length = getLength();
+        if (start.getValue().doubleValue() == 0) {
+            /*
+             * The start parameter of a curve which is not a segment of another one is zero, and
+             * the default `getStartParam()` reports that zero as a dimensionless quantity since it
+             * cannot know the unit of the arc length. `Geometries.add(…)` would accept it and
+             * return a dimensionless sum, discarding the unit of the length; zero being the
+             * neutral element, the end parameter is the length itself, unit included.
+             */
+            return length;
+        }
+        return Geometries.add(start, length);
     }
 
     /**
@@ -454,10 +479,13 @@ public sealed interface Curve extends Orientable
      * @param  offset   maximal distance between this curve and the line, or zero for no limit.
      * @return a linear approximation of this curve.
      *
+     * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
+     *
      * @see ISO 19107:2019 - 6.4.18.17
      */
     @UML(identifier="asLine", specification=ISO_19107)
-    default LineString asLine(Length spacing, Length offset) {
+    default LineString asLine(Quantity<?> spacing, Quantity<?> offset) {
         //TODO
         throw new UnsupportedOperationException();
     }
@@ -490,6 +518,9 @@ public sealed interface Curve extends Orientable
      *       the smallest length is returned.</li>
      * </ul>
      *
+     * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
+     *
      * @param  point1  first position, by default the {@linkplain #getStartPoint() start point}.
      * @param  point2  second position, by default the {@linkplain #getEndPoint() end point}.
      * @return length of this curve between the two given positions.
@@ -497,7 +528,7 @@ public sealed interface Curve extends Orientable
      * @see ISO 19107:2019 - 6.4.18.19
      */
     @UML(identifier="length", specification=ISO_19107)
-    default Length getLength(DirectPosition point1, DirectPosition point2) {
+    default Quantity<?> getLength(DirectPosition point1, DirectPosition point2) {
         //TODO
         throw new UnsupportedOperationException();
     }
@@ -507,6 +538,9 @@ public sealed interface Curve extends Orientable
      * This variant works directly in the construction parameter space, and therefore also
      * converts a construction parameter into an arc length parameter.
      *
+     * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
+     *
      * @param  cparam1  first construction parameter, by default the {@linkplain #getStartConstrParam() start} one.
      * @param  cparam2  second construction parameter, by default the {@linkplain #getEndConstrParam() end} one.
      * @return length of this curve between the two given construction parameters.
@@ -514,7 +548,7 @@ public sealed interface Curve extends Orientable
      * @see ISO 19107:2019 - 6.4.18.19
      */
     @UML(identifier="length", specification=ISO_19107)
-    default Length getLength(double cparam1, double cparam2) {
+    default Quantity<?> getLength(double cparam1, double cparam2) {
         //TODO
         throw new UnsupportedOperationException();
     }
@@ -524,6 +558,9 @@ public sealed interface Curve extends Orientable
      * i.e. at the given distance measured along this curve from the
      * {@linkplain #getStartParam() start parameter}.
      *
+     * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
+     *
      * @param  s  arc length parameter, between the {@linkplain #getStartParam() start}
      *            and the {@linkplain #getEndParam() end} parameters.
      * @return position on this curve at the given arc length parameter.
@@ -531,7 +568,7 @@ public sealed interface Curve extends Orientable
      * @see ISO 19107:2019 - 6.4.18.20
      */
     @UML(identifier="param", specification=ISO_19107)
-    default DirectPosition param(Length s) {
+    default DirectPosition param(Quantity<?> s) {
         //TODO
         throw new UnsupportedOperationException();
     }
@@ -542,12 +579,15 @@ public sealed interface Curve extends Orientable
      * <p>Constraints:</p>
      * <ul>
      *   <li>A position which is not on this curve is replaced by the nearest position on this curve.</li>
-     *   <li>For any returned value <var>d</var>, {@link #param(Length)} applied to <var>d</var>
+     *   <li>For any returned value <var>d</var>, {@link #param(Quantity)} applied to <var>d</var>
      *       gives the given position.</li>
      *   <li>More than one value is returned only if this curve is not simple.</li>
      *   <li>If several positions of this curve are at the same minimal distance from the given
      *       position, the choice among them is arbitrary.</li>
      * </ul>
+     *
+     * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
      *
      * @param  p  position for which to compute the arc length parameters.
      * @return arc length parameters of the given position, possibly empty.
@@ -555,7 +595,7 @@ public sealed interface Curve extends Orientable
      * @see ISO 19107:2019 - 6.4.18.21
      */
     @UML(identifier="paramForPoint", specification=ISO_19107)
-    default List<Length> paramForPoint(DirectPosition p) {
+    default List<Quantity<?>> paramForPoint(DirectPosition p) {
         //TODO
         throw new UnsupportedOperationException();
     }
@@ -567,12 +607,15 @@ public sealed interface Curve extends Orientable
      *
      * @param  s  arc length parameter, between the {@linkplain #getStartParam() start}
      *            and the {@linkplain #getEndParam() end} parameters.
+     * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
+     *
      * @return unit tangent vector at the given arc length parameter.
      *
      * @see ISO 19107:2019 - 6.4.18.22
      */
     @UML(identifier="tangent", specification=ISO_19107)
-    default Vector tangent(Length s) {
+    default Vector tangent(Quantity<?> s) {
         //TODO
         throw new UnsupportedOperationException();
     }
@@ -581,7 +624,7 @@ public sealed interface Curve extends Orientable
      * Returns the tangent vector at the given construction parameter.
      * The vector coordinates are the differentials of the coordinates of the direct positions.
      * Its direction is the direction of this curve, but its magnitude depends on the construction
-     * parameterization; {@link #tangent(Length)} returns the collinear unit vector.
+     * parameterization; {@link #tangent(Quantity)} returns the collinear unit vector.
      *
      * @param  knotParameter  construction parameter, between the {@linkplain #getStartConstrParam() start}
      *                        and the {@linkplain #getEndConstrParam() end} construction parameters.
@@ -635,6 +678,9 @@ public sealed interface Curve extends Orientable
      * <p>Difference with ISO 19107: declared as a copy constructor in the standard,
      * which an interface cannot express in Java.</p>
      *
+     * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
+     *
      * @param  dist1  arc length parameter where the returned curve begins.
      * @param  dist2  arc length parameter where the returned curve ends.
      * @return the portion of this curve between the two given arc length parameters.
@@ -642,7 +688,7 @@ public sealed interface Curve extends Orientable
      * @see ISO 19107:2019 - 6.4.18.22
      */
     @UML(identifier="Curve", specification=ISO_19107)
-    default Curve subCurve(Length dist1, Length dist2) {
+    default Curve subCurve(Quantity<?> dist1, Quantity<?> dist2) {
         //TODO
         throw new UnsupportedOperationException();
     }

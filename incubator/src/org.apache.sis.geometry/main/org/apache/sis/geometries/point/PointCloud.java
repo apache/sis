@@ -16,7 +16,7 @@
  */
 package org.apache.sis.geometries.point;
 
-import javax.measure.quantity.Length;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.Geometry;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -93,6 +93,9 @@ public interface PointCloud {
      * <p>Difference with ISO 19107, which also takes a list of {@code Constraint}: no such type is
      * defined by this implementation, so additional constraints cannot be expressed yet.</p>
      *
+     * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
+     *
      * @param  density  average distance between the points of the returned cloud.
      * @param  range    extent to which the returned cloud is limited.
      * @return a sub-cloud of this cloud.
@@ -100,7 +103,7 @@ public interface PointCloud {
      * @see ISO 19107:2019 - 11.2.2.4
      */
     @UML(identifier="SubCloud", specification=ISO_19107)
-    PointCloud subCloud(Length density, Envelope range);
+    PointCloud subCloud(Quantity<?> density, Envelope range);
 
     /**
      * Builds a simplicial complex from this cloud: a triangulated surface in 2 dimensions,
@@ -110,6 +113,9 @@ public interface PointCloud {
      * of {@code Constraint}: neither type is defined by this implementation, so the result is
      * returned as a {@link Geometry} and additional constraints cannot be expressed yet.</p>
      *
+     * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
+     *
      * @param  dimension  topological dimension of the simplices to build.
      * @param  density    average distance between the points to use.
      * @param  range      extent to which the computation is limited.
@@ -118,5 +124,5 @@ public interface PointCloud {
      * @see ISO 19107:2019 - 11.2.2.5
      */
     @UML(identifier="SimplicialComplex", specification=ISO_19107)
-    Geometry simplicialComplex(int dimension, Length density, Envelope range);
+    Geometry simplicialComplex(int dimension, Quantity<?> density, Envelope range);
 }

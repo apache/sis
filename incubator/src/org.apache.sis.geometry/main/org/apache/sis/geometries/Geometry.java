@@ -18,7 +18,7 @@ package org.apache.sis.geometries;
 
 import java.util.List;
 import java.util.Map;
-import javax.measure.quantity.Length;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.adapter.WellKnownBinary;
 import org.apache.sis.geometries.adapter.WellKnownText;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
@@ -580,7 +580,7 @@ public sealed interface Geometry
      * expressed in the units of the coordinate reference system.
      *
      * <p>Difference with ISO 19107, which takes a distance quantity:
-     * see {@link #buffer(Length)} for the standard operation.</p>
+     * see {@link #buffer(Quantity)} for the standard operation.</p>
      *
      * @param  distance  radius of the buffer.
      * @return buffer around this geometry.
@@ -606,16 +606,19 @@ public sealed interface Geometry
      *   <li>The buffer of an empty geometry is the empty geometry.</li>
      * </ul>
      *
+     * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
+     *
      * @param  radius  radius of the buffer.
      * @return buffer around this geometry.
      * @throws OperationException if the buffer cannot be computed.
      *
-     * @see GeometryProcessor#buffer(org.apache.sis.geometries.Geometry, javax.measure.quantity.Length)
+     * @see GeometryProcessor#buffer(org.apache.sis.geometries.Geometry, javax.measure.Quantity)
      * @see ISO 19107:2019 - 6.4.4.24, 6.4.8.3, 6.4.9
      */
     @UML(identifier="buffer", specification=ISO_19107)
     //@UML(identifier="3Dbuffer", specification=ISO_19107)
-    default Geometry buffer(Length radius) throws OperationException {
+    default Geometry buffer(Quantity<?> radius) throws OperationException {
         return new GeometryProcessor().buffer(this, radius);
     }
 
@@ -676,6 +679,9 @@ public sealed interface Geometry
      *   <li>Infinite if either geometry is empty.</li>
      * </ul>
      *
+     * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
+     *
      * @param  other  the geometry to measure the distance to.
      * @return distance between the two geometries.
      * @throws OperationException if the distance cannot be computed.
@@ -685,7 +691,7 @@ public sealed interface Geometry
      */
     @UML(identifier="distance", specification=ISO_19107)
     //@UML(identifier="3Ddistance", specification=ISO_19107)
-    default Length distance(Geometry other) throws OperationException {
+    default Quantity<?> distance(Geometry other) throws OperationException {
         return new GeometryProcessor().distance(this, other);
     }
 
@@ -1075,17 +1081,20 @@ public sealed interface Geometry
      *   <li>Equivalent to {@code buffer(distance).intersects(other)}.</li>
      * </ul>
      *
+     * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
+     *
      * @param  other     the geometry to test against.
      * @param  distance  maximal distance between the two geometries.
      * @return {@code true} if the two geometries are within the given distance.
      * @throws OperationException if the test cannot be performed.
      *
-     * @see GeometryProcessor#withinDistance(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry, javax.measure.quantity.Length)
+     * @see GeometryProcessor#withinDistance(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry, javax.measure.Quantity)
      * @see ISO 19107:2019 - 6.4.8.8, 6.4.9, 10.8.7
      */
     @UML(identifier="withinDistance", specification=ISO_19107)
     //@UML(identifier="3DwithinDistance", specification=ISO_19107)
-    default boolean withinDistance(Geometry other, Length distance) throws OperationException {
+    default boolean withinDistance(Geometry other, Quantity<?> distance) throws OperationException {
         return new GeometryProcessor().withinDistance(this, other, distance);
     }
 

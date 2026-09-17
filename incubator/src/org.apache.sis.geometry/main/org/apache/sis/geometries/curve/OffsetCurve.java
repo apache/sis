@@ -16,7 +16,7 @@
  */
 package org.apache.sis.geometries.curve;
 
-import javax.measure.quantity.Length;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.Bearing;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.internal.shared.DefaultOffsetCurve;
@@ -77,7 +77,7 @@ public sealed interface OffsetCurve extends Curve
      * @see ISO 19107:2019 - 6.4.20.2
      */
     @UML(identifier="distance", specification=ISO_19107)
-    Length getDistance();
+    Quantity<?> getDistance();
 
     /**
      * Direction in which this curve is offset from the {@linkplain #getBaseCurve() base curve},

@@ -18,7 +18,7 @@ package org.apache.sis.geometries.surface;
 
 import java.util.Collections;
 import java.util.List;
-import javax.measure.quantity.Area;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
@@ -126,7 +126,7 @@ public sealed interface Triangle extends Polygon
     }
 
     @Override
-    default Area getArea() {
+    default Quantity<?> getArea() {
         final DataPoints points = getExteriorRing().getDataPoints();
         final Tuple<?> a = points.getPosition(0);
         final Tuple<?> b = points.getPosition(1);

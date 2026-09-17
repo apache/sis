@@ -18,8 +18,7 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.List;
 import java.util.Objects;
-import javax.measure.quantity.Area;
-import javax.measure.quantity.Volume;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.solid.Polyhedron;
@@ -91,12 +90,12 @@ public non-sealed class DefaultPolyhedron extends AbstractGeometry implements Po
     }
 
     @Override
-    public Area getArea() {
+    public Quantity<?> getArea() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Volume getVolume() {
+    public Quantity<?> getVolume() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

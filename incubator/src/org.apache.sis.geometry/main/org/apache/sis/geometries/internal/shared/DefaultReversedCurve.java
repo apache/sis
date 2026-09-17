@@ -17,7 +17,7 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
-import javax.measure.quantity.Length;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
@@ -94,7 +94,7 @@ public non-sealed class DefaultReversedCurve extends AbstractGeometry implements
     }
 
     @Override
-    public Length getLength() {
+    public Quantity<?> getLength() {
         return base.getLength();
     }
 

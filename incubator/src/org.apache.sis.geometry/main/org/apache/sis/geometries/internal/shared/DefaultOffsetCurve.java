@@ -17,7 +17,7 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
-import javax.measure.quantity.Length;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Bearing;
 import org.apache.sis.geometries.Curve;
@@ -44,7 +44,7 @@ public non-sealed class DefaultOffsetCurve extends AbstractGeometry implements O
     /**
      * Distance at which this curve is generated from the base curve.
      */
-    protected final Length distance;
+    protected final Quantity<?> distance;
 
     /**
      * Direction in which this curve is offset, or {@code null} if the spatial dimension is 2.
@@ -63,7 +63,7 @@ public non-sealed class DefaultOffsetCurve extends AbstractGeometry implements O
      *                       of the base curve gives the offset direction in a 3-dimensional
      *                       coordinate system, or {@code null} if the spatial dimension is 2.
      */
-    public DefaultOffsetCurve(final Curve baseCurve, final Length distance, final Bearing refDirection) {
+    public DefaultOffsetCurve(final Curve baseCurve, final Quantity<?> distance, final Bearing refDirection) {
         this.baseCurve    = Objects.requireNonNull(baseCurve);
         this.distance     = Objects.requireNonNull(distance);
         this.refDirection = refDirection;
@@ -75,7 +75,7 @@ public non-sealed class DefaultOffsetCurve extends AbstractGeometry implements O
     }
 
     @Override
-    public Length getDistance() {
+    public Quantity<?> getDistance() {
         return distance;
     }
 

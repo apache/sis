@@ -17,8 +17,7 @@
 package org.apache.sis.geometries;
 
 import java.util.List;
-import javax.measure.quantity.Area;
-import javax.measure.quantity.Volume;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.solid.ParametricCurveSolid;
 import org.apache.sis.geometries.solid.Polyhedron;
 import static org.opengis.annotation.Specification.ISO_19107;
@@ -108,12 +107,15 @@ public sealed interface Solid extends Primitive
     /**
      * Sum of the areas of all the boundary surfaces of this solid.
      *
+     * <p>Difference with ISO-19107, the Area type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
+     *
      * @return area of the boundary of this solid.
      *
      * @see ISO 19107:2019 - 6.4.28.3
      */
     @UML(identifier="area", specification=ISO_19107)
-    default Area getArea() {
+    default Quantity<?> getArea() {
         throw new UnsupportedOperationException();
     }
 
@@ -121,12 +123,15 @@ public sealed interface Solid extends Primitive
      * Volume enclosed by this solid, that is the volume interior to the exterior shell
      * and exterior to any interior shell.
      *
+     * <p>Difference with ISO-19107, the Volume type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
+     *
      * @return volume of this solid.
      *
      * @see ISO 19107:2019 - 6.4.28.4
      */
     @UML(identifier="volume", specification=ISO_19107)
-    default Volume getVolume() {
+    default Quantity<?> getVolume() {
         throw new UnsupportedOperationException();
     }
 

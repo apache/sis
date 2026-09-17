@@ -21,8 +21,8 @@ import java.nio.DoubleBuffer;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import javax.measure.Quantity;
 import javax.measure.Unit;
-import javax.measure.quantity.Length;
 import org.apache.sis.geometries.cs.Projection;
 import org.apache.sis.geometries.curve.Arc;
 import org.apache.sis.geometries.curve.ArcByBulge;
@@ -487,7 +487,7 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
      * @param  refDirection  reference direction of the offset in a 3-dimensional coordinate system,
      *                       or {@code null} if the spatial dimension is 2.
      */
-    public static OffsetCurve createOffsetCurve(Curve baseCurve, Length distance, Bearing refDirection) {
+    public static OffsetCurve createOffsetCurve(Curve baseCurve, Quantity<?> distance, Bearing refDirection) {
         return new DefaultOffsetCurve(baseCurve, distance, refDirection);
     }
 

@@ -18,7 +18,7 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.Arrays;
 import java.util.List;
-import javax.measure.quantity.Area;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
@@ -337,7 +337,7 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
     }
 
     @Override
-    public Area getArea() {
+    public Quantity<?> getArea() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

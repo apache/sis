@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import javax.measure.quantity.Length;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
@@ -85,7 +85,7 @@ public final class GeometryProcessor {
 
     @UML(identifier="buffer", specification=ISO_19107) // section 6.4.4.24 and 6.4.8.3
     //@UML(identifier="3Dbuffer", specification=ISO_19107) // section 6.4.9
-    public Geometry buffer(Geometry geom, Length radius) throws OperationException {
+    public Geometry buffer(Geometry geom, Quantity<?> radius) throws OperationException {
         throw new UnsupportedOperationException();
     }
 
@@ -123,10 +123,13 @@ public final class GeometryProcessor {
      * coordinate reference system that magnitude is therefore an amount of degrees reported as
      * metres. Computing a true geodesic distance on the reference surface, as required by
      * ISO 19107 REQ. 11, remains to be done.</p>
+     *
+     * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
      */
     @UML(identifier="distance", specification=ISO_19107) // section 6.4.4.26 and 6.4.8.2
     //@UML(identifier="3Ddistance", specification=ISO_19107) // section 6.4.9
-    public Length distance(Geometry geom1, Geometry geom2) throws OperationException {
+    public Quantity<?> distance(Geometry geom1, Geometry geom2) throws OperationException {
         if (geom1 instanceof Point pt1) {
             if (geom2 instanceof Point pt2) {
                 return Quantities.create(Distance.distance(pt1, pt2), Units.METRE);
@@ -309,9 +312,13 @@ public final class GeometryProcessor {
         return jts(geom1).within(jts(geom2));
     }
 
+    /**
+     * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
+     */
     @UML(identifier="withinDistance", specification=ISO_19107) // section 6.4.8.8
     //@UML(identifier="3DwithinDistance", specification=ISO_19107) // section 6.4.9
-    public boolean withinDistance(Geometry geom1, Geometry geom2, Length distance) throws OperationException {
+    public boolean withinDistance(Geometry geom1, Geometry geom2, Quantity<?> distance) throws OperationException {
         throw new UnsupportedOperationException();
     }
 

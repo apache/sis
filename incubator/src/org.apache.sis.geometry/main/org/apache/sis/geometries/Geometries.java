@@ -29,6 +29,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import javax.measure.Quantity;
 import javax.measure.Unit;
 import org.apache.sis.geometries.adapter.JTSAdapter;
 import org.apache.sis.geometries.adapter.ShapeAdapter;
@@ -44,6 +45,7 @@ import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vector3D;
 import org.apache.sis.maths.Vectors;
+import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.crs.DefaultEngineeringCRS;
@@ -693,6 +695,39 @@ public final class Geometries {
         primitive.setPositions(positions);
         primitive.setIndex(idx);
         return primitive;
+    }
+
+    /**
+     * Returns the sum of the two given quantities, expressed in the unit of the first one,
+     * or dimensionless if either operand is dimensionless.
+     *
+     * @param  q1  the first quantity, whose unit is the unit of the result unless one operand is
+     *             dimensionless, in which case the result is dimensionless.
+     * @param  q2  the quantity to add to the first one.
+     * @return the sum of the two quantities.
+     * @throws ClassCastException if the two quantities have different dimensions, neither of them
+     *         being the dimensionless one.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static Quantity<?> add(final Quantity<?> q1, final Quantity<?> q2) {
+        if (Units.isScale(q1.getUnit()) != Units.isScale(q2.getUnit())) {
+            return Quantities.create(toScalar(q1) + toScalar(q2), Units.UNITY);
+        }
+        return ((Quantity) q1).add(q2);
+    }
+
+    /**
+     * Returns the value of the given quantity as a plain number. A dimensionless quantity is first
+     * converted to {@link Units#UNITY}, so that a percentage counts for its fraction rather than
+     * for its numerator. Any other quantity is taken as-is, no conversion to unity existing.
+     */
+    private static double toScalar(final Quantity<?> q) {
+        final Unit<?> unit = q.getUnit();
+        final double value = q.getValue().doubleValue();
+        if (Units.isScale(unit)) {
+            return Units.ensureScale(unit).getConverterTo(Units.UNITY).convert(value);
+        }
+        return value;
     }
 
     /**
