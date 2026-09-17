@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.curve;
 
 import org.apache.sis.geometries.CurveInterpolation;
+import org.apache.sis.geometries.internal.shared.DefaultPolynomialSpline;
 import org.apache.sis.maths.Vector;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -46,8 +47,19 @@ import org.opengis.annotation.UML;
 @UML(identifier="PolynomialSpline", specification=ISO_19107)
 public sealed interface PolynomialSpline extends SplineCurve
         permits CubicSpline,
-                Bezier
+                Bezier,
+                DefaultPolynomialSpline
 {
+
+    /**
+     * Well-known text keyword of this geometry type.
+     */
+    static final String TYPE = "POLYNOMIALSPLINE";
+
+    @Override
+    default String getGeometryType() {
+        return TYPE;
+    }
 
     /**
      * Returns {@link CurveInterpolation#POLYNOMIAL_SPLINE}.

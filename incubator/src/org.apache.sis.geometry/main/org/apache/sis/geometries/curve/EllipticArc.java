@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.curve;
 
 import org.apache.sis.geometries.CurveInterpolation;
+import org.apache.sis.geometries.internal.shared.DefaultEllipticArc;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
@@ -37,7 +38,18 @@ import org.opengis.annotation.UML;
  * @see ISO 19107:2019 - 7.9.6
  */
 @UML(identifier="EllipticArc", specification=ISO_19107)
-public non-sealed interface EllipticArc extends Conic {
+public sealed interface EllipticArc extends Conic
+        permits DefaultEllipticArc {
+
+    /**
+     * Well-known text keyword of this geometry type.
+     */
+    static final String TYPE = "ELLIPTICARC";
+
+    @Override
+    default String getGeometryType() {
+        return TYPE;
+    }
 
     /**
      * Returns {@link CurveInterpolation#ELLIPTICAL}.

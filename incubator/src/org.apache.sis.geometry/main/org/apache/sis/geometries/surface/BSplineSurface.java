@@ -21,6 +21,7 @@ import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.curve.KnotType;
+import org.apache.sis.geometries.internal.shared.DefaultBSplineSurface;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -47,8 +48,19 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 @UML(identifier="BSplineSurface", specification=ISO_19107)
 public sealed interface BSplineSurface extends ParametricCurveSurface
-        permits NurbSurface
+        permits NurbSurface,
+                DefaultBSplineSurface
 {
+
+    /**
+     * Well-known text keyword of this geometry type.
+     */
+    static final String TYPE = "BSPLINESURFACE";
+
+    @Override
+    default String getGeometryType() {
+        return TYPE;
+    }
 
     /**
      * Algebraic degree of the b-spline basis functions of this surface.

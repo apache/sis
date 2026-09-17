@@ -18,6 +18,7 @@ package org.apache.sis.geometries.surface;
 
 import java.util.List;
 import org.apache.sis.geometries.SurfaceInterpolation;
+import org.apache.sis.geometries.internal.shared.DefaultBilinearGrid;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
@@ -49,7 +50,18 @@ import org.opengis.annotation.UML;
  * @see ISO 19107:2019 - 8.3.4
  */
 @UML(identifier="BilinearGrid", specification=ISO_19107)
-public non-sealed interface BilinearGrid extends ParametricCurveSurface {
+public sealed interface BilinearGrid extends ParametricCurveSurface
+        permits DefaultBilinearGrid {
+
+    /**
+     * Well-known text keyword of this geometry type.
+     */
+    static final String TYPE = "BILINEARGRID";
+
+    @Override
+    default String getGeometryType() {
+        return TYPE;
+    }
 
     /**
      * Returns {@link SurfaceInterpolation#LINEAR}: each cell of the grid is interpolated

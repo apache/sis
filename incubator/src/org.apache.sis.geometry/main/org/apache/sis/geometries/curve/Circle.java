@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.apache.sis.geometries.internal.shared.DefaultCircle;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
@@ -41,7 +42,18 @@ import org.opengis.annotation.UML;
  * @see ISO 19107:2019 - 7.9.4
  */
 @UML(identifier="Circle", specification=ISO_19107)
-public non-sealed interface Circle extends Arc {
+public sealed interface Circle extends Arc
+        permits DefaultCircle {
+
+    /**
+     * Well-known text keyword of this geometry type.
+     */
+    static final String TYPE = "CIRCLE";
+
+    @Override
+    default String getGeometryType() {
+        return TYPE;
+    }
 
     /**
      * Returns {@code true}: a circle is a complete curve closing on itself.

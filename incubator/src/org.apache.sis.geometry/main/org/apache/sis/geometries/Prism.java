@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+import org.apache.sis.geometries.internal.shared.DefaultPrism;
 import org.opengis.referencing.crs.SingleCRS;
 import org.apache.sis.measure.NumberRange;
 
@@ -26,7 +27,8 @@ import org.apache.sis.measure.NumberRange;
  * @author Johann Sorel (Geomatys)
  * @see https://docs.ogc.org/DRAFTS/21-045r1.html#prism
  */
-public non-sealed interface Prism extends Geometry {
+public sealed interface Prism extends Geometry
+        permits DefaultPrism {
 
     static final String TYPE = "PRISM";
 

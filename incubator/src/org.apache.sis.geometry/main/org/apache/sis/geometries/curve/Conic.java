@@ -19,6 +19,7 @@ package org.apache.sis.geometries.curve;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.internal.shared.DefaultConic;
 import org.apache.sis.maths.Array;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -49,8 +50,19 @@ import org.opengis.annotation.UML;
 @UML(identifier="Conic", specification=ISO_19107)
 public sealed interface Conic extends Curve
         permits Arc,
-                EllipticArc
+                EllipticArc,
+                DefaultConic
 {
+
+    /**
+     * Well-known text keyword of this geometry type.
+     */
+    static final String TYPE = "CONIC";
+
+    @Override
+    default String getGeometryType() {
+        return TYPE;
+    }
 
     /**
      * Returns {@link CurveInterpolation#CONIC}.

@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.curve;
 
 import org.apache.sis.geometries.CurveInterpolation;
+import org.apache.sis.geometries.internal.shared.DefaultBSplineCurve;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
@@ -46,8 +47,19 @@ import org.opengis.annotation.UML;
 @UML(identifier="BSplineCurve", specification=ISO_19107)
 public sealed interface BSplineCurve extends SplineCurve
         permits Bezier,
-                NurbCurve
+                NurbCurve,
+                DefaultBSplineCurve
 {
+
+    /**
+     * Well-known text keyword of this geometry type.
+     */
+    static final String TYPE = "BSPLINECURVE";
+
+    @Override
+    default String getGeometryType() {
+        return TYPE;
+    }
 
     /**
      * Returns {@link CurveInterpolation#BSPLINE}.

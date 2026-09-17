@@ -22,24 +22,51 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.measure.Unit;
+import javax.measure.quantity.Length;
+import org.apache.sis.geometries.cs.Projection;
+import org.apache.sis.geometries.curve.Arc;
 import org.apache.sis.geometries.curve.ArcByBulge;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
+import org.apache.sis.geometries.curve.BSplineCurve;
+import org.apache.sis.geometries.curve.Bezier;
 import org.apache.sis.geometries.curve.Circle;
 import org.apache.sis.geometries.curve.CircularString;
 import org.apache.sis.geometries.curve.Clothoid;
 import org.apache.sis.geometries.curve.CompoundCurve;
+import org.apache.sis.geometries.curve.Conic;
+import org.apache.sis.geometries.curve.CubicSpline;
+import org.apache.sis.geometries.curve.EllipticArc;
 import org.apache.sis.geometries.curve.Geodesic;
+import org.apache.sis.geometries.curve.KnotType;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.curve.MultiCurve;
 import org.apache.sis.geometries.curve.MultiLineString;
+import org.apache.sis.geometries.curve.NurbCurve;
+import org.apache.sis.geometries.curve.OffsetCurve;
+import org.apache.sis.geometries.curve.PolynomialSpline;
+import org.apache.sis.geometries.curve.ProductCurve;
+import org.apache.sis.geometries.curve.RealFunction;
 import org.apache.sis.geometries.curve.Rhumb;
+import org.apache.sis.geometries.curve.Spiral;
+import org.apache.sis.geometries.curve.SplineCurveForm;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
+import org.apache.sis.geometries.internal.shared.DefaultArc;
 import org.apache.sis.geometries.internal.shared.DefaultArcByBulge;
 import org.apache.sis.geometries.internal.shared.DefaultArcByCenterPoint;
+import org.apache.sis.geometries.internal.shared.DefaultBSplineSolid;
+import org.apache.sis.geometries.internal.shared.DefaultBSplineCurve;
+import org.apache.sis.geometries.internal.shared.DefaultBSplineSurface;
+import org.apache.sis.geometries.internal.shared.DefaultBezier;
+import org.apache.sis.geometries.internal.shared.DefaultBilinearGrid;
+import org.apache.sis.geometries.internal.shared.DefaultCircle;
 import org.apache.sis.geometries.internal.shared.DefaultCircularString;
+import org.apache.sis.geometries.internal.shared.DefaultClothoid;
 import org.apache.sis.geometries.internal.shared.DefaultCompoundCurve;
+import org.apache.sis.geometries.internal.shared.DefaultConic;
+import org.apache.sis.geometries.internal.shared.DefaultCubicSpline;
 import org.apache.sis.geometries.internal.shared.DefaultCurvePolygon;
+import org.apache.sis.geometries.internal.shared.DefaultEllipticArc;
 import org.apache.sis.geometries.internal.shared.DefaultEmpty;
 import org.apache.sis.geometries.internal.shared.DefaultGeodesic;
 import org.apache.sis.geometries.internal.shared.DefaultGeometryCollection;
@@ -51,22 +78,33 @@ import org.apache.sis.geometries.internal.shared.DefaultMultiPoint;
 import org.apache.sis.geometries.internal.shared.DefaultMultiPolygon;
 import org.apache.sis.geometries.internal.shared.DefaultMultiPolyhedron;
 import org.apache.sis.geometries.internal.shared.DefaultMultiSurface;
+import org.apache.sis.geometries.internal.shared.DefaultNurbCurve;
+import org.apache.sis.geometries.internal.shared.DefaultNurbSurface;
+import org.apache.sis.geometries.internal.shared.DefaultOffsetCurve;
 import org.apache.sis.geometries.internal.shared.DefaultPoint;
 import org.apache.sis.geometries.internal.shared.DefaultPolygon;
 import org.apache.sis.geometries.internal.shared.DefaultPolyhedralSurface;
 import org.apache.sis.geometries.internal.shared.DefaultPolyhedron;
+import org.apache.sis.geometries.internal.shared.DefaultPolynomialSpline;
+import org.apache.sis.geometries.internal.shared.DefaultPrism;
+import org.apache.sis.geometries.internal.shared.DefaultProductCurve;
 import org.apache.sis.geometries.internal.shared.DefaultRawMultiPoint;
 import org.apache.sis.geometries.internal.shared.DefaultReversedCurve;
 import org.apache.sis.geometries.internal.shared.DefaultReversedSurface;
 import org.apache.sis.geometries.internal.shared.DefaultRhumb;
+import org.apache.sis.geometries.internal.shared.DefaultSpiral;
 import org.apache.sis.geometries.internal.shared.DefaultTriangle;
 import org.apache.sis.geometries.internal.shared.DefaultTriangulatedSurface;
 import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.solid.MultiPolyhedron;
 import org.apache.sis.geometries.solid.Polyhedron;
+import org.apache.sis.geometries.surface.BSplineSurface;
+import org.apache.sis.geometries.surface.BSplineSurfaceForm;
+import org.apache.sis.geometries.surface.BilinearGrid;
 import org.apache.sis.geometries.surface.CurvePolygon;
 import org.apache.sis.geometries.surface.MultiPolygon;
 import org.apache.sis.geometries.surface.MultiSurface;
+import org.apache.sis.geometries.surface.NurbSurface;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.geometries.surface.TIN;
@@ -80,8 +118,13 @@ import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.measure.NumberRange;
+import org.apache.sis.measure.Range;
 import org.apache.sis.setup.GeometryLibrary;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.SingleCRS;
+import org.apache.sis.geometries.solid.BSplineSolid;
 
 
 /**
@@ -251,6 +294,218 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
         return new DefaultArcByBulge(points, bulge, normal);
     }
 
+    /*
+     * Conics, spirals and splines. These are the curves whose interpolation is neither linear nor
+     * a simple chain of circular arcs, and which ISO 19107 defines by a mathematical construction
+     * rather than by a list of positions alone.
+     */
+
+    /**
+     * Creates a chain of conic section arcs, each of them determined by five data points.
+     *
+     * @param  points         points lying on the conic. At least five of them, the first one also
+     *                        acting as the last one when {@code cycle} is {@code true}.
+     * @param  controlPoints  centres of the exponential maps in which the arcs are constructed,
+     *                        one per arc, or {@code null} if none.
+     * @param  cycle          whether the conic closes on itself.
+     */
+    public static Conic createConic(DataPoints points, Array controlPoints, boolean cycle) {
+        return new DefaultConic(points, controlPoints, cycle);
+    }
+
+    /**
+     * Creates a chain of circular arcs, each of them centred on a control point and joining two
+     * consecutive data points.
+     *
+     * @param  points         start and end points of the arcs, two consecutive arcs sharing a point.
+     *                        There is one more point than there are arcs.
+     * @param  controlPoints  centres of the circles carrying the arcs, one per arc.
+     * @param  radius         radius vectors giving the plane and the rotation direction of each arc,
+     *                        possibly empty.
+     * @param  cycle          whether the chain closes on itself.
+     */
+    public static Arc createArc(DataPoints points, Array controlPoints, List<Vector> radius, boolean cycle) {
+        return new DefaultArc(points, controlPoints, radius, cycle);
+    }
+
+    /**
+     * Creates a complete circle, i.e. a chain of circular arcs sharing a single centre and closing
+     * on itself.
+     *
+     * @param  points         points of the circle, all at the same distance from the centre,
+     *                        the first and the last ones being equal.
+     * @param  controlPoints  the centre of the circle, repeated once per arc. Because a single arc
+     *                        must stay below a full turn, at least two of them are needed.
+     * @param  radius         radius vectors of the arcs, possibly empty.
+     */
+    public static Circle createCircle(DataPoints points, Array controlPoints, List<Vector> radius) {
+        return new DefaultCircle(points, controlPoints, radius);
+    }
+
+    /**
+     * Creates a conic without a cross term, therefore an arc of ellipse, each arc being determined
+     * by four data points instead of five.
+     *
+     * @param  points         points lying on the ellipse.
+     * @param  controlPoints  centres of the ellipses of the arcs, or {@code null} if none.
+     * @param  cycle          whether the arc closes on itself, making it a complete ellipse.
+     */
+    public static EllipticArc createEllipticArc(DataPoints points, Array controlPoints, boolean cycle) {
+        return new DefaultEllipticArc(points, controlPoints, cycle);
+    }
+
+    /**
+     * Creates a curve defined indirectly by its curvature, and by its torsion when it is not planar.
+     *
+     * @param  points      points of the spiral, the first one being its start point.
+     * @param  curvature   curvature as a function of arc length.
+     * @param  torsion     torsion as a function of arc length, or {@code null} if the spiral is planar.
+     * @param  startFrame  two or three mutually orthogonal unit vectors forming a right-handed frame
+     *                     at the start point.
+     */
+    public static Spiral createSpiral(DataPoints points, RealFunction curvature,
+            RealFunction torsion, List<Vector> startFrame)
+    {
+        return new DefaultSpiral(points, curvature, torsion, startFrame);
+    }
+
+    /**
+     * Creates a spiral whose curvature varies linearly with arc length, also called a Cornu spiral.
+     *
+     * @param  points      points of the clothoid, the first one being its start point.
+     * @param  curvature   curvature as a function of arc length. It shall be linear in the arc
+     *                     length measured from the point where the infinite clothoid has zero
+     *                     curvature.
+     * @param  startFrame  two mutually orthogonal unit vectors forming a right-handed frame at the
+     *                     start point, a clothoid being planar.
+     */
+    public static Clothoid createClothoid(DataPoints points, RealFunction curvature, List<Vector> startFrame) {
+        return new DefaultClothoid(points, curvature, startFrame);
+    }
+
+    /**
+     * Creates a spline which interpolates its data points, i.e. a polynomial curve passing through them.
+     *
+     * @param  points              points the spline passes through, in order.
+     * @param  controlPoints       control points of the spline, or {@code null} if none.
+     * @param  knots               knot values, strictly increasing, one per data point.
+     * @param  degree              degree of the interpolating polynomials.
+     * @param  curveForm           kind of curve approximated by the spline, or {@code null} if none.
+     * @param  knotSpec            distribution of the knots, or {@code null} if unspecified.
+     * @param  derivativeAtStart   derivative imposed at the start point, or {@code null} if none.
+     * @param  derivativeAtEnd     derivative imposed at the end point, or {@code null} if none.
+     * @param  derivativeInterior  number of continuous derivatives at the interior knots,
+     *                             at most {@code degree} − 1.
+     */
+    public static PolynomialSpline createPolynomialSpline(DataPoints points, Array controlPoints,
+            double[] knots, int degree, SplineCurveForm curveForm, KnotType knotSpec,
+            Vector derivativeAtStart, Vector derivativeAtEnd, int derivativeInterior)
+    {
+        return new DefaultPolynomialSpline(points, controlPoints, knots, degree, curveForm,
+                knotSpec, derivativeAtStart, derivativeAtEnd, derivativeInterior);
+    }
+
+    /**
+     * Creates a polynomial spline of degree 3, C² everywhere and passing through its data points.
+     *
+     * @param  points             points the spline passes through, in order.
+     * @param  controlPoints      control points of the spline, or {@code null} if none.
+     * @param  knots              knot values, strictly increasing, one per data point.
+     * @param  curveForm          kind of curve approximated by the spline, or {@code null} if none.
+     * @param  knotSpec           distribution of the knots, or {@code null} if unspecified.
+     * @param  derivativeAtStart  tangent imposed at the start point, or {@code null} if none.
+     * @param  derivativeAtEnd    tangent imposed at the end point, or {@code null} if none.
+     */
+    public static CubicSpline createCubicSpline(DataPoints points, Array controlPoints, double[] knots,
+            SplineCurveForm curveForm, KnotType knotSpec, Vector derivativeAtStart, Vector derivativeAtEnd)
+    {
+        return new DefaultCubicSpline(points, controlPoints, knots, curveForm, knotSpec,
+                derivativeAtStart, derivativeAtEnd);
+    }
+
+    /**
+     * Creates an approximating spline using the Bézier (Bernstein) polynomials as partition of unity.
+     *
+     * @param  points             end points of the segments of the curve.
+     * @param  controlPoints      control points of the curve, each subsequence of {@code degree} + 1
+     *                            points starting at a multiple of {@code degree} defining one segment.
+     * @param  knots              knot values. For a Bézier curve the only knots are 0 and 1.
+     * @param  degree             degree of the Bernstein polynomials.
+     * @param  curveForm          kind of curve approximated by the spline, or {@code null} if none.
+     * @param  knotSpec           distribution of the knots, or {@code null} if unspecified.
+     * @param  derivativeAtStart  derivative imposed at the start point, or {@code null} if none.
+     * @param  derivativeAtEnd    derivative imposed at the end point, or {@code null} if none.
+     */
+    public static Bezier createBezier(DataPoints points, Array controlPoints, double[] knots, int degree,
+            SplineCurveForm curveForm, KnotType knotSpec, Vector derivativeAtStart, Vector derivativeAtEnd)
+    {
+        return new DefaultBezier(points, controlPoints, knots, degree, curveForm, knotSpec,
+                derivativeAtStart, derivativeAtEnd);
+    }
+
+    /**
+     * Creates an approximating spline using the b-spline basis functions as partition of unity.
+     * For the rational flavour carrying a weight per control point, see
+     * {@link #createNurbCurve(DataPoints, double[], double[], int)}.
+     *
+     * @param  points         points of the curve.
+     * @param  controlPoints  control points of the curve, or {@code null} if none.
+     * @param  knots          knot values, strictly increasing, repeated knots being expressed by
+     *                        their multiplicity rather than by repetition.
+     * @param  degree         degree of the b-spline basis functions.
+     * @param  curveForm      kind of curve approximated by the spline, or {@code null} if none.
+     * @param  knotSpec       distribution of the knots, or {@code null} if unspecified.
+     * @param  rational       whether the control points are expressed in homogeneous coordinates.
+     */
+    public static BSplineCurve createBSplineCurve(DataPoints points, Array controlPoints, double[] knots,
+            int degree, SplineCurveForm curveForm, KnotType knotSpec, boolean rational)
+    {
+        return new DefaultBSplineCurve(points, controlPoints, knots, degree, curveForm, knotSpec, rational);
+    }
+
+    /**
+     * Creates a curve defined by control points, weights, a knot vector and a degree. Depending on
+     * the given values it is a Bézier curve, a b-spline or a NURBS.
+     *
+     * @param  points   control points of the curve.
+     * @param  weights  weight of each control point, making the curve rational.
+     * @param  knots    knot values, whose multiplicities make the curve clamped or periodic.
+     * @param  degree   degree of the basis functions.
+     */
+    public static NurbCurve createNurbCurve(DataPoints points, double[] weights, double[] knots, int degree) {
+        return new DefaultNurbCurve(points, weights, knots, degree);
+    }
+
+    /**
+     * Creates a curve at a constant distance and bearing from a base curve.
+     *
+     * @param  baseCurve     curve from which the returned curve is offset. It shall have a
+     *                       well-defined tangent at every position.
+     * @param  distance      constant offset distance. In a 2-dimensional coordinate system, a
+     *                       positive distance designates the left side of the base curve with
+     *                       respect to the tangent, and a negative distance its right side.
+     * @param  refDirection  reference direction of the offset in a 3-dimensional coordinate system,
+     *                       or {@code null} if the spatial dimension is 2.
+     */
+    public static OffsetCurve createOffsetCurve(Curve baseCurve, Length distance, Bearing refDirection) {
+        return new DefaultOffsetCurve(baseCurve, distance, refDirection);
+    }
+
+    /**
+     * Creates a curve composed of other curves which all share the same parameter space, each of
+     * them covering a disjoint projection of the coordinate system.
+     *
+     * @param  parameterRange  interval of the construction parameter shared by all the elements.
+     * @param  projections     projections of the coordinate system matching the element curves.
+     *                         They are disjoint and together cover the whole coordinate system.
+     * @param  elements        projections of the curve, one per projection of the coordinate system.
+     */
+    public static ProductCurve createProductCurve(Range<?> parameterRange,
+            List<Projection> projections, Curve ... elements)
+    {
+        return new DefaultProductCurve(parameterRange, projections, elements);
+    }
+
     public static CurvePolygon createCurvePolygon(Curve exterior, List<Curve> interiors) {
         return new DefaultCurvePolygon(exterior, interiors);
     }
@@ -281,6 +536,99 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
 
     public static MultiPolyhedron createMultiPolyhedron(CoordinateReferenceSystem crs, Polyhedron ... solids) {
         return new DefaultMultiPolyhedron(crs, solids);
+    }
+
+    /*
+     * Surfaces and solids defined over a rectangular parameter space, in which fixing all the
+     * parameters but one yields a family of section curves.
+     */
+
+    /**
+     * Creates a parametric curve surface using polylines as both horizontal and vertical curves,
+     * each cell of the parameter grid being interpolated bilinearly over the unit square.
+     *
+     * @param  points         positions at the knots of the parameter grid, in row-major order.
+     *                        There shall be {@code rows} × {@code columns} of them.
+     * @param  controlPoints  control points of the section curves in row-major order,
+     *                        or {@code null} if none.
+     * @param  rows           number of rows in the parameter grid.
+     * @param  columns        number of columns in the parameter grid.
+     * @param  knots          knot values, one sequence per surface parameter, or {@code null} if none.
+     */
+    public static BilinearGrid createBilinearGrid(DataPoints points, List<DirectPosition> controlPoints,
+            int rows, int columns, List<double[]> knots)
+    {
+        return new DefaultBilinearGrid(points, controlPoints, rows, columns, knots);
+    }
+
+    /**
+     * Creates a rational or polynomial parametric surface represented by control points, b-spline
+     * basis functions and possibly weights. For the rational flavour carrying a weight per control
+     * point, see {@link #createNurbSurface(Vector[][], double[][], double[], double[], int)}.
+     *
+     * @param  points         positions at the knots of the parameter grid, in row-major order.
+     *                        There shall be {@code rows} × {@code columns} of them.
+     * @param  controlPoints  control points in row-major order, or {@code null} if none.
+     * @param  rows           number of rows in the parameter grid.
+     * @param  columns        number of columns in the parameter grid.
+     * @param  knots          exactly two knot sequences, one per surface parameter, knots with a
+     *                        multiplicity greater than one being repeated in the sequence.
+     * @param  degree         algebraic degree of the b-spline basis functions.
+     * @param  knotSpec       distribution of the knots, or {@code null} if unspecified.
+     * @param  surfaceForm    kind of surface approximated by the spline, or {@code null} if none.
+     * @param  polynomial     {@code true} if the surface is polynomial, {@code false} if the control
+     *                        points are expressed in homogeneous coordinates, making it rational.
+     */
+    public static BSplineSurface createBSplineSurface(DataPoints points, List<DirectPosition> controlPoints,
+            int rows, int columns, List<double[]> knots, int degree, KnotType knotSpec,
+            BSplineSurfaceForm surfaceForm, boolean polynomial)
+    {
+        return new DefaultBSplineSurface(points, controlPoints, rows, columns, knots, degree,
+                knotSpec, surfaceForm, polynomial);
+    }
+
+    /**
+     * Creates a NURBS surface, i.e. the tensor product of two directions each having its own knot
+     * vector, over a grid of weighted control points.
+     *
+     * @param  controlPoints  control points as a grid, the first index running along <var>u</var>
+     *                        and the second one along <var>v</var>.
+     * @param  weights        weight of each control point, in the same layout as the control points.
+     * @param  knotsU         knot values along the <var>u</var> parameter.
+     * @param  knotsV         knot values along the <var>v</var> parameter.
+     * @param  degree         degree of the basis functions.
+     */
+    public static NurbSurface createNurbSurface(Vector<?>[][] controlPoints, double[][] weights,
+            double[] knotsU, double[] knotsV, int degree)
+    {
+        return new DefaultNurbSurface(controlPoints, weights, knotsU, knotsV, degree);
+    }
+
+    /**
+     * Creates a parametric curve solid whose three families of curves are b-splines.
+     *
+     * @param  points         positions at the knots of the parameter grid, in row-major order.
+     *                        There shall be {@code rows} × {@code columns} × {@code files} of them.
+     * @param  controlPoints  control points in row-major order, or {@code null} if none.
+     * @param  rows           number of horizontal rows in the parameter grid.
+     * @param  columns        number of vertical columns in the parameter grid.
+     * @param  files          number of depth files in the parameter grid.
+     */
+    public static BSplineSolid createBSolidSpline(DataPoints points, List<DirectPosition> controlPoints,
+            int rows, int columns, int files)
+    {
+        return new DefaultBSplineSolid(points, controlPoints, rows, columns, files);
+    }
+
+    /**
+     * Creates a prism by extruding the given base shape between two limits.
+     *
+     * @param  base            base shape of the prism, for example a polygon or a circle.
+     * @param  extrusionRange  lower and upper limits of the extrusion.
+     * @param  extrusionCrs    coordinate reference system of the extrusion range.
+     */
+    public static Prism createPrism(Geometry base, NumberRange<?> extrusionRange, SingleCRS extrusionCrs) {
+        return new DefaultPrism(base, extrusionRange, extrusionCrs);
     }
 
     /**

@@ -19,6 +19,7 @@ package org.apache.sis.geometries.curve;
 import javax.measure.quantity.Length;
 import org.apache.sis.geometries.Bearing;
 import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.internal.shared.DefaultOffsetCurve;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
@@ -45,7 +46,18 @@ import org.opengis.annotation.UML;
  * @see ISO 19107:2019 - 6.4.20
  */
 @UML(identifier="OffsetCurve", specification=ISO_19107)
-public non-sealed interface OffsetCurve extends Curve {
+public sealed interface OffsetCurve extends Curve
+        permits DefaultOffsetCurve {
+
+    /**
+     * Well-known text keyword of this geometry type.
+     */
+    static final String TYPE = "OFFSETCURVE";
+
+    @Override
+    default String getGeometryType() {
+        return TYPE;
+    }
 
     /**
      * Distance at which this curve is generated from the {@linkplain #getBaseCurve() base curve}.

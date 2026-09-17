@@ -46,7 +46,7 @@ import org.opengis.geometry.DirectPosition;
  */
 @UML(identifier="ParametricCurveSolid", specification=ISO_19107)
 public sealed interface ParametricCurveSolid extends Solid
-        permits BSolidSpline
+        permits BSplineSolid
 {
 
     /**

@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.solid;
 
 import org.apache.sis.geometries.SolidInterpolation;
+import org.apache.sis.geometries.internal.shared.DefaultBSplineSolid;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
@@ -38,7 +39,18 @@ import org.opengis.annotation.UML;
  * @see ISO 19107:2019 - 9.3.2
  */
 @UML(identifier="BSolidSpline", specification=ISO_19107)
-public non-sealed interface BSolidSpline extends ParametricCurveSolid {
+public sealed interface BSplineSolid extends ParametricCurveSolid
+        permits DefaultBSplineSolid {
+
+    /**
+     * Well-known text keyword of this geometry type.
+     */
+    static final String TYPE = "BSOLIDSPLINE";
+
+    @Override
+    default String getGeometryType() {
+        return TYPE;
+    }
 
     /**
      * Returns {@link SolidInterpolation#BSPLINE}: the three families of curves defining the

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.apache.sis.geometries.internal.shared.DefaultCubicSpline;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
@@ -40,7 +41,18 @@ import org.opengis.annotation.UML;
  * @see ISO 19107:2019 - 7.13.6
  */
 @UML(identifier="CubicSpline", specification=ISO_19107)
-public non-sealed interface CubicSpline extends PolynomialSpline {
+public sealed interface CubicSpline extends PolynomialSpline
+        permits DefaultCubicSpline {
+
+    /**
+     * Well-known text keyword of this geometry type.
+     */
+    static final String TYPE = "CUBICSPLINE";
+
+    @Override
+    default String getGeometryType() {
+        return TYPE;
+    }
 
     /**
      * Returns 3: a cubic spline is defined by polynomials of degree 3.

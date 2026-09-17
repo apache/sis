@@ -23,6 +23,7 @@ import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.cs.Projection;
+import org.apache.sis.geometries.internal.shared.DefaultProductCurve;
 import org.apache.sis.measure.Range;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -52,7 +53,22 @@ import org.opengis.annotation.UML;
  * @see ISO 19107:2019 - 6.4.22
  */
 @UML(identifier="ProductCurve", specification=ISO_19107)
-public non-sealed interface ProductCurve extends Curve, GeometryCollection<Curve> {
+public sealed interface ProductCurve extends Curve, GeometryCollection<Curve>
+        permits DefaultProductCurve {
+
+    /**
+     * Well-known text keyword of this geometry type.
+     */
+    static final String TYPE = "PRODUCTCURVE";
+
+    /**
+     * Returns {@link #TYPE} rather than the keyword of a plain geometry collection.
+     * This value resolves the ambiguity between {@link Curve} and {@link GeometryCollection}.
+     */
+    @Override
+    default String getGeometryType() {
+        return TYPE;
+    }
 
     /**
      * Returns {@link CurveInterpolation#PRODUCT_CURVE}: the interpolation of a product curve is

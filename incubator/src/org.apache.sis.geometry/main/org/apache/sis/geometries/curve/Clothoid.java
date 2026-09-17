@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.curve;
 
 import org.apache.sis.geometries.CurveInterpolation;
+import org.apache.sis.geometries.internal.shared.DefaultClothoid;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
@@ -46,7 +47,18 @@ import org.opengis.annotation.UML;
  * @see ISO 19107:2019 - 7.11.3
  */
 @UML(identifier="Clothoid", specification=ISO_19107)
-public non-sealed interface Clothoid extends Spiral {
+public sealed interface Clothoid extends Spiral
+        permits DefaultClothoid {
+
+    /**
+     * Well-known text keyword of this geometry type.
+     */
+    static final String TYPE = "CLOTHOID";
+
+    @Override
+    default String getGeometryType() {
+        return TYPE;
+    }
 
     /**
      * Returns {@link CurveInterpolation#CLOTHOID}.
