@@ -16,7 +16,17 @@
  */
 package org.apache.sis.geometries.surface;
 
+import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.CommonCRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -27,6 +37,18 @@ import org.junit.jupiter.api.Test;
  * @author Johann Sorel (Geomatys)
  */
 public class PreparedTINTest {
+    /**
+     * A three-dimensional coordinate reference system used by the tests.
+     */
+    private static final CoordinateReferenceSystem CRS3D;
+    static {
+        try {
+            CRS3D = CRS.compound(CommonCRS.WGS84.normalizedGeographic(), CommonCRS.Vertical.ELLIPSOIDAL.crs());
+        } catch (FactoryException ex) {
+            throw new RuntimeException(ex.getMessage(), ex);
+        }
+    }
+
     /**
      * Test of {@code getPatches(Envelope)}.
      */
@@ -57,5 +79,58 @@ public class PreparedTINTest {
     @Test
     @Disabled("Not implemented yet.")
     public void testEvaluator() {
+    }
+
+    /**
+     * Test single prepared tin.
+     */
+    @Test
+    public void testSingle() throws TransformException {
+
+        final MeshPrimitive.Triangles geometry = new MeshPrimitive.Triangles();
+        geometry.setPositions(NDArrays.of(CRS3D,
+                0,1,2,
+                3,4,5,
+                6,7,8,
+                9,10,11));
+        geometry.setIndex(NDArrays.ofUnsigned(1, 0, 1, 2, 2, 3, 1));
+
+        final PreparedTIN tin = PreparedTIN.create(geometry);
+        assertEquals(2, tin.getPatches(null).count());
+
+        GeneralEnvelope env = new GeneralEnvelope(CommonCRS.WGS84.normalizedGeographic());
+        env.setRange(0, 8.9, 10);
+        env.setRange(1, 8, 9);
+        assertEquals(1, tin.getPatches(env).count());
+
+    }
+
+    /**
+     * Test multi prepared tin.
+     */
+    @Test
+    public void testMulti() throws TransformException {
+
+        final MeshPrimitive.Triangles geometry = new MeshPrimitive.Triangles();
+        geometry.setPositions(NDArrays.of(CRS3D,
+                0,1,2,
+                3,4,5,
+                6,7,8,
+                9,10,11));
+        geometry.setIndex(NDArrays.ofUnsigned(1, 0, 1, 2, 2, 3, 1));
+
+        final PreparedTIN tin = PreparedTIN.create(geometry, geometry);
+        assertEquals(4, tin.getPatches(null).count());
+
+        GeneralEnvelope env = new GeneralEnvelope(CommonCRS.WGS84.normalizedGeographic());
+        env.setRange(0, 8.9, 10);
+        env.setRange(1, 8, 9);
+        assertEquals(2, tin.getPatches(env).count());
+
+        assertEquals(4, tin.getNumPatches());
+        assertEquals("TRIANGLE Z ((0 1 2, 3 4 5, 6 7 8, 0 1 2))", tin.getPatchN(0).asText());
+        assertEquals("TRIANGLE Z ((6 7 8, 9 10 11, 3 4 5, 6 7 8))", tin.getPatchN(1).asText());
+        assertEquals("TRIANGLE Z ((0 1 2, 3 4 5, 6 7 8, 0 1 2))", tin.getPatchN(2).asText());
+        assertEquals("TRIANGLE Z ((6 7 8, 9 10 11, 3 4 5, 6 7 8))", tin.getPatchN(3).asText());
     }
 }

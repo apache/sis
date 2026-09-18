@@ -218,4 +218,108 @@ public class EmptyTest {
     @Disabled("Not implemented yet.")
     public void testIntersects() {
     }
+
+    /**
+     * Test of {@code getCoordinateReferenceSystem()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetCoordinateReferenceSystem() {
+    }
+
+    /**
+     * Test of {@code setCoordinateReferenceSystem(CoordinateReferenceSystem)}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testSetCoordinateReferenceSystem() {
+    }
+
+    /**
+     * Test of {@code getMetadata()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetMetadata() {
+    }
+
+    /**
+     * Test of {@code getAttributesType()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetAttributesType() {
+    }
+
+    /**
+     * Test of {@code getDimension()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetDimension() {
+    }
+
+    /**
+     * Test of {@code getDimension(DirectPosition)}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetDimension_DirectPosition() {
+    }
+
+    /**
+     * Test of {@code is3D()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testIs3D() {
+    }
+
+    /**
+     * Test of {@code getSpatialDimension()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetSpatialDimension() {
+    }
+
+    /**
+     * Test of {@code getBoundaryType()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetBoundaryType() {
+    }
+
+    /**
+     * Test of {@code getGeometryType2()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetGeometryType2() {
+    }
+
+    /**
+     * Test of {@code getEnvelope()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetEnvelope() {
+    }
+
+    /**
+     * Test of {@code getMaximalComplex()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetMaximalComplex() {
+    }
+
+    /**
+     * Test of {@code userProperties()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testUserProperties() {
+    }
 }

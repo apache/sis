@@ -14,24 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.surface;
+package org.apache.sis.geometries.internal.shared;
 
 // Test dependencies
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.curve.CubicSplineTest;
 
 
 /**
- * Tests {@link TriangulatedSurface}.
+ * Tests {@link DefaultCubicSpline}.
  *
  * @author Johann Sorel (Geomatys)
  */
-public class TriangulatedSurfaceTest {
-    /**
-     * Test of {@code getInterpolation()}.
-     */
-    @Test
-    @Disabled("Not implemented yet.")
-    public void testGetInterpolation() {
-    }
+public class DefaultCubicSplineTest extends CubicSplineTest {
 }

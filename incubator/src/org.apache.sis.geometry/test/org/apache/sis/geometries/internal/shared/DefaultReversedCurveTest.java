@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries;
+package org.apache.sis.geometries.internal.shared;
 
 // Test dependencies
 import org.junit.jupiter.api.Disabled;
@@ -22,11 +22,11 @@ import org.junit.jupiter.api.Test;
 
 
 /**
- * Tests {@link Curve}.
+ * Tests {@link DefaultReversedCurve}.
  *
  * @author Johann Sorel (Geomatys)
  */
-public class CurveTest {
+public class DefaultReversedCurveTest {
     /**
      * Test of {@code getTopologicDimension()}.
      */
@@ -265,5 +265,197 @@ public class CurveTest {
     @Test
     @Disabled("Not implemented yet.")
     public void testSubCurve_Length_Length() {
+    }
+
+    /**
+     * Test of {@code getOrientationSign()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetOrientationSign() {
+    }
+
+    /**
+     * Test of {@code getProxy()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetProxy() {
+    }
+
+    /**
+     * Test of {@code getPrimitive()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetPrimitive() {
+    }
+
+    /**
+     * Test of {@code getBoundaryType()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetBoundaryType() {
+    }
+
+    /**
+     * Test of {@code getDimension(DirectPosition)}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetDimension() {
+    }
+
+    /**
+     * Test of {@code getSegments()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetSegments() {
+    }
+
+    /**
+     * Test of {@code getCoordinateReferenceSystem()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetCoordinateReferenceSystem() {
+    }
+
+    /**
+     * Test of {@code setCoordinateReferenceSystem(CoordinateReferenceSystem)}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testSetCoordinateReferenceSystem() {
+    }
+
+    /**
+     * Test of {@code getMetadata()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetMetadata() {
+    }
+
+    /**
+     * Test of {@code getAttributesType()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetAttributesType() {
+    }
+
+    /**
+     * Test of {@code getDimension(DirectPosition)}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetDimension_DirectPosition() {
+    }
+
+    /**
+     * Test of {@code is3D()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testIs3D() {
+    }
+
+    /**
+     * Test of {@code getSpatialDimension()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetSpatialDimension() {
+    }
+
+    /**
+     * Test of {@code getGeometryType()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetGeometryType() {
+    }
+
+    /**
+     * Test of {@code getGeometryType2()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetGeometryType2() {
+    }
+
+    /**
+     * Test of {@code getEnvelope()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetEnvelope() {
+    }
+
+    /**
+     * Test of {@code getCentroid()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetCentroid() {
+    }
+
+    /**
+     * Test of {@code getRepresentativePoint()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetRepresentativePoint() {
+    }
+
+    /**
+     * Test of {@code getClosure()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetClosure() {
+    }
+
+    /**
+     * Test of {@code getMaximalComplex()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testGetMaximalComplex() {
+    }
+
+    /**
+     * Test of {@code isEmpty()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testIsEmpty() {
+    }
+
+    /**
+     * Test of {@code isSimple()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testIsSimple() {
+    }
+
+    /**
+     * Test of {@code isValid()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testIsValid() {
+    }
+
+    /**
+     * Test of {@code userProperties()}.
+     */
+    @Test
+    @Disabled("Not implemented yet.")
+    public void testUserProperties() {
     }
 }

@@ -14,32 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.curve;
+package org.apache.sis.geometries.internal.shared;
 
 // Test dependencies
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.PointTest;
 
 
 /**
- * Tests {@link FunctionCurve}.
+ * Tests {@link IndexedPoint}.
  *
  * @author Johann Sorel (Geomatys)
  */
-public class FunctionCurveTest {
-    /**
-     * Test of {@code getNumArc()}.
-     */
-    @Test
-    @Disabled("Not implemented yet.")
-    public void testGetNumArc() {
-    }
-
-    /**
-     * Test of {@code getSegment(int)}.
-     */
-    @Test
-    @Disabled("Not implemented yet.")
-    public void testGetSegment() {
-    }
+public class IndexedPointTest extends PointTest {
 }

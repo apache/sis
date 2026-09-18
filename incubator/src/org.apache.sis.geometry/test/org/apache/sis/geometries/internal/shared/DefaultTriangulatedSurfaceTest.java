@@ -14,48 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries;
+package org.apache.sis.geometries.internal.shared;
 
 // Test dependencies
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.surface.TINTest;
 
 
 /**
- * Tests {@link Orientable}.
+ * Tests {@link DefaultTriangulatedSurface}.
  *
  * @author Johann Sorel (Geomatys)
  */
-public class OrientableTest {
-    /**
-     * Test of {@code getOrientationSign()}.
-     */
-    @Test
-    @Disabled("Not implemented yet.")
-    public void testGetOrientationSign() {
-    }
-
-    /**
-     * Test of {@code getProxy()}.
-     */
-    @Test
-    @Disabled("Not implemented yet.")
-    public void testGetProxy() {
-    }
-
-    /**
-     * Test of {@code getPrimitive()}.
-     */
-    @Test
-    @Disabled("Not implemented yet.")
-    public void testGetPrimitive() {
-    }
-
-    /**
-     * Test of {@code getReverse()}.
-     */
-    @Test
-    @Disabled("Not implemented yet.")
-    public void testGetReverse() {
-    }
+public class DefaultTriangulatedSurfaceTest extends TINTest {
 }

@@ -14,24 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.solid;
+package org.apache.sis.geometries.internal.shared;
 
 // Test dependencies
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.EmptyTest;
 
 
 /**
- * Tests {@link BSolidSpline}.
+ * Tests {@link DefaultEmpty}.
  *
  * @author Johann Sorel (Geomatys)
  */
-public class BSolidSplineTest {
-    /**
-     * Test of {@code getInterpolation()}.
-     */
-    @Test
-    @Disabled("Not implemented yet.")
-    public void testGetInterpolation() {
-    }
+public class DefaultEmptyTest extends EmptyTest {
 }
