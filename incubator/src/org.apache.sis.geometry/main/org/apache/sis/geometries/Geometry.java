@@ -812,7 +812,7 @@ public sealed interface Geometry
      *
      * <p>Constraints:</p>
      * <ul>
-     *   <li>Equivalent to {@code relate(other, "TNNNNNFFN")}.</li>
+     *   <li>Equivalent to the {@code "TNNNNNFFN"} {@linkplain DE9IM intersection pattern}.</li>
      *   <li>{@code a.contains(b)} is equivalent to {@code b.within(a)}.</li>
      * </ul>
      *
@@ -855,7 +855,8 @@ public sealed interface Geometry
      *
      * <p>Constraints:</p>
      * <ul>
-     *   <li>Equivalent to {@code relate(other, "FFNFFNNNN")}, or {@code "FNNN"} on the order 4 matrix.</li>
+     *   <li>Equivalent to the {@code "FFNFFNNNN"} {@linkplain DE9IM intersection pattern},
+     *       or {@code "FNNN"} on the order 4 matrix.</li>
      *   <li>The negation of {@link #intersects(Geometry)}.</li>
      * </ul>
      *
@@ -876,7 +877,7 @@ public sealed interface Geometry
      *
      * <p>Constraints:</p>
      * <ul>
-     *   <li>Equivalent to {@code relate(other, "NFFFNFNNF")}.</li>
+     *   <li>Equivalent to the {@code "NFFFNFNNF"} {@linkplain DE9IM intersection pattern}.</li>
      *   <li>Only the spatial coordinates are compared, so a spatio-temporal geometry is tested
      *       for spatial equality only.</li>
      *   <li>The given geometry is converted to the coordinate reference system of this geometry
@@ -901,7 +902,7 @@ public sealed interface Geometry
      *
      * <p>Constraints:</p>
      * <ul>
-     *   <li>Equivalent to {@code relate(other, "TNNN")} on the order 4 matrix.</li>
+     *   <li>Equivalent to the {@code "TNNN"} {@linkplain DE9IM intersection pattern} on the order 4 matrix.</li>
      *   <li>The negation of {@link #disjoint(Geometry)}.</li>
      * </ul>
      *
@@ -967,7 +968,7 @@ public sealed interface Geometry
      *
      * <p>Constraints:</p>
      * <ul>
-     *   <li>Equivalent to {@code relate(other, "TNTNNNTNN")}.</li>
+     *   <li>Equivalent to the {@code "TNTNNNTNN"} {@linkplain DE9IM intersection pattern}.</li>
      *   <li>Symmetric: {@code a.overlaps(b)} is equivalent to {@code b.overlaps(a)}.</li>
      * </ul>
      *
@@ -984,49 +985,41 @@ public sealed interface Geometry
     }
 
     /**
-     * Returns whether the two geometries are related according to the given intersection pattern,
-     * encoded as an integer mask.
-     *
-     * <p>Difference with ISO 19107, which specifies the pattern as a string:
-     * see {@link #relate(Geometry, String)} for the standard operation.</p>
-     *
-     * @param  other   the geometry to test against.
-     * @param  matrix  intersection pattern, encoded as an integer mask.
-     * @return {@code true} if the two geometries match the given pattern.
-     * @throws OperationException if the test cannot be performed.
-     *
-     * @see GeometryProcessor#relate(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry, int)
-     */
-    default boolean relate(Geometry other, int matrix) throws OperationException {
-        return new GeometryProcessor().relate(this, other, matrix);
-    }
-
-    /**
-     * Returns whether the two geometries are related according to the given intersection pattern.
+     * Returns whether the two geometries are related according to the given intersection matrix.
      * This is the reference operation from which all the named topological predicates are derived.
      *
      * <p>Constraints:</p>
      * <ul>
-     *   <li>A pattern of 4 characters tests the intersections between the closures and the exteriors
+     *   <li>A matrix of order 4 tests the intersections between the closures and the exteriors
      *       of the two geometries, in row-major order.</li>
-     *   <li>A pattern of 9 characters tests the intersections between the interiors, the boundaries
+     *   <li>A matrix of order 9 tests the intersections between the interiors, the boundaries
      *       and the exteriors of the two geometries, in row-major order.</li>
-     *   <li>{@code T} requires a non-empty intersection, {@code F} an empty one, and {@code N}
-     *       (also written {@code *}) leaves that cell untested.</li>
-     *   <li>The digits {@code 0} to {@code 3} additionally require the intersection to be of that
-     *       topological dimension at most.</li>
+     *   <li>{@link DE9IM.Constraint#NON_EMPTY} requires a non-empty intersection,
+     *       {@link DE9IM.Constraint#EMPTY} an empty one, and {@link DE9IM.Constraint#ANY}
+     *       leaves that cell untested.</li>
+     *   <li>{@link DE9IM.Constraint#POINT} to {@link DE9IM.Constraint#SOLID} require the intersection
+     *       to be of exactly that topological dimension.</li>
      * </ul>
      *
+     * <p>Difference with ISO 19107, which specifies the pattern as a string: the pattern is given as
+     * a {@link DE9IM} matrix, which can be {@linkplain DE9IM#valueOf(String) read from a string} of
+     * 4 or 9 characters, from an {@linkplain DE9IM#valueOf(int) integer mask}, or built cell by cell.</p>
+     *
+     * <p>Difference with ISO 19107, where a digit requires the intersection to be of that topological
+     * dimension <em>at most</em>: the digits are interpreted as requiring <em>exactly</em> that dimension,
+     * which is the interpretation of OGC Simple Feature Access and of the usual implementations such as
+     * JTS.</p>
+     *
      * @param  other   the geometry to test against.
-     * @param  matrix  intersection pattern of 4 or 9 characters.
+     * @param  matrix  intersection pattern of order 4 or 9.
      * @return {@code true} if the two geometries match the given pattern.
      * @throws OperationException if the test cannot be performed.
      *
-     * @see GeometryProcessor#relate(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry, java.lang.String)
+     * @see GeometryProcessor#relate(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry, org.apache.sis.geometries.DE9IM)
      * @see ISO 19107:2019 - relate & 3Drelate - 6.4.8.8, 6.4.9, 10.8.4, 10.8.5, 10.8.6
      */
     @UML(identifier="relate", specification=ISO_19107)
-    default boolean relate(Geometry other, String matrix) throws OperationException {
+    default boolean relate(Geometry other, DE9IM matrix) throws OperationException {
         return new GeometryProcessor().relate(this, other, matrix);
     }
 
@@ -1036,8 +1029,8 @@ public sealed interface Geometry
      * <p>Constraints:</p>
      * <ul>
      *   <li>The closures intersect but the interiors are disjoint.</li>
-     *   <li>Equivalent to {@code relate(other, "FT*******")}, {@code "F**T*****"}
-     *       or {@code "F***T****"}.</li>
+     *   <li>Equivalent to the {@code "FT*******"}, {@code "F**T*****"} or {@code "F***T****"}
+     *       {@linkplain DE9IM intersection patterns}.</li>
      * </ul>
      *
      * @param  other  the geometry to test against.
@@ -1058,7 +1051,7 @@ public sealed interface Geometry
      *
      * <p>Constraints:</p>
      * <ul>
-     *   <li>Equivalent to {@code relate(other, "TNFNNFNNN")}.</li>
+     *   <li>Equivalent to the {@code "TNFNNFNNN"} {@linkplain DE9IM intersection pattern}.</li>
      *   <li>{@code a.within(b)} is equivalent to {@code b.contains(a)}.</li>
      * </ul>
      *

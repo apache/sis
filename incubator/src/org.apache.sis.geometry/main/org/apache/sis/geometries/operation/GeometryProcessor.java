@@ -25,6 +25,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.measure.Quantity;
 import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.DE9IM;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
@@ -45,6 +46,7 @@ import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
+import org.apache.sis.util.ArgumentChecks;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
@@ -262,17 +264,23 @@ public final class GeometryProcessor {
      * intersectionPatternMatrix.
      * This returns FALSE if all the tested intersections are empty except exterior (this) intersect exterior (another).
      *
-     * @todo merge with ISO Relate beneath
+     * @param  geom1   the geometry on which the operation is invoked.
+     * @param  geom2   the geometry to test against.
+     * @param  matrix  the intersection pattern, of order 4 or 9.
+     * @return whether the two geometries match the given pattern.
+     * @throws OperationException if the test cannot be performed.
      */
-    public boolean relate(Geometry geom1, Geometry geom2, int matrix) throws OperationException {
-        throw new UnsupportedOperationException();
-    }
-
     @UML(identifier="relate", specification=ISO_19107) // section 6.4.8.8
     //@UML(identifier="3Drelate", specification=ISO_19107) // section 6.4.9
-    public boolean relate(Geometry geom1, Geometry geom2, String matrix) throws OperationException {
+    public boolean relate(Geometry geom1, Geometry geom2, DE9IM matrix) throws OperationException {
+        ArgumentChecks.ensureNonNull("matrix", matrix);
         //TODO : fallback on JTS until implemented
-        return jts(geom1).relate(jts(geom2), matrix);
+        final org.locationtech.jts.geom.IntersectionMatrix computed = jts(geom1).relate(jts(geom2));
+        final int[] dimensions = new int[9];
+        for (int i=0; i<dimensions.length; i++) {
+            dimensions[i] = computed.get(i / 3, i % 3);
+        }
+        return matrix.matches(dimensions);
     }
 
     /**

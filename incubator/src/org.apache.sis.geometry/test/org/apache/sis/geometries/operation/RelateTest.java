@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.operation;
 
+import org.apache.sis.geometries.DE9IM;
 import org.apache.sis.geometries.Geometry;
 
 // Test dependencies
@@ -25,13 +26,13 @@ import org.junit.jupiter.api.Test;
 
 
 /**
- * Tests the {@code relate} operations of {@link GeometryProcessor}.
+ * Tests the {@code relate} operation of {@link GeometryProcessor}.
  *
  * @author Johann Sorel (Geomatys)
  */
 public class RelateTest {
     /**
-     * The inputs and expected result of a single test of {@code relate(Geometry, Geometry, int)}.
+     * The inputs and expected result of a single test of {@code relate(Geometry, Geometry, DE9IM)}.
      *
      * @param input    the geometry on which the operation is invoked.
      * @param other    the other operand.
@@ -41,65 +42,24 @@ public class RelateTest {
      */
     private record Entry(Geometry input,
                          Geometry other,
-                         int matrix,
+                         DE9IM matrix,
                          Boolean expected,
                          Class<? extends Exception> error)
     {
     }
 
     /**
-     * All test cases of {@code relate(Geometry, Geometry, int)}.
+     * All test cases of {@code relate(Geometry, Geometry, DE9IM)}.
      */
     private static final Entry[] ENTRIES = {
     };
 
     /**
-     * Tests {@code relate(Geometry, Geometry, int)} on all declared test cases.
+     * Tests {@code relate(Geometry, Geometry, DE9IM)} on all declared test cases.
      */
     @Test
     public void testRelate() {
         for (final Entry entry : ENTRIES) {
-            try {
-                final boolean result = new GeometryProcessor().relate(entry.input(), entry.other(), entry.matrix());
-                assertNull(entry.error(), "An exception was expected.");
-                assertEquals(entry.expected(), result);
-            } catch (Exception ex) {
-                if (entry.error() == null || !entry.error().isInstance(ex)) {
-                    throw new AssertionError("Unexpected exception for " + entry, ex);
-                }
-            }
-        }
-    }
-
-    /**
-     * The inputs and expected result of a single test of {@code relate(Geometry, Geometry, String)}.
-     *
-     * @param input    the geometry on which the operation is invoked.
-     * @param other    the other operand.
-     * @param matrix   the intersection matrix pattern.
-     * @param expected the expected result, or {@code null} if an exception is expected.
-     * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
-     */
-    private record PatternEntry(Geometry input,
-                                Geometry other,
-                                String matrix,
-                                Boolean expected,
-                                Class<? extends Exception> error)
-    {
-    }
-
-    /**
-     * All test cases of {@code relate(Geometry, Geometry, String)}.
-     */
-    private static final PatternEntry[] PATTERN_ENTRIES = {
-    };
-
-    /**
-     * Tests {@code relate(Geometry, Geometry, String)} on all declared test cases.
-     */
-    @Test
-    public void testRelateByPattern() {
-        for (final PatternEntry entry : PATTERN_ENTRIES) {
             try {
                 final boolean result = new GeometryProcessor().relate(entry.input(), entry.other(), entry.matrix());
                 assertNull(entry.error(), "An exception was expected.");
