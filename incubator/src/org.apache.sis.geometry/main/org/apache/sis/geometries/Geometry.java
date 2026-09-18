@@ -25,6 +25,8 @@ import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.operation.GeometryProcessor;
 import org.apache.sis.geometries.operation.OperationException;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
@@ -589,12 +591,13 @@ public sealed interface Geometry
      * @see GeometryProcessor#buffer(org.apache.sis.geometries.Geometry, double)
      */
     default Geometry buffer(double distance) throws OperationException {
-        return new GeometryProcessor().buffer(this, distance);
+        return buffer(Quantities.create(distance, Units.UNITY));
     }
 
     /**
      * Returns a geometry containing all the positions whose distance to this geometry
      * is smaller than or equal to the given radius.
+     * If the quantity unit is dimensionless, then the CRS unit is assumed.
      *
      * <p>Constraints:</p>
      * <ul>
@@ -608,16 +611,18 @@ public sealed interface Geometry
      *
      * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
      * handle temporal geometries and crs-less geometries.</p>
+     * <p>Difference with ISO-19107 to match OGC SFA and SQL/MM :
+     * if the quantity unit is dimensionless, then the CRS unit is assumed.
+     * </p>
      *
      * @param  radius  radius of the buffer.
      * @return buffer around this geometry.
      * @throws OperationException if the buffer cannot be computed.
      *
      * @see GeometryProcessor#buffer(org.apache.sis.geometries.Geometry, javax.measure.Quantity)
-     * @see ISO 19107:2019 - 6.4.4.24, 6.4.8.3, 6.4.9
+     * @see ISO 19107:2019 - buffer & 3Dbuffer - 6.4.4.24, 6.4.8.3, 6.4.9
      */
     @UML(identifier="buffer", specification=ISO_19107)
-    //@UML(identifier="3Dbuffer", specification=ISO_19107)
     default Geometry buffer(Quantity<?> radius) throws OperationException {
         return new GeometryProcessor().buffer(this, radius);
     }
@@ -637,10 +642,9 @@ public sealed interface Geometry
      * @throws OperationException if the convex hull cannot be computed.
      *
      * @see GeometryProcessor#convexHull(org.apache.sis.geometries.Geometry)
-     * @see ISO 19107:2019 - 6.4.4.10, 6.4.9
+     * @see ISO 19107:2019 - convexHull & 3DconvexHull - 6.4.4.10, 6.4.9
      */
     @UML(identifier="convexHull", specification=ISO_19107)
-    //@UML(identifier="3DconvexHull", specification=ISO_19107)
     default Geometry convexHull() throws OperationException {
         return new GeometryProcessor().convexHull(this);
     }
@@ -660,10 +664,9 @@ public sealed interface Geometry
      * @throws OperationException if the difference cannot be computed.
      *
      * @see GeometryProcessor#difference(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
-     * @see ISO 19107:2019 - 6.4.4.30, 6.4.8.5, 6.4.9
+     * @see ISO 19107:2019 - difference & 3Ddifference - 6.4.4.30, 6.4.8.5, 6.4.9
      */
     @UML(identifier="difference", specification=ISO_19107)
-    //@UML(identifier="3Ddifference", specification=ISO_19107)
     default Geometry difference(Geometry other) throws OperationException {
         return new GeometryProcessor().difference(this, other);
     }
@@ -687,10 +690,9 @@ public sealed interface Geometry
      * @throws OperationException if the distance cannot be computed.
      *
      * @see GeometryProcessor#distance(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
-     * @see ISO 19107:2019 - 6.4.4.26, 6.4.8.2, 6.4.9
+     * @see ISO 19107:2019 - distance & 3Ddistance - 6.4.4.26, 6.4.8.2, 6.4.9
      */
     @UML(identifier="distance", specification=ISO_19107)
-    //@UML(identifier="3Ddistance", specification=ISO_19107)
     default Quantity<?> distance(Geometry other) throws OperationException {
         return new GeometryProcessor().distance(this, other);
     }
@@ -710,10 +712,9 @@ public sealed interface Geometry
      * @throws OperationException if the intersection cannot be computed.
      *
      * @see GeometryProcessor#intersection(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
-     * @see ISO 19107:2019 - 6.4.4.30, 6.4.8.4, 6.4.9
+     * @see ISO 19107:2019 - intersection & 3Dintersection - 6.4.4.30, 6.4.8.4, 6.4.9
      */
     @UML(identifier="intersection", specification=ISO_19107)
-    //@UML(identifier="3Dintersection", specification=ISO_19107)
     default Geometry intersection(Geometry other) throws OperationException {
         return new GeometryProcessor().intersection(this, other);
     }
@@ -734,10 +735,9 @@ public sealed interface Geometry
      * @throws OperationException if the symmetric difference cannot be computed.
      *
      * @see GeometryProcessor#symDifference(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
-     * @see ISO 19107:2019 - 6.4.4.30, 6.4.8.6, 6.4.9
+     * @see ISO 19107:2019 - symDifference & 3DsymDifference - 6.4.4.30, 6.4.8.6, 6.4.9
      */
     @UML(identifier="symDifference", specification=ISO_19107)
-    //@UML(identifier="3DsymDifference", specification=ISO_19107)
     default Geometry symDifference(Geometry other) throws OperationException {
         return new GeometryProcessor().symDifference(this, other);
     }
@@ -757,10 +757,9 @@ public sealed interface Geometry
      * @throws OperationException if the union cannot be computed.
      *
      * @see GeometryProcessor#union(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
-     * @see ISO 19107:2019 - 6.4.4.30, 6.4.8.7, 6.4.9
+     * @see ISO 19107:2019 - union & 3Dunion - 6.4.4.30, 6.4.8.7, 6.4.9
      */
     @UML(identifier="union", specification=ISO_19107)
-    //@UML(identifier="3Dunion", specification=ISO_19107)
     default Geometry union(Geometry other) throws OperationException {
         return new GeometryProcessor().union(this, other);
     }
@@ -800,10 +799,9 @@ public sealed interface Geometry
      * @throws OperationException if the test cannot be performed.
      *
      * @see GeometryProcessor#contains(org.apache.sis.geometries.Geometry, org.opengis.geometry.DirectPosition)
-     * @see ISO 19107:2019 - 6.4.2, 6.4.4.30, 6.4.9
+     * @see ISO 19107:2019 - contains & 3Dcontains - 6.4.2, 6.4.4.30, 6.4.9
      */
     @UML(identifier="contains", specification=ISO_19107)
-    //@UML(identifier="3Dcontains", specification=ISO_19107)
     default boolean contains(DirectPosition element) throws OperationException {
         return new GeometryProcessor().contains(this, element);
     }
@@ -823,7 +821,7 @@ public sealed interface Geometry
      * @throws OperationException if the test cannot be performed.
      *
      * @see GeometryProcessor#contains(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
-     * @see ISO 19107:2019 - 6.4.4.30, 6.4.8.8, 10.8.6.3.2
+     * @see ISO 19107:2019 - contains & 3Dcontains - 6.4.4.30, 6.4.8.8, 10.8.6.3.2
      */
     @UML(identifier="contains", specification=ISO_19107)
     default boolean contains(Geometry other) throws OperationException {
@@ -845,10 +843,9 @@ public sealed interface Geometry
      * @throws OperationException if the test cannot be performed.
      *
      * @see GeometryProcessor#crosses(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
-     * @see ISO 19107:2019 - 6.4.8.8, 6.4.9, 10.8.6.3.6
+     * @see ISO 19107:2019 - crosses & 3Dcrosses - 6.4.8.8, 6.4.9, 10.8.6.3.6
      */
     @UML(identifier="crosses", specification=ISO_19107)
-    //@UML(identifier="3Dcrosses", specification=ISO_19107)
     default boolean crosses(Geometry other) throws OperationException {
         return new GeometryProcessor().crosses(this, other);
     }
@@ -867,10 +864,9 @@ public sealed interface Geometry
      * @throws OperationException if the test cannot be performed.
      *
      * @see GeometryProcessor#disjoint(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
-     * @see ISO 19107:2019 - 6.4.8.8, 6.4.9, 10.8.6.3.3
+     * @see ISO 19107:2019 - disjoint & 3Ddisjoint - 6.4.8.8, 6.4.9, 10.8.6.3.3
      */
     @UML(identifier="disjoint", specification=ISO_19107)
-    //@UML(identifier="3Ddisjoint", specification=ISO_19107)
     default boolean disjoint(Geometry other) throws OperationException {
         return new GeometryProcessor().disjoint(this, other);
     }
@@ -893,10 +889,9 @@ public sealed interface Geometry
      * @throws OperationException if the test cannot be performed.
      *
      * @see GeometryProcessor#equal(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
-     * @see ISO 19107:2019 - 6.4.4.27, 6.4.4.30, 6.4.8.8, 6.4.9, 10.8.6.3.1
+     * @see ISO 19107:2019 - equals & 3Dequals - 6.4.4.27, 6.4.4.30, 6.4.8.8, 6.4.9, 10.8.6.3.1
      */
     @UML(identifier="equals", specification=ISO_19107)
-    //@UML(identifier="3Dequals", specification=ISO_19107)
     default boolean equal(Geometry other) throws OperationException {
         return new GeometryProcessor().equal(this, other);
     }
@@ -915,10 +910,9 @@ public sealed interface Geometry
      * @throws OperationException if the test cannot be performed.
      *
      * @see GeometryProcessor#intersects(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
-     * @see ISO 19107:2019 - 6.4.4.30, 6.4.8.8, 6.4.9, 10.8.6.3.4
+     * @see ISO 19107:2019 - intersects & 3Dintersects - 6.4.4.30, 6.4.8.8, 6.4.9, 10.8.6.3.4
      */
     @UML(identifier="intersects", specification=ISO_19107)
-    //@UML(identifier="3Dintersects", specification=ISO_19107)
     default boolean intersects(Geometry other) throws OperationException {
         return new GeometryProcessor().intersects(this, other);
     }
@@ -929,14 +923,20 @@ public sealed interface Geometry
      * <p>Difference with ISO 19107: this operation has no equivalent in the standard,
      * which delegates linear referencing to ISO 19148.</p>
      *
-     * @param  mValue  measure value at which to locate.
+     * <p>Difference with ISO 13249-3 : since SIS geometries may have multiple attributes
+     * a name pararemeter has been added.</p>
+     *
+     * <p>Difference with ISO 19148 : since method is not limited to linear elements</p>
+     *
+     * @param attributeName
+     * @param  value  measure value at which to locate.
      * @return part of this geometry at the given measure.
      * @throws OperationException if the location cannot be computed.
      *
      * @see GeometryProcessor#locateAlong(org.apache.sis.geometries.Geometry, double)
      */
-    default Geometry locateAlong(double mValue) throws OperationException {
-        return new GeometryProcessor().locateAlong(this, mValue);
+    default Geometry locateAlong(String attributeName, Number value) throws OperationException {
+        return new GeometryProcessor().locateAlong(this, attributeName, value);
     }
 
     /**
@@ -945,15 +945,20 @@ public sealed interface Geometry
      * <p>Difference with ISO 19107: this operation has no equivalent in the standard,
      * which delegates linear referencing to ISO 19148.</p>
      *
-     * @param  mStart  measure value where the returned geometry begins.
-     * @param  mEnd    measure value where the returned geometry ends.
+     * <p>Difference with ISO 13249-3 : since SIS geometries may have multiple attributes
+     * a name pararemeter has been added.</p>
+     *
+     * <p>Difference with ISO 19148 : since method is not limited to linear elements</p>
+     *
+     * @param  start  measure value where the returned geometry begins.
+     * @param  end    measure value where the returned geometry ends.
      * @return part of this geometry between the two given measures.
      * @throws OperationException if the location cannot be computed.
      *
      * @see GeometryProcessor#contains(org.apache.sis.geometries.Geometry, double, double)
      */
-    default Geometry locateBetween(double mStart, double mEnd) throws OperationException {
-        return new GeometryProcessor().locateBetween(this, mStart, mEnd);
+    default Geometry locateBetween(String attributeName, Number start, Number end) throws OperationException {
+        return new GeometryProcessor().locateBetween(this, attributeName, start, end);
     }
 
     /**
@@ -971,10 +976,9 @@ public sealed interface Geometry
      * @throws OperationException if the test cannot be performed.
      *
      * @see GeometryProcessor#overlaps(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
-     * @see ISO 19107:2019 - 6.4.8.8, 6.4.9, 10.8.6.3.8
+     * @see ISO 19107:2019 - overlaps & 3Doverlaps - 6.4.8.8, 6.4.9, 10.8.6.3.8
      */
     @UML(identifier="overlaps", specification=ISO_19107)
-    //@UML(identifier="3Doverlaps", specification=ISO_19107)
     default boolean overlaps(Geometry other) throws OperationException {
         return new GeometryProcessor().overlaps(this, other);
     }
@@ -1019,10 +1023,9 @@ public sealed interface Geometry
      * @throws OperationException if the test cannot be performed.
      *
      * @see GeometryProcessor#relate(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry, java.lang.String)
-     * @see ISO 19107:2019 - 6.4.8.8, 6.4.9, 10.8.4, 10.8.5, 10.8.6
+     * @see ISO 19107:2019 - relate & 3Drelate - 6.4.8.8, 6.4.9, 10.8.4, 10.8.5, 10.8.6
      */
     @UML(identifier="relate", specification=ISO_19107)
-    //@UML(identifier="3Drelate", specification=ISO_19107)
     default boolean relate(Geometry other, String matrix) throws OperationException {
         return new GeometryProcessor().relate(this, other, matrix);
     }
@@ -1042,10 +1045,9 @@ public sealed interface Geometry
      * @throws OperationException if the test cannot be performed.
      *
      * @see GeometryProcessor#touches(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
-     * @see ISO 19107:2019 - 6.4.8.8, 6.4.9, 10.8.6.3.5
+     * @see ISO 19107:2019 - touches & 3Dtouches - 6.4.8.8, 6.4.9, 10.8.6.3.5
      */
     @UML(identifier="touches", specification=ISO_19107)
-    //@UML(identifier="3Dtouches", specification=ISO_19107)
     default boolean touches(Geometry other) throws OperationException {
         return new GeometryProcessor().touches(this, other);
     }
@@ -1065,10 +1067,9 @@ public sealed interface Geometry
      * @throws OperationException if the test cannot be performed.
      *
      * @see GeometryProcessor#within(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry)
-     * @see ISO 19107:2019 - 6.4.8.8, 6.4.9, 10.8.6.3.7
+     * @see ISO 19107:2019 - within & 3Dwithin - 6.4.8.8, 6.4.9, 10.8.6.3.7
      */
     @UML(identifier="within", specification=ISO_19107)
-    //@UML(identifier="3Dwithin", specification=ISO_19107)
     default boolean within(Geometry other) throws OperationException {
         return new GeometryProcessor().within(this, other);
     }
@@ -1090,10 +1091,9 @@ public sealed interface Geometry
      * @throws OperationException if the test cannot be performed.
      *
      * @see GeometryProcessor#withinDistance(org.apache.sis.geometries.Geometry, org.apache.sis.geometries.Geometry, javax.measure.Quantity)
-     * @see ISO 19107:2019 - 6.4.8.8, 6.4.9, 10.8.7
+     * @see ISO 19107:2019 - withinDistance & 3DwithinDistance - 6.4.8.8, 6.4.9, 10.8.7
      */
     @UML(identifier="withinDistance", specification=ISO_19107)
-    //@UML(identifier="3DwithinDistance", specification=ISO_19107)
     default boolean withinDistance(Geometry other, Quantity<?> distance) throws OperationException {
         return new GeometryProcessor().withinDistance(this, other, distance);
     }

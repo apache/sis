@@ -162,16 +162,6 @@ public sealed interface Empty extends Geometry
      *
      * @see ISO 19107:2019 - 6.4.4.24
      */
-    @Override
-    default Geometry buffer(double distance) {
-        return this;
-    }
-
-    /**
-     * Returns {@code this}: there is no position to grow a buffer around.
-     *
-     * @see ISO 19107:2019 - 6.4.4.24
-     */
     @UML(identifier="buffer", specification=ISO_19107)
     @Override
     default Geometry buffer(Quantity<?> radius) {

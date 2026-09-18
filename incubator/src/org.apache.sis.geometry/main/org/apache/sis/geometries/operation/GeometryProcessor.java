@@ -71,18 +71,6 @@ public final class GeometryProcessor {
 
     public GeometryProcessor(){}
 
-    /**
-     * Returns a geometric object that represents all Points whose distance from this geometric object is less than
-     * or equal to distance. Calculations are in the spatial reference system of this geometric object. Because of the
-     * limitations of linear interpolation, there will often be some relatively small error in this distance,
-     * but it should be near the resolution of the coordinates used.
-     */
-    public Geometry buffer(Geometry geom, double distance) throws OperationException {
-
-        //TODO : fallback on JTS until implemented, this loss the attributes !
-        return Geometries.fromJTS(jts(geom).buffer(distance), true);
-    }
-
     @UML(identifier="buffer", specification=ISO_19107) // section 6.4.4.24 and 6.4.8.3
     //@UML(identifier="3Dbuffer", specification=ISO_19107) // section 6.4.9
     public Geometry buffer(Geometry geom, Quantity<?> radius) throws OperationException {
@@ -245,20 +233,16 @@ public final class GeometryProcessor {
     /**
      * Returns a derived geometry collection value that matches the specified m coordinate value.
      * See Subclause 6.1.2.6 “Measures on Geometry” for more details.
-     *
-     * TODO : M has been replaced by attributes, change this method
      */
-    public Geometry locateAlong(Geometry geom1, double mValue) throws OperationException {
+    public Geometry locateAlong(Geometry geom1, String attributeName, Number value) throws OperationException {
         throw new UnsupportedOperationException();
     }
 
     /**
      * Returns a derived geometry collection value that matches the specified range of m coordinate values inclusively.
      * See Subclause 6.1.2.6 “Measures on Geometry” for more details.
-     *
-     * TODO : M has been replaced by attributes, change this method
      */
-    public Geometry locateBetween(Geometry geom1, double mStart, double mEnd) throws OperationException {
+    public Geometry locateBetween(Geometry geom1, String attributeName, Number start, Number end) throws OperationException {
         throw new UnsupportedOperationException();
     }
 

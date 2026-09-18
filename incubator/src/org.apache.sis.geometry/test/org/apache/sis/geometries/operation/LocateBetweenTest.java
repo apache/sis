@@ -40,6 +40,7 @@ public class LocateBetweenTest {
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
     private record Entry(Geometry input,
+                         String attName,
                          double mStart,
                          double mEnd,
                          Geometry expected,
@@ -60,7 +61,7 @@ public class LocateBetweenTest {
     public void testLocateBetween() {
         for (final Entry entry : ENTRIES) {
             try {
-                final Geometry result = new GeometryProcessor().locateBetween(entry.input(), entry.mStart(), entry.mEnd());
+                final Geometry result = new GeometryProcessor().locateBetween(entry.input(), entry.attName(), entry.mStart(), entry.mEnd());
                 assertNull(entry.error(), "An exception was expected.");
                 assertEquals(entry.expected(), result);
             } catch (Exception ex) {

@@ -53,24 +53,6 @@ public class BufferTest {
     };
 
     /**
-     * Tests {@code buffer(Geometry, double)} on all declared test cases.
-     */
-    @Test
-    public void testBuffer() {
-        for (final Entry entry : ENTRIES) {
-            try {
-                final Geometry result = new GeometryProcessor().buffer(entry.input(), entry.distance());
-                assertNull(entry.error(), "An exception was expected.");
-                assertEquals(entry.expected(), result);
-            } catch (Exception ex) {
-                if (entry.error() == null || !entry.error().isInstance(ex)) {
-                    throw new AssertionError("Unexpected exception for " + entry, ex);
-                }
-            }
-        }
-    }
-
-    /**
      * The inputs and expected result of a single test of {@code buffer(Geometry, Quantity)}.
      *
      * @param input    the geometry on which the operation is invoked.

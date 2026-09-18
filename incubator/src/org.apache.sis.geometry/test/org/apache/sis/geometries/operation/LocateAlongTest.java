@@ -39,6 +39,7 @@ public class LocateAlongTest {
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
     private record Entry(Geometry input,
+                         String attName,
                          double mValue,
                          Geometry expected,
                          Class<? extends Exception> error)
@@ -58,7 +59,7 @@ public class LocateAlongTest {
     public void testLocateAlong() {
         for (final Entry entry : ENTRIES) {
             try {
-                final Geometry result = new GeometryProcessor().locateAlong(entry.input(), entry.mValue());
+                final Geometry result = new GeometryProcessor().locateAlong(entry.input(), entry.attName(), entry.mValue());
                 assertNull(entry.error(), "An exception was expected.");
                 assertEquals(entry.expected(), result);
             } catch (Exception ex) {
