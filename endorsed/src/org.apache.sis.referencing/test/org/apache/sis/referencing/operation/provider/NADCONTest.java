@@ -19,23 +19,29 @@ package org.apache.sis.referencing.operation.provider;
 import java.util.Locale;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.net.URL;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import javax.measure.quantity.Angle;
 import org.opengis.geometry.Envelope;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.gridded.GridFile;
 import org.apache.sis.referencing.operation.gridded.GridLoader;
 import org.apache.sis.referencing.operation.gridded.LoadedGrid;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
+import org.apache.sis.referencing.factory.MissingFactoryResourceException;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.measure.Units;
+import org.apache.sis.parameter.Parameters;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assertions.assertMatrixEquals;
@@ -47,7 +53,7 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Simon Reynard (Geomatys)
  */
-public final class NADCONTest extends DatumShiftTestCase {
+public final class NADCONTest extends TestCase {
     /**
      * Creates a new test case.
      */
@@ -98,6 +104,39 @@ public final class NADCONTest extends DatumShiftTestCase {
     public static final String TEST_FILE = "conus-extract";
 
     /**
+     * Creates a grid file for the given <abbr>URI</abbr>.
+     *
+     * @param  file       the grid file <abbr>URI</abbr>.
+     * @param  parameter  {@link NADCON#LONGITUDE} or {@link NADCON#LATITUDE}.
+     * @return an object representing the grid file at the given URI.
+     * @throws MissingFactoryResourceException if the path cannot be resolved.
+     */
+    public static GridFile newGridFile(final URI file, final ParameterDescriptor<URI> parameter)
+            throws MissingFactoryResourceException
+    {
+        Parameters pg = Parameters.castOrWrap(NADCON.PARAMETERS.createValue());
+        pg.getOrCreate(parameter).setValue(file);
+        return new GridFile(pg, parameter);
+    }
+
+    /**
+     * Creates a file for the resource of the given name.
+     *
+     * @param  filename   filename of the grid to load.
+     * @param  parameter  {@link NADCON#LONGITUDE} or {@link NADCON#LATITUDE}.
+     * @return an object representing the grid file for the specified resource.
+     * @throws URISyntaxException if the URL to the test file is not valid.
+     * @throws MissingFactoryResourceException if the path cannot be resolved.
+     */
+    private static GridFile getResource(final String filename, final ParameterDescriptor<URI> parameter)
+            throws URISyntaxException, MissingFactoryResourceException
+    {
+        URL file = NADCONTest.class.getResource(filename);
+        assertNotNull(file, filename);
+        return newGridFile(file.toURI(), parameter);
+    }
+
+    /**
      * Tests loading a grid file and interpolating a sample point.
      * The point used for this test is given by {@link #samplePoint(int)}.
      *
@@ -105,8 +144,8 @@ public final class NADCONTest extends DatumShiftTestCase {
      */
     @Test
     public void testLoader() throws Exception {
-        testNADCON(getResource(TEST_FILE + ".laa"),     // Latitude shifts
-                   getResource(TEST_FILE + ".loa"),     // Longitude shifts
+        testNADCON(getResource(TEST_FILE + ".laa", NADCON.LATITUDE),
+                   getResource(TEST_FILE + ".loa", NADCON.LONGITUDE),
                    -99.75, -98.0, 37.5, 39.75);
     }
 

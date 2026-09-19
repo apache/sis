@@ -79,7 +79,7 @@ public final class NADCON extends AbstractProvider {
      *   <li>Default value: {@code conus.las}</li>
      * </ul>
      */
-    private static final ParameterDescriptor<URI> LATITUDE;
+    public static final ParameterDescriptor<URI> LATITUDE;
 
     /**
      * The operation parameter descriptor for the <q>Longitude difference file</q> parameter value.
@@ -95,12 +95,12 @@ public final class NADCON extends AbstractProvider {
      *   <li>Default value: {@code conus.los}</li>
      * </ul>
      */
-    private static final ParameterDescriptor<URI> LONGITUDE;
+    public static final ParameterDescriptor<URI> LONGITUDE;
 
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    private static final ParameterDescriptorGroup PARAMETERS;
+    static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
         LATITUDE = builder

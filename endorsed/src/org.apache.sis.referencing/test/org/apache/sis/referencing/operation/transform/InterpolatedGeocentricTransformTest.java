@@ -35,7 +35,8 @@ import org.apache.sis.referencing.datum.HardCodedDatum;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public class InterpolatedGeocentricTransformTest extends MathTransformTestCase {
+@SuppressWarnings("exports")
+public final class InterpolatedGeocentricTransformTest extends MathTransformTestCase {
     /**
      * Creates a new test case.
      */
@@ -56,7 +57,7 @@ public class InterpolatedGeocentricTransformTest extends MathTransformTestCase {
      * Creates the transform using the given provider.
      */
     final void createGeodeticTransformation(final FranceGeocentricInterpolation provider) throws FactoryException {
-        final URL file = FranceGeocentricInterpolationTest.getResourceAsConvertibleURL(FranceGeocentricInterpolationTest.TEST_FILE);
+        final URL file = FranceGeocentricInterpolationTest.class.getResource(FranceGeocentricInterpolationTest.TEST_FILE);
         final Ellipsoid source = HardCodedDatum.NTF.getEllipsoid();     // Clarke 1880 (IGN)
         final Ellipsoid target = CommonCRS.ETRS89.ellipsoid();          // GRS 1980 ellipsoid
         final ParameterValueGroup values = provider.getParameters().createValue();

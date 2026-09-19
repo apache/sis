@@ -44,6 +44,7 @@ import org.apache.sis.referencing.operation.provider.NTv2Test;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class InterpolatedTransformTest extends MathTransformTestCase {
     /**
      * Creates a new test case.
@@ -73,7 +74,7 @@ public final class InterpolatedTransformTest extends MathTransformTestCase {
      * @throws FactoryException if an error occurred while loading the grid.
      */
     private void createRGF93() throws FactoryException {
-        final URL file = NTv2Test.getResourceAsConvertibleURL(NTv2Test.TEST_FILE);
+        final URL file = NTv2Test.class.getResource(NTv2Test.TEST_FILE);
         final NTv2 provider = new NTv2();
         final ParameterValueGroup values = provider.getParameters().createValue();
         values.parameter("Latitude and longitude difference file").setValue(file);    // Automatic conversion from URL to Path.
@@ -88,8 +89,8 @@ public final class InterpolatedTransformTest extends MathTransformTestCase {
      * @throws FactoryException if an error occurred while loading the grid.
      */
     private void createNADCON() throws FactoryException {
-        final URL latitudeShifts  = NADCONTest.getResourceAsConvertibleURL(NADCONTest.TEST_FILE + ".laa");
-        final URL longitudeShifts = NADCONTest.getResourceAsConvertibleURL(NADCONTest.TEST_FILE + ".loa");
+        final URL latitudeShifts  = NADCONTest.class.getResource(NADCONTest.TEST_FILE + ".laa");
+        final URL longitudeShifts = NADCONTest.class.getResource(NADCONTest.TEST_FILE + ".loa");
         final NADCON provider = new NADCON();
         final ParameterValueGroup values = provider.getParameters().createValue();
         values.parameter("Latitude difference file").setValue(latitudeShifts);

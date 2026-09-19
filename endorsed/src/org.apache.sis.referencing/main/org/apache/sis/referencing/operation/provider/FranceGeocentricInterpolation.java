@@ -281,7 +281,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
         final Parameters pg = Parameters.castOrWrap(context.getCompletedParameters());
         final int dim = pg.getValue(Molodensky.DIMENSION);
         final GridFile file = new GridFile(pg, FILE);
-        final LoadedGrid<Angle,Length> grid;
+        final LoadedGrid<Angle, Length> grid;
         try {
             grid = getOrLoad(file, isRecognized(file) ? new double[] {TX, TY, TZ} : null, PRECISION);
         } catch (FactoryException e) {
@@ -321,7 +321,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
      *
      * @see GridLoader#canNotLoad(Class, String, URI, Exception)
      */
-    static LoadedGrid<Angle,Length> getOrLoad(final GridFile file, final double[] averages, final double scale)
+    static LoadedGrid<Angle, Length> getOrLoad(final GridFile file, final double[] averages, final double scale)
             throws Exception
     {
         return LoadedGrid.getOrLoad(file, null, new Loader(file, averages, scale))
@@ -363,7 +363,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
             final LoadedGrid<?,?> grid;
             try (BufferedReader in = file.newBufferedReader()) {
                 file.startLoading(FranceGeocentricInterpolation.class);
-                final LoadedGrid.Float<Angle,Length> g = load(in, file);
+                final LoadedGrid.Float<Angle, Length> g = load(in, file);
                 grid = CompressedGrid.compress(g, averages, scale);
             }
             return grid.useSharedData();
@@ -380,10 +380,10 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
          * @throws FactoryException if an problem is found with the file content.
          * @throws ArithmeticException if the width or the height exceed the integer capacity.
          */
-        static LoadedGrid.Float<Angle,Length> load(final BufferedReader in, final GridFile file)
+        static LoadedGrid.Float<Angle, Length> load(final BufferedReader in, final GridFile file)
                 throws IOException, FactoryException, NoninvertibleTransformException
         {
-            LoadedGrid.Float<Angle,Length> grid = null;
+            LoadedGrid.Float<Angle, Length> grid = null;
             double x0 = 0;
             double xf = 0;
             double y0 = 0;

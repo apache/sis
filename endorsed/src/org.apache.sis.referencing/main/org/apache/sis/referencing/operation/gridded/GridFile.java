@@ -61,9 +61,11 @@ public final class GridFile {
     private static final AtomicBoolean datumDirectoryLogged = new AtomicBoolean();
 
     /**
-     * The directory where to search for a local copy of the data, or {@code null} if none.
+     * Returns the directory where to search for a local copy of the data.
      */
-    private final DataDirectory localDirectory;
+    private static DataDirectory localDirectory() {
+        return DataDirectory.DATUM_CHANGES;
+    }
 
     /**
      * The URI specified in the parameter. This URI is usually relative to an unspecified directory.
@@ -88,18 +90,6 @@ public final class GridFile {
     private Path asPath;
 
     /**
-     * Creates a file for the given URI, assumed already resolved.
-     * This constructor is for testing purposes.
-     *
-     * @param  resolved  the resolved URI.
-     */
-    public GridFile(final URI resolved) {
-        parameter = resolved;
-        this.resolved = resolved;
-        localDirectory = DataDirectory.DATUM_CHANGES;
-    }
-
-    /**
      * Resolves the given parameter as an absolute URI, resolved in the {@code "$SIS_DATA/DatumChanges"} directory
      * if the URI is relative. If the URI cannot be resolved, a {@link MissingFactoryResourceException} is thrown.
      * That exception type is necessary for letting the caller know that a coordinate operation is probably valid
@@ -112,27 +102,7 @@ public final class GridFile {
      * @throws MissingFactoryResourceException if the path cannot be resolved.
      */
     public GridFile(final Parameters group, final ParameterDescriptor<URI> param) throws MissingFactoryResourceException {
-        this(group, param, DataDirectory.DATUM_CHANGES);
-    }
-
-    /**
-     * Resolves the given parameter as an absolute URI, resolved with the specified {@code DataDirectory}
-     * if the URI is relative. If the URI cannot be resolved, a {@link MissingFactoryResourceException} is thrown.
-     * That exception type is necessary for letting the caller know that a coordinate operation is probably valid
-     * but cannot be constructed because an optional configuration is missing.
-     * It is typically because the {@code SIS_DATA} environment variable has not been set.
-     *
-     * @param  group           the group of parameters from which to get the URI.
-     * @param  param           identification of the parameter to fetch.
-     * @param  localDirectory  the directory where to search for a local copy of the data, or {@code null} if none.
-     * @throws ParameterNotFoundException if the specified parameter is not found in the given group.
-     * @throws MissingFactoryResourceException if the path cannot be resolved.
-     */
-    public GridFile(final Parameters group, final ParameterDescriptor<URI> param, final DataDirectory localDirectory)
-            throws MissingFactoryResourceException
-    {
         RuntimeException error = null;
-        this.localDirectory = localDirectory;
         parameter = group.getMandatoryValue(param);
         if (parameter.isAbsolute()) {
             resolved = parameter.normalize();
@@ -142,17 +112,15 @@ public final class GridFile {
              * That directory can be seen as a cache to be tried before to download data that may be
              * on the network.
              */
-            if (localDirectory != null) {
-                base = localDirectory.getDirectoryAsURI();
-                if (base != null) try {
-                    resolved = base.resolve(parameter).normalize();
-                    asPath = Path.of(resolved);
-                    if (Files.exists(asPath)) {
-                        return;
-                    }
-                } catch (IllegalArgumentException | FileSystemNotFoundException e) {
-                    error = e;
+            base = localDirectory().getDirectoryAsURI();
+            if (base != null) try {
+                resolved = base.resolve(parameter).normalize();
+                asPath = Path.of(resolved);
+                if (Files.exists(asPath)) {
+                    return;
                 }
+            } catch (IllegalArgumentException | FileSystemNotFoundException e) {
+                error = e;
             }
             /*
              * If the "$SIS_DATA/DatumChanges" directory cannot be used, check if we
@@ -276,8 +244,8 @@ public final class GridFile {
      * @param  cause   the cause of the failure to load the grid file.
      */
     public FactoryException canNotLoad(final Class<?> caller, final String format, final Exception cause) {
-        if (localDirectory != null && !datumDirectoryLogged.get()) {
-            final Path directory = localDirectory.getDirectory();
+        if (!datumDirectoryLogged.get()) {
+            final Path directory = localDirectory().getDirectory();
             if (directory != null && !datumDirectoryLogged.getAndSet(true)) {
                 GridLoader.log(caller, Resources.forLocale(null).createLogRecord(Level.INFO,
                                        Resources.Keys.DatumChangesDirectory_1, directory));

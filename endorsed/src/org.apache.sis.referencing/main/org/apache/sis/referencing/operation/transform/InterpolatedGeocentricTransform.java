@@ -203,7 +203,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
      */
     protected InterpolatedGeocentricTransform(final Ellipsoid source, final boolean isSource3D,
                                               final Ellipsoid target, final boolean isTarget3D,
-                                              final DatumShiftGrid<Angle,Length> grid)
+                                              final DatumShiftGrid<Angle, Length> grid)
     {
         this(source, isSource3D, target, isTarget3D, grid, null);
     }
@@ -341,7 +341,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
     public static MathTransform createGeodeticTransformation(final MathTransformFactory factory,
             final Ellipsoid source, final boolean isSource3D,
             final Ellipsoid target, final boolean isTarget3D,
-            final DatumShiftGrid<Angle,Length> grid) throws FactoryException
+            final DatumShiftGrid<Angle, Length> grid) throws FactoryException
     {
         final InterpolatedGeocentricTransform tr;
         if (isSource3D || isTarget3D) {

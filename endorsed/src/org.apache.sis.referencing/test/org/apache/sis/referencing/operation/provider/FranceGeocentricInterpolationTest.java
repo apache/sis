@@ -16,8 +16,9 @@
  */
 package org.apache.sis.referencing.operation.provider;
 
-import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import javax.measure.quantity.Angle;
@@ -28,10 +29,13 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.gridded.GridFile;
 import org.apache.sis.referencing.operation.gridded.LoadedGrid;
 import org.apache.sis.referencing.operation.gridded.CompressedGrid;
+import org.apache.sis.referencing.factory.MissingFactoryResourceException;
+import org.apache.sis.parameter.Parameters;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
 
 
@@ -43,7 +47,7 @@ import org.apache.sis.test.TestStep;
  * @see GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()
  * @see org.apache.sis.referencing.operation.transform.MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()
  */
-public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase {
+public final class FranceGeocentricInterpolationTest extends TestCase {
     /**
      * Name of the file containing a small extract of the "{@code GR3DF97A.txt}" file.
      * The amount of data in this test file is less than 0.14% of the original file.
@@ -94,16 +98,61 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
     }
 
     /**
+     * Creates a grid file for the given <abbr>URI</abbr>.
+     *
+     * @param  file  the grid file <abbr>URI</abbr>.
+     * @return an object representing the grid file at the given URI.
+     * @throws MissingFactoryResourceException if the path cannot be resolved.
+     */
+    private static GridFile newGridFile(final URI file) throws MissingFactoryResourceException {
+        Parameters pg = Parameters.castOrWrap(FranceGeocentricInterpolation.PARAMETERS.createValue());
+        pg.getOrCreate(FranceGeocentricInterpolation.FILE).setValue(file);
+        return new GridFile(pg, FranceGeocentricInterpolation.FILE);
+    }
+
+    /**
+     * Creates a file for the resource of the given name.
+     *
+     * @param  filename  filename of the grid to load.
+     * @return an object representing the grid file for the specified resource.
+     * @throws URISyntaxException if the URL to the test file is not valid.
+     * @throws MissingFactoryResourceException if the path cannot be resolved.
+     */
+    private static GridFile getResource(final String filename)
+            throws URISyntaxException, MissingFactoryResourceException
+    {
+        URL file = FranceGeocentricInterpolationTest.class.getResource(filename);
+        assertNotNull(file, filename);
+        return newGridFile(file.toURI());
+    }
+
+    /**
+     * Returns the value of {@code FranceGeocentricInterpolation.isRecognized(…)}
+     * for a grid using the given <abbr>URI</abbr>.
+     *
+     * @param  resolved  the <abbr>URI</abbr> to test.
+     * @throws URISyntaxException if the URL to the test file is not valid.
+     * @throws MissingFactoryResourceException if the path cannot be resolved.
+     * @return result of {@code FranceGeocentricInterpolation.isRecognized(…)}.
+     */
+    private static boolean isRecognized(final String resolved)
+            throws URISyntaxException, MissingFactoryResourceException
+    {
+        return FranceGeocentricInterpolation.isRecognized(newGridFile(new URI(resolved)));
+    }
+
+    /**
      * Tests {@link FranceGeocentricInterpolation#isRecognized(URI)}.
      *
      * @throws URISyntaxException if the URL to the test file is not valid.
+     * @throws MissingFactoryResourceException if the path cannot be resolved.
      */
     @Test
-    public void testIsRecognized() throws URISyntaxException {
-        assertTrue (FranceGeocentricInterpolation.isRecognized(new GridFile(new URI("GR3DF97A.txt"))));
-        assertTrue (FranceGeocentricInterpolation.isRecognized(new GridFile(new URI("gr3df"))));
-        assertFalse(FranceGeocentricInterpolation.isRecognized(new GridFile(new URI("gr3d"))));
-        assertTrue (FranceGeocentricInterpolation.isRecognized(new GridFile(new URI(TEST_FILE))));
+    public void testIsRecognized() throws URISyntaxException, MissingFactoryResourceException {
+        assertTrue (isRecognized("GR3DF97A.txt"));
+        assertTrue (isRecognized("gr3df"));
+        assertFalse(isRecognized("gr3d"));
+        assertTrue (isRecognized(TEST_FILE));
     }
 
     /**
@@ -132,11 +181,11 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
      * @throws TransformException if an error occurred while computing the envelope.
      */
     @TestStep
-    private static LoadedGrid<Angle,Length> testGridAsFloats()
+    private static LoadedGrid<Angle, Length> testGridAsFloats()
             throws URISyntaxException, IOException, FactoryException, TransformException
     {
         final GridFile file = getResource(TEST_FILE);
-        final LoadedGrid.Float<Angle,Length> grid;
+        final LoadedGrid.Float<Angle, Length> grid;
         try (BufferedReader in = file.newBufferedReader()) {
             grid = FranceGeocentricInterpolation.Loader.load(in, file);
         }
@@ -159,10 +208,10 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
      * @throws TransformException if an error occurred while computing the envelope.
      */
     @TestStep
-    private static LoadedGrid<Angle,Length> testGridAsShorts(LoadedGrid<Angle,Length> grid)
+    private static LoadedGrid<Angle, Length> testGridAsShorts(LoadedGrid<Angle, Length> grid)
             throws TransformException
     {
-        grid = CompressedGrid.compress((LoadedGrid.Float<Angle,Length>) grid, new double[] {
+        grid = CompressedGrid.compress((LoadedGrid.Float<Angle, Length>) grid, new double[] {
                 FranceGeocentricInterpolation.TX,           //  168 metres
                 FranceGeocentricInterpolation.TY,           //   60 metres
                 FranceGeocentricInterpolation.TZ},          // -320 metres
@@ -181,7 +230,7 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
      *
      * @throws TransformException if an error occurred while computing the envelope.
      */
-    private static void verifyGrid(final LoadedGrid<Angle,Length> grid) throws TransformException {
+    private static void verifyGrid(final LoadedGrid<Angle, Length> grid) throws TransformException {
         final Envelope envelope = grid.getDomainOfValidity();
         assertEquals( 2.2, envelope.getMinimum(0), 1E-12, "xmin");
         assertEquals( 2.5, envelope.getMaximum(0), 1E-12, "xmax");
@@ -223,7 +272,7 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
      */
     @Test
     public void testGetOrLoad() throws Exception {
-        final LoadedGrid<Angle,Length> grid = FranceGeocentricInterpolation.getOrLoad(
+        final LoadedGrid<Angle, Length> grid = FranceGeocentricInterpolation.getOrLoad(
                 getResource(TEST_FILE), new double[] {
                         FranceGeocentricInterpolation.TX,
                         FranceGeocentricInterpolation.TY,

@@ -16,7 +16,9 @@
  */
 package org.apache.sis.referencing.operation.provider;
 
+import java.net.URL;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -33,6 +35,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.gridded.GridFile;
 import org.apache.sis.referencing.operation.gridded.GridGroup;
 import org.apache.sis.referencing.operation.gridded.LoadedGrid;
+import org.apache.sis.referencing.factory.MissingFactoryResourceException;
 import static org.apache.sis.referencing.operation.gridded.GridLoader.DEGREES_TO_SECONDS;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Envelopes;
@@ -43,6 +46,7 @@ import org.apache.sis.system.DataDirectory;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assertions.assertMatrixEquals;
@@ -57,7 +61,7 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  * @see GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()
  * @see org.apache.sis.referencing.operation.transform.MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()
  */
-public final class NTv2Test extends DatumShiftTestCase {
+public final class NTv2Test extends TestCase {
     /**
      * Name of the file containing a small extract of the "{@code NTF_R93.gsb}" file.
      * The amount of data in this test file is less than 0.14% of the original file.
@@ -83,8 +87,36 @@ public final class NTv2Test extends DatumShiftTestCase {
     }
 
     /**
-     * Tests loading a grid file and interpolating a sample point. The point used for
-     * this test is given by {@link FranceGeocentricInterpolationTest#samplePoint(int)}.
+     * Creates a grid file for the given <abbr>URI</abbr>.
+     *
+     * @param  file  the grid file <abbr>URI</abbr>.
+     * @return an object representing the grid file at the given URI.
+     * @throws MissingFactoryResourceException if the path cannot be resolved.
+     */
+    public static GridFile newGridFile(final URI file) throws MissingFactoryResourceException {
+        Parameters pg = Parameters.castOrWrap(NTv2.PARAMETERS.createValue());
+        pg.getOrCreate(NTv2.FILE).setValue(file);
+        return new GridFile(pg, NTv2.FILE);
+    }
+
+    /**
+     * Creates a file for the resource of the given name.
+     *
+     * @param  filename  filename of the grid to load.
+     * @return an object representing the grid file for the specified resource.
+     * @throws URISyntaxException if the URL to the test file is not valid.
+     * @throws MissingFactoryResourceException if the path cannot be resolved.
+     */
+    private static GridFile getResource(final String filename)
+            throws URISyntaxException, MissingFactoryResourceException
+    {
+        URL file = NTv2Test.class.getResource(filename);
+        assertNotNull(file, filename);
+        return newGridFile(file.toURI());
+    }
+
+    /**
+     * Tests loading a grid file and interpolating a sample point.
      *
      * @throws Exception if an error occurred while loading or computing the grid, or while testing transformations.
      */
@@ -122,7 +154,7 @@ public final class NTv2Test extends DatumShiftTestCase {
             final double ymin, final double ymax) throws Exception
     {
         final double cellSize = 360;
-        final LoadedGrid<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
+        final LoadedGrid<Angle, Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
         assertInstanceOf(LoadedGrid.Float.class, grid, "Should not be compressed.");
         assertEquals(Units.ARC_SECOND, grid.getCoordinateUnit());
         assertEquals(Units.ARC_SECOND, grid.getTranslationUnit());
@@ -184,11 +216,11 @@ public final class NTv2Test extends DatumShiftTestCase {
     @Test
     public void testMultiGrids() throws Exception {
         assumeDataExists(DataDirectory.DATUM_CHANGES, MULTIGRID_TEST_FILE);
-        final Parameters pg = Parameters.castOrWrap(new NTv2().getParameters().createValue());
+        final Parameters pg = Parameters.castOrWrap(NTv2.PARAMETERS.createValue());
         pg.getOrCreate(NTv2.FILE).setValue(new URI(MULTIGRID_TEST_FILE));
         final GridFile file = new GridFile(pg, NTv2.FILE);
 
-        final LoadedGrid<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
+        final LoadedGrid<Angle, Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
         assertInstanceOf(GridGroup.class, grid, "Should contain many grids.");
         assertEquals(Units.ARC_SECOND, grid.getCoordinateUnit());
         assertEquals(Units.ARC_SECOND, grid.getTranslationUnit());
