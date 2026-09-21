@@ -22,6 +22,9 @@ import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.referencing.CommonCRS;
+import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
+import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
+import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -150,7 +153,7 @@ public class IntersectionTest {
      * @param expected the expected result, or {@code null} if an exception is expected.
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
-    private record Entry(Geometry input,
+    private record TestCase(Geometry input,
                          Geometry other,
                          Geometry expected,
                          Class<? extends Exception> error)
@@ -160,7 +163,11 @@ public class IntersectionTest {
     /**
      * All test cases of {@code intersection(Geometry, Geometry)}.
      */
-    private static final Entry[] ENTRIES = {
+    private static final TestCase[] ENTRIES = {
+        // ∅ ∩ A = ∅ and A ∩ ∅ = ∅: the result is the operand which is already empty.
+        new TestCase(EMPTY_1,   NON_EMPTY, EMPTY_1, null),
+        new TestCase(NON_EMPTY, EMPTY_1,   EMPTY_1, null),
+        new TestCase(EMPTY_1,   EMPTY_2,   EMPTY_1, null)
     };
 
     /**
@@ -168,7 +175,7 @@ public class IntersectionTest {
      */
     @Test
     public void testIntersection() {
-        for (final Entry entry : ENTRIES) {
+        for (final TestCase entry : ENTRIES) {
             try {
                 final Geometry result = new GeometryProcessor().intersection(entry.input(), entry.other());
                 assertNull(entry.error(), "An exception was expected.");

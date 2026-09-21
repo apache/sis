@@ -19,6 +19,9 @@ package org.apache.sis.geometries.operation;
 import org.apache.sis.geometries.Geometry;
 
 // Test dependencies
+import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
+import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
+import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
@@ -38,7 +41,7 @@ public class IntersectsTest {
      * @param expected the expected result, or {@code null} if an exception is expected.
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
-    private record Entry(Geometry input,
+    private record TestCase(Geometry input,
                          Geometry other,
                          Boolean expected,
                          Class<? extends Exception> error)
@@ -48,7 +51,12 @@ public class IntersectsTest {
     /**
      * All test cases of {@code intersects(Geometry, Geometry)}.
      */
-    private static final Entry[] ENTRIES = {
+    private static final TestCase[] ENTRIES = {
+        // Negation of `disjoint(Geometry, Geometry)`.
+        new TestCase(EMPTY_1,   NON_EMPTY, false, null),
+        new TestCase(NON_EMPTY, EMPTY_1,   false, null),
+        new TestCase(EMPTY_1,   EMPTY_1,   false, null),
+        new TestCase(EMPTY_1,   EMPTY_2,   false, null)
     };
 
     /**
@@ -56,7 +64,7 @@ public class IntersectsTest {
      */
     @Test
     public void testIntersects() {
-        for (final Entry entry : ENTRIES) {
+        for (final TestCase entry : ENTRIES) {
             try {
                 final boolean result = new GeometryProcessor().intersects(entry.input(), entry.other());
                 assertNull(entry.error(), "An exception was expected.");

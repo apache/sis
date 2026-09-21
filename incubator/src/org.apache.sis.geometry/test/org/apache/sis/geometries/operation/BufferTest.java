@@ -18,8 +18,11 @@ package org.apache.sis.geometries.operation;
 
 import javax.measure.Quantity;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
 
 // Test dependencies
+import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
@@ -32,27 +35,6 @@ import org.junit.jupiter.api.Test;
  */
 public class BufferTest {
     /**
-     * The inputs and expected result of a single test of {@code buffer(Geometry, double)}.
-     *
-     * @param input    the geometry on which the operation is invoked.
-     * @param distance the buffer distance.
-     * @param expected the expected result, or {@code null} if an exception is expected.
-     * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
-     */
-    private record Entry(Geometry input,
-                         double distance,
-                         Geometry expected,
-                         Class<? extends Exception> error)
-    {
-    }
-
-    /**
-     * All test cases of {@code buffer(Geometry, double)}.
-     */
-    private static final Entry[] ENTRIES = {
-    };
-
-    /**
      * The inputs and expected result of a single test of {@code buffer(Geometry, Quantity)}.
      *
      * @param input    the geometry on which the operation is invoked.
@@ -60,7 +42,7 @@ public class BufferTest {
      * @param expected the expected result, or {@code null} if an exception is expected.
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
-    private record RadiusEntry(Geometry input,
+    private record TestCase(Geometry input,
                                Quantity<?> radius,
                                Geometry expected,
                                Class<? extends Exception> error)
@@ -70,7 +52,16 @@ public class BufferTest {
     /**
      * All test cases of {@code buffer(Geometry, Quantity)}.
      */
-    private static final RadiusEntry[] RADIUS_ENTRIES = {
+    private static final TestCase[] RADIUS_ENTRIES = {
+        /*
+         * There is no position to grow a buffer around, therefore the buffer of an empty geometry
+         * is the empty geometry. This holds for a negative radius, which shrinks a geometry, and
+         * for a dimensionless radius, which is interpreted in the units of the coordinate system.
+         */
+        new TestCase(EMPTY_1, Quantities.create( 10, Units.METRE), EMPTY_1, null),
+        new TestCase(EMPTY_1, Quantities.create(  0, Units.METRE), EMPTY_1, null),
+        new TestCase(EMPTY_1, Quantities.create(-10, Units.METRE), EMPTY_1, null),
+        new TestCase(EMPTY_1, Quantities.create( 10, Units.UNITY), EMPTY_1, null)
     };
 
     /**
@@ -78,7 +69,7 @@ public class BufferTest {
      */
     @Test
     public void testBufferByRadius() {
-        for (final RadiusEntry entry : RADIUS_ENTRIES) {
+        for (final TestCase entry : RADIUS_ENTRIES) {
             try {
                 final Geometry result = new GeometryProcessor().buffer(entry.input(), entry.radius());
                 assertNull(entry.error(), "An exception was expected.");

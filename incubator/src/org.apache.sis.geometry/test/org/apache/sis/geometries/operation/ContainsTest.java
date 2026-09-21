@@ -17,9 +17,11 @@
 package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Geometry;
-import org.opengis.geometry.DirectPosition;
 
 // Test dependencies
+import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
+import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
+import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
@@ -32,45 +34,6 @@ import org.junit.jupiter.api.Test;
  */
 public class ContainsTest {
     /**
-     * The inputs and expected result of a single test of {@code contains(Geometry, DirectPosition)}.
-     *
-     * @param input    the geometry on which the operation is invoked.
-     * @param element  the position to test for inclusion.
-     * @param expected the expected result, or {@code null} if an exception is expected.
-     * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
-     */
-    private record PositionEntry(Geometry input,
-                                 DirectPosition element,
-                                 Boolean expected,
-                                 Class<? extends Exception> error)
-    {
-    }
-
-    /**
-     * All test cases of {@code contains(Geometry, DirectPosition)}.
-     */
-    private static final PositionEntry[] POSITION_ENTRIES = {
-    };
-
-    /**
-     * Tests {@code contains(Geometry, DirectPosition)} on all declared test cases.
-     */
-    @Test
-    public void testContainsPosition() {
-        for (final PositionEntry entry : POSITION_ENTRIES) {
-            try {
-                final boolean result = new GeometryProcessor().contains(entry.input(), entry.element());
-                assertNull(entry.error(), "An exception was expected.");
-                assertEquals(entry.expected(), result);
-            } catch (Exception ex) {
-                if (entry.error() == null || !entry.error().isInstance(ex)) {
-                    throw new AssertionError("Unexpected exception for " + entry, ex);
-                }
-            }
-        }
-    }
-
-    /**
      * The inputs and expected result of a single test of {@code contains(Geometry, Geometry)}.
      *
      * @param input    the geometry on which the operation is invoked.
@@ -78,7 +41,7 @@ public class ContainsTest {
      * @param expected the expected result, or {@code null} if an exception is expected.
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
-    private record Entry(Geometry input,
+    private record TestCase(Geometry input,
                          Geometry other,
                          Boolean expected,
                          Class<? extends Exception> error)
@@ -88,7 +51,12 @@ public class ContainsTest {
     /**
      * All test cases of {@code contains(Geometry, Geometry)}.
      */
-    private static final Entry[] ENTRIES = {
+    private static final TestCase[] ENTRIES = {
+        // The empty set is a superset of itself only, and a subset of every geometry.
+        new TestCase(EMPTY_1,   EMPTY_1,   true,  null),
+        new TestCase(EMPTY_1,   EMPTY_2,   true,  null),
+        new TestCase(EMPTY_1,   NON_EMPTY, false, null),
+        new TestCase(NON_EMPTY, EMPTY_1,   true,  null)
     };
 
     /**
@@ -96,7 +64,7 @@ public class ContainsTest {
      */
     @Test
     public void testContains() {
-        for (final Entry entry : ENTRIES) {
+        for (final TestCase entry : ENTRIES) {
             try {
                 final boolean result = new GeometryProcessor().contains(entry.input(), entry.other());
                 assertNull(entry.error(), "An exception was expected.");

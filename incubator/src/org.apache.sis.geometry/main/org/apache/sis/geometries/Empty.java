@@ -16,13 +16,10 @@
  */
 package org.apache.sis.geometries;
 
-import javax.measure.Quantity;
 import org.apache.sis.geometries.internal.shared.DefaultEmpty;
-import org.apache.sis.measure.Quantities;
-import org.apache.sis.measure.Units;
+import org.apache.sis.geometries.operation.GeometryProcessor;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
-import org.opengis.geometry.DirectPosition;
 
 
 /**
@@ -147,28 +144,6 @@ public sealed interface Empty extends Geometry
     }
 
     /**
-     * Returns {@code this}: the convex hull of the empty set is empty.
-     *
-     * @see ISO 19107:2019 - 6.4.4.10
-     */
-    @UML(identifier="convexHull", specification=ISO_19107)
-    @Override
-    default Geometry convexHull() {
-        return this;
-    }
-
-    /**
-     * Returns {@code this}: there is no position to grow a buffer around.
-     *
-     * @see ISO 19107:2019 - 6.4.4.24
-     */
-    @UML(identifier="buffer", specification=ISO_19107)
-    @Override
-    default Geometry buffer(Quantity<?> radius) {
-        return this;
-    }
-
-    /**
      * Returns {@code null}: the centroid of the empty set is undefined.
      *
      * @see ISO 19107:2019 - 6.4.4.8
@@ -188,128 +163,6 @@ public sealed interface Empty extends Geometry
     @Override
     default Point getRepresentativePoint() {
         return null;
-    }
-
-    /**
-     * Returns an infinite distance: no position of this geometry can come close to another geometry.
-     * The returned quantity is dimensionless, the empty set having no measurement unit to report.
-     *
-     * @see ISO 19107:2019 - 6.4.4.26
-     */
-    @UML(identifier="distance", specification=ISO_19107)
-    @Override
-    default Quantity<?> distance(Geometry other) {
-        return Quantities.create(Double.POSITIVE_INFINITY, Units.UNITY);
-    }
-
-    /**
-     * Returns {@code this}: {@code ∅ ∩ A = ∅}.
-     *
-     * @see ISO 19107:2019 - 6.4.8.4
-     */
-    @UML(identifier="intersection", specification=ISO_19107)
-    @Override
-    default Geometry intersection(Geometry other) {
-        return this;
-    }
-
-    /**
-     * Returns the given geometry: {@code ∅ ∪ A = A}.
-     *
-     * @see ISO 19107:2019 - 6.4.8.7
-     */
-    @UML(identifier="union", specification=ISO_19107)
-    @Override
-    default Geometry union(Geometry other) {
-        return other;
-    }
-
-    /**
-     * Returns {@code this}: {@code ∅ − A = ∅}.
-     *
-     * @see ISO 19107:2019 - 6.4.8.5
-     */
-    @UML(identifier="difference", specification=ISO_19107)
-    @Override
-    default Geometry difference(Geometry other) {
-        return this;
-    }
-
-    /**
-     * Returns the given geometry: {@code (∅ − A) ∪ (A − ∅) = A}.
-     *
-     * @see ISO 19107:2019 - 6.4.8.6
-     */
-    @UML(identifier="symDifference", specification=ISO_19107)
-    @Override
-    default Geometry symDifference(Geometry other) {
-        return other;
-    }
-
-    /**
-     * Returns {@code false}: the empty set contains no position at all.
-     *
-     * @see ISO 19107:2019 - 6.4.2
-     */
-    @UML(identifier="contains", specification=ISO_19107)
-    @Override
-    default boolean contains(DirectPosition element) {
-        return false;
-    }
-
-    /**
-     * Returns whether the given geometry is empty: the empty set is a superset of itself only.
-     *
-     * @see ISO 19107:2019 - 10.8.6.3.2
-     */
-    @UML(identifier="contains", specification=ISO_19107)
-    @Override
-    default boolean contains(Geometry other) {
-        return other.isEmpty();
-    }
-
-    /**
-     * Returns {@code true}: the empty set is a subset of every geometry.
-     *
-     * @see ISO 19107:2019 - 10.8.6.3.7
-     */
-    @UML(identifier="within", specification=ISO_19107)
-    @Override
-    default boolean within(Geometry other) {
-        return true;
-    }
-
-    /**
-     * Returns whether the given geometry is empty: any two empty geometries are equal.
-     *
-     * @see ISO 19107:2019 - 6.4.4.27, 10.8.6.3.1
-     */
-    @UML(identifier="equals", specification=ISO_19107)
-    @Override
-    default boolean equal(Geometry other) {
-        return other.isEmpty();
-    }
-
-    /**
-     * Returns {@code true}: the empty set has no position in common with any geometry.
-     *
-     * @see ISO 19107:2019 - 10.8.6.3.3
-     */
-    @UML(identifier="disjoint", specification=ISO_19107)
-    @Override
-    default boolean disjoint(Geometry other) {
-        return true;
-    }
-
-    /**
-     * Returns {@code false}: the empty set has no position in common with any geometry.
-     *
-     * @see ISO 19107:2019 - 10.8.6.3.4
-     */
-    @UML(identifier="intersects", specification=ISO_19107)
-    @Override
-    default boolean intersects(Geometry other) {
-        return false;
     }
 
 }

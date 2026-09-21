@@ -19,6 +19,9 @@ package org.apache.sis.geometries.operation;
 import org.apache.sis.geometries.Geometry;
 
 // Test dependencies
+import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
+import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
+import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
@@ -38,7 +41,7 @@ public class WithinTest {
      * @param expected the expected result, or {@code null} if an exception is expected.
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
-    private record Entry(Geometry input,
+    private record TestCase(Geometry input,
                          Geometry other,
                          Boolean expected,
                          Class<? extends Exception> error)
@@ -48,7 +51,12 @@ public class WithinTest {
     /**
      * All test cases of {@code within(Geometry, Geometry)}.
      */
-    private static final Entry[] ENTRIES = {
+    private static final TestCase[] ENTRIES = {
+        // The empty set is a subset of every geometry. Converse of `contains(Geometry, Geometry)`.
+        new TestCase(EMPTY_1,   NON_EMPTY, true,  null),
+        new TestCase(EMPTY_1,   EMPTY_1,   true,  null),
+        new TestCase(EMPTY_1,   EMPTY_2,   true,  null),
+        new TestCase(NON_EMPTY, EMPTY_1,   false, null)
     };
 
     /**
@@ -56,7 +64,7 @@ public class WithinTest {
      */
     @Test
     public void testWithin() {
-        for (final Entry entry : ENTRIES) {
+        for (final TestCase entry : ENTRIES) {
             try {
                 final boolean result = new GeometryProcessor().within(entry.input(), entry.other());
                 assertNull(entry.error(), "An exception was expected.");

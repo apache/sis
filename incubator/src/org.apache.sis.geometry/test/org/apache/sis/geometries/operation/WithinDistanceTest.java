@@ -40,7 +40,7 @@ public class WithinDistanceTest {
      * @param expected the expected result, or {@code null} if an exception is expected.
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
-    private record Entry(Geometry input,
+    private record TestCase(Geometry input,
                          Geometry other,
                          Quantity<?> distance,
                          Boolean expected,
@@ -51,7 +51,7 @@ public class WithinDistanceTest {
     /**
      * All test cases of {@code withinDistance(Geometry, Geometry, Quantity)}.
      */
-    private static final Entry[] ENTRIES = {
+    private static final TestCase[] ENTRIES = {
     };
 
     /**
@@ -59,7 +59,7 @@ public class WithinDistanceTest {
      */
     @Test
     public void testWithinDistance() {
-        for (final Entry entry : ENTRIES) {
+        for (final TestCase entry : ENTRIES) {
             try {
                 final boolean result = new GeometryProcessor().withinDistance(entry.input(), entry.other(), entry.distance());
                 assertNull(entry.error(), "An exception was expected.");

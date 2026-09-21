@@ -40,7 +40,7 @@ public class RelateTest {
      * @param expected the expected result, or {@code null} if an exception is expected.
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
-    private record Entry(Geometry input,
+    private record TestCase(Geometry input,
                          Geometry other,
                          DE9IM matrix,
                          Boolean expected,
@@ -51,7 +51,7 @@ public class RelateTest {
     /**
      * All test cases of {@code relate(Geometry, Geometry, DE9IM)}.
      */
-    private static final Entry[] ENTRIES = {
+    private static final TestCase[] ENTRIES = {
     };
 
     /**
@@ -59,7 +59,7 @@ public class RelateTest {
      */
     @Test
     public void testRelate() {
-        for (final Entry entry : ENTRIES) {
+        for (final TestCase entry : ENTRIES) {
             try {
                 final boolean result = new GeometryProcessor().relate(entry.input(), entry.other(), entry.matrix());
                 assertNull(entry.error(), "An exception was expected.");

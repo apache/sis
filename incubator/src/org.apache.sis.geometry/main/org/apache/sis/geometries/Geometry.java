@@ -67,10 +67,15 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * <p>
  * Deviation from ISO-19107 :<br>
- * A Geometry should be a sub type of TransfiniteSetOfDirectPositions (section 6.4.2)
- * A TransfiniteSetOfDirectPositions exist to define a Geometry within the <b>Set theory</b>, it is a mathematical conceptual interface.
- * But the interface has only a unique subtype and provide a single additional method contains(DirectPosition),
- * therefor we merged TransfiniteSetOfDirectPositions in Geometry for simplicity state
+ * <ul>
+ *   <li>A Geometry should be a sub type of TransfiniteSetOfDirectPositions (section 6.4.2)
+ *   A TransfiniteSetOfDirectPositions exist to define a Geometry within the <b>Set theory</b>, it is a mathematical conceptual interface.
+ *   But the interface has only a unique subtype and provide a single additional method contains(DirectPosition),
+ *   therefor we merged TransfiniteSetOfDirectPositions in Geometry for simplicity state</li>
+ *   <li>We removed contains(DirectPosition) defined on TransfinitSet.
+ *   This method mimics contains(Point), to harmonize everything we keep only the geometric parameter method.
+ *   </li>
+ * </ul>
  *
  * @author Johann Sorel (Geomatys)
  *
@@ -584,11 +589,9 @@ public sealed interface Geometry
      * <p>Difference with ISO 19107, which takes a distance quantity:
      * see {@link #buffer(Quantity)} for the standard operation.</p>
      *
-     * @param  distance  radius of the buffer.
+     * @param  distance  radius of the buffer, in CRS unit.
      * @return buffer around this geometry.
      * @throws OperationException if the buffer cannot be computed.
-     *
-     * @see GeometryProcessor#buffer(org.apache.sis.geometries.Geometry, double)
      */
     default Geometry buffer(double distance) throws OperationException {
         return buffer(Quantities.create(distance, Units.UNITY));
@@ -787,23 +790,6 @@ public sealed interface Geometry
     @UML(identifier="transform", specification=ISO_19107)
     default Geometry transform(CoordinateReferenceSystem crs) {
         return new GeometryProcessor().transform(this, crs, null);
-    }
-
-    /**
-     * Returns whether the given position belongs to this geometry.
-     * This is the membership test which stands for this geometry being a possibly infinite
-     * set of positions.
-     *
-     * @param  element  the position to test.
-     * @return {@code true} if the given position is on this geometry.
-     * @throws OperationException if the test cannot be performed.
-     *
-     * @see GeometryProcessor#contains(org.apache.sis.geometries.Geometry, org.opengis.geometry.DirectPosition)
-     * @see ISO 19107:2019 - contains & 3Dcontains - 6.4.2, 6.4.4.30, 6.4.9
-     */
-    @UML(identifier="contains", specification=ISO_19107)
-    default boolean contains(DirectPosition element) throws OperationException {
-        return new GeometryProcessor().contains(this, element);
     }
 
     /**

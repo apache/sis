@@ -38,7 +38,7 @@ public class TouchesTest {
      * @param expected the expected result, or {@code null} if an exception is expected.
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
-    private record Entry(Geometry input,
+    private record TestCase(Geometry input,
                          Geometry other,
                          Boolean expected,
                          Class<? extends Exception> error)
@@ -48,7 +48,7 @@ public class TouchesTest {
     /**
      * All test cases of {@code touches(Geometry, Geometry)}.
      */
-    private static final Entry[] ENTRIES = {
+    private static final TestCase[] ENTRIES = {
     };
 
     /**
@@ -56,7 +56,7 @@ public class TouchesTest {
      */
     @Test
     public void testTouches() {
-        for (final Entry entry : ENTRIES) {
+        for (final TestCase entry : ENTRIES) {
             try {
                 final boolean result = new GeometryProcessor().touches(entry.input(), entry.other());
                 assertNull(entry.error(), "An exception was expected.");

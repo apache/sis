@@ -19,6 +19,9 @@ package org.apache.sis.geometries.operation;
 import org.apache.sis.geometries.Geometry;
 
 // Test dependencies
+import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
+import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
+import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
@@ -38,7 +41,7 @@ public class UnionTest {
      * @param expected the expected result, or {@code null} if an exception is expected.
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
-    private record Entry(Geometry input,
+    private record TestCase(Geometry input,
                          Geometry other,
                          Geometry expected,
                          Class<? extends Exception> error)
@@ -48,7 +51,11 @@ public class UnionTest {
     /**
      * All test cases of {@code union(Geometry, Geometry)}.
      */
-    private static final Entry[] ENTRIES = {
+    private static final TestCase[] ENTRIES = {
+        // ∅ ∪ A = A and A ∪ ∅ = A: the result is the operand which is not empty.
+        new TestCase(EMPTY_1,   NON_EMPTY, NON_EMPTY, null),
+        new TestCase(NON_EMPTY, EMPTY_1,   NON_EMPTY, null),
+        new TestCase(EMPTY_1,   EMPTY_2,   EMPTY_2,   null)
     };
 
     /**
@@ -56,7 +63,7 @@ public class UnionTest {
      */
     @Test
     public void testUnion() {
-        for (final Entry entry : ENTRIES) {
+        for (final TestCase entry : ENTRIES) {
             try {
                 final Geometry result = new GeometryProcessor().union(entry.input(), entry.other());
                 assertNull(entry.error(), "An exception was expected.");

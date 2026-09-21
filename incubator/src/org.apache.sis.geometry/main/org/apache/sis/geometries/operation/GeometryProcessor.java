@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.measure.Quantity;
+import javax.measure.Unit;
 import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.DE9IM;
 import org.apache.sis.geometries.Geometries;
@@ -49,7 +50,6 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArgumentChecks;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 
@@ -76,6 +76,10 @@ public final class GeometryProcessor {
     @UML(identifier="buffer", specification=ISO_19107) // section 6.4.4.24 and 6.4.8.3
     //@UML(identifier="3Dbuffer", specification=ISO_19107) // section 6.4.9
     public Geometry buffer(Geometry geom, Quantity<?> radius) throws OperationException {
+        if (geom.isEmpty()) {
+            // There is no position to grow a buffer around, whatever the radius.
+            return geom;
+        }
         throw new UnsupportedOperationException();
     }
 
@@ -86,6 +90,10 @@ public final class GeometryProcessor {
      */
     //@UML(identifier="3DconvexHull", specification=ISO_19107) // section 6.4.9
     public Geometry convexHull(Geometry geom) throws OperationException {
+        if (geom.isEmpty()) {
+            // The convex hull of the empty set is empty.
+            return geom;
+        }
 
         //TODO : fallback on JTS until implemented, this loss the attributes !
         return Geometries.fromJTS(jts(geom).convexHull(), true);
@@ -97,6 +105,10 @@ public final class GeometryProcessor {
     @UML(identifier="difference", specification=ISO_19107) // section 6.4.4.30 and 6.4.8.5
     //@UML(identifier="3Ddifference", specification=ISO_19107) // section 6.4.9
     public Geometry difference(Geometry geom1, Geometry geom2) throws OperationException {
+        if (geom1.isEmpty() || geom2.isEmpty()) {
+            // ∅ − A = ∅ and A − ∅ = A, which are both the first operand.
+            return geom1;
+        }
 
         //TODO : fallback on JTS until implemented, this loss the attributes !
         return Geometries.fromJTS(jts(geom1).difference(jts(geom2)), true);
@@ -120,9 +132,16 @@ public final class GeometryProcessor {
     @UML(identifier="distance", specification=ISO_19107) // section 6.4.4.26 and 6.4.8.2
     //@UML(identifier="3Ddistance", specification=ISO_19107) // section 6.4.9
     public Quantity<?> distance(Geometry geom1, Geometry geom2) throws OperationException {
+        if (geom1.isEmpty() || geom2.isEmpty()) {
+            /*
+             * No position of an empty geometry can come close to another geometry.
+             * The returned quantity is dimensionless, the empty set having no measurement unit to report.
+             */
+            return Quantities.create(Double.POSITIVE_INFINITY, Units.UNITY);
+        }
         if (geom1 instanceof Point pt1) {
             if (geom2 instanceof Point pt2) {
-                return Quantities.create(Distance.distance(pt1, pt2), Units.METRE);
+                return Quantities.create(Distance.distance(pt1, pt2), getUnit(pt1));
             }
         }
 
@@ -135,6 +154,13 @@ public final class GeometryProcessor {
     @UML(identifier="intersection", specification=ISO_19107) // section 6.4.4.30 and 6.4.8.4
     //@UML(identifier="3Dintersection", specification=ISO_19107) // section 6.4.9
     public Geometry intersection(Geometry geom1, Geometry geom2) throws OperationException {
+        // ∅ ∩ A = ∅ and A ∩ ∅ = ∅, the result being the operand which is already empty.
+        if (geom1.isEmpty()) {
+            return geom1;
+        }
+        if (geom2.isEmpty()) {
+            return geom2;
+        }
 
         if (geom1 instanceof MeshPrimitive.Triangles g1) {
             if (geom2 instanceof MeshPrimitive.Points g2) {
@@ -155,6 +181,13 @@ public final class GeometryProcessor {
     @UML(identifier="symDifference", specification=ISO_19107) // section 6.4.4.30 and 6.4.8.6
     //@UML(identifier="3DsymDifference", specification=ISO_19107) // section 6.4.9
     public Geometry symDifference(Geometry geom1, Geometry geom2) throws OperationException {
+        // (∅ − A) ∪ (A − ∅) = A, the result being the operand which is not empty.
+        if (geom1.isEmpty()) {
+            return geom2;
+        }
+        if (geom2.isEmpty()) {
+            return geom1;
+        }
 
         //TODO : fallback on JTS until implemented, this loss the attributes !
         return Geometries.fromJTS(jts(geom1).symDifference(jts(geom2)), true);
@@ -166,15 +199,16 @@ public final class GeometryProcessor {
     @UML(identifier="union", specification=ISO_19107) // section 6.4.4.30 and 6.4.8.7
     //@UML(identifier="3Dunion", specification=ISO_19107) // section 6.4.9
     public Geometry union(Geometry geom1, Geometry geom2) throws OperationException {
+        // ∅ ∪ A = A and A ∪ ∅ = A, the result being the operand which is not empty.
+        if (geom1.isEmpty()) {
+            return geom2;
+        }
+        if (geom2.isEmpty()) {
+            return geom1;
+        }
 
         //TODO : fallback on JTS until implemented, this loss the attributes !
         return Geometries.fromJTS(jts(geom1).union(jts(geom2)), true);
-    }
-
-    @UML(identifier="contains", specification=ISO_19107) // section 6.4.4.30 ?
-    //@UML(identifier="3Dcontains", specification=ISO_19107) // section 6.4.9
-    public boolean contains(Geometry geom1, DirectPosition element) throws OperationException {
-        throw new UnsupportedOperationException();
     }
 
     /**
@@ -182,6 +216,14 @@ public final class GeometryProcessor {
      */
     @UML(identifier="contains", specification=ISO_19107) // section 6.4.8.8, 6.4.4.2
     public boolean contains(Geometry geom1, Geometry geom2) throws OperationException {
+        if (geom1.isEmpty()) {
+            // The empty set is a superset of itself only.
+            return geom2.isEmpty();
+        }
+        if (geom2.isEmpty()) {
+            // The empty set is a subset of every geometry.
+            return true;
+        }
         if (geom1 instanceof Polygon polygon) {
             if (geom2 instanceof Point pt) {
                 return Contains.contains(polygon, pt);
@@ -208,6 +250,11 @@ public final class GeometryProcessor {
     @UML(identifier="disjoint", specification=ISO_19107) // section 6.4.8.8
     //@UML(identifier="3Ddisjoint", specification=ISO_19107) // section 6.4.9
     public boolean disjoint(Geometry geom1, Geometry geom2) throws OperationException {
+        if (geom1.isEmpty() || geom2.isEmpty()) {
+            // The empty set has no position in common with any geometry.
+            return true;
+        }
+
         //TODO : fallback on JTS until implemented
         return jts(geom1).disjoint(jts(geom2));
     }
@@ -218,6 +265,11 @@ public final class GeometryProcessor {
     @UML(identifier="equals", specification=ISO_19107) // section 6.4.8.8, 6.4.4.30
     //@UML(identifier="3Dequals", specification=ISO_19107) // section 6.4.9
     public boolean equal(Geometry geom1, Geometry geom2) throws OperationException {
+        if (geom1.isEmpty() || geom2.isEmpty()) {
+            // The empty set being unique, any two empty geometries are equal and nothing else is.
+            return geom1.isEmpty() == geom2.isEmpty();
+        }
+
         //TODO : fallback on JTS until implemented
         return jts(geom1).equals(jts(geom2));
     }
@@ -228,6 +280,11 @@ public final class GeometryProcessor {
     @UML(identifier="intersects", specification=ISO_19107) // section 6.4.8.8, 6.4.4.30
     //@UML(identifier="3Dintersects", specification=ISO_19107) // section 6.4.9
     public boolean intersects(Geometry geom1, Geometry geom2) throws OperationException {
+        if (geom1.isEmpty() || geom2.isEmpty()) {
+            // Negation of `disjoint(Geometry, Geometry)`.
+            return false;
+        }
+
         //TODO : fallback on JTS until implemented
         return jts(geom1).intersects(jts(geom2));
     }
@@ -299,6 +356,14 @@ public final class GeometryProcessor {
     @UML(identifier="within", specification=ISO_19107) // section 6.4.8.8
     //@UML(identifier="3Dwithin", specification=ISO_19107) // section 6.4.9
     public boolean within(Geometry geom1, Geometry geom2) throws OperationException {
+        if (geom1.isEmpty()) {
+            // The empty set is a subset of every geometry.
+            return true;
+        }
+        if (geom2.isEmpty()) {
+            // Converse of `contains(Geometry, Geometry)`: only the empty set is within the empty set.
+            return false;
+        }
 
         //TODO : fallback on JTS until implemented
         return jts(geom1).within(jts(geom2));
@@ -490,5 +555,13 @@ public final class GeometryProcessor {
      */
     private static org.locationtech.jts.geom.Geometry jts(Geometry geom) {
         return Geometries.asJTS(geom, false, null);
+    }
+
+    private static Unit getUnit(Geometry geometry) {
+        return getUnit(geometry.getCoordinateReferenceSystem());
+    }
+
+    private static Unit getUnit(CoordinateReferenceSystem crs) {
+        return crs.getCoordinateSystem().getAxis(0).getUnit();
     }
 }
