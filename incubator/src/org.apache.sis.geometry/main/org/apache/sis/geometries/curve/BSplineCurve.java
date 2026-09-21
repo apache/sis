@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.curve;
 
 import org.apache.sis.geometries.CurveInterpolation;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.internal.shared.DefaultBSplineCurve;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -57,8 +58,8 @@ public sealed interface BSplineCurve extends SplineCurve
     static final String TYPE = "BSPLINECURVE";
 
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.BSPLINECURVE;
     }
 
     /**

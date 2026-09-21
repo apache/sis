@@ -58,8 +58,8 @@ public final class OBBox extends AbstractGeometry {
     }
 
     @Override
-    public String getGeometryType() {
-        return "BBOX"; //TODO not in OGC SFA.
+    public GeometryType getGeometryType() {
+        return GeometryType.BBOX;
     }
 
     @Override
@@ -83,8 +83,8 @@ public final class OBBox extends AbstractGeometry {
     }
 
     @Override
-    public AttributesType getAttributesType() {
-        return AttributesType.EMPTY;
+    public DataPointsType getDataPointsType() {
+        return DataPointsType.EMPTY;
     }
 
     /**

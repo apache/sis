@@ -16,11 +16,11 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Empty;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 /**
  *
@@ -28,15 +28,15 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public non-sealed class DefaultEmpty extends AbstractGeometry implements Empty {
 
-    private final AttributesType attType;
+    private final DataPointsType attType;
 
-    public DefaultEmpty(AttributesType attType) {
+    public DefaultEmpty(DataPointsType attType) {
         this.attType = attType;
     }
 
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return attType.getAttributeSystem(AttributesType.ATT_POSITION).getCoordinateReferenceSystem();
+        return attType.getAttributeSystem(DataPointsType.ATT_POSITION).getCoordinateReferenceSystem();
     }
 
     @Override
@@ -45,7 +45,7 @@ public non-sealed class DefaultEmpty extends AbstractGeometry implements Empty {
     }
 
     @Override
-    public AttributesType getAttributesType() {
+    public DataPointsType getDataPointsType() {
         return attType;
     }
 

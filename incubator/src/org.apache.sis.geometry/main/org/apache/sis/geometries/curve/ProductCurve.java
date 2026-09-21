@@ -66,8 +66,8 @@ public sealed interface ProductCurve extends Curve, GeometryCollection<Curve>
      * This value resolves the ambiguity between {@link Curve} and {@link GeometryCollection}.
      */
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.PRODUCTCURVE;
     }
 
     /**

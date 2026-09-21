@@ -17,12 +17,12 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.Conic;
 import org.apache.sis.maths.Array;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -90,8 +90,8 @@ public non-sealed class DefaultConic extends AbstractGeometry implements Conic {
     }
 
     @Override
-    public AttributesType getAttributesType() {
-        return points.getAttributesType();
+    public DataPointsType getDataPointsType() {
+        return points.getType();
     }
 
     @Override

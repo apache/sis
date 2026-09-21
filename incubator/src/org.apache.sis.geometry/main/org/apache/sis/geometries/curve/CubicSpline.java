@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.internal.shared.DefaultCubicSpline;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -50,8 +51,8 @@ public sealed interface CubicSpline extends PolynomialSpline
     static final String TYPE = "CUBICSPLINE";
 
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.CUBICSPLINE;
     }
 
     /**

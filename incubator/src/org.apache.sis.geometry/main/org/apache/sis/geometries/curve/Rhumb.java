@@ -16,16 +16,17 @@
  */
 package org.apache.sis.geometries.curve;
 
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Bearing;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.internal.shared.DefaultRhumb;
 import org.apache.sis.maths.Array;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -60,13 +61,13 @@ public sealed interface Rhumb extends Curve
     static final String TYPE = "RHUMB";
 
     /**
-     * Returns {@value #TYPE}.
+     * Returns {@link GeometryType#RHUMB}.
      *
      * @see ISO 19107:2019 - 6.4.4.23
      */
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.RHUMB;
     }
 
     /**
@@ -133,8 +134,8 @@ public sealed interface Rhumb extends Curve
     }
 
     @Override
-    default AttributesType getAttributesType() {
-        return getDataPoints().getAttributesType();
+    default DataPointsType getDataPointsType() {
+        return getDataPoints().getType();
     }
 
 }

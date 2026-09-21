@@ -73,7 +73,7 @@ public interface DataPoints {
      * Get geometry attributes type.
      * @return attributes type, never null
      */
-    AttributesType getAttributesType();
+    DataPointsType getType();
 
     /**
      * Get the geometry bounding envelope.
@@ -81,7 +81,7 @@ public interface DataPoints {
      * @return Envelope in geometry coordinate reference system.
      */
     default Envelope getEnvelope() {
-        return getAttributeRange(AttributesType.ATT_POSITION);
+        return getAttributeRange(DataPointsType.ATT_POSITION);
     }
 
     default boolean isEmpty() {
@@ -133,7 +133,7 @@ public interface DataPoints {
      * @return copy of all attribute values
      */
     default Array getAttributeArray(String name) {
-        final AttributesType at = getAttributesType();
+        final DataPointsType at = getType();
         final SampleSystem ss = at.getAttributeSystem(name);
         final DataType type = at.getAttributeType(name);
         final int size = size();

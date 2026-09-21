@@ -19,7 +19,6 @@ package org.apache.sis.geometries.operation.simplify.greedyinsert;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
@@ -31,6 +30,7 @@ import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.Tuple;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -52,8 +52,8 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
         }
 
         @Override
-        public AttributesType getAttributesType() {
-            return AttributesType.EMPTY;
+        public DataPointsType getType() {
+            return DataPointsType.EMPTY;
         }
 
         @Override
@@ -91,7 +91,7 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
 
         @Override
         public Tuple getAttribute(int index, String name) {
-            if (AttributesType.ATT_POSITION.equals(name)) {
+            if (DataPointsType.ATT_POSITION.equals(name)) {
                 return getPosition(index);
             }
             return null;
@@ -99,7 +99,7 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
 
         @Override
         public void setAttribute(int index, String name, Tuple value) {
-            if (AttributesType.ATT_POSITION.equals(name)) {
+            if (DataPointsType.ATT_POSITION.equals(name)) {
                 setPosition(index, value);
                 return;
             }

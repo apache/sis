@@ -19,6 +19,7 @@ package org.apache.sis.geometries.surface;
 import java.util.List;
 import javax.measure.Quantity;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultPolyhedralSurface;
@@ -73,13 +74,13 @@ public sealed interface PolyhedralSurface<T extends Polygon> extends /*GeometryC
     static final String TYPE = "POLYHEDRALSURFACE";
 
     /**
-     * Returns {@value #TYPE}.
+     * Returns {@link GeometryType#POLYHEDRALSURFACE}.
      *
      * @see ISO 19107:2019 - 6.4.4.23
      */
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.POLYHEDRALSURFACE;
     }
 
 //    @UML(identifier="segment", specification=ISO_19107)

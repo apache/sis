@@ -19,7 +19,6 @@ package org.apache.sis.geometries.internal.shared;
 import java.util.HashMap;
 import java.util.Map;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.NDArrays;
@@ -31,6 +30,7 @@ import org.apache.sis.referencing.CommonCRS;
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -66,7 +66,7 @@ public class ArraySequenceTest {
     public void constructorAttributesNoPositionTest() {
         final Array normals = NDArrays.of(3, new double[]{1,0,0, 0,1,0, 0,0,1, 1,0,0});
         final Map<String,Array> attributes = new HashMap<>();
-        attributes.put(AttributesType.ATT_NORMAL, normals);
+        attributes.put(DataPointsType.ATT_NORMAL, normals);
         assertThrows(NullPointerException.class, ()->{
             ArrayDataPoints array = new ArrayDataPoints(attributes);
         });
@@ -80,8 +80,8 @@ public class ArraySequenceTest {
         final Array positions = NDArrays.of(CommonCRS.WGS84.normalizedGeographic(), new double[]{0,0, 1,0, 0,1, 0,0});
         final Array normals = NDArrays.of(3, new double[]{1,0,0, 0,1,0, 0,0,1, 1,0,0});
         final Map<String,Array> attributes = new HashMap<>();
-        attributes.put(AttributesType.ATT_POSITION, positions);
-        attributes.put(AttributesType.ATT_NORMAL, normals);
+        attributes.put(DataPointsType.ATT_POSITION, positions);
+        attributes.put(DataPointsType.ATT_NORMAL, normals);
         ArrayDataPoints array = new ArrayDataPoints(attributes);
     }
 
@@ -95,29 +95,29 @@ public class ArraySequenceTest {
         final Array positions = NDArrays.of(crs, new double[]{0,0, 1,0, 0,1, 0,0});
         final Array normals = NDArrays.of(3, new double[]{1,0,0, 0,1,0, 0,0,1, 1,0,0});
         final Map<String,Array> attributes = new HashMap<>();
-        attributes.put(AttributesType.ATT_POSITION, positions);
-        attributes.put(AttributesType.ATT_NORMAL, normals);
+        attributes.put(DataPointsType.ATT_POSITION, positions);
+        attributes.put(DataPointsType.ATT_NORMAL, normals);
         final ArrayDataPoints array = new ArrayDataPoints(attributes);
 
         assertEquals(CommonCRS.WGS84.normalizedGeographic(), array.getCoordinateReferenceSystem());
         assertEquals(2, array.getDimension());
-        assertEquals(positions, array.getAttribute(AttributesType.ATT_POSITION));
-        assertEquals(normals, array.getAttribute(AttributesType.ATT_NORMAL));
+        assertEquals(positions, array.getAttribute(DataPointsType.ATT_POSITION));
+        assertEquals(normals, array.getAttribute(DataPointsType.ATT_NORMAL));
         assertEquals(2, array.getAttributeNames().size());
 
         final SampleSystem ss = SampleSystem.of(crs);
-        assertEquals(new Vector2D.Double(ss, 0, 0), array.getAttribute(0, AttributesType.ATT_POSITION));
-        assertEquals(new Vector2D.Double(ss, 1, 0), array.getAttribute(1, AttributesType.ATT_POSITION));
-        assertEquals(new Vector2D.Double(ss, 0, 1), array.getAttribute(2, AttributesType.ATT_POSITION));
-        assertEquals(new Vector2D.Double(ss, 0, 0), array.getAttribute(3, AttributesType.ATT_POSITION));
+        assertEquals(new Vector2D.Double(ss, 0, 0), array.getAttribute(0, DataPointsType.ATT_POSITION));
+        assertEquals(new Vector2D.Double(ss, 1, 0), array.getAttribute(1, DataPointsType.ATT_POSITION));
+        assertEquals(new Vector2D.Double(ss, 0, 1), array.getAttribute(2, DataPointsType.ATT_POSITION));
+        assertEquals(new Vector2D.Double(ss, 0, 0), array.getAttribute(3, DataPointsType.ATT_POSITION));
         assertEquals(new Vector2D.Double(ss, 0, 0), array.getPosition(0));
         assertEquals(new Vector2D.Double(ss, 1, 0), array.getPosition(1));
         assertEquals(new Vector2D.Double(ss, 0, 1), array.getPosition(2));
         assertEquals(new Vector2D.Double(ss, 0, 0), array.getPosition(3));
-        assertEquals(new Vector3D.Double(1, 0, 0), array.getAttribute(0, AttributesType.ATT_NORMAL));
-        assertEquals(new Vector3D.Double(0, 1, 0), array.getAttribute(1, AttributesType.ATT_NORMAL));
-        assertEquals(new Vector3D.Double(0, 0, 1), array.getAttribute(2, AttributesType.ATT_NORMAL));
-        assertEquals(new Vector3D.Double(1, 0, 0), array.getAttribute(3, AttributesType.ATT_NORMAL));
+        assertEquals(new Vector3D.Double(1, 0, 0), array.getAttribute(0, DataPointsType.ATT_NORMAL));
+        assertEquals(new Vector3D.Double(0, 1, 0), array.getAttribute(1, DataPointsType.ATT_NORMAL));
+        assertEquals(new Vector3D.Double(0, 0, 1), array.getAttribute(2, DataPointsType.ATT_NORMAL));
+        assertEquals(new Vector3D.Double(1, 0, 0), array.getAttribute(3, DataPointsType.ATT_NORMAL));
 
         Point pt0 = array.getPoint(0);
         Point pt1 = array.getPoint(1);
@@ -127,10 +127,10 @@ public class ArraySequenceTest {
         assertEquals(new Vector2D.Double(ss, 1, 0), pt1.getPosition());
         assertEquals(new Vector2D.Double(ss, 0, 1), pt2.getPosition());
         assertEquals(new Vector2D.Double(ss, 0, 0), pt3.getPosition());
-        assertEquals(new Vector3D.Double(1, 0, 0), pt0.getAttribute(AttributesType.ATT_NORMAL));
-        assertEquals(new Vector3D.Double(0, 1, 0), pt1.getAttribute(AttributesType.ATT_NORMAL));
-        assertEquals(new Vector3D.Double(0, 0, 1), pt2.getAttribute(AttributesType.ATT_NORMAL));
-        assertEquals(new Vector3D.Double(1, 0, 0), pt3.getAttribute(AttributesType.ATT_NORMAL));
+        assertEquals(new Vector3D.Double(1, 0, 0), pt0.getAttribute(DataPointsType.ATT_NORMAL));
+        assertEquals(new Vector3D.Double(0, 1, 0), pt1.getAttribute(DataPointsType.ATT_NORMAL));
+        assertEquals(new Vector3D.Double(0, 0, 1), pt2.getAttribute(DataPointsType.ATT_NORMAL));
+        assertEquals(new Vector3D.Double(1, 0, 0), pt3.getAttribute(DataPointsType.ATT_NORMAL));
 
     }
 

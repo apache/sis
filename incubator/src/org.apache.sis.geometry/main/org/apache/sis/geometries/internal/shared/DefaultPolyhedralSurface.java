@@ -16,11 +16,11 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -86,8 +86,8 @@ public non-sealed class DefaultPolyhedralSurface<T extends Polygon> extends Abst
     }
 
     @Override
-    public AttributesType getAttributesType() {
-        return (patches.length != 0) ? patches[0].getAttributesType() : AttributesType.EMPTY;
+    public DataPointsType getDataPointsType() {
+        return (patches.length != 0) ? patches[0].getDataPointsType() : DataPointsType.EMPTY;
     }
 
     @Override

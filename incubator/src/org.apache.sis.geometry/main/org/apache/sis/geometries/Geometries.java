@@ -410,7 +410,7 @@ public final class Geometries {
             maxIndexSize += index.getLength() + 3; //+1 for winding reset, +2 for degenerated triangle
             attSize += p.getPositions().getLength();
         }
-        for (String name : primitive.getAttributesType().getAttributeNames()) {
+        for (String name : primitive.getDataPointsType().getAttributeNames()) {
             final Array model = primitive.getAttribute(name);
             resultAttributes.put(name, NDArrays.of(model.getSampleSystem(), model.getDataType(), attSize));
         }
@@ -437,10 +437,10 @@ public final class Geometries {
             if (!CRS.equivalent(crs, primitive.getCoordinateReferenceSystem())) {
                 throw new IllegalArgumentException("All primitives must have the same CRS, found \n" + crs +"\n and \n" + primitive.getCoordinateReferenceSystem());
             }
-            if (resultAttributes.size() != primitive.getAttributesType().getAttributeNames().size()) {
+            if (resultAttributes.size() != primitive.getDataPointsType().getAttributeNames().size()) {
                 throw new IllegalArgumentException("All primitives must have the same attributes."
                         + "\n Found " + Arrays.toString(resultAttributes.keySet().toArray())
-                        + "\n Found " + Arrays.toString(primitive.getAttributesType().getAttributeNames().toArray()));
+                        + "\n Found " + Arrays.toString(primitive.getDataPointsType().getAttributeNames().toArray()));
             }
 
             primIndex = primitive.getIndex().toArrayInt();
@@ -613,7 +613,7 @@ public final class Geometries {
         final Map<String,List<Tuple<?>>> rebuild = new IdentityHashMap<>();
         final int[] index = indexArray.toArrayInt();
 
-        for (String name : primitive.getAttributesType().getAttributeNames()) {
+        for (String name : primitive.getDataPointsType().getAttributeNames()) {
             rebuild.put(name, new ArrayList<>());
         }
 
@@ -733,7 +733,7 @@ public final class Geometries {
     /**
      * Ensure two geometries declare the same attributes.
      */
-    public static void ensureSameAttributes(AttributesType att1, AttributesType att2) {
+    public static void ensureSameAttributes(DataPointsType att1, DataPointsType att2) {
         final List<String> names1 = att1.getAttributeNames();
         final List<String> names2 = att2.getAttributeNames();
         if (names1.size() != names2.size() || !names1.containsAll(names2)) {

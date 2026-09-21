@@ -17,7 +17,6 @@
 package org.apache.sis.geometries;
 
 import org.apache.sis.geometries.internal.shared.DefaultEmpty;
-import org.apache.sis.geometries.operation.GeometryProcessor;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
@@ -69,13 +68,13 @@ public sealed interface Empty extends Geometry
     }
 
     /**
-     * Returns {@value #TYPE}.
+     * Returns {@link GeometryType#EMPTY}.
      *
      * @see ISO 19107:2019 - 6.4.4.23
      */
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.EMPTY;
     }
 
     /**

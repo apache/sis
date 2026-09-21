@@ -79,7 +79,7 @@ public abstract class EmptyTest {
      */
     @Test
     public void testGetGeometryType() {
-        assertEquals("EMPTY", createEmpty(CRS_2D).getGeometryType());
+        assertEquals(GeometryType.EMPTY, createEmpty(CRS_2D).getGeometryType());
     }
 
     /**
@@ -195,14 +195,14 @@ public abstract class EmptyTest {
     @Test
     public void testGetAttributesType() {
         final Empty empty = createEmpty(CRS_2D);
-        final AttributesType type = empty.getAttributesType();
+        final DataPointsType type = empty.getDataPointsType();
         assertNotNull(type);
         assertNotNull(type.getAttributeNames());
         /*
          * The positions of a geometry use the coordinate reference system of that geometry,
          * as stated in the constraints of the `Geometry` interface.
          */
-        assertEquals(CRS_2D, type.getAttributeSystem(AttributesType.ATT_POSITION).getCoordinateReferenceSystem());
+        assertEquals(CRS_2D, type.getAttributeSystem(DataPointsType.ATT_POSITION).getCoordinateReferenceSystem());
     }
 
     /**

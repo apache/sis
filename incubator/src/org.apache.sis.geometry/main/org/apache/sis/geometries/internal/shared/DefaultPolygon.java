@@ -48,7 +48,7 @@ public non-sealed class DefaultPolygon extends AbstractGeometry implements Polyg
         this.interiors = (interiors == null) ? List.of() : List.copyOf(interiors);
         if (!this.interiors.isEmpty()) {
             for (Curve interior : this.interiors) {
-                Geometries.ensureSameAttributes(exterior.getAttributesType(), interior.getAttributesType());
+                Geometries.ensureSameAttributes(exterior.getDataPointsType(), interior.getDataPointsType());
             }
         }
     }

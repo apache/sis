@@ -16,13 +16,13 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.CompoundCurve;
 import org.apache.sis.maths.Array;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -87,8 +87,8 @@ public non-sealed class DefaultCompoundCurve extends AbstractGeometry implements
     }
 
     @Override
-    public AttributesType getAttributesType() {
-        return (curves.length != 0) ? curves[0].getAttributesType() : AttributesType.EMPTY;
+    public DataPointsType getDataPointsType() {
+        return (curves.length != 0) ? curves[0].getDataPointsType() : DataPointsType.EMPTY;
     }
 
     @Override

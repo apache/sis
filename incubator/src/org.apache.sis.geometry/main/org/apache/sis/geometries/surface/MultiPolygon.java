@@ -43,8 +43,8 @@ public sealed interface MultiPolygon extends MultiSurface<Polygon>
     static final String TYPE = "MULTIPOLYGON";
 
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.MULTIPOLYGON;
     }
 
     /**

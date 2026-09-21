@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.internal.shared.DefaultLinearRing;
 
 
@@ -31,8 +32,8 @@ public sealed interface LinearRing extends LineString
     static final String TYPE = "LINEARRING";
 
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.LINEARRING;
     }
 
     /**

@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
@@ -33,24 +32,25 @@ import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.util.ArgumentChecks;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class ArrayDataPoints implements DataPoints, AttributesType {
+public final class ArrayDataPoints implements DataPoints, DataPointsType {
 
     private Array positions;
     private final Map<String,Array> attributes = new HashMap<>(1);
 
     public ArrayDataPoints(Array positions) {
-        this(Collections.singletonMap(AttributesType.ATT_POSITION, positions));
+        this(Collections.singletonMap(DataPointsType.ATT_POSITION, positions));
     }
 
     public ArrayDataPoints(Map<String, Array> attributes) {
         this.attributes.putAll(attributes);
-        this.positions = attributes.get(AttributesType.ATT_POSITION);
+        this.positions = attributes.get(DataPointsType.ATT_POSITION);
         ArgumentChecks.ensureNonNull("positions", this.positions);
         ArgumentChecks.ensureNonNull("positions crs", this.positions.getCoordinateReferenceSystem());
         final long size = this.positions.getLength();
@@ -107,13 +107,13 @@ public final class ArrayDataPoints implements DataPoints, AttributesType {
 
     public void setAttribute(String name, Array array) {
         if (array == null) {
-            if (AttributesType.ATT_POSITION.equals(name)) {
+            if (DataPointsType.ATT_POSITION.equals(name)) {
                 throw new IllegalArgumentException("Positions attribute cannot be removed");
             }
             attributes.remove(name);
         } else if (array.getLength() != size()) {
             throw new IllegalArgumentException("Array must have the same length");
-        } else if (AttributesType.ATT_POSITION.equals(name)) {
+        } else if (DataPointsType.ATT_POSITION.equals(name)) {
             this.positions = array;
             attributes.put(name, array);
         } else {
@@ -132,7 +132,7 @@ public final class ArrayDataPoints implements DataPoints, AttributesType {
     }
 
     @Override
-    public AttributesType getAttributesType() {
+    public DataPointsType getType() {
         return this;
     }
 
@@ -222,8 +222,8 @@ public final class ArrayDataPoints implements DataPoints, AttributesType {
         }
 
         @Override
-        public AttributesType getAttributesType() {
-            return parent.getAttributesType();
+        public DataPointsType getDataPointsType() {
+            return parent.getType();
         }
     }
 }

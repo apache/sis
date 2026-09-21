@@ -19,17 +19,17 @@ package org.apache.sis.scene;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class MorphTarget implements AttributesType {
+public final class MorphTarget implements DataPointsType {
 
     private final LinkedHashMap<String,Array> attributes = new LinkedHashMap<>();
 
@@ -37,7 +37,7 @@ public final class MorphTarget implements AttributesType {
      * Get geometry attributes type.
      * @return attributes type, never null
      */
-    public AttributesType getAttributesType() {
+    public DataPointsType getAttributesType() {
         return this;
     }
 

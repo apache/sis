@@ -16,7 +16,6 @@
  */
 package org.apache.sis.geometries.point;
 
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.DataPoints;
 import java.util.Set;
 import org.apache.sis.geometries.GeometryCollection;
@@ -27,6 +26,7 @@ import org.apache.sis.geometries.internal.shared.DefaultRawMultiPoint;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.maths.Tuple;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -48,8 +48,8 @@ public sealed interface MultiPoint<T extends Point> extends GeometryCollection<T
     static final String TYPE = "MULTIPOINT";
 
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.MULTIPOINT;
     }
 
     /**
@@ -108,8 +108,8 @@ public sealed interface MultiPoint<T extends Point> extends GeometryCollection<T
             }
 
             @Override
-            public AttributesType getAttributesType() {
-                return MultiPoint.this.getAttributesType();
+            public DataPointsType getType() {
+                return MultiPoint.this.getDataPointsType();
             }
         };
     }

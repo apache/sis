@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.surface;
 
 import java.util.List;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultTriangulatedSurface;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
@@ -38,11 +39,11 @@ public sealed interface TIN extends TriangulatedSurface<Triangle>
     static final String TYPE = "TIN";
 
     /**
-     * Returns {@value #TYPE}.
+     * Returns {@link GeometryType#TIN}.
      */
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.TIN;
     }
 
     /**

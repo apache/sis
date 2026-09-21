@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Point;
@@ -41,6 +40,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -157,8 +157,8 @@ public sealed interface PreparedTIN extends TIN
         }
 
         @Override
-        public AttributesType getAttributesType() {
-            return base.getAttributesType();
+        public DataPointsType getDataPointsType() {
+            return base.getDataPointsType();
         }
     }
 
@@ -261,8 +261,8 @@ public sealed interface PreparedTIN extends TIN
         }
 
         @Override
-        public AttributesType getAttributesType() {
-            return base[0].getAttributesType();
+        public DataPointsType getDataPointsType() {
+            return base[0].getDataPointsType();
         }
     }
 

@@ -19,6 +19,7 @@ package org.apache.sis.geometries.curve;
 import java.util.List;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.internal.shared.DefaultSpiral;
 import org.apache.sis.maths.Vector;
 import static org.opengis.annotation.Specification.ISO_19107;
@@ -58,8 +59,8 @@ public sealed interface Spiral extends Curve
     static final String TYPE = "SPIRAL";
 
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.SPIRAL;
     }
 
     /**

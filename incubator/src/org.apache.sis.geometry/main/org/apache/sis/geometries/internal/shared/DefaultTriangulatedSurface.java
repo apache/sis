@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.surface.TIN;
 import org.apache.sis.geometries.surface.Triangle;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -37,10 +38,10 @@ public non-sealed class DefaultTriangulatedSurface extends DefaultPolyhedralSurf
     }
 
     /**
-     * Returns {@value TIN#TYPE}, not {@code "POLYHEDRALSURFACE"}.
+     * Returns {@link GeometryType#TIN}, not {@link GeometryType#POLYHEDRALSURFACE}.
      */
     @Override
-    public String getGeometryType() {
-        return TIN.TYPE;
+    public GeometryType getGeometryType() {
+        return GeometryType.TIN;
     }
 }

@@ -17,14 +17,15 @@
 package org.apache.sis.geometries.curve;
 
 import javax.measure.Unit;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.internal.shared.DefaultArcByCenterPoint;
 import org.apache.sis.maths.Array;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 /**
  * A single circular arc described by the centre of its circle, the radius of that circle and the
@@ -50,8 +51,8 @@ public sealed interface ArcByCenterPoint extends Curve
     static final String TYPE = "ARCBYCENTERPOINT";
 
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.ARCBYCENTERPOINT;
     }
 
     /**
@@ -129,8 +130,8 @@ public sealed interface ArcByCenterPoint extends Curve
     }
 
     @Override
-    default AttributesType getAttributesType() {
-        return getCenter().getAttributesType();
+    default DataPointsType getDataPointsType() {
+        return getCenter().getDataPointsType();
     }
 
     /**

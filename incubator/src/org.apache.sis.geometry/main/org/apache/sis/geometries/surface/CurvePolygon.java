@@ -17,13 +17,14 @@
 package org.apache.sis.geometries.surface;
 
 import java.util.List;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.internal.shared.DefaultCurvePolygon;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.coordinate.GriddedSurface;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -61,21 +62,21 @@ public sealed interface CurvePolygon extends Surface
     static final String TYPE = "CURVEPOLYGON";
 
     /**
-     * Returns {@value #TYPE}.
+     * Returns {@link GeometryType#CURVEPOLYGON}.
      *
      * @see ISO 19107:2019 - 6.4.4.23
      */
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.CURVEPOLYGON;
     }
 
     /**
      * Returns the attributes of the exterior ring, which are the attributes of this surface.
      */
     @Override
-    default AttributesType getAttributesType() {
-        return getExteriorRing().getAttributesType();
+    default DataPointsType getDataPointsType() {
+        return getExteriorRing().getDataPointsType();
     }
 
     /**

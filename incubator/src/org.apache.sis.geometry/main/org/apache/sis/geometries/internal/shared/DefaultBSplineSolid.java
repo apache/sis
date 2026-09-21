@@ -18,7 +18,6 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.List;
 import java.util.Objects;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
@@ -26,6 +25,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.solid.BSplineSolid;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -160,8 +160,8 @@ public non-sealed class DefaultBSplineSolid extends AbstractGeometry implements 
     }
 
     @Override
-    public AttributesType getAttributesType() {
-        return points.getAttributesType();
+    public DataPointsType getDataPointsType() {
+        return points.getType();
     }
 
     @Override

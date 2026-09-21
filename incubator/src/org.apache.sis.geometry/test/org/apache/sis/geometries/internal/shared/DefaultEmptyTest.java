@@ -16,7 +16,6 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Empty;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.SampleSystem;
@@ -24,6 +23,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 // Test dependencies
 import org.apache.sis.geometries.EmptyTest;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -43,8 +43,8 @@ public class DefaultEmptyTest extends EmptyTest {
      */
     @Override
     protected Empty createEmpty(final CoordinateReferenceSystem crs) {
-        final AttributesType.Template attType = new AttributesType.Template();
-        attType.addOrReplaceAttribute(AttributesType.ATT_POSITION, SampleSystem.of(crs), DataType.DOUBLE);
+        final DataPointsType.Template attType = new DataPointsType.Template();
+        attType.addOrReplaceAttribute(DataPointsType.ATT_POSITION, SampleSystem.of(crs), DataType.DOUBLE);
         return new DefaultEmpty(attType);
     }
 }

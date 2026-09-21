@@ -18,7 +18,6 @@ package org.apache.sis.geometries.solid;
 
 import java.util.List;
 import javax.measure.Quantity;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
@@ -37,6 +36,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -103,8 +103,8 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
     }
 
     @Override
-    public String getGeometryType() {
-        return "SPHERE";
+    public GeometryType getGeometryType() {
+        return GeometryType.SPHERE;
     }
 
     @Override
@@ -133,8 +133,8 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
     }
 
     @Override
-    public AttributesType getAttributesType() {
-        return AttributesType.EMPTY;
+    public DataPointsType getDataPointsType() {
+        return DataPointsType.EMPTY;
     }
 
     /**

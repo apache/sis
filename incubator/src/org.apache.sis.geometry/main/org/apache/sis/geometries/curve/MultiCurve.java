@@ -56,8 +56,8 @@ public sealed interface MultiCurve<T extends Curve> extends GeometryCollection<T
     static final String TYPE = "MULTICURVE";
 
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.MULTICURVE;
     }
 
     /**

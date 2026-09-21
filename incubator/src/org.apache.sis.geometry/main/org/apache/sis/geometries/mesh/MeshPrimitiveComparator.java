@@ -95,8 +95,8 @@ public final class MeshPrimitiveComparator {
                 throw new IllegalArgumentException("Primitive type differ, expected " + expected.getType() + " but was " + candidate.getType());
             }
 
-            final List<String> expectedAtts = expected.getAttributesType().getAttributeNames();
-            final List<String> candidateAtts = candidate.getAttributesType().getAttributeNames();
+            final List<String> expectedAtts = expected.getDataPointsType().getAttributeNames();
+            final List<String> candidateAtts = candidate.getDataPointsType().getAttributeNames();
             final Array expectedIdx = expected.getIndex();
             final Array candidateIdx = candidate.getIndex();
 
@@ -229,11 +229,11 @@ public final class MeshPrimitiveComparator {
 
         Collection<String> toTest = comparedAttributes;
         if (toTest.isEmpty()) {
-            toTest = expected.getAttributesType().getAttributeNames();
-            if (toTest.size() != candidate.getAttributesType().getAttributeNames().size()) {
+            toTest = expected.getDataPointsType().getAttributeNames();
+            if (toTest.size() != candidate.getDataPointsType().getAttributeNames().size()) {
                 throw new IllegalArgumentException("Attributes do not match, expected "
                         + Arrays.toString(toTest.toArray()) + " but was "
-                        + Arrays.toString(candidate.getAttributesType().getAttributeNames().toArray()));
+                        + Arrays.toString(candidate.getDataPointsType().getAttributeNames().toArray()));
             }
         }
 

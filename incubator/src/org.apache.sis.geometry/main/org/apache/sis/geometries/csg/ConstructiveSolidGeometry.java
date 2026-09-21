@@ -16,10 +16,11 @@
  */
 package org.apache.sis.geometries.csg;
 
+import org.apache.sis.geometries.GeometryType;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -42,12 +43,12 @@ public final class ConstructiveSolidGeometry extends AbstractGeometry {
     }
 
     @Override
-    public AttributesType getAttributesType() {
+    public DataPointsType getDataPointsType() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public String getGeometryType() {
+    public GeometryType getGeometryType() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

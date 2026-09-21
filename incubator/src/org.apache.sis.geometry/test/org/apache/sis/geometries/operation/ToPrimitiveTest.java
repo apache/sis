@@ -17,7 +17,6 @@
 package org.apache.sis.geometries.operation;
 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.curve.LineString;
@@ -36,6 +35,7 @@ import org.apache.sis.referencing.CommonCRS;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -121,8 +121,8 @@ public class ToPrimitiveTest {
             assertEquals(2, mp.getNumGeometries());
             LineString l1 = mp.getGeometryN(0);
             LineString l2 = mp.getGeometryN(1);
-            assertArrayEquals(new double[]{0,1,2,3}, l1.getDataPoints().getAttributeArray(AttributesType.ATT_POSITION).toArrayDouble(), 0.0);
-            assertArrayEquals(new double[]{3,4,5,6}, l2.getDataPoints().getAttributeArray(AttributesType.ATT_POSITION).toArrayDouble(), 0.0);
+            assertArrayEquals(new double[]{0,1,2,3}, l1.getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION).toArrayDouble(), 0.0);
+            assertArrayEquals(new double[]{3,4,5,6}, l2.getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION).toArrayDouble(), 0.0);
         }
     }
 

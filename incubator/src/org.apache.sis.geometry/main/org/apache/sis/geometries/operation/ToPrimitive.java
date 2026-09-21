@@ -19,7 +19,6 @@ package org.apache.sis.geometries.operation;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
@@ -34,6 +33,7 @@ import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -46,7 +46,7 @@ public final class ToPrimitive {
 
     private static ArrayDataPoints toArraySequence(DataPoints points) {
         final Map<String,Array> attributes = new HashMap<>();
-        for (String name : points.getAttributesType().getAttributeNames()) {
+        for (String name : points.getType().getAttributeNames()) {
             attributes.put(name, points.getAttributeArray(name));
         }
         return new ArrayDataPoints(attributes);
@@ -57,7 +57,7 @@ public final class ToPrimitive {
      */
     public static MeshPrimitive.Points toPrimitive(Point geometry) throws OperationException {
         final MeshPrimitive.Points primitive = new MeshPrimitive.Points();
-        final AttributesType attributesType = geometry.getAttributesType();
+        final DataPointsType attributesType = geometry.getDataPointsType();
         for (String name : attributesType.getAttributeNames()) {
             final Array array = NDArrays.of(attributesType.getAttributeSystem(name), attributesType.getAttributeType(name), 1);
             array.set(0, geometry.getAttribute(name));
@@ -111,7 +111,7 @@ public final class ToPrimitive {
 
         if (allLines) {
             final MeshPrimitive.Lines primitive = new MeshPrimitive.Lines();
-            final AttributesType attributesType = geometry.getAttributesType();
+            final DataPointsType attributesType = geometry.getDataPointsType();
             for (String name : attributesType.getAttributeNames()) {
                 primitive.setAttribute(name, NDArrays.of(attributesType.getAttributeSystem(name), attributesType.getAttributeType(name), numGeometries*2));
             }

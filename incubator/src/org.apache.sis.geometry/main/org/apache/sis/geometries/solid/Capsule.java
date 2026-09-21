@@ -16,12 +16,13 @@
  */
 package org.apache.sis.geometries.solid;
 
-import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.internal.shared.AbstractOrientedGeometry;
 import static org.opengis.annotation.Specification.ISO_12113;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -43,8 +44,8 @@ public final class Capsule extends AbstractOrientedGeometry {
     }
 
     @Override
-    public String getGeometryType() {
-        return "CAPSULE";
+    public GeometryType getGeometryType() {
+        return GeometryType.CAPSULE;
     }
 
     /**
@@ -115,7 +116,7 @@ public final class Capsule extends AbstractOrientedGeometry {
     }
 
     @Override
-    public AttributesType getAttributesType() {
+    public DataPointsType getDataPointsType() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

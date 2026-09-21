@@ -33,13 +33,13 @@ public sealed interface Prism extends Geometry
     static final String TYPE = "PRISM";
 
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.PRISM;
     }
 
     @Override
-    default AttributesType getAttributesType() {
-        return getBase().getAttributesType();
+    default DataPointsType getDataPointsType() {
+        return getBase().getDataPointsType();
     }
 
     /**

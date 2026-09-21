@@ -16,7 +16,6 @@
  */
 package org.apache.sis.geometries.operation;
 
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.surface.Polygon;
@@ -25,6 +24,7 @@ import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vectors;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -85,7 +85,7 @@ public final class Contains {
         ProcessorUtils.ensureSameCRS2D(polygon, candidate);
 
         { //check exterior
-            final Array coords = polygon.getExteriorRing().getDataPoints().getAttributeArray(AttributesType.ATT_POSITION);
+            final Array coords = polygon.getExteriorRing().getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION);
             if (!contains(coords, candidate.getPosition())) {
                 //point is outside the exterior ring
                 return false;
@@ -95,7 +95,7 @@ public final class Contains {
         { //check holes
             for (int i = 0, n = polygon.getNumInteriorRing(); i < n; i++) {
                 final LineString hole = polygon.getInteriorRingN(i);
-                final Array coords = hole.getDataPoints().getAttributeArray(AttributesType.ATT_POSITION);
+                final Array coords = hole.getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION);
                 if (contains(coords, candidate.getPosition())) {
                     //point is within a hole
                     return false;

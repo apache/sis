@@ -25,7 +25,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.measure.Quantity;
 import javax.measure.Unit;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.DE9IM;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
@@ -52,6 +51,7 @@ import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
+import org.apache.sis.geometries.DataPointsType;
 
 /**
  * Geometry operation computation processor.
@@ -486,7 +486,7 @@ public final class GeometryProcessor {
      */
     public Geometry separateFaces(MeshPrimitive p) {
 
-        final AttributesType attributesType = p.getAttributesType();
+        final DataPointsType attributesType = p.getDataPointsType();
         final Map<String,List<Tuple<?>>> atts = new HashMap<>();
 
         for (String name : attributesType.getAttributeNames()) {

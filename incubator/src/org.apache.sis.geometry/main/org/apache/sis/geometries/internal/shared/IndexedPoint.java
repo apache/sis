@@ -16,11 +16,11 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.maths.Tuple;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -78,7 +78,7 @@ public non-sealed class IndexedPoint implements Point {
     }
 
     @Override
-    public AttributesType getAttributesType() {
-        return parent.getAttributesType();
+    public DataPointsType getDataPointsType() {
+        return parent.getType();
     }
 }

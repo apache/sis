@@ -30,12 +30,12 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.MultiLineString;
@@ -58,6 +58,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.Containers;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -104,13 +105,13 @@ public sealed interface MeshPrimitive extends Geometry
         }
     }
 
-    public static MeshPrimitive createEmpty(Type type, AttributesType attDef) {
+    public static MeshPrimitive createEmpty(Type type, DataPointsType attDef) {
         Abs p = (Abs) create(type);
         for (String name : attDef.getAttributeNames()) {
             p.attributes.put(name, NDArrays.of(attDef.getAttributeSystem(name), attDef.getAttributeType(name), 0));
         }
-        p.positions = p.attributes.get(AttributesType.ATT_POSITION);
-        ArgumentChecks.ensureNonNull(AttributesType.ATT_POSITION, p.positions);
+        p.positions = p.attributes.get(DataPointsType.ATT_POSITION);
+        ArgumentChecks.ensureNonNull(DataPointsType.ATT_POSITION, p.positions);
         return p;
     }
 
@@ -279,7 +280,7 @@ public sealed interface MeshPrimitive extends Geometry
      */
     void removeDuplicatesByPosition();
 
-    public static abstract sealed class Abs implements MeshPrimitive, AttributesType
+    public static abstract sealed class Abs implements MeshPrimitive, DataPointsType
             permits Points,
                     Lines,
                     LineLoop,
@@ -302,7 +303,7 @@ public sealed interface MeshPrimitive extends Geometry
 
         protected Abs(Type type) {
             positions = NDArrays.of(SampleSystem.of(Geometries.RIGHT_HAND_3D), new double[0]);
-            attributes.put(AttributesType.ATT_POSITION, positions);
+            attributes.put(DataPointsType.ATT_POSITION, positions);
             this.type = type;
         }
 
@@ -323,7 +324,7 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         @Override
-        public AttributesType getAttributesType() {
+        public DataPointsType getDataPointsType() {
             return this;
         }
 
@@ -712,7 +713,7 @@ public sealed interface MeshPrimitive extends Geometry
             if (index != null) {
                 copy.setIndex(index.copy());
             }
-            copy.positions = copy.attributes.get(AttributesType.ATT_POSITION);
+            copy.positions = copy.attributes.get(DataPointsType.ATT_POSITION);
             return copy;
         }
 
@@ -931,7 +932,7 @@ public sealed interface MeshPrimitive extends Geometry
             }
             attributes.clear();
             attributes.putAll(newAttributes);
-            positions = attributes.get(AttributesType.ATT_POSITION);
+            positions = attributes.get(DataPointsType.ATT_POSITION);
         }
 
         @Override
@@ -1042,15 +1043,15 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         @Override
-        public AttributesType getAttributesType() {
-            return parent.getAttributesType();
+        public DataPointsType getDataPointsType() {
+            return parent.getDataPointsType();
         }
 
         @Override
         public String toString() {
             final StringBuilder sb = new StringBuilder("V:");
             sb.append(getIndex());
-            final TreeSet<String> properties = new TreeSet<>(getAttributesType().getAttributeNames());
+            final TreeSet<String> properties = new TreeSet<>(getDataPointsType().getAttributeNames());
             for (String name : properties) {
                 sb.append(" ");
                 sb.append(name);
@@ -1102,8 +1103,8 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         @Override
-        public AttributesType getAttributesType() {
-            return primitive.getAttributesType();
+        public DataPointsType getType() {
+            return primitive.getDataPointsType();
         }
 
         @Override
@@ -1128,8 +1129,8 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         @Override
-        public String getGeometryType() {
-            return "MULTIPOINT";
+        public GeometryType getGeometryType() {
+            return GeometryType.MULTIPOINT;
         }
 
         @Override

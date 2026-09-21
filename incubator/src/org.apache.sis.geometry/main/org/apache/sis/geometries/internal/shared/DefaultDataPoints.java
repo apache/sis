@@ -18,12 +18,12 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.Arrays;
 import java.util.List;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.util.ArgumentChecks;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -57,8 +57,8 @@ public final class DefaultDataPoints implements DataPoints {
     }
 
     @Override
-    public AttributesType getAttributesType() {
-        return points.get(0).getAttributesType();
+    public DataPointsType getType() {
+        return points.get(0).getDataPointsType();
     }
 
     @Override

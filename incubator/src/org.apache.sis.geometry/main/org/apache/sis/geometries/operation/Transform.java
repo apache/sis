@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.curve.LinearRing;
@@ -38,6 +37,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -80,11 +80,11 @@ public final class Transform {
     public static LinearRing transform(LinearRing r, CoordinateReferenceSystem crs, MathTransform transform) throws OperationException {
 
         DataPoints ps = r.getDataPoints();
-        final Array reference = ps.getAttributeArray(AttributesType.ATT_POSITION);
+        final Array reference = ps.getAttributeArray(DataPointsType.ATT_POSITION);
         final Array positions = transform(reference, crs, transform);
         final ArrayDataPoints cp = new ArrayDataPoints(positions);
-        for (String name : ps.getAttributesType().getAttributeNames()) {
-            if (!AttributesType.ATT_POSITION.equals(name)) {
+        for (String name : ps.getType().getAttributeNames()) {
+            if (!DataPointsType.ATT_POSITION.equals(name)) {
                 cp.setAttribute(name, ps.getAttributeArray(name).copy());
             }
         }
@@ -121,20 +121,20 @@ public final class Transform {
         final MeshPrimitive copy = MeshPrimitive.create(p.getType());
 
         final Set<String> toSkip = new HashSet<>();
-        final Array positions = p.getAttribute(AttributesType.ATT_POSITION);
-        final Array normals = p.getAttribute(AttributesType.ATT_NORMAL);
-        final Array tangents = p.getAttribute(AttributesType.ATT_TANGENT);
+        final Array positions = p.getAttribute(DataPointsType.ATT_POSITION);
+        final Array normals = p.getAttribute(DataPointsType.ATT_NORMAL);
+        final Array tangents = p.getAttribute(DataPointsType.ATT_TANGENT);
         if (positions != null) {
-            toSkip.add(AttributesType.ATT_POSITION);
-            toSkip.add(AttributesType.ATT_NORMAL);
-            toSkip.add(AttributesType.ATT_TANGENT);
+            toSkip.add(DataPointsType.ATT_POSITION);
+            toSkip.add(DataPointsType.ATT_NORMAL);
+            toSkip.add(DataPointsType.ATT_TANGENT);
 
             try {
                 //transform positions
                 final Array cpp = positions.copy();
                 cpp.setSampleSystem(SampleSystem.of(crs));
                 cpp.transform(transform);
-                copy.setAttribute(AttributesType.ATT_POSITION, cpp);
+                copy.setAttribute(DataPointsType.ATT_POSITION, cpp);
 
                 final Array cpn = (normals == null) ? null : normals.copy();
                 final Array cpt = (tangents == null) ? null : tangents.copy();
@@ -161,8 +161,8 @@ public final class Transform {
                             cpt.set(i, tag);
                         }
                     }
-                    if (cpn != null) copy.setAttribute(AttributesType.ATT_NORMAL, cpn);
-                    if (cpt != null) copy.setAttribute(AttributesType.ATT_TANGENT, cpt);
+                    if (cpn != null) copy.setAttribute(DataPointsType.ATT_NORMAL, cpn);
+                    if (cpt != null) copy.setAttribute(DataPointsType.ATT_TANGENT, cpt);
                 }
             } catch (TransformException ex) {
                 throw new OperationException(ex.getMessage(), ex);
@@ -170,7 +170,7 @@ public final class Transform {
         }
 
         //copy all other attributes
-        for (String name : p.getAttributesType().getAttributeNames()) {
+        for (String name : p.getDataPointsType().getAttributeNames()) {
             if (!toSkip.contains(name)) {
                 copy.setAttribute(name, p.getAttribute(name).copy());
             }
@@ -188,11 +188,11 @@ public final class Transform {
     public static Triangle transform(Triangle p, CoordinateReferenceSystem crs, MathTransform transform) throws OperationException {
         final DataPoints ps = p.getExteriorRing().getDataPoints();
 
-        final Array reference = ps.getAttributeArray(AttributesType.ATT_POSITION);
+        final Array reference = ps.getAttributeArray(DataPointsType.ATT_POSITION);
         final Array positions = transform(reference, crs, transform);
         final ArrayDataPoints cp = new ArrayDataPoints(positions);
-        for (String name : ps.getAttributesType().getAttributeNames()) {
-            if (!AttributesType.ATT_POSITION.equals(name)) {
+        for (String name : ps.getType().getAttributeNames()) {
+            if (!DataPointsType.ATT_POSITION.equals(name)) {
                 cp.setAttribute(name, ps.getAttributeArray(name).copy());
             }
         }

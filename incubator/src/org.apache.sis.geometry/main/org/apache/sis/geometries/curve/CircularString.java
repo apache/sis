@@ -16,13 +16,14 @@
  */
 package org.apache.sis.geometries.curve;
 
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.internal.shared.DefaultCircularString;
 import org.apache.sis.maths.Array;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -42,8 +43,8 @@ public sealed interface CircularString extends Curve
     static final String TYPE = "CIRCULARSTRING";
 
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.CIRCULARSTRING;
     }
 
     /**
@@ -90,8 +91,8 @@ public sealed interface CircularString extends Curve
     }
 
     @Override
-    default AttributesType getAttributesType() {
-        return getDataPoints().getAttributesType();
+    default DataPointsType getDataPointsType() {
+        return getDataPoints().getType();
     }
 
     @Override

@@ -22,6 +22,7 @@ import javax.measure.Quantity;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.internal.shared.DefaultCompoundCurve;
 import org.apache.sis.measure.Quantities;
@@ -42,8 +43,8 @@ public sealed interface CompoundCurve extends Curve
     static final String TYPE = "COMPOUNDCURVE";
 
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.COMPOUNDCURVE;
     }
 
     /**

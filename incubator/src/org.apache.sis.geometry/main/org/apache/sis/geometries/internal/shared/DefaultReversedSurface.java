@@ -18,12 +18,13 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
 import javax.measure.Quantity;
-import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Orientable;
 import org.apache.sis.geometries.Primitive;
 import org.apache.sis.geometries.Surface;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -64,7 +65,7 @@ public non-sealed class DefaultReversedSurface extends AbstractGeometry implemen
      * of surface it is.
      */
     @Override
-    public String getGeometryType() {
+    public GeometryType getGeometryType() {
         return base.getGeometryType();
     }
 
@@ -92,8 +93,8 @@ public non-sealed class DefaultReversedSurface extends AbstractGeometry implemen
     }
 
     @Override
-    public AttributesType getAttributesType() {
-        return base.getAttributesType();
+    public DataPointsType getDataPointsType() {
+        return base.getDataPointsType();
     }
 
     @Override

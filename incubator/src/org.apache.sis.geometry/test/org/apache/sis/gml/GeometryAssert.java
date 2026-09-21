@@ -16,7 +16,6 @@
  */
 package org.apache.sis.gml;
 
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
@@ -32,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -66,8 +66,8 @@ final class GeometryAssert {
     static void assertGeometryEquals(final Geometry expected, final Geometry actual, final double tolerance) {
         assertNotNull(actual, "geometry");
         /*
-         * `BBox` is checked first and by Java type: its `getGeometryType()` reports "POLYGON", so a
-         * box and a rectangular polygon are indistinguishable by type name alone.
+         * `BBox` is checked first and by Java type: its `getGeometryType()` reports `POLYGON`, so a
+         * box and a rectangular polygon are indistinguishable by that type alone.
          */
         if (expected instanceof BBox e) {
             final BBox a = assertInstanceOf(BBox.class, actual, "geometry type");
@@ -116,8 +116,8 @@ final class GeometryAssert {
     {
         assertEquals(expected.size(), actual.size(), "number of points");
         assertEquals(expected.getDimension(), actual.getDimension(), "coordinate dimension");
-        final var e = expected.getAttributeArray(AttributesType.ATT_POSITION);
-        final var a = actual.getAttributeArray(AttributesType.ATT_POSITION);
+        final var e = expected.getAttributeArray(DataPointsType.ATT_POSITION);
+        final var a = actual.getAttributeArray(DataPointsType.ATT_POSITION);
         assertTrue(e.equals(a, tolerance), () -> "Expected coordinates " + e + " but got " + a);
     }
 

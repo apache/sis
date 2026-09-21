@@ -20,7 +20,6 @@ import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.function.IntFunction;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Empty;
@@ -45,6 +44,7 @@ import org.apache.sis.maths.Tuple;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -84,8 +84,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * is rejected by {@link #encode encode(…)} with an {@link IllegalArgumentException}.</p>
  *
  * <h2>Dimensions and measures</h2>
- * The {@code Z} flag is the third ordinate of the {@linkplain AttributesType#ATT_POSITION position}
- * attribute, and the {@code M} flag is the separate {@linkplain AttributesType#ATT_M measure}
+ * The {@code Z} flag is the third ordinate of the {@link DataPointsType#ATT_POSITION position}
+ * attribute, and the {@code M} flag is the separate {@link DataPointsType#ATT_M measure}
  * attribute. A geometry whose position has neither 2 nor 3 dimensions cannot be written.
  * When the text carries no flag, the number of ordinates of the first coordinate tuple decides:
  * two of them are read as <var>x y</var> and three as <var>x y z</var>. Four ordinates without a
@@ -338,7 +338,7 @@ public final class WellKnownText {
     private void formatPoint(final StringBuilder sb, final Point geometry) {
         if (appendHeader(sb, Point.TYPE, geometry)) return;
         sb.append('(');
-        appendPosition(sb, geometry.getPosition(), hasMeasure(geometry) ? geometry.getAttribute(AttributesType.ATT_M) : null);
+        appendPosition(sb, geometry.getPosition(), hasMeasure(geometry) ? geometry.getAttribute(DataPointsType.ATT_M) : null);
         sb.append(')');
     }
 
@@ -428,7 +428,7 @@ public final class WellKnownText {
                 sb.append("EMPTY");
             } else {
                 sb.append('(');
-                appendPosition(sb, point.getPosition(), hasM ? point.getAttribute(AttributesType.ATT_M) : null);
+                appendPosition(sb, point.getPosition(), hasM ? point.getAttribute(DataPointsType.ATT_M) : null);
                 sb.append(')');
             }
         }
@@ -516,7 +516,7 @@ public final class WellKnownText {
         sb.append('(');
         for (int i = 0, n = points.size(); i < n; i++) {
             if (i != 0) sb.append(", ");
-            appendPosition(sb, points.getPosition(i), hasM ? points.getAttribute(i, AttributesType.ATT_M) : null);
+            appendPosition(sb, points.getPosition(i), hasM ? points.getAttribute(i, DataPointsType.ATT_M) : null);
         }
         sb.append(')');
     }
@@ -579,12 +579,12 @@ public final class WellKnownText {
     }
 
     /**
-     * Returns whether the given geometry carries the {@linkplain AttributesType#ATT_M measure}
+     * Returns whether the given geometry carries the {@link DataPointsType#ATT_M measure}
      * attribute, which is what the {@code M} and {@code ZM} flags stand for.
      */
     private static boolean hasMeasure(final Geometry geometry) {
-        final AttributesType type = geometry.getAttributesType();
-        return (type != null) && type.getAttributeNames().contains(AttributesType.ATT_M);
+        final DataPointsType type = geometry.getDataPointsType();
+        return (type != null) && type.getAttributeNames().contains(DataPointsType.ATT_M);
     }
 
     /**

@@ -23,7 +23,6 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Objects;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
@@ -37,6 +36,7 @@ import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.referencing.internal.shared.AbstractShape;
 import org.apache.sis.referencing.internal.shared.IntervalRectangle;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -69,7 +69,7 @@ public final class ShapeAdapter extends AbstractShape {
      */
     @Override
     protected boolean isFloat() {
-        final DataType dataType = geometry.getAttributesType().getAttributeType(AttributesType.ATT_POSITION);
+        final DataType dataType = geometry.getDataPointsType().getAttributeType(DataPointsType.ATT_POSITION);
         return dataType == DataType.FLOAT;
     }
 

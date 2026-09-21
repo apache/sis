@@ -17,7 +17,6 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.maths.DataType;
@@ -25,6 +24,7 @@ import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Tuple;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -84,8 +84,8 @@ public non-sealed class DefaultPoint extends AbstractGeometry implements Point {
     }
 
     @Override
-    public AttributesType getAttributesType() {
-        return points.getAttributesType();
+    public DataPointsType getDataPointsType() {
+        return points.getType();
     }
 
     @Override

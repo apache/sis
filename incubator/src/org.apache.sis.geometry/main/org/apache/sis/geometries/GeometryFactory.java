@@ -140,12 +140,12 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
     }
 
     public static Empty createEmpty(CoordinateReferenceSystem crs) {
-        final AttributesType.Template attType = new AttributesType.Template();
-        attType.addOrReplaceAttribute(AttributesType.ATT_POSITION, SampleSystem.of(crs), DataType.DOUBLE);
+        final DataPointsType.Template attType = new DataPointsType.Template();
+        attType.addOrReplaceAttribute(DataPointsType.ATT_POSITION, SampleSystem.of(crs), DataType.DOUBLE);
         return new DefaultEmpty(attType);
     }
 
-    public static Empty createEmpty(AttributesType attType) {
+    public static Empty createEmpty(DataPointsType attType) {
         return new DefaultEmpty(attType);
     }
 
@@ -648,7 +648,7 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
     }
 
     public static DataPoints createSequence(Array positions) {
-        return createSequence(Collections.singletonMap(AttributesType.ATT_POSITION, positions));
+        return createSequence(Collections.singletonMap(DataPointsType.ATT_POSITION, positions));
     }
 
     public static DataPoints createSequence(Map<String, Array> attributes) {
@@ -762,7 +762,7 @@ public final class GeometryFactory extends org.apache.sis.geometry.wrapper.Geome
             } else {
                 marray = NDArrays.of(SampleSystem.ofSize(1), coordinates.get(dimensions.hasZ ? 3 : 2));
             }
-            points.setAttribute(AttributesType.ATT_M, marray);
+            points.setAttribute(DataPointsType.ATT_M, marray);
         }
 
         return new DefaultPoint(points);

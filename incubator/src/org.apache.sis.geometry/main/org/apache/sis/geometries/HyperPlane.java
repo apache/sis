@@ -36,8 +36,8 @@ public final class HyperPlane extends AbstractOrientedGeometry {
     }
 
     @Override
-    public String getGeometryType() {
-        return "HYPERPLANE";
+    public GeometryType getGeometryType() {
+        return GeometryType.HYPERPLANE;
     }
 
     @Override
@@ -56,7 +56,7 @@ public final class HyperPlane extends AbstractOrientedGeometry {
     }
 
     @Override
-    public AttributesType getAttributesType() {
+    public DataPointsType getDataPointsType() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

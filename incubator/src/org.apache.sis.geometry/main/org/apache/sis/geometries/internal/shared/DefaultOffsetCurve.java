@@ -18,7 +18,6 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
 import javax.measure.Quantity;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Bearing;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
@@ -26,6 +25,7 @@ import org.apache.sis.geometries.curve.OffsetCurve;
 import org.apache.sis.maths.Array;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -105,8 +105,8 @@ public non-sealed class DefaultOffsetCurve extends AbstractGeometry implements O
     }
 
     @Override
-    public AttributesType getAttributesType() {
-        return baseCurve.getAttributesType();
+    public DataPointsType getDataPointsType() {
+        return baseCurve.getDataPointsType();
     }
 
     @Override

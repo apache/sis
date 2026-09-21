@@ -18,7 +18,6 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.List;
 import java.util.Objects;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.RealFunction;
 import org.apache.sis.geometries.curve.Spiral;
@@ -26,6 +25,7 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Vector;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -117,8 +117,8 @@ public non-sealed class DefaultSpiral extends AbstractGeometry implements Spiral
     }
 
     @Override
-    public AttributesType getAttributesType() {
-        return points.getAttributesType();
+    public DataPointsType getDataPointsType() {
+        return points.getType();
     }
 
     @Override

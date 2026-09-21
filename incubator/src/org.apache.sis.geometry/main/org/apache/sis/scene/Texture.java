@@ -22,8 +22,8 @@ import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.util.Arrays;
 import java.util.Objects;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.image.PixelIterator;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -33,7 +33,7 @@ import org.apache.sis.image.PixelIterator;
 public final class Texture {
 
     private RenderedImage image;
-    private String texCoord = AttributesType.ATT_TEXCOORD_0;
+    private String texCoord = DataPointsType.ATT_TEXCOORD_0;
     private Sampler sampler = new Sampler();
 
     /**

@@ -18,7 +18,6 @@ package org.apache.sis.geometries.adapter;
 
 import java.nio.ByteOrder;
 import java.util.Arrays;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Empty;
 import org.apache.sis.geometries.Geometries;
@@ -50,6 +49,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -171,15 +171,15 @@ public final class WellKnownBinaryTest {
         assertEquals(2, points.size());
         assertArrayEquals(new double[] {0, 1, 2}, points.getPosition(0).toArrayDouble());
         assertArrayEquals(new double[] {3, 4, 5}, points.getPosition(1).toArrayDouble());
-        assertTrue(points.getAttributesType().getAttributeNames().contains(AttributesType.ATT_M));
-        assertEquals(5.0, points.getAttribute(0, AttributesType.ATT_M).get(0));
-        assertEquals(6.0, points.getAttribute(1, AttributesType.ATT_M).get(0));
+        assertTrue(points.getType().getAttributeNames().contains(DataPointsType.ATT_M));
+        assertEquals(5.0, points.getAttribute(0, DataPointsType.ATT_M).get(0));
+        assertEquals(6.0, points.getAttribute(1, DataPointsType.ATT_M).get(0));
         /*
          * Without the flag, a 2-dimensional geometry carries no measure at all.
          */
         final LineString plain = assertInstanceOf(LineString.class,
                 wkb.decode(wkb.encode(wkt.decode("LINESTRING (0 1, 3 4)"))));
-        assertFalse(plain.getDataPoints().getAttributesType().getAttributeNames().contains(AttributesType.ATT_M));
+        assertFalse(plain.getDataPoints().getType().getAttributeNames().contains(DataPointsType.ATT_M));
     }
 
     /**

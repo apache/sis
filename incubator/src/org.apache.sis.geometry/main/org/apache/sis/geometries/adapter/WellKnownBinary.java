@@ -19,7 +19,6 @@ package org.apache.sis.geometries.adapter;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.function.IntFunction;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Empty;
 import org.apache.sis.geometries.Geometry;
@@ -42,6 +41,7 @@ import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.util.ArgumentChecks;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -85,8 +85,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *
  * <h2>Dimensions and measures</h2>
  * As in {@link WellKnownText}, the {@code Z} flag is the third ordinate of the
- * {@linkplain AttributesType#ATT_POSITION position} attribute and the {@code M} flag is the
- * separate {@linkplain AttributesType#ATT_M measure} attribute, written as the ordinate following
+ * {@link DataPointsType#ATT_POSITION position} attribute and the {@code M} flag is the
+ * separate {@link DataPointsType#ATT_M measure} attribute, written as the ordinate following
  * the position ones. A geometry whose position has neither 2 nor 3 dimensions cannot be written.
  * Unlike the text form, the binary form always states the flags, so nothing is ever inferred from
  * the width of a tuple.
@@ -397,7 +397,7 @@ public final class WellKnownBinary {
                 out.writeDouble(Double.NaN);
             }
         } else {
-            writePosition(out, geometry.getPosition(), hasM ? geometry.getAttribute(AttributesType.ATT_M) : null);
+            writePosition(out, geometry.getPosition(), hasM ? geometry.getAttribute(DataPointsType.ATT_M) : null);
         }
     }
 
@@ -504,7 +504,7 @@ public final class WellKnownBinary {
         final int n = points.size();
         out.writeInt(n);
         for (int i = 0; i < n; i++) {
-            writePosition(out, points.getPosition(i), hasM ? points.getAttribute(i, AttributesType.ATT_M) : null);
+            writePosition(out, points.getPosition(i), hasM ? points.getAttribute(i, DataPointsType.ATT_M) : null);
         }
     }
 
@@ -569,12 +569,12 @@ public final class WellKnownBinary {
     }
 
     /**
-     * Returns whether the given geometry carries the {@linkplain AttributesType#ATT_M measure}
+     * Returns whether the given geometry carries the {@link DataPointsType#ATT_M measure}
      * attribute, which is what the {@code M} and {@code ZM} flags stand for.
      */
     private static boolean hasMeasure(final Geometry geometry) {
-        final AttributesType type = geometry.getAttributesType();
-        return (type != null) && type.getAttributeNames().contains(AttributesType.ATT_M);
+        final DataPointsType type = geometry.getDataPointsType();
+        return (type != null) && type.getAttributeNames().contains(DataPointsType.ATT_M);
     }
 
     /**

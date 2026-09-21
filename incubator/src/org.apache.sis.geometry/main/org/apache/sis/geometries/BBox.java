@@ -84,8 +84,8 @@ public final class BBox extends GeneralEnvelope implements Geometry {
     }
 
     @Override
-    public String getGeometryType() {
-        return "POLYGON"; //TODO not in OGC SFA.
+    public GeometryType getGeometryType() {
+        return GeometryType.BBOX;
     }
 
     public void add(Tuple<?> position) throws MismatchedDimensionException {
@@ -123,8 +123,8 @@ public final class BBox extends GeneralEnvelope implements Geometry {
     }
 
     @Override
-    public AttributesType getAttributesType() {
-        return AttributesType.EMPTY;
+    public DataPointsType getDataPointsType() {
+        return DataPointsType.EMPTY;
     }
 
 }

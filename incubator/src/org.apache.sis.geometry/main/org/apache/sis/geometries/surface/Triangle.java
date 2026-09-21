@@ -19,9 +19,9 @@ package org.apache.sis.geometries.surface;
 import java.util.Collections;
 import java.util.List;
 import javax.measure.Quantity;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.internal.shared.DefaultTriangle;
@@ -39,6 +39,7 @@ import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -74,13 +75,13 @@ public sealed interface Triangle extends Polygon
     static final String TYPE = "TRIANGLE";
 
     /**
-     * Returns {@value #TYPE}.
+     * Returns {@link GeometryType#TRIANGLE}.
      *
      * @see ISO 19107:2019 - 6.4.4.23
      */
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.TRIANGLE;
     }
 
     /**
@@ -314,11 +315,10 @@ public sealed interface Triangle extends Polygon
             final DataPoints points = triangle.getExteriorRing().getDataPoints();
             switch (cornerIdx) {
                 case -1 :
-                    return interpolate(
-                        points.getAttribute(0,name),
+                    return interpolate(points.getAttribute(0,name),
                         points.getAttribute(1,name),
                         points.getAttribute(2,name),
-                        AttributesType.ATT_NORMAL.equals(name) || AttributesType.ATT_TANGENT.equals(name));
+                        DataPointsType.ATT_NORMAL.equals(name) || DataPointsType.ATT_TANGENT.equals(name));
                 default :
                     return points.getAttribute(cornerIdx, name);
             }
@@ -355,8 +355,8 @@ public sealed interface Triangle extends Polygon
         }
 
         @Override
-        public AttributesType getAttributesType() {
-            return triangle.getAttributesType();
+        public DataPointsType getDataPointsType() {
+            return triangle.getDataPointsType();
         }
 
         @Override

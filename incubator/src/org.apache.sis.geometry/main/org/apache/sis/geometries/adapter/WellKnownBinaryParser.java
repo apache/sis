@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Empty;
@@ -49,6 +48,7 @@ import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -85,7 +85,7 @@ final class WellKnownBinaryParser {
     private static final int FLAG_Z = 1, FLAG_M = 2;
 
     /**
-     * Sample system of the {@linkplain AttributesType#ATT_M measure} attribute, which is a single
+     * Sample system of the {@link DataPointsType#ATT_M measure} attribute, which is a single
      * value with no coordinate reference system of its own.
      */
     private static final SampleSystem MEASURE_SYSTEM = SampleSystem.ofSize(1);
@@ -644,8 +644,8 @@ final class WellKnownBinaryParser {
          */
         private DataPoints createSequence(final Array positions, final Array measures) {
             final Map<String,Array> attributes = new LinkedHashMap<>(4);
-            attributes.put(AttributesType.ATT_POSITION, positions);
-            attributes.put(AttributesType.ATT_M, measures);
+            attributes.put(DataPointsType.ATT_POSITION, positions);
+            attributes.put(DataPointsType.ATT_M, measures);
             return GeometryFactory.createSequence(attributes);
         }
     }

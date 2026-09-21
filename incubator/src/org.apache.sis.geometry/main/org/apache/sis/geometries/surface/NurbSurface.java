@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.surface;
 
 import java.util.List;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultNurbSurface;
 
@@ -33,8 +34,8 @@ public sealed interface NurbSurface extends BSplineSurface
     static final String TYPE = "NURBSSURFACE";
 
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.NURBSSURFACE;
     }
 
     /**

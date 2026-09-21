@@ -17,7 +17,6 @@
 package org.apache.sis.geometries.surface;
 
 import java.util.List;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.curve.KnotType;
@@ -25,6 +24,7 @@ import org.apache.sis.geometries.internal.shared.DefaultBSplineSurface;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -58,8 +58,8 @@ public sealed interface BSplineSurface extends ParametricCurveSurface
     static final String TYPE = "BSPLINESURFACE";
 
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.BSPLINESURFACE;
     }
 
     /**
@@ -141,8 +141,8 @@ public sealed interface BSplineSurface extends ParametricCurveSurface
     }
 
     @Override
-    default AttributesType getAttributesType() {
-        return getDataPoints().getAttributesType();
+    default DataPointsType getDataPointsType() {
+        return getDataPoints().getType();
     }
 
     @Override

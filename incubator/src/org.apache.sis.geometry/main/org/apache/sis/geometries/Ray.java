@@ -45,8 +45,8 @@ public final class Ray extends AbstractGeometry{
     }
 
     @Override
-    public String getGeometryType() {
-        return "RAY";
+    public GeometryType getGeometryType() {
+        return GeometryType.RAY;
     }
 
     public Tuple<?> getPosition() {
@@ -98,7 +98,7 @@ public final class Ray extends AbstractGeometry{
     }
 
     @Override
-    public AttributesType getAttributesType() {
+    public DataPointsType getDataPointsType() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

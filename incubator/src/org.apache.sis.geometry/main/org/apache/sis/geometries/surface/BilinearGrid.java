@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.surface;
 
 import java.util.List;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultBilinearGrid;
 import static org.opengis.annotation.Specification.ISO_19107;
@@ -59,8 +60,8 @@ public sealed interface BilinearGrid extends ParametricCurveSurface
     static final String TYPE = "BILINEARGRID";
 
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.BILINEARGRID;
     }
 
     /**

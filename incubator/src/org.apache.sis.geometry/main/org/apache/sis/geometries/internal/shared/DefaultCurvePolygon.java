@@ -45,7 +45,7 @@ public non-sealed class DefaultCurvePolygon extends AbstractGeometry implements 
         this.exterior = Objects.requireNonNull(exterior);
         this.interiors = (interiors == null) ? List.of() : List.copyOf(interiors);
         for (final Curve interior : this.interiors) {
-            Geometries.ensureSameAttributes(exterior.getAttributesType(), interior.getAttributesType());
+            Geometries.ensureSameAttributes(exterior.getDataPointsType(), interior.getDataPointsType());
         }
     }
 

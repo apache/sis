@@ -19,7 +19,6 @@ package org.apache.sis.geometries.operation;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
@@ -35,6 +34,7 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.FactoryException;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -54,7 +54,7 @@ public final class To3D {
 
     private static ArrayDataPoints copy(DataPoints ps) {
         final Map<String,Array> attributes = new HashMap<>();
-        for (String name : ps.getAttributesType().getAttributeNames()) {
+        for (String name : ps.getType().getAttributeNames()) {
             attributes.put(name, ps.getAttributeArray(name).copy());
         }
         return new ArrayDataPoints(attributes);
@@ -68,9 +68,9 @@ public final class To3D {
             Zeditor = (Tuple t) -> t.set(2, 0.0);
         }
 
-        Array positions = ps.getAttributeArray(AttributesType.ATT_POSITION);
+        Array positions = ps.getAttributeArray(DataPointsType.ATT_POSITION);
         positions = to3d(positions, crs3d, Zeditor);
-        ps.setAttribute(AttributesType.ATT_POSITION, positions);
+        ps.setAttribute(DataPointsType.ATT_POSITION, positions);
         return ps;
     }
 

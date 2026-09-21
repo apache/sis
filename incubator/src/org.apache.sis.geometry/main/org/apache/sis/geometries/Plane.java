@@ -46,8 +46,8 @@ public final class Plane extends AbstractOrientedGeometry {
     }
 
     @Override
-    public String getGeometryType() {
-        return "PLANE";
+    public GeometryType getGeometryType() {
+        return GeometryType.PLANE;
     }
 
     /**
@@ -126,7 +126,7 @@ public final class Plane extends AbstractOrientedGeometry {
     }
 
     @Override
-    public AttributesType getAttributesType() {
+    public DataPointsType getDataPointsType() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

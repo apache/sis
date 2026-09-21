@@ -18,7 +18,6 @@ package org.apache.sis.geometries.adapter;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
@@ -46,6 +45,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.CoordinateXY;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -230,15 +230,15 @@ public final class JTSAdapter {
         private final CoordinateSequence jts;
         private final CoordinateReferenceSystem crs;
         private final int dim;
-        private final AttributesType type;
+        private final DataPointsType type;
 
         private JTSDataPoints(CoordinateSequence jts, CoordinateReferenceSystem crs) {
             this.jts = jts;
             this.crs = crs;
             this.dim = jts.getDimension();
 
-            final AttributesType.Template at = new AttributesType.Template();
-            at.addOrReplaceAttribute(AttributesType.ATT_POSITION, SampleSystem.of(crs), DataType.DOUBLE);
+            final DataPointsType.Template at = new DataPointsType.Template();
+            at.addOrReplaceAttribute(DataPointsType.ATT_POSITION, SampleSystem.of(crs), DataType.DOUBLE);
             type = at;
         }
 
@@ -253,7 +253,7 @@ public final class JTSAdapter {
         }
 
         @Override
-        public AttributesType getAttributesType() {
+        public DataPointsType getType() {
             return type;
         }
 
@@ -285,7 +285,7 @@ public final class JTSAdapter {
 
         @Override
         public Tuple getAttribute(int index, String name) {
-            if (AttributesType.ATT_POSITION.equals(name)) {
+            if (DataPointsType.ATT_POSITION.equals(name)) {
                 return getPosition(index);
             }
             throw new IllegalArgumentException("No attribute for name " + name);
@@ -293,7 +293,7 @@ public final class JTSAdapter {
 
         @Override
         public void setAttribute(int index, String name, Tuple value) {
-            if (AttributesType.ATT_POSITION.equals(name)) {
+            if (DataPointsType.ATT_POSITION.equals(name)) {
                 setPosition(index, value);
             } else {
                 throw new IllegalArgumentException("No attribute for name " + name);
@@ -375,7 +375,7 @@ public final class JTSAdapter {
 
         @Override
         public org.locationtech.jts.geom.Envelope expandEnvelope(org.locationtech.jts.geom.Envelope env) {
-            final BBox bbox = points.getAttributeRange(AttributesType.ATT_POSITION);
+            final BBox bbox = points.getAttributeRange(DataPointsType.ATT_POSITION);
             env.expandToInclude(bbox.getMinimum(0), bbox.getMinimum(1));
             env.expandToInclude(bbox.getMaximum(0), bbox.getMaximum(1));
             return env;

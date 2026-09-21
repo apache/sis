@@ -35,8 +35,8 @@ public sealed interface MultiLineString extends MultiCurve<LineString>
     static final String TYPE = "MULTILINESTRING";
 
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.MULTILINESTRING;
     }
 
     /**

@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.solid;
 
 import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.internal.shared.DefaultMultiPolyhedron;
 
 
@@ -35,8 +36,8 @@ public sealed interface MultiPolyhedron extends GeometryCollection<Polyhedron>
     static final String TYPE = "MULTIPOLYHEDRON";
 
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.MULTIPOLYHEDRON;
     }
 
 }

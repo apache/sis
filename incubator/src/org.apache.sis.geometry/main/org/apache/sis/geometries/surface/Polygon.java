@@ -17,13 +17,14 @@
 package org.apache.sis.geometries.surface;
 
 import java.util.List;
-import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.internal.shared.DefaultPolygon;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -70,21 +71,21 @@ public sealed interface Polygon extends Surface
     static final String TYPE = "POLYGON";
 
     /**
-     * Returns {@value #TYPE}.
+     * Returns {@link GeometryType#POLYGON}.
      *
      * @see ISO 19107:2019 - 6.4.4.23
      */
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.POLYGON;
     }
 
     /**
      * Returns the attributes of the exterior ring, which are the attributes of this polygon.
      */
     @Override
-    default AttributesType getAttributesType() {
-        return getExteriorRing().getAttributesType();
+    default DataPointsType getDataPointsType() {
+        return getExteriorRing().getDataPointsType();
     }
 
     /**

@@ -35,7 +35,7 @@ import org.apache.sis.maths.SampleSystem;
  * @author Johann Sorel (Geomatys
  * @see https://docs.ogc.org/DRAFTS/21-045r1.html#bb_measures
  */
-public interface AttributesType {
+public interface DataPointsType {
 
     static final String ATT_POSITION = "POSITION";
 
@@ -109,7 +109,7 @@ public interface AttributesType {
     /**
      * Empty attributes type.
      */
-    static AttributesType EMPTY = new AttributesType() {
+    static DataPointsType EMPTY = new DataPointsType() {
         @Override
         public SampleSystem getAttributeSystem(String name) {
             return null;
@@ -129,7 +129,7 @@ public interface AttributesType {
     /**
      * Modifiable AttributesType implementation.
      */
-    public static final class Template implements AttributesType {
+    public static final class Template implements DataPointsType {
 
         private final Map<String,DataType> datatypes = new HashMap<>();
         private final Map<String,SampleSystem> sampleSystems = new HashMap<>();
@@ -166,7 +166,7 @@ public interface AttributesType {
      * @param other not null
      * @return new AttributesType or this instance if unchanged.
      */
-    default AttributesType retainAll(AttributesType other) throws IllegalArgumentException {
+    default DataPointsType retainAll(DataPointsType other) throws IllegalArgumentException {
         List<String> attributeNames = new ArrayList<>(getAttributeNames());
         attributeNames.retainAll(other.getAttributeNames());
 

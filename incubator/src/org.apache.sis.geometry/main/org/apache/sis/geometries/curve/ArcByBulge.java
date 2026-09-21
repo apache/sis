@@ -16,14 +16,15 @@
  */
 package org.apache.sis.geometries.curve;
 
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.internal.shared.DefaultArcByBulge;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Vector;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -47,8 +48,8 @@ public sealed interface ArcByBulge extends Curve
     static final String TYPE = "ARCBYBULGE";
 
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.ARCBYBULGE;
     }
 
     /**
@@ -103,8 +104,8 @@ public sealed interface ArcByBulge extends Curve
     }
 
     @Override
-    default AttributesType getAttributesType() {
-        return getDataPoints().getAttributesType();
+    default DataPointsType getDataPointsType() {
+        return getDataPoints().getType();
     }
 
     @Override

@@ -19,6 +19,7 @@ package org.apache.sis.geometries.curve;
 import java.util.List;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.internal.shared.DefaultArc;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Vector;
@@ -46,8 +47,8 @@ public sealed interface Arc extends Conic
     static final String TYPE = "ARC";
 
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.ARC;
     }
 
     /**

@@ -149,15 +149,15 @@ public sealed interface Point extends Primitive
             }
 
             @Override
-            public AttributesType getAttributesType() {
-                return Point.this.getAttributesType();
+            public DataPointsType getType() {
+                return Point.this.getDataPointsType();
             }
         };
     }
 
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.POINT;
     }
 
     /**

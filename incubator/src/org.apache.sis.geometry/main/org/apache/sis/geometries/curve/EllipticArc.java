@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.curve;
 
 import org.apache.sis.geometries.CurveInterpolation;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.internal.shared.DefaultEllipticArc;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -47,8 +48,8 @@ public sealed interface EllipticArc extends Conic
     static final String TYPE = "ELLIPTICARC";
 
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.ELLIPTICARC;
     }
 
     /**

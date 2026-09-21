@@ -73,13 +73,13 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
     static final String TYPE = "GEOMETRYCOLLECTION";
 
     /**
-     * Returns {@value #TYPE}.
+     * Returns {@link GeometryType#COLLECTION}.
      *
      * @see ISO 19107:2019 - 6.4.4.23
      */
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.COLLECTION;
     }
 
     /**
@@ -183,9 +183,9 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
     }
 
     @Override
-    default AttributesType getAttributesType() {
+    default DataPointsType getDataPointsType() {
         if (getNumGeometries() == 0) return null;
-        return getGeometryN(0).getAttributesType();
+        return getGeometryN(0).getDataPointsType();
     }
 
 }

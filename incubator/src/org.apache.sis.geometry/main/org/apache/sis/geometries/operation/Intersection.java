@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
@@ -47,6 +46,7 @@ import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -98,7 +98,7 @@ public final class Intersection {
      */
     private static void copyAttributes(PreparedTIN tin, MeshPrimitive primitive) {
 
-        final AttributesType attributesType = tin.getAttributesType();
+        final DataPointsType attributesType = tin.getDataPointsType();
         final long nbVertex = primitive.getPositions().getLength();
 
         final List<String> attributeNames = new ArrayList<>(attributesType.getAttributeNames());
@@ -106,7 +106,7 @@ public final class Intersection {
             //no attributes to copy
             return;
         }
-        attributeNames.remove(AttributesType.ATT_POSITION);
+        attributeNames.remove(DataPointsType.ATT_POSITION);
         final String[] templateNames = new String[attributeNames.size()];
         final Array[] attributes = new Array[attributeNames.size()];
         for (int i = 0; i < templateNames.length; i++) {
@@ -186,7 +186,7 @@ public final class Intersection {
         final List<LineString> segments = new ArrayList<>();
         for (int i = 0, n = lines.getNumGeometries(); i < n; i++) {
             final LineString line = lines.getGeometryN(i);
-            final Array segment = line.getDataPoints().getAttributeArray(AttributesType.ATT_POSITION);
+            final Array segment = line.getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION);
             final Tuple<?> s1 = segment.get(0);
             final Tuple<?> s2 = segment.get(1);
 
@@ -195,7 +195,7 @@ public final class Intersection {
 
                 while (iterator.hasNext()) {
                     final Triangle triangle = iterator.next();
-                    final Array corners = triangle.getExteriorRing().getDataPoints().getAttributeArray(AttributesType.ATT_POSITION);
+                    final Array corners = triangle.getExteriorRing().getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION);
                     final Tuple<?> c0 = corners.get(0);
                     final Tuple<?> c1 = corners.get(1);
                     final Tuple<?> c2 = corners.get(2);

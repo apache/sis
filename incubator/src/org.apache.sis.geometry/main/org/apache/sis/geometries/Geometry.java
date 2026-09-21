@@ -16,7 +16,6 @@
  */
 package org.apache.sis.geometries;
 
-import java.util.List;
 import java.util.Map;
 import javax.measure.Quantity;
 import org.apache.sis.geometries.adapter.WellKnownBinary;
@@ -147,7 +146,7 @@ public sealed interface Geometry
     }
 
     /**
-     * Get geometry attributes type.
+     * Get geometry data points type.
      *
      * <p>Difference with ISO 19107: this accessor has no equivalent in the standard.
      * It describes the attributes carried by the geometry positions in addition to the
@@ -155,7 +154,7 @@ public sealed interface Geometry
      *
      * @return attributes type, never null
      */
-    AttributesType getAttributesType();
+    DataPointsType getDataPointsType();
 
     /**
      * Number of axes in the coordinate reference system of this geometry.
@@ -273,35 +272,26 @@ public sealed interface Geometry
     }
 
     /**
-     * Returns the name of the instantiable subtype of Geometry of which this geometric object is an instantiable member.<br>
-     * The name of the subtype of Geometry is returned as a string.
+     * Returns the instantiable subtype of Geometry of which this geometric object is an instantiable member.<br>
      *
-     * @return geometry subtype name.
+     * Deviation from ISO-19107 :<br>
+     * <ul>
+     *   <li>ISO-19107 expect to return a list with at least one value,
+     *   taken from the types the implementation declares as supported.
+     *   We remove the list type to match SFA, not real use case needs has raised to
+     *   require a list instead of a single value.
+     *   ISO-19107 expected list can be seen as a way to find the geometry capabilities.
+     *   But java already has the capability to check those with an instanceof test.
+     *   </li>
+     * </ul>
+     *
+     * @return geometry subtype, never null.
      *
      * @see OGC Simple Feature Access 1.2.1 - 6.1.2.2
      * @see ISO 19107:2019 - 6.4.4.23
      */
-    String getGeometryType();
-
-    /**
-     * Interfaces of this standard, or of its extensions, supported by this geometry instance.
-     *
-     * <p>Constraints:</p>
-     * <ul>
-     *   <li>At least one value, taken from the types the implementation declares as supported.</li>
-     *   <li>The values are the most specific types applicable to this instance.</li>
-     *   <li>An empty geometry is of type {@code EMPTY}.</li>
-     * </ul>
-     *
-     * @return types of this geometry.
-     *
-     * @see ISO 19107:2019 - 6.4.4.23
-     */
     @UML(identifier="type", specification=ISO_19107)
-    default List<GeometryType> getGeometryType2() {
-        //TODO merge with getGeometryType
-        throw new UnsupportedOperationException();
-    }
+    GeometryType getGeometryType();
 
     /**
      * The minimum bounding box for this Geometry, returned as a Geometry.<br>

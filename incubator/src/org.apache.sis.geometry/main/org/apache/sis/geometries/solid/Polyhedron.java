@@ -17,12 +17,13 @@
 package org.apache.sis.geometries.solid;
 
 import java.util.List;
-import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.SolidInterpolation;
 import org.apache.sis.geometries.Solid;
 import org.apache.sis.geometries.internal.shared.DefaultPolyhedron;
 import org.apache.sis.geometries.solid.polyhedron.AbstractPolyhedron;
 import org.apache.sis.geometries.surface.MultiPolygon;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -47,13 +48,13 @@ public sealed interface Polyhedron extends Solid
     static final String TYPE = "POLYHEDRON";
 
     @Override
-    default String getGeometryType() {
-        return TYPE;
+    default GeometryType getGeometryType() {
+        return GeometryType.POLYHEDRON;
     }
 
     @Override
-    default AttributesType getAttributesType() {
-        return getExteriorShell().getAttributesType();
+    default DataPointsType getDataPointsType() {
+        return getExteriorShell().getDataPointsType();
     }
 
     /**
