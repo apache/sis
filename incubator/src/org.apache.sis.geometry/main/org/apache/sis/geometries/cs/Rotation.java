@@ -21,11 +21,31 @@ import org.opengis.annotation.UML;
 
 
 /**
+ * The sense in which an angular measure increases.
+ *
+ * <p>The two senses are named as seen from the positive side of the normal to the surface on which
+ * the angle is measured, that is, looking down on that surface from above. This is the convention
+ * of a compass laid flat on the ground and read from above.</p>
+ *
+ * <p>A rotation is not a direction: it says how an angle grows, not where it starts. The origin of
+ * the measure is given by a {@link ReferenceDirection} instead.</p>
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see Bearing#getRotation()
+ * @see ISO 19107:2019 - 6.2.23
  */
-@UML(identifier="Rotation", specification=ISO_19107) // section 6.2.23
+@UML(identifier="Rotation", specification=ISO_19107)
 public enum Rotation {
+    /**
+     * Angles increase in the direction followed by the hands of a clock.
+     * This is the usual sense of a compass azimuth, which grows from north toward east.
+     */
     CLOCKWISE,
+
+    /**
+     * Angles increase in the direction opposite to the hands of a clock.
+     * This is the usual sense of trigonometry, which grows from the first axis toward the second.
+     */
     COUNTER_CLOCKWISE
 }

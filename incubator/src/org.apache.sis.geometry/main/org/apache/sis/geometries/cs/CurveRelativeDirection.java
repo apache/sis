@@ -21,19 +21,66 @@ import org.opengis.annotation.UML;
 
 
 /**
+ * A reference direction relative to a curve, at a position on that curve.
+ *
+ * <p>These directions are the vectors of the local frame carried along the curve. They vary from
+ * one position to another, so a {@linkplain Bearing bearing} measured from one of them is meaningful
+ * only together with the position at which it is taken.</p>
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 6.2.26
  */
-@UML(identifier="CurveRelativeDirection", specification=ISO_19107) // section 6.2.26
-public enum CurveRelativeDirection {
+@UML(identifier="CurveRelativeDirection", specification=ISO_19107)
+public enum CurveRelativeDirection implements ReferenceDirection {
+    /**
+     * The direction in which the curve is travelled, that is the unit vector collinear with the
+     * derivative of the curve with respect to its arc length.
+     */
     TANGENT,
+
+    /**
+     * Opposite to the {@linkplain #TANGENT tangent}.
+     */
     REVERSE_TANGENT,
+
+    /**
+     * Perpendicular to the {@linkplain #TANGENT tangent}, in the direction of the curvature vector.
+     */
     NORMAL,
+
+    /**
+     * Opposite to the {@linkplain #NORMAL normal}.
+     */
     REVERSE_NORMAL,
+
+    /**
+     * Toward the center of curvature, that is toward the inside of the curve.
+     */
     BINORMAL,
+
+    /**
+     * Opposite to the {@linkplain #BINORMAL binormal}, that is toward the outside of the curve.
+     */
     REVERSE_BINORMAL,
+
+    /**
+     * Perpendicular to the {@linkplain #TANGENT tangent}, on its left side.
+     */
     LEFT_NORMAL,
+
+    /**
+     * Perpendicular to the {@linkplain #TANGENT tangent}, on its right side.
+     */
     RIGHT_NORMAL,
+
+    /**
+     * Perpendicular to the reference surface, pointing away from it.
+     */
     UP_NORMAL,
+
+    /**
+     * Opposite to the {@linkplain #UP_NORMAL upward normal}.
+     */
     DOWN_NORMAL
 }

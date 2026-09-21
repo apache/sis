@@ -17,6 +17,7 @@
 package org.apache.sis.geometries;
 
 import java.util.List;
+import org.apache.sis.geometries.cs.Bearing;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultPoint;
 import org.apache.sis.geometries.internal.shared.IndexedPoint;

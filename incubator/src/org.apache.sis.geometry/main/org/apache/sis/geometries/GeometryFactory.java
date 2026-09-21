@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import javax.measure.Quantity;
 import javax.measure.Unit;
+import org.apache.sis.geometries.cs.Bearing;
 import org.apache.sis.geometries.cs.Projection;
 import org.apache.sis.geometries.curve.Arc;
 import org.apache.sis.geometries.curve.ArcByBulge;

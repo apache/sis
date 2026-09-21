@@ -16,7 +16,7 @@
  */
 package org.apache.sis.geometries.curve;
 
-import org.apache.sis.geometries.Bearing;
+import org.apache.sis.geometries.cs.Bearing;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.GeometryType;
