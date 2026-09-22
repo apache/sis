@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import org.opengis.util.FactoryException;
@@ -23,6 +24,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.provider.NADCON;
 import org.apache.sis.referencing.operation.provider.NTv2;
+import org.apache.sis.referencing.operation.gridded.GridFileTest;
 import org.apache.sis.referencing.internal.shared.Formulas;
 
 // Test dependencies
@@ -73,12 +75,13 @@ public final class InterpolatedTransformTest extends MathTransformTestCase {
      *
      * @throws FactoryException if an error occurred while loading the grid.
      */
-    private void createRGF93() throws FactoryException {
+    private void createRGF93() throws URISyntaxException, FactoryException {
         final URL file = NTv2Test.class.getResource(NTv2Test.TEST_FILE);
         final NTv2 provider = new NTv2();
         final ParameterValueGroup values = provider.getParameters().createValue();
-        values.parameter("Latitude and longitude difference file").setValue(file);    // Automatic conversion from URL to Path.
-        transform = provider.createMathTransform(DefaultMathTransformFactory.provider(), values);
+        values.parameter("Latitude and longitude difference file").setValue(file);
+        GridFileTest.makeParameterRelativeToSourceFile(values);
+        transform = provider.createMathTransform(null, values);
         tolerance = Formulas.ANGULAR_TOLERANCE;
         validate();
     }
@@ -86,16 +89,17 @@ public final class InterpolatedTransformTest extends MathTransformTestCase {
     /**
      * Creates a transformation from NAD27 to NAD93.
      *
-     * @throws FactoryException if an error occurred while loading the grid.
+     * @throws Exception if an error occurred while loading the grid.
      */
-    private void createNADCON() throws FactoryException {
+    private void createNADCON() throws Exception {
         final URL latitudeShifts  = NADCONTest.class.getResource(NADCONTest.TEST_FILE + ".laa");
         final URL longitudeShifts = NADCONTest.class.getResource(NADCONTest.TEST_FILE + ".loa");
         final NADCON provider = new NADCON();
         final ParameterValueGroup values = provider.getParameters().createValue();
         values.parameter("Latitude difference file").setValue(latitudeShifts);
         values.parameter("Longitude difference file").setValue(longitudeShifts);
-        transform = provider.createMathTransform(DefaultMathTransformFactory.provider(), values);
+        GridFileTest.makeParameterRelativeToSourceFile(values);
+        transform = provider.createMathTransform(null, values);
         tolerance = NADCONTest.ANGULAR_TOLERANCE;
         validate();
     }
@@ -214,7 +218,7 @@ public final class InterpolatedTransformTest extends MathTransformTestCase {
      * @see InterpolatedGeocentricTransformTest#testInverseTransform()
      */
     @Test
-    public void testRGF93() throws FactoryException, TransformException {
+    public void testRGF93() throws Exception {
         createRGF93();
 
         // Forward transform
@@ -240,11 +244,10 @@ public final class InterpolatedTransformTest extends MathTransformTestCase {
     /**
      * Performs the tests using the transformation from NAD27 to NAD93.
      *
-     * @throws FactoryException if an error occurred while creating a transform.
-     * @throws TransformException if an error occurred while transforming a coordinate.
+     * @throws Exception if an error occurred while creating a transform or transforming a coordinate.
      */
     @Test
-    public void testNADCON() throws FactoryException, TransformException {
+    public void testNADCON() throws Exception {
         createNADCON();
 
         // Forward transform
@@ -262,11 +265,10 @@ public final class InterpolatedTransformTest extends MathTransformTestCase {
      * Tests the Well Known Text (version 1) formatting.
      * The result is what we show to users, but may be quite different than what SIS has in memory.
      *
-     * @throws FactoryException if an error occurred while creating a transform.
-     * @throws TransformException should never happen.
+     * @throws Exception if an error occurred while creating a transform.
      */
     @Test
-    public void testWKT() throws FactoryException, TransformException {
+    public void testWKT() throws Exception {
         createRGF93();
         assertWktEqualsRegex("(?m)\\Q" +
                 "PARAM_MT[“NTv2”,\n" +

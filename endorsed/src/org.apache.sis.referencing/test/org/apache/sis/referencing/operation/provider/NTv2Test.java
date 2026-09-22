@@ -29,13 +29,13 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
 import javax.measure.quantity.Angle;
 import org.opengis.geometry.Envelope;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.gridded.GridFile;
 import org.apache.sis.referencing.operation.gridded.GridGroup;
 import org.apache.sis.referencing.operation.gridded.LoadedGrid;
-import org.apache.sis.referencing.factory.MissingFactoryResourceException;
 import static org.apache.sis.referencing.operation.gridded.GridLoader.DEGREES_TO_SECONDS;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Envelopes;
@@ -47,6 +47,7 @@ import org.apache.sis.system.DataDirectory;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.operation.gridded.GridFileTest;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assertions.assertMatrixEquals;
@@ -91,12 +92,14 @@ public final class NTv2Test extends TestCase {
      *
      * @param  file  the grid file <abbr>URI</abbr>.
      * @return an object representing the grid file at the given URI.
-     * @throws MissingFactoryResourceException if the path cannot be resolved.
+     * @throws URISyntaxException if the URL to the test file is not valid.
+     * @throws FactoryException if the path cannot be resolved.
      */
-    public static GridFile newGridFile(final URI file) throws MissingFactoryResourceException {
+    public static GridFile newGridFile(final URI file) throws URISyntaxException, FactoryException {
         Parameters pg = Parameters.castOrWrap(NTv2.PARAMETERS.createValue());
         pg.getOrCreate(NTv2.FILE).setValue(file);
-        return new GridFile(pg, NTv2.FILE);
+        GridFileTest.makeParameterRelativeToSourceFile(pg);
+        return new GridFile(null, pg, NTv2.FILE);
     }
 
     /**
@@ -105,11 +108,9 @@ public final class NTv2Test extends TestCase {
      * @param  filename  filename of the grid to load.
      * @return an object representing the grid file for the specified resource.
      * @throws URISyntaxException if the URL to the test file is not valid.
-     * @throws MissingFactoryResourceException if the path cannot be resolved.
+     * @throws FactoryException if the path cannot be resolved.
      */
-    private static GridFile getResource(final String filename)
-            throws URISyntaxException, MissingFactoryResourceException
-    {
+    private static GridFile getResource(final String filename) throws URISyntaxException, FactoryException {
         URL file = NTv2Test.class.getResource(filename);
         assertNotNull(file, filename);
         return newGridFile(file.toURI());
@@ -218,7 +219,7 @@ public final class NTv2Test extends TestCase {
         assumeDataExists(DataDirectory.DATUM_CHANGES, MULTIGRID_TEST_FILE);
         final Parameters pg = Parameters.castOrWrap(NTv2.PARAMETERS.createValue());
         pg.getOrCreate(NTv2.FILE).setValue(new URI(MULTIGRID_TEST_FILE));
-        final GridFile file = new GridFile(pg, NTv2.FILE);
+        final var file = new GridFile(null, pg, NTv2.FILE);
 
         final LoadedGrid<Angle, Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
         assertInstanceOf(GridGroup.class, grid, "Should contain many grids.");
@@ -318,7 +319,7 @@ public final class NTv2Test extends TestCase {
      * @throws TransformException if an error occurred while computing the envelope.
      * @throws IOException if an error occurred while writing the test file.
      */
-    public static void writeSubGrid(final LoadedGrid<Angle,Angle> grid, final Path out,
+    public static void writeSubGrid(final LoadedGrid<Angle, Angle> grid, final Path out,
             final int gridX, final int gridY, final int nx, final int ny) throws IOException, TransformException
     {
         Envelope envelope = new Envelope2D(null, gridX, gridY, nx - 1, ny - 1);

@@ -229,8 +229,8 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
                     }
                     p = target;
                 } else if (p instanceof ParameterValueGroup) {
-                    final ParameterValueGroup source = (ParameterValueGroup) p;
-                    final ParameterValueGroup target = new DefaultParameterValueGroup((ParameterDescriptorGroup) replacement);
+                    final var source = (ParameterValueGroup) p;
+                    final var target = new DefaultParameterValueGroup((ParameterDescriptorGroup) replacement);
                     final Collection<GeneralParameterValue> values = source.values();
                     store(values.toArray(GeneralParameterValue[]::new), target.values(), replacements);
                     p = target;

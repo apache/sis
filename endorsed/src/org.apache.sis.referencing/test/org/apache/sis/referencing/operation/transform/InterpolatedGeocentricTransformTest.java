@@ -17,15 +17,14 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.net.URL;
-import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.datum.Ellipsoid;
-import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolation;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.apache.sis.referencing.operation.gridded.GridFileTest;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 
@@ -47,16 +46,16 @@ public final class InterpolatedGeocentricTransformTest extends MathTransformTest
      * Creates the <q>France geocentric interpolation</q> transform,
      * including the normalization and denormalization parts.
      *
-     * @throws FactoryException if an error occurred while loading the grid.
+     * @throws Exception if an error occurred while loading the grid.
      */
-    void createGeodeticTransformation() throws FactoryException {
+    private void createGeodeticTransformation() throws Exception {
         createGeodeticTransformation(new FranceGeocentricInterpolation());
     }
 
     /**
      * Creates the transform using the given provider.
      */
-    final void createGeodeticTransformation(final FranceGeocentricInterpolation provider) throws FactoryException {
+    private void createGeodeticTransformation(final FranceGeocentricInterpolation provider) throws Exception {
         final URL file = FranceGeocentricInterpolationTest.class.getResource(FranceGeocentricInterpolationTest.TEST_FILE);
         final Ellipsoid source = HardCodedDatum.NTF.getEllipsoid();     // Clarke 1880 (IGN)
         final Ellipsoid target = CommonCRS.ETRS89.ellipsoid();          // GRS 1980 ellipsoid
@@ -66,7 +65,8 @@ public final class InterpolatedGeocentricTransformTest extends MathTransformTest
         values.parameter("tgt_semi_major").setValue(target.getSemiMajorAxis());
         values.parameter("tgt_semi_minor").setValue(target.getSemiMinorAxis());
         values.parameter("Geocentric translation file").setValue(file);    // Automatic conversion from URL to Path.
-        transform = provider.createMathTransform(DefaultMathTransformFactory.provider(), values);
+        GridFileTest.makeParameterRelativeToSourceFile(values);
+        transform = provider.createMathTransform(null, values);
         tolerance = FranceGeocentricInterpolationTest.ANGULAR_TOLERANCE;
     }
 
@@ -75,11 +75,10 @@ public final class InterpolatedGeocentricTransformTest extends MathTransformTest
      * We call this transformation "forward" because it uses the grid values directly,
      * without doing first an approximation followed by an iteration.
      *
-     * @throws FactoryException if an error occurred while loading the grid.
-     * @throws TransformException if an error occurred while transforming the coordinate.
+     * @throws Exception if an error occurred while loading the grid or transforming the coordinate.
      */
     @Test
-    public void testForwardTransform() throws FactoryException, TransformException {
+    public void testForwardTransform() throws Exception {
         createGeodeticTransformation();   // Create the inverse of the transform we are interested in.
         transform = transform.inverse();
         isInverseTransformSupported = false;
@@ -97,11 +96,10 @@ public final class InterpolatedGeocentricTransformTest extends MathTransformTest
     /**
      * Tests transformation of sample point from NTF to RGF93.
      *
-     * @throws FactoryException if an error occurred while loading the grid.
-     * @throws TransformException if an error occurred while transforming the coordinate.
+     * @throws Exception if an error occurred while loading the grid or transforming the coordinate.
      */
     @Test
-    public void testInverseTransform() throws FactoryException, TransformException {
+    public void testInverseTransform() throws Exception {
         createGeodeticTransformation();
         isInverseTransformSupported = false;
         verifyTransform(FranceGeocentricInterpolationTest.samplePoint(1),
@@ -113,11 +111,10 @@ public final class InterpolatedGeocentricTransformTest extends MathTransformTest
      * Tests the derivatives at the sample point. This method compares the derivatives computed by
      * the transform with an estimation of derivatives computed by the finite differences method.
      *
-     * @throws FactoryException if an error occurred while loading the grid.
-     * @throws TransformException if an error occurred while transforming the coordinate.
+     * @throws Exception if an error occurred while loading the grid or transforming the coordinate.
      */
     @Test
-    public void testForwardDerivative() throws FactoryException, TransformException {
+    public void testForwardDerivative() throws Exception {
         createGeodeticTransformation();
         transform = transform.inverse();
         final double delta = (100.0 / 60) / 1852;           // Approximately 100 metres.
@@ -130,11 +127,10 @@ public final class InterpolatedGeocentricTransformTest extends MathTransformTest
      * Tests the derivatives at the sample point. This method compares the derivatives computed by
      * the transform with an estimation of derivatives computed by the finite differences method.
      *
-     * @throws FactoryException if an error occurred while loading the grid.
-     * @throws TransformException if an error occurred while transforming the coordinate.
+     * @throws Exception if an error occurred while loading the grid or transforming the coordinate.
      */
     @Test
-    public void testInverseDerivative() throws FactoryException, TransformException {
+    public void testInverseDerivative() throws Exception {
         createGeodeticTransformation();
         final double delta = (100.0 / 60) / 1852;           // Approximately 100 metres.
         derivativeDeltas = new double[] {delta, delta};
@@ -146,11 +142,10 @@ public final class InterpolatedGeocentricTransformTest extends MathTransformTest
      * Tests the Well Known Text (version 1) formatting.
      * The result is what we show to users, but may quite different than what SIS has in memory.
      *
-     * @throws FactoryException if an error occurred while creating a transform.
-     * @throws TransformException should never happen.
+     * @throws Exception if an error occurred while loading the grid or transforming the coordinate.
      */
     @Test
-    public void testWKT() throws FactoryException, TransformException {
+    public void testWKT() throws Exception {
         createGeodeticTransformation();
         transform = transform.inverse();
         assertWktEqualsRegex("(?m)\\Q" +
@@ -180,11 +175,10 @@ public final class InterpolatedGeocentricTransformTest extends MathTransformTest
      * This WKT shows what SIS has in memory for debugging purpose.
      * This is normally not what we show to users.
      *
-     * @throws FactoryException if an error occurred while creating a transform.
-     * @throws TransformException should never happen.
+     * @throws Exception if an error occurred while loading the grid or transforming the coordinate.
      */
     @Test
-    public void testInternalWKT() throws FactoryException, TransformException {
+    public void testInternalWKT() throws Exception {
         createGeodeticTransformation();
         assertInternalWktEqualsRegex("(?m)\\Q" +
                 "Concat_MT[\n" +

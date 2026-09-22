@@ -17,17 +17,9 @@
 package org.apache.sis.referencing.operation.gridded;
 
 import java.net.URI;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Path;
-import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
-import java.nio.file.FileSystemNotFoundException;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.opengis.util.FactoryException;
@@ -36,9 +28,13 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.factory.MissingFactoryResourceException;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
+import org.apache.sis.referencing.operation.transform.MathTransformBuilder;
+import org.apache.sis.referencing.operation.transform.MathTransformProvider.Context;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.system.DataDirectory;
+import org.apache.sis.system.DataURI;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
@@ -48,12 +44,15 @@ import org.apache.sis.util.resources.Messages;
  * Resolved path to a grid file. The starting point is the path specified by a parameter.
  * If that path is relative, then this class tries to resolve it in a directory specified
  * by the {@code SIS_DATA} environment variable. If the path cannot be resolved that way,
- * then this method check if it can be resolved relatively to the GML or WKT file containing
+ * then this class checks if the path can be resolved relatively to the document containing
  * the parameter.
+ *
+ * <p>Instances of this class should be temporary.
+ * This is an helper class for loading data and discarded after the loading completed.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class GridFile {
+public final class GridFile extends DataURI {
     /**
      * Whether the tip about the location of datum shift files has been logged.
      * We log this tip only once, and only if we failed to load at least one grid.
@@ -68,145 +67,65 @@ public final class GridFile {
     }
 
     /**
-     * The URI specified in the parameter. This URI is usually relative to an unspecified directory.
-     *
-     * @see #resolved()
-     */
-    public final URI parameter;
-
-    /**
-     * The URI as an absolute path.
-     */
-    private URI resolved;
-
-    /**
-     * The base URI used for resolving the parameter, or {@code null} if none.
-     */
-    private URI base;
-
-    /**
-     * The resolved URI as a path, or {@code null} if not yet computed or not convertible.
-     */
-    private Path asPath;
-
-    /**
      * Resolves the given parameter as an absolute URI, resolved in the {@code "$SIS_DATA/DatumChanges"} directory
      * if the URI is relative. If the URI cannot be resolved, a {@link MissingFactoryResourceException} is thrown.
      * That exception type is necessary for letting the caller know that a coordinate operation is probably valid
      * but cannot be constructed because an optional configuration is missing.
      * It is typically because the {@code SIS_DATA} environment variable has not been set.
      *
-     * @param  group  the group of parameters from which to get the URI.
-     * @param  param  identification of the parameter to fetch.
+     * @param  context  context of the transform to create, or {@code null}.
+     * @param  group    the group of parameters from which to get the URI.
+     * @param  param    identification of the parameter to fetch.
      * @throws ParameterNotFoundException if the specified parameter is not found in the given group.
      * @throws MissingFactoryResourceException if the path cannot be resolved.
+     * @throws InvalidGeodeticParameterException if access is denied.
      */
-    public GridFile(final Parameters group, final ParameterDescriptor<URI> param) throws MissingFactoryResourceException {
-        RuntimeException error = null;
-        parameter = group.getMandatoryValue(param);
-        if (parameter.isAbsolute()) {
-            resolved = parameter.normalize();
-        } else {
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
+    public GridFile(final Context context, final Parameters group, final ParameterDescriptor<URI> param)
+            throws FactoryException
+    {
+        super(group.getMandatoryValue(param));
+        /*
+         * First, try to resolve the parameter relatively to the "$SIS_DATA/DatumChanges" directory.
+         * That directory can be seen as a cache to be tried before to potentially download the data.
+         */
+        if (!tryResolve(localDirectory().getDirectoryAsURI()) || isFileMissing()) {
             /*
-             * First, try to resolve the parameter relative to the "$SIS_DATA/DatumChanges" directory.
-             * That directory can be seen as a cache to be tried before to download data that may be
-             * on the network.
+             * If the "$SIS_DATA/DatumChanges" directory cannot be used, assume a file in the same directory
+             * as the document that provided the parameter. Throw an exception if no resolution was possible,
+             * including with previous attempt. Do not throw an exception for file not found,
+             * because that check will be done when the file will be opened.
              */
-            base = localDirectory().getDirectoryAsURI();
-            if (base != null) try {
-                resolved = base.resolve(parameter).normalize();
-                asPath = Path.of(resolved);
-                if (Files.exists(asPath)) {
-                    return;
-                }
-            } catch (IllegalArgumentException | FileSystemNotFoundException e) {
-                error = e;
-            }
-            /*
-             * If the "$SIS_DATA/DatumChanges" directory cannot be used, check if we
-             * have another base URI that we could try. If not, we cannot continue.
-             */
-            final URI document = group.getSourceFile(param).orElse(null);
-            if (document == null) {
-                if (resolved != null) {
-                    return;             // NoSuchFileException will be thrown later by `newByteChannel()`.
-                }
+            if (!tryResolve(group.getSourceFile(param).orElse(null)) && resolved() == null) {
+                /*
+                 * If the URL cannot be resolved, the most important reason is because `SIS_DATA` was not set.
+                 * Try to provide an helpful error message. This is not about whether the file exists.
+                 */
                 final String message;
-                if (parameter.isOpaque()) {
-                    message = Errors.format(Errors.Keys.CanNotOpen_1, parameter);
+                if (DataDirectory.getenv() == null) {
+                    message = Messages.format(Messages.Keys.DataDirectoryNotSpecified_1, DataDirectory.ENV);
                 } else {
-                    final String env = DataDirectory.getenv();
-                    if (env == null) {
-                        message = Messages.format(Messages.Keys.DataDirectoryNotSpecified_1, DataDirectory.ENV);
-                    } else {
-                        message = Messages.format(Messages.Keys.DataDirectoryNotAccessible_2, DataDirectory.ENV, env);
-                    }
+                    message = Errors.format(Errors.Keys.CanNotOpen_1, parameter);
                 }
                 throw new MissingFactoryResourceException(message, error);
             }
-            /*
-             * Use the alternative base URI without checking if it exists.
-             * This check will be done when the file will be opened.
-             */
-            base = document;
-            resolved = document.resolve(parameter).normalize();
-        }
-        try {
-            asPath = Path.of(resolved);
-        } catch (IllegalArgumentException | FileSystemNotFoundException e) {
-            if (error == null) error = e;
-            else error.addSuppressed(e);
-            asPath = null;
         }
         if (error != null) {
             Logging.ignorableException(AbstractProvider.LOGGER, GridFile.class, "<init>", error);
         }
-    }
-
-    /**
-     * Returns the resolved <abbr>URI</abbr>.
-     *
-     * @see #parameter
-     */
-    public URI resolved() {
-        return resolved;
-    }
-
-    /**
-     * Returns the resolved <abbr>URI</abbr> as a path if possible.
-     * A use case for this method is grids to open as a {@link org.apache.sis.storage.DataStore}.
-     */
-    public Optional<Path> path() {
-        return Optional.ofNullable(asPath);
-    }
-
-    /**
-     * Creates a channel for reading bytes from the file at the path specified at construction time.
-     * This method tries to open using the file system before to open from the URL.
-     *
-     * @return a channel for reading bytes from the file.
-     * @throws IOException if the channel cannot be created.
-     */
-    public ReadableByteChannel newByteChannel() throws IOException {
-        if (asPath != null) {
-            return Files.newByteChannel(asPath);
-        } else {
-            return Channels.newChannel(resolved.toURL().openStream());
+        /*
+         * Verify authorization to read the file at the given URL. If there is no user-specified access control,
+         * the default is the verify that the URL is not outside the local data directory or the parent directory.
+         */
+        if (context instanceof MathTransformBuilder) {
+            final var builder = (MathTransformBuilder) context;
+            switch (builder.getAccessControl().apply(param, resolved())) {
+                case GRANTED: return;
+                case DENIED: isRelative = false; break;
+            }
         }
-    }
-
-    /**
-     * Creates a buffered reader for reading characters from the file at the path specified at construction time.
-     * This method tries to open using the file system before to open from the URL.
-     *
-     * @return a channel for reading bytes from the file.
-     * @throws IOException if the reader cannot be created.
-     */
-    public BufferedReader newBufferedReader() throws IOException {
-        if (asPath != null) {
-            return Files.newBufferedReader(asPath);
-        } else {
-            return new BufferedReader(new InputStreamReader(resolved.toURL().openStream()));
+        if (!isRelative) {
+            throw new InvalidGeodeticParameterException(accessDenied());
         }
     }
 
@@ -258,13 +177,5 @@ public final class GridFile {
         } else {
             return new FactoryDataException(message, cause);
         }
-    }
-
-    /**
-     * Returns a string representation of this path for debugging purposes.
-     */
-    @Override
-    public String toString() {
-        return String.valueOf(resolved);
     }
 }

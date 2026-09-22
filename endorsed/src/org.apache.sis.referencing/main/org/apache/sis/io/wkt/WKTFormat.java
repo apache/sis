@@ -800,8 +800,9 @@ public class WKTFormat extends CompoundFormat<Object> {
 
     /**
      * Sets the URI to declare as the source of the WKT definitions. This information will be stored in
-     * {@link org.apache.sis.parameter.DefaultParameterValue#getSourceFile()} at WKT parsing time as a
-     * hint for resolving relative paths as absolute paths. This value has no effect at formatting time.
+     * {@link org.apache.sis.parameter.DefaultParameterValue#setSourceFile(URI)} at WKT parsing time as a
+     * hint for resolving relative paths found in {@code PARAMETERFILE[…]} elements.
+     * This value has no effect at formatting time.
      *
      * @param  document  URI to the file that contains the WKT definitions to parse, or {@code null} if none.
      *

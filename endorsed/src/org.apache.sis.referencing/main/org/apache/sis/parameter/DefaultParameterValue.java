@@ -21,6 +21,7 @@ import java.lang.reflect.Type;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.function.BiFunction;
 import java.io.Serializable;
 import java.io.File;
 import java.nio.file.Path;
@@ -52,6 +53,7 @@ import org.apache.sis.metadata.internal.shared.ImplementationHelper;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.shared.WKTUtilities;
 import org.apache.sis.referencing.internal.shared.WKTKeywords;
+import org.apache.sis.referencing.operation.transform.MathTransformBuilder;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.NumberType;
 import org.apache.sis.measure.Units;
@@ -101,22 +103,25 @@ import org.apache.sis.util.logging.Logging;
  *     Class<T> valueClass = parameter.getDescriptor().getValueClass();
  *     }
  *
- * <h2>Absolute paths of value files</h2>
+ * <h2>Resolution of <abbr>URI</abbr> parameter values</h2>
  * Parameters that are too complex for being expressed as an {@code int[]}, {@code double[]} or {@code String} type
  * may be encoded in auxiliary files. It is the case, for example, of gridded data such as datum shift grids.
  * The name of an auxiliary file is given by {@link #valueFile()}, but often as a <em>relative</em> path.
  * The directory where that file is located depends on the operation using the parameter.
- * For example, datum shift grids used by coordinate transformations are searched in the
+ * For example, datum shift grid files used by coordinate transformations are searched in the
  * {@code $SIS_DATA/DatumChanges} directory, where {@code $SIS_DATA} is the value of the environment variable.
- * However, the latest approach requires that all potentially used auxiliary files are preexisting on the local machine.
- * This assumption may be applicable for parameters coming from a well-known registry such as EPSG, but cannot work
- * with arbitrary operations where the auxiliary files need to be transferred together with the parameter values.
- * For the latter case, an alternative is to consider the auxiliary files as relative to the GML document or WKT file
- * that provides the parameter values. For allowing users to resolve or download auxiliary files in that way,
- * a {@link #getSourceFile()} method is provided. Operations can then use {@link URI#resolve(URI)} for getting the
- * absolute path of an auxiliary file from the same server or directory than the GML or WKT file of parameter values.
+ * However, this approach requires that all potentially used auxiliary files are preexisting on the local machine.
+ * This assumption may be applicable for parameters coming from a well-known registry such as <abbr>EPSG</abbr>,
+ * but cannot work with arbitrary operations where the auxiliary files need to be transferred together with the parameter values.
+ * For the latter case, Apache <abbr>SIS</abbr> fallbacks on <abbr>URI</abbr> relative to the directory of the
+ * <abbr>JSON</abbr>, <abbr>GML</abbr> or <abbr>WKT</abbr> document where the parameter value appears.
+ * This resolution can be done only if the document directory is specified by the {@link #getSourceFile()} method.
  *
- * <h2>Instantiation</h2>
+ * <p><abbr>URI</abbr> parameter values are not resolved by this class, but by the operation which uses this parameter.
+ * For security reasons, an operation may reject <abbr>URI</abbr>s that are not in the expected directory.
+ * For controlling which <abbr>URI</abbr>s to accept, see {@link MathTransformBuilder#setAccessControl(BiFunction)}.</p>
+ *
+ * <h2>Instantiation of parameter values</h2>
  * A {@linkplain DefaultParameterDescriptor parameter descriptor} must be defined before parameter value can be created.
  * Descriptors are usually predefined (often hard-coded) by map projection or process providers. Given a descriptor,
  * the preferred way to create a parameter value is to invoke the {@link ParameterDescriptor#createValue()} method.
@@ -250,10 +255,14 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     }
 
     /**
-     * Returns the <abbr>URI</abbr> of the <abbr>GML</abbr> document
-     * or <abbr>WKT</abbr> file from which the parameter values are read.
-     * This information allows to interpret {@link #valueFile()} as a path relative to the file that defined
-     * this parameter value. For example, the following snippet gets the file, then tries to make it absolute:
+     * Returns the <abbr>URI</abbr> of the <abbr>JSON</abbr>, <abbr>GML</abbr> or <abbr>WKT</abbr>
+     * document providing this parameter value. In the case of formats such as <abbr>GML</abbr>
+     * where parameter values can be declared in separated files referenced by {@code xlink:href},
+     * each parameter may have its own source <abbr>URI</abbr>.
+     *
+     * <p>This information can be used for resolving relative {@link #valueFile()} as a sibling
+     * (i.e., a file in the same directory) of the source file that defined this parameter value.
+     * For example, the following snippet gets the file, then tries to make it absolute:</p>
      *
      * {@snippet lang="java" :
      *     DefaultParameterValue<?> pv = ...;
@@ -261,7 +270,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *     file = pv.getSourceFile().map((base) -> base.resolve(file)).orElse(file);
      *     }
      *
-     * @return the <abbr>URI</abbr> of the document from which the parameter values are read.
+     * @return the <abbr>URI</abbr> of the document from which the parameter value has is read.
      *
      * @see #setSourceFile(URI)
      * @see Parameters#getSourceFile(ParameterDescriptor)
@@ -547,11 +556,12 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * The default implementation can convert the following value types:
      * {@link URI}, {@link URL}, {@link Path}, {@link File}.
      *
-     * <h4>Relative paths to absolute paths</h4>
-     * This parameter value is often a path relative to an unspecified directory. The base directory
-     * depends on the context. For example, it may be a directory where all datum grids are cached.
-     * Sometime, it is convenient to interpret the path as relative to the GML document or WKT file
-     * that defined this parameter value. For such resolution, see {@link #getSourceFile()}.
+     * <p>This parameter value is often a path relative to a context-dependent directory.
+     * For example, if this parameter specifies a datum shift grid file,
+     * then the returned value may be relative to the {@code $SIS_DATA/DatumChanges} directory.
+     * If the file is not found in that directory or if this parameter is not for a datum shift,
+     * then the returned value may be relative to the directory of the <abbr>JSON</abbr>, <abbr>GML</abbr>
+     * or <abbr>WKT</abbr> document where this parameter value appears.</p>
      *
      * @return the reference to a file containing parameter values.
      * @throws InvalidParameterTypeException if the value is not a reference to a file or a URI.
@@ -559,6 +569,8 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *
      * @see #getValue()
      * @see #setValue(Object)
+     * @see #getSourceFile()
+     * @see MathTransformBuilder#setAccessControl(BiFunction)
      */
     @Override
     public URI valueFile() throws IllegalStateException {
@@ -602,9 +614,11 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     }
 
     /**
-     * Sets the URI of the GML document or WKT file from which this parameter value has been read.
-     * The given URI is a hint to be returned by {@link #getSourceFile()} for allowing callers to
-     * {@linkplain URI#resolve(URI) resolve} relative {@linkplain #valueFile() value files}.
+     * Sets the <abbr>URI</abbr> of the <abbr>JSON</abbr>, <abbr>GML</abbr> or <abbr>WKT</abbr>
+     * document providing this parameter value.
+     * This information can be used for resolving relative file returned by {@link #valueFile()}.
+     * Each parameter can declare its own source <abbr>URI</abbr> because some formats such as <abbr>GML</abbr>
+     * can declare parameter values in separated files referenced by {@code xlink:href}.
      *
      * @param document  URI of the document from which this parameter value has been read, or {@code null} if none.
      *

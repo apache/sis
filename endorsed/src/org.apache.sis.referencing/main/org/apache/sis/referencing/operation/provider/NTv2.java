@@ -140,8 +140,9 @@ public final class NTv2 extends AbstractProvider {
     static MathTransform createMathTransform(final Class<? extends AbstractProvider> provider,
             final Context context, final int version) throws FactoryException
     {
-        final GridFile file = new GridFile(Parameters.castOrWrap(context.getCompletedParameters()), FILE);
-        final LoadedGrid<Angle,Angle> grid;
+        final Parameters pg = Parameters.castOrWrap(context.getCompletedParameters());
+        final var file = new GridFile(context, pg, FILE);
+        final LoadedGrid<Angle, Angle> grid;
         try {
             grid = getOrLoad(provider, file, version);
         } catch (FactoryException e) {
@@ -164,14 +165,14 @@ public final class NTv2 extends AbstractProvider {
      *
      * @see GridLoader#canNotLoad(String, URI, Exception)
      */
-    static LoadedGrid<Angle,Angle> getOrLoad(final Class<? extends AbstractProvider> provider,
+    static LoadedGrid<Angle, Angle> getOrLoad(final Class<? extends AbstractProvider> provider,
             final GridFile file, final int version) throws Exception
     {
         return LoadedGrid.getOrLoad(file, null, () -> {
             final LoadedGrid<?,?> grid;
             try (ReadableByteChannel in = file.newByteChannel()) {
                 file.startLoading(provider);
-                final Loader loader = new Loader(in, file, version);
+                final var loader = new Loader(in, file, version);
                 grid = loader.readAllGrids();
                 loader.report(provider);
             }
@@ -437,9 +438,9 @@ public final class NTv2 extends AbstractProvider {
          * them in a child-parent relationship. The result is a tree with a single root containing
          * sub-grids (if any) as children.
          */
-        final LoadedGrid<Angle,Angle> readAllGrids() throws IOException, FactoryException, NoninvertibleTransformException {
-            final Map<String,      LoadedGrid<Angle,Angle>>  grids    = JDK19.newHashMap(numGrids);
-            final Map<String, List<LoadedGrid<Angle,Angle>>> children = new LinkedHashMap<>();   // Should have few entries.
+        final LoadedGrid<Angle, Angle> readAllGrids() throws IOException, FactoryException, NoninvertibleTransformException {
+            final Map<String,      LoadedGrid<Angle, Angle>>  grids    = JDK19.newHashMap(numGrids);
+            final Map<String, List<LoadedGrid<Angle, Angle>>> children = new LinkedHashMap<>();   // Should have few entries.
             while (grids.size() < numGrids) {
                 readGrid(grids, children);
             }
@@ -451,10 +452,10 @@ public final class NTv2 extends AbstractProvider {
              *        the grids in cycles will be lost. This is because we need a grid without parent for getting the
              *        graph added in the roots list. There is currently no mechanism for detecting those problems.
              */
-            final List<LoadedGrid<Angle,Angle>> roots = new ArrayList<>();
-            for (final Map.Entry<String, List<LoadedGrid<Angle,Angle>>> entry : children.entrySet()) {
-                final LoadedGrid<Angle,Angle> parent = grids.get(entry.getKey());
-                final List<LoadedGrid<Angle,Angle>> subgrids = entry.getValue();
+            final List<LoadedGrid<Angle, Angle>> roots = new ArrayList<>();
+            for (final Map.Entry<String, List<LoadedGrid<Angle, Angle>>> entry : children.entrySet()) {
+                final LoadedGrid<Angle, Angle> parent = grids.get(entry.getKey());
+                final List<LoadedGrid<Angle, Angle>> subgrids = entry.getValue();
                 if (parent != null) {
                     /*
                      * Verify that the children does not declare themselves as their parent.
@@ -494,8 +495,8 @@ public final class NTv2 extends AbstractProvider {
          * @param  addTo     the map where to add the grid with the grid name as the key.
          * @param  children  the map where to add children with the parent name as the key.
          */
-        private void readGrid(final Map<String, LoadedGrid<Angle,Angle>> addTo,
-                final Map<String, List<LoadedGrid<Angle,Angle>>> children)
+        private void readGrid(final Map<String, LoadedGrid<Angle, Angle>> addTo,
+                final Map<String, List<LoadedGrid<Angle, Angle>>> children)
                 throws IOException, FactoryException, NoninvertibleTransformException
         {
             if (isV2) {
@@ -545,9 +546,9 @@ public final class NTv2 extends AbstractProvider {
              * will be handled by grid.coordinateToGrid MathTransform and its inverse.
              */
             final double size = Math.max(dx, dy);
-            final LoadedGrid<Angle,Angle> grid;
+            final LoadedGrid<Angle, Angle> grid;
             if (isV2) {
-                final LoadedGrid.Float<Angle,Angle> data;
+                final LoadedGrid.Float<Angle, Angle> data;
                 data = new LoadedGrid.Float<>(2, unit, unit, true,
                         -xmin, ymin, -dx, dy, width, height, PARAMETERS, file);
                 @SuppressWarnings("MismatchedReadAndWriteOfArray") final float[] tx = data.offsets[0];
@@ -567,7 +568,7 @@ public final class NTv2 extends AbstractProvider {
                 /*
                  * NTv1: same as NTv2 but using double precision and without accuracy information.
                  */
-                final LoadedGrid.Double<Angle,Angle> data;
+                final LoadedGrid.Double<Angle, Angle> data;
                 grid = data = new LoadedGrid.Double<>(2, unit, unit, true,
                         -xmin, ymin, -dx, dy, width, height, PARAMETERS, file);
                 @SuppressWarnings("MismatchedReadAndWriteOfArray") final double[] tx = data.offsets[0];

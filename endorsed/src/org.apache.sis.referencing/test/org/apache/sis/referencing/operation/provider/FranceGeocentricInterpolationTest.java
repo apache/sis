@@ -29,7 +29,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.gridded.GridFile;
 import org.apache.sis.referencing.operation.gridded.LoadedGrid;
 import org.apache.sis.referencing.operation.gridded.CompressedGrid;
-import org.apache.sis.referencing.factory.MissingFactoryResourceException;
 import org.apache.sis.parameter.Parameters;
 
 // Test dependencies
@@ -37,6 +36,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
+import org.apache.sis.referencing.operation.gridded.GridFileTest;
 
 
 /**
@@ -102,12 +102,14 @@ public final class FranceGeocentricInterpolationTest extends TestCase {
      *
      * @param  file  the grid file <abbr>URI</abbr>.
      * @return an object representing the grid file at the given URI.
-     * @throws MissingFactoryResourceException if the path cannot be resolved.
+     * @throws URISyntaxException if the URL to the test file is not valid.
+     * @throws FactoryException if the path cannot be resolved.
      */
-    private static GridFile newGridFile(final URI file) throws MissingFactoryResourceException {
+    private static GridFile newGridFile(final URI file) throws URISyntaxException, FactoryException {
         Parameters pg = Parameters.castOrWrap(FranceGeocentricInterpolation.PARAMETERS.createValue());
         pg.getOrCreate(FranceGeocentricInterpolation.FILE).setValue(file);
-        return new GridFile(pg, FranceGeocentricInterpolation.FILE);
+        GridFileTest.makeParameterRelativeToSourceFile(pg);
+        return new GridFile(null, pg, FranceGeocentricInterpolation.FILE);
     }
 
     /**
@@ -116,10 +118,10 @@ public final class FranceGeocentricInterpolationTest extends TestCase {
      * @param  filename  filename of the grid to load.
      * @return an object representing the grid file for the specified resource.
      * @throws URISyntaxException if the URL to the test file is not valid.
-     * @throws MissingFactoryResourceException if the path cannot be resolved.
+     * @throws FactoryException if the path cannot be resolved.
      */
     private static GridFile getResource(final String filename)
-            throws URISyntaxException, MissingFactoryResourceException
+            throws URISyntaxException, FactoryException
     {
         URL file = FranceGeocentricInterpolationTest.class.getResource(filename);
         assertNotNull(file, filename);
@@ -132,12 +134,10 @@ public final class FranceGeocentricInterpolationTest extends TestCase {
      *
      * @param  resolved  the <abbr>URI</abbr> to test.
      * @throws URISyntaxException if the URL to the test file is not valid.
-     * @throws MissingFactoryResourceException if the path cannot be resolved.
+     * @throws FactoryException if the path cannot be resolved.
      * @return result of {@code FranceGeocentricInterpolation.isRecognized(…)}.
      */
-    private static boolean isRecognized(final String resolved)
-            throws URISyntaxException, MissingFactoryResourceException
-    {
+    private static boolean isRecognized(final String resolved) throws URISyntaxException, FactoryException {
         return FranceGeocentricInterpolation.isRecognized(newGridFile(new URI(resolved)));
     }
 
@@ -145,10 +145,10 @@ public final class FranceGeocentricInterpolationTest extends TestCase {
      * Tests {@link FranceGeocentricInterpolation#isRecognized(URI)}.
      *
      * @throws URISyntaxException if the URL to the test file is not valid.
-     * @throws MissingFactoryResourceException if the path cannot be resolved.
+     * @throws FactoryException if the path cannot be resolved.
      */
     @Test
-    public void testIsRecognized() throws URISyntaxException, MissingFactoryResourceException {
+    public void testIsRecognized() throws URISyntaxException, FactoryException {
         assertTrue (isRecognized("GR3DF97A.txt"));
         assertTrue (isRecognized("gr3df"));
         assertFalse(isRecognized("gr3d"));

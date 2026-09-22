@@ -72,6 +72,11 @@ public class Errors extends IndexedResourceBundle {
         }
 
         /**
+         * Access to the “{0}” file has been denied by application configuration.
+         */
+        public static final short AccessDenied_1 = 208;
+
+        /**
          * ‘{0}’ is already initialized.
          */
         public static final short AlreadyInitialized_1 = 1;

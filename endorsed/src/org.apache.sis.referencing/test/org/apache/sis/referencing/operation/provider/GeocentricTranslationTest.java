@@ -142,7 +142,7 @@ public final class GeocentricTranslationTest extends MathTransformTestCase {
         if (method instanceof GeocentricAffineBetweenGeographic) {
             setEllipsoids(values, CommonCRS.WGS84.ellipsoid(), CommonCRS.ED50.ellipsoid());
         }
-        transform = method.createMathTransform(DefaultMathTransformFactory.provider(), values);
+        transform = method.createMathTransform(null, values);
     }
 
     /**

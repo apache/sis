@@ -165,7 +165,7 @@ public abstract class PRJDataStore extends URIDataStore {
                 throw new DataStoreException(s.getMessage(getLocale()), s.exception);
             }
             final String wkt = content.toString();
-            final var format = new StoreFormat(dataLocale, timezone, null, listeners);
+            final var format = new StoreFormat(content.getURI(), dataLocale, timezone, null, listeners);
             format.setConvention(getConvention());          // Ignored if the format is WKT 2.
             try {
                 format.setSourceFile(content.getURI());
@@ -213,7 +213,7 @@ public abstract class PRJDataStore extends URIDataStore {
             if (crs == null) {
                 deleteAuxiliaryFile(PRJ);
             } else try (BufferedWriter out = writeAuxiliaryFile(PRJ)) {
-                final var format = new StoreFormat(dataLocale, timezone, null, listeners);
+                final var format = new StoreFormat(null, dataLocale, timezone, null, listeners);
                 format.setConvention(Convention.WKT2_2015);     // TODO: upgrade to newer version.
                 format.format(crs, out);
                 out.newLine();

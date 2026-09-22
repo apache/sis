@@ -125,7 +125,7 @@ final class Store extends URIDataStore {
              * definitions.
              */
             final var pos = new ParsePosition(0);
-            final var parser = new StoreFormat(dataLocale, timezone, library, listeners);
+            final var parser = new StoreFormat(location, dataLocale, timezone, library, listeners);
             do {
                 final Object obj = parser.parse(wkt, pos);
                 objects.add(obj);

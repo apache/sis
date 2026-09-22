@@ -517,10 +517,10 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
     }
 
     /**
-     * Returns the <abbr>URI</abbr> of the <abbr>GML</abbr> document
-     * or <abbr>WKT</abbr> file from which the parameter values are read.
+     * Returns the <abbr>URI</abbr> of the <abbr>JSON</abbr>, <abbr>GML</abbr> or <abbr>WKT</abbr>
+     * document providing the value of the specified parameter.
      * This information can be used together with {@code getValue(ParameterDescriptor<URI>)} for
-     * resolving a parameter value as a path relative to the GML or WKT file declaring the parameter.
+     * resolving a parameter value as a path relative to the document declaring the parameter.
      * Note that the source file is not necessarily the same for all parameters in a group, because a GML
      * document could define parameters in files referenced by different {@code xlink:href} attribute values.
      *

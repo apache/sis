@@ -139,10 +139,10 @@ public final class NADCON extends AbstractProvider {
     @Override
     public MathTransform createMathTransform(final Context context) throws FactoryException {
         final Parameters pg = Parameters.castOrWrap(context.getCompletedParameters());
-        final GridFile latitudeShifts  = new GridFile(pg, LATITUDE);
-        final GridFile longitudeShifts = new GridFile(pg, LONGITUDE);
+        final var latitudeShifts  = new GridFile(context, pg, LATITUDE);
+        final var longitudeShifts = new GridFile(context, pg, LONGITUDE);
         try {
-            LoadedGrid<Angle,Angle> grid = getOrLoad(latitudeShifts, longitudeShifts);
+            LoadedGrid<Angle, Angle> grid = getOrLoad(latitudeShifts, longitudeShifts);
             return LoadedGrid.createGeodeticTransformation(NADCON.class, context.getFactory(), grid);
         } catch (NoSuchFileException e) {
             throw new MissingFactoryResourceException(e.getMessage(), e);
@@ -161,7 +161,7 @@ public final class NADCON extends AbstractProvider {
      * @param  longitudeShifts  relative or absolute path name of the grid file for longitude shifts.
      * @throws Exception if an error occurred while loading the grid.
      */
-    static LoadedGrid<Angle,Angle> getOrLoad(final GridFile latitudeShifts, final GridFile longitudeShifts)
+    static LoadedGrid<Angle, Angle> getOrLoad(final GridFile latitudeShifts, final GridFile longitudeShifts)
             throws Exception
     {
         return LoadedGrid.getOrLoad(latitudeShifts, longitudeShifts, () -> {
@@ -258,7 +258,7 @@ public final class NADCON extends AbstractProvider {
         /**
          * The grid created by {@link #readGrid(FloatBuffer, Loader, URI)}.
          */
-        LoadedGrid.Float<Angle,Angle> grid;
+        LoadedGrid.Float<Angle, Angle> grid;
 
         /**
          * Creates a new reader for the given channel. The file can be binary or ASCII.

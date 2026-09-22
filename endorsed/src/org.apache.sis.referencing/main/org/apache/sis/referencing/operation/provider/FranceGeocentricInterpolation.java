@@ -280,7 +280,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
     public MathTransform createMathTransform(final Context context) throws FactoryException {
         final Parameters pg = Parameters.castOrWrap(context.getCompletedParameters());
         final int dim = pg.getValue(Molodensky.DIMENSION);
-        final GridFile file = new GridFile(pg, FILE);
+        final var file = new GridFile(context, pg, FILE);
         final LoadedGrid<Angle, Length> grid;
         try {
             grid = getOrLoad(file, isRecognized(file) ? new double[] {TX, TY, TZ} : null, PRECISION);
