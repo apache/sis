@@ -47,6 +47,14 @@ public class DistanceTest {
     private static final Point POINT_10_6     = GeometryFactory.createPoint(CRS2D, 10.0, 6.0);
 
     /**
+     * Two points in a three-dimensional coordinate reference system, at the same horizontal
+     * position but at different heights.
+     */
+    private static final SampleSystem CRS3D = SampleSystem.of(CommonCRS.WGS84.geographic3D());
+    private static final Point POINT_3D_LOW  = GeometryFactory.createPoint(CRS3D, 10.0, 5.0,   0.0);
+    private static final Point POINT_3D_HIGH = GeometryFactory.createPoint(CRS3D, 10.0, 5.0, 100.0);
+
+    /**
      * Two points using coordinate reference systems which differ by their axis order.
      */
     private static final Point POINT_GEOGRAPHIC = GeometryFactory.createPoint(CommonCRS.WGS84.geographic());
@@ -86,6 +94,12 @@ public class DistanceTest {
         new TestCase(POINT_10_5, POINT_10_5_BIS, Quantities.create(0.0, Units.DEGREE), null),
         new TestCase(POINT_10_5, POINT_10_6,     Quantities.create(1.0, Units.DEGREE), null),
         new TestCase(POINT_10_6, POINT_10_5,     Quantities.create(1.0, Units.DEGREE), null),
+        /*
+         * TODO / Limitation: only the first two axes are taken in account, therefore two points
+         * at the same horizontal position are reported at a distance of zero whatever the
+         * difference of their heights.
+         */
+        new TestCase(POINT_3D_LOW, POINT_3D_HIGH, Quantities.create(0.0, Units.DEGREE), null),
         /*
          * The operation computes in the coordinate reference system of the first geometry,
          * and does not transform the second one.

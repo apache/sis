@@ -20,6 +20,12 @@ import org.apache.sis.geometries.DE9IM;
 import org.apache.sis.geometries.Geometry;
 
 // Test dependencies
+import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
+import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
+import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
+import static org.apache.sis.geometries.operation.TestData.POINT_A;
+import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
+import static org.apache.sis.geometries.operation.TestData.POINT_B;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
@@ -52,6 +58,27 @@ public class RelateTest {
      * All test cases of {@code relate(Geometry, Geometry, DE9IM)}.
      */
     private static final TestCase[] ENTRIES = {
+        /*
+         * The interior and the boundary of the empty set meet nothing, while its exterior is the
+         * whole space. Two empty geometries therefore meet only by their exteriors.
+         */
+        new TestCase(EMPTY_1, EMPTY_2, DE9IM.valueOf("FFFFFFFF2"), true, null),
+        /*
+         * Between the empty set and a point, the only non-empty intersections are those of the
+         * exterior of the empty set with the point, which is a position, and with the exterior
+         * of the point, which is the rest of the plane. The boundary of a point being empty,
+         * the boundary row and the boundary column stay empty in both cases.
+         */
+        new TestCase(EMPTY_1,   NON_EMPTY, DE9IM.valueOf("FFFFFF0F2"), true, null),
+        new TestCase(NON_EMPTY, EMPTY_1,   DE9IM.valueOf("FF0FFFFF2"), true, null),
+        /*
+         * Two points at the same position have their interiors in common and nothing else.
+         * Two points at different positions have no position in common, each one lying in
+         * the exterior of the other.
+         */
+        new TestCase(POINT_A, POINT_A_BIS, DE9IM.valueOf("0FFFFFFF2"), true,  null),
+        new TestCase(POINT_A, POINT_B,     DE9IM.valueOf("FF0FFF0F2"), true,  null),
+        new TestCase(POINT_A, POINT_B,     DE9IM.valueOf("0FFFFFFF2"), false, null)
     };
 
     /**

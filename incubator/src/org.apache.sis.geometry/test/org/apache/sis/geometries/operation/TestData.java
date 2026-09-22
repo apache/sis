@@ -16,11 +16,18 @@
  */
 package org.apache.sis.geometries.operation;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.apache.sis.geometries.Empty;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.referencing.CommonCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+// Test dependencies
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 /**
@@ -54,8 +61,52 @@ public final class TestData {
     public static final Point NON_EMPTY = GeometryFactory.createPoint(CRS_2D, 10.0, 5.0);
 
     /**
+     * An arbitrary point. Together with {@link #POINT_A_BIS}, it allows to verify that the result
+     * of an operation on two points depends on their positions, not on their identity.
+     */
+    public static final Point POINT_A = GeometryFactory.createPoint(CRS_2D, 10.0, 5.0);
+
+    /**
+     * Another point, distinct from {@link #POINT_A} but at the same position.
+     */
+    public static final Point POINT_A_BIS = GeometryFactory.createPoint(CRS_2D, 10.0, 5.0);
+
+    /**
+     * A point at a position different than {@link #POINT_A}.
+     */
+    public static final Point POINT_B = GeometryFactory.createPoint(CRS_2D, 20.0, 15.0);
+
+    /**
+     * The empty geometry expected as the result of an operation which found no position,
+     * for example the intersection of {@link #POINT_A} with {@link #POINT_B}.
+     * It is a distinct instance from {@link #EMPTY_1} on purpose: an operation builds its
+     * result rather than returning an operand when neither operand is empty.
+     */
+    public static final Empty EMPTY_RESULT = GeometryFactory.createEmpty(CRS_2D);
+
+    /**
      * Do not allow instantiation of this class.
      */
     private TestData() {
+    }
+
+    /**
+     * Asserts that the given collection contains exactly the positions of the given points,
+     * in any order. This is used for the results of the operations which are specified as a
+     * set of positions, the order of which is left to the implementation.
+     *
+     * @param  actual    the collection of points to verify.
+     * @param  expected  the points which shall be in the given collection, in any order.
+     */
+    public static void assertPositionsEqual(final MultiPoint<?> actual, final Point... expected) {
+        final List<String> remaining = new ArrayList<>(expected.length);
+        for (final Point point : expected) {
+            remaining.add(Arrays.toString(point.getPosition().toArrayDouble()));
+        }
+        for (int i = 0; i < actual.getNumGeometries(); i++) {
+            final String position = Arrays.toString(actual.getGeometryN(i).getPosition().toArrayDouble());
+            assertTrue(remaining.remove(position), () -> "Unexpected position " + position + '.');
+        }
+        assertTrue(remaining.isEmpty(), () -> "Missing positions " + remaining + '.');
     }
 }

@@ -16,6 +16,9 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.apache.sis.geometries.Point;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 // Test dependencies
 import org.apache.sis.geometries.PointTest;
 
@@ -26,4 +29,12 @@ import org.apache.sis.geometries.PointTest;
  * @author Johann Sorel (Geomatys)
  */
 public class DefaultPointTest extends PointTest {
+
+    public DefaultPointTest() {
+    }
+
+    @Override
+    protected Point createPoint(final CoordinateReferenceSystem crs, final double... coordinates) {
+        return new DefaultPoint(crs, coordinates);
+    }
 }

@@ -16,6 +16,10 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.apache.sis.geometries.Point;
+import org.apache.sis.maths.NDArrays;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 // Test dependencies
 import org.apache.sis.geometries.PointTest;
 
@@ -26,4 +30,12 @@ import org.apache.sis.geometries.PointTest;
  * @author Johann Sorel (Geomatys)
  */
 public class IndexedPointTest extends PointTest {
+
+    public IndexedPointTest() {
+    }
+
+    @Override
+    protected Point createPoint(final CoordinateReferenceSystem crs, final double... coordinates) {
+        return new IndexedPoint(new ArrayDataPoints(NDArrays.of(crs, coordinates)), 0);
+    }
 }

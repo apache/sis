@@ -19,8 +19,10 @@ package org.apache.sis.geometries;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.SampleSystem;
 
@@ -105,6 +107,44 @@ public interface DataPointsType {
      */
     List<String> getAttributeNames();
 
+    static int hashCode(final DataPointsType type) {
+        int hash = 0;
+        for (final String name : type.getAttributeNames()) {
+            // Summed so that the result does not depend on the order in which the names are returned.
+            hash += name.hashCode()
+                  ^ Objects.hashCode(type.getAttributeSystem(name))
+                  ^ Objects.hashCode(type.getAttributeType(name));
+        }
+        return hash;
+    }
+
+    static boolean equals(final DataPointsType type, final Object obj) {
+        if (type == obj) {
+            return true;
+        }
+        if (!(obj instanceof DataPointsType other)) {
+            return false;
+        }
+        if (type instanceof DataPoints || type instanceof Geometry ||
+            obj  instanceof DataPoints || obj  instanceof Geometry)
+        {
+            // At least one operand carries the positions, not only their description.
+            return false;
+        }
+        final List<String> names = type.getAttributeNames();
+        final List<String> others = other.getAttributeNames();
+        if (names.size() != others.size() || !new HashSet<>(names).containsAll(others)) {
+            return false;
+        }
+        for (final String name : names) {
+            if (!Objects.equals(type.getAttributeSystem(name), other.getAttributeSystem(name)) ||
+                !Objects.equals(type.getAttributeType  (name), other.getAttributeType  (name)))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
 
     /**
      * Empty attributes type.
@@ -123,6 +163,16 @@ public interface DataPointsType {
         @Override
         public List<String> getAttributeNames() {
             return Collections.EMPTY_LIST;
+        }
+
+        @Override
+        public int hashCode() {
+            return DataPointsType.hashCode(this);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return DataPointsType.equals(this, obj);
         }
     };
 
@@ -154,6 +204,28 @@ public interface DataPointsType {
         @Override
         public List<String> getAttributeNames() {
             return new ArrayList(datatypes.keySet());
+        }
+
+        /**
+         * Returns a hash code value for this description.
+         *
+         * @see DataPointsType#hashCode(DataPointsType)
+         */
+        @Override
+        public int hashCode() {
+            return DataPointsType.hashCode(this);
+        }
+
+        /**
+         * Compares this description with the given object for equality.
+         * The given object does not need to be a template: any description
+         * declaring the same attributes is equal to this one.
+         *
+         * @see DataPointsType#equals(DataPointsType, Object)
+         */
+        @Override
+        public boolean equals(Object obj) {
+            return DataPointsType.equals(this, obj);
         }
     }
 

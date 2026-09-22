@@ -148,6 +148,14 @@ public class TransformTest {
      * All test cases of {@code transform(Geometry, CoordinateReferenceSystem, MathTransform)}.
      */
     private static final TestCase[] ENTRIES = {
+        /*
+         * TODO: `GeometryProcessor.transform(...)` handles only the mesh primitives and the
+         * surfaces built on linear rings. The transform of an empty geometry should be that
+         * geometry in the target reference system, and the transform of a point should be its
+         * position converted to that system.
+         */
+        new TestCase(TestData.EMPTY_1, CRS_TARGET, null, UnsupportedOperationException.class),
+        new TestCase(TestData.POINT_A, CRS_TARGET, null, UnsupportedOperationException.class)
     };
 
     /**

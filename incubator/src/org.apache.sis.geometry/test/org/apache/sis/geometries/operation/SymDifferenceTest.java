@@ -17,12 +17,18 @@
 package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.point.MultiPoint;
 
 // Test dependencies
 import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
 import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
+import static org.apache.sis.geometries.operation.TestData.EMPTY_RESULT;
 import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
+import static org.apache.sis.geometries.operation.TestData.POINT_A;
+import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
+import static org.apache.sis.geometries.operation.TestData.POINT_B;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
 
@@ -55,7 +61,8 @@ public class SymDifferenceTest {
         // (∅ − A) ∪ (A − ∅) = A: the result is the operand which is not empty.
         new TestCase(EMPTY_1,   NON_EMPTY, NON_EMPTY, null),
         new TestCase(NON_EMPTY, EMPTY_1,   NON_EMPTY, null),
-        new TestCase(EMPTY_1,   EMPTY_2,   EMPTY_2,   null)
+        new TestCase(EMPTY_1,   EMPTY_2,   EMPTY_2,   null),
+        new TestCase(POINT_A, POINT_A_BIS, EMPTY_RESULT, null)
     };
 
     /**
@@ -74,5 +81,20 @@ public class SymDifferenceTest {
                 }
             }
         }
+    }
+
+    /**
+     * Tests {@code symDifference(Geometry, Geometry)} on two points at different positions.
+     * No position belongs to both points, therefore the result shall contain both of them,
+     * in an unspecified order.
+     */
+    @Test
+    public void testDistinctPoints() {
+        final Geometry result = new GeometryProcessor().symDifference(POINT_A, POINT_B);
+        assertInstanceOf(MultiPoint.class, result, "No position is shared by the two points.");
+        final MultiPoint<?> points = (MultiPoint<?>) result;
+        assertEquals(TestData.CRS_2D, points.getCoordinateReferenceSystem());
+        assertEquals(2, points.getNumGeometries());
+        TestData.assertPositionsEqual(points, POINT_A, POINT_B);
     }
 }

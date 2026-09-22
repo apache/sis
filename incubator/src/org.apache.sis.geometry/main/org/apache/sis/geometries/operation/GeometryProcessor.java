@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.operation;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,7 +97,7 @@ public final class GeometryProcessor {
         }
 
         //TODO : fallback on JTS until implemented, this loss the attributes !
-        return Geometries.fromJTS(jts(geom).convexHull(), true);
+        return fromJTS(jts(geom).convexHull(), geom);
     }
 
     /**
@@ -111,7 +112,7 @@ public final class GeometryProcessor {
         }
 
         //TODO : fallback on JTS until implemented, this loss the attributes !
-        return Geometries.fromJTS(jts(geom1).difference(jts(geom2)), true);
+        return fromJTS(jts(geom1).difference(jts(geom2)), geom1);
     }
 
     /**
@@ -171,7 +172,7 @@ public final class GeometryProcessor {
         }
 
         //TODO : fallback on JTS until implemented, this loss the attributes !
-        return Geometries.fromJTS(jts(geom1).intersection(jts(geom2)), true);
+        return fromJTS(jts(geom1).intersection(jts(geom2)), geom1);
     }
 
     /**
@@ -190,7 +191,7 @@ public final class GeometryProcessor {
         }
 
         //TODO : fallback on JTS until implemented, this loss the attributes !
-        return Geometries.fromJTS(jts(geom1).symDifference(jts(geom2)), true);
+        return fromJTS(jts(geom1).symDifference(jts(geom2)), geom1);
     }
 
     /**
@@ -208,7 +209,7 @@ public final class GeometryProcessor {
         }
 
         //TODO : fallback on JTS until implemented, this loss the attributes !
-        return Geometries.fromJTS(jts(geom1).union(jts(geom2)), true);
+        return fromJTS(jts(geom1).union(jts(geom2)), geom1);
     }
 
     /**
@@ -240,6 +241,10 @@ public final class GeometryProcessor {
     @UML(identifier="crosses", specification=ISO_19107) // section 6.4.8.8
     //@UML(identifier="3Dcrosses", specification=ISO_19107) // section 6.4.9
     public boolean crosses(Geometry geom1, Geometry geom2) throws OperationException {
+        if (geom1.isEmpty() || geom2.isEmpty()) {
+            return false;
+        }
+
         //TODO : fallback on JTS until implemented
         return jts(geom1).crosses(jts(geom2));
     }
@@ -311,6 +316,10 @@ public final class GeometryProcessor {
     @UML(identifier="overlaps", specification=ISO_19107) // section 6.4.8.8
     //@UML(identifier="3Doverlaps", specification=ISO_19107) // section 6.4.9
     public boolean overlaps(Geometry geom1, Geometry geom2) throws OperationException {
+        if (geom1.isEmpty() || geom2.isEmpty()) {
+            return false;
+        }
+
         //TODO : fallback on JTS until implemented
         return jts(geom1).overlaps(jts(geom2));
     }
@@ -331,11 +340,36 @@ public final class GeometryProcessor {
     //@UML(identifier="3Drelate", specification=ISO_19107) // section 6.4.9
     public boolean relate(Geometry geom1, Geometry geom2, DE9IM matrix) throws OperationException {
         ArgumentChecks.ensureNonNull("matrix", matrix);
-        //TODO : fallback on JTS until implemented
-        final org.locationtech.jts.geom.IntersectionMatrix computed = jts(geom1).relate(jts(geom2));
         final int[] dimensions = new int[9];
-        for (int i=0; i<dimensions.length; i++) {
-            dimensions[i] = computed.get(i / 3, i % 3);
+        if (geom1.isEmpty() || geom2.isEmpty()) {
+            /*
+             * The interior and the boundary of the empty set meet nothing, while its exterior is the
+             * whole space. The row and the column of an empty operand are therefore empty, except the
+             * cells where its exterior meets the interior or the boundary of the other operand.
+             */
+            Arrays.fill(dimensions, -1);
+            dimensions[8] = 2;                      // Both exteriors cover the whole plane.
+            if (geom1.isEmpty() != geom2.isEmpty()) {
+                /*
+                 * The dimensions of the other operand are those of its interior and of its boundary.
+                 */
+                final Geometry other = geom1.isEmpty() ? geom2 : geom1;
+                final int interior = other.getTopologicDimension();
+                final int boundary = other.boundary().getTopologicDimension();
+                if (geom1.isEmpty()) {
+                    dimensions[6] = interior;       // Exterior of geom1 ∩ interior of geom2.
+                    dimensions[7] = boundary;       // Exterior of geom1 ∩ boundary of geom2.
+                } else {
+                    dimensions[2] = interior;       // Interior of geom1 ∩ exterior of geom2.
+                    dimensions[5] = boundary;       // Boundary of geom1 ∩ exterior of geom2.
+                }
+            }
+        } else {
+            //TODO : fallback on JTS until implemented
+            final org.locationtech.jts.geom.IntersectionMatrix computed = jts(geom1).relate(jts(geom2));
+            for (int i=0; i<dimensions.length; i++) {
+                dimensions[i] = computed.get(i / 3, i % 3);
+            }
         }
         return matrix.matches(dimensions);
     }
@@ -346,6 +380,10 @@ public final class GeometryProcessor {
     @UML(identifier="touches", specification=ISO_19107) // section 6.4.8.8
     //@UML(identifier="3Dtouches", specification=ISO_19107) // section 6.4.9
     public boolean touches(Geometry geom1, Geometry geom2) throws OperationException {
+        if (geom1.isEmpty() || geom2.isEmpty()) {
+            return false;
+        }
+
         //TODO : fallback on JTS until implemented
         return jts(geom1).touches(jts(geom2));
     }
@@ -376,7 +414,12 @@ public final class GeometryProcessor {
     @UML(identifier="withinDistance", specification=ISO_19107) // section 6.4.8.8
     //@UML(identifier="3DwithinDistance", specification=ISO_19107) // section 6.4.9
     public boolean withinDistance(Geometry geom1, Geometry geom2, Quantity<?> distance) throws OperationException {
-        throw new UnsupportedOperationException();
+        if (geom1.isEmpty() || geom2.isEmpty()) {
+            return false;
+        }
+
+        //TODO : fallback on JTS until implemented
+        return jts(geom1).isWithinDistance(jts(geom2), distance.getValue().doubleValue());
     }
 
     // ////////////////////////////////////////////////////////////////////////
@@ -555,6 +598,20 @@ public final class GeometryProcessor {
      */
     private static org.locationtech.jts.geom.Geometry jts(Geometry geom) {
         return Geometries.asJTS(geom, false, null);
+    }
+
+    /**
+     * Converts back to a geometry of this package the result of an operation delegated to JTS.
+     * The JTS geometries produced by an overlay operation carry no reference system, therefore
+     * the system of the geometry on which the operation was invoked is assigned to the result.
+     *
+     * @param  result  the geometry computed by JTS.
+     * @param  source  the geometry which provided the coordinate reference system of the operation.
+     * @return the result as a geometry of this package.
+     */
+    private static Geometry fromJTS(org.locationtech.jts.geom.Geometry result, Geometry source) {
+        result.setUserData(source.getCoordinateReferenceSystem());
+        return Geometries.fromJTS(result, true);
     }
 
     private static Unit getUnit(Geometry geometry) {

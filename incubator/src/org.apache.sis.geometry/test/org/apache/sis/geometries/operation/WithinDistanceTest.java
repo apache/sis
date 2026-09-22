@@ -18,8 +18,14 @@ package org.apache.sis.geometries.operation;
 
 import javax.measure.Quantity;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
 
 // Test dependencies
+import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
+import static org.apache.sis.geometries.operation.TestData.POINT_A;
+import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
+import static org.apache.sis.geometries.operation.TestData.POINT_B;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
@@ -31,6 +37,11 @@ import org.junit.jupiter.api.Test;
  * @author Johann Sorel (Geomatys)
  */
 public class WithinDistanceTest {
+    /**
+     * An arbitrary radius, smaller than the distance between the two points of the test cases.
+     */
+    private static final Quantity<?> RADIUS = Quantities.create(1, Units.DEGREE);
+
     /**
      * The inputs and expected result of a single test of {@code withinDistance(Geometry, Geometry, Length)}.
      *
@@ -52,6 +63,10 @@ public class WithinDistanceTest {
      * All test cases of {@code withinDistance(Geometry, Geometry, Quantity)}.
      */
     private static final TestCase[] ENTRIES = {
+        new TestCase(EMPTY_1, POINT_A,     RADIUS, false, null),
+        new TestCase(POINT_A, EMPTY_1,     RADIUS, false, null),
+        new TestCase(POINT_A, POINT_A_BIS, RADIUS, true, null),
+        new TestCase(POINT_A, POINT_B,     RADIUS, false, null)
     };
 
     /**

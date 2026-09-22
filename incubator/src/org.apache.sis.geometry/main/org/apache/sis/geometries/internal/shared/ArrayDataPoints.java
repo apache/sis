@@ -123,7 +123,8 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
 
     @Override
     public Tuple getAttribute(int index, String name) {
-        return attributes.get(name).get(index);
+        final Array array = attributes.get(name);
+        return (array != null) ? array.get(index) : null;
     }
 
     @Override
@@ -159,6 +160,22 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
     @Override
     public BBox getAttributeRange(String name) {
         return NDArrays.computeRange(attributes.get(name));
+    }
+
+    @Override
+    public int hashCode() {
+        return 37 * attributes.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof ArrayDataPoints)) {
+            return false;
+        }
+        return attributes.equals(((ArrayDataPoints) obj).attributes);
     }
 
     /**

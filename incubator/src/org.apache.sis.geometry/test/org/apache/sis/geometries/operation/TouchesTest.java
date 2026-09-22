@@ -19,6 +19,12 @@ package org.apache.sis.geometries.operation;
 import org.apache.sis.geometries.Geometry;
 
 // Test dependencies
+import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
+import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
+import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
+import static org.apache.sis.geometries.operation.TestData.POINT_A;
+import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
+import static org.apache.sis.geometries.operation.TestData.POINT_B;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
@@ -49,6 +55,20 @@ public class TouchesTest {
      * All test cases of {@code touches(Geometry, Geometry)}.
      */
     private static final TestCase[] ENTRIES = {
+        /*
+         * Touching requires a shared position which is in the boundary of at least one of the
+         * two geometries. The empty set has no boundary, therefore it touches nothing.
+         */
+        new TestCase(EMPTY_1,   NON_EMPTY, false, null),
+        new TestCase(NON_EMPTY, EMPTY_1,   false, null),
+        new TestCase(EMPTY_1,   EMPTY_1,   false, null),
+        new TestCase(EMPTY_1,   EMPTY_2,   false, null),
+        /*
+         * Two points cannot touch: the boundary of a point is empty, therefore the only
+         * position they may share is interior to both of them.
+         */
+        new TestCase(POINT_A, POINT_A_BIS, false, null),
+        new TestCase(POINT_A, POINT_B,     false, null)
     };
 
     /**

@@ -75,6 +75,9 @@ public final class JTSAdapter {
     private static Geometry fromJTS(org.locationtech.jts.geom.Geometry jts, CoordinateReferenceSystem crs, boolean copy) {
         if (jts == null) {
             return null;
+        } else if (jts.isEmpty()) {
+            return GeometryFactory.createEmpty(crs);
+
         } else if (jts instanceof org.locationtech.jts.geom.Point cdt) {
             return GeometryFactory.createPoint(toDataPoints(cdt.getCoordinateSequence(), crs, copy));
 

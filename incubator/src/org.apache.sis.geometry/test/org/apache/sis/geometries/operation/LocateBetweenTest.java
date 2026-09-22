@@ -17,8 +17,11 @@
 package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.DataPointsType;
 
 // Test dependencies
+import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
+import static org.apache.sis.geometries.operation.TestData.POINT_A;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
@@ -52,6 +55,11 @@ public class LocateBetweenTest {
      * All test cases of {@code locateBetween(Geometry, double, double)}.
      */
     private static final TestCase[] ENTRIES = {
+        /*
+         * TODO
+         */
+        new TestCase(EMPTY_1, DataPointsType.ATT_M, 1, 2, null, UnsupportedOperationException.class),
+        new TestCase(POINT_A, DataPointsType.ATT_M, 1, 2, null, UnsupportedOperationException.class)
     };
 
     /**

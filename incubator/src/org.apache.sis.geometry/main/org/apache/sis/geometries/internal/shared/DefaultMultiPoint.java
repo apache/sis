@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import java.util.Objects;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.point.MultiPoint;
@@ -71,4 +72,19 @@ public non-sealed class DefaultMultiPoint extends AbstractGeometry implements Mu
         return points;
     }
 
+    @Override
+    public int hashCode() {
+        return 13 * Objects.hashCode(points);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        return Objects.equals(points, ((DefaultMultiPoint) obj).points);
+    }
 }

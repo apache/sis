@@ -17,12 +17,17 @@
 package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.point.MultiPoint;
 
 // Test dependencies
 import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
 import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
 import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
+import static org.apache.sis.geometries.operation.TestData.POINT_A;
+import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
+import static org.apache.sis.geometries.operation.TestData.POINT_B;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
 
@@ -55,7 +60,8 @@ public class UnionTest {
         // ∅ ∪ A = A and A ∪ ∅ = A: the result is the operand which is not empty.
         new TestCase(EMPTY_1,   NON_EMPTY, NON_EMPTY, null),
         new TestCase(NON_EMPTY, EMPTY_1,   NON_EMPTY, null),
-        new TestCase(EMPTY_1,   EMPTY_2,   EMPTY_2,   null)
+        new TestCase(EMPTY_1,   EMPTY_2,   EMPTY_2,   null),
+        new TestCase(POINT_A, POINT_A_BIS, POINT_A, null)
     };
 
     /**
@@ -74,5 +80,19 @@ public class UnionTest {
                 }
             }
         }
+    }
+
+    /**
+     * Tests {@code union(Geometry, Geometry)} on two points at different positions.
+     * The result shall contain both positions, in an unspecified order.
+     */
+    @Test
+    public void testDistinctPoints() {
+        final Geometry result = new GeometryProcessor().union(POINT_A, POINT_B);
+        assertInstanceOf(MultiPoint.class, result, "The union of two distinct points is a set of two points.");
+        final MultiPoint<?> points = (MultiPoint<?>) result;
+        assertEquals(TestData.CRS_2D, points.getCoordinateReferenceSystem());
+        assertEquals(2, points.getNumGeometries());
+        TestData.assertPositionsEqual(points, POINT_A, POINT_B);
     }
 }

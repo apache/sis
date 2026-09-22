@@ -19,6 +19,12 @@ package org.apache.sis.geometries.operation;
 import org.apache.sis.geometries.Geometry;
 
 // Test dependencies
+import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
+import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
+import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
+import static org.apache.sis.geometries.operation.TestData.POINT_A;
+import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
+import static org.apache.sis.geometries.operation.TestData.POINT_B;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
@@ -49,6 +55,17 @@ public class CrossesTest {
      * All test cases of {@code crosses(Geometry, Geometry)}.
      */
     private static final TestCase[] ENTRIES = {
+        /*
+         * Crossing requires the two interiors to share a position while neither geometry
+         * contains the other. The empty set has no interior, therefore it crosses nothing.
+         */
+        new TestCase(EMPTY_1,   NON_EMPTY, false, null),
+        new TestCase(NON_EMPTY, EMPTY_1,   false, null),
+        new TestCase(EMPTY_1,   EMPTY_1,   false, null),
+        new TestCase(EMPTY_1,   EMPTY_2,   false, null),
+       // points
+        new TestCase(POINT_A, POINT_A_BIS, false, null),
+        new TestCase(POINT_A, POINT_B,     false, null)
     };
 
     /**

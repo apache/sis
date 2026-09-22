@@ -24,7 +24,11 @@ import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.referencing.CommonCRS;
 import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
 import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
+import static org.apache.sis.geometries.operation.TestData.EMPTY_RESULT;
 import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
+import static org.apache.sis.geometries.operation.TestData.POINT_A;
+import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
+import static org.apache.sis.geometries.operation.TestData.POINT_B;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -167,7 +171,10 @@ public class IntersectionTest {
         // ∅ ∩ A = ∅ and A ∩ ∅ = ∅: the result is the operand which is already empty.
         new TestCase(EMPTY_1,   NON_EMPTY, EMPTY_1, null),
         new TestCase(NON_EMPTY, EMPTY_1,   EMPTY_1, null),
-        new TestCase(EMPTY_1,   EMPTY_2,   EMPTY_1, null)
+        new TestCase(EMPTY_1,   EMPTY_2,   EMPTY_1, null),
+        // points
+        new TestCase(POINT_A, POINT_A_BIS, POINT_A,      null),
+        new TestCase(POINT_A, POINT_B,     EMPTY_RESULT, null)
     };
 
     /**

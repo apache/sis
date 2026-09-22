@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import java.util.Objects;
 import org.apache.sis.geometries.Empty;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.opengis.geometry.Envelope;
@@ -56,4 +57,19 @@ public non-sealed class DefaultEmpty extends AbstractGeometry implements Empty {
         return env;
     }
 
+    @Override
+    public int hashCode() {
+        return 11 * Objects.hashCode(attType);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        return Objects.equals(attType, ((DefaultEmpty) obj).attType);
+    }
 }

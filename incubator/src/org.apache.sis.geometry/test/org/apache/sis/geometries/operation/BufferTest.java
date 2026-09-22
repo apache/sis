@@ -23,6 +23,7 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
+import static org.apache.sis.geometries.operation.TestData.POINT_A;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
@@ -61,7 +62,12 @@ public class BufferTest {
         new TestCase(EMPTY_1, Quantities.create( 10, Units.METRE), EMPTY_1, null),
         new TestCase(EMPTY_1, Quantities.create(  0, Units.METRE), EMPTY_1, null),
         new TestCase(EMPTY_1, Quantities.create(-10, Units.METRE), EMPTY_1, null),
-        new TestCase(EMPTY_1, Quantities.create( 10, Units.UNITY), EMPTY_1, null)
+        new TestCase(EMPTY_1, Quantities.create( 10, Units.UNITY), EMPTY_1, null),
+        /*
+         * TODO
+         */
+        new TestCase(POINT_A, Quantities.create( 10, Units.METRE), null, UnsupportedOperationException.class),
+        new TestCase(POINT_A, Quantities.create(  0, Units.METRE), null, UnsupportedOperationException.class)
     };
 
     /**

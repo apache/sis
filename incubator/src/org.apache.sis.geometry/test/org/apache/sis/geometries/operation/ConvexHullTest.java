@@ -19,6 +19,8 @@ package org.apache.sis.geometries.operation;
 import org.apache.sis.geometries.Geometry;
 
 // Test dependencies
+import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
+import static org.apache.sis.geometries.operation.TestData.POINT_A;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
@@ -47,6 +49,10 @@ public class ConvexHullTest {
      * All test cases of {@code convexHull(Geometry)}.
      */
     private static final TestCase[] ENTRIES = {
+        // The convex hull of the empty set is empty.
+        new TestCase(EMPTY_1, EMPTY_1, null),
+        // points
+        new TestCase(POINT_A, POINT_A, null)
     };
 
     /**

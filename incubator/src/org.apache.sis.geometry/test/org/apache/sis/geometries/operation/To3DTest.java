@@ -19,6 +19,8 @@ package org.apache.sis.geometries.operation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.NDArrays;
@@ -46,6 +48,16 @@ public class To3DTest {
         } catch (FactoryException ex) {
             throw new RuntimeException(ex.getMessage(), ex);
         }
+    }
+
+    @Test
+    public void testPoint() {
+        final Point point = GeometryFactory.createPoint(CRS2D, 10.0, 5.0);
+        final Geometry result = new GeometryProcessor().to3D(point, CRS2DZ, (Tuple t) -> t.set(2, 15));
+        assertInstanceOf(Point.class, result);
+        assertEquals(CRS2DZ, result.getCoordinateReferenceSystem());
+        assertArrayEquals(new double[] {10.0, 5.0, 15.0},
+                          ((Point) result).getPosition().toArrayDouble(), 0.0);
     }
 
     @Test

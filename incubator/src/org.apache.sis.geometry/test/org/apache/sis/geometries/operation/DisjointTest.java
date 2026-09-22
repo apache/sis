@@ -22,6 +22,9 @@ import org.apache.sis.geometries.Geometry;
 import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
 import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
 import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
+import static org.apache.sis.geometries.operation.TestData.POINT_A;
+import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
+import static org.apache.sis.geometries.operation.TestData.POINT_B;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
@@ -56,7 +59,11 @@ public class DisjointTest {
         new TestCase(EMPTY_1,   NON_EMPTY, true, null),
         new TestCase(NON_EMPTY, EMPTY_1,   true, null),
         new TestCase(EMPTY_1,   EMPTY_1,   true, null),
-        new TestCase(EMPTY_1,   EMPTY_2,   true, null)
+        new TestCase(EMPTY_1,   EMPTY_2,   true, null),
+        // points
+        new TestCase(POINT_A, POINT_A_BIS, false, null),
+        new TestCase(POINT_A, POINT_B,     true,  null),
+        new TestCase(POINT_B, POINT_A,     true,  null)
     };
 
     /**
