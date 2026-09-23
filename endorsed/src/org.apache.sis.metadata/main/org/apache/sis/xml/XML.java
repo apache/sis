@@ -261,7 +261,7 @@ public final class XML {
      *   <li>If the reference is of the form {@code xlink:href="#foo"} and an object with the {@code gml:id="foo"}
      *       attribute was previously found in the same <abbr>XML</abbr> document, then that object will be used.</li>
      *   <li>Otherwise, if {@code xlink:href} references an external document and the resolver is
-     *       {@linkplain ReferenceResolver#canOpenExternal(java.net.URI) authorized to open external documents},
+     *       {@linkplain ReferenceResolver#accessControl authorized to open external documents},
      *       then that document is unmarshalled.</li>
      *   <li>Otherwise, an empty element containing only the values of the above-cited attributes is created.</li>
      * </ul>
@@ -623,7 +623,7 @@ public final class XML {
         ensureNonNull("input", input);
         final Object object;
         try (InputStream in = new BufferedInputStream(Files.newInputStream(input, StandardOpenOption.READ))) {
-            object = unmarshal(URISource.create(in, input.toUri()), null);
+            object = unmarshal(URISource.create(in, null, input.toUri()), null);
         } catch (URISyntaxException | IOException e) {
             throw new JAXBException(Errors.format(Errors.Keys.CanNotRead_1, input), e);
         }

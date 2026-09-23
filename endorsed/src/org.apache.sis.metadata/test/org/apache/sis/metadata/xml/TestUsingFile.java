@@ -39,6 +39,9 @@ public abstract class TestUsingFile extends TestCase {
      * Identification of the data to use for a test.
      */
     protected enum Format {
+        /** A document in the sub-directory of files simulating inputs from external users in unspecified format. */
+        EXTERN(null, "extern/"),
+
         /** A document in the sub-directory of XML files encoded according the ISO 19115-3:2016 schema. */
         XML2016(VERSION_2014, "2016/"),
 
@@ -65,7 +68,7 @@ public abstract class TestUsingFile extends TestCase {
          * @throws URISyntaxException if the URL to the file is not valid.
          */
         public final Source getSource(final String filename) throws URISyntaxException {
-            return URISource.create(null, getURL(filename).toURI());
+            return URISource.create(null, null, getURL(filename).toURI());
         }
 
         /**

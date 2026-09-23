@@ -22,6 +22,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import javax.xml.transform.stream.StreamSource;
 import org.apache.sis.util.internal.shared.Strings;
+import org.apache.sis.system.DataURI;
 
 
 /**
@@ -32,6 +33,12 @@ import org.apache.sis.util.internal.shared.Strings;
  * @author  Martin Desruisseaux (Geomatys)
  */
 public final class URISource extends StreamSource {
+    /**
+     * If the URI has been resolved relatively to some base directory or sibling file, that base.
+     * Otherwise {@code null}.
+     */
+    private final URI base;
+
     /**
      * Normalized URI of the XML document, without the fragment part if the document will be read from this URL.
      * The URI is normalized for making possible to use it as a key in a cache of previously loaded documents.
@@ -49,10 +56,17 @@ public final class URISource extends StreamSource {
      * Creates a source from an URI. This constructor separates the fragment from the path.
      * The URI stored by this constructor in {@link #document} excludes the fragment part.
      *
+     * @param  base    the base directory from which to resolve the source, or {@code null} if none.
      * @param  source  URI to the XML document.
      * @throws URISyntaxException if an error occurred while normalizing the URI.
      */
-    URISource(URI source) throws URISyntaxException {
+    URISource(URI base, URI source) throws URISyntaxException {
+        if (base != null) {
+            if (source == (source = base.resolve(source))) {
+                base = null;    // The base could not be used.
+            }
+        }
+        this.base = base;
         source = source.normalize();
         fragment = Strings.trimOrNull(source.getFragment());
         // Build a new URI unconditionally because it also decodes escaped characters.
@@ -74,20 +88,34 @@ public final class URISource extends StreamSource {
      * Creates a new source from the given input stream.
      * The input should not be null, unless it will be specified later
      * by a call to {@code setInputStream(…)} or {@code setReader(…)}.
+     * This method never returns {@code null} since the input may be set after this method call.
      *
      * @param  input   stream of the XML document, or {@code null} if none.
+     * @param  base    the base directory from which to resolve the source, or {@code null} if none.
      * @param  source  URL of the XML document, or {@code null} if none.
-     * @return the given input stream as a source.
+     * @return the given input stream as a source, never null even if all arguments were null.
      * @throws URISyntaxException if an error occurred while normalizing the URI.
      */
-    public static StreamSource create(final InputStream input, final URI source) throws URISyntaxException {
+    public static StreamSource create(final InputStream input, final URI base, final URI source)
+            throws URISyntaxException
+    {
         if (source != null) {
-            var s = new URISource(source);
+            var s = new URISource(base, source);
             s.setInputStream(input);
             return s;
         } else {
             return new StreamSource(input);
         }
+    }
+
+    /**
+     * Returns whether the document URL is in the same directory or in a sub-directory
+     * of the base given at construction time. This is used for access control.
+     *
+     * @return whether the document URL has been resolved relatively to the base.
+     */
+    public boolean isChildOfBase() {
+        return (base != null) && DataURI.isPathInDirectory(base, document);
     }
 
     /**

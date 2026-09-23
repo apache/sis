@@ -189,24 +189,6 @@ public class ExternalLinkHandler {
     }
 
     /**
-     * Resolves the given path as an URI. This method behaves as specified in {@link URI#resolve(URI)},
-     * with the URI given at construction-time as the base URI. If the given path is relative and there
-     * is no base URI, then the path cannot be resolved and this method returns {@code null}.
-     *
-     * @param  path  path to resolve.
-     * @return resolved path, or {@code null} it it cannot be resolved.
-     *
-     * @see URI#resolve(URI)
-     */
-    final URI resolve(final URI path) {
-        final URI baseURI = getURI();
-        if (baseURI != null) {
-            return baseURI.resolve(path);
-        }
-        return path.isAbsolute() ? path : null;
-    }
-
-    /**
      * Reports a warning about a URI that cannot be parsed.
      * This method declares {@link ReferenceResolver} as the public source of the warning.
      * The latter assumption is valid if {@code ReferenceResolver.resolve(…)} is the only
@@ -226,9 +208,9 @@ public class ExternalLinkHandler {
      * @return source of the XML document, or {@code null} if the path cannot be resolved.
      * @throws Exception if an error occurred while creating the source.
      */
-    public Source openReader(URI path) throws Exception {
-        path = resolve(path);
-        return (path != null) ? new URISource(path) : null;
+    public Source tryResolve(final URI path) throws Exception {
+        final var source = new URISource(getURI(), path);
+        return source.document.isAbsolute() ? source : null;
     }
 
     /*
@@ -269,7 +251,7 @@ public class ExternalLinkHandler {
     }
 
     /**
-     * Creates a link resolver for a XML document reads a StAX stream or event reader.
+     * Creates a link resolver for a XML document which is read with a StAX stream or event reader.
      *
      * @param  property  value of the {@value XMLInputFactory#RESOLVER} property. May be null.
      * @param  location  current location of the reader, or {@code null} if unknown.
@@ -285,7 +267,7 @@ public class ExternalLinkHandler {
         }
         final var resolver = (XMLResolver) property;
         return new ExternalLinkHandler(base) {
-            @Override public Source openReader(final URI path) throws Exception {
+            @Override public Source tryResolve(final URI path) throws Exception {
                 /*
                  * According StAX specification, the return type can be either InputStream,
                  * XMLStreamReader or XMLEventReader. We additionally accept Source as well.
@@ -301,7 +283,8 @@ public class ExternalLinkHandler {
                 } else if (source instanceof XMLStreamReader) {
                     return new StAXSource((XMLStreamReader) source);
                 } else if (source instanceof InputStream) {
-                    return URISource.create((InputStream) source, resolve(path));
+                    // No check for `URISource.document.isAbsolute()` because an input stream is provided.
+                    return URISource.create((InputStream) source, getURI(), path);
                 } else {
                     throw new XMLStreamException(Errors.format(Errors.Keys.UnsupportedType_1, source.getClass()));
                 }

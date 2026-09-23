@@ -108,13 +108,7 @@ public class DataURI {
         }
         final URI result = base.resolve(parameter).normalize();
         if (result != resolved) {
-            if (result == parameter) {
-                isRelative = false;
-            } else {
-                String path = Strings.orEmpty(base.getPath());
-                path = path.substring(0, path.lastIndexOf('/') + 1);
-                isRelative = Strings.orEmpty(result.getPath()).startsWith(path);
-            }
+            isRelative = (result != parameter) && isPathInDirectory(base, result);
             resolved = result;
             try {
                 asPath = Path.of(result);
@@ -125,6 +119,27 @@ public class DataURI {
             }
         }
         return true;
+    }
+
+    /**
+     * Returns {@code true} if the resolved <abbr>URI</abbr> has a path inside the directory of the base <abbr>URI</abbr>.
+     * If the given base URI ends with {@code '/'}, it is assumed to be a directory and its path will be used as-is.
+     * Otherwise, the base URI is assumed a file and the last path component (the filename) will be ignored.
+     * This policy is consistent with the behavior of {@link URI#resolve(URI)}.
+     *
+     * <p>This method can be used for verifying the result of {@code base.resolve(parameter)}.
+     * Caller should verify that {@code resolve(parameter)} did not returned {@code parameter},
+     * in which case this method can assume that the new URI has the same scheme as the base URI
+     * (this is not verified by this method).</p>
+     *
+     * @param  base      the base directory.
+     * @param  resolved  result of {@code base.resolve(parameter)}.
+     * @return whether the resolved path starts with the directory part of the base path.
+     */
+    public static boolean isPathInDirectory(final URI base, final URI resolved) {
+        String path = Strings.orEmpty(base.getPath());
+        path = path.substring(0, path.lastIndexOf('/') + 1);
+        return Strings.orEmpty(resolved.getPath()).startsWith(path);
     }
 
     /**

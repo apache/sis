@@ -24,6 +24,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.URIResolver;
 import jakarta.xml.bind.Unmarshaller;
 import org.opengis.metadata.Identifier;
+import org.apache.sis.io.Authorization;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.LenientComparable;
@@ -52,24 +53,29 @@ import org.apache.sis.xml.internal.shared.XmlUtilities;
  */
 public class ReferenceResolver {
     /**
-     * The default resolved used at unmarshalling time when no resolver was explicitly set.
-     * This instance resolves {@code xlink:href} which are <abbr>URI</abbr> fragments relative
-     * to the current document, but does not accept to open references to external documents.
+     * The default resolver used at unmarshalling time when no resolver was explicitly set.
+     * For security reasons, this instance follows only the following types of {@code xlink:href}:
+     *
+     * <ul>
+     *   <li>references to fragments inside the current document, or</li>
+     *   <li>references to files in the same directory or in a sub-directory
+     *       of the file containing the {@code xlink:href}.</li>
+     * </ul>
      *
      * @see XML#RESOLVER
      */
     public static final ReferenceResolver DEFAULT = new ReferenceResolver();
 
     /**
-     * A resolver which accepts to open all external documents referenced by {@code xlink:href}.
-     * By {@linkplain #DEFAULT default}, only <abbr>URI</abbr> fragments relative to the current document are opened.
+     * A resolver which accepts to open all documents referenced by {@code xlink:href}.
+     * By {@linkplain #DEFAULT default}, only references in the same directory or sub-directory are followed.
      * But if this resolver is specified as a {@link XML#RESOLVER} property, all <abbr>URI</abbr>s will be accepted.
      *
      * <p><b>Historical note:</b> this was the default behavior in Apache <abbr>SIS</abbr> 1.5 and 1.6, but
      * <abbr>SIS</abbr> 1.7 reverted to not opening external document by default for security reasons.</p>
      *
      * @see XML#RESOLVER
-     * @see #canOpenExternal(URI)
+     * @see #accessControl(URI)
      *
      * @since 1.7
      */
@@ -205,7 +211,7 @@ public class ReferenceResolver {
              * For forward references, see https://issues.apache.org/jira/browse/SIS-420
              */
             final String fragment = Strings.trimOrNull(href.getFragment());
-            if (fragment == null) {
+            if (fragment == null || accessControl(href) == Authorization.DENIED) {
                 return null;
             }
             object = Context.getObjectForID(c, fragment);
@@ -224,7 +230,7 @@ public class ReferenceResolver {
                     source = externalSourceResolver.resolve(href.toString(), base.toString());
                 }
             }
-            if (source == null && (source = handler.openReader(href)) == null) {
+            if (source == null && (source = handler.tryResolve(href)) == null) {
                 reasonIfNull = Errors.Keys.CanNotResolveAsAbsolutePath_1;
                 object = null;
             } else {
@@ -266,20 +272,19 @@ public class ReferenceResolver {
      * The default implementation loads the file from the given source if it is not in the cache,
      * then returns the object identified by the fragment part of the URI.
      *
-     * <p>The {@code source} argument should have been determined by the caller has below:</p>
+     * <p>The {@code source} argument is constructed by the caller ({@code resolve(…)}) has below:</p>
      * <ul>
      *   <li>If an {@link URIResolver} has been specified at construction time, delegates to it.</li>
      *   <li>Otherwise or if the above returned {@code null}, then if the source of the current document
      *       is associated to a {@link javax.xml.stream.XMLResolver}, delegates to it.</li>
      *   <li>Otherwise, the caller tries to resolve the URI itself.</li>
      * </ul>
-     * The resolved URL, if known, should be available in {@link Source#getSystemId()}.
+     * The resolved URL, if known, is available in {@link Source#getSystemId()}.
      *
      * <h4>Authorization to resolve {@code xlink:href}</h4>
      * If the given {@code source} argument wraps an {@link URI}, then this method asks to
-     * {@link #canOpenExternal(URI)} whether this {@code ReferenceResolver} can open that <abbr>URI</abbr>.
-     * If {@code canOpenExternal(…)} returns {@code false}, then an {@link AccessDeniedException} is thrown.
-     * For security reasons, the default {@code canOpenExternal(…)} implementation returns always {@code false}.
+     * {@link #accessControl(URI)} whether this {@code ReferenceResolver} can open that <abbr>URI</abbr>.
+     * If {@code accessControl(…)} returns {@code DENIED}, then an {@link AccessDeniedException} is thrown.
      *
      * <h4>Error handling on failure to resolve {@code xlink:href}</h4>
      * The default implementation keeps a cache during the execution of an {@code XML.unmarshall(…)} method
@@ -297,15 +302,16 @@ public class ReferenceResolver {
      *
      * @since 1.5
      */
-    @SuppressWarnings("UseSpecificCatch")
+    @SuppressWarnings({"UseSpecificCatch", "fallthrough"})
     protected Object resolveExternal(final MarshalContext context, final Source source) throws Exception {
         final Object document;
         final String fragment;
         final URI uri;
         if (source instanceof URISource) {
             final var s = (URISource) source;
-            if (!canOpenExternal(s.document)) {
-                throw new AccessDeniedException(s.document.toString());
+            switch (accessControl(s.document)) {
+                case DEFAULT: if (s.isChildOfBase()) break;     // Else fallthrough.
+                case DENIED:  throw new AccessDeniedException(s.document.toString());
             }
             uri = s.getReadableURI();
             document = s.document;
@@ -378,20 +384,25 @@ public class ReferenceResolver {
     }
 
     /**
-     * Returns whether the given external document referenced in a {@code xlink:href} can be opened.
-     * If this method returns {@code false}, then {@link #resolveExternal(MarshalContext, Source)}
-     * while throw an {@link AccessDeniedException}.
-     * The {@linkplain #DEFAULT default} implementation returns {@code false}.
+     * Returns whether the specified document or fragment referenced in a {@code xlink:href} can be opened.
+     * The return value control the {@link #resolveExternal(MarshalContext, Source)} behavior as below:
      *
-     * @param  document  the external document referenced in a {@code xlink:href}.
-     * @return whether the given document can be opened.
+     * <ul>
+     *   <li>{@code GRANTED}: parse the document or fragment at the given <abbr>URI</abbr>.</li>
+     *   <li>{@code DENIED}:  throw an {@link AccessDeniedException}.</li>
+     *   <li>{@code DEFAULT}: behave like {@code GRANTED} if the file is in the same directory or in a subdirectory
+     *       of the document containing the {@code xlink:href}, otherwise behave like {@code DENIED}.</li>
+     * </ul>
+     *
+     * @param  document  the document or fragment referenced in a {@code xlink:href}.
+     * @return whether the given document or fragment can be opened.
      *
      * @see #FOLLOW_EXTERNAL_XLINK
      *
      * @since 1.7
      */
-    public boolean canOpenExternal(URI document) {
-        return this == FOLLOW_EXTERNAL_XLINK;
+    public Authorization accessControl(URI document) {
+        return (this == FOLLOW_EXTERNAL_XLINK) ? Authorization.GRANTED : Authorization.DEFAULT;
     }
 
     /**

@@ -61,27 +61,30 @@ public final class ReferenceResolverTest extends TestUsingFile implements Filter
      */
     @Override
     public boolean isLoggable(final LogRecord record) {
-        assertNotEquals(0, expectAccessDenied);
         String file = assertInstanceOf(AccessDeniedException.class, record.getThrown()).getFile();
         assertTrue(file.endsWith("Citation.xml"), file);
+        assertNotEquals(0, expectAccessDenied, "Access should not be denied.");
         expectAccessDenied--;
         return false;
     }
 
     /**
-     * Reads the test <abbr>XML</abbr> document.
+     * Parses the test <abbr>XML</abbr> document.
      *
+     * @param  directory     the directory where to look for the {@code "UsingExternalXLink.xml"} file.
      * @param  readExternal  whether to allow the reading of external documents.
      */
-    private DataIdentification data(final boolean readExternal) throws URISyntaxException, JAXBException {
-        final Source source = Format.XML2016.getSource("UsingExternalXLink.xml");
+    private DataIdentification data(final Format directory, final boolean readExternal)
+            throws URISyntaxException, JAXBException
+    {
+        final Source source = directory.getSource("UsingExternalXLink.xml");
         final var properties = new HashMap<String, Object>(4);
         assertNull(properties.put(XML.WARNING_FILTER, this));
         if (readExternal) {
             assertNull(properties.put(XML.RESOLVER, ReferenceResolver.FOLLOW_EXTERNAL_XLINK));
         }
         final var data = assertInstanceOf(DataIdentification.class, XML.unmarshal(source, properties));
-        assertEquals("Test the use of XLink to an external document.", data.getAbstract().toString());
+        assertTrue(data.getAbstract().toString().startsWith("Test the use of XLink to an external document"));
         return data;
     }
 
@@ -95,22 +98,52 @@ public final class ReferenceResolverTest extends TestUsingFile implements Filter
     @Test
     public void testAccessDenied() throws URISyntaxException, IOException, JAXBException {
         expectAccessDenied = 2;
-        final DataIdentification data = data(false);
+        final DataIdentification data = data(Format.EXTERN, false);
         final Citation citation = data.getCitation();
         assertNull(citation.getTitle());
         assertEquals(0, expectAccessDenied, "Expected a warning.");
     }
 
     /**
-     * Tests loading a document with a {@code xlink:href} to an external document.
+     * Tests loading a document with a {@code xlink:href} to an external document in a different directory.
+     * This is not allowed by default (verified by {@link #testAccessDenied()},
+     * but this test grants authorization.
      *
      * @throws URISyntaxException if an error occurred while getting the URL to the test file.
      * @throws IOException if an error occurred while opening the test file.
      * @throws JAXBException if an error occurred while parsing the test file.
      */
     @Test
-    public void testUsingExternalXLink() throws URISyntaxException, IOException, JAXBException {
-        final DataIdentification data = data(true);
+    public void testAccessGranted() throws URISyntaxException, IOException, JAXBException {
+        testUsingExternalXLink(Format.EXTERN, true);
+    }
+
+    /**
+     * Tests loading a document with a {@code xlink:href} to an external document in the same directory.
+     * The access is granted by default.
+     *
+     * @throws URISyntaxException if an error occurred while getting the URL to the test file.
+     * @throws IOException if an error occurred while opening the test file.
+     * @throws JAXBException if an error occurred while parsing the test file.
+     */
+    @Test
+    public void testSameDirectory() throws URISyntaxException, IOException, JAXBException {
+        testUsingExternalXLink(Format.XML2016, false);
+    }
+
+    /**
+     * Tests loading a document with a {@code xlink:href} to an external document.
+     *
+     * @param  directory     the directory where to look for the {@code "UsingExternalXLink.xml"} file.
+     * @param  readExternal  whether to allow the reading of external documents.
+     * @throws URISyntaxException if an error occurred while getting the URL to the test file.
+     * @throws IOException if an error occurred while opening the test file.
+     * @throws JAXBException if an error occurred while parsing the test file.
+     */
+    private void testUsingExternalXLink(final Format directory, final boolean readExternal)
+            throws URISyntaxException, IOException, JAXBException
+    {
+        final DataIdentification data = data(directory, readExternal);
         final Citation citation = data.getCitation();
         DefaultCitationTest.verifyUnmarshalledCitation(citation);
         /*

@@ -437,7 +437,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource {
             throws URISyntaxException, IOException, JAXBException
     {
         try (input) {
-            return readXML(URISource.create(input, source));
+            return readXML(URISource.create(input, location, source));
         }
     }
 
@@ -521,7 +521,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource {
          * for giving a chance of `org.apache.sis.xml.XML.unmarshal(Source)` to resolve relative links.
          */
         if (acceptXML && stream.markSupported() && org.apache.sis.storage.xml.AbstractProvider.isXML(stream)) {
-            return new AuxiliaryContent(source, URISource.create(stream, (path != null) ? path.toUri() : sourceURI));
+            return new AuxiliaryContent(source, URISource.create(stream, location, (path != null) ? path.toUri() : sourceURI));
         }
         /*
          * If the auxiliary file is not an XML file, reads it fully as a text file with an arbitrary size limit.
