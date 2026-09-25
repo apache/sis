@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.wkt;
 
-import java.net.URI;
 import java.text.ParseException;
 import java.time.ZoneId;
 import java.util.Locale;
@@ -63,19 +62,17 @@ public final class StoreFormat extends WKTFormat {
      * The given locale will be used for {@link InternationalString} localization;
      * this is <strong>not</strong> the locale for number format.
      *
-     * @param  source     the file being parsed, or {@code null} if unknown.
      * @param  locale     the locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
      * @param  timezone   the timezone, or {@code null} for UTC.
      * @param  library    the geometry library, or {@code null} for the default.
      * @param  listeners  where to send warnings.
      */
-    public StoreFormat(final URI source, final Locale locale, final ZoneId timezone,
+    public StoreFormat(final Locale locale, final ZoneId timezone,
                        final GeometryLibrary library, final StoreListeners listeners)
     {
         super(locale, timezone);
         this.library   = library;
         this.listeners = listeners;
-        setSourceFile(source);
     }
 
     /**

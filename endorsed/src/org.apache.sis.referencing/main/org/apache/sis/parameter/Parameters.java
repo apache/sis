@@ -16,7 +16,6 @@
  */
 package org.apache.sis.parameter;
 
-import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -297,7 +296,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
         if (parameters == null) {
             return null;
         }
-        final GeneralParameterDescriptor[] descriptors = new GeneralParameterDescriptor[parameters.length];
+        final var descriptors = new GeneralParameterDescriptor[parameters.length];
         for (int i=0; i<parameters.length; i++) {
             final GeneralParameterValue p = parameters[i];
             if (p != null) {
@@ -913,7 +912,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
             throws InvalidParameterNameException, InvalidParameterValueException
     {
         final Integer ZERO = 0;
-        final Map<String,Integer> occurrences = new HashMap<>();
+        final var occurrences = new HashMap<String, Integer>();
         for (final GeneralParameterValue value : values.values()) {
             final String name = value.getDescriptor().getName().getCode();
             final int occurrence = occurrences.getOrDefault(name, ZERO);

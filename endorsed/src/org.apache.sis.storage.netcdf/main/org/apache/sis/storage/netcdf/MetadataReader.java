@@ -191,14 +191,6 @@ final class MetadataReader extends MetadataBuilder {
     }
 
     /**
-     * Returns the netCDF file as an <abbr>URI</abbr>, or {@code null} if none.
-     */
-    private URI location() {
-        final Path location = decoder.location;
-        return (location != null) ? location.toUri() : null;
-    }
-
-    /**
      * Invoked when a non-fatal exception occurred while reading metadata.
      * This method sends a record to the registered listeners if any,
      * or logs the record otherwise.
@@ -661,7 +653,11 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
          */
         final String wkt = stringValue(GEOSPATIAL_BOUNDS);
         if (wkt != null) {
-            var parser = new StoreFormat(location(), null, null, decoder.geomlib, decoder.listeners);
+            var parser = new StoreFormat(null, null, decoder.geomlib, decoder.listeners);
+            final Path location = decoder.location;
+            if (location != null) {
+                parser.setSourceFile(location.toUri());
+            }
             addBoundingPolygon(parser.parseGeometry(wkt,
                     stringValue(GEOSPATIAL_BOUNDS + "_crs"),
                     stringValue(GEOSPATIAL_BOUNDS + "_vertical_crs")));
