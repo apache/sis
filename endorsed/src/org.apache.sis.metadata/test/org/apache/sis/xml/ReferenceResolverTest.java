@@ -21,9 +21,11 @@ import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import javax.xml.transform.Source;
 import jakarta.xml.bind.JAXBException;
+import org.apache.sis.io.Authorization;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.DataIdentification;
 
@@ -81,7 +83,11 @@ public final class ReferenceResolverTest extends TestUsingFile implements Filter
         final var properties = new HashMap<String, Object>(4);
         assertNull(properties.put(XML.WARNING_FILTER, this));
         if (readExternal) {
-            assertNull(properties.put(XML.RESOLVER, ReferenceResolver.FOLLOW_EXTERNAL_XLINK));
+            assertNull(properties.put(XML.RESOLVER, new ReferenceResolver() {
+                @Override public Authorization accessControl(URI document) {
+                    return Authorization.GRANTED;
+                }
+            }));
         }
         final var data = assertInstanceOf(DataIdentification.class, XML.unmarshal(source, properties));
         assertTrue(data.getAbstract().toString().startsWith("Test the use of XLink to an external document"));

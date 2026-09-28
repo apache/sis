@@ -25,6 +25,8 @@ import javax.xml.transform.URIResolver;
 import jakarta.xml.bind.Unmarshaller;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.io.Authorization;
+import org.apache.sis.system.Environment;
+import org.apache.sis.setup.Configuration;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.LenientComparable;
@@ -65,21 +67,6 @@ public class ReferenceResolver {
      * @see XML#RESOLVER
      */
     public static final ReferenceResolver DEFAULT = new ReferenceResolver();
-
-    /**
-     * A resolver which accepts to open all documents referenced by {@code xlink:href}.
-     * By {@linkplain #DEFAULT default}, only references in the same directory or sub-directory are followed.
-     * But if this resolver is specified as a {@link XML#RESOLVER} property, all <abbr>URI</abbr>s will be accepted.
-     *
-     * <p><b>Historical note:</b> this was the default behavior in Apache <abbr>SIS</abbr> 1.5 and 1.6, but
-     * <abbr>SIS</abbr> 1.7 reverted to not opening external document by default for security reasons.</p>
-     *
-     * @see XML#RESOLVER
-     * @see #accessControl(URI)
-     *
-     * @since 1.7
-     */
-    public static final ReferenceResolver FOLLOW_EXTERNAL_XLINK = new ReferenceResolver();
 
     /**
      * Provider of sources to use for unmarshalling objects referenced by links to another document.
@@ -394,15 +381,18 @@ public class ReferenceResolver {
      *       of the document containing the {@code xlink:href}, otherwise behave like {@code DENIED}.</li>
      * </ul>
      *
+     * The default implementation returns {@code GRANTED} in a
+     * {@linkplain Configuration#isTrustedEnvironment() trusted environment}, or {@code DEFAULT} otherwise.
+     * Security policy can be tuned more finely by overriding this method and specifying the customized
+     * {@code Resolver} instance as documented in {@link XML#RESOLVER}.
+     *
      * @param  document  the document or fragment referenced in a {@code xlink:href}.
      * @return whether the given document or fragment can be opened.
-     *
-     * @see #FOLLOW_EXTERNAL_XLINK
      *
      * @since 1.7
      */
     public Authorization accessControl(URI document) {
-        return (this == FOLLOW_EXTERNAL_XLINK) ? Authorization.GRANTED : Authorization.DEFAULT;
+        return Environment.isTrusted ? Authorization.GRANTED : Authorization.DEFAULT;
     }
 
     /**

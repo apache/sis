@@ -31,6 +31,13 @@ import org.apache.sis.pending.jdk.JDK17;
  */
 public final class Environment {
     /**
+     * Whether to relax security restrictions.
+     *
+     * @see org.apache.sis.setup.Configuration#isTrustedEnvironment()
+     */
+    public static final boolean isTrusted = Boolean.getBoolean("org.apache.sis.trustedEnvironment");
+
+    /**
      * Whether the use of the console writer should be avoided.
      *
      * @see #avoidConsoleWriter()
@@ -62,6 +69,7 @@ public final class Environment {
      *
      * @return the writer to use.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static PrintWriter writer() {
         return writer(System.console(), System.out);
     }

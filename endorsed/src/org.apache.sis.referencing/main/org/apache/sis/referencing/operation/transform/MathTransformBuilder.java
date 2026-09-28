@@ -25,6 +25,8 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.setup.Configuration;
+import org.apache.sis.system.Environment;
 import org.apache.sis.io.Authorization;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.internal.shared.Strings;
@@ -50,7 +52,9 @@ public abstract class MathTransformBuilder implements MathTransform.Builder {
 
     /**
      * A function which determines whether the <abbr>URI</abbr> specified in a parameter can be opened.
-     * The default access control returns {@link Authorization#DEFAULT}.
+     * The default access control returns {@link Authorization#DEFAULT} in non-trusted environment.
+     *
+     * @see #getAccessControl()
      */
     private BiFunction<ParameterDescriptor<URI>, URI, Authorization> accessControl;
 
@@ -76,7 +80,7 @@ public abstract class MathTransformBuilder implements MathTransform.Builder {
         accessControl = (param, file) -> {
             Objects.requireNonNull(param);
             Objects.requireNonNull(file);
-            return Authorization.DEFAULT;
+            return Environment.isTrusted ? Authorization.GRANTED : Authorization.DEFAULT;
         };
     }
 
@@ -102,12 +106,16 @@ public abstract class MathTransformBuilder implements MathTransform.Builder {
      *   <li>the actual <abbr>URI</abbr> parameter value.</li>
      * </ol>
      *
-     * The default access control is a function returning {@link Authorization#DEFAULT}.
-     * The default authorization grants access to files in the {@code $SIS_DATA/DatumChanges}
+     * The default access control is a function returning {@link Authorization#GRANTED}
+     * in a {@linkplain Configuration#isTrustedEnvironment() trusted environment},
+     * or {@link Authorization#DEFAULT} otherwise.
+     * The {@code DEFAULT} authorization grants access to files in the {@code $SIS_DATA/DatumChanges}
      * directory for parameters that are datum shift grid files, and to files in the same directory as the
      * <abbr>JSON</abbr>, <abbr>GML</abbr> or <abbr>WKT</abbr> document where the parameter value appears.
      *
      * @return a function deciding whether the <abbr>URI</abbr> can be opened.
+     *
+     * @see org.apache.sis.setup.Configuration#isTrustedEnvironment()
      *
      * @since 1.7
      */

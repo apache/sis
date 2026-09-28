@@ -30,5 +30,6 @@ export COLUMNS
 java --module-path "$BASE_DIR/lib:$BASE_DIR/lib/app/org.apache.sis.console.jar" \
      -Djava.util.logging.config.class="org.apache.sis.util.logging.Initializer" \
      -Djava.util.logging.config.file="$BASE_DIR/conf/logging.properties" \
+     -Dorg.apache.sis.trustedEnvironment=true \
      --module org.apache.sis.console/org.apache.sis.console.Command \
      $SIS_OPTS "$@"

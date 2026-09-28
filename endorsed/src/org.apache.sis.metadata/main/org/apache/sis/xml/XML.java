@@ -253,7 +253,7 @@ public final class XML {
     /**
      * Allows client code to replace {@code xlink} or {@code uuidref} attributes by the actual data.
      * The value for this property shall be an instance of {@link ReferenceResolver}.
-     * The specified reference resolver (of if none, the {@linkplain ReferenceResolver#DEFAULT default} one)
+     * The specified reference resolver (or if none, the {@linkplain ReferenceResolver#DEFAULT default} one)
      * is used when a <abbr>XML</abbr> element is defined only by {@code xlink} or {@code uuidref} attributes,
      * without any concrete definition. The typical choices are:
      *
