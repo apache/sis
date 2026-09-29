@@ -20,18 +20,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.LineString;
-import org.apache.sis.geometries.Polygon;
-import org.apache.sis.geometries.math.Maths;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.geometries.math.Vector2D;
-import org.apache.sis.geometries.math.Array;
-import static org.apache.sis.geometries.math.Vectors.*;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Maths;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector2D;
+import static org.apache.sis.maths.Vectors.*;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -148,14 +148,14 @@ public class EarClipping {
 
         //build a single geometry linking inner holes.
         final List<Tuple<?>> borderCoords = new ArrayList<>();
-        part.outter.getPoints().getAttributeArray(AttributesType.ATT_POSITION).stream(false).forEach(borderCoords::add);
+        part.outter.getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION).stream(false).forEach(borderCoords::add);
         //sort inner holes by minimum x value
         orderHoles(part);
 
         //attach holes to the main geometry
         for(int i=0,n=part.inners.size();i<n;i++){
             //we must find the minimum x coordinate in the inner loop
-            final List<Tuple<?>> loop = part.inners.get(i).getPoints().getAttributeArray(AttributesType.ATT_POSITION).stream(false).toList();
+            final List<Tuple<?>> loop = part.inners.get(i).getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION).stream(false).toList();
             int index = 0;
             Tuple min = loop.get(index);
             for(int k=1,p=loop.size();k<p;k++){

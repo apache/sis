@@ -82,8 +82,8 @@ public interface IdentifierSpace<T> extends Citation {
      * is <i>unqualified</i>).</p>
      *
      * <p>Elements with {@code gco:uuid} attribute can be referenced from other XML elements using the
-     * {@code gco:uuidref} attribute. However, this is not done automatically by Apache SIS. Users need
-     * to manage their set of UUIDs in their own {@link ReferenceResolver} subclass.</p>
+     * {@code gco:uuidref} attribute. However, this is not done automatically by Apache <abbr>SIS</abbr>.
+     * Users need to manage their set of UUIDs in their own {@link ReferenceResolver} subclass.</p>
      *
      * @see UUID
      */

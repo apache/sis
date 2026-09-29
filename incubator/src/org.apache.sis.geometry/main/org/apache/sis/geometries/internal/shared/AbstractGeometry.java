@@ -19,10 +19,8 @@ package org.apache.sis.geometries.internal.shared;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.PointSequence;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.Cursor;
-import org.apache.sis.geometries.math.Array;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.opengis.geometry.Envelope;
 
 
 /**
@@ -30,7 +28,7 @@ import org.apache.sis.geometries.math.Array;
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class AbstractGeometry implements Geometry {
+public abstract non-sealed class AbstractGeometry implements Geometry {
 
     private Map<String,Object> properties;
 
@@ -47,35 +45,31 @@ public abstract class AbstractGeometry implements Geometry {
         return asText();
     }
 
-    public static void toText(StringBuilder sb, Tuple tuple) {
-        sb.append(tuple.get(0));
-        for (int i = 1, n = tuple.getDimension(); i < n; i++) {
-            sb.append(' ');
-            sb.append(tuple.get(i));
+    /**
+     * Returns the union of the envelopes of the given geometries,
+     * or {@code null} if there is nothing to compute a union of.
+     */
+    protected static Envelope envUnion(final Geometry... geometries) {
+        GeneralEnvelope union = null;
+        for (final Geometry geometry : geometries) {
+            union = add(union, geometry);
         }
+        return union;
     }
 
-    public static void toText(StringBuilder sb, Array array) {
-        final Cursor cursor = array.cursor();
-        boolean first = true;
-        while (cursor.next()) {
-            if (!first) {
-                sb.append(", ");
+    /**
+     * Adds the envelope of the given geometry to the given union, creating it if needed.
+     * Geometries with no envelope at all (an empty one, typically) are skipped.
+     */
+    private static GeneralEnvelope add(GeneralEnvelope union, final Geometry geometry) {
+        final Envelope envelope = geometry.getEnvelope();
+        if (envelope != null) {
+            if (union == null) {
+                union = new GeneralEnvelope(envelope);
+            } else {
+                union.add(envelope);
             }
-            toText(sb, cursor.samples());
-            first = false;
         }
-    }
-
-    public static void toText(StringBuilder sb, PointSequence array) {
-        final int size = array.size();
-        if (size == 0) return;
-
-        for (int i = 0; i < size; i++) {
-            if (i != 0) {
-                sb.append(", ");
-            }
-            toText(sb, array.getPosition(i));
-        }
+        return union;
     }
 }

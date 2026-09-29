@@ -37,22 +37,20 @@
  *   <li>SRID : replaced by getCoordinateReferenceSystem</li>
  *   <li>is3D : look at geometry CoordinateReferenceSystem instead</li>
  *   <li>isMeasured() : replaced by Attributive interface which holds more informations.</li>
- *   <li>Relation and query function have been moved to {@link  org.apache.sis.geometries.operation.GeometryOperations  GeometryOperations}</li>
- *   <li>Query3D interface is moved to {@link  org.apache.sis.geometries.operation.GeometryOperations#SpatialAnalysis3D  SpatialAnalysis3D}
- *       and {@link  org.apache.sis.geometries.operation.GeometryOperations#SpatialRelations3D  SpatialRelations3D}</li>
  * </ul>
  *
  * <h3>Key differences with ISO 19107</h3>
  * <ul>
+ *   <li>The TransfiniteSetOfDirectPositions interface has been merged in Geometry, check the class javadoc for details</li>
  *   <li>Encoding interface is fused in Geometry interface</li>
- *   <li>Query2D interface is moved to {@link  org.apache.sis.geometries.operation.GeometryOperations#SpatialAnalysis2D  SpatialAnalysis2D}
- *       and {@link  org.apache.sis.geometries.operation.GeometryOperations#SpatialRelations2D  SpatialRelations2D}</li>
- *   <li>Query3D interface is moved to {@link  org.apache.sis.geometries.operation.GeometryOperations#SpatialAnalysis3D  SpatialAnalysis3D}
- *       and {@link  org.apache.sis.geometries.operation.GeometryOperations#SpatialRelations3D  SpatialRelations3D}</li>
  *   <li>Encoding.asGML has been removed since it is a large task to implement and multiple versions
  *       exists. GML support should be located in a different module</li>
+ *   <li>Knot pdf sections 6.4.17.2 and 6.4.17.3 : two notations exist :
+ *     one using a repetition of values in a single knot list,
+ *     and a second using 2 lists, one for distinct values and one for multiplicity.
+ *     SIS makes use of the first one, which is the most used in online references.
+ *   </li>
  * </ul>
- *
  *
  * <h2>Remaining work to be done</h2>
  *
@@ -65,7 +63,7 @@
  * <h3>TODO : ISO 19107 Complex (Section 6.4.34)</h3>
  * No interface or implementation yet.
  * This is special sub class of Collection with advance analysis capabilities.
- * Add methode getMaximalComplex on Geometry, see section 6.4.4.17
+ * Geometry.getMaximalComplex returns a Geometry until this interface exists.
  *
  * <h3>TODO : ISO 19107 Topology (Section 10)</h3>
  * No interface or implementation yet.
@@ -75,7 +73,7 @@
  * No interface or implementation yet.
  *
  * <h3>TODO : ISO 19107 PointCloud (Section 11.2.2)</h3>
- * No interface or implementation yet.
+ * {@link org.apache.sis.geometries.point.PointCloud} declares the interface, no implementation yet.
  *
  * <h3>TODO : ISO 19107 PointCloud (Section 6.4.4.27)</h3>
  * Geometry has an equal method with a surface parameter.

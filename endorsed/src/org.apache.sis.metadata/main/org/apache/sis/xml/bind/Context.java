@@ -159,7 +159,7 @@ public final class Context extends MarshalContext {
      * The base URL of ISO 19115-3 (or other standards) schemas.
      * The valid values are documented in the {@link org.apache.sis.xml.XML#SCHEMAS} property.
      */
-    private final Map<String,String> schemas;
+    private final Map<String, String> schemas;
 
     /**
      * The GML version to be marshalled or unmarshalled, or {@code null} if unspecified.
@@ -198,7 +198,7 @@ public final class Context extends MarshalContext {
      *
      * @see #getObjectForID(Context, String)
      */
-    private final Map<String,Object> xmlidToObject;
+    private final Map<String, Object> xmlidToObject;
 
     /**
      * The identifiers used for marshalled objects in the current document.
@@ -206,7 +206,7 @@ public final class Context extends MarshalContext {
      * for a given object. The {@code gml:id} values to use are not necessarily the same as the values associated
      * to {@link IdentifierSpace#ID} if some identifiers were already used for other objects in the same XML document.
      */
-    private final Map<Object,String> objectToXmlid;
+    private final Map<Object, String> objectToXmlid;
 
     /**
      * The {@link #xmlidToObject} map for each document being unmarshalled.
@@ -223,7 +223,7 @@ public final class Context extends MarshalContext {
      * <p>Values of this map are the {@link #xmlidToObject} maps of the corresponding document.
      * See {@link #xmlidToObject} for a description of the meaning of those maps.</p>
      */
-    private final Map<Object, Map<String,Object>> documentToXmlids;
+    private final Map<Object, Map<String, Object>> documentToXmlids;
 
     /**
      * All identified objects associated to a global identifier (not {@code gml:id}).
@@ -285,11 +285,12 @@ public final class Context extends MarshalContext {
      * @param  converter        the converter in use.
      * @param  logFilter        the object to inform about warnings.
      */
+    @SuppressWarnings("LeakingThisInConstructor")
     public Context(int                       bitMasks,
                    final MarshallerPool      pool,
                    final Locale              locale,
                    final ZoneId              timezone,
-                   final Map<String,String>  schemas,
+                   final Map<String, String> schemas,
                    final Version             versionGML,
                    final Version             versionMetadata,
                    final ExternalLinkHandler linkHandler,
@@ -902,6 +903,8 @@ public final class Context extends MarshalContext {
 
     /**
      * Returns a string representation of this context for debugging purposes.
+     *
+     * @return debugging information.
      */
     @Override
     public String toString() {

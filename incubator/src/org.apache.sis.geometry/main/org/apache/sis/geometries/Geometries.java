@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,9 +28,37 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import javax.measure.Quantity;
+import javax.measure.Unit;
+import org.apache.sis.geometries.adapter.JTSAdapter;
+import org.apache.sis.geometries.adapter.ShapeAdapter;
+import org.apache.sis.geometries.adapter.ShapeConverter;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
+import org.apache.sis.geometry.wrapper.jts.JTS;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Matrix3D;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vector3D;
+import org.apache.sis.maths.Vectors;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.crs.DefaultEngineeringCRS;
+import org.apache.sis.referencing.cs.DefaultCartesianCS;
+import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
+import org.apache.sis.referencing.cs.DefaultLinearCS;
+import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
+import org.apache.sis.referencing.internal.shared.AxisDirections;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.SimpleInternationalString;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
-import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.IdentifiedObject;
 import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
@@ -42,31 +71,6 @@ import org.opengis.referencing.datum.EngineeringDatum;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
-import org.apache.sis.geometries.math.DataType;
-import org.apache.sis.geometries.math.SampleSystem;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.geometries.math.Vector;
-import org.apache.sis.geometries.math.Vector3D;
-import org.apache.sis.geometries.math.Vectors;
-import org.apache.sis.geometries.math.Cursor;
-import org.apache.sis.geometries.math.Array;
-import org.apache.sis.geometries.math.Matrix3D;
-import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
-import org.apache.sis.geometries.internal.shared.ArraySequence;
-import org.apache.sis.geometry.wrapper.jts.JTS;
-import org.apache.sis.measure.Units;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.crs.DefaultEngineeringCRS;
-import org.apache.sis.referencing.cs.DefaultCartesianCS;
-import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
-import org.apache.sis.referencing.cs.DefaultLinearCS;
-import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
-import org.apache.sis.referencing.operation.transform.LinearTransform;
-import org.apache.sis.referencing.internal.shared.AxisDirections;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.SimpleInternationalString;
 
 
 /**
@@ -75,6 +79,8 @@ import org.apache.sis.util.SimpleInternationalString;
  * @author Johann Sorel (Geomatys)
  */
 public final class Geometries {
+
+    private static final org.locationtech.jts.geom.GeometryFactory JTS_FACTORY = new org.locationtech.jts.geom.GeometryFactory();
 
     private static final CoordinateReferenceSystem UNDEFINED_CRS_1D = createUndefined(1);
     private static final CoordinateReferenceSystem UNDEFINED_CRS_2D = createUndefined(2);
@@ -404,7 +410,7 @@ public final class Geometries {
             maxIndexSize += index.getLength() + 3; //+1 for winding reset, +2 for degenerated triangle
             attSize += p.getPositions().getLength();
         }
-        for (String name : primitive.getAttributesType().getAttributeNames()) {
+        for (String name : primitive.getDataPointsType().getAttributeNames()) {
             final Array model = primitive.getAttribute(name);
             resultAttributes.put(name, NDArrays.of(model.getSampleSystem(), model.getDataType(), attSize));
         }
@@ -431,10 +437,10 @@ public final class Geometries {
             if (!CRS.equivalent(crs, primitive.getCoordinateReferenceSystem())) {
                 throw new IllegalArgumentException("All primitives must have the same CRS, found \n" + crs +"\n and \n" + primitive.getCoordinateReferenceSystem());
             }
-            if (resultAttributes.size() != primitive.getAttributesType().getAttributeNames().size()) {
+            if (resultAttributes.size() != primitive.getDataPointsType().getAttributeNames().size()) {
                 throw new IllegalArgumentException("All primitives must have the same attributes."
                         + "\n Found " + Arrays.toString(resultAttributes.keySet().toArray())
-                        + "\n Found " + Arrays.toString(primitive.getAttributesType().getAttributeNames().toArray()));
+                        + "\n Found " + Arrays.toString(primitive.getDataPointsType().getAttributeNames().toArray()));
             }
 
             primIndex = primitive.getIndex().toArrayInt();
@@ -607,7 +613,7 @@ public final class Geometries {
         final Map<String,List<Tuple<?>>> rebuild = new IdentityHashMap<>();
         final int[] index = indexArray.toArrayInt();
 
-        for (String name : primitive.getAttributesType().getAttributeNames()) {
+        for (String name : primitive.getDataPointsType().getAttributeNames()) {
             rebuild.put(name, new ArrayList<>());
         }
 
@@ -692,9 +698,42 @@ public final class Geometries {
     }
 
     /**
+     * Returns the sum of the two given quantities, expressed in the unit of the first one,
+     * or dimensionless if either operand is dimensionless.
+     *
+     * @param  q1  the first quantity, whose unit is the unit of the result unless one operand is
+     *             dimensionless, in which case the result is dimensionless.
+     * @param  q2  the quantity to add to the first one.
+     * @return the sum of the two quantities.
+     * @throws ClassCastException if the two quantities have different dimensions, neither of them
+     *         being the dimensionless one.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static Quantity<?> add(final Quantity<?> q1, final Quantity<?> q2) {
+        if (Units.isScale(q1.getUnit()) != Units.isScale(q2.getUnit())) {
+            return Quantities.create(toScalar(q1) + toScalar(q2), Units.UNITY);
+        }
+        return ((Quantity) q1).add(q2);
+    }
+
+    /**
+     * Returns the value of the given quantity as a plain number. A dimensionless quantity is first
+     * converted to {@link Units#UNITY}, so that a percentage counts for its fraction rather than
+     * for its numerator. Any other quantity is taken as-is, no conversion to unity existing.
+     */
+    private static double toScalar(final Quantity<?> q) {
+        final Unit<?> unit = q.getUnit();
+        final double value = q.getValue().doubleValue();
+        if (Units.isScale(unit)) {
+            return Units.ensureScale(unit).getConverterTo(Units.UNITY).convert(value);
+        }
+        return value;
+    }
+
+    /**
      * Ensure two geometries declare the same attributes.
      */
-    public static void ensureSameAttributes(AttributesType att1, AttributesType att2) {
+    public static void ensureSameAttributes(DataPointsType att1, DataPointsType att2) {
         final List<String> names1 = att1.getAttributeNames();
         final List<String> names2 = att2.getAttributeNames();
         if (names1.size() != names2.size() || !names1.containsAll(names2)) {
@@ -712,87 +751,44 @@ public final class Geometries {
 
     /**
      * Convert given JTS geometry to SIS Geometry.
+     * @param copy if true create a copy of the coordinate sequence, otherwise create a view
      */
-    public static Geometry fromJTS(org.locationtech.jts.geom.Geometry jts) {
-        if (jts == null) {
-            return null;
-        }
-        CoordinateReferenceSystem crs = org.apache.sis.geometry.wrapper.Geometries.wrap(jts).get().getCoordinateReferenceSystem();
-        if (crs == null) crs = Geometries.getUndefinedCRS(2);
-        return fromJTS(jts, crs);
+    public static Geometry fromJTS(org.locationtech.jts.geom.Geometry jts, boolean copy) {
+        return JTSAdapter.fromJTS(jts, copy);
     }
 
     /**
-     * Convert given JTS geometry to SIS Geometry.
+     * View a geometry as a JTS geometry.
+     *
+     * @param copy if true create a copy of the point sequence, otherwise create a view
+     * @param gf JTS factory or null for default
+     * @return JTS equivalent
      */
-    private static Geometry fromJTS(org.locationtech.jts.geom.Geometry jts, CoordinateReferenceSystem crs) {
-        if (jts == null) {
-            return null;
-        } else if (jts instanceof org.locationtech.jts.geom.Point cdt) {
-            return GeometryFactory.createPoint(toPointSequence(cdt.getCoordinateSequence(), crs));
-
-        } else if (jts instanceof org.locationtech.jts.geom.MultiPoint cdt) {
-            return GeometryFactory.createMultiPoint(toPointSequence(jts.getFactory().getCoordinateSequenceFactory().create(cdt.getCoordinates()), crs));
-
-        } else if (jts instanceof org.locationtech.jts.geom.LinearRing cdt) {
-            return GeometryFactory.createLinearRing(toPointSequence(cdt.getCoordinateSequence(), crs));
-
-        } else if (jts instanceof org.locationtech.jts.geom.LineString cdt) {
-            return GeometryFactory.createLineString(toPointSequence(cdt.getCoordinateSequence(), crs));
-
-        } else if (jts instanceof org.locationtech.jts.geom.MultiLineString cdt) {
-            final LineString[] strings = new LineString[cdt.getNumGeometries()];
-            for (int i = 0; i < strings.length; i++) {
-                strings[i] = (LineString) fromJTS(cdt.getGeometryN(i), crs);
-            }
-            return GeometryFactory.createMultiLineString(strings);
-        } else if (jts instanceof org.locationtech.jts.geom.Polygon cdt) {
-            final LinearRing exterior = (LinearRing) fromJTS(cdt.getExteriorRing(), crs);
-            final List<LinearRing> interiors = new ArrayList<>(cdt.getNumInteriorRing());
-            for (int i = 0, n = cdt.getNumInteriorRing(); i < n; i++) {
-                interiors.add((LinearRing) fromJTS(cdt.getInteriorRingN(i), crs));
-            }
-            return GeometryFactory.createPolygon(exterior, interiors);
-
-        } else if (jts instanceof org.locationtech.jts.geom.MultiPolygon cdt) {
-            final Surface[] geoms = new Surface[cdt.getNumGeometries()];
-            for (int i = 0; i < geoms.length; i++) {
-                geoms[i] = (Surface) fromJTS(cdt.getGeometryN(i), crs);
-            }
-            return GeometryFactory.createMultiSurface(geoms);
-
-        } else if (jts instanceof org.locationtech.jts.geom.GeometryCollection cdt) {
-            final Geometry[] geoms = new Geometry[cdt.getNumGeometries()];
-            for (int i = 0; i < geoms.length; i++) {
-                geoms[i] = fromJTS(cdt.getGeometryN(i), crs);
-            }
-            return GeometryFactory.createGeometryCollection(geoms);
-
-        } else {
-            throw new IllegalArgumentException("Unknown JTS geometry type");
-        }
+    public static org.locationtech.jts.geom.Geometry asJTS(Geometry geom, boolean copy, org.locationtech.jts.geom.GeometryFactory gf) {
+        return JTSAdapter.asJTS(geom, copy, gf == null ? JTS_FACTORY : gf);
     }
 
     /**
-     * Convert JTS coordinate sequence to SIS PointSequence.
+     * Returns a view of the given SIS geometry as a Java2D shape.
+     *
+     * @param  geometry  the geometry to view as a shape, not {@code null}.
+     * @return the Java2D shape view.
      */
-    private static PointSequence toPointSequence(CoordinateSequence cs, CoordinateReferenceSystem crs) {
-        final int size = cs.size();
-        final int dimension = crs.getCoordinateSystem().getDimension();
-        final Array positions = NDArrays.of(SampleSystem.of(crs), DataType.DOUBLE, size);
-        final Cursor cursor = positions.cursor();
-        int i = 0;
-        while (cursor.next()) {
-            final Tuple samples = cursor.samples();
-            samples.set(0, cs.getOrdinate(i, 0));
-            samples.set(1, cs.getOrdinate(i, 1));
-            if (dimension > 2) {
-                //JTS only goes up to 3 dimensions
-                samples.set(2, cs.getOrdinate(i, 2));
-            }
-            i++;
-        }
-        return new ArraySequence(positions);
+    public static Shape asShape(final Geometry geometry) {
+        // Null value check in the invoked constructor.
+        return new ShapeAdapter(geometry);
     }
 
+    /**
+     * Converts a Java2D shape to a SIS geometry. If the given shape is a view created by {@link #asShape(Geometry)},
+     * then the original geometry is returned. Otherwise a new geometry is created with a copy (not a view) of the
+     * shape coordinates.
+     *
+     * @param  shape     the Java2D shape to convert. Cannot be {@code null}.
+     * @param  flatness  the maximum distance that line segments are allowed to deviate from curves.
+     * @return SIS geometry with shape coordinates. Never null but can be empty.
+     */
+    public static Geometry fromAWT(final Shape shape, final double flatness) {
+        return ShapeConverter.create(Objects.requireNonNull(shape), flatness);
+    }
 }

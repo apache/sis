@@ -88,7 +88,8 @@ module org.apache.sis.feature {
             org.apache.sis.cql;                     // In the "incubator" sub-project.
 
     exports org.apache.sis.geometry.wrapper.j2d to
-            org.apache.sis.gui;                     // In the "optional" sub-project.
+            org.apache.sis.gui,                     // In the "optional" sub-project.
+            org.apache.sis.geometry;                // In the "incubator" sub-project.
 
     exports org.apache.sis.geometry.wrapper.jts to
             org.apache.sis.geometry,                // In the "incubator" sub-project.
@@ -108,6 +109,7 @@ module org.apache.sis.feature {
             org.apache.sis.storage.geoheif,
             org.apache.sis.storage.geotiff,
             org.apache.sis.referencing.dggs,            // In the "incubator" sub-project.
+            org.apache.sis.geometry,                    // In the "incubator" sub-project.
             org.apache.sis.storage.gdal,                // In the "optional" sub-project.
             org.apache.sis.portrayal,
             org.apache.sis.gui;                         // In the "optional" sub-project.

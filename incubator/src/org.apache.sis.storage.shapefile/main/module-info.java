@@ -30,6 +30,9 @@ module org.apache.sis.storage.shapefile {
     exports org.apache.sis.storage.shapefile.shp;
     exports org.apache.sis.storage.shapefile.shx;
 
+    //todo : move this to endorsed when reviewed
+    exports org.apache.sis.storage.internal.shared;
+
     provides org.apache.sis.storage.DataStoreProvider
             with org.apache.sis.storage.shapefile.ShapefileProvider;
 }

@@ -16,8 +16,8 @@
  */
 package org.apache.sis.scene.physics;
 
-import org.apache.sis.geometries.math.Quaternion;
-import org.apache.sis.geometries.math.Vector3D;
+import org.apache.sis.maths.Quaternion;
+import org.apache.sis.maths.Vector3D;
 
 
 /**

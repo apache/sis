@@ -17,9 +17,9 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
-import org.apache.sis.geometries.LinearRing;
-import org.apache.sis.geometries.PointSequence;
-import org.apache.sis.geometries.Triangle;
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.curve.LinearRing;
+import org.apache.sis.geometries.surface.Triangle;
 
 
 /**
@@ -27,14 +27,14 @@ import org.apache.sis.geometries.Triangle;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultTriangle extends DefaultPolygon implements Triangle {
+public non-sealed class DefaultTriangle extends DefaultPolygon implements Triangle {
 
     /**
      * @param exterior exterior triangle ring
      */
     public DefaultTriangle(LinearRing exterior) {
         super(exterior);
-        final PointSequence points = exterior.getPoints();
+        final DataPoints points = exterior.getDataPoints();
         final int size = points.size();
         switch (size) {
             case 0: //empty triangle
@@ -71,11 +71,6 @@ public class DefaultTriangle extends DefaultPolygon implements Triangle {
     @Override
     public int hashCode() {
         return 7 * exterior.hashCode();
-    }
-
-    @Override
-    public String asText() {
-        return Triangle.super.asText();
     }
 
 }

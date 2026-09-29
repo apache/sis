@@ -18,12 +18,12 @@ package org.apache.sis.geometries;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vectors;
 import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.Vectors;
-import org.apache.sis.geometry.GeneralEnvelope;
 
 
 /**
@@ -84,8 +84,8 @@ public final class BBox extends GeneralEnvelope implements Geometry {
     }
 
     @Override
-    public String getGeometryType() {
-        return "POLYGON"; //TODO not in OGC SFA.
+    public GeometryType getGeometryType() {
+        return GeometryType.BBOX;
     }
 
     public void add(Tuple<?> position) throws MismatchedDimensionException {
@@ -123,8 +123,8 @@ public final class BBox extends GeneralEnvelope implements Geometry {
     }
 
     @Override
-    public AttributesType getAttributesType() {
-        return AttributesType.EMPTY;
+    public DataPointsType getDataPointsType() {
+        return DataPointsType.EMPTY;
     }
 
 }

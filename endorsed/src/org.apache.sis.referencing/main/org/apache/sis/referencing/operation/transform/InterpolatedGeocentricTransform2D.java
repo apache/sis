@@ -41,7 +41,7 @@ final class InterpolatedGeocentricTransform2D extends InterpolatedGeocentricTran
     /**
      * Constructs a 2D transform.
      */
-    InterpolatedGeocentricTransform2D(final Ellipsoid source, final Ellipsoid target, final DatumShiftGrid<Angle,Length> grid) {
+    InterpolatedGeocentricTransform2D(final Ellipsoid source, final Ellipsoid target, final DatumShiftGrid<Angle, Length> grid) {
         super(source, false, target, false, grid);
     }
 

@@ -10,6 +10,7 @@ structures along with methods derived from the following international standards
 * Features and filters    — ISO 19109, ISO 19143
 * Units of measurement    — ISO 19103, JSR 385
 * Data formats:
+  * GeoHEIF
   * GeoTIFF               — OGC 19-008
   * NetCDF                — OGC 10-092, OGC 16-114
   * XML and GML           — ISO 19139, ISO 19136, OGC 01-009

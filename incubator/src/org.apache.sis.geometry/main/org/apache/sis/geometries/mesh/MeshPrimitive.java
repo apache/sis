@@ -30,34 +30,35 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.AttributesType;
 import org.apache.sis.geometries.BBox;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.LineString;
-import org.apache.sis.geometries.MultiLineString;
-import org.apache.sis.geometries.MultiPoint;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
-import org.apache.sis.geometries.TIN;
-import org.apache.sis.geometries.Triangle;
-import org.apache.sis.geometries.math.DataType;
-import org.apache.sis.geometries.math.Maths;
-import org.apache.sis.geometries.math.SampleSystem;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.geometries.math.Vector;
-import org.apache.sis.geometries.math.Vector1D;
-import org.apache.sis.geometries.math.Vector3D;
-import org.apache.sis.geometries.math.Vectors;
-import org.apache.sis.geometries.math.Cursor;
-import org.apache.sis.geometries.math.Array;
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.curve.MultiLineString;
+import org.apache.sis.geometries.point.MultiPoint;
+import org.apache.sis.geometries.surface.TIN;
+import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Cursor;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.Maths;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vector1D;
+import org.apache.sis.maths.Vector3D;
+import org.apache.sis.maths.Vectors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.Containers;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -72,7 +73,9 @@ import org.apache.sis.util.collection.Containers;
  *
  * @author Johann Sorel (Geomatys)
  */
-public interface MeshPrimitive extends Geometry {
+public sealed interface MeshPrimitive extends Geometry
+        permits MeshPrimitive.Abs
+{
 
     public static final Logger LOGGER = Logger.getLogger("org.apache.sis.geometries");
 
@@ -102,13 +105,13 @@ public interface MeshPrimitive extends Geometry {
         }
     }
 
-    public static MeshPrimitive createEmpty(Type type, AttributesType attDef) {
+    public static MeshPrimitive createEmpty(Type type, DataPointsType attDef) {
         Abs p = (Abs) create(type);
         for (String name : attDef.getAttributeNames()) {
             p.attributes.put(name, NDArrays.of(attDef.getAttributeSystem(name), attDef.getAttributeType(name), 0));
         }
-        p.positions = p.attributes.get(AttributesType.ATT_POSITION);
-        ArgumentChecks.ensureNonNull(AttributesType.ATT_POSITION, p.positions);
+        p.positions = p.attributes.get(DataPointsType.ATT_POSITION);
+        ArgumentChecks.ensureNonNull(DataPointsType.ATT_POSITION, p.positions);
         return p;
     }
 
@@ -277,7 +280,15 @@ public interface MeshPrimitive extends Geometry {
      */
     void removeDuplicatesByPosition();
 
-    public static abstract class Abs implements MeshPrimitive, AttributesType {
+    public static abstract sealed class Abs implements MeshPrimitive, DataPointsType
+            permits Points,
+                    Lines,
+                    LineLoop,
+                    LineStrip,
+                    Triangles,
+                    TriangleFan,
+                    TriangleStrip
+    {
 
         /**
          * Checks tuplearray change for position is in the same crs as the geometry.
@@ -292,7 +303,7 @@ public interface MeshPrimitive extends Geometry {
 
         protected Abs(Type type) {
             positions = NDArrays.of(SampleSystem.of(Geometries.RIGHT_HAND_3D), new double[0]);
-            attributes.put(AttributesType.ATT_POSITION, positions);
+            attributes.put(DataPointsType.ATT_POSITION, positions);
             this.type = type;
         }
 
@@ -313,7 +324,7 @@ public interface MeshPrimitive extends Geometry {
         }
 
         @Override
-        public AttributesType getAttributesType() {
+        public DataPointsType getDataPointsType() {
             return this;
         }
 
@@ -702,7 +713,7 @@ public interface MeshPrimitive extends Geometry {
             if (index != null) {
                 copy.setIndex(index.copy());
             }
-            copy.positions = copy.attributes.get(AttributesType.ATT_POSITION);
+            copy.positions = copy.attributes.get(DataPointsType.ATT_POSITION);
             return copy;
         }
 
@@ -794,7 +805,7 @@ public interface MeshPrimitive extends Geometry {
 
                 @Override
                 protected void visit(Triangle candidate) {
-                    final PointSequence points = candidate.getExteriorRing().getPoints();
+                    final DataPoints points = candidate.getExteriorRing().getDataPoints();
                     long idx0 = ((MeshPrimitive.Vertex)points.getPoint(0)).getIndex();
                     long idx1 = ((MeshPrimitive.Vertex)points.getPoint(1)).getIndex();
                     long idx2 = ((MeshPrimitive.Vertex)points.getPoint(2)).getIndex();
@@ -828,7 +839,7 @@ public interface MeshPrimitive extends Geometry {
 
                 @Override
                 protected void visit(LineString candidate) {
-                    final PointSequence points = candidate.getPoints();
+                    final DataPoints points = candidate.getDataPoints();
                     long idx0 = ((MeshPrimitive.Vertex)points.getPoint(0)).getIndex();
                     long idx1 = ((MeshPrimitive.Vertex)points.getPoint(1)).getIndex();
                     positions.get(idx0, pos0);
@@ -921,7 +932,7 @@ public interface MeshPrimitive extends Geometry {
             }
             attributes.clear();
             attributes.putAll(newAttributes);
-            positions = attributes.get(AttributesType.ATT_POSITION);
+            positions = attributes.get(DataPointsType.ATT_POSITION);
         }
 
         @Override
@@ -970,7 +981,7 @@ public interface MeshPrimitive extends Geometry {
     /**
      * A vertex is a indexed point in a geometry.
      */
-    public static class Vertex implements Point {
+    public static final class Vertex implements Point {
 
         private final Abs parent;
         private long index;
@@ -1032,15 +1043,15 @@ public interface MeshPrimitive extends Geometry {
         }
 
         @Override
-        public AttributesType getAttributesType() {
-            return parent.getAttributesType();
+        public DataPointsType getDataPointsType() {
+            return parent.getDataPointsType();
         }
 
         @Override
         public String toString() {
             final StringBuilder sb = new StringBuilder("V:");
             sb.append(getIndex());
-            final TreeSet<String> properties = new TreeSet<>(getAttributesType().getAttributeNames());
+            final TreeSet<String> properties = new TreeSet<>(getDataPointsType().getAttributeNames());
             for (String name : properties) {
                 sb.append(" ");
                 sb.append(name);
@@ -1051,7 +1062,7 @@ public interface MeshPrimitive extends Geometry {
         }
     }
 
-    public static final class Sequence implements PointSequence {
+    public static final class Sequence implements DataPoints {
 
         private final Abs primitive;
         public final int[] index;
@@ -1092,8 +1103,8 @@ public interface MeshPrimitive extends Geometry {
         }
 
         @Override
-        public AttributesType getAttributesType() {
-            return primitive.getAttributesType();
+        public DataPointsType getType() {
+            return primitive.getDataPointsType();
         }
 
         @Override
@@ -1112,14 +1123,14 @@ public interface MeshPrimitive extends Geometry {
         }
     }
 
-    public static class Points extends Abs implements MultiPoint<Point>{
+    public static final class Points extends Abs implements MultiPoint<Point>{
         public Points() {
             super(Type.POINTS);
         }
 
         @Override
-        public String getGeometryType() {
-            return "MULTIPOINT";
+        public GeometryType getGeometryType() {
+            return GeometryType.MULTIPOINT;
         }
 
         @Override
@@ -1135,7 +1146,7 @@ public interface MeshPrimitive extends Geometry {
         }
     }
 
-    public static class Lines extends Abs implements MultiLineString {
+    public static final class Lines extends Abs implements MultiLineString {
         public Lines() {
             super(Type.LINES);
         }
@@ -1153,13 +1164,13 @@ public interface MeshPrimitive extends Geometry {
         }
     }
 
-    public static class LineLoop extends Abs implements LineString {
+    public static final class LineLoop extends Abs implements LineString {
         public LineLoop() {
             super(Type.LINE_LOOP);
         }
 
         @Override
-        public PointSequence getPoints() {
+        public DataPoints getDataPoints() {
             //select all points, duplicate first point as last
             int[] indices;
             if (index == null) {
@@ -1175,13 +1186,13 @@ public interface MeshPrimitive extends Geometry {
         }
     }
 
-    public static class LineStrip extends Abs implements LineString {
+    public static final class LineStrip extends Abs implements LineString {
         public LineStrip() {
             super(Type.LINE_STRIP);
         }
 
         @Override
-        public PointSequence getPoints() {
+        public DataPoints getDataPoints() {
             final int[] indices;
             if (index == null) {
                 indices = new int[Math.toIntExact(getPositions().getLength())];
@@ -1193,7 +1204,7 @@ public interface MeshPrimitive extends Geometry {
         }
     }
 
-    public static class Triangles extends Abs implements TIN {
+    public static final class Triangles extends Abs implements TIN {
         public Triangles() {
             super(Type.TRIANGLES);
         }
@@ -1219,7 +1230,7 @@ public interface MeshPrimitive extends Geometry {
         }
     }
 
-    public static class TriangleFan extends Abs implements TIN {
+    public static final class TriangleFan extends Abs implements TIN {
         public TriangleFan() {
             super(Type.TRIANGLE_FAN);
         }
@@ -1247,7 +1258,7 @@ public interface MeshPrimitive extends Geometry {
         }
     }
 
-    public static class TriangleStrip extends Abs implements TIN {
+    public static final class TriangleStrip extends Abs implements TIN {
         public TriangleStrip() {
             super(Type.TRIANGLE_STRIP);
         }

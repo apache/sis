@@ -41,7 +41,7 @@ import org.apache.sis.referencing.dggs.DiscreteGlobalGridReferenceSystem;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.dggs.DiscreteGlobalGridGeometry;
-import org.apache.sis.storage.image.internal.ImageBuilder;
+import org.apache.sis.images.ImageBuilder;
 import org.apache.sis.storage.rs.CodedCoverage;
 import org.apache.sis.util.Utilities;
 

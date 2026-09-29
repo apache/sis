@@ -18,19 +18,23 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.List;
 import java.util.Objects;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.Geometries;
-import org.apache.sis.geometries.LinearRing;
-import org.apache.sis.geometries.Polygon;
+import org.apache.sis.geometries.curve.LinearRing;
+import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultPolygon extends AbstractGeometry implements Polygon {
+public non-sealed class DefaultPolygon extends AbstractGeometry implements Polygon {
 
     protected final LinearRing exterior;
     protected final List<LinearRing> interiors;
@@ -44,7 +48,7 @@ public class DefaultPolygon extends AbstractGeometry implements Polygon {
         this.interiors = (interiors == null) ? List.of() : List.copyOf(interiors);
         if (!this.interiors.isEmpty()) {
             for (Curve interior : this.interiors) {
-                Geometries.ensureSameAttributes(exterior.getAttributesType(), interior.getAttributesType());
+                Geometries.ensureSameAttributes(exterior.getDataPointsType(), interior.getDataPointsType());
             }
         }
     }
@@ -80,6 +84,12 @@ public class DefaultPolygon extends AbstractGeometry implements Polygon {
     @Override
     public Envelope getEnvelope() {
         return getExteriorRing().getEnvelope();
+    }
+
+    @Override
+    public Quantity<?> getArea() {
+        //TODO : fallback on JTS until implemented
+        return Quantities.create(Geometries.asJTS(this, false, new GeometryFactory()).getArea(), Units.SQUARE_METRE);
     }
 
 }

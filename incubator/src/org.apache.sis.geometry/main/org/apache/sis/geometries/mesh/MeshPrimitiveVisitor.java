@@ -17,15 +17,15 @@
 package org.apache.sis.geometries.mesh;
 
 import java.util.HashSet;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.LineString;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
-import org.apache.sis.geometries.Triangle;
-import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.geometries.math.Cursor;
-import org.apache.sis.geometries.math.Array;
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.surface.Triangle;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Cursor;
+import org.apache.sis.maths.NDArrays;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -204,7 +204,7 @@ public abstract class MeshPrimitiveVisitor {
      * Override this method to process a triangle.
      */
     protected void visit(Triangle candidate) {
-        final PointSequence points = candidate.getExteriorRing().getPoints();
+        final DataPoints points = candidate.getExteriorRing().getDataPoints();
         visit((MeshPrimitive.Vertex) points.getPoint(0));
         visit((MeshPrimitive.Vertex) points.getPoint(1));
         visit((MeshPrimitive.Vertex) points.getPoint(2));
@@ -214,7 +214,7 @@ public abstract class MeshPrimitiveVisitor {
      * Override this method to process a line.
      */
     protected void visit(LineString candidate) {
-        final PointSequence points = candidate.getPoints();
+        final DataPoints points = candidate.getDataPoints();
         visit((MeshPrimitive.Vertex) points.getPoint(0));
         visit((MeshPrimitive.Vertex) points.getPoint(1));
     }

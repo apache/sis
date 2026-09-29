@@ -16,18 +16,17 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import org.apache.sis.geometries.LinearRing;
-import org.apache.sis.geometries.PointSequence;
-
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.curve.LinearRing;
 
 /**
  * TODO : add linear ring constraints.
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultLinearRing extends DefaultLineString implements LinearRing{
+public non-sealed class DefaultLinearRing extends DefaultLineString implements LinearRing{
 
-    public DefaultLinearRing(PointSequence points) {
+    public DefaultLinearRing(DataPoints points) {
         super(points);
     }
 

@@ -254,7 +254,7 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
             throws FactoryException
     {
         this.anchor = anchor;
-        properties.put(DefiningConversion.NORMALIZED_KEY, Boolean.FALSE);
+        properties.put(DefiningConversion.SIDE_PROCESSING_KEY, DefiningConversion.SideProcessing.NONE);
         properties.put(ObjectDomain.SCOPE_KEY, SCOPE);
         grid.getGeographicExtent().ifPresent((domain) -> {
             properties.put(ObjectDomain.DOMAIN_OF_VALIDITY_KEY, new DefaultExtent(null, domain, null, null));

@@ -16,6 +16,17 @@
  */
 package org.apache.sis.geometries;
 
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.curve.LinearRing;
+import org.apache.sis.geometries.curve.MultiCurve;
+import org.apache.sis.geometries.curve.MultiLineString;
+import org.apache.sis.geometries.point.MultiPoint;
+import org.apache.sis.geometries.surface.MultiPolygon;
+import org.apache.sis.geometries.surface.MultiSurface;
+import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.geometries.surface.PolyhedralSurface;
+import org.apache.sis.geometries.surface.TIN;
+import org.apache.sis.geometries.surface.Triangle;
 
 /**
  *
@@ -32,9 +43,9 @@ public class GeometryVisitor {
 
         else if (geometry instanceof Triangle candidate) visit(candidate);
         else if (geometry instanceof Polygon candidate) visit(candidate);
-        else if (geometry instanceof Surface candidate) visit(candidate);
         else if (geometry instanceof TIN candidate) visit(candidate);
         else if (geometry instanceof PolyhedralSurface candidate) visit(candidate);
+        else if (geometry instanceof Surface candidate) visit(candidate);
 
         else if (geometry instanceof MultiPolygon candidate) visit(candidate);
         else if (geometry instanceof MultiLineString candidate) visit(candidate);
@@ -56,7 +67,7 @@ public class GeometryVisitor {
     }
 
     public void visit(LineString geometry) {
-        visit(geometry.getPoints());
+        visit(geometry.getDataPoints());
     }
 
     public void visit(Polygon geometry) {
@@ -69,7 +80,7 @@ public class GeometryVisitor {
     }
 
     public void visit(LinearRing geometry) {
-        visit(geometry.getPoints());
+        visit(geometry.getDataPoints());
     }
 
     public void visit(TIN geometry) {
@@ -120,7 +131,7 @@ public class GeometryVisitor {
         }
     }
 
-    public void visit(PointSequence sequence) {
+    public void visit(DataPoints sequence) {
         for (int i = 0, n = sequence.size(); i < n; i++) {
             visit(sequence.getPoint(i));
         }

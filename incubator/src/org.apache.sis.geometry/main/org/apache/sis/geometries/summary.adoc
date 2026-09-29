@@ -1,0 +1,1111 @@
+= Geometry Types Summary
+
+Overview of the geometry types defined in the `org.apache.sis.geometry` module
+(package `org.apache.sis.geometries` and its sub-packages).
+
+== Interface hierarchy
+
+The 56 interfaces of the `Geometry` hierarchy are shown below, split by theme.
+`Geometry` and most of its subtypes are `sealed`, so their permitted subtypes are fixed
+at compile time and a `switch` over them can be exhaustive.
+Implementation classes are omitted; see the `internal.shared` package.
+
+Colours: white is a `sealed` type; *yellow* is `non-sealed`, still open for extension
+because it has no implementation yet; *blue-grey* is a type detailed in another diagram
+here, repeated only to anchor it; *grey* is a type declared outside this module.
+
+=== Core types
+
+The spine of the hierarchy. `Geometry` splits into a single `Primitive`, a `GeometryCollection` of geometries, an analytic `OrientedGeometry`, the `Empty` set, an extruded `Prism` and a GPU-oriented `MeshPrimitive` batch. Each leaf below is detailed in one of the following diagrams.
+
+[plantuml,geometry-core,svg]
+....
+@startuml
+hide empty members
+skinparam shadowing false
+skinparam interface {
+    BackgroundColor #FDFDFD
+    BorderColor #4A6785
+}
+skinparam interface<<open>> {
+    BackgroundColor #FFF6E0
+    BorderColor #C9A227
+}
+skinparam interface<<context>> {
+    BackgroundColor #EEF3F8
+    BorderColor #93A9C0
+}
+skinparam interface<<external>> {
+    BackgroundColor #F0F0F0
+    BorderColor #999999
+}
+
+interface Curve
+interface Empty
+interface Geometry
+interface "GeometryCollection<T extends Geometry>" as GeometryCollection
+interface MeshPrimitive
+interface Orientable
+interface OrientedGeometry
+interface Point
+interface Primitive
+interface Prism <<open>>
+interface Solid
+interface Surface
+
+Geometry <|-- Empty
+Geometry <|-- GeometryCollection
+Geometry <|-- MeshPrimitive
+Geometry <|-- OrientedGeometry
+Geometry <|-- Primitive
+Geometry <|-- Prism
+Orientable <|-- Curve
+Orientable <|-- Surface
+Primitive <|-- Orientable
+Primitive <|-- Point
+Primitive <|-- Solid
+@enduml
+....
+
+=== Curves
+
+Subtypes of `Curve` that interpolate a stored sequence of points, plus the conic family.
+
+[plantuml,geometry-curves,svg]
+....
+@startuml
+hide empty members
+skinparam shadowing false
+skinparam interface {
+    BackgroundColor #FDFDFD
+    BorderColor #4A6785
+}
+skinparam interface<<open>> {
+    BackgroundColor #FFF6E0
+    BorderColor #C9A227
+}
+skinparam interface<<context>> {
+    BackgroundColor #EEF3F8
+    BorderColor #93A9C0
+}
+skinparam interface<<external>> {
+    BackgroundColor #F0F0F0
+    BorderColor #999999
+}
+
+interface Arc
+interface ArcByBulge
+interface ArcByCenterPoint
+interface Circle <<open>>
+interface CircularString
+interface Clothoid <<open>>
+interface CompoundCurve
+interface Conic
+interface Curve <<context>>
+interface EllipticArc <<open>>
+interface Geodesic
+interface LineString
+interface LinearRing
+interface OffsetCurve <<open>>
+interface Rhumb
+interface Spiral
+
+Arc <|-- Circle
+Conic <|-- Arc
+Conic <|-- EllipticArc
+Curve <|-- ArcByBulge
+Curve <|-- ArcByCenterPoint
+Curve <|-- CircularString
+Curve <|-- CompoundCurve
+Curve <|-- Conic
+Curve <|-- Geodesic
+Curve <|-- LineString
+Curve <|-- OffsetCurve
+Curve <|-- Rhumb
+Curve <|-- Spiral
+LineString <|-- LinearRing
+Spiral <|-- Clothoid
+@enduml
+....
+
+=== Spline and function curves
+
+Subtypes of `Curve` defined by a mathematical function rather than by interpolation.
+
+[plantuml,geometry-splines,svg]
+....
+@startuml
+hide empty members
+skinparam shadowing false
+skinparam interface {
+    BackgroundColor #FDFDFD
+    BorderColor #4A6785
+}
+skinparam interface<<open>> {
+    BackgroundColor #FFF6E0
+    BorderColor #C9A227
+}
+skinparam interface<<context>> {
+    BackgroundColor #EEF3F8
+    BorderColor #93A9C0
+}
+skinparam interface<<external>> {
+    BackgroundColor #F0F0F0
+    BorderColor #999999
+}
+
+interface BSplineCurve
+interface Bezier <<open>>
+interface CubicSpline <<open>>
+interface Curve <<context>>
+interface "FunctionCurve<T extends FunctionArc>" as FunctionCurve
+interface NurbCurve
+interface "PolynomialCurve<PolynomialArc>" as PolynomialCurve
+interface PolynomialSpline
+interface SplineCurve
+
+BSplineCurve <|-- Bezier
+BSplineCurve <|-- NurbCurve
+Curve <|-- FunctionCurve
+FunctionCurve <|-- PolynomialCurve
+PolynomialCurve <|-- SplineCurve
+PolynomialSpline <|-- Bezier
+PolynomialSpline <|-- CubicSpline
+SplineCurve <|-- BSplineCurve
+SplineCurve <|-- PolynomialSpline
+@enduml
+....
+
+=== Surfaces
+
+Subtypes of `Surface`: polygonal, patch-based and parametric.
+
+[plantuml,geometry-surfaces,svg]
+....
+@startuml
+hide empty members
+skinparam shadowing false
+skinparam interface {
+    BackgroundColor #FDFDFD
+    BorderColor #4A6785
+}
+skinparam interface<<open>> {
+    BackgroundColor #FFF6E0
+    BorderColor #C9A227
+}
+skinparam interface<<context>> {
+    BackgroundColor #EEF3F8
+    BorderColor #93A9C0
+}
+skinparam interface<<external>> {
+    BackgroundColor #F0F0F0
+    BorderColor #999999
+}
+
+interface BSplineSurface
+interface BilinearGrid <<open>>
+interface CurvePolygon
+interface NurbSurface
+interface ParametricCurveSurface
+interface Polygon
+interface "PolyhedralSurface<T extends Polygon>" as PolyhedralSurface
+interface PreparedTIN
+interface Surface <<context>>
+interface TIN
+interface Triangle
+interface "TriangulatedSurface<T extends Polygon>" as TriangulatedSurface
+
+interface ReferenceSystem <<external>>
+
+BSplineSurface <|-- NurbSurface
+ParametricCurveSurface <|-- BSplineSurface
+ParametricCurveSurface <|-- BilinearGrid
+Polygon <|-- Triangle
+PolyhedralSurface <|-- TriangulatedSurface
+ReferenceSystem <|-- ParametricCurveSurface
+Surface <|-- CurvePolygon
+Surface <|-- ParametricCurveSurface
+Surface <|-- Polygon
+Surface <|-- PolyhedralSurface
+TIN <|-- PreparedTIN
+TriangulatedSurface <|-- TIN : Triangle
+@enduml
+....
+
+=== Solids
+
+Subtypes of `Solid`.
+
+[plantuml,geometry-solids,svg]
+....
+@startuml
+hide empty members
+skinparam shadowing false
+skinparam interface {
+    BackgroundColor #FDFDFD
+    BorderColor #4A6785
+}
+skinparam interface<<open>> {
+    BackgroundColor #FFF6E0
+    BorderColor #C9A227
+}
+skinparam interface<<context>> {
+    BackgroundColor #EEF3F8
+    BorderColor #93A9C0
+}
+skinparam interface<<external>> {
+    BackgroundColor #F0F0F0
+    BorderColor #999999
+}
+
+interface BSolidSpline <<open>>
+interface ParametricCurveSolid
+interface Polyhedron
+interface Solid <<context>>
+
+ParametricCurveSolid <|-- BSolidSpline
+Solid <|-- ParametricCurveSolid
+Solid <|-- Polyhedron
+@enduml
+....
+
+=== Collections
+
+Subtypes of `GeometryCollection`, each restricting its elements to one geometry kind. `ProductCurve` appears here because it is both a collection and a `Curve`.
+
+[plantuml,geometry-collections,svg]
+....
+@startuml
+hide empty members
+skinparam shadowing false
+skinparam interface {
+    BackgroundColor #FDFDFD
+    BorderColor #4A6785
+}
+skinparam interface<<open>> {
+    BackgroundColor #FFF6E0
+    BorderColor #C9A227
+}
+skinparam interface<<context>> {
+    BackgroundColor #EEF3F8
+    BorderColor #93A9C0
+}
+skinparam interface<<external>> {
+    BackgroundColor #F0F0F0
+    BorderColor #999999
+}
+
+interface Curve <<context>>
+interface "GeometryCollection<T extends Geometry>" as GeometryCollection <<context>>
+interface "MultiCurve<T extends Curve>" as MultiCurve
+interface MultiLineString
+interface "MultiPoint<T extends Point>" as MultiPoint
+interface MultiPolygon
+interface MultiPolyhedron
+interface "MultiSurface<T extends Surface>" as MultiSurface
+interface ProductCurve <<open>>
+
+Curve <|-- ProductCurve
+GeometryCollection <|-- MultiCurve
+GeometryCollection <|-- MultiPoint
+GeometryCollection <|-- MultiPolyhedron : Polyhedron
+GeometryCollection <|-- MultiSurface
+GeometryCollection <|-- ProductCurve : Curve
+MultiCurve <|-- MultiLineString : LineString
+MultiSurface <|-- MultiPolygon : Polygon
+@enduml
+....
+== Format mapping
+
+[cols="2,3,2,2,2,2,2,6", options="header"]
+|===
+|Type |Package |OGC-SimpleFeature |GeoJSON |OGC-JSON-FG |Khronos-glTF |Khronos-ANARI |Description
+
+// --- Core / ISO 19107 base types --------------------------------------
+|Geometry
+|—
+|Geometry
+|—
+|—
+|—
+|Geometry
+|Root interface of every geometry, based on ISO 19107, OGC Simple Feature Access, glTF 2.0 and ANARI.
+
+|Primitive
+|—
+|—
+|—
+|—
+|—
+|—
+|Base type for non-decomposable geometries (`Point`, `Curve`, `Surface`, `Solid`).
+
+|Orientable
+|—
+|—
+|—
+|—
+|—
+|—
+|Primitive that carries an orientation sign and may expose an oppositely-oriented proxy.
+
+|Empty
+|—
+|—
+|—
+|—
+|—
+|—
+|The empty geometry, representing the empty set.
+
+|Point
+|—
+|Point
+|Point
+|Point
+|—
+|—
+|0-dimensional geometry representing a single location in coordinate space.
+
+|Curve
+|—
+|Curve
+|—
+|—
+|—
+|curve
+|1-dimensional geometry stored as a sequence of points, interpolated according to its subtype.
+
+|Surface
+|—
+|Surface
+|—
+|—
+|—
+|—
+|2-dimensional geometry, generalized by `Polygon` and `PolyhedralSurface`.
+
+|Solid
+|—
+|—
+|—
+|—
+|—
+|—
+|3-dimensional geometry bounded by one or more closed surfaces (shells).
+
+// --- Curves -------------------------------------------------------------
+8+| *Curves*
+
+|LineString
+|`curve`
+|LineString
+|LineString
+|LineString
+|—
+|—
+|Curve with linear interpolation between consecutive points.
+
+|LinearRing
+|`curve`
+|LinearRing
+|—
+|—
+|—
+|—
+|`LineString` that is both closed and simple.
+
+|CompoundCurve
+|`curve`
+|—
+|—
+|CompoundCurve
+|—
+|—
+|Curve made of several connected curve segments, possibly of different subtypes.
+
+|OffsetCurve
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|Curve derived from a base curve by applying a lateral offset distance.
+
+|ProductCurve
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|Collection of curves treated as one continuous curve.
+
+|Ray
+|—
+|—
+|—
+|—
+|—
+|—
+|Semi-infinite line defined by an origin point and a direction.
+
+|Rhumb
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|Curve of constant bearing (loxodrome) crossing all meridians at the same angle.
+
+|Bearing
+|—
+|—
+|—
+|—
+|—
+|—
+|ISO 19107 bearing/direction primitive.
+
+|Geodesic
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|Shortest path curve between two points on an ellipsoid or sphere.
+
+// --- Surfaces -------------------------------------------------------------
+8+| *Surfaces*
+
+|Polygon
+|`surface`
+|Polygon
+|Polygon
+|Polygon
+|—
+|—
+|Planar surface defined by one exterior boundary and zero or more interior boundaries (holes).
+
+|CurvePolygon
+|`surface`
+|—
+|—
+|CurvePolygon
+|—
+|—
+|Surface whose rings may be line strings, circular strings or compound curves.
+
+|PolyhedralSurface
+|`surface`
+|PolyhedralSurface
+|—
+|—
+|—
+|—
+|Contiguous collection of polygon patches sharing common boundary segments.
+
+|TriangulatedSurface
+|`surface`
+|—
+|—
+|—
+|—
+|—
+|`PolyhedralSurface` restricted to triangle patches.
+
+|TIN
+|`surface`
+|TIN
+|—
+|—
+|—
+|—
+|Triangulated Irregular Network, a `PolyhedralSurface` made only of `Triangle` patches.
+
+|PreparedTIN
+|`surface`
+|—
+|—
+|—
+|—
+|—
+|`TIN` decorated with an optimized spatial index for fast queries.
+
+|Triangle
+|`surface`
+|Triangle
+|—
+|—
+|—
+|—
+|Polygon with exactly 3 distinct, non-collinear vertices and no interior boundary.
+
+|ParametricCurveSurface
+|`surface`
+|—
+|—
+|—
+|—
+|—
+|Surface defined by a parametric function together with its own coordinate system.
+
+|BilinearGrid
+|`surface`
+|—
+|—
+|—
+|—
+|—
+|Parametric surface interpolated bilinearly over a regular grid of points.
+
+|Prism
+|—
+|—
+|—
+|Prism
+|—
+|—
+|Surface or solid obtained by extruding a base shape between a lower and an upper limit.
+
+// --- Solids -------------------------------------------------------------
+8+| *Solids*
+
+|Polyhedron
+|`solid`
+|—
+|—
+|Polyhedron
+|—
+|—
+|Solid whose bounding shells are each expressed as a multi-polygon.
+
+|ParametricCurveSolid
+|`solid`
+|—
+|—
+|—
+|—
+|—
+|Solid defined by a parametric function.
+
+|BSolidSpline
+|`solid`
+|—
+|—
+|—
+|—
+|—
+|`ParametricCurveSolid` defined by a B-spline volumetric representation.
+
+|ConstructiveSolidGeometry
+|`csg`
+|—
+|—
+|—
+|—
+|—
+|Placeholder type for boolean-combined solids (union, intersection, difference).
+
+// --- Oriented / analytic shapes ------------------------------------------
+8+| *Oriented / analytic shapes*
+
+|OrientedGeometry
+|—
+|—
+|—
+|—
+|—
+|—
+|Base type for named analytic shapes carrying their own rotation and translation.
+
+|Cylinder
+|`solid`
+|—
+|—
+|—
+|—
+|cylinder, cone
+|Oriented geometry describing a tube shape with a radius and a height.
+
+|Sphere
+|`solid`
+|—
+|—
+|—
+|—
+|sphere
+|Parametric surface made of the set of points equidistant from a center.
+
+|Frustrum
+|`solid`
+|—
+|—
+|—
+|—
+|—
+|Oriented geometry describing a cone or pyramid with its top cut off.
+
+|Capsule
+|`solid`
+|—
+|—
+|—
+|—
+|—
+|Oriented geometry describing a cylinder capped with two hemispherical ends.
+
+|Plane
+|—
+|—
+|—
+|—
+|—
+|quad
+|Oriented geometry describing a flat surface.
+
+|HyperPlane
+|—
+|—
+|—
+|—
+|—
+|—
+|Oriented geometry dividing the coordinate space in two half-spaces.
+
+|BBox
+|—
+|—
+|—
+|—
+|—
+|—
+|Axis-aligned bounding box exposed as a geometry.
+
+|OBBox
+|—
+|—
+|—
+|—
+|—
+|—
+|Oriented (rotated) bounding box.
+
+// --- Collections -------------------------------------------------------
+8+| *Collections*
+
+|GeometryCollection
+|—
+|GeometryCollection
+|GeometryCollection
+|GeometryCollection
+|—
+|—
+|Collection of an arbitrary number of geometric objects sharing the same spatial reference system.
+
+|MultiPoint
+|`point`
+|MultiPoint
+|MultiPoint
+|MultiPoint
+|—
+|—
+|0-dimensional `GeometryCollection` whose elements are restricted to `Point`.
+
+|MultiCurve
+|`curve`
+|MultiCurve
+|—
+|MultiCurve
+|—
+|—
+|1-dimensional `GeometryCollection` whose elements are `Curve`.
+
+|MultiLineString
+|`curve`
+|MultiLineString
+|MultiLineString
+|MultiLineString
+|—
+|—
+|`MultiCurve` whose elements are `LineString`.
+
+|MultiSurface
+|`surface`
+|MultiSurface
+|—
+|MultiSurface
+|—
+|—
+|2-dimensional `GeometryCollection` whose elements are `Surface`.
+
+|MultiPolygon
+|`surface`
+|MultiPolygon
+|MultiPolygon
+|MultiPolygon
+|—
+|—
+|`MultiSurface` whose elements are `Polygon`.
+
+|MultiPolyhedron
+|`solid`
+|—
+|—
+|MultiPolyhedron
+|—
+|—
+|Arbitrary aggregation of `Polyhedron` solids.
+
+// --- Mesh -----------------------------------------------------------------
+8+| *Mesh*
+
+|MeshPrimitive
+|`mesh`
+|—
+|—
+|—
+|POINTS, LINES, LINE_LOOP, LINE_STRIP, TRIANGLES, TRIANGLE_FAN, TRIANGLE_STRIP;
+|triangle
+|GPU-like batch of simple geometries (points, lines or triangles), inspired by glTF 2.0.
+
+|MultiMeshPrimitive
+|`mesh`
+|—
+|—
+|—
+|Mesh
+|—
+|`GeometryCollection` of `MeshPrimitive` batches.
+
+// --- Regular polyhedra ------------------------------------------------
+8+| *Regular polyhedra*
+
+|Tetrahedron
+|`solid.polyhedron`
+|—
+|—
+|—
+|—
+|—
+|Platonic solid with 4 triangular faces.
+
+|Hexahedron
+|`solid.polyhedron`
+|—
+|—
+|—
+|—
+|—
+|Platonic solid with 6 square faces (cube).
+
+|Octahedron
+|`solid.polyhedron`
+|—
+|—
+|—
+|—
+|—
+|Platonic solid with 8 triangular faces.
+
+|Dodecahedron
+|`solid.polyhedron`
+|—
+|—
+|—
+|—
+|—
+|Platonic solid with 12 pentagonal faces.
+
+|Icosahedron
+|`solid.polyhedron`
+|—
+|—
+|—
+|—
+|—
+|Platonic solid with 20 triangular faces.
+
+|RhombicTriacontahedron
+|`solid.polyhedron`
+|—
+|—
+|—
+|—
+|—
+|Catalan solid with 30 rhombic faces.
+
+|TruncatedIcosahedron
+|`solid.polyhedron`
+|—
+|—
+|—
+|—
+|—
+|Archimedean solid with 12 pentagonal and 20 hexagonal faces (soccer-ball shape).
+
+// --- Conics ---------------------------------------------------------------
+8+| *Conics*
+
+|Conic
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|Curve defined by a conic section.
+
+|Arc
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|Arc segment of a `Conic`.
+
+|Circle
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|Circular arc, or full circle when start and end angles coincide.
+
+|CircularString
+|`curve`
+|—
+|—
+|CircularString
+|—
+|—
+|Curve interpolated using a sequence of circular arcs.
+
+|ArcByBulge
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|Single circular arc given by its two end points and how far it bulges away from their chord.
+
+|ArcByCenterPoint
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|Single circular arc given by the centre and radius of its circle and its start/end bearings.
+
+|ConicArc
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|Arc segment of a general conic curve.
+
+|Ellipse
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|Elliptical conic curve.
+
+|EllipticArc
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|Arc segment of an `Ellipse`.
+
+// --- Splines ----------------------------------------------------------
+8+| *Splines*
+
+|SplineCurve
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|`PolynomialCurve` represented by a piecewise polynomial spline.
+
+|PolynomialSpline
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|`SplineCurve` whose arcs are plain polynomial segments.
+
+|CubicSpline
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|`PolynomialSpline` of degree 3.
+
+|BSplineCurve
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|`SplineCurve` represented by a basis-spline (B-spline).
+
+|NurbCurve
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|Non-Uniform Rational B-Spline curve.
+
+|Bezier
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|Spline curve defined by Bezier control points.
+
+|BSplineSurface
+|`surface`
+|—
+|—
+|—
+|—
+|—
+|`ParametricCurveSurface` represented by a basis-spline (B-spline).
+
+|NurbSurface
+|`surface`
+|—
+|—
+|—
+|—
+|—
+|Non-Uniform Rational B-Spline surface.
+
+// --- Polynomial / function curves ---------------------------------------
+8+| *Polynomial / function curves*
+
+|FunctionArc
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|Arc segment defined by a mathematical function.
+
+|FunctionCurve
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|Curve made of a sequence of `FunctionArc` segments.
+
+|PolynomialArc
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|`FunctionArc` whose function is a polynomial.
+
+|PolynomialCurve
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|`FunctionCurve` made of `PolynomialArc` segments.
+
+// --- Spirals ----------------------------------------------------------
+8+| *Spirals*
+
+|Spiral
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|Curve whose curvature varies continuously along its length.
+
+|Clothoid
+|`curve`
+|—
+|—
+|—
+|—
+|—
+|Euler spiral whose curvature varies linearly with arc length.
+
+// --- Spherical geometry -------------------------------------------------
+8+| *Spherical*
+
+|GreatCircleArc
+|`spherical`
+|—
+|—
+|—
+|—
+|—
+|Arc of a great circle on the surface of a sphere.
+
+|SphericalConvexPolygon
+|`spherical`
+|—
+|—
+|—
+|—
+|—
+|Convex polygon defined on the surface of a sphere.
+
+|SphericalTriangle
+|`spherical`
+|—
+|—
+|—
+|—
+|—
+|Triangle defined on the surface of a sphere.
+
+// --- Not available yet -------------------------------------------------
+8+| *Not available yet*
+
+|—
+|—
+|—
+|—
+|—
+|—
+|isosurface
+|Implicit surface extracted from a scalar field at given iso-values (marching-cubes style)
+
+|===

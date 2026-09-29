@@ -16,18 +16,23 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import org.apache.sis.geometries.LineString;
-import org.apache.sis.geometries.MultiLineString;
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.curve.MultiLineString;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultMultiLineString extends DefaultMultiCurve<LineString> implements MultiLineString {
+public non-sealed class DefaultMultiLineString extends DefaultMultiCurve<LineString> implements MultiLineString {
 
     public DefaultMultiLineString(LineString... geometries) {
         super(geometries);
+    }
+
+    public DefaultMultiLineString(CoordinateReferenceSystem fallbackCRS, LineString... geometries) {
+        super(fallbackCRS, geometries);
     }
 
 }

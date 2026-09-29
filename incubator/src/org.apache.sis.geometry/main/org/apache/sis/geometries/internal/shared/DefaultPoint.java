@@ -17,14 +17,14 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.AttributesType;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
-import org.apache.sis.geometries.math.SampleSystem;
-import org.apache.sis.geometries.math.DataType;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.NDArrays;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.maths.Tuple;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -32,31 +32,31 @@ import org.apache.sis.geometries.math.NDArrays;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultPoint extends AbstractGeometry implements Point {
+public non-sealed class DefaultPoint extends AbstractGeometry implements Point {
 
-    private final PointSequence points;
+    private final DataPoints points;
 
     /**
      * @param crs geometry coordinate system, not null.
      */
     public DefaultPoint(CoordinateReferenceSystem crs) {
-        points = new ArraySequence(NDArrays.of(SampleSystem.of(crs), DataType.DOUBLE, 1));
+        points = new ArrayDataPoints(NDArrays.of(SampleSystem.of(crs), DataType.DOUBLE, 1));
     }
 
     public DefaultPoint(Tuple position) {
-        points = new ArraySequence(NDArrays.of(position.getSampleSystem(), position.getDataType(), 1));
+        points = new ArrayDataPoints(NDArrays.of(position.getSampleSystem(), position.getDataType(), 1));
         points.setPosition(0, position);
     }
 
     public DefaultPoint(CoordinateReferenceSystem crs, double... position) {
-        points = new ArraySequence(NDArrays.of(crs, position));
+        points = new ArrayDataPoints(NDArrays.of(crs, position));
     }
 
     public DefaultPoint(SampleSystem ss, double... position) {
-        points = new ArraySequence(NDArrays.of(ss, position));
+        points = new ArrayDataPoints(NDArrays.of(ss, position));
     }
 
-    public DefaultPoint(PointSequence ps) {
+    public DefaultPoint(DataPoints ps) {
         if (ps.size() != 1) {
             throw new IllegalArgumentException("Point sequence must contain one point");
         }
@@ -64,7 +64,7 @@ public class DefaultPoint extends AbstractGeometry implements Point {
     }
 
     @Override
-    public PointSequence asPointSequence() {
+    public DataPoints asDataPoint() {
         return points;
     }
 
@@ -84,8 +84,8 @@ public class DefaultPoint extends AbstractGeometry implements Point {
     }
 
     @Override
-    public AttributesType getAttributesType() {
-        return points.getAttributesType();
+    public DataPointsType getDataPointsType() {
+        return points.getType();
     }
 
     @Override

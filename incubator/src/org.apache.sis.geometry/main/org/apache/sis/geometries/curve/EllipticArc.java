@@ -1,0 +1,65 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.geometries.curve;
+
+import org.apache.sis.geometries.CurveInterpolation;
+import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.internal.shared.DefaultEllipticArc;
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
+
+
+/**
+ * A conic without a cross term, therefore an arc of ellipse.
+ *
+ * <p>Constraints:</p>
+ * <ul>
+ *   <li>Four data points determine each arc, instead of the five needed by a general
+ *       {@link Conic}, since the <var>xy</var> term is absent from the defining equation.</li>
+ *   <li>Ellipses are built in the tangent plane at the centre of the ellipse, then projected on
+ *       the geometric reference surface by the exponential map.</li>
+ * </ul>
+ *
+ * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 7.9.6
+ */
+@UML(identifier="EllipticArc", specification=ISO_19107)
+public sealed interface EllipticArc extends Conic
+        permits DefaultEllipticArc {
+
+    /**
+     * Well-known text keyword of this geometry type.
+     */
+    static final String TYPE = "ELLIPTICARC";
+
+    @Override
+    default GeometryType getGeometryType() {
+        return GeometryType.ELLIPTICARC;
+    }
+
+    /**
+     * Returns {@link CurveInterpolation#ELLIPTICAL}.
+     *
+     * @see ISO 19107:2019 - 7.9.6
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
+    @Override
+    default CurveInterpolation getInterpolation() {
+        return CurveInterpolation.ELLIPTICAL;
+    }
+}

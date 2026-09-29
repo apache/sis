@@ -69,12 +69,17 @@ public final class DBFReader implements AutoCloseable {
 
     /**
      * Move channel to given position.
+     * The number of read records is recomputed from the given position,
+     * this allows to continue reading sequentially after the jump.
      *
      * @param position new position
      * @throws IOException if the stream cannot be moved to the given position.
      */
     public void moveToOffset(long position) throws IOException {
         channel.seek(position);
+        if (header.recordSize > 0) {
+            nbRead = Math.toIntExact(Math.max(0, position - header.headerSize) / header.recordSize);
+        }
     }
 
     /**
@@ -94,7 +99,7 @@ public final class DBFReader implements AutoCloseable {
 
         final int marker = channel.readUnsignedByte();
         if (marker == TAG_DELETED) {
-            channel.seek(channel.getStreamPosition() + header.recordSize);
+            channel.seek(channel.getStreamPosition() + header.recordSize - 1); //-1 for the delete tag
             return DELETED_RECORD;
         } else if (marker == TAG_EOF) {
             return null;

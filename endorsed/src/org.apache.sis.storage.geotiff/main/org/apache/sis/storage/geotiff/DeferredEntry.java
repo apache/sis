@@ -16,7 +16,10 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.geotiff.base.Tags;
 import org.apache.sis.storage.geotiff.reader.Type;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -38,12 +41,13 @@ final class DeferredEntry implements Comparable<DeferredEntry> {
     /**
      * The GeoTIFF type of the value to read.
      */
-    final Type type;
+    private final Type type;
 
     /**
      * The number of values to read.
+     * This value come from a 32-bits unsigned integer. Therefore, it should never be negative.
      */
-    final long count;
+    private final long count;
 
     /**
      * Offset from beginning of TIFF file where the values are stored.
@@ -70,5 +74,26 @@ final class DeferredEntry implements Comparable<DeferredEntry> {
     @Override
     public int compareTo(final DeferredEntry other) {
         return Long.signum(offset - other.offset);
+    }
+
+    /**
+     * Ensures that the number of elements to read is not too large.
+     *
+     * @param remaining  number of bytes remaining in the stream to read.
+     */
+    final void ensureReasonableCount(final long remaining) throws DataStoreContentException {
+        if (count * type.size > remaining) {
+            throw new DataStoreContentException(owner.reader.errors().getString(Errors.Keys.ExcessiveListSize_2, Tags.name(tag), count));
+        }
+    }
+
+    /**
+     * Adds the value read from the current position in the given stream for this entry.
+     *
+     * @return {@code null} on success, or the unrecognized value otherwise.
+     * @throws Exception if an error occurred while reading the entry.
+     */
+    final Object addDeferredEntry() throws Exception {
+        return owner.addEntry(tag, type, count);
     }
 }

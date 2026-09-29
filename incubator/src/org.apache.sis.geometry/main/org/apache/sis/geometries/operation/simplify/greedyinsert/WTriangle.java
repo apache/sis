@@ -19,17 +19,18 @@ package org.apache.sis.geometries.operation.simplify.greedyinsert;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.AttributesType;
-import org.apache.sis.geometries.LinearRing;
-import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
-import org.apache.sis.geometries.Triangle;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
-import org.apache.sis.geometries.math.Maths;
-import org.apache.sis.geometries.math.Tuple;
+import org.apache.sis.geometries.internal.shared.IndexedPoint;
 import org.apache.sis.geometries.operation.OperationException;
+import org.apache.sis.geometries.surface.Triangle;
+import org.apache.sis.maths.Maths;
+import org.apache.sis.maths.Tuple;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -37,9 +38,9 @@ import org.apache.sis.geometries.operation.OperationException;
  *
  * @author Johann Sorel (Geomatys)
  */
-final class WTriangle extends AbstractGeometry implements Triangle {
+public final class WTriangle extends AbstractGeometry implements Triangle {
 
-    private final LinearRing ring = GeometryFactory.createLinearRing(new PointSequence() {
+    private final LinearRing ring = GeometryFactory.createLinearRing(new DataPoints() {
         @Override
         public CoordinateReferenceSystem getCoordinateReferenceSystem() {
             return p0.getCoordinateReferenceSystem();
@@ -51,8 +52,8 @@ final class WTriangle extends AbstractGeometry implements Triangle {
         }
 
         @Override
-        public AttributesType getAttributesType() {
-            return AttributesType.EMPTY;
+        public DataPointsType getType() {
+            return DataPointsType.EMPTY;
         }
 
         @Override
@@ -62,49 +63,12 @@ final class WTriangle extends AbstractGeometry implements Triangle {
 
         @Override
         public Point getPoint(final int index) {
-            final PointSequence ps = this;
             switch (index) {
                 case 0 :
                 case 1 :
                 case 2 :
                 case 3 :
-                    return new Point() {
-                        @Override
-                        public Tuple getPosition() {
-                            return ps.getPosition(index);
-                        }
-
-                        @Override
-                        public Tuple getAttribute(String name) {
-                            return ps.getAttribute(index, name);
-                        }
-
-                        @Override
-                        public void setAttribute(String name, Tuple tuple) {
-                            ps.setAttribute(index, name, tuple);
-                        }
-
-                        @Override
-                        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-                            return p0.getCoordinateReferenceSystem();
-                        }
-
-                        @Override
-                        public void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
-                            throw new UnsupportedOperationException("Not supported.");
-                        }
-
-                        @Override
-                        public AttributesType getAttributesType() {
-                            return ps.getAttributesType();
-                        }
-
-                        @Override
-                        public boolean isEmpty() {
-                            return false;
-                        }
-
-                    };
+                    return new IndexedPoint(this, index);
                 default : throw new ArrayIndexOutOfBoundsException();
             }
         }
@@ -127,7 +91,7 @@ final class WTriangle extends AbstractGeometry implements Triangle {
 
         @Override
         public Tuple getAttribute(int index, String name) {
-            if (AttributesType.ATT_POSITION.equals(name)) {
+            if (DataPointsType.ATT_POSITION.equals(name)) {
                 return getPosition(index);
             }
             return null;
@@ -135,7 +99,7 @@ final class WTriangle extends AbstractGeometry implements Triangle {
 
         @Override
         public void setAttribute(int index, String name, Tuple value) {
-            if (AttributesType.ATT_POSITION.equals(name)) {
+            if (DataPointsType.ATT_POSITION.equals(name)) {
                 setPosition(index, value);
                 return;
             }

@@ -19,7 +19,7 @@ package org.apache.sis.geometries.mesh;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.sis.geometries.Geometries;
-import org.apache.sis.geometries.math.NDArrays;
+import org.apache.sis.maths.NDArrays;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -224,8 +224,8 @@ public class PrimitiveTest {
         final MeshPrimitive p0 = primitives.get(0);
         final MeshPrimitive p1 = primitives.get(1);
 
-        assertEquals(1, p0.getAttributesType().getAttributeNames().size());
-        assertEquals(1, p1.getAttributesType().getAttributeNames().size());
+        assertEquals(1, p0.getDataPointsType().getAttributeNames().size());
+        assertEquals(1, p1.getDataPointsType().getAttributeNames().size());
         assertEquals(MeshPrimitive.Type.TRIANGLES, p0.getType());
         assertEquals(MeshPrimitive.Type.TRIANGLES, p1.getType());
 

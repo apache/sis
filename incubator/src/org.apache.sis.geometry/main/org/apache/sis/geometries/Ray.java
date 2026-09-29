@@ -17,12 +17,11 @@
 package org.apache.sis.geometries;
 
 import java.util.Objects;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.Vector;
-import org.apache.sis.geometries.math.Vectors;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vectors;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
@@ -46,8 +45,8 @@ public final class Ray extends AbstractGeometry{
     }
 
     @Override
-    public String getGeometryType() {
-        return "RAY";
+    public GeometryType getGeometryType() {
+        return GeometryType.RAY;
     }
 
     public Tuple<?> getPosition() {
@@ -99,7 +98,7 @@ public final class Ray extends AbstractGeometry{
     }
 
     @Override
-    public AttributesType getAttributesType() {
+    public DataPointsType getDataPointsType() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

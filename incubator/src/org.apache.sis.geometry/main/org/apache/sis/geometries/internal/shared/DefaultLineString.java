@@ -16,19 +16,18 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import org.apache.sis.geometries.LineString;
-import org.apache.sis.geometries.PointSequence;
-
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.curve.LineString;
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultLineString extends AbstractGeometry implements LineString {
+public non-sealed class DefaultLineString extends AbstractGeometry implements LineString {
 
-    private final PointSequence points;
+    private final DataPoints points;
 
-    public DefaultLineString(PointSequence points) {
+    public DefaultLineString(DataPoints points) {
         this.points = points;
     }
 
@@ -38,7 +37,7 @@ public class DefaultLineString extends AbstractGeometry implements LineString {
     }
 
     @Override
-    public PointSequence getPoints() {
+    public DataPoints getDataPoints() {
         return points;
     }
 

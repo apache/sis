@@ -16,13 +16,12 @@
  */
 package org.apache.sis.geometries;
 
+import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vectors;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.internal.shared.AbstractGeometry;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.Vector;
-import org.apache.sis.geometries.math.Vectors;
-import org.apache.sis.geometry.GeneralEnvelope;
 
 
 /**
@@ -59,8 +58,8 @@ public final class OBBox extends AbstractGeometry {
     }
 
     @Override
-    public String getGeometryType() {
-        return "BBOX"; //TODO not in OGC SFA.
+    public GeometryType getGeometryType() {
+        return GeometryType.BBOX;
     }
 
     @Override
@@ -84,8 +83,8 @@ public final class OBBox extends AbstractGeometry {
     }
 
     @Override
-    public AttributesType getAttributesType() {
-        return AttributesType.EMPTY;
+    public DataPointsType getDataPointsType() {
+        return DataPointsType.EMPTY;
     }
 
     /**

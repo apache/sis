@@ -21,13 +21,39 @@ import org.opengis.annotation.UML;
 
 
 /**
+ * A reference direction relative to a moving object, such as a vehicle.
+ *
+ * <p>These directions are carried by the object and turn with it: they are meaningful only while
+ * the heading of that object is known. A {@linkplain Bearing bearing} measured from one of them is
+ * therefore relative, unlike a bearing measured from a {@link FixedDirection}.</p>
  *
  * @author Johann Sorel (Geomatys)
+ *
+ * @see ISO 19107:2019 - 6.2.24
  */
-@UML(identifier="RelativeDirection", specification=ISO_19107) // section 6.2.24
-public enum RelativeDirection {
-    FORWARD, //FORE
-    BACKWARD, //AFT
-    LEFT, //PORT
-    RIGHT //STARBOARD
+@UML(identifier="RelativeDirection", specification=ISO_19107)
+public enum RelativeDirection implements ReferenceDirection {
+    /**
+     * Toward the front of the object, in the direction of its movement.
+     * Also called <dfn>fore</dfn>.
+     */
+    FORWARD,
+
+    /**
+     * Toward the rear of the object, opposite to the direction of its movement.
+     * Also called <dfn>aft</dfn>.
+     */
+    BACKWARD,
+
+    /**
+     * Ninety degrees to the left of {@link #FORWARD}.
+     * Also called <dfn>port</dfn>.
+     */
+    LEFT,
+
+    /**
+     * Ninety degrees to the right of {@link #FORWARD}.
+     * Also called <dfn>starboard</dfn>.
+     */
+    RIGHT
 }

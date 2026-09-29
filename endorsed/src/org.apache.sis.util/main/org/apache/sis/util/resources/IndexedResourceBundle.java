@@ -132,13 +132,6 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
     private transient AutoMessageFormat format;
 
     /**
-     * The key of the last resource requested. If the same resource is requested multiple times,
-     * knowing its key allows us to avoid invoking the costly {@link MessageFormat#applyPattern}
-     * method.
-     */
-    private transient short lastKey;
-
-    /**
      * Constructs a new resource bundle loading data from a UTF file derived from the class name.
      */
     protected IndexedResourceBundle() {
@@ -557,18 +550,9 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
         final Object[] arguments = toArray(arg0);
         synchronized (this) {
             if (format == null) {
-                /*
-                 * Constructs a new MessageFormat for formatting the arguments.
-                 */
                 format  = new AutoMessageFormat(pattern, getLocale());
-                lastKey = key;
-            } else if (key != lastKey) {
-                /*
-                 * Method MessageFormat.applyPattern(…) is costly! We will avoid
-                 * calling it again if the format already has the right pattern.
-                 */
+            } else {
                 format.applyPattern(pattern);
-                lastKey = key;
             }
             try {
                 format.configure(arguments);

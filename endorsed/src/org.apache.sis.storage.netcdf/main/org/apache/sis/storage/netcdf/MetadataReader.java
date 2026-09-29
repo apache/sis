@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.temporal.Temporal;
 import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
 import ucar.nc2.constants.CDM;      // idem
@@ -655,8 +656,14 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
          */
         final String wkt = stringValue(GEOSPATIAL_BOUNDS);
         if (wkt != null) {
-            addBoundingPolygon(new StoreFormat(null, null, decoder.geomlib, decoder.listeners).parseGeometry(wkt,
-                    stringValue(GEOSPATIAL_BOUNDS + "_crs"), stringValue(GEOSPATIAL_BOUNDS + "_vertical_crs")));
+            var parser = new StoreFormat(null, null, decoder.geomlib, decoder.listeners);
+            final Path location = decoder.location;
+            if (location != null) {
+                parser.setSourceFile(location.toUri());
+            }
+            addBoundingPolygon(parser.parseGeometry(wkt,
+                    stringValue(GEOSPATIAL_BOUNDS + "_crs"),
+                    stringValue(GEOSPATIAL_BOUNDS + "_vertical_crs")));
         }
         /*
          * Add a description of the format. The description is determined by the decoder in use.

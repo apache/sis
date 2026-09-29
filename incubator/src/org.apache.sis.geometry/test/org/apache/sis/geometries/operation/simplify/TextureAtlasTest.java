@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.operation.simplify;
 
+import org.apache.sis.scene.TextureAtlas;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;

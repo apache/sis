@@ -16,10 +16,10 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.OrientedGeometry;
-import org.apache.sis.geometries.math.Similarity;
-import org.apache.sis.geometries.math.Similarity3D;
+import org.apache.sis.maths.Similarity;
+import org.apache.sis.maths.Similarity3D;
+import org.opengis.geometry.Envelope;
 
 
 /**
@@ -27,7 +27,7 @@ import org.apache.sis.geometries.math.Similarity3D;
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class AbstractOrientedGeometry extends AbstractGeometry implements OrientedGeometry{
+public abstract non-sealed class AbstractOrientedGeometry extends AbstractGeometry implements OrientedGeometry {
 
     protected final Similarity<?> transform;
 

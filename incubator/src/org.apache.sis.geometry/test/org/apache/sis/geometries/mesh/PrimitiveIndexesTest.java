@@ -21,8 +21,8 @@ import java.util.Arrays;
 import java.util.List;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveIndexes;
-import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.geometries.math.Array;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.Array;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;

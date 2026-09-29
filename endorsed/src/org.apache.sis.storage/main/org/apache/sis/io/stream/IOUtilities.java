@@ -560,6 +560,23 @@ check:  if (stream instanceof ChannelData) {
     }
 
     /**
+     * Returns {@code true} if the given file is relative and does not go up in the parent directory.
+     * Callers should invoke {@link Path#normalize()} before this method.
+     *
+     * @param  path  the path to test.
+     * @return whether the given path is relative and does not go up in the parent directory.
+     */
+    public static boolean isRelativeInsideDirectory(final Path path) {
+        if (path.isAbsolute()) {
+            return false;
+        }
+        if (path.getNameCount() != 0 && path.getName(0).toString().startsWith(".")) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Returns {@code true} if the file at the specified path is absent or an empty file.
      * If the file exists but is not a regular file, then this method returns {@code false}.
      *

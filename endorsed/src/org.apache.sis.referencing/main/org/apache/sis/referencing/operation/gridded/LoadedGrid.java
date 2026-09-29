@@ -487,15 +487,15 @@ public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> e
      * @see InterpolatedTransform#createGeodeticTransformation(MathTransformFactory, DatumShiftGrid)
      */
     public static MathTransform createGeodeticTransformation(final Class<? extends AbstractProvider> provider,
-            final MathTransformFactory factory, final LoadedGrid<Angle,Angle> grid) throws FactoryException
+            final MathTransformFactory factory, final LoadedGrid<Angle, Angle> grid) throws FactoryException
     {
         MathTransform global = InterpolatedTransform.createGeodeticTransformation(factory, grid);
-        final LoadedGrid<Angle,Angle>[] subgrids = grid.subgrids;
+        final LoadedGrid<Angle, Angle>[] subgrids = grid.subgrids;
         if (subgrids == null) {
             return global;
         }
         final Map<Envelope, MathTransform> specializations = JDK19.newLinkedHashMap(subgrids.length);
-        for (final LoadedGrid<Angle,Angle> sg : subgrids) try {
+        for (final LoadedGrid<Angle, Angle> sg : subgrids) try {
             final Envelope domain = sg.getDomainOfValidity(Units.DEGREE);
             final MathTransform st = createGeodeticTransformation(provider, factory, sg);
             if (specializations.putIfAbsent(domain, st) != null) {

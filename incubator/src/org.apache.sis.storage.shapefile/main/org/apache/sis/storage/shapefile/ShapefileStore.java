@@ -33,6 +33,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -95,6 +96,8 @@ import org.apache.sis.storage.WritableFeatureSet;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.storage.base.WarningAdapter;
+import org.apache.sis.storage.internal.shared.FeatureSetContentEvent;
+import org.apache.sis.storage.internal.shared.FeatureSetModelEvent;
 import org.apache.sis.storage.shapefile.cpg.CpgFiles;
 import org.apache.sis.storage.shapefile.dbf.DBFField;
 import org.apache.sis.storage.shapefile.dbf.DBFHeader;
@@ -121,9 +124,11 @@ import org.opengis.feature.AttributeType;
 import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.filter.Expression;
 import org.opengis.filter.Filter;
+import org.opengis.filter.FilterFactory;
 import org.opengis.filter.Literal;
 import org.opengis.filter.LogicalOperator;
 import org.opengis.filter.LogicalOperatorName;
+import org.opengis.filter.ResourceId;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.ValueReference;
 import org.apache.sis.geometry.wrapper.*;
@@ -262,6 +267,26 @@ public final class ShapefileStore extends URIDataStore implements WritableFeatur
     @Override
     public Optional<FileSet> getFileSet() throws DataStoreException {
         return featureSetView.getFileSet();
+    }
+
+    /**
+     * Rewrite the files, removing all records marked as deleted.
+     *
+     * Removing features does not shrink the files, deleted records are only
+     * flagged as such in the dbf file to preserve the record numbers, and therefore
+     * the feature identifiers, of the remaining features.
+     * This method physically drops those records to reduce the files size.
+     *
+     * <p>
+     * <b>Warning :</b> the remaining records are renumbered from one, consequently
+     * their {@code sis:identifier} values change. Any identifier obtained before this
+     * call must be considered obsolete.
+     * </p>
+     *
+     * @throws DataStoreException if an error occurred while rewriting the files.
+     */
+    public void compact() throws DataStoreException {
+        featureSetView.compact();
     }
 
     private final class AsFeatureSet extends AbstractFeatureSet implements WritableFeatureSet {
@@ -423,6 +448,54 @@ public final class ShapefileStore extends URIDataStore implements WritableFeatur
             return type;
         }
 
+        /**
+         * Reload the shp and dbf headers.
+         * Must be called after the files have been rewritten, the number of records
+         * and the bounding box may have changed.
+         */
+        private void reloadHeaders() throws DataStoreException {
+            if (readShp) {
+                try (final ShapeReader reader = new ShapeReader(ShpFiles.openReadChannel(files.shpFile), null)) {
+                    shpHeader = new ShapeHeader(reader.getHeader());
+                } catch (IOException ex) {
+                    throw new DataStoreException("Failed to parse shape file header.", ex);
+                }
+            }
+            final Path dbfFile = files.getDbf(false);
+            if (dbfFile != null) {
+                try (DBFReader reader = new DBFReader(ShpFiles.openReadChannel(dbfFile), charset, timezone, null)) {
+                    dbfHeader = new DBFHeader(reader.getHeader());
+                } catch (IOException ex) {
+                    throw new DataStoreException("Failed to parse dbf file header.", ex);
+                }
+            }
+        }
+
+        /**
+         * Build a feature from a shp and dbf record.
+         *
+         * @param recordNumber record number, starts at one, used as feature identifier
+         * @param geometry record geometry, may be null
+         * @param dbfRecord dbf field values, restricted to the read properties
+         */
+        private Feature toFeature(FeatureType type, int recordNumber, Geometry geometry, Object[] dbfRecord,
+                DBFHeader header, int geomSrid, boolean generateId, String baseId)
+        {
+            final Feature next = type.newInstance();
+            if (readShp) {
+                if (geometry != null) {
+                    geometry.setUserData(crs);
+                    geometry.setSRID(geomSrid);
+                }
+                next.setPropertyValue(GEOMETRY_NAME, geometry);
+            }
+            for (int i = 0; i < dbfPropertiesIndex.length; i++) {
+                next.setPropertyValue(header.fields[dbfPropertiesIndex[i]].fieldName, dbfRecord[i]);
+            }
+            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, baseId + recordNumber);
+            return next;
+        }
+
         @Override
         public Optional<Envelope> getEnvelope() throws DataStoreException {
             getType();//force loading headers
@@ -435,6 +508,13 @@ public final class ShapefileStore extends URIDataStore implements WritableFeatur
             return super.getEnvelope();
         }
 
+        /**
+         * {@inheritDoc }
+         *
+         * The returned value is the number of records stored in the dbf file,
+         * it includes the records marked as deleted. Call {@link ShapefileStore#compact()}
+         * to remove them and obtain an exact count.
+         */
         @Override
         public OptionalLong getFeatureCount() {
             try {
@@ -455,7 +535,9 @@ public final class ShapefileStore extends URIDataStore implements WritableFeatur
             final DBFReader dbfreader;
             try {
                 shpreader = readShp ? new ShapeReader(ShpFiles.openReadChannel(files.shpFile), filter) : null;
-                dbfreader = (dbfPropertiesIndex.length > 0) ? new DBFReader(ShpFiles.openReadChannel(files.getDbf(false)), charset, timezone, dbfPropertiesIndex) : null;
+                //the dbf file is always read, even if no property is requested :
+                //the record state tag is the only place where deleted records are flagged.
+                dbfreader = new DBFReader(ShpFiles.openReadChannel(files.getDbf(false)), charset, timezone, dbfPropertiesIndex);
             } catch (IOException ex) {
                 throw new DataStoreException("Faild to open shp and dbf files.", ex);
             }
@@ -471,57 +553,29 @@ public final class ShapefileStore extends URIDataStore implements WritableFeatur
 
             final boolean generateId = mustGenerateId();
             final String baseId = type.getName().tip().toString() +".";
+            final DBFHeader header = dbfreader.getHeader();
 
             final Spliterator spliterator;
-            if (readShp && dbfPropertiesIndex.length > 0) {
-                //read both shp and dbf
-                final DBFHeader header = dbfreader.getHeader();
-
+            if (readShp) {
+                //read the shp and the matching dbf record
                 spliterator = new Spliterators.AbstractSpliterator(Long.MAX_VALUE, Spliterator.ORDERED) {
                     @Override
                     public boolean tryAdvance(Consumer action) {
                         try {
-                            final ShapeRecord shpRecord = shpreader.next();
-                            if (shpRecord == null) return false;
-                            //move dbf to record offset, some shp record might have been skipped because of filter
-                            long offset = (long)header.headerSize + ((long)(shpRecord.recordNumber-1)) * ((long)header.recordSize);
-                            dbfreader.moveToOffset(offset);
-                            final Object[] dbfRecord = dbfreader.next();
-                            final Feature next = type.newInstance();
-                            if (shpRecord.geometry != null) {
-                                shpRecord.geometry.setUserData(crs);
-                                shpRecord.geometry.setSRID(geomSrid);
+                            for (;;) {
+                                final ShapeRecord shpRecord = shpreader.next();
+                                if (shpRecord == null) return false;
+                                //move dbf to record offset, some shp record might have been skipped because of filter
+                                long offset = (long)header.headerSize + ((long)(shpRecord.recordNumber-1)) * ((long)header.recordSize);
+                                dbfreader.moveToOffset(offset);
+                                final Object[] dbfRecord = dbfreader.next();
+                                if (dbfRecord == null) return false;
+                                //skip deleted records, they only exist to preserve the record numbers
+                                if (dbfRecord == DBFReader.DELETED_RECORD) continue;
+                                action.accept(toFeature(type, shpRecord.recordNumber, shpRecord.geometry,
+                                        dbfRecord, header, geomSrid, generateId, baseId));
+                                return true;
                             }
-                            next.setPropertyValue(GEOMETRY_NAME, shpRecord.geometry);
-                            for (int i = 0; i < dbfPropertiesIndex.length; i++) {
-                                next.setPropertyValue(header.fields[dbfPropertiesIndex[i]].fieldName, dbfRecord[i]);
-                            }
-                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, baseId + shpRecord.recordNumber);
-
-                            action.accept(next);
-                            return true;
-                        } catch (IOException ex) {
-                            throw new BackingStoreException(ex.getMessage(), ex);
-                        }
-                    }
-                };
-            } else if (readShp) {
-                //read only the shp
-                spliterator = new Spliterators.AbstractSpliterator(Long.MAX_VALUE, Spliterator.ORDERED) {
-                    @Override
-                    public boolean tryAdvance(Consumer action) {
-                        try {
-                            final ShapeRecord shpRecord = shpreader.next();
-                            if (shpRecord == null) return false;
-                            final Feature next = type.newInstance();
-                            if (shpRecord.geometry != null) {
-                                shpRecord.geometry.setUserData(crs);
-                                shpRecord.geometry.setSRID(geomSrid);
-                            }
-                            next.setPropertyValue(GEOMETRY_NAME, shpRecord.geometry);
-                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, baseId + shpRecord.recordNumber);
-                            action.accept(next);
-                            return true;
                         } catch (IOException ex) {
                             throw new BackingStoreException(ex.getMessage(), ex);
                         }
@@ -529,21 +583,21 @@ public final class ShapefileStore extends URIDataStore implements WritableFeatur
                 };
             } else {
                 //read only dbf
-                final AtomicInteger nextId = new AtomicInteger();
-                final DBFHeader header = dbfreader.getHeader();
+                final AtomicInteger recordNumber = new AtomicInteger();
                 spliterator = new Spliterators.AbstractSpliterator(Long.MAX_VALUE, Spliterator.ORDERED) {
                     @Override
                     public boolean tryAdvance(Consumer action) {
                         try {
-                            final Object[] dbfRecord = dbfreader.next();
-                            if (dbfRecord == null) return false;
-                            final Feature next = type.newInstance();
-                            for (int i = 0; i < dbfPropertiesIndex.length; i++) {
-                                next.setPropertyValue(header.fields[dbfPropertiesIndex[i]].fieldName, dbfRecord[i]);
+                            for (;;) {
+                                //deleted records are counted, identifiers must match those of the shp records
+                                final int number = recordNumber.incrementAndGet();
+                                final Object[] dbfRecord = dbfreader.next();
+                                if (dbfRecord == null) return false;
+                                if (dbfRecord == DBFReader.DELETED_RECORD) continue;
+                                action.accept(toFeature(type, number, null,
+                                        dbfRecord, header, geomSrid, generateId, baseId));
+                                return true;
                             }
-                            if (generateId) next.setPropertyValue(AttributeConvention.IDENTIFIER, baseId + nextId.incrementAndGet());
-                            action.accept(next);
-                            return true;
                         } catch (IOException ex) {
                             throw new BackingStoreException(ex.getMessage(), ex);
                         }
@@ -822,85 +876,131 @@ public final class ShapefileStore extends URIDataStore implements WritableFeatur
             } finally {
                 lock.writeLock().unlock();
             }
+            /*
+             * The files did not exist before this call, so the feature type has been created
+             * rather than modified. The type sent to the listeners is the one read back from
+             * the files, which is the effective type: the shapefile format cannot store every
+             * property of the requested type.
+             */
+            ShapefileStore.this.listeners.fire(FeatureSetModelEvent.class,
+                    FeatureSetModelEvent.createAddEvent(ShapefileStore.this, getType()));
         }
 
         @Override
         public void add(Iterator<? extends Feature> features) throws DataStoreException {
-            if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
-            if (!Files.exists(locationAsPath)) {
-                throw new DataStoreException("FeatureType do not exist, use updateType before modifying features.");
-            }
-            final Writer writer = new Writer(charset);
-            try {
-                //write existing features
-                try (Stream<Feature> stream = features(false)) {
-                    Iterator<Feature> iterator = stream.iterator();
-                    while (iterator.hasNext()) {
-                        writer.write(iterator.next());
-                    }
-                }
-
-                //write new features
-                while (features.hasNext()) {
-                    writer.write(features.next());
-                }
-
-                writer.finish(true);
-            } catch (IOException ex) {
-                try {
-                    writer.finish(false);
-                } catch (IOException e) {
-                    ex.addSuppressed(e);
-                }
-                throw  new DataStoreException("Writing failed", ex);
-            }
+            rewrite(null, null, features, false);
         }
 
         @Override
         public void removeIf(Predicate<? super Feature> filter) throws DataStoreException {
-            if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
-            if (!Files.exists(locationAsPath)) {
-                throw new DataStoreException("FeatureType do not exist, use updateType before modifying features.");
-            }
-            final Writer writer = new Writer(charset);
-            try {
-                //write existing features not matching filter
-                try (Stream<Feature> stream = features(false)) {
-                    Iterator<Feature> iterator = stream.filter(filter.negate()).iterator();
-                    while (iterator.hasNext()) {
-                        writer.write(iterator.next());
-                    }
-                }
-                writer.finish(true);
-            } catch (IOException ex) {
-                try {
-                    writer.finish(false);
-                } catch (IOException e) {
-                    ex.addSuppressed(e);
-                }
-                throw  new DataStoreException("Writing failed", ex);
-            }
+            rewrite(filter, null, null, false);
         }
 
         @Override
         public void replaceIf(Predicate<? super Feature> filter, UnaryOperator<Feature> updater) throws DataStoreException {
+            rewrite(filter, updater, null, false);
+        }
+
+        /**
+         * Rewrite the files without the records marked as deleted.
+         *
+         * @see ShapefileStore#compact()
+         */
+        private void compact() throws DataStoreException {
+            rewrite(null, null, null, true);
+        }
+
+        /**
+         * Rewrite all files applying given modifications.
+         *
+         * Existing records are copied one by one, preserving their record number,
+         * therefore preserving the feature identifiers. Removed features are not dropped
+         * but replaced by a record marked as deleted, holding a null shape and blank fields.
+         * New features are appended after the last record number.
+         *
+         * <p>A {@link FeatureSetContentEvent} is sent for each kind of modification which actually
+         * happened, once the new files have replaced the old ones. Nothing is sent when the call
+         * modified nothing, which is the case of an empty iterator of new features or of a
+         * predicate matching no feature.</p>
+         *
+         * @param remove predicate selecting the features to remove or to update, can be null
+         * @param updater operator applied to the features matching the predicate, can be null
+         *                to remove them. A null result also removes the feature.
+         * @param newFeatures features to append at the end of the files, can be null
+         * @param dropDeleted true to drop the records marked as deleted and renumber the
+         *                remaining records from one, changing the feature identifiers.
+         * @throws DataStoreException if an error occurred while writing the files
+         */
+        private void rewrite(Predicate<? super Feature> remove, UnaryOperator<Feature> updater,
+                Iterator<? extends Feature> newFeatures, boolean dropDeleted) throws DataStoreException
+        {
             if (!isDefaultView()) throw new DataStoreException("Resource not writable in current filter state");
             if (!Files.exists(locationAsPath)) {
                 throw new DataStoreException("FeatureType do not exist, use updateType before modifying features.");
             }
+            //force loading the headers, the charset and the properties index
+            final FeatureType type = getType();
+            final boolean generateId = mustGenerateId();
+            final String baseId = type.getName().tip().toString() + ".";
+            int srid = 0;
+            final Identifier id = IdentifiedObjects.getIdentifier(crs, Citations.EPSG);
+            if (id != null) try {
+                srid = Integer.parseInt(id.getCode());
+            } catch (NumberFormatException e) {
+                // Ignore. Note: this is also the exception if id.getCode() is null.
+            }
+            final int geomSrid = srid;
+            /*
+             * Identifiers of the features modified by this call, collected while the new files are
+             * written and sent to the listeners once the write succeeded. They are recorded even
+             * when `generateId` is false, in which case they cannot designate anything and are
+             * dropped when the events are built, but their number still tells what happened.
+             */
+            final var added   = new ArrayList<String>();
+            final var updated = new ArrayList<String>();
+            final var removed = new ArrayList<String>();
+            int dropped = 0;
+
             final Writer writer = new Writer(charset);
             try {
-                //write existing features applying modifications
-                try (Stream<Feature> stream = features(false)) {
-                    Iterator<Feature> iterator = stream.iterator();
-                    while (iterator.hasNext()) {
-                        Feature feature = iterator.next();
-                        if (filter.test(feature)) {
-                            feature = updater.apply(feature);
+                //copy existing records
+                try (ShapeReader shpreader = new ShapeReader(ShpFiles.openReadChannel(files.shpFile), null);
+                     DBFReader dbfreader = new DBFReader(ShpFiles.openReadChannel(files.getDbf(false)), charset, timezone, dbfPropertiesIndex))
+                {
+                    final DBFHeader header = dbfreader.getHeader();
+                    for (ShapeRecord shpRecord = shpreader.next(); shpRecord != null; shpRecord = shpreader.next()) {
+                        final long offset = (long)header.headerSize + ((long)(shpRecord.recordNumber-1)) * ((long)header.recordSize);
+                        dbfreader.moveToOffset(offset);
+                        final Object[] dbfRecord = dbfreader.next();
+                        if (dbfRecord == null) break;
+
+                        Feature feature = null;
+                        if (dbfRecord != DBFReader.DELETED_RECORD) {
+                            feature = toFeature(type, shpRecord.recordNumber, shpRecord.geometry,
+                                    dbfRecord, header, geomSrid, generateId, baseId);
+                            if (remove != null && remove.test(feature)) {
+                                feature = (updater == null) ? null : updater.apply(feature);
+                                (feature == null ? removed : updated).add(baseId + shpRecord.recordNumber);
+                            }
                         }
-                        if (feature != null) writer.write(feature);
+
+                        if (feature == null) {
+                            //record is deleted, keep its slot to preserve the following record numbers
+                            if (dropDeleted) dropped++;
+                            else writer.writeDeleted(shpRecord.recordNumber);
+                        } else if (dropDeleted) {
+                            writer.write(feature);
+                        } else {
+                            writer.write(feature, shpRecord.recordNumber);
+                        }
                     }
                 }
+
+                //append new features
+                while (newFeatures != null && newFeatures.hasNext()) {
+                    added.add(baseId + writer.write(newFeatures.next()));
+                }
+
                 writer.finish(true);
             } catch (IOException ex) {
                 try {
@@ -910,6 +1010,51 @@ public final class ShapefileStore extends URIDataStore implements WritableFeatur
                 }
                 throw  new DataStoreException("Writing failed", ex);
             }
+            //files have been replaced, number of records and bounding box have changed
+            files.scan();
+            reloadHeaders();
+
+            if (dropDeleted) {
+                /*
+                 * Compaction renumbers every surviving record, so the identifier of every feature
+                 * changed. Which new identifier replaces which old one cannot be expressed by a
+                 * filter, hence the null one. Nothing changed if no record had been deleted.
+                 */
+                if (dropped != 0) {
+                    ShapefileStore.this.listeners.fire(FeatureSetContentEvent.class,
+                            FeatureSetContentEvent.createUpdateEvent(ShapefileStore.this, null));
+                }
+            } else {
+                fireContentEvent(FeatureSetContentEvent.Type.ADD,    added,   generateId);
+                fireContentEvent(FeatureSetContentEvent.Type.UPDATE, updated, generateId);
+                fireContentEvent(FeatureSetContentEvent.Type.DELETE, removed, generateId);
+            }
+        }
+
+        /**
+         * Sends a content event for the given feature identifiers, if there is any.
+         *
+         * @param type         whether the features were added, updated or deleted.
+         * @param identifiers  identifiers of the modified features, empty if none were.
+         * @param usable       whether the feature type has an identifier property.
+         */
+        private void fireContentEvent(final FeatureSetContentEvent.Type type,
+                final List<String> identifiers, final boolean usable)
+        {
+            if (identifiers.isEmpty()) {
+                return;
+            }
+            Filter<Feature> ids = null;
+            if (usable) {
+                final FilterFactory<Feature,Object,Object> ff = DefaultFilterFactory.forFeatures();
+                final var rid = new LinkedHashSet<ResourceId>();
+                for (final String identifier : identifiers) {
+                    rid.add(ff.resourceId(identifier));
+                }
+                ids = FeatureSetContentEvent.resourceId(rid);
+            }
+            ShapefileStore.this.listeners.fire(FeatureSetContentEvent.class,
+                    new FeatureSetContentEvent(ShapefileStore.this, type, ids));
         }
 
         @Override
@@ -1185,7 +1330,10 @@ public final class ShapefileStore extends URIDataStore implements WritableFeatur
         private final ShapeHeader shpHeader;
         private final DBFHeader dbfHeader;
         private String defaultGeomName = null;
-        private int inc = 0;
+        /**
+         * Highest record number written, new records are appended after it.
+         */
+        private int lastRecordNumber = 0;
 
         private Writer(Charset charset) throws DataStoreException{
             try {
@@ -1227,8 +1375,23 @@ public final class ShapefileStore extends URIDataStore implements WritableFeatur
 
         }
 
-        private void write(Feature feature) throws IOException {
-            inc++; //number starts at 1
+        /**
+         * Write a feature, appended after the last written record.
+         *
+         * @return the record number given to the feature, which determines its identifier.
+         */
+        private int write(Feature feature) throws IOException {
+            final int recordNumber = lastRecordNumber + 1;
+            write(feature, recordNumber);
+            return recordNumber;
+        }
+
+        /**
+         * Write a feature with the given record number.
+         *
+         * @param recordNumber record number, starts at one
+         */
+        private void write(Feature feature, int recordNumber) throws IOException {
             final ShapeRecord shpRecord = new ShapeRecord();
             final long recordStartPosition = shpWriter.getSteamPosition();
 
@@ -1248,21 +1411,16 @@ public final class ShapefileStore extends URIDataStore implements WritableFeatur
                 }
             }
 
-            //write geometry
+            //write geometry, a null geometry is written as a null shape
+            shpRecord.recordNumber = recordNumber;
             Object value = feature.getPropertyValue(defaultGeomName);
             if (value instanceof Geometry) {
                 shpRecord.geometry = (Geometry) value;
-                shpRecord.recordNumber = inc;
-            } else {
+            } else if (value != null) {
                 throw new IOException("Feature geometry property is not a geometry");
             }
             shpWriter.writeRecord(shpRecord);
-            final long recordEndPosition = shpWriter.getSteamPosition();
-
-            //write index
-            final int recordStartPositionWord = Math.toIntExact(recordStartPosition / 2); // divide by 2 for word size
-            final int recordEndPositionWord = Math.toIntExact(recordEndPosition / 2); // divide by 2 for word size
-            shxWriter.writeRecord(recordStartPositionWord, recordEndPositionWord - recordStartPositionWord);
+            writeIndex(recordStartPosition);
 
             //copy dbf fields
             Object[] fields = new Object[dbfHeader.fields.length];
@@ -1270,6 +1428,37 @@ public final class ShapefileStore extends URIDataStore implements WritableFeatur
                 fields[i] = feature.getPropertyValue(dbfHeader.fields[i].fieldName);
             }
             dbfWriter.writeRecord(fields);
+            lastRecordNumber = Math.max(lastRecordNumber, recordNumber);
+        }
+
+        /**
+         * Write a record marked as deleted.
+         *
+         * The record is preserved in the files to keep the record numbers of the
+         * following records unchanged. It contains a null shape and blank dbf fields.
+         *
+         * @param recordNumber record number, starts at one
+         */
+        private void writeDeleted(int recordNumber) throws IOException {
+            final ShapeRecord shpRecord = new ShapeRecord();
+            shpRecord.recordNumber = recordNumber;
+            final long recordStartPosition = shpWriter.getSteamPosition();
+            shpWriter.writeRecord(shpRecord);
+            writeIndex(recordStartPosition);
+            dbfWriter.writeDeletedRecord();
+            lastRecordNumber = Math.max(lastRecordNumber, recordNumber);
+        }
+
+        /**
+         * Write the shx entry of the record which starts at given position.
+         *
+         * @param recordStartPosition position of the record in the shp file, in bytes
+         */
+        private void writeIndex(long recordStartPosition) throws IOException {
+            final long recordEndPosition = shpWriter.getSteamPosition();
+            final int recordStartPositionWord = Math.toIntExact(recordStartPosition / 2); // divide by 2 for word size
+            final int recordEndPositionWord = Math.toIntExact(recordEndPosition / 2); // divide by 2 for word size
+            shxWriter.writeRecord(recordStartPositionWord, recordEndPositionWord - recordStartPositionWord);
         }
 
         /**

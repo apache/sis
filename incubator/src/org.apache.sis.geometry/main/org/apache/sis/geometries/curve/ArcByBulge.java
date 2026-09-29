@@ -1,0 +1,124 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.geometries.curve;
+
+import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.CurveInterpolation;
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.internal.shared.DefaultArcByBulge;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Vector;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPointsType;
+
+
+/**
+ * A single circular arc described by its two end points, how far it bulges away from the chord
+ * joining them, and which side of the chord it bulges towards.
+ *
+ * <p>This is the parameterisation that GML calls {@code gml:ArcByBulge}. Compared with
+ * {@link CircularString}, which needs a third point <em>on</em> the arc, this one replaces that
+ * point by a scalar {@linkplain #getBulge() bulge} — the distance from the midpoint of the chord to
+ * the arc, measured along the {@linkplain #getNormal() normal}. The two carry the same information
+ * and neither is an approximation of the other, but converting between them means solving for the
+ * circle, so both are kept as they were written.</p>
+ *
+ * @author Johann Sorel (Geomatys)
+ * @see GML ArcByBulge
+ */
+public sealed interface ArcByBulge extends Curve
+        permits DefaultArcByBulge
+{
+
+    static final String TYPE = "ARCBYBULGE";
+
+    @Override
+    default GeometryType getGeometryType() {
+        return GeometryType.ARCBYBULGE;
+    }
+
+    /**
+     * Returns the two end points of this arc: its start point followed by its end point.
+     *
+     * @return the start and end points, never null and always of size 2.
+     */
+    @Override
+    DataPoints getDataPoints();
+
+    /**
+     * Returns the distance from the midpoint of the chord joining the two end points to the arc,
+     * measured along the {@linkplain #getNormal() normal}. It is expressed in the units of the
+     * coordinate system axes.
+     *
+     * @return the bulge of this arc.
+     */
+    double getBulge();
+
+    /**
+     * Returns the direction the arc bulges towards, as a vector perpendicular to the chord joining
+     * the two end points.
+     *
+     * @return the normal to the chord, never null.
+     */
+    Vector<?> getNormal();
+
+    /**
+     * @return null, a ArcByBulge has no control points
+     */
+    @Override
+    default Array getControlPoints() {
+        return null;
+    }
+
+    /**
+     * Returns {@link CurveInterpolation#CIRCULAR}.
+     */
+    @Override
+    default CurveInterpolation getInterpolation() {
+        return CurveInterpolation.CIRCULAR;
+    }
+
+    @Override
+    default CoordinateReferenceSystem getCoordinateReferenceSystem() {
+        return getDataPoints().getCoordinateReferenceSystem();
+    }
+
+    @Override
+    default void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
+        getDataPoints().setCoordinateReferenceSystem(cs);
+    }
+
+    @Override
+    default DataPointsType getDataPointsType() {
+        return getDataPoints().getType();
+    }
+
+    @Override
+    default boolean isEmpty() {
+        return getDataPoints().isEmpty();
+    }
+
+    /**
+     * Returns {@code false}: an arc joining two distinct end points cannot close on itself, and two
+     * identical end points would give a chord of zero length, for which no circle is determined.
+     */
+    @Override
+    default boolean isClosed() {
+        return false;
+    }
+}

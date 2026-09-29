@@ -16,23 +16,24 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import java.util.Objects;
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.point.MultiPoint;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.AttributesType;
-import org.apache.sis.geometries.MultiPoint;
-import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.PointSequence;
+import org.apache.sis.geometries.DataPointsType;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultMultiPoint extends AbstractGeometry implements MultiPoint<Point> {
+public non-sealed class DefaultMultiPoint extends AbstractGeometry implements MultiPoint<Point> {
 
-    private final PointSequence points;
+    private final DataPoints points;
 
-    public DefaultMultiPoint(PointSequence points) {
+    public DefaultMultiPoint(DataPoints points) {
         this.points = points;
     }
 
@@ -62,13 +63,28 @@ public class DefaultMultiPoint extends AbstractGeometry implements MultiPoint<Po
     }
 
     @Override
-    public AttributesType getAttributesType() {
-        return points.getAttributesType();
+    public DataPointsType getDataPointsType() {
+        return points.getType();
     }
 
     @Override
-    public PointSequence asPointSequence() {
+    public DataPoints asDataPoints() {
         return points;
     }
 
+    @Override
+    public int hashCode() {
+        return 13 * Objects.hashCode(points);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        return Objects.equals(points, ((DefaultMultiPoint) obj).points);
+    }
 }

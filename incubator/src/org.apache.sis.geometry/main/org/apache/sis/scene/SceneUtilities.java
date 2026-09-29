@@ -16,8 +16,8 @@
  */
 package org.apache.sis.scene;
 
-import org.apache.sis.geometries.math.Matrix;
-import org.apache.sis.geometries.math.Similarity3D;
+import org.apache.sis.maths.Matrix;
+import org.apache.sis.maths.Similarity3D;
 
 
 /**

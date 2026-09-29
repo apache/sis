@@ -1,0 +1,258 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.geometries;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.SampleSystem;
+
+
+/**
+ * 3D Engine decompose draw calls by primitive types.
+ * Each indexed primitives are forwarded with a set of Attributes.
+ *
+ * In common GIS, a single ordinate has been defined as 'M'.
+ * It is a very limited capability compared to 3D engine geometry properties.
+ *
+ * @author Johann Sorel (Geomatys
+ * @see https://docs.ogc.org/DRAFTS/21-045r1.html#bb_measures
+ */
+public interface DataPointsType {
+
+    static final String ATT_POSITION = "POSITION";
+
+    /**
+     * The single ordinate that common GIS formats call <cite>M</cite>, the measure.
+     * It is a one dimensional attribute, kept apart from {@link #ATT_POSITION} because
+     * it is not a spatial ordinate: it takes part in no distance, area or transform.
+     * This is the attribute that the {@code M} and {@code ZM} flavors of Well-Known Text
+     * are read into and written from.
+     */
+    static final String ATT_M = "M";
+
+    static final String ATT_NORMAL = "NORMAL";
+    static final String ATT_TANGENT = "TANGENT";
+    static final String ATT_TEXCOORD_0 = "TEXCOORD_0";
+
+    //indexed attributes
+    static final String ATT_TEXCOORD = "TEXCOORD";
+    static final String ATT_COLOR = "COLOR";
+    static final String ATT_JOINTS = "JOINTS";
+    static final String ATT_WEIGHTS = "WEIGHTS";
+
+    /**
+     * Attribute from OGC 3D Tiles.
+     * To link primitives to features/batch tables.
+     */
+    static final String ATT_BATCH_ID = "_BATCHID";
+
+    /**
+     * Returns attribute system for given name.
+     *
+     * @param name seached attribute name
+     * @return system or null.
+     */
+    SampleSystem getAttributeSystem(String name);
+
+    /**
+     * Returns attribute type for given name.
+     *
+     * @param name seached attribute name
+     * @return type or null.
+     */
+    DataType getAttributeType(String name);
+
+    /**
+     * Get how values should be interpolation in geometric operations.
+     *
+     * TODO : experimentale but needed
+     */
+    default AttributeInterpolation getAttributeInterpolation(String name) {
+        return AttributeInterpolation.NEAREST;
+    }
+
+    /**
+     * Get how values should be transformed in geometric operations.
+     *
+     * TODO : experimentale but needed
+     */
+    default AttributeTransformation getAttributeTransformation(String name) {
+        return AttributeTransformation.NONE;
+    }
+
+    /**
+     * Returns attribute names.
+     *
+     * @return names, never null, can be empty
+     */
+    List<String> getAttributeNames();
+
+    static int hashCode(final DataPointsType type) {
+        int hash = 0;
+        for (final String name : type.getAttributeNames()) {
+            // Summed so that the result does not depend on the order in which the names are returned.
+            hash += name.hashCode()
+                  ^ Objects.hashCode(type.getAttributeSystem(name))
+                  ^ Objects.hashCode(type.getAttributeType(name));
+        }
+        return hash;
+    }
+
+    static boolean equals(final DataPointsType type, final Object obj) {
+        if (type == obj) {
+            return true;
+        }
+        if (!(obj instanceof DataPointsType other)) {
+            return false;
+        }
+        if (type instanceof DataPoints || type instanceof Geometry ||
+            obj  instanceof DataPoints || obj  instanceof Geometry)
+        {
+            // At least one operand carries the positions, not only their description.
+            return false;
+        }
+        final List<String> names = type.getAttributeNames();
+        final List<String> others = other.getAttributeNames();
+        if (names.size() != others.size() || !new HashSet<>(names).containsAll(others)) {
+            return false;
+        }
+        for (final String name : names) {
+            if (!Objects.equals(type.getAttributeSystem(name), other.getAttributeSystem(name)) ||
+                !Objects.equals(type.getAttributeType  (name), other.getAttributeType  (name)))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Empty attributes type.
+     */
+    static DataPointsType EMPTY = new DataPointsType() {
+        @Override
+        public SampleSystem getAttributeSystem(String name) {
+            return null;
+        }
+
+        @Override
+        public DataType getAttributeType(String name) {
+            return null;
+        }
+
+        @Override
+        public List<String> getAttributeNames() {
+            return Collections.EMPTY_LIST;
+        }
+
+        @Override
+        public int hashCode() {
+            return DataPointsType.hashCode(this);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return DataPointsType.equals(this, obj);
+        }
+    };
+
+    /**
+     * Modifiable AttributesType implementation.
+     */
+    public static final class Template implements DataPointsType {
+
+        private final Map<String,DataType> datatypes = new HashMap<>();
+        private final Map<String,SampleSystem> sampleSystems = new HashMap<>();
+
+        public Template() {}
+
+        public void addOrReplaceAttribute(String name, SampleSystem system, DataType type) {
+            datatypes.put(name, type);
+            sampleSystems.put(name, system);
+        }
+
+        @Override
+        public SampleSystem getAttributeSystem(String name) {
+            return sampleSystems.get(name);
+        }
+
+        @Override
+        public DataType getAttributeType(String name) {
+            return datatypes.get(name);
+        }
+
+        @Override
+        public List<String> getAttributeNames() {
+            return new ArrayList(datatypes.keySet());
+        }
+
+        /**
+         * Returns a hash code value for this description.
+         *
+         * @see DataPointsType#hashCode(DataPointsType)
+         */
+        @Override
+        public int hashCode() {
+            return DataPointsType.hashCode(this);
+        }
+
+        /**
+         * Compares this description with the given object for equality.
+         * The given object does not need to be a template: any description
+         * declaring the same attributes is equal to this one.
+         *
+         * @see DataPointsType#equals(DataPointsType, Object)
+         */
+        @Override
+        public boolean equals(Object obj) {
+            return DataPointsType.equals(this, obj);
+        }
+    }
+
+    /**
+     * Retains only the elements in this AttributesType that are contained in the
+     * specified AttributesType. In other words, removes from
+     * this AttributesType all of its elements that are not contained in the
+     * specified AttributesType.
+     *
+     * @param other not null
+     * @return new AttributesType or this instance if unchanged.
+     */
+    default DataPointsType retainAll(DataPointsType other) throws IllegalArgumentException {
+        List<String> attributeNames = new ArrayList<>(getAttributeNames());
+        attributeNames.retainAll(other.getAttributeNames());
+
+        final Template template = new Template();
+        for (String name : getAttributeNames()) {
+            SampleSystem system = other.getAttributeSystem(name);
+            if (system == null) continue;
+            if (!system.equals(getAttributeSystem(name))) {
+                throw new IllegalArgumentException("Both attribute types contain " + name + " but sample system differ");
+            }
+            DataType type = DataType.largest(getAttributeType(name), other.getAttributeType(name));
+            template.addOrReplaceAttribute(name, system, type);
+        }
+
+        return template;
+    }
+}

@@ -16,10 +16,12 @@
  */
 package org.apache.sis.storage.event;
 
+import java.util.Locale;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.apache.sis.storage.Resource;
+import org.apache.sis.util.internal.shared.Strings;
 
 
 /**
@@ -29,8 +31,8 @@ import org.apache.sis.storage.Resource;
  * {@linkplain LogRecord#getInstant() log time}, <i>etc.</i>) in addition of warning message.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.7
  * @since   1.0
- * @version 1.0
  */
 public class WarningEvent extends StoreEvent {
     /**
@@ -67,13 +69,25 @@ public class WarningEvent extends StoreEvent {
     }
 
     /**
+     * Returns the warning message, preferably in the given locale.
+     * The locale is used on a best-effort basis and may be ignored if unsupported.
+     *
+     * @param  locale  the desired locale, or {@code null} for the default locale.
+     * @return the warning message, preferably in the given locale.
+     * @since 1.7
+     */
+    public String getMessage(final Locale locale) {
+        return Strings.formatMessage(description, locale, null, null, null);
+    }
+
+    /**
      * Returns a string representation of this warning for debugging purpose.
      *
      * @return a string representation of this warning.
      */
     @Override
     public String toString() {
-        final StringBuilder b = new StringBuilder();
+        final var b = new StringBuilder();
         final Level level = description.getLevel();
         if (level != null) {
             b.append(level.getLocalizedName()).append(": ");

@@ -16,43 +16,23 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
-import org.apache.sis.geometries.MultiCurve;
+import org.apache.sis.geometries.curve.MultiCurve;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultMultiCurve<T extends Curve> extends AbstractGeometry implements MultiCurve<T> {
-
-    private final T[] curves;
+public non-sealed class DefaultMultiCurve<T extends Curve> extends DefaultGeometryCollection<T> implements MultiCurve<T> {
 
     public DefaultMultiCurve(T[] geometries) {
-        this.curves = geometries;
+        this(null, geometries);
     }
 
-    @Override
-    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return curves[0].getCoordinateReferenceSystem();
-    }
-
-    @Override
-    public void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
-        for (Curve c : curves) {
-            c.setCoordinateReferenceSystem(cs);
-        }
-    }
-
-    @Override
-    public int getNumGeometries() {
-        return curves.length;
-    }
-
-    @Override
-    public T getGeometryN(int n) {
-        return curves[n];
+    public DefaultMultiCurve(CoordinateReferenceSystem fallbackCRS, T[] geometries) {
+        super(fallbackCRS, geometries);
     }
 
 }

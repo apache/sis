@@ -165,12 +165,20 @@ public class SQLBuilder extends Syntax {
 
     /**
      * Appends an identifier between quote characters.
+     * If the identifier contains quotes, the quotes will be doubled.
      *
      * @param  name  the identifier to append.
      * @return this builder, for method call chaining.
      */
     public final SQLBuilder appendIdentifier(final String name) {
-        buffer.append(identifierQuote).append(name).append(identifierQuote);
+        int i = buffer.append(identifierQuote).length();
+        buffer.append(name);
+        while ((i = buffer.indexOf(identifierQuote, i)) >= 0) {
+            final int n = identifierQuote.length();
+            buffer.insert(i += n, identifierQuote);
+            i += n;
+        }
+        buffer.append(identifierQuote);
         return this;
     }
 

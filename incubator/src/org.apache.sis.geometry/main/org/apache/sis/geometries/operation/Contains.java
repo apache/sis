@@ -1,0 +1,110 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.geometries.operation;
+
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Cursor;
+import org.apache.sis.maths.Maths;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vectors;
+import org.apache.sis.geometries.DataPointsType;
+
+
+/**
+ * Constains 2D processors.
+ *
+ * @author Johann Sorel (Geomatys)
+ */
+public final class Contains {
+
+    private Contains(){}
+
+    /**
+     * Test if point is within polygon using Winding Number algorithm.
+     * http://geomalgorithms.com/a03-_inclusion.html
+     * http://en.wikipedia.org/wiki/Point_in_polygon
+     *
+     * @param ring not null
+     * @param point not null
+     */
+    private static boolean contains(Array ring, Tuple<?> point) {
+        final Cursor cursor = ring.cursor();
+
+        int windingNumber = 0;
+        Tuple<?> current;
+        Tuple<?> previous;
+        cursor.moveTo(0);
+        current = cursor.samples();
+        previous = Vectors.create(current.getSampleSystem(), current.getDataType());
+        final double pointY = point.get(1);
+        for (long i = 1, n = ring.getLength(); i < n; i++){
+            previous.set(current);
+            cursor.moveTo(i);
+            current = cursor.samples();
+
+            if (previous.get(1) <= pointY){
+                if (current.get(1) > pointY){
+                    if (Maths.lineSide(previous, current, point) > 0){
+                        windingNumber++;
+                    }
+                }
+            } else {
+                if (current.get(1) <= pointY){
+                    if (Maths.lineSide(previous, current, point) < 0){
+                        windingNumber--;
+                    }
+                }
+            }
+        }
+
+        //if 0 point is outside
+        return windingNumber != 0;
+    }
+
+    /**
+     * Polygon contains Point test.
+     */
+    public static boolean contains(Polygon polygon, Point candidate) throws OperationException {
+        ProcessorUtils.ensureSameCRS2D(polygon, candidate);
+
+        { //check exterior
+            final Array coords = polygon.getExteriorRing().getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION);
+            if (!contains(coords, candidate.getPosition())) {
+                //point is outside the exterior ring
+                return false;
+            }
+        }
+
+        { //check holes
+            for (int i = 0, n = polygon.getNumInteriorRing(); i < n; i++) {
+                final LineString hole = polygon.getInteriorRingN(i);
+                final Array coords = hole.getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION);
+                if (contains(coords, candidate.getPosition())) {
+                    //point is within a hole
+                    return false;
+                }
+            }
+        }
+
+        //point is inside polygon
+        return true;
+    }
+
+}

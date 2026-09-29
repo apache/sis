@@ -1,0 +1,148 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.geometries.operation;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Cursor;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.CommonCRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.util.FactoryException;
+import org.apache.sis.geometries.DataPointsType;
+
+
+/**
+ *
+ * @author Johann Sorel (Geomatys)
+ */
+public final class To3D {
+
+    private To3D(){}
+
+    private static void zedit(Array array, Consumer<Tuple> Zeditor) {
+        final Cursor cursor = array.cursor();
+        while (cursor.next()) {
+            Zeditor.accept(cursor.samples());
+        }
+    }
+
+    private static ArrayDataPoints copy(DataPoints ps) {
+        final Map<String,Array> attributes = new HashMap<>();
+        for (String name : ps.getType().getAttributeNames()) {
+            attributes.put(name, ps.getAttributeArray(name).copy());
+        }
+        return new ArrayDataPoints(attributes);
+    }
+
+    private static ArrayDataPoints to3d(DataPoints base, CoordinateReferenceSystem crs3d, Consumer<Tuple> Zeditor) {
+
+        final ArrayDataPoints ps = copy(base);
+
+        if (Zeditor == null) {
+            Zeditor = (Tuple t) -> t.set(2, 0.0);
+        }
+
+        Array positions = ps.getAttributeArray(DataPointsType.ATT_POSITION);
+        positions = to3d(positions, crs3d, Zeditor);
+        ps.setAttribute(DataPointsType.ATT_POSITION, positions);
+        return ps;
+    }
+
+    private static Array to3d(Array positions, CoordinateReferenceSystem crs3d, Consumer<Tuple> Zeditor) {
+
+        if (Zeditor == null) {
+            Zeditor = (Tuple t) -> t.set(2, 0.0);
+        }
+
+        final CoordinateReferenceSystem geomCrs = positions.getCoordinateReferenceSystem();
+        final int geomCrsDim = geomCrs.getCoordinateSystem().getDimension();
+        if (geomCrsDim < 2) throw new OperationException("Geometry crs must have at least two dimensions");
+
+        if (crs3d == null && geomCrsDim > 2) {
+            //just edit the Z values
+            zedit(positions, Zeditor);
+        } else if (crs3d != null && geomCrsDim == 3) {
+            //change the crs and edit values
+            positions.setSampleSystem(SampleSystem.of(crs3d));
+            zedit(positions, Zeditor);
+        } else {
+            if (crs3d == null) {
+                try {
+                    crs3d = CRS.compound(geomCrs, CommonCRS.Vertical.ELLIPSOIDAL.crs());
+                } catch (FactoryException ex) {
+                    throw new OperationException(ex.getMessage(), ex);
+                }
+            }
+            //create a new one
+            final Array array = NDArrays.of(SampleSystem.of(crs3d), positions.getDataType(), positions.getLength());
+            final Cursor target = array.cursor();
+            final Cursor source = positions.cursor();
+            while (source.next() && target.next()) {
+                Tuple t = target.samples();
+                Tuple s = source.samples();
+                t.set(0, s.get(0));
+                t.set(1, s.get(1));
+                Zeditor.accept(t);
+            }
+            positions = array;
+        }
+        return positions;
+    }
+
+    /**
+     * Add Z axis to Point.
+     */
+    public static Point to3D(Point base, CoordinateReferenceSystem crs3d, Consumer<Tuple> zeditor) {
+        final DataPoints copy3d = to3d(base.asDataPoint(), crs3d, zeditor);
+        return GeometryFactory.createPoint(copy3d);
+    }
+
+    /**
+     * Add Z axis to LineString.
+     */
+    public static LineString to3D(LineString base, CoordinateReferenceSystem crs3d, Consumer<Tuple> zeditor) {
+        final DataPoints copy3d = to3d(base.getDataPoints(), crs3d, zeditor);
+        return GeometryFactory.createLineString(copy3d);
+    }
+
+    /**
+     * Add Z axis to Primitive.
+     * Also works for ModelPrimitive.
+     */
+    public static MeshPrimitive to3D(MeshPrimitive base, CoordinateReferenceSystem crs3d, Consumer<Tuple> zeditor) {
+        final MeshPrimitive copy3d = base.deepCopy();
+
+        Array positions = copy3d.getPositions();
+        positions = to3d(positions, crs3d, zeditor);
+        copy3d.setPositions(positions);
+
+        return copy3d;
+    }
+
+}

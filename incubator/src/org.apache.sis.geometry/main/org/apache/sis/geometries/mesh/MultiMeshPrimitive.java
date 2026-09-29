@@ -24,13 +24,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 
 
 /**

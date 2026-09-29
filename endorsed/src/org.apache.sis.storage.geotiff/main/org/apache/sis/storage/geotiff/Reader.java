@@ -367,13 +367,18 @@ final class Reader extends IOBase {
                 if (stopAfter.owner == dir) break;
             }
         }
+        final long length = input.length();
         for (final Iterator<DeferredEntry> it = deferredEntries.iterator(); it.hasNext();) {
             final DeferredEntry entry = it.next();
-            if (entry.owner == dir || (entry.offset >= ignoreBefore && entry.offset <= ignoreAfter)) {
-                input.seek(entry.offset);
+            final long offset = entry.offset;
+            if (entry.owner == dir || (offset >= ignoreBefore && offset <= ignoreAfter)) {
+                if (length >= 0) {
+                    entry.ensureReasonableCount(length - offset);
+                }
+                input.seek(offset);
                 Object error;
                 try {
-                    error = entry.owner.addEntry(entry.tag, entry.type, entry.count);
+                    error = entry.addDeferredEntry();
                 } catch (IOException | DataStoreException e) {
                     throw e;
                 } catch (Exception e) {

@@ -23,19 +23,19 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.opengis.geometry.Envelope;
+import org.apache.sis.geometries.index.KdTree;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
-import org.apache.sis.geometries.index.KdTree;
-import org.apache.sis.geometries.math.Maths;
-import org.apache.sis.geometries.math.Tuple;
-import org.apache.sis.geometries.math.NDArrays;
-import org.apache.sis.geometries.math.Vector;
-import org.apache.sis.geometries.math.Vectors;
-import org.apache.sis.geometries.math.Array;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Maths;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vectors;
 import org.apache.sis.util.ArgumentChecks;
+import org.opengis.geometry.Envelope;
 
 
 /**
@@ -427,7 +427,6 @@ public final class Delaunay {
      * @throws OperationException if an algorithm exception occurs
      */
     private OrientedEdge insertEdge(OrientedEdge A_B, Vertex Z, boolean isContraint) throws OperationException {
-//        System.out.println("ee " + A_B.getTriangle().asTextPolygon() +" LINESTRING(" + A_B.getStart().getPosition().get(0) +" "+  A_B.getStart().getPosition().get(1) + ", " + Z.getPosition().get(0) +" "+ Z.getPosition().get(1) + ")");
 
         //find the starting triangle
         /*

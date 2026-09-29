@@ -30,7 +30,6 @@ import java.util.Arrays;
 import java.util.TreeMap;
 import java.util.SortedMap;
 import java.util.Comparator;
-import java.util.ResourceBundle;
 import java.util.logging.*;
 import java.util.function.IntSupplier;
 import org.apache.sis.system.Modules;
@@ -245,13 +244,6 @@ public class MonolineFormatter extends Formatter {
      * The message format, or {@code null} if not yet created.
      */
     private transient AutoMessageFormat messageFormat;
-
-    /**
-     * Value of the last call to {@link MessageFormat#applyPattern(String)}. Saved in order to avoid
-     * calling {@code applyPattern(String)} in the common case where the same message is logged many
-     * times with different arguments.
-     */
-    private transient String messagePattern;
 
     /**
      * One of the following constants: {@link #NO_SOURCE}, {@link #LOGGER_SHORT},
@@ -855,41 +847,7 @@ loop:   for (int i=0; ; i++) {
      */
     @Override
     public String formatMessage(final LogRecord record) {
-        /*
-         * Same work as java.util.logging.Formatter.formatMessage(LogRecord) except for the synchronization lock,
-         * the reuse of existing MessageFormat and StringBuffer instances, and not catching formatting exceptions
-         * (we want to know if our messages have a problem).
-         */
-        String message = record.getMessage();
-        ResourceBundle resources = record.getResourceBundle();
-        if (resources != null) {
-            message = resources.getString(message);
-        }
-        final Object[] parameters = record.getParameters();
-        if (parameters != null && parameters.length != 0) {
-            int i = message.indexOf('{');
-            if (i >= 0 && ++i < message.length()) {
-                final char c = message.charAt(i);
-                if (c >= '0' && c <= '9') {
-                    synchronized (buffer) {
-                        if (messageFormat == null) {
-                            messageFormat = new AutoMessageFormat(message);
-                        } else if (!message.equals(messagePattern)) {
-                            messageFormat.applyPattern(message);
-                        }
-                        messagePattern = message;
-                        final int base = buffer.length();
-                        try {
-                            messageFormat.configure(parameters);
-                            message = messageFormat.format(parameters, buffer, new FieldPosition(0)).substring(base);
-                        } finally {
-                            buffer.setLength(base);
-                        }
-                    }
-                }
-            }
-        }
-        return message;
+        return Strings.formatMessage(record, null, buffer, messageFormat, (created) -> messageFormat = created);
     }
 
     /**
