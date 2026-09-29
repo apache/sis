@@ -63,6 +63,18 @@ public final class SQLBuilderTest extends TestCase {
     }
 
     /**
+     * Tests the appending of an identifier.
+     */
+    public void testAppendIdentifier() {
+        assertSame(builder, builder.appendIdentifier("Foo"));
+        compareAndClear("\"Foo\"");
+        assertSame(builder, builder.appendIdentifier("Foo\"bar"));
+        compareAndClear("\"Foo\"\"bar\"");
+        assertSame(builder, builder.appendIdentifier("Foo\"bar\"\"more\""));
+        compareAndClear("\"Foo\"\"bar\"\"\"\"more\"\"\"");
+    }
+
+    /**
      * Tests the formatting of values of different types.
      */
     @Test
