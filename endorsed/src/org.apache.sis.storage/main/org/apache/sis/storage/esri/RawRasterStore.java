@@ -550,9 +550,11 @@ final class RawRasterStore extends RasterStore {
      * @throws DataStoreException if an error occurred while closing this data store.
      */
     @Override
+    @SuppressWarnings("ConvertToTryWithResources")
     public void close() throws DataStoreException {
         try {
             listeners.close();                      // Should never fail.
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final ChannelDataInput input = this.input;
             if (input != null) try {
                 input.channel.close();
