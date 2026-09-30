@@ -16,12 +16,17 @@
  */
 package org.apache.sis.resources.embedded;
 
+import java.net.URL;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import javax.sql.DataSource;
 import java.util.Map;
+import java.util.HashSet;
 import java.util.ServiceLoader;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.setup.InstallationResources;
@@ -41,7 +46,7 @@ import static org.apache.sis.test.Assertions.assertSingleton;
 
 /**
  * Tests {@link EmbeddedResources}.
- * This test has the side-effect of creating the database if it does not already exists.
+ * This test has the side-effect of creating the database if it does not already exist.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -112,6 +117,38 @@ public final class EmbeddedResourcesTest {
     }
 
     /**
+     * Verifies that the database directories contains the file expected by {@code tryInstall(…)}.
+     * Verifies also that there is no extra files. If extra files are found, maybe they should be
+     * declared in the {@code tryInstall(…)} method.
+     *
+     * @throws Exception if an error occurred while verifying the directory content.
+     */
+    @Test
+    public void testDatabaseFiles() throws Exception {
+        assumeContainsEPSG();
+        getInstance();
+        URL resource = null;
+        final var expected = new HashSet<String>();
+        final ClassLoader loader = EmbeddedResources.class.getClassLoader();
+        for (String suffix : EmbeddedResources.databaseSuffixes()) {
+            final String name = Initializer.DATABASE + '.' + suffix;
+            final String path = EmbeddedResources.DIRECTORY + '/'
+                              + EmbeddedResources.DATABASES + '/'
+                              + name;
+            resource = loader.getResource(path);
+            assertNotNull(resource, path);
+            assertTrue(expected.add(name));
+        }
+        try (DirectoryStream<Path> list = Files.newDirectoryStream(Path.of(resource.toURI()).getParent())) {
+            for (Path file : list) {
+                assertTrue(expected.remove(file.getFileName().toString()),
+                        () -> "File not declared in `databaseSuffixes()`:" + file);
+            }
+        }
+        assertTrue(expected.isEmpty());
+    }
+
+    /**
      * Tests connecting to the database.
      *
      * @throws Exception if an error occurred while fetching the data source, or connecting to the database.
@@ -127,7 +164,8 @@ public final class EmbeddedResourcesTest {
         final DataSource ds = Initializer.getDataSource();
         assertNotNull(ds, "Cannot find the data source.");
         try (Connection c = ds.getConnection()) {
-            assertEquals("jdbc:hsqldb:res:" + EmbeddedResources.DIRECTORY + "/Databases/" + Initializer.DATABASE, c.getMetaData().getURL(), "URL");
+            assertEquals("jdbc:hsqldb:res:" + EmbeddedResources.DIRECTORY + '/' + EmbeddedResources.DATABASES + '/' + Initializer.DATABASE,
+                         c.getMetaData().getURL(), "URL");
             try (Statement s = c.createStatement()) {
                 try (ResultSet r = s.executeQuery("SELECT COORD_REF_SYS_NAME FROM EPSG.\"Coordinate Reference System\" WHERE COORD_REF_SYS_CODE = 4326")) {
                     assertTrue(r.next(), "ResultSet.next()");
