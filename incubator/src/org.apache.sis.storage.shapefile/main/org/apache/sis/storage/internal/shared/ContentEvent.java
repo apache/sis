@@ -18,6 +18,7 @@ package org.apache.sis.storage.internal.shared;
 
 import org.apache.sis.storage.Resource;
 
+
 /**
  * Experimental event used to notify the content of the resource has change.
  * For FeatureSet this implies features have been added, deleted or updated.

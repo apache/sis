@@ -16,18 +16,18 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-
 import java.util.Arrays;
 import java.util.List;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.NurbCurve;
 import org.apache.sis.geometries.operation.DeBoorAlgorithm;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
-import org.apache.sis.geometries.DataPointsType;
+
 
 /**
  * A curve defined by control points, weights, a knot vector and a degree.

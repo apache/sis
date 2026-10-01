@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.adapter;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Empty;
 import org.apache.sis.geometries.Geometries;
@@ -23,6 +24,7 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.CircularString;
 import org.apache.sis.geometries.curve.CompoundCurve;
 import org.apache.sis.geometries.curve.LineString;
@@ -41,12 +43,10 @@ import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
-import org.apache.sis.geometries.DataPointsType;
 
 
 /**

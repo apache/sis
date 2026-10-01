@@ -19,12 +19,12 @@ package org.apache.sis.geometries.operation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Empty;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.referencing.CommonCRS;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertTrue;

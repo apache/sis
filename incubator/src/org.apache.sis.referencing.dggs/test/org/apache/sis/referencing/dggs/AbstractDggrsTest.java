@@ -32,6 +32,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridOrientation;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Tuple;
@@ -50,7 +51,6 @@ import org.apache.sis.storage.rs.CodeIterator;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.apache.sis.geometries.DataPoints;
 
 
 /**

@@ -20,8 +20,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
@@ -34,10 +38,6 @@ import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.geometries.DataPointsType;
 
 
 /**

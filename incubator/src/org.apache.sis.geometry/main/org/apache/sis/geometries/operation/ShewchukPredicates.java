@@ -18,6 +18,7 @@ package org.apache.sis.geometries.operation;
 
 import org.apache.sis.util.internal.shared.DoubleDouble;
 
+
 /**
  * Java port to Jonathan R. Shewchuk. Adaptive Precision Floating-Point Arithmetic and Fast Robust Predicates for Computational Geometry.
  * <p>

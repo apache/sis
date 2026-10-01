@@ -19,13 +19,14 @@ package org.apache.sis.gml;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.referencing.CRS;
@@ -33,10 +34,6 @@ import org.apache.sis.referencing.CRS;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.DataPoints;
 
 
 /**

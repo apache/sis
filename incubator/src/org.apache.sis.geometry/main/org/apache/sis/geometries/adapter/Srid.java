@@ -17,15 +17,15 @@
 package org.apache.sis.geometries.adapter;
 
 import java.util.logging.Logger;
+import org.opengis.metadata.Identifier;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.util.FactoryException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.logging.Logging;
-import org.opengis.metadata.Identifier;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.SingleCRS;
-import org.opengis.util.FactoryException;
 
 
 /**

@@ -18,10 +18,10 @@ package org.apache.sis.gml;
 
 import java.io.OutputStream;
 import java.util.function.IntFunction;
-import javax.measure.Unit;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import javax.measure.Unit;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;

@@ -16,11 +16,11 @@
  */
 package org.apache.sis.geometries.solid;
 
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.SolidInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultBSplineSolid;
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
 
 
 /**

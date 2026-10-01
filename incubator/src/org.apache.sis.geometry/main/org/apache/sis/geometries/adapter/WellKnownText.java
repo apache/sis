@@ -20,6 +20,7 @@ import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.function.IntFunction;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Empty;
@@ -27,6 +28,7 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.Orientable;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.CircularString;
 import org.apache.sis.geometries.curve.CompoundCurve;
 import org.apache.sis.geometries.curve.LineString;
@@ -43,8 +45,6 @@ import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.DataPointsType;
 
 
 /**

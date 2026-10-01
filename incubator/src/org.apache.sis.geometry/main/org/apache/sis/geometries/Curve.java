@@ -18,6 +18,9 @@ package org.apache.sis.geometries;
 
 import java.util.List;
 import javax.measure.Quantity;
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
+import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometries.curve.ArcByBulge;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
 import org.apache.sis.geometries.curve.CircularString;
@@ -35,9 +38,6 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
-import org.opengis.geometry.DirectPosition;
 
 
 /**

@@ -20,12 +20,12 @@ import javax.measure.Quantity;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
-
-// Test dependencies
 import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
 import static org.apache.sis.geometries.operation.TestData.POINT_A;
 import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
 import static org.apache.sis.geometries.operation.TestData.POINT_B;
+
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;

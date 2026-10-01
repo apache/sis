@@ -17,11 +17,11 @@
 package org.apache.sis.geometries.surface;
 
 import java.util.List;
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultBilinearGrid;
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
 
 
 /**

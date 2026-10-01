@@ -17,6 +17,10 @@
 package org.apache.sis.gml;
 
 import java.util.Map;
+import org.opengis.metadata.Identifier;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeodeticCRS;
+import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.CRS;
@@ -24,10 +28,6 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
-import org.opengis.metadata.Identifier;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.GeodeticCRS;
-import org.opengis.util.FactoryException;
 
 
 /**

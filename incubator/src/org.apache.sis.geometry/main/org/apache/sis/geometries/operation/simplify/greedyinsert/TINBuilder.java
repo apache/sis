@@ -28,6 +28,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.curve.LinearRing;
@@ -39,7 +40,6 @@ import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

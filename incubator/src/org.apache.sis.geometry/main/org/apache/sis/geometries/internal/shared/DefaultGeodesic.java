@@ -16,9 +16,9 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.Geodesic;
-import org.opengis.geometry.Envelope;
 
 
 /**

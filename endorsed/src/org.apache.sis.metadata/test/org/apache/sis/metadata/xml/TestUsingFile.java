@@ -17,8 +17,8 @@
 package org.apache.sis.metadata.xml;
 
 import java.net.URL;
-import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.io.InputStream;
 import javax.xml.transform.Source;
 import org.apache.sis.util.Version;
 import org.apache.sis.xml.internal.shared.URISource;

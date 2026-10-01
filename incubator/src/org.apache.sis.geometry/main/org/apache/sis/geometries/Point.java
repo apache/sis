@@ -17,6 +17,11 @@
 package org.apache.sis.geometries;
 
 import java.util.List;
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.cs.Bearing;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultPoint;
@@ -25,11 +30,6 @@ import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector;
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

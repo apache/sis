@@ -16,17 +16,17 @@
  */
 package org.apache.sis.geometries.point;
 
-import org.apache.sis.geometries.DataPoints;
 import java.util.Set;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.internal.shared.DefaultMultiPoint;
 import org.apache.sis.geometries.internal.shared.DefaultRawMultiPoint;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.maths.Tuple;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.DataPointsType;
 
 
 /**

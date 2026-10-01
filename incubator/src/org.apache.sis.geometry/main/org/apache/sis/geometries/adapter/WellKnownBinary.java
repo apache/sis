@@ -19,12 +19,14 @@ package org.apache.sis.geometries.adapter;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.function.IntFunction;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Empty;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.Orientable;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.CircularString;
 import org.apache.sis.geometries.curve.CompoundCurve;
 import org.apache.sis.geometries.curve.LineString;
@@ -40,8 +42,6 @@ import org.apache.sis.geometries.surface.TIN;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.util.ArgumentChecks;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.DataPointsType;
 
 
 /**
@@ -176,8 +176,8 @@ public final class WellKnownBinary {
      * Bits which the {@link Flavor#EWKB} dialect sets in the high order of a type code, and the
      * mask which isolates the base code from them.
      */
-    static final int EWKB_Z = 0x80000000, 
-                     EWKB_M = 0x40000000, 
+    static final int EWKB_Z = 0x80000000,
+                     EWKB_M = 0x40000000,
                      EWKB_SRID = 0x20000000,
                      EWKB_BASE_MASK = 0x1FFFFFFF;
 
@@ -192,21 +192,21 @@ public final class WellKnownBinary {
          * Codes 13 and 14, which stand for the abstract {@code Curve} and {@code Surface} types,
          * are deliberately absent: no geometry can be of an abstract type.
          */
-        static final int 
-                POINT = 1, 
-                LINESTRING = 2, 
-                POLYGON = 3, 
-                MULTIPOINT = 4, 
+        static final int
+                POINT = 1,
+                LINESTRING = 2,
+                POLYGON = 3,
+                MULTIPOINT = 4,
                 MULTILINESTRING = 5,
-                MULTIPOLYGON = 6, 
-                GEOMETRYCOLLECTION = 7, 
-                CIRCULARSTRING = 8, 
+                MULTIPOLYGON = 6,
+                GEOMETRYCOLLECTION = 7,
+                CIRCULARSTRING = 8,
                 COMPOUNDCURVE = 9,
-                CURVEPOLYGON = 10, 
-                MULTICURVE = 11, 
-                MULTISURFACE = 12, 
+                CURVEPOLYGON = 10,
+                MULTICURVE = 11,
+                MULTISURFACE = 12,
                 POLYHEDRALSURFACE = 15,
-                TIN = 16, 
+                TIN = 16,
                 TRIANGLE = 17;
 
         /**

@@ -19,6 +19,7 @@ package org.apache.sis.geometries.operation;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 
+
 /**
  * De Boor's algorithm: evaluation of a B-spline of degree p at a parameter u, by repeated linear interpolation of the
  * control points over the knot vector.

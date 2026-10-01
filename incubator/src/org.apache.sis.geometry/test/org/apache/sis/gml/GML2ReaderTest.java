@@ -20,17 +20,18 @@ import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.curve.MultiLineString;
 import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.surface.MultiPolygon;
-import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
@@ -44,10 +45,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.gml.GeometryAssert.assertCRS;
 import static org.apache.sis.gml.GeometryAssert.assertGeometryEquals;
 import static org.apache.sis.gml.GeometryAssert.assertUndefinedCRS;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.DataPoints;
 
 
 /**

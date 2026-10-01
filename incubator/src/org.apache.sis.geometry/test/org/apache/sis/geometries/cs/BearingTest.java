@@ -19,12 +19,12 @@ package org.apache.sis.geometries.cs;
 import java.util.Arrays;
 import javax.measure.Quantity;
 import javax.measure.quantity.Angle;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CommonCRS;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;

@@ -19,13 +19,13 @@ package org.apache.sis.geometries.internal.shared;
 import java.util.List;
 import java.util.Objects;
 import javax.measure.Quantity;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.solid.Polyhedron;
 import org.apache.sis.geometries.surface.MultiPolygon;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

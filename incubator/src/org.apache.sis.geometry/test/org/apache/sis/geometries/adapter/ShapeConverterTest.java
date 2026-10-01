@@ -17,6 +17,8 @@
 package org.apache.sis.geometries.adapter;
 
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.awt.Shape;
 import java.awt.Graphics2D;
 import java.awt.Font;
@@ -27,15 +29,15 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
+import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.Empty;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.surface.MultiPolygon;
-import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector2D;
@@ -43,8 +45,6 @@ import org.apache.sis.maths.Vector2D;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.opengis.geometry.Envelope;
-import org.apache.sis.geometries.DataPoints;
 
 
 /**

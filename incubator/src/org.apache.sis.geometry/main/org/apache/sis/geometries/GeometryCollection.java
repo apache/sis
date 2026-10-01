@@ -17,6 +17,9 @@
 package org.apache.sis.geometries;
 
 import java.util.Set;
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
+import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.curve.MultiCurve;
 import org.apache.sis.geometries.curve.ProductCurve;
 import org.apache.sis.geometries.internal.shared.DefaultGeometryCollection;
@@ -25,9 +28,6 @@ import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.solid.MultiPolyhedron;
 import org.apache.sis.geometries.surface.MultiSurface;
 import org.apache.sis.geometry.GeneralEnvelope;
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
-import org.opengis.geometry.Envelope;
 
 
 /**

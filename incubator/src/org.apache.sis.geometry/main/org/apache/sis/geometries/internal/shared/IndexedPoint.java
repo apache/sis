@@ -16,16 +16,16 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.maths.Tuple;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.maths.Tuple;
 
 
 /**
  * A point viewing a single index of a DataPoints.
- * All operations are delegated to the parent DataPoints, this class holds no* coordinate of its own. 
+ * All operations are delegated to the parent DataPoints, this class holds no* coordinate of its own.
  * The coordinate reference system cannot be modified through this view.
  *
  * @author Johann Sorel (Geomatys)

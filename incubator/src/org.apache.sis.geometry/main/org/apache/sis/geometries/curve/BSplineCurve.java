@@ -16,11 +16,12 @@
  */
 package org.apache.sis.geometries.curve;
 
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.internal.shared.DefaultBSplineCurve;
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
+
 
 /**
  * A piecewise polynomial or rational parametric curve described by control points and by the

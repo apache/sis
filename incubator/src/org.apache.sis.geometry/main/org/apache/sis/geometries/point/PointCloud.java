@@ -17,11 +17,11 @@
 package org.apache.sis.geometries.point;
 
 import javax.measure.Quantity;
-import org.apache.sis.geometries.Geometry;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.geometries.Geometry;
 
 
 /**

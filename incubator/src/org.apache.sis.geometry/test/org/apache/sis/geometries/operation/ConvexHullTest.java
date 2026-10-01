@@ -17,10 +17,10 @@
 package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Geometry;
-
-// Test dependencies
 import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
 import static org.apache.sis.geometries.operation.TestData.POINT_A;
+
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;

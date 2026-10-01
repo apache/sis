@@ -23,6 +23,9 @@ import java.util.List;
 import java.util.Map;
 import javax.measure.Quantity;
 import javax.measure.Unit;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.SingleCRS;
 import org.apache.sis.geometries.cs.Bearing;
 import org.apache.sis.geometries.cs.Projection;
 import org.apache.sis.geometries.curve.Arc;
@@ -99,6 +102,7 @@ import org.apache.sis.geometries.internal.shared.DefaultTriangulatedSurface;
 import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.solid.MultiPolyhedron;
 import org.apache.sis.geometries.solid.Polyhedron;
+import org.apache.sis.geometries.solid.BSplineSolid;
 import org.apache.sis.geometries.surface.BSplineSurface;
 import org.apache.sis.geometries.surface.BSplineSurfaceForm;
 import org.apache.sis.geometries.surface.BilinearGrid;
@@ -122,10 +126,6 @@ import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Range;
 import org.apache.sis.setup.GeometryLibrary;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.SingleCRS;
-import org.apache.sis.geometries.solid.BSplineSolid;
 
 
 /**

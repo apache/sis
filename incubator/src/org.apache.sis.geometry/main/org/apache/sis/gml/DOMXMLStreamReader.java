@@ -32,6 +32,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 
+
 /**
  * A pull-style {@link XMLStreamReader} (StAX cursor) that walks over an existing DOM subtree instead of parsing
  * bytes/characters.

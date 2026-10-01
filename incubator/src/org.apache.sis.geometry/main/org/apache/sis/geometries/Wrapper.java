@@ -19,6 +19,14 @@ package org.apache.sis.geometries;
 import java.awt.Shape;
 import java.util.Iterator;
 import java.util.OptionalInt;
+import org.opengis.filter.DistanceOperatorName;
+import org.opengis.filter.SpatialOperatorName;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
 import org.apache.sis.filter.sqlmm.SQLMM;
 import org.apache.sis.geometries.adapter.JTSAdapter;
 import org.apache.sis.geometries.curve.LineString;
@@ -30,14 +38,6 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.util.Debug;
-import org.opengis.filter.DistanceOperatorName;
-import org.opengis.filter.SpatialOperatorName;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
 
 
 /**

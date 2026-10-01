@@ -18,6 +18,8 @@ package org.apache.sis.geometries.surface;
 
 import java.util.List;
 import javax.measure.Quantity;
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
@@ -25,8 +27,6 @@ import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultPolyhedralSurface;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
 
 
 /**

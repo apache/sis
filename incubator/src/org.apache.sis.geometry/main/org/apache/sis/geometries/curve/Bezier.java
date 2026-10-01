@@ -16,11 +16,12 @@
  */
 package org.apache.sis.geometries.curve;
 
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.internal.shared.DefaultBezier;
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
+
 
 /**
  * An approximating spline using the Bézier (Bernstein) polynomials as partition of unity.

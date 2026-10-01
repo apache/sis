@@ -20,6 +20,9 @@ import java.util.Arrays;
 import java.util.Objects;
 import javax.measure.Quantity;
 import javax.measure.quantity.Angle;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.geometries.cs.Bearing;
 import org.apache.sis.geometries.cs.ReferenceDirection;
 import org.apache.sis.geometries.cs.Rotation;
@@ -31,9 +34,6 @@ import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.util.ArgumentChecks;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.cs.AxisDirection;
-import org.opengis.referencing.cs.CoordinateSystem;
 
 
 /**

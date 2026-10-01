@@ -19,6 +19,7 @@ package org.apache.sis.geometries.internal.shared;
 import java.util.Arrays;
 import java.util.List;
 import javax.measure.Quantity;
+import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
@@ -29,8 +30,10 @@ import org.apache.sis.geometries.surface.NurbSurface;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
-import org.opengis.geometry.DirectPosition;
+
+// Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.Identifier;
+
 
 /**
  * NURBS surface: tensor product of two directions (u, v), each one with its own degree and its own knot vector.
