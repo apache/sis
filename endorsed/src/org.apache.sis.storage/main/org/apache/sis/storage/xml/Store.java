@@ -90,11 +90,11 @@ final class Store extends URIDataStore implements Filter {
         super(provider, connector);
         final InputStream in = connector.getStorageAs(InputStream.class);
         if (in != null) {
-            source = URISource.create(in, location);
+            source = URISource.create(in, null, location);
         } else {
             final Reader reader = connector.getStorageAs(Reader.class);
             if (reader != null) {
-                var s = URISource.create(null, location);
+                var s = URISource.create(null, null, location);
                 s.setReader(reader);
                 source = s;
             }

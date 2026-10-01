@@ -45,6 +45,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
@@ -1044,7 +1045,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     {
         try {
             return LenientDateFormat.parseBest(getOptionalString(result, columnIndex));
-        } catch (NumberFormatException exception) {
+        } catch (DateTimeParseException exception) {
             unexpectedException(caller, exception);          // Not a fatal error.
         }
         return null;
@@ -3896,7 +3897,11 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
         boolean can = true;
         SQLException error = null;
         if (!authorityCodes.isEmpty()) {
-            System.gc();                // For cleaning as much weak references as we can before we check them.
+            /*
+             * We could invoke `System.gc()` here for clearing more weak references,
+             * which is needed for determining whether we can close the connection.
+             * But is causes too much overload in application with large heap.
+             */
             final Iterator<CloseableReference> it = authorityCodes.values().iterator();
             while (it.hasNext()) {
                 final CloseableReference reference = it.next();

@@ -174,6 +174,7 @@ public final class ImageMetadataBuilder extends MetadataBuilder {
      *
      * @throws DataStoreException if an error occurred while reading metadata from the data store.
      */
+    @SuppressWarnings("UseSpecificCatch")
     public void finish(final GeoTiffStore store, final StoreListeners listeners) throws DataStoreException {
         /*
          * Add the resolution into the metadata. Our current ISO 19115 implementation restricts

@@ -24,7 +24,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.internal.shared.Formulas;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
-import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -95,7 +94,7 @@ public final class PositionVector7ParamTest extends MathTransformTestCase {
         if (method instanceof GeocentricAffineBetweenGeographic) {
             GeocentricTranslationTest.setEllipsoids(values, CommonCRS.WGS72.ellipsoid(), CommonCRS.WGS84.ellipsoid());
         }
-        return method.createMathTransform(DefaultMathTransformFactory.provider(), values);
+        return method.createMathTransform(null, values);
     }
 
     /**

@@ -82,7 +82,7 @@ import org.apache.sis.util.collection.Containers;
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   1.1
  */
 public class LandsatStore extends DataStore implements Aggregate {
@@ -143,6 +143,7 @@ public class LandsatStore extends DataStore implements Aggregate {
         connector.closeAllExcept(source);
         Path file = null;
         if (path != null) {
+            path = path.normalize();            // Needed for `Band.setFilename(String)`.
             if (source != null) {
                 file = path;
                 path = path.getParent();        // If the source has been opened, then the path is a file.
@@ -239,9 +240,9 @@ public class LandsatStore extends DataStore implements Aggregate {
              * The namespace of each identifier is the name of the data set directory.
              */
             resources = new Band[parser.bands.size()];
-            for (final Map.Entry<BandName,Band> entry : parser.bands.entrySet()) {
+            for (final Map.Entry<BandName, Band> entry : parser.bands.entrySet()) {
                 final Band component = entry.getValue();
-                if (component.filename != null) {
+                if (component.isValid()) {
                     component.identifier = factory.createLocalName(scope, entry.getKey().name());
                     resources[count++] = component;
                 }
@@ -319,6 +320,13 @@ public class LandsatStore extends DataStore implements Aggregate {
         }
         paths.remove(null);
         return Optional.of(new FileSet(paths));
+    }
+
+    /**
+     * Logs a warning.
+     */
+    final void warning(final String message) {
+        listeners.warning(message);
     }
 
     /**

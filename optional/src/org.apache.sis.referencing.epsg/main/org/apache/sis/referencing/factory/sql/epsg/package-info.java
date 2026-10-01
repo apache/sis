@@ -16,7 +16,7 @@
  */
 
 /**
- * SQL scripts for EPSG geodetic data set installation.
+ * <abbr>SQL</abbr> scripts for <abbr>EPSG</abbr> geodetic data set installation.
  * The <a href="https://epsg.org/">EPSG</a> geodetic dataset provides definitions for thousands of
  * {@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem Coordinate Reference Systems} (<abbr>CRS</abbr>),
  * together with parameter values for thousands of {@linkplain org.opengis.referencing.operation.ConcatenatedOperation
@@ -31,7 +31,7 @@
  * see <a href="https://sis.apache.org/epsg.html">How to use EPSG geodetic dataset</a> on the <abbr>SIS</abbr> web site.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   0.7
  */
 package org.apache.sis.referencing.factory.sql.epsg;

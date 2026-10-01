@@ -1,5 +1,10 @@
 # EPSG dataset update procedure
 
+<!--
+Online version:
+https://github.com/apache/sis/blob/main/optional/src/org.apache.sis.referencing.epsg/test/org/apache/sis/referencing/factory/sql/epsg/README.md
+-->
+
 The `org.apache.sis.referencing.factory.sql.epsg` package in the `non-free:sis-epsg` Maven artifact
 provides SQL scripts for installing a local copy of the [EPSG geodetic dataset](https://epsg.org/).
 That dataset provides definitions for thousands of Coordinate Reference Systems (CRS),
@@ -44,12 +49,13 @@ Verify that the new SQL scripts downloaded from EPSG defines the same tables as 
 
 ```bash
 cd _<directory containing EPSG scripts of previous version>_
+diff PostgreSQL_Readme.txt $EPSG_SCRIPTS/PostgreSQL_Readme.txt
 diff PostgreSQL_Table_Script.sql $EPSG_SCRIPTS/PostgreSQL_Table_Script.sql
 diff PostgreSQL_FKey_Script.sql  $EPSG_SCRIPTS/PostgreSQL_FKey_Script.sql
 ```
 
-If there are some changes, port them manually to the {@code Tables.sql} and {@code FKeys.sql} scripts.
-The [page listing the changes](./Changes.html) gives information about the changes to expert or to reproduce.
+If there are some changes, port them manually to the `Tables.sql` and `FKeys.sql` scripts.
+The [page listing the changes](./Changes.md) gives information about the changes to expect or to reproduce.
 Then, execute the `main` method of the `org.apache.sis.referencing.factory.sql.epsg.*Updater` classes
 located in the test directory of the `org.apache.sis.non-free:sis-epsg` Maven sub-project.
 Adjust version numbers as needed in the following commands:

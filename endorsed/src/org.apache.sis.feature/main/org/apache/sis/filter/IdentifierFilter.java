@@ -26,6 +26,7 @@ import org.apache.sis.feature.internal.shared.AttributeConvention;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
+import org.apache.sis.pending.geoapi.filter.ResourceId;
 
 
 /**
@@ -36,7 +37,7 @@ import org.apache.sis.feature.AbstractFeature;
  * @author  Martin Desruisseaux (Geomatys)
  */
 final class IdentifierFilter extends Node
-        implements Filter<AbstractFeature>, XPathSource, Optimization.OnFilter<AbstractFeature>
+        implements ResourceId<AbstractFeature>, XPathSource, Optimization.OnFilter<AbstractFeature>
 {
     /**
      * For cross-version compatibility.
@@ -114,6 +115,14 @@ final class IdentifierFilter extends Node
     @Override
     public String getXPath() {
         return property;
+    }
+
+    /**
+     * Returns the identifiers of feature instances to accept.
+     */
+    @Override
+    public String getIdentifier() {
+        return identifier;
     }
 
     /**

@@ -30,6 +30,7 @@ import org.apache.sis.test.TestCase;
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class MetadataReaderTest extends TestCase {
     /**
      * Creates a new test case.

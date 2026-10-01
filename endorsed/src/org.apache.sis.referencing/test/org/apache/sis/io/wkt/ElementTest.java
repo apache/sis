@@ -35,6 +35,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class ElementTest extends TestCase {
     /**
      * Creates a new test case.
@@ -61,7 +62,7 @@ public final class ElementTest extends TestCase {
      * Parses the given text and ensures that {@link ParsePosition} index is set at to the end of string.
      */
     private Element parse(final String text) throws ParseException {
-        final ParsePosition position = new ParsePosition(0);
+        final var position = new ParsePosition(0);
         final Element element;
         try {
             element = new Element(parser, text, position);

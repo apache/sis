@@ -24,14 +24,15 @@ import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import org.apache.sis.system.Shutdown;
+import org.apache.sis.system.Environment;
 import org.apache.sis.system.SystemListener;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.internal.shared.MetadataServices;
 
 
 /**
- * Provides system-wide configuration for Apache SIS library.
- * Methods in this class can be used for overriding SIS default values.
+ * Provides system-wide configuration of the Apache <abbr>SIS</abbr> library.
+ * Methods in this class can be used for overriding <abbr>SIS</abbr> default values.
  * Those methods can be used in final applications, but should not be used by libraries
  * in order to avoid interfering with user's settings.
  *
@@ -45,7 +46,7 @@ import org.apache.sis.util.internal.shared.MetadataServices;
  * </ul>
  *
  * The following properties are defined by the standard Java environment.
- * Apache SIS read those properties but does not modify them:
+ * Apache SIS reads those properties but does not modify them:
  *
  * <ul>
  *   <li>{@link Locale#getDefault()} (sometimes using {@link Locale.Category})</li>
@@ -81,6 +82,37 @@ public final class Configuration {
      */
     public static Configuration current() {
         return DEFAULT;
+    }
+
+    /**
+     * Returns whether to relax the default security settings.
+     * By default, Apache <abbr>SIS</abbr> applies the following restrictions:
+     *
+     * <ul>
+     *   <li>Disable all accesses to external <abbr>DTD</abbr>s and external Entity References
+     *       when reading <abbr>XML</abbr> documents.</li>
+     *   <li>Follow {@code xlink:href} only if it is an <abbr>XML</abbr> fragment or if the referenced file is in
+     *       the same directory or in a sub-directory of the <abbr>GML</abbr> file containing the reference.</li>
+     *   <li>Open file referenced in coordinate operation only if the parameter is a datum shift grid file
+     *       and the file is in the {@code $SIS_DATA/DatumChanges} directory, or (for any parameter) if the
+     *       file is in the same directory or in a sub-directory of
+     *       <abbr>JSON</abbr>, <abbr>GML</abbr> or <abbr>WKT</abbr> file containing the parameter value.</li>
+     * </ul>
+     *
+     * If the {@systemProperty org.apache.sis.trustedEnvironment} is set to {@code true},
+     * the above listed restrictions are ignored.
+     *
+     * @return whether the default security restrictions are relaxed.
+     *
+     * @see javax.xml.XMLConstants#ACCESS_EXTERNAL_DTD
+     * @see javax.xml.XMLConstants#FEATURE_SECURE_PROCESSING
+     * @see org.apache.sis.xml.ReferenceResolver#DEFAULT
+     * @see org.apache.sis.referencing.operation.transform.MathTransformBuilder#getAccessControl()
+     *
+     * @since 1.7
+     */
+    public boolean isTrustedEnvironment() {
+        return Environment.isTrusted;
     }
 
     /**

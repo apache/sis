@@ -51,6 +51,13 @@ public class DBFIOTest {
         return cdi;
     }
 
+    private ChannelDataInput openRead(Path path) throws DataStoreException {
+        final StorageConnector cnx = new StorageConnector(path);
+        final ChannelDataInput cdi = cnx.getStorageAs(ChannelDataInput.class);
+        cnx.closeAllExcept(cdi);
+        return cdi;
+    }
+
     private ChannelDataOutput openWrite(Path path) throws DataStoreException, IOException {
         final StorageConnector cnx = new StorageConnector(path);
         cnx.setOption(OptionKey.OPEN_OPTIONS, new OpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING});
@@ -150,6 +157,47 @@ public class DBFIOTest {
             final byte[] result = Files.readAllBytes(tempFile);
             assertArrayEquals(expected, result);
 
+        } finally {
+            Files.delete(tempFile);
+        }
+    }
+
+    /**
+     * Test writing and reading a record marked as deleted.
+     * Such record preserves the position of the following records.
+     */
+    @Test
+    public void deletedRecordTest() throws DataStoreException, IOException {
+        final String path = "/org/apache/sis/storage/shapefile/point.dbf";
+        final DBFHeader header;
+        final Object[] record1;
+        final Object[] record2;
+        try (DBFReader reader = new DBFReader(openRead(path), StandardCharsets.US_ASCII, null, null)) {
+            header  = reader.getHeader();
+            record1 = reader.next();
+            record2 = reader.next();
+        }
+
+        final Path tempFile = Files.createTempFile("tmp", ".dbf");
+        try {
+            //write a present, a deleted then a present record
+            try (DBFWriter writer = new DBFWriter(openWrite(tempFile))) {
+                writer.writeHeader(header);
+                writer.writeRecord(record1);
+                writer.writeDeletedRecord();
+                writer.writeRecord(record2);
+            }
+
+            try (DBFReader reader = new DBFReader(openRead(tempFile), StandardCharsets.US_ASCII, null, null)) {
+                //the deleted record is counted in the header
+                assertEquals(3, reader.getHeader().nbRecord);
+                assertEquals(header.recordSize, reader.getHeader().recordSize);
+                assertArrayEquals(record1, reader.next());
+                assertSame(DBFReader.DELETED_RECORD, reader.next());
+                //the record after the deleted one must still be properly aligned
+                assertArrayEquals(record2, reader.next());
+                assertNull(reader.next());
+            }
         } finally {
             Files.delete(tempFile);
         }

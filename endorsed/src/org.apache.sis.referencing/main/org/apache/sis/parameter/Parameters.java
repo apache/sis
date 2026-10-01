@@ -16,7 +16,6 @@
  */
 package org.apache.sis.parameter;
 
-import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -297,7 +296,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
         if (parameters == null) {
             return null;
         }
-        final GeneralParameterDescriptor[] descriptors = new GeneralParameterDescriptor[parameters.length];
+        final var descriptors = new GeneralParameterDescriptor[parameters.length];
         for (int i=0; i<parameters.length; i++) {
             final GeneralParameterValue p = parameters[i];
             if (p != null) {
@@ -517,10 +516,10 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
     }
 
     /**
-     * Returns the <abbr>URI</abbr> of the <abbr>GML</abbr> document
-     * or <abbr>WKT</abbr> file from which the parameter values are read.
+     * Returns the <abbr>URI</abbr> of the <abbr>JSON</abbr>, <abbr>GML</abbr> or <abbr>WKT</abbr>
+     * document providing the value of the specified parameter.
      * This information can be used together with {@code getValue(ParameterDescriptor<URI>)} for
-     * resolving a parameter value as a path relative to the GML or WKT file declaring the parameter.
+     * resolving a parameter value as a path relative to the document declaring the parameter.
      * Note that the source file is not necessarily the same for all parameters in a group, because a GML
      * document could define parameters in files referenced by different {@code xlink:href} attribute values.
      *
@@ -913,7 +912,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
             throws InvalidParameterNameException, InvalidParameterValueException
     {
         final Integer ZERO = 0;
-        final Map<String,Integer> occurrences = new HashMap<>();
+        final var occurrences = new HashMap<String, Integer>();
         for (final GeneralParameterValue value : values.values()) {
             final String name = value.getDescriptor().getName().getCode();
             final int occurrence = occurrences.getOrDefault(name, ZERO);

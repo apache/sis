@@ -21,6 +21,7 @@ import jakarta.xml.bind.annotation.XmlValue;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.shared.Constants;
 import org.apache.sis.util.internal.shared.DefinitionURI;
 import org.apache.sis.metadata.internal.shared.NameMeaning;
@@ -227,7 +228,7 @@ public final class Code {
                         if (isEPSG) {
                             code.codeSpace = Constants.IOGP;    // Default value if we do not find a codespace below.
                             if (authority != null) {
-                                for (final Identifier id : authority.getIdentifiers()) {
+                                for (final Identifier id : Containers.nonNull(authority.getIdentifiers())) {
                                     if (Constants.EPSG.equalsIgnoreCase(id.getCode())) {
                                         if (id instanceof ReferenceIdentifier) {
                                             final String cs = ((ReferenceIdentifier) id).getCodeSpace();

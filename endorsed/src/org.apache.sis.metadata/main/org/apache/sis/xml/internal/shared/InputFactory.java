@@ -33,6 +33,7 @@ import javax.xml.transform.sax.SAXSource;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.apache.sis.system.Loggers;
+import org.apache.sis.system.Environment;
 import org.apache.sis.util.logging.Logging;
 
 
@@ -59,37 +60,39 @@ public final class InputFactory {
     private static final XMLInputFactory FACTORY = newSecureFactory();
 
     /**
-     * Creates a new <abbr>XML</abbr> factory with some security setting enabled.
+     * Do not allow instantiation of this class.
+     */
+    private InputFactory() {
+    }
+
+    /**
+     * Creates a new <abbr>XML</abbr> factory with some security setting enabled, unless the environment is trusted.
      *
      * @return a new <abbr>XML</abbr> factory.
      */
     public static XMLInputFactory newSecureFactory() {
         final XMLInputFactory factory = XMLInputFactory.newFactory();
-        if (factory.isPropertySupported(XMLConstants.FEATURE_SECURE_PROCESSING)) {
-            factory.setProperty(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);
-        }
-        try {
-            // No `isPropertySupported(…)` because support of this property is required.
-            if ("all".equals(factory.getProperty(XMLConstants.ACCESS_EXTERNAL_DTD))) {
-                factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        if (!Environment.isTrusted) {
+            if (factory.isPropertySupported(XMLConstants.FEATURE_SECURE_PROCESSING)) {
+                factory.setProperty(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);
             }
-        } catch (IllegalArgumentException e) {
-            /*
-             * `ACCESS_EXTERNAL_DTD` is clearly documented as a mandatory property since JAXP 1.5 in Java 7.
-             * But Jackson 2.19.1, despite being released 14 years after Java 7, still doesn't support this
-             * property.
-             */
-            final var record = new LogRecord(Level.CONFIG, e.getLocalizedMessage());
-            record.setThrown(e);
-            Logging.completeAndLog(Logger.getLogger(Loggers.XML), InputFactory.class, "newSecureFactory", record);
+            try {
+                // No `isPropertySupported(…)` because support of this property is required.
+                if ("all".equals(factory.getProperty(XMLConstants.ACCESS_EXTERNAL_DTD))) {
+                    factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+                }
+            } catch (IllegalArgumentException e) {
+                /*
+                 * `ACCESS_EXTERNAL_DTD` is clearly documented as a mandatory property since JAXP 1.5 in Java 7.
+                 * But Jackson 2.19.1, despite being released 14 years after Java 7, still doesn't support this
+                 * property.
+                 */
+                final var record = new LogRecord(Level.CONFIG, e.getLocalizedMessage());
+                record.setThrown(e);
+                Logging.completeAndLog(Logger.getLogger(Loggers.XML), InputFactory.class, "newSecureFactory", record);
+            }
         }
         return factory;
-    }
-
-    /**
-     * Do not allow instantiation of this class.
-     */
-    private InputFactory() {
     }
 
     /*

@@ -54,35 +54,67 @@ public class DefiningConversion extends DefaultConversion {
     private static final long serialVersionUID = 901299137419800444L;
 
     /**
-     * Key for a property specifying whether the conversion is fully-defined or defines only the part between
-     * normalized <abbr>CRS</abbr>s. The associated value shall be an instance of {@link Boolean}.
+     * The preprocessing and post-processing steps to apply before and after a defining conversion.
+     * Some {@code DefiningConversion} implementations require a preprocessing step for expressing
+     * input coordinates in a conventional axis order and in predefined units of measurement,
+     * and a post-processing step for converting the output to the target <abbr>CRS</abbr>.
+     * This enumeration specifies which preprocessing and post-processing, if any, are required.
+     */
+    public enum SideProcessing {
+        /**
+         * The defining conversion works on coordinates supplied <i>as-is</i>, with no side-processing.
+         * The most typical example is Affine Transform, which works on coordinates in any axis order
+         * and units of measurement. If, for example, a unit conversion is desired, that conversion
+         * should be bundled in the coefficients of the affine transform.
+         */
+        NONE,
+
+        /**
+         * The defining conversion is defined between a pair of normalized <abbr>CRS</abbr>s.
+         * The normalization is described in the {@link AxesConvention#NORMALIZED} documentation:
+         * right-handed source and target coordinate systems with predetermined units of measurement.
+         * Such defining conversions need to be completed with unit conversions and axis order changes.
+         * These preprocessing and post-processing steps can be added by invoking the
+         * {@link #specialize DefiningConversion.specialize(…)} method.
+         *
+         * <p>They are the default side-processing expected by Apache <abbr>SIS</abbr>.
+         * For example, map projections are implemented by {@link MathTransform} steps expecting
+         * (<var>longitude</var>, <var>latitude</var>) coordinates in degrees and returning
+         * (<var>easting</var>, <var>northing</var>) coordinates in metres.
+         * If the source <abbr>CRS</abbr> is <abbr>EPSG</abbr>:4326,
+         * the change of axis order must be applied before to execute the map projection.</p>
+         */
+        NORMALIZED
+    }
+
+    /**
+     * Key for a property specifying the preprocessing and post-processing steps to apply before and after
+     * the defining conversion. The associated value shall be an instance of {@link SideProcessing}.
      * Possible values are:
      *
      * <ul class="verbose">
-     *   <li>{@link Boolean#TRUE} means that the conversion is defined between a pair of <abbr>CRS</abbr>s
-     *     normalized in the sense of {@link AxesConvention#NORMALIZED}: the source and target coordinate
-     *     systems are right-handed and use predetermined units of measurement such as degrees and metres.
-     *     Such {@code DefiningConversion} may need to be completed with change of units and axis order.
+     *   <li>{@link SideProcessing#NORMALIZED} means that the conversion is defined between a pair of <abbr>CRS</abbr>s
+     *     normalized in the sense of {@link AxesConvention#NORMALIZED}: the source and target coordinate systems
+     *     are right-handed and use predetermined units of measurement such as degrees and metres.
+     *     The {@code DefiningConversion} needs to be completed with unit conversions and axis order changes.
      *     These changes can be applied by {@link #specialize DefaultConversion.specialize(…)}.</li>
-     *   <li>{@link Boolean#FALSE} means that the conversion is already fully-defined,
-     *     including any change of units or axis order that may be required.
-     *     No conversion step will be added.</li>
+     *   <li>{@link SideProcessing#NONE} means that no preprocessing or post-processing steps shall be added.</li>
      * </ul>
      *
-     * The default value is {@link Boolean#TRUE}.
+     * The default value is {@link SideProcessing#NORMALIZED}.
      *
-     * @see #normalized()
+     * @see #getSideProcessing()
      * @see AxesConvention#NORMALIZED
      */
-    public static final String NORMALIZED_KEY = "normalized";
+    public static final String SIDE_PROCESSING_KEY = "sideProcessing";
 
     /**
-     * Whether this defining conversion provides a normalized transform.
-     * If {@code true}, then an adjustment for axis directions and units of measurement will need to be
-     * added when the source and target <abbr>CRS</abbr> will become known. If {@code false}, then this
+     * The preprocessing and post-processing steps to apply before and after the defining conversion.
+     * If {@code NORMALIZED}, then an adjustment for axis directions and units of measurement will need
+     * to be added when the source and target <abbr>CRS</abbr> will become known. If {@code NONE}, this
      * defining conversion shall provide the fully-defined transform and no adjustments will be added.
      */
-    private final boolean normalized;
+    private final SideProcessing sideProcessing;
 
     /**
      * Cached result of the call to {@code specialize(…)}.
@@ -110,9 +142,9 @@ public class DefiningConversion extends DefaultConversion {
      *     <th>Value type</th>
      *     <th>Returned by</th>
      *   </tr><tr>
-     *     <td>{@value #CONVERSION_COMPLETION_KEY}</td>
-     *     <td>{@link Boolean}</td>
-     *     <td>{@link #normalized()}</td>
+     *     <td>{@value #SIDE_PROCESSING_KEY}</td>
+     *     <td>{@link SideProcessing}</td>
+     *     <td>{@link #getSideProcessing}</td>
      *   </tr>
      * </table>
      *
@@ -121,7 +153,7 @@ public class DefiningConversion extends DefaultConversion {
      * If the caller supplies a {@code transform} argument, then by default it shall be a transform expecting
      * {@linkplain AxesConvention#NORMALIZED normalized} input coordinates and producing normalized output coordinates
      * (see {@link AxesConvention} for more information about what Apache <abbr>SIS</abbr> means by "normalized").
-     * This default behavior can be disabled by setting the {@value #NORMALIZED_KEY} key to {@code false}.
+     * This default behavior can be disabled by setting the {@value #SIDE_PROCESSING_KEY} key to {@code NONE}.
      *
      * <p>If the caller cannot yet supply a {@code MathTransform}, then it shall supply the parameter values needed
      * for creating that transform, with the possible omission of {@code "semi_major"} and {@code "semi_minor"} values.
@@ -149,9 +181,28 @@ public class DefiningConversion extends DefaultConversion {
             throw new IllegalArgumentException(Resources.forProperties(properties)
                     .getString(Resources.Keys.UnspecifiedParameterValues));
         }
-        normalized = !Boolean.FALSE.equals(Containers.property(properties, NORMALIZED_KEY, Boolean.class));
+        final var c = Containers.property(properties, SIDE_PROCESSING_KEY, SideProcessing.class);
+        sideProcessing = (c != null) ? c : SideProcessing.NORMALIZED;
         setParameterValues(parameters, null);
         checkDimensions(properties);
+    }
+
+    /**
+     * Returns the preprocessing and post-processing steps to apply before and after the defining conversion.
+     * If {@code NORMALIZED}, the source and target coordinate systems are right-handed and use predetermined
+     * units of measurement such as degrees and metres. Such conversion needs to be completed by a call to
+     * {@link #specialize specialize(…)}.
+     *
+     * <p>If this method returns {@code NONE}, then this {@code DefiningConversion} defines fully the conversion
+     * and no conversion step should be added.</p>
+     *
+     * @return the preprocessing and post-processing steps to apply before and after the defining conversion.
+     *
+     * @see #SIDE_PROCESSING_KEY
+     * @see AxesConvention#NORMALIZED
+     */
+    public SideProcessing getSideProcessing() {
+        return sideProcessing;
     }
 
     /**
@@ -164,13 +215,10 @@ public class DefiningConversion extends DefaultConversion {
      * and no conversion step should be added.</p>
      *
      * @return whether this conversion is defined between a pair of normalized <abbr>CRS</abbr>s.
-     *
-     * @see #NORMALIZED_KEY
-     * @see AxesConvention#NORMALIZED
      */
     @Override
-    public boolean normalized() {
-        return normalized;
+    final boolean normalized() {
+        return getSideProcessing() != SideProcessing.NONE;
     }
 
     /**

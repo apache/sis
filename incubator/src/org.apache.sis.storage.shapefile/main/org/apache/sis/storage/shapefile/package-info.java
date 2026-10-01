@@ -24,6 +24,15 @@
  * <h2>Writing example</h2>
  *{@snippet class="org.apache.sis.storage.shapefile.Snippets" region="write"}
  *
+ * <h2>Feature identifiers</h2>
+ * The shapefile format does not store feature identifiers, they are derived from
+ * the record number. To keep those identifiers stable, removing a feature does not
+ * shift the following records : the record is flagged as deleted in the dbf file and
+ * its slot is preserved, holding a null shape and blank fields. New features are always
+ * appended after the last record number, an identifier is therefore never reused.
+ * Use {@link org.apache.sis.storage.shapefile.ShapefileStore#compact()} to drop those
+ * records and reduce the files size, at the cost of renumbering the remaining records.
+ *
  * For raw access to DBF and SHP, use the related packages :
  * <ul>
  * <li>{@link org.apache.sis.storage.shapefile.shp}</li>

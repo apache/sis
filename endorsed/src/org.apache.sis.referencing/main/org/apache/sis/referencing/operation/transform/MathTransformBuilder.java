@@ -16,12 +16,18 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.setup.Configuration;
+import org.apache.sis.system.Environment;
+import org.apache.sis.io.Authorization;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.internal.shared.Strings;
 
@@ -41,7 +47,7 @@ import org.opengis.parameter.ParameterValueGroup;
  * Then, the transform is created by a call to {@link #create()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   1.5
  */
 public abstract class MathTransformBuilder {
@@ -49,6 +55,14 @@ public abstract class MathTransformBuilder {
      * The factory to use for building the transform.
      */
     protected final MathTransformFactory factory;
+
+    /**
+     * A function which determines whether the <abbr>URI</abbr> specified in a parameter can be opened.
+     * The default access control returns {@link Authorization#DEFAULT} in non-trusted environment.
+     *
+     * @see #getAccessControl()
+     */
+    private BiFunction<ParameterDescriptor<URI>, URI, Authorization> accessControl;
 
     /**
      * The provider that created the parameterized {@link MathTransform} instance, or {@code null}
@@ -69,6 +83,11 @@ public abstract class MathTransformBuilder {
      */
     protected MathTransformBuilder(final MathTransformFactory factory) {
         this.factory = Objects.requireNonNull(factory);
+        accessControl = (param, file) -> {
+            Objects.requireNonNull(param);
+            Objects.requireNonNull(file);
+            return Environment.isTrusted ? Authorization.GRANTED : Authorization.DEFAULT;
+        };
     }
 
     /**
@@ -162,6 +181,44 @@ public abstract class MathTransformBuilder {
      *         This exception is thrown if some required parameters have not been supplied, or have illegal values.
      */
     public abstract MathTransform create() throws FactoryException;
+
+    /**
+     * Returns a function which determines whether the <abbr>URI</abbr> specified in a parameter can be opened.
+     * The function will receive the following arguments:
+     *
+     * <ol>
+     *   <li>a description of the <abbr>URI</abbr> parameter,</li>
+     *   <li>the actual <abbr>URI</abbr> parameter value.</li>
+     * </ol>
+     *
+     * The default access control is a function returning {@link Authorization#GRANTED}
+     * in a {@linkplain Configuration#isTrustedEnvironment() trusted environment},
+     * or {@link Authorization#DEFAULT} otherwise.
+     * The {@code DEFAULT} authorization grants access to files in the {@code $SIS_DATA/DatumChanges}
+     * directory for parameters that are datum shift grid files, and to files in the same directory as the
+     * <abbr>JSON</abbr>, <abbr>GML</abbr> or <abbr>WKT</abbr> document where the parameter value appears.
+     *
+     * @return a function deciding whether the <abbr>URI</abbr> can be opened.
+     *
+     * @see org.apache.sis.setup.Configuration#isTrustedEnvironment()
+     *
+     * @since 1.7
+     */
+    public BiFunction<ParameterDescriptor<URI>, URI, Authorization> getAccessControl() {
+        return accessControl;
+    }
+
+    /**
+     * Sets a function which determines whether the <abbr>URI</abbr> specified in a parameter can be opened.
+     * See {@link #getAccessControl()} for more information.
+     *
+     * @param  ac  function telling whether the <abbr>URI</abbr> can be opened.
+     *
+     * @since 1.7
+     */
+    public void setAccessControl(BiFunction<ParameterDescriptor<URI>, URI, Authorization> ac) {
+        accessControl = Objects.requireNonNull(ac);
+    }
 
     /**
      * Eventually replaces the given transform by a unique instance. The replacement is done
