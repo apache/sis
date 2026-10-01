@@ -28,6 +28,7 @@ import org.apache.sis.geometries.internal.shared.DefaultCompoundCurve;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 
+
 /**
  * A curve made of several curves joined end to end, each of which may use a different
  * interpolation. The end point of each component is the start point of the next one, so a compound

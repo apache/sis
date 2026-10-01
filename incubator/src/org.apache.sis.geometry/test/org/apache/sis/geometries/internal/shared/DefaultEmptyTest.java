@@ -16,14 +16,14 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Empty;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.SampleSystem;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 // Test dependencies
 import org.apache.sis.geometries.EmptyTest;
-import org.apache.sis.geometries.DataPointsType;
 
 
 /**

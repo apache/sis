@@ -16,11 +16,11 @@
  */
 package org.apache.sis.geometries;
 
-import org.apache.sis.geometries.internal.shared.AbstractOrientedGeometry;
 import static org.opengis.annotation.Specification.ISO_12113;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.internal.shared.AbstractOrientedGeometry;
 
 
 /**

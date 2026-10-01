@@ -22,9 +22,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.MultiLineString;
 import org.apache.sis.geometries.internal.shared.DefaultDataPoints;
@@ -37,16 +40,13 @@ import org.apache.sis.geometries.surface.PreparedTIN;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Cursor;
-import static org.apache.sis.maths.Maths.clamp;
 import org.apache.sis.maths.Matrices;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.geometries.DataPointsType;
+import static org.apache.sis.maths.Maths.clamp;
 
 
 /**

@@ -23,6 +23,7 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.MultiLineString;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
@@ -33,7 +34,6 @@ import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.geometries.DataPointsType;
 
 
 /**

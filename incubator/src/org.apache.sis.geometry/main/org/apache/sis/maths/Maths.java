@@ -544,7 +544,7 @@ public final class Maths {
     }
 
     /**
-     * @see #inCircle(double, double, double, double, double, double, double, double) 
+     * @see #inCircle(double, double, double, double, double, double, double, double)
      */
     public static boolean inCircle(float[] a, float[] b, float[] c, float[] d) {
         return inCircle(a[0], a[1], b[0], b[1], c[0], c[1], d[0], d[1]);

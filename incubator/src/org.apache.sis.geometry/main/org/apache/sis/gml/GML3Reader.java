@@ -19,11 +19,12 @@ package org.apache.sis.gml;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import javax.measure.Unit;
-import javax.measure.format.MeasurementParseException;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import javax.measure.Unit;
+import javax.measure.format.MeasurementParseException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.Geometry;
@@ -49,7 +50,6 @@ import org.apache.sis.maths.Vectors;
 import org.apache.sis.measure.Units;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

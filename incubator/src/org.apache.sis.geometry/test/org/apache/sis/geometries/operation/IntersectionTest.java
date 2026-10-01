@@ -29,11 +29,14 @@ import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
 import static org.apache.sis.geometries.operation.TestData.POINT_A;
 import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
 import static org.apache.sis.geometries.operation.TestData.POINT_B;
+
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
+
 
 /**
  *

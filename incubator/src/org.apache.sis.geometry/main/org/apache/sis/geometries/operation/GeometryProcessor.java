@@ -26,11 +26,16 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.measure.Quantity;
 import javax.measure.Unit;
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.geometries.DE9IM;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.curve.MultiLineString;
@@ -48,11 +53,7 @@ import org.apache.sis.maths.Tuple;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArgumentChecks;
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
-import org.apache.sis.geometries.DataPointsType;
+
 
 /**
  * Geometry operation computation processor.

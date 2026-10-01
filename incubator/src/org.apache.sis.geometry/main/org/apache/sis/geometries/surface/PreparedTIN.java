@@ -22,9 +22,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
+import org.locationtech.jts.index.quadtree.Quadtree;
+import org.opengis.coverage.CannotEvaluateException;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.Tuple;
@@ -33,14 +41,6 @@ import org.apache.sis.maths.Vector2D;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
-import org.locationtech.jts.index.quadtree.Quadtree;
-import org.opengis.coverage.CannotEvaluateException;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
-import org.opengis.util.FactoryException;
-import org.apache.sis.geometries.DataPointsType;
 
 
 /**

@@ -19,13 +19,13 @@ package org.apache.sis.geometries.internal.shared;
 import java.util.List;
 import java.util.Objects;
 import javax.measure.Quantity;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.KnotType;
 import org.apache.sis.geometries.surface.BSplineSurface;
 import org.apache.sis.geometries.surface.BSplineSurfaceForm;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.Envelope;
 
 // Specific to the geoapi-3.1 branch:
 import org.opengis.referencing.ReferenceIdentifier;

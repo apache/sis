@@ -18,7 +18,7 @@ package org.apache.sis.gml;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
-
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.maths.NDArrays;
@@ -27,9 +27,6 @@ import org.apache.sis.referencing.CRS;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

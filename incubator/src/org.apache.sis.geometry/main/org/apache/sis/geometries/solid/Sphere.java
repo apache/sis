@@ -18,27 +18,27 @@ package org.apache.sis.geometries.solid;
 
 import java.util.List;
 import javax.measure.Quantity;
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.SurfaceInterpolation;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.surface.ParametricCurveSurface;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.util.ArgumentChecks;
 
 // Specific to the geoapi-3.1 branch:
 import org.opengis.referencing.ReferenceIdentifier;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.DataPointsType;
 
 
 /**

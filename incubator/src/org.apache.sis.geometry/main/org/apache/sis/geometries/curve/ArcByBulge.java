@@ -16,15 +16,15 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.internal.shared.DefaultArcByBulge;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Vector;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.DataPointsType;
 
 
 /**

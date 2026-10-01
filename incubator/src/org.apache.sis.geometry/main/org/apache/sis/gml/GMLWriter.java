@@ -19,10 +19,10 @@ package org.apache.sis.gml;
 import java.io.OutputStream;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

@@ -37,6 +37,7 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.maths.Array;
@@ -65,7 +66,6 @@ import org.apache.sis.storage.rs.CodedResource;
 import org.apache.sis.storage.rs.internal.shared.CodedCoverageAsFeatureSet;
 import org.apache.sis.storage.rs.internal.shared.s2.Factory;
 import org.apache.sis.storage.rs.internal.shared.s2.S2;
-import org.apache.sis.geometries.DataPoints;
 
 
 /**

@@ -17,16 +17,16 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.FunctionArc;
 import org.apache.sis.geometries.curve.KnotType;
 import org.apache.sis.geometries.curve.PolynomialSpline;
 import org.apache.sis.geometries.curve.SplineCurveForm;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Vector;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.DataPointsType;
 
 
 /**

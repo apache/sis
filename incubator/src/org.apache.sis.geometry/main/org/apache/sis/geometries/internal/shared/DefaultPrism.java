@@ -17,12 +17,12 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
-import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.Prism;
-import org.apache.sis.measure.NumberRange;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.SingleCRS;
+import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.Prism;
+import org.apache.sis.measure.NumberRange;
 
 
 /**

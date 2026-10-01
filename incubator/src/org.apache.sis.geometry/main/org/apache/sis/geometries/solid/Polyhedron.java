@@ -20,10 +20,10 @@ import java.util.List;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.SolidInterpolation;
 import org.apache.sis.geometries.Solid;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.internal.shared.DefaultPolyhedron;
 import org.apache.sis.geometries.solid.polyhedron.AbstractPolyhedron;
 import org.apache.sis.geometries.surface.MultiPolygon;
-import org.apache.sis.geometries.DataPointsType;
 
 
 /**

@@ -18,6 +18,7 @@ package org.apache.sis.gml;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
@@ -35,7 +36,6 @@ import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

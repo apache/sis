@@ -21,9 +21,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.DataType;
@@ -31,8 +33,6 @@ import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.util.ArgumentChecks;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.DataPointsType;
 
 
 /**

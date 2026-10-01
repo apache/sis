@@ -18,6 +18,9 @@ package org.apache.sis.geometries;
 
 import java.util.List;
 import java.util.Map;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.SampleSystem;
@@ -25,9 +28,6 @@ import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.referencing.CommonCRS;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;

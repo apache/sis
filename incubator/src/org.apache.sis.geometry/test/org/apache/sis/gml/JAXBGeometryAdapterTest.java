@@ -19,16 +19,6 @@ package org.apache.sis.gml;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.List;
-
-import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.surface.Polygon;
-import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.referencing.CRS;
-
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
@@ -36,6 +26,16 @@ import jakarta.xml.bind.annotation.XmlAnyElement;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.curve.LinearRing;
+import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.referencing.CRS;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -43,10 +43,6 @@ import org.junit.jupiter.api.Disabled;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.gml.GeometryAssert.assertCRS;
 import static org.apache.sis.gml.GeometryAssert.assertGeometryEquals;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.DataPoints;
 
 
 /**

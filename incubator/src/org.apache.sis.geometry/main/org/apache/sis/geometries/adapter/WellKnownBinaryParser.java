@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Empty;
@@ -30,6 +31,7 @@ import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Surface;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.CompoundCurve;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.curve.LineString;
@@ -47,8 +49,6 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.DataPointsType;
 
 
 /**

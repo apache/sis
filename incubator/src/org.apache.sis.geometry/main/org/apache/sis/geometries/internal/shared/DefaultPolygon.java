@@ -18,16 +18,16 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.List;
 import java.util.Objects;
+import org.locationtech.jts.geom.GeometryFactory;
 import javax.measure.Quantity;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

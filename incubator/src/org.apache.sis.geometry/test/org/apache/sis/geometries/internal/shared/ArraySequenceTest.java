@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Vector2D;
@@ -30,7 +31,6 @@ import org.apache.sis.referencing.CommonCRS;
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
-import org.apache.sis.geometries.DataPointsType;
 
 
 /**

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries;
 
+
 /**
  * Defines how geometry attribute should be interpolation on the curves, surfaces or in volumes.
  * This information will be used by geometry transforming operations.

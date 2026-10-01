@@ -18,9 +18,9 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.opengis.geometry.Envelope;
 
 
 /**

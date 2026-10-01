@@ -18,6 +18,12 @@ package org.apache.sis.geometries;
 
 import java.util.Map;
 import javax.measure.Quantity;
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Metadata;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.adapter.WellKnownBinary;
 import org.apache.sis.geometries.adapter.WellKnownText;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
@@ -26,12 +32,6 @@ import org.apache.sis.geometries.operation.GeometryProcessor;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.Envelope;
-import org.opengis.metadata.Metadata;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

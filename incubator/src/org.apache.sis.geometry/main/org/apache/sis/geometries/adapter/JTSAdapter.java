@@ -18,6 +18,10 @@ package org.apache.sis.geometries.adapter;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.CoordinateXY;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
@@ -25,6 +29,7 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.curve.MultiLineString;
@@ -41,11 +46,6 @@ import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.CoordinateSequence;
-import org.locationtech.jts.geom.CoordinateXY;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.DataPointsType;
 
 
 /**

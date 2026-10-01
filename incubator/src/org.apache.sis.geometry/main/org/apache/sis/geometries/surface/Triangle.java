@@ -19,10 +19,15 @@ package org.apache.sis.geometries.surface;
 import java.util.Collections;
 import java.util.List;
 import javax.measure.Quantity;
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.internal.shared.DefaultTriangle;
 import org.apache.sis.geometries.operation.simplify.greedyinsert.WTriangle;
@@ -35,11 +40,6 @@ import org.apache.sis.maths.Vector3D;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.DataPointsType;
 
 
 /**

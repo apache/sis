@@ -18,10 +18,10 @@ package org.apache.sis.geometries.cs;
 
 import javax.measure.Quantity;
 import javax.measure.quantity.Angle;
-import org.apache.sis.geometries.internal.shared.DefaultBearing;
-import org.apache.sis.maths.Vector;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
+import org.apache.sis.geometries.internal.shared.DefaultBearing;
+import org.apache.sis.maths.Vector;
 
 
 /**

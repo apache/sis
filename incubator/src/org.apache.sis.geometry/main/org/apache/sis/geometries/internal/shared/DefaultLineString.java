@@ -19,6 +19,7 @@ package org.apache.sis.geometries.internal.shared;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.LineString;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

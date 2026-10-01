@@ -20,9 +20,12 @@ import java.util.Set;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Resource;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
 import org.opengis.filter.Filter;
 import org.opengis.filter.ResourceId;
+
 
 /**
  * FeatureSet content event.

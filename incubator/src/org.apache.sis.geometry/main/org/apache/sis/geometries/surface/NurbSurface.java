@@ -21,6 +21,7 @@ import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultNurbSurface;
 
+
 /**
  * TODO : missing in ISO:19107 ? need to recheck this one.
  *

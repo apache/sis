@@ -16,14 +16,15 @@
  */
 package org.apache.sis.gml;
 
-import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.dom.DOMResult;
-import org.apache.sis.geometries.Geometry;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.apache.sis.geometries.Geometry;
+
 
 /**
  * Adapts an Apache SIS {@link Geometry} for use in a JAXB-annotated class.

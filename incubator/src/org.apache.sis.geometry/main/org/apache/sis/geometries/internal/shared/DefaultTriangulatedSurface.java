@@ -16,10 +16,10 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.surface.TIN;
 import org.apache.sis.geometries.surface.Triangle;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

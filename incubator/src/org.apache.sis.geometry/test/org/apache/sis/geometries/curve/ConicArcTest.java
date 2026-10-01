@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.curve;
 
+
 /**
  * Tests {@link ConicArc}.
  * This interface declares no method, therefore this class declares no test.

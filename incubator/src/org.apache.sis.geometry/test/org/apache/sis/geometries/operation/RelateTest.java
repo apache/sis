@@ -18,14 +18,14 @@ package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.DE9IM;
 import org.apache.sis.geometries.Geometry;
-
-// Test dependencies
 import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
 import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
 import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
 import static org.apache.sis.geometries.operation.TestData.POINT_A;
 import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
 import static org.apache.sis.geometries.operation.TestData.POINT_B;
+
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;

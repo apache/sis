@@ -17,10 +17,13 @@
 package org.apache.sis.geometries.operation;
 
 import org.apache.sis.maths.Maths;
+
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
+
 
 /**
  *
@@ -64,7 +67,7 @@ public class ShewchukPredicatesTest {
     public void testInsphere() {
         //a,b,c,d on the unit sphere
         final double ax= 1,ay=0,az=0,
-                     bx=-1,by=0,bz=0, 
+                     bx=-1,by=0,bz=0,
                      cx= 0,cy=1,cz=0,
                      dx= 0,dy=0,dz=1;
         //origin is inside the sphere

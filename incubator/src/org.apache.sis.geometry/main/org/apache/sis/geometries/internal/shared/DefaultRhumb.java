@@ -16,10 +16,10 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import org.apache.sis.geometries.cs.Bearing;
-import org.apache.sis.geometries.DataPoints;
-import org.apache.sis.geometries.curve.Rhumb;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.cs.Bearing;
+import org.apache.sis.geometries.curve.Rhumb;
 
 
 /**

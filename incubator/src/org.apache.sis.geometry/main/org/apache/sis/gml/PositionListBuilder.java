@@ -17,6 +17,7 @@
 package org.apache.sis.gml;
 
 import java.util.Arrays;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.maths.DataType;
@@ -24,7 +25,6 @@ import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

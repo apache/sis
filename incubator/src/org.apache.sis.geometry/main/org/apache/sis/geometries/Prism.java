@@ -16,8 +16,8 @@
  */
 package org.apache.sis.geometries;
 
-import org.apache.sis.geometries.internal.shared.DefaultPrism;
 import org.opengis.referencing.crs.SingleCRS;
+import org.apache.sis.geometries.internal.shared.DefaultPrism;
 import org.apache.sis.measure.NumberRange;
 
 

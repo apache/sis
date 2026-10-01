@@ -18,6 +18,8 @@ package org.apache.sis.geometries.curve;
 
 import java.util.List;
 import java.util.Set;
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.GeometryCollection;
@@ -25,8 +27,6 @@ import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.cs.Projection;
 import org.apache.sis.geometries.internal.shared.DefaultProductCurve;
 import org.apache.sis.measure.Range;
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
 
 
 /**

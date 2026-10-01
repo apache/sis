@@ -16,22 +16,20 @@
  */
 package org.apache.sis.gml;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
-import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.referencing.CRS;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.DataPoints;
-import org.apache.sis.geometries.DataPointsType;
 
 
 /**

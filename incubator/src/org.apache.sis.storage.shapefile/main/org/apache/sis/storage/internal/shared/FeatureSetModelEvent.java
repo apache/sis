@@ -19,7 +19,10 @@ package org.apache.sis.storage.internal.shared;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.Resource;
 import static org.apache.sis.util.ArgumentChecks.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.FeatureType;
+
 
 /**
  * FeatureSet management event.

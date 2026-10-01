@@ -17,12 +17,12 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
-import org.apache.sis.geometries.DataPoints;
-import org.apache.sis.geometries.curve.Conic;
-import org.apache.sis.maths.Array;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.curve.Conic;
+import org.apache.sis.maths.Array;
 
 
 /**

@@ -25,9 +25,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import javax.xml.transform.Source;
 import jakarta.xml.bind.JAXBException;
-import org.apache.sis.io.Authorization;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.DataIdentification;
+import org.apache.sis.io.Authorization;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

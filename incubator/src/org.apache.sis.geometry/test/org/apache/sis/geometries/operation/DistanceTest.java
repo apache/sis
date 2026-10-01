@@ -27,9 +27,12 @@ import org.apache.sis.referencing.CommonCRS;
 import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
 import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
 import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
+
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
+
 
 /**
  *
