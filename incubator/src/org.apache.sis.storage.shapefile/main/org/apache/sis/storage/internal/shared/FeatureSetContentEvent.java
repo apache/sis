@@ -25,6 +25,7 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.filter.Filter;
 import org.apache.sis.feature.AbstractFeature;
 
+
 /**
  * FeatureSet content event.
  *

@@ -23,6 +23,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
 // Specific to the main branch:
 import org.apache.sis.feature.DefaultFeatureType;
 
+
 /**
  * FeatureSet management event.
  *

@@ -16,8 +16,9 @@
  */
 package org.apache.sis.storage.internal.shared;
 
-import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.Resource;
+import org.apache.sis.storage.event.StoreEvent;
+
 
 /**
  * Storage event.

@@ -32,10 +32,10 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.internal.shared.Strings;
 
 // Specific to the main branch:
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.parameter.ParameterValueGroup;
 
 
 /**

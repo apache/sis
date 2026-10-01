@@ -19,6 +19,7 @@ package org.apache.sis.storage.internal.shared;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.event.StoreEvent;
 
+
 /**
  * Event raised when a resource has been added or removed from an Aggregation.
  *

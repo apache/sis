@@ -19,6 +19,7 @@ package org.apache.sis.storage.internal.shared;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.storage.Resource;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

@@ -16,8 +16,9 @@
  */
 package org.apache.sis.storage.internal.shared;
 
-import org.apache.sis.storage.Resource;
 import org.opengis.util.GenericName;
+import org.apache.sis.storage.Resource;
+
 
 /**
  * Coverage store structure change event.

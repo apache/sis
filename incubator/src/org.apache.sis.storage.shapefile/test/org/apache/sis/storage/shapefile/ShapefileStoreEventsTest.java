@@ -41,9 +41,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 // Specific to the main branch:
-import org.apache.sis.filter.Filter;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
+import org.apache.sis.filter.Filter;
 import org.apache.sis.pending.geoapi.filter.ResourceId;
 import org.apache.sis.pending.geoapi.filter.LogicalOperator;
 
