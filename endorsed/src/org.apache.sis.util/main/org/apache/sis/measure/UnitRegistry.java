@@ -98,7 +98,7 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
      *
      * <h4>Dimension order</h4>
      * The search for an existing unit in this map is <strong>not</strong> sensitive to dimension order.
-     * N⋅m is considered equivalent to m⋅N, and both of them are associated to the symbol "J" (Joule).
+     * N⋅m is considered equivalent to m⋅N, and both of them are associated with the symbol "J" (Joule).
      * We ignore dimension order because it has no incidence on the unit symbol shown to user.
      */
     private static final Map<Object, Object> HARD_CODED = new HashMap<>(256);
@@ -109,10 +109,10 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
      * Key and value types are the same as the one described in {@link #HARD_CODED}.
      *
      * <h4>Dimension order</h4>
-     * Contrarily to {@link #HARD_CODED}, the user-specified map of units is sensitive to dimension order.
+     * Contrary to {@link #HARD_CODED}, the user-specified map of units is sensitive to dimension order.
      * kg∕(m⋅s³) is not considered the same as kg∕(s³⋅m) for formatting purpose (but still considered the
      * same for unit conversions purpose). This distinction is applied because the unit may have no label
-     * associated to it. The only label may be the list of dimensions, so we try to show them in the same
+     * associated with it. The only label may be the list of dimensions, so we try to show them in the same
      * order as specified by the users when they constructed their units.
      *
      * <h4>Implementation note</h4>
@@ -229,7 +229,7 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
 
     /**
      * Adds the given {@code key}, {@code value} pair in the map of user-defined values, provided that no value
-     * is currently associated to the given key. This method shall be invoked only after the {@link Units} class
+     * is currently associated with the given key. This method shall be invoked only after the {@link Units} class
      * has been fully initialized.
      */
     static Object putIfAbsent(final Object key, final Object value) {
@@ -242,7 +242,7 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
     }
 
     /**
-     * Returns the value associated to the given key, or {@code null} if none.
+     * Returns the value associated with the given key, or {@code null} if none.
      * This method can be invoked at anytime (at {@link Units} class initialization time or not).
      */
     static Object get(final Object key) {

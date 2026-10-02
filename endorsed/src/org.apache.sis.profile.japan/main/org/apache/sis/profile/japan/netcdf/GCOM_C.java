@@ -268,7 +268,7 @@ public final class GCOM_C extends Convention {
         final VariableRole role = super.roleOf(variable);
         if (role == VariableRole.COVERAGE) {
             /*
-             * Exclude (for now) some variables associated to longitude and latitude: Obs_time, Sensor_zenith, Solar_zenith.
+             * Exclude (for now) some variables associated with longitude and latitude: Obs_time, Sensor_zenith, Solar_zenith.
              * In a future version we should probably keep them but store them in their own resource aggregate.
              */
             final String group = variable.getGroupName();

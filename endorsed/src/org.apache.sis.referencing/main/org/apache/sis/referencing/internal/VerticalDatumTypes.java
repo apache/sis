@@ -51,7 +51,7 @@ public final class VerticalDatumTypes {
      * should never be separated from the horizontal components according ISO 19111.
      *
      * <h4>Legacy</h4>
-     * This type was associated to code 2000 in the {@code Vert_Datum} element of the legacy WKT 1 format.
+     * This type was associated with code 2000 in the {@code Vert_Datum} element of the legacy WKT 1 format.
      * The UML identifier was {@code CS_DatumType.CS_VD_Ellipsoidal}.
      *
      * @see org.apache.sis.referencing.CommonCRS.Vertical#ELLIPSOIDAL
@@ -62,7 +62,7 @@ public final class VerticalDatumTypes {
      * A vertical datum type for orthometric heights that are measured along the plumb line.
      *
      * <h4>Legacy</h4>
-     * This type was associated to code 2001 in the {@code Vert_Datum} element of the legacy WKT 1 format.
+     * This type was associated with code 2001 in the {@code Vert_Datum} element of the legacy WKT 1 format.
      * The UML identifier was {@code CS_DatumType.CS_VD_Orthometric}.
      */
     private static final String ORTHOMETRIC = "ORTHOMETRIC";
@@ -71,7 +71,7 @@ public final class VerticalDatumTypes {
      * A vertical datum type for origin of the vertical axis based on atmospheric pressure.
      *
      * <h4>Legacy</h4>
-     * This type was associated to code 2003 in the {@code Vert_Datum} element of the legacy WKT 1 format.
+     * This type was associated with code 2003 in the {@code Vert_Datum} element of the legacy WKT 1 format.
      * The UML identifier was {@code CS_DatumType.CS_VD_AltitudeBarometric}.
      *
      * @see org.apache.sis.referencing.CommonCRS.Vertical#BAROMETRIC

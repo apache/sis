@@ -444,7 +444,7 @@ public class Content extends ResourceDefinition {
 
     /**
      * Returns the coordinate reference system constructed from the <abbr>SRID</abbr>.
-     * The value may be absent if the <abbr>WKT</abbr> associated to the <abbr>SRID</abbr>
+     * The value may be absent if the <abbr>WKT</abbr> associated with the <abbr>SRID</abbr>
      * cannot be parsed.
      *
      * @return the <abbr>CRS</abbr> constructed from the <abbr>SRID</abbr>.

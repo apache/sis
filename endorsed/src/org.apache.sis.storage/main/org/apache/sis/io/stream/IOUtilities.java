@@ -465,7 +465,7 @@ public final class IOUtilities {
 
     /**
      * Converts the given output stream to an input stream. It is caller's responsibility to flush
-     * the stream and reset its position to the beginning of file before to invoke this method.
+     * the stream and reset its position to the beginning of file before invoking this method.
      * The data read by the input stream will be the data that have been written in the output stream
      * before this method is invoked.
      *
@@ -503,7 +503,7 @@ public final class IOUtilities {
 
     /**
      * Converts the given input stream to an output stream. It is caller's responsibility to reset
-     * the stream position to the beginning of file before to invoke this method. The data written
+     * the stream position to the beginning of file before invoking this method. The data written
      * by the output stream will overwrite the previous data, but the caller may need to
      * {@linkplain #truncate truncate} the output stream after he finished to write in it.
      *
@@ -539,7 +539,7 @@ check:  if (stream instanceof ChannelData) {
     /**
      * Truncates the given output stream at its current position.
      * This method works with Apache SIS implementations backed (sometimes indirectly) by {@link SeekableByteChannel}.
-     * Callers may need to {@linkplain java.io.Flushable#flush() flush} the stream before to invoke this method.
+     * Callers may need to {@linkplain java.io.Flushable#flush() flush} the stream before invoking this method.
      *
      * @param  stream  the output stream or writable channel to truncate.
      * @return whether this method has been able to truncate the given stream.

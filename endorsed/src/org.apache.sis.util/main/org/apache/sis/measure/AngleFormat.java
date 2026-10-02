@@ -666,7 +666,7 @@ public class AngleFormat extends Format implements Localized {
                  * We reached the field after the last one. This is not necessarily FRACTIONAL_FIELD
                  * since a previous field can be marked as omitted. Before to stop the loop, write
                  * the pattern for the fractional part of degrees, minutes or seconds, followed by
-                 * the suffix. In this case, 'previousSuffix' is actually associated to the integer
+                 * the suffix. In this case, 'previousSuffix' is actually associated with the integer
                  * part of the current field.
                  */
                 width = fractionFieldWidth;

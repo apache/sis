@@ -275,7 +275,7 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
 
     /**
      * Returns the base units used by Apache SIS implementations.
-     * Contrarily to {@link #getBaseUnits()}, this method never returns {@code null}.
+     * Contrary to {@link #getBaseUnits()}, this method never returns {@code null}.
      */
     @Override
     final Map<SystemUnit<?>, Fraction> getBaseSystemUnits() {

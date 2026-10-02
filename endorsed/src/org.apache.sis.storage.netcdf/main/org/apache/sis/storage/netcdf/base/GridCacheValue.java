@@ -29,7 +29,7 @@ import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 /**
  * A value cached in {@link GridCacheKey.Global#CACHE}.
  * This is used for sharing common localization grids between different netCDF files.
- * {@code GridCacheValue}s are associated to {@link GridCacheKey}s in a hash map.
+ * {@code GridCacheValue}s are associated with {@link GridCacheKey}s in a hash map.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

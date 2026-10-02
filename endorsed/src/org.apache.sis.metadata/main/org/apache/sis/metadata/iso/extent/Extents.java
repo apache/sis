@@ -259,10 +259,10 @@ public final class Extents {
      *         {@linkplain DefaultGeographicBoundingBox#add union} of all bounding boxes.</li>
      *   </ul></li>
      *   <li>If above step found no {@code GeographicBoundingBox}, then this method inspects geographic elements
-     *       that are instance of {@link BoundingPolygon}, taking in account only the envelopes associated to a
+     *       that are instance of {@link BoundingPolygon}, taking in account only the envelopes associated with a
      *       coordinate reference system of kind {@link GeographicCRS}. If such envelopes are found, then this
      *       method computes and returns their union.</li>
-     *   <li>If above step found no polygon's envelope associated to a geographic CRS, then in last resort this
+     *   <li>If above step found no polygon's envelope associated with a geographic CRS, then in last resort this
      *       method uses all polygon's envelopes regardless their coordinate reference system (provided that the
      *       CRS is not null), applying coordinate transformations if needed.</li>
      *   <li>If above step found no polygon's envelope, then this method returns {@code null}.</li>

@@ -42,7 +42,7 @@ public abstract class AbstractFactory implements Factory {
     /**
      * Returns the implementer of this factory, or {@code null} if unknown.
      * The default implementation tries to fetch this information from the
-     * manifest associated to the package of {@code this.getClass()}.
+     * manifest associated with the package of {@code this.getClass()}.
      *
      * @return the vendor for this factory implementation, or {@code null} if unknown.
      * @throws FactoryException if an error occurred while fetching the vendor information.

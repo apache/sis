@@ -253,7 +253,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
     /**
      * Formats a localized string representation of the given statistics.
      * If statistics on {@linkplain Statistics#differences() differences}
-     * are associated to the given object, they will be formatted too.
+     * are associated with the given object, they will be formatted too.
      *
      * @param  stats       the statistics to format.
      * @param  toAppendTo  where to format the statistics.

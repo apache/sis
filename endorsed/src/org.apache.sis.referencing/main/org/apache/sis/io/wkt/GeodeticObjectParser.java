@@ -411,7 +411,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Returns the value associated to {@link IdentifiedObject#IDENTIFIERS_KEY} as an {@code Identifier} object.
+     * Returns the value associated with {@link IdentifiedObject#IDENTIFIERS_KEY} as an {@code Identifier} object.
      * This method shall accept all value types that {@link #parseMetadataAndClose(Element, String, IdentifiedObject)}
      * may store.
      *
@@ -493,7 +493,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     return ArraysExt.append((Identifier[]) previous, more);
                 }
             });
-            // REMINDER: values associated to IDENTIFIERS_KEY shall be recognized by `toIdentifier(Object)`.
+            // REMINDER: values associated with IDENTIFIERS_KEY shall be recognized by `toIdentifier(Object)`.
         }
         /*
          * SCOPE, AREA, BBOX, VERTICALEXTENT and TIMEEXTENT. Since ISO 19162:2019,

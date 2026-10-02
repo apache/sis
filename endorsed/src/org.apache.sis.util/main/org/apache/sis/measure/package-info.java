@@ -47,7 +47,7 @@
  *
  * <ul>
  *   <li>{@linkplain org.apache.sis.measure.Quantities}
- *       as a {@code double} value value associated to a {@code Unit} instance.</li>
+ *       as a {@code double} value value associated with a {@code Unit} instance.</li>
  *   <li>{@link org.apache.sis.measure.Angle} and its subclasses
  *      ({@link org.apache.sis.measure.Longitude},
  *       {@link org.apache.sis.measure.Latitude},

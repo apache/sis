@@ -116,7 +116,7 @@ final class MultiCanvas extends Widget implements Observable {
     private final VBox view;
 
     /**
-     * All created canvases, visible or not, associated to their title and status bar.
+     * All created canvases, visible or not, associated with their title and status bar.
      *
      * @see #addResource(Resource)
      * @see #removeResource(Resource)
@@ -125,7 +125,7 @@ final class MultiCanvas extends Widget implements Observable {
     private final Map<MapCanvas, Controls> canvasPool;
 
     /**
-     * Controls associated to each map canvas.
+     * Controls associated with each map canvas.
      */
     private static final class Controls implements ChangeListener<Boolean> {
         /**
@@ -252,7 +252,7 @@ final class MultiCanvas extends Widget implements Observable {
 
         /**
          * Invoked when the user pressed the button for enabling or disabling the propagation of
-         * navigation events from the canvas associated to this {@code Controls} to other canvases.
+         * navigation events from the canvas associated with this {@code Controls} to other canvases.
          */
         @Override
         public void changed(ObservableValue<? extends Boolean> property, Boolean oldValue, Boolean newValue) {
@@ -318,7 +318,7 @@ final class MultiCanvas extends Widget implements Observable {
 
     /**
      * Returns the JavaFX node to show for the given canvas. This method is defined
-     * for having a central place where this choice is made, for ensuring consistency.
+     * for having a central place where this choice is made, to ensure consistency.
      */
     private static Region getView(final MapCanvas canvas) {
         return canvas.fixedPane;
@@ -608,7 +608,7 @@ final class MultiCanvas extends Widget implements Observable {
     }
 
     /**
-     * Tries to remove all canvases associated to the given resource.
+     * Tries to remove all canvases associated with the given resource.
      * The grid is reorganized for accommodating the remaining canvases,
      * potentially with the removal of rows or columns.
      *
@@ -761,7 +761,7 @@ final class MultiCanvas extends Widget implements Observable {
 
     /**
      * Clears the content of the given map canvas.
-     * It is better to remove the canvas from {@link #canvasGrid} before to invoke this method.
+     * It is better to remove the canvas from {@link #canvasGrid} before invoking this method.
      *
      * @param  canvas    the map canvas to clear.
      * @param  controls  value of {@code canvasPool.get(canvas)} (not necessarily obtained by that call).

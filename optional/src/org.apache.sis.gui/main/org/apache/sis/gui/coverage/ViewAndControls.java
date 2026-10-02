@@ -221,13 +221,13 @@ abstract class ViewAndControls {
     // ════════ Helper methods for subclass constructors ════════════════════════════════════════════════════════
 
     /**
-     * Creates a label with the specified text (fetched from localized resources) associated to the given control.
+     * Creates a label with the specified text (fetched from localized resources) associated with the given control.
      * If the given control is {@code null}, then this method returns {@code null} for skipping the row completely.
      *
      * @param  vocabulary  the resources from which to get the text.
      * @param  key         {@code vocabulary} key of the text to put in the label.
      * @param  control     the control to associate to the label, or {@code null} if none.
-     * @return label associated to the given control, or {@code null} if the given control was null.
+     * @return label associated with the given control, or {@code null} if the given control was null.
      */
     static Label label(final IndexedResourceBundle vocabulary, final short key, final Control control) {
         if (control == null) {
@@ -240,13 +240,13 @@ abstract class ViewAndControls {
     }
 
     /**
-     * Creates a label with the specified text associated to the given group of controls.
+     * Creates a label with the specified text associated with the given group of controls.
      *
      * @param  vocabulary  the resources from which to get the text.
      * @param  key         {@code vocabulary} key of the text to put in the label.
      * @param  group       the group of controls to associate to the label.
      * @param  isFirst     whether the given group is the first group in the pane.
-     * @return label associated to the given group of controls.
+     * @return label associated with the given group of controls.
      */
     static Label labelOfGroup(final IndexedResourceBundle vocabulary, final short key, final Region group, final boolean isFirst) {
         final Label label = new Label(vocabulary.getString(key));

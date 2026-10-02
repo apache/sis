@@ -71,7 +71,7 @@ public final class GUIUtilities {
     }
 
     /**
-     * Returns the window of the bean associated to the given property.
+     * Returns the window of the bean associated with the given property.
      *
      * @param  property  the property for which to get the window of the control, or {@code null}.
      * @return the window, or {@code null} if unknown.

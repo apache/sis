@@ -229,7 +229,7 @@ public final class EPSGFactoryFallbackTest extends TestCaseWithLogs {
 
     /**
      * Asserts that the result of {@link EPSGFactoryFallback#createObject(String)} is CS of the given CRS.
-     * Contrarily to other kinds of objects, coordinate systems are currently not cached. Consequently, we
+     * Contrary to other kinds of objects, coordinate systems are currently not cached. Consequently, we
      * cannot assert that instances are the same.
      */
     private static void verifyCreateCS(final CoordinateReferenceSystem crs, final String code) throws FactoryException {

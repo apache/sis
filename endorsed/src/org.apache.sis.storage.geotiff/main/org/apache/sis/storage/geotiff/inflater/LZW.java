@@ -223,7 +223,7 @@ final class LZW extends InflaterChannel {
     private int indexOfFreeString;
 
     /**
-     * Sequences of bytes associated to codes. For a given <var>c</var> code read from the stream,
+     * Sequences of bytes associated with codes. For a given <var>c</var> code read from the stream,
      * the first uncompressed byte is {@code stringsFromCode(offset(entriesForCodes[c]))} and the
      * number of bytes is {@code length(entriesForCodes[c])}.
      */

@@ -72,7 +72,7 @@ public final class ValueColorMapper extends TabularWidget {
         public final DoubleProperty value;
 
         /**
-         * Color associated to the {@linkplain #value}.
+         * Color associated with the {@linkplain #value}.
          *
          * The value type is {@link ColorRamp} for now. But if this property become public (i.e. located
          * in a non-internal package) in a future version then the type should be changed to {@link Color}
@@ -163,7 +163,7 @@ public final class ValueColorMapper extends TabularWidget {
     private final FormatApplicator<Number> textConverter;
 
     /**
-     * The table showing values associated to colors.
+     * The table showing values associated with colors.
      */
     private final TableView<Step> table;
 
@@ -227,7 +227,7 @@ public final class ValueColorMapper extends TabularWidget {
         }
 
         /**
-         * Returns the color associated to given row as an observable value.
+         * Returns the color associated with given row as an observable value.
          *
          * @param  level  the value for which to get the color to show in color cell.
          * @return the color(s) to use for the given value, or {@code null} if none (transparent).
@@ -421,7 +421,7 @@ increment:  while (decimal.compareTo(r.maximum) <= 0) {
     }
 
     /**
-     * The range of values and constant interval at which to create values associated to colors.
+     * The range of values and constant interval at which to create values associated with colors.
      */
     private static final class Range {
         /**
@@ -511,7 +511,7 @@ increment:  while (decimal.compareTo(r.maximum) <= 0) {
 
         /**
          * Creates one of the rows (minimum, maximum or increment) label to show in dialog box.
-         * The label are associated to a {@link TextField} or {@link ColorPicker}.
+         * The label are associated with a {@link TextField} or {@link ColorPicker}.
          */
         private static Label createRow(final Node editor, final Vocabulary vocabulary, final short key) {
             final Label label = new Label(vocabulary.getLabel(key));

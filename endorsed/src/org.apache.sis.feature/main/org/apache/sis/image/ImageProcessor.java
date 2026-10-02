@@ -756,7 +756,7 @@ public class ImageProcessor implements Cloneable {
      *   </tr>
      * </table>
      *
-     * <b>Note:</b> if no value is associated to the {@code "sampleDimensions"} key, then the default
+     * <b>Note:</b> if no value is associated with the {@code "sampleDimensions"} key, then the default
      * value will be the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY} image property value if defined.
      * That value can be an array, in which case the sample dimension of the visible band is taken.
      *
@@ -775,7 +775,7 @@ public class ImageProcessor implements Cloneable {
      * @param  modifiers  modifiers for narrowing the range of values, or {@code null} if none.
      * @return the image with color ramp stretched between the specified or calculated bounds,
      *         or {@code image} unchanged if the operation cannot be applied on the given image.
-     * @throws IllegalArgumentException if the value associated to one of about keys is not of expected type.
+     * @throws IllegalArgumentException if the value associated with one of about keys is not of expected type.
      */
     public RenderedImage stretchColorRamp(final RenderedImage source, final Map<String,?> modifiers) {
         ArgumentChecks.ensureNonNull("source", source);

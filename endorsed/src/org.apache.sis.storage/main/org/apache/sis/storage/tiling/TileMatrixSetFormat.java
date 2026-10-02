@@ -291,7 +291,7 @@ public class TileMatrixSetFormat extends CompoundFormat<TileMatrixSet> {
     }
 
     /**
-     * Formats the properties of the given Tile Matrices in a way suitable to a tabular format.
+     * Formats the properties of the given Tile Matrices in a way suitable for a tabular format.
      * The properties are formatted as {@link String}s using the locale given at construction time.
      * The returned map contains the following entries if the corresponding properties were found:
      *

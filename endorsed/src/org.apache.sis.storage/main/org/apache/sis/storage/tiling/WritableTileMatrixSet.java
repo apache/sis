@@ -75,7 +75,7 @@ public interface WritableTileMatrixSet extends TileMatrixSet {
      * <code>{@linkplain TileMatrix#getIdentifier()}.toString()</code> value of the tile matrix to delete.
      *
      * @param  identifier  identifier of the {@link TileMatrix} to delete.
-     * @throws NoSuchDataException if there is no tile matrix associated to the given identifier in this set.
+     * @throws NoSuchDataException if there is no tile matrix associated with the given identifier in this set.
      * @throws ReadOnlyStorageException if this tile matrix set is not writable. It may be caused by insufficient credentials.
      * @throws DataStoreException if deleting the tile matrix failed for another reason.
      */

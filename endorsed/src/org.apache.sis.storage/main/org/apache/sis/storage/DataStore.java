@@ -406,7 +406,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * Subclasses are encouraged to override this method with a more efficient implementation.</p>
      *
      * @param  identifier  identifier of the resource to fetch. Must be non-null.
-     * @return resource associated to the given identifier (never {@code null}).
+     * @return resource associated with the given identifier (never {@code null}).
      * @throws IllegalNameException if no resource is found for the given identifier, or if more than one resource is found.
      * @throws DataStoreException if another kind of error occurred while searching resources.
      *
@@ -429,7 +429,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * @param  identifier  identifier of the resource to fetch.
      * @param  candidate   a resource to compare against the identifier.
      * @param  visited     resources visited so-far, for avoiding never-ending loops if cycles exist.
-     * @return resource associated to the given identifier, or {@code null} if not found.
+     * @return resource associated with the given identifier, or {@code null} if not found.
      */
     private Resource findResource(final String identifier, final Resource candidate,
             final Map<Resource,Boolean> visited) throws DataStoreException

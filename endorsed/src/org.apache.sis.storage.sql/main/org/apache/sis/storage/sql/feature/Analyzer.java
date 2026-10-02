@@ -229,10 +229,10 @@ public final class Analyzer {
      *
      * <h4>Prerequisites</h4>
      * The {@link #spatialInformation} (if available) and {@link #customizer} (if any) fields should
-     * be set before to invoke this method. Those fields are optional, they may be {@code null}.
+     * be set before invoking this method. Those fields are optional, they may be {@code null}.
      *
      * @param  tableNames  qualified name of the tables. Specified by users at construction time.
-     * @param  queries     additional resources associated to SQL queries. Specified by users at construction time.
+     * @param  queries     additional resources associated with SQL queries. Specified by users at construction time.
      * @throws Exception if a <abbr>SQL</abbr> error or logical error occurred.
      *
      * @see #finish()

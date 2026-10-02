@@ -1373,7 +1373,7 @@ public final class Units {
         PPM     = add(one, micro,                                                    "ppm",   OTHER, (short) 9202);
         bel     = add(one, PowerOf10.belToOne(), "B", (byte) (ACCEPTED | PREFIXABLE), (short) 0);
         DECIBEL = add(bel, Prefixes.converter('d'), "dB", ACCEPTED, (short) 0);
-        UNITY   = UnitRegistry.init(one);  // Must be last in order to take precedence over all other units associated to UnitDimension.NONE.
+        UNITY   = UnitRegistry.init(one);  // Must be last in order to take precedence over all other units associated with UnitDimension.NONE.
 
         UnitRegistry.alias(UNITY,       Short.valueOf((short) 9203));
         UnitRegistry.alias(DEGREE,      Short.valueOf(Constants.EPSG_AXIS_DEGREES));

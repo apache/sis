@@ -152,7 +152,7 @@ public interface ObjectConverter<S,T> extends Function<S,T> {
 
     /**
      * Returns a converter capable to convert instances of <var>T</var> back to instances of <var>S</var>.
-     * Before to invoke this method, callers can verify if this converter is invertible as below:
+     * Before invoking this method, callers can verify if this converter is invertible as below:
      *
      * {@snippet lang="java" :
      *     if (converter.properties().contains(FunctionProperty.INVERTIBLE)) {

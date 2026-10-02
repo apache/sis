@@ -263,7 +263,7 @@ public class ReferenceResolver {
      * <ul>
      *   <li>If an {@link URIResolver} has been specified at construction time, delegates to it.</li>
      *   <li>Otherwise or if the above returned {@code null}, then if the source of the current document
-     *       is associated to a {@link javax.xml.stream.XMLResolver}, delegates to it.</li>
+     *       is associated with a {@link javax.xml.stream.XMLResolver}, delegates to it.</li>
      *   <li>Otherwise, the caller tries to resolve the URI itself.</li>
      * </ul>
      * The resolved URL, if known, is available in {@link Source#getSystemId()}.

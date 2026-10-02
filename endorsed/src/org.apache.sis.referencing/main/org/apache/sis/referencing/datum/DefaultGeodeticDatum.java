@@ -65,7 +65,7 @@ import org.opengis.referencing.datum.DynamicReferenceFrame;
  * and also with Cartesian coordinate system centered in the ellipsoid (or sphere).
  *
  * <h2>Bursa-Wolf parameters</h2>
- * One or many {@link BursaWolfParameters} can optionally be associated to each {@code DefaultGeodeticDatum} instance.
+ * One or many {@link BursaWolfParameters} can optionally be associated with each {@code DefaultGeodeticDatum} instance.
  * This association is not part of the ISO 19111 model, but still a common practice (especially in older standards).
  * Associating Bursa-Wolf parameters to a geodetic reference frame is known as the <i>early-binding</i> approach.
  * A recommended alternative, discussed below, is the <i>late-binding</i> approach.
@@ -84,8 +84,8 @@ import org.opengis.referencing.datum.DynamicReferenceFrame;
  *     {@link org.opengis.referencing.operation.MathTransform} is requested for a pair of CRS.
  *     This is known as the <i>late-binding</i> approach.
  *     If a datum shift method is found in the database, it will have precedence over any {@code BursaWolfParameters}
- *     instance associated to this {@code DefaultGeodeticDatum}. Only if no datum shift method is found in the database,
- *     then the {@code BursaWolfParameters} associated to the datum may be used as a fallback.</p>
+ *     instance associated with this {@code DefaultGeodeticDatum}. Only if no datum shift method is found in the database,
+ *     then the {@code BursaWolfParameters} associated with the datum may be used as a fallback.</p>
  *   </li>
  *
  *   <li><b>WKT version 1 formatting</b><br>
@@ -438,8 +438,8 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
             return createTransformation(candidate, areaOfInterest);
         }
         /*
-         * Found no suitable BursaWolfParameters associated to this instance.
-         * Search in the BursaWolfParameters associated to the other instance.
+         * Found no suitable BursaWolfParameters associated with this instance.
+         * Search in the BursaWolfParameters associated with the other instance.
          */
         if (targetDatum instanceof DefaultGeodeticDatum) {
             candidate = ((DefaultGeodeticDatum) targetDatum).select(this, selector);

@@ -505,7 +505,7 @@ public final class CoordinateReferenceSystems extends HTMLGenerator {
                     /*
                      * If a replacement exists for a deprecated CRS, use the datum of the replacement instead of
                      * the datum of the deprecated CRS for determining in which section to put the CRS. The reason
-                     * is that some CRS are deprecated because they were associated to the wrong datum, in which
+                     * is that some CRS are deprecated because they were associated with the wrong datum, in which
                      * case the deprecated CRS would appear in the wrong section if we do not apply this correction.
                      */
                     if (replacedBy != null) try {

@@ -732,7 +732,7 @@ public class Convention {
     /**
      * Builds the function converting values from their packed formats in the variable to "real" values.
      * The transfer function is typically built from the {@code "scale_factor"} and {@code "add_offset"}
-     * attributes associated to the given variable, but other conventions could use different attributes.
+     * attributes associated with the given variable, but other conventions could use different attributes.
      * The returned function will be a component of the {@link org.apache.sis.coverage.SampleDimension}
      * to be created for each variable.
      *

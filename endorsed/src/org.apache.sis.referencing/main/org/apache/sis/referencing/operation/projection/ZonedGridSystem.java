@@ -113,7 +113,7 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
      *   <li><q>Transverse Mercator Zoned Grid System</q>.</li>
      * </ul>
      *
-     * Contrarily to other map projections in this package, there is no {@code createMapProjection(MathTransformFactory)}
+     * Contrary to other map projections in this package, there is no {@code createMapProjection(MathTransformFactory)}
      * method in this class. Instead, the factory must be specified at this {@code ZonedGridSystem} construction time.
      *
      * @param  method      description of the projection parameters.

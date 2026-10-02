@@ -244,13 +244,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
         }
 
         /**
-         * The numerical code associated to this enumeration value. It serves similar purpose to the
+         * The numerical code associated with this enumeration value. It serves similar purpose to the
          * {@link #ordinal()} value, but is nevertheless provided for the reasons given in {@link #VALUES}.
          */
         final byte code;
 
         /**
-         * Creates a new state associated to the given code numerical code.
+         * Creates a new state associated with the given code numerical code.
          */
         private State(final byte code) {
             this.code = code;

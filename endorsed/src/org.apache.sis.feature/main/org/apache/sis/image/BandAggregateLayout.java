@@ -55,7 +55,7 @@ import org.apache.sis.image.internal.shared.ColorModelFactory;
 final class BandAggregateLayout {
     /**
      * The source images. This is a copy of the user-specified array,
-     * except that images associated to an empty set of bands are discarded.
+     * except that images associated with an empty set of bands are discarded.
      */
     private final RenderedImage[] sources;
 

@@ -573,14 +573,14 @@ public class SampleDimension implements IdentifiedType, LenientComparable, Seria
      *   <li>An arbitrary number of <i>quantitative</i> categories.</li>
      * </ul>
      *
-     * <p>A <dfn>qualitative category</dfn> is a range of sample values associated to a label.
+     * <p>A <dfn>qualitative category</dfn> is a range of sample values associated with a label.
      * For example, 0 = no data, 1 = cloud, 2 = sea, 3 = land, <i>etc</i>.
      * Missing values are also considered as a qualitative category and should be declared.
      * If the missing value can be used as a background value for filling empty spaces in
      * {@linkplain org.apache.sis.image.ImageProcessor#resample image resampling operations},
      * then it should be declared using {@code setBackground(…)} method instead of {@code addQualitative(…)}.</p>
      *
-     * <p>A <dfn>quantitative category</dfn> is a range of sample values associated to numbers with units of measurement.
+     * <p>A <dfn>quantitative category</dfn> is a range of sample values associated with numbers with units of measurement.
      * For example, 10 = 1.0°C, 11 = 1.1°C, 12 = 1.2°C, <i>etc</i>. A quantitative category has a
      * {@linkplain org.opengis.metadata.content.SampleDimension#getTransferFunctionType() transfer function}
      * (typically a scale factor and an offset) for converting sample values to values expressed
@@ -1106,7 +1106,7 @@ public class SampleDimension implements IdentifiedType, LenientComparable, Seria
          * @param  samples     the minimum and maximum sample values in the category. Element class is usually
          *                     {@link Integer}, but {@link Float} and {@link Double} values are accepted as well.
          * @param  converted   the range of real values for this category, as an instance of {@link MeasurementRange}
-         *                     if those values are associated to an unit of measurement.
+         *                     if those values are associated with an unit of measurement.
          * @return {@code this}, for method call chaining.
          * @throws ClassCastException if the range element class is not a {@link Number} subclass.
          * @throws IllegalArgumentException if the range is invalid.

@@ -33,7 +33,7 @@ import org.apache.sis.storage.UnsupportedEncodingException;
 public class ByteRanges implements Comparable<ByteRanges> {
     /**
      * Interface implemented by the {@link TreeNode} subclasses which read bytes only when requested.
-     * Contrarily to the constructors of {@link Box} subclasses which read all the payload immediately,
+     * Contrary to the constructors of {@link Box} subclasses which read all the payload immediately,
      * the method provided by this interface allow access to a subset of a potentially large sequence of bytes.
      *
      * @author Martin Desruisseaux (Geomatys)
@@ -121,7 +121,7 @@ public class ByteRanges implements Comparable<ByteRanges> {
 
     /**
      * Notifies the given input about the range of bytes which will be requested. This method should be
-     * invoked for the {@code ByteRanges} associated to all tiles to read before the actual reading starts.
+     * invoked for the {@code ByteRanges} associated with all tiles to read before the actual reading starts.
      * This notification is only a hint. It can be used for preparing a <abbr>HTTP</abbr> range request.
      *
      * @param  input  the input stream to notify about the ranges of bytes that will be requested.

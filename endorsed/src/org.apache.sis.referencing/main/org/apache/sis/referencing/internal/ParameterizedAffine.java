@@ -81,11 +81,11 @@ public final class ParameterizedAffine extends AffineTransform2D {
     }
 
     /**
-     * Returns the given transform associated to the same parameters as this {@code ParameterizedAffine},
+     * Returns the given transform associated with the same parameters as this {@code ParameterizedAffine},
      * if possible. If the given transform is not affine, then it is returned unchanged.
      *
      * @param  transform  the transform to be at least partially described by {@link #parameters}.
-     * @return a copy of the given affine transform associated to the parameter of this object,
+     * @return a copy of the given affine transform associated with the parameter of this object,
      *         or the given transform unchanged if it was not affine.
      */
     public MathTransform newTransform(final MathTransform transform) {

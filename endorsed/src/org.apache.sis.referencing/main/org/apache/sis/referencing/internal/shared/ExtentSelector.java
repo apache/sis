@@ -391,7 +391,7 @@ public final class ExtentSelector<T> {
      * Implementation delegates to {@link #evaluate(GeographicBoundingBox, Temporal, Temporal, Object)}.
      *
      * @param  domain  the extent to evaluate, or {@code null} if none.
-     * @param  object  a user object associated to the given extent.
+     * @param  object  a user object associated with the given extent.
      * @throws DateTimeException if this method cannot perform temporal calculation between the given objects.
      */
     public void evaluate(final Extent domain, final T object) {
@@ -409,7 +409,7 @@ public final class ExtentSelector<T> {
      * @param  bbox       the geographic extent of {@code object}, or {@code null} if none.
      * @param  startTime  start time of {@code object}, or {@code null} if none (unbounded).
      * @param  endTime    end time of {@code object}, or {@code null} if none (unbounded).
-     * @param  object     a user object associated to the given extent.
+     * @param  object     a user object associated with the given extent.
      * @throws DateTimeException if this method cannot perform temporal calculation between the given objects.
      */
     @SuppressWarnings("fallthrough")
@@ -564,9 +564,9 @@ public final class ExtentSelector<T> {
     }
 
     /**
-     * Returns the object associated to the largest area found so far.
+     * Returns the object associated with the largest area found so far.
      *
-     * @return the object associated to the largest area found so far, or {@code null}.
+     * @return the object associated with the largest area found so far, or {@code null}.
      */
     public T best() {
         return best;

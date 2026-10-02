@@ -170,7 +170,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
     /**
      * Whether to include deprecated objects in the list of objects returned by {@code getAuthorityCodes(…)}.
      * This flag is set to {@code true} if the properties given to the constructor contains a key named
-     * {@code "showDeprecated"} associated to {@link Boolean#TRUE}.
+     * {@code "showDeprecated"} associated with {@link Boolean#TRUE}.
      */
     final boolean showDeprecated;
 

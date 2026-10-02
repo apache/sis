@@ -175,9 +175,9 @@ final class SubOperationInfo {
         final var infos = new SubOperationInfo[targets.size()];
         final var sourceComponentIsUsed = new boolean[sources.size()];
         /*
-         * Each target CRS must be associated to exactly one source CRS
+         * Each target CRS must be associated with exactly one source CRS
          * (or to zero source CRS if the missing source CRS can be replaced by constant coordinate values).
-         * Each source CRS must be associated to zero or one target CRS, not necessarily in the same order.
+         * Each source CRS must be associated with zero or one target CRS, not necessarily in the same order.
          * Therefore, the iteration over source components will be repeated for each target CRS, combined
          * with `sourceComponentIsUsed` flags for using each source CRS at most once.
          */

@@ -64,7 +64,7 @@ public abstract class ArithmeticFunction<R> extends BinaryFunctionWidening<R, Nu
     /**
      * Returns the type of values computed by this expression.
      * It should be {@code Long} if we are certain that all results will be of that type.
-     * The default implementation is suitable to addition, subtraction and multiplication.
+     * The default implementation is suitable for addition, subtraction and multiplication.
      * Other operations should override this method.
      */
     @Override

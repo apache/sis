@@ -177,7 +177,7 @@ public class IndexedResourceCompiler {
      *   <li>{@code "NotAnInternationalResource.properties"}</li>
      * </ul>
      *
-     * Then this method will set to {@code Boolean.TRUE} the values associated to the following files
+     * Then this method will set to {@code Boolean.TRUE} the values associated with the following files
      * and remove the entries for their language variants:
      * <ul>
      *   <li>{@code "Errors.properties"}</li>

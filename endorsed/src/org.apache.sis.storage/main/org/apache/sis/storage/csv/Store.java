@@ -635,9 +635,9 @@ final class Store extends URIDataStore implements FeatureSet {
     }
 
     /**
-     * Returns the metadata associated to the CSV file, or {@code null} if none.
+     * Returns the metadata associated with the CSV file, or {@code null} if none.
      *
-     * @return the metadata associated to the CSV file, or {@code null} if none.
+     * @return the metadata associated with the CSV file, or {@code null} if none.
      * @throws DataStoreException if an error occurred during the parsing process.
      */
     @Override

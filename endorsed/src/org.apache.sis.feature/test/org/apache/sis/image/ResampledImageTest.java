@@ -141,7 +141,7 @@ public final class ResampledImageTest extends TestCase {
 
     /**
      * Verifies that all pixels that are mapped to an integer position in the source image have the same
-     * values than in the source image. This verification is suitable to interpolation methods that are
+     * values than in the source image. This verification is suitable for interpolation methods that are
      * expected to return the exact pixel values when the interpolation point is exactly in a pixel center.
      * This is the case of {@link Interpolation#BILINEAR} for example, but not {@link Interpolation#LANCZOS}.
      */
@@ -273,7 +273,7 @@ public final class ResampledImageTest extends TestCase {
      * </pre></blockquote>
      *
      * The {@linkplain #target} is a 9×9 image computed using the {@linkplain #interpolation} method.
-     * It is caller's responsibility to set {@link #interpolation} field before to invoke this method
+     * It is caller's responsibility to set {@link #interpolation} field before invoking this method
      * and to verify the result.
      *
      * @param  size  the image width and height.

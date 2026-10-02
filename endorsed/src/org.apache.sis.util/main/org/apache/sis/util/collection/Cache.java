@@ -946,11 +946,11 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
                     /*
                      * Example of key collision: the EPSG database defines the CoordinateOperation
                      * 8653 ("ED50 to WGS84" using polynomial equations).  The EPSG factory sets a
-                     * lock for this code, then searches for OperationParameters associated to this
+                     * lock for this code, then searches for OperationParameters associated with this
                      * operation. One of those parameters ("Bu0v4") has the same key (EPSG:8653).
                      * So we get a key collision. If we ignore the second occurrence, its value will
                      * not be cached. This is okay since the value that we really want to cache is
-                     * CoordinateOperation, which is associated to the first occurrence of that key.
+                     * CoordinateOperation, which is associated with the first occurrence of that key.
                      */
                     return new Simple<>(null);
                 }
@@ -1273,7 +1273,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     }
 
     /**
-     * Removes the given key from the map if it is associated to the given value, otherwise do nothing.
+     * Removes the given key from the map if it is associated with the given value, otherwise do nothing.
      * This method is invoked when the value of a weak or soft reference has been cleared.
      * Theoretically no entry for that key should exist in the {@link #costs} map because
      * that map contains only the keys of objects hold by strong references.
@@ -1281,7 +1281,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * It may happen if some keys are removed from {@link #keySet()} instead of using {@code Cache} API.
      *
      * @param key    key of the entry to remove.
-     * @param value  expected value associated to the given entry.
+     * @param value  expected value associated with the given entry.
      */
     private void removeKey(final K key, final Reference<V> value) {
         if (map.remove(key, value)) {

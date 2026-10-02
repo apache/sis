@@ -177,7 +177,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
 
     /**
      * If non-null, elements to skip before we can write the {@linkplain #deferred} events.
-     * Should be the {@link #ELEMENTS_TO_REORDER} value associated to the element to defer.
+     * Should be the {@link #ELEMENTS_TO_REORDER} value associated with the element to defer.
      * A null value means that events can be written immediately to {@link #out}.
      */
     private Set<QName> toSkip;
@@ -232,7 +232,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
     /**
      * Returns the prefix to use for a name in a new namespace.
      *
-     * @param  previous   the prefix associated to old namespace.
+     * @param  previous   the prefix associated with old namespace.
      * @param  namespace  the new namespace URI.
      * @return prefix to use for the new namespace.
      * @throws XMLStreamException if an error occurred while fetching the prefix.

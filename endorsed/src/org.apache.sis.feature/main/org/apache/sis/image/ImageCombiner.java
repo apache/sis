@@ -213,7 +213,7 @@ public class ImageCombiner implements Consumer<RenderedImage> {
      *       for enabling faster resampling at the cost of lower precision.</li>
      * </ul>
      *
-     * Contrarily to {@link ImageProcessor}, this method does not use {@linkplain ImageProcessor#getFillValues() fill values}.
+     * Contrary to {@link ImageProcessor}, this method does not use {@linkplain ImageProcessor#getFillValues() fill values}.
      * Destination pixels that cannot be mapped to source pixels are left unchanged.
      *
      * @param  source    the image to be resampled.

@@ -41,7 +41,7 @@ import org.apache.sis.util.ArraysExt;
 
 /**
  * Information about the grid geometry and the conversion from grid coordinates to geodetic coordinates.
- * A grid is associated to all variables that are georeferenced coverages and the same grid may be shared
+ * A grid is associated with all variables that are georeferenced coverages and the same grid may be shared
  * by many variables. The {@linkplain #getSourceDimensions() number of source dimensions} is normally the
  * number of {@linkplain Variable#getGridDimensions() netCDF dimensions in the variable}, but may be less
  * if a variable dimensions should considered as bands instead of spatiotemporal dimensions.
@@ -156,7 +156,7 @@ public abstract class Grid extends NamedElement {
      * The list length should be equal to {@link #getSourceDimensions()}.
      *
      * <p>This list is usually equal to the {@link Variable#getGridDimensions()} list for all variables
-     * that are {@linkplain Variable#findGrid associated to this grid}. But those lists can also differ
+     * that are {@linkplain Variable#findGrid associated with this grid}. But those lists can also differ
      * in the following aspects:</p>
      *
      * <ul>
@@ -488,7 +488,7 @@ findFree:       for (int srcDim : axis.gridDimensionIndices) {                  
              * If at least one `gridDimensionIndices` is undefined, the variable is maybe not a grid.
              * It happens for example if the variable is a trajectory, in which case we have two
              * CRS dimensions (e.g. latitude and longitude) but only one variable dimension;
-             * the first CRS dimension has been associated to that variable and the other CRS
+             * the first CRS dimension has been associated with that variable and the other CRS
              * dimension is orphan.
              */
             for (final int s : gridDimensionIndices) {

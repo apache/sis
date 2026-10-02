@@ -122,7 +122,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
 
     /**
      * Number of target dimensions on which this transform operates.
-     * This is fixed to 3, contrarily to the source dimensions which may be 2 or 3 depending on {@link #withHeight}.
+     * This is fixed to 3, contrary to the source dimensions which may be 2 or 3 depending on {@link #withHeight}.
      * This constant is also used for the <em>source</em> number of dimensions of the <em>inverse</em> transform.
      */
     private static final int NUM_CENTRIC_DIM = 3;
@@ -176,7 +176,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
          * or a subclass of those types.
          *
          * @param  csType  the coordinate system type.
-         * @return enumeration value associated to the given type.
+         * @return enumeration value associated with the given type.
          * @throws IllegalArgumentException if the given {@code csType} is not one of the above-documented types.
          * @since  1.5
          */

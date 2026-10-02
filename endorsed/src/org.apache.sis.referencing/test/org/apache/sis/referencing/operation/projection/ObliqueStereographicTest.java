@@ -142,7 +142,7 @@ public final class ObliqueStereographicTest extends MapProjectionTestCase {
 
     /**
      * Creates the complete transform from the given parameter values.
-     * Input and output coordinates will be in degrees, contrarily to the transform
+     * Input and output coordinates will be in degrees, contrary to the transform
      * created by above {@link #createNormalizedProjection(boolean)} method.
      */
     private void createCompleteTransform(final OperationMethod op, final ParameterValueGroup p) throws FactoryException {

@@ -25,7 +25,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 /**
  * Modifications to apply on the axes of a coordinate system in order to produce a new coordinate system.
  * {@code AxisFilter} can specify the axes to exclude in the new coordinate system, or specify different
- * units and directions associated to the axes.
+ * units and directions associated with the axes.
  *
  * <div class="note"><b>Terminology note:</b>
  * the word <q>filter</q> is understood here as <q>a computer program or subroutine to process a stream,

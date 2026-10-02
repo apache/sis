@@ -69,7 +69,7 @@ public enum UnitKey {
     VERTICAL(GeoKeys.VerticalUnits, (short) 0, true, true, false, false),
 
     /**
-     * Unit of measurement of ratios. There is no GeoTIFF keys associated to this unit.
+     * Unit of measurement of ratios. There is no GeoTIFF keys associated with this unit.
      */
     RATIO((short) 0, (short) 0, false, false, false, true),
 
@@ -92,7 +92,7 @@ public enum UnitKey {
     public final short scaleKey;
 
     /**
-     * Whether the unit may be associated to coordinate system axes.
+     * Whether the unit may be associated with coordinate system axes.
      */
     public final boolean isAxis;
 
@@ -106,7 +106,7 @@ public enum UnitKey {
      *
      * @param  codeKey   {@link GeoKeys} for a unit defined by an EPSG code, or 0 if none.
      * @param  scaleKey  {@link GeoKeys} for a unit defined by a scale applied on a base unit, or 0 if none.
-     * @param  isAxis    whether the unit may be associated to coordinate system axes.
+     * @param  isAxis    whether the unit may be associated with coordinate system axes.
      */
     private UnitKey(short codeKey, short scaleKey, boolean isAxis, boolean linear, boolean angular, boolean scalar) {
         this.codeKey  = codeKey;

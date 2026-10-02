@@ -210,7 +210,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      * Constructs a new geodetic calculator expecting coordinates in the supplied CRS.
      *
      * @param  crs         the referencing system for the {@link DirectPosition} arguments and return values.
-     * @param  ellipsoid   ellipsoid associated to the geodetic component of given CRS.
+     * @param  ellipsoid   ellipsoid associated with the geodetic component of given CRS.
      */
     GeodesicsOnEllipsoid(final CoordinateReferenceSystem crs, final Ellipsoid ellipsoid) {
         super(crs, ellipsoid);
@@ -234,7 +234,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
     /**
      * Computes series expansions coefficients.
      *
-     * <p><b>Preconditions:</b> The {@link #sinα0} and {@link #cosα0} fields shall be set before to invoke this method.
+     * <p><b>Preconditions:</b> The {@link #sinα0} and {@link #cosα0} fields shall be set before invoking this method.
      * It is caller's responsibility to ensure that sin(α₀)² + cos(α₀)² ≈ 1 (this is verified in assertion).</p>
      *
      * <p><b>Post-conditions:</b> this method sets the {@link #ε}, {@link #A1}, {@link #A2}, {@link #A3},

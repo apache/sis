@@ -33,7 +33,7 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * Java2D path iterator for JTS geometry.
- * This iterator gets coordinates from the {@link CoordinateSequence} associated to each geometry.
+ * This iterator gets coordinates from the {@link CoordinateSequence} associated with each geometry.
  *
  * @author  Johann Sorel (Puzzle-GIS, Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

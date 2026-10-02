@@ -213,7 +213,7 @@ public final class CodeTransforms {
                 return;
             }
             if (crsToGrid == null) {
-                //no synchronisation here, in worse case it will be computed a few times
+                //no synchronization here, in worse case it will be computed a few times
                 // but the result will always be the same
                 this.crsToGrid = this.gridToCRS.inverse();
             }

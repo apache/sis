@@ -41,7 +41,7 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *   <li>{@link org.apache.sis.util.resources.Errors.Keys#NullArgument_1}</li>
  * </ul>
  *
- * If the localized strings associated to those keys are modified,
+ * If the localized strings associated with those keys are modified,
  * then this {@code IndexedResourceBundleTest} class will need to be updated.
  *
  * @author  Martin Desruisseaux (Geomatys)

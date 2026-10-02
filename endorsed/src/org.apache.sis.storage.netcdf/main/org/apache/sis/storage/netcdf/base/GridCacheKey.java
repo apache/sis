@@ -37,7 +37,7 @@ import org.apache.sis.math.Vector;
  * </ul>
  *
  * The base class if for local cache. The inner class is for the global cache.
- * {@code GridCacheKey}s are associated to {@link GridCacheValue}s in a hash map.
+ * {@code GridCacheKey}s are associated with {@link GridCacheValue}s in a hash map.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

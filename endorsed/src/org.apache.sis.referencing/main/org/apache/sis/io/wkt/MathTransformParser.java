@@ -73,7 +73,7 @@ class MathTransformParser extends AbstractParser {
     };
 
     /**
-     * The base units associated to the {@link #UNIT_KEYWORDS}, ignoring {@link WKTKeywords#Unit}.
+     * The base units associated with the {@link #UNIT_KEYWORDS}, ignoring {@link WKTKeywords#Unit}.
      * For each {@code UNIT_KEYWORDS[i]} element, the associated base unit is {@code BASE_UNIT[i-1]}.
      */
     private static final Unit<?>[] BASE_UNITS = {

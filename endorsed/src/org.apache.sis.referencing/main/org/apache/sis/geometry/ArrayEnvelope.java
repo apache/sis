@@ -95,8 +95,8 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
 
     /**
      * Constructs an envelope defined by two corners given as direct positions.
-     * If at least one corner is associated to a CRS, then the new envelope will also
-     * be associated to that CRS.
+     * If at least one corner is associated with a CRS, then the new envelope will also
+     * be associated with that CRS.
      *
      * @param  lowerCorner  the limits in the direction of decreasing coordinate values for each dimension.
      * @param  upperCorner  the limits in the direction of increasing coordinate values for each dimension.

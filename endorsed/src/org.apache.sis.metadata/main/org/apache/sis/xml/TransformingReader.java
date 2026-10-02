@@ -332,7 +332,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * by a previous call to {@code importNS(Namespace, …)}, for example as a result of a {@code NAMESPACE} event.
      * If not, we compute it now using the same algorithm as in {@code importNS}.
      *
-     * @param  previous   the prefix associated to old namespace.
+     * @param  previous   the prefix associated with old namespace.
      * @param  namespace  the new namespace URI.
      * @return prefix to use for the new namespace.
      */

@@ -1630,7 +1630,7 @@ check:  if (dataType.isInteger()) {
          * This method is the converse of {@link #identifierOfLevel(int)}.
          *
          * @param  identifier  the identifier for which to get the pyramid level.
-         * @return pyramid level associated to the given identifier.
+         * @return pyramid level associated with the given identifier.
          * @throws IllegalArgumentException if the given identifier is not recognized by this pyramid.
          */
         default int levelOfIdentifier(final String identifier) {

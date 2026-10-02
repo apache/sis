@@ -67,7 +67,7 @@ public interface WritableTiledResource extends TiledResource {
      * <code>{@linkplain TileMatrixSet#getIdentifier()}.toString()</code> value of the set to delete.
      *
      * @param  identifier  identifier of the {@link TileMatrixSet} to delete.
-     * @throws NoSuchDataException if there is no tile matrix set associated to the given identifier in this resource.
+     * @throws NoSuchDataException if there is no tile matrix set associated with the given identifier in this resource.
      * @throws ReadOnlyStorageException if this resource is not writable. It may be caused by insufficient credentials.
      * @throws DataStoreException if deleting the tile matrix set failed for another reason.
      */

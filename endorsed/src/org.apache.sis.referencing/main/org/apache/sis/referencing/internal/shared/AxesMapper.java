@@ -148,7 +148,7 @@ enum AxesMapper {
     }
 
     /**
-     * Returns a mask for clearing the bit associated to the given coordinate system dimension.
+     * Returns a mask for clearing the bit associated with the given coordinate system dimension.
      */
     private static long clearMask(final int dim) {
         return ~(1L << dim);

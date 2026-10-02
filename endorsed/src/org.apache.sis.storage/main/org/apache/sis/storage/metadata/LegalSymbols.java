@@ -44,7 +44,7 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
  */
 final class LegalSymbols {
     /**
-     * Symbols associated to restrictions.
+     * Symbols associated with restrictions.
      */
     private static final LegalSymbols[] VALUES = {
         new LegalSymbols(Restriction.COPYRIGHT, "COPYRIGHT", "(C)", "©", "All rights reserved"),

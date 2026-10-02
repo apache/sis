@@ -196,7 +196,7 @@ final class GridMapping {
     }
 
     /**
-     * Fetches grid geometry information from attributes associated to the given variable.
+     * Fetches grid geometry information from attributes associated with the given variable.
      * This method should be invoked only one or two times per variable, but may return a
      * shared {@code GridMapping} instance for all variables because there is typically
      * only one set of grid mapping attributes for the whole file.
@@ -240,7 +240,7 @@ final class GridMapping {
     }
 
     /**
-     * Parses the map projection parameters defined as attribute associated to the given variable.
+     * Parses the map projection parameters defined as attribute associated with the given variable.
      * This method tries to parse <abbr>CF</abbr>-compliant attributes, potentially mixed with
      * non-standard extensions (for example <abbr>GDAL</abbr> and <abbr>ESRI</abbr>).
      *

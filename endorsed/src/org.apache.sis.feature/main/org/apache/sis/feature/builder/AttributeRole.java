@@ -22,7 +22,7 @@ import org.apache.sis.feature.FeatureOperations;
 
 
 /**
- * Roles that can be associated to some attributes for instructing {@code FeatureTypeBuilder}
+ * Roles that can be associated with some attributes for instructing {@code FeatureTypeBuilder}
  * how to generate predefined operations. Those predefined operations are:
  *
  * <ul>

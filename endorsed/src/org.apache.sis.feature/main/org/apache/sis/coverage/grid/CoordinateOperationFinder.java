@@ -119,7 +119,7 @@ final class CoordinateOperationFinder extends CoordinateOperationContext {
      * Inverse of {@link #changeOfCRS} transform together with {@link WraparoundTransform} if needed.
      * The wraparound is used for handling images crossing the anti-meridian.
      *
-     * <p>Contrarily to {@link #forwardChangeOfCRS}, the process that determine this {@code inverseChangeOfCRS}
+     * <p>Contrary to {@link #forwardChangeOfCRS}, the process that determine this {@code inverseChangeOfCRS}
      * transform should check if wraparound is really needed. This is because {@code inverseChangeOfCRS} will be
      * used much more extensively (for every pixels) than other transforms.</p>
      *
@@ -464,7 +464,7 @@ apply:          if (forwardChangeOfCRS == null) {
                 if (!isWraparoundNeedVerified) {
                     isWraparoundNeedVerified = true;
                     /*
-                     * Need to compute transform with wraparound checks, but contrarily to `gridToCRS()` we do not want
+                     * Need to compute transform with wraparound checks, but contrary to `gridToCRS()` we do not want
                      * `WraparoundTransform` to be systematically inserted. This is for performance reasons, because the
                      * transform returned by this method will be applied on every pixels of destination image. We create
                      * both transforms with and without wraparound, and check if their results differ.
@@ -557,7 +557,7 @@ apply:          if (forwardChangeOfCRS == null) {
             /*
              * The reference must be a corner in the `source` grid. If the given extent was from `target` grid,
              * convert to source grid coordinates by completing the "target → CRS → source" chain of transforms.
-             * The `crsToGrid` transform includes the wraparound, contrarily to `crsToGridNoWrap` used above.
+             * The `crsToGrid` transform includes the wraparound, contrary to `crsToGridNoWrap` used above.
              */
             if (sourceCrsToGrid == null) {
                 // `applyWraparound()` already invoked by caller.

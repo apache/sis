@@ -40,7 +40,7 @@ final class GroupBySample extends Group<GroupByCRS<GroupByTransform>> {
     private final List<SampleDimension> ranges;
 
     /**
-     * Creates a new group of objects associated to the list of sample dimensions.
+     * Creates a new group of objects associated with the list of sample dimensions.
      *
      * @param  parent  the parent group in which this group is a child.
      * @param  ranges  the sample dimensions of this group.
@@ -72,11 +72,11 @@ final class GroupBySample extends Group<GroupByCRS<GroupByTransform>> {
     }
 
     /**
-     * Returns the group of objects associated to the given <abbr>CRS</abbr>.
+     * Returns the group of objects associated with the given <abbr>CRS</abbr>.
      * The <abbr>CRS</abbr> comparisons ignore metadata.
      *
      * @param  crs  the coordinate reference to search (may be null).
-     * @return group of objects associated to the given CRS (never null).
+     * @return group of objects associated with the given CRS (never null).
      */
     final GroupByCRS<GroupByTransform> getOrAdd(final CoordinateReferenceSystem crs) {
         synchronized (members) {

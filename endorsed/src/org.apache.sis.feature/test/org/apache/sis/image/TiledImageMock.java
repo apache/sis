@@ -122,7 +122,7 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
 
     /**
      * Tiles to keep in error on all invocations of {@link #getTile(int, int)}. This is an alternative
-     * to {@link #randomFailures} for creating artificial errors. Contrarily to {@link #randomFailures},
+     * to {@link #randomFailures} for creating artificial errors. Contrary to {@link #randomFailures},
      * all calls to {@link #getTile(int, int)} with the same indices have the same behavior.
      */
     private boolean[] constantFailures;
@@ -255,7 +255,7 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
     }
 
     /**
-     * Returns the value associated to the given property name.
+     * Returns the value associated with the given property name.
      *
      * @param  name  name of the property to fetch.
      * @return the associated value, or {@link Image#UndefinedProperty} if none.
@@ -266,8 +266,8 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
     }
 
     /**
-     * Adds a value associated to the given property name.
-     * Each property name can be associated to a value only once.
+     * Adds a value associated with the given property name.
+     * Each property name can be associated with a value only once.
      *
      * @param  name   name of the property to set.
      * @param  value  value of the property.
@@ -442,7 +442,7 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
 
     /**
      * Initializes the sample values of all tiles to random values. The image must have been
-     * initialized by a call to {@link #initializeAllTiles(int)} before to invoke this method.
+     * initialized by a call to {@link #initializeAllTiles(int)} before invoking this method.
      *
      * @param  band       band index where to set values. Other bands will be unmodified.
      * @param  generator  the random number generator to use for obtaining values.

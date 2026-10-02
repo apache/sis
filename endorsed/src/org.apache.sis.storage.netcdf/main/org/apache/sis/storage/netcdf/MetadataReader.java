@@ -750,7 +750,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     /**
      * Adds the extent declared in the current group. For more consistent results, the caller should restrict
      * the {@linkplain Decoder#setSearchPath search path} to a single group before invoking this method.
-     * The {@link #verticalCRS} field should have been set before to invoke this method.
+     * The {@link #verticalCRS} field should have been set before invoking this method.
      *
      * @return {@code true} if at least one numerical value has been added.
      */
@@ -890,7 +890,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * having more dimension.
      *
      * <p><b>Example:</b> a netCDF file may contain variables for both static and dynamic phenomenons.
-     * The dynamic phenomenons are associated to (<var>x</var>, <var>y</var>, <var>t</var>) axes,
+     * The dynamic phenomenons are associated with (<var>x</var>, <var>y</var>, <var>t</var>) axes,
      * while the static phenomenons have only the (<var>x</var>, <var>y</var>) axes.
      * But we still want to group them together. Not doing so appear to be confusing.</p>
      */

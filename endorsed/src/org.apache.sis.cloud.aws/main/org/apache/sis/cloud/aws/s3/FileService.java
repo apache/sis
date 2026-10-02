@@ -212,7 +212,7 @@ public class FileService extends FileSystemProvider {
      * The password (also called "secret access key") shall not be specified in the URI;
      * syntax like {@code accessKey:password} will <em>not</em> be parsed by this package.
      * Instead the password can be specified in the given map as a {@link String} value
-     * associated to the {@value #AWS_SECRET_ACCESS_KEY} key.
+     * associated with the {@value #AWS_SECRET_ACCESS_KEY} key.
      *
      * <h4>Recognized properties</h4>
      * The following properties are accepted:
@@ -297,7 +297,7 @@ public class FileService extends FileSystemProvider {
      * @param  properties    map from which to get a property value.
      * @param  key           key of the property to get.
      * @param  type          type of the property to get.
-     * @param  defaultValue  default value if the key is not associated to a non-null value.
+     * @param  defaultValue  default value if the key is not associated with a non-null value.
      * @param  parser        function to invoke for converting a text to a value.
      * @return the property value for the given key cast to the given type, or {@code defaultValue} if none.
      * @throws IllegalArgumentException if the value is not of the expected type.

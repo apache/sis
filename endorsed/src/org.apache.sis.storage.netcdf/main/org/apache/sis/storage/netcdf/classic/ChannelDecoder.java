@@ -173,7 +173,7 @@ public final class ChannelDecoder extends Decoder {
     /**
      * Contains all {@link #variables}, but as a map for faster lookup by name. The same {@link VariableInfo}
      * instance may be repeated in two entries if the original variable name contains upper case letters.
-     * In such case, the value is repeated and associated to a key in all lower case key letters.
+     * In such case, the value is repeated and associated with a key in all lower case key letters.
      *
      * @see #findVariable(String)
      */
@@ -992,7 +992,7 @@ public final class ChannelDecoder extends Decoder {
 
     /**
      * Adds to the given set all variables of the given names. This operation is performed when the set of axes is
-     * specified by a {@code "coordinates"} attribute associated to a data variable, or by customized conventions
+     * specified by a {@code "coordinates"} attribute associated with a data variable, or by customized conventions
      * specified by {@link org.apache.sis.storage.netcdf.base.Convention#namesOfAxisVariables(Variable)}.
      *
      * @param  names       names of variables containing axis data, or {@code null} if none.

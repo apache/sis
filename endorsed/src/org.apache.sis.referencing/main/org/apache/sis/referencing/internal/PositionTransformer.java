@@ -198,7 +198,7 @@ public final class PositionTransformer extends GeneralDirectPosition {
 
     /**
      * Transforms a given position from its CRS to the CRS of this {@code PositionTransformer}.
-     * If the CRS associated to the given position is {@code null}, then that CRS is assumed to
+     * If the CRS associated with the given position is {@code null}, then that CRS is assumed to
      * be the default CRS specified at construction time. Otherwise if that CRS is not equal to
      * the {@linkplain #getCoordinateReferenceSystem() CRS associated with this position}, then
      * a coordinates transformations are applied. The result may be stored in this instance.

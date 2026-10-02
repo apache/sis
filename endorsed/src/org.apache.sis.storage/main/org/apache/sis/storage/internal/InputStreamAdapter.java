@@ -34,7 +34,7 @@ import org.apache.sis.io.stream.Markable;
  * This means that if the wrapped input is {@link org.apache.sis.io.stream.ChannelImageInputStream},
  * then this class is <strong>not</strong> thread-safe. This is not necessarily a contradiction with
  * Java API because input streams define no explicit synchronization lock
- * (contrarily to {@link java.io.Reader}).
+ * (contrary to {@link java.io.Reader}).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  *

@@ -104,7 +104,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
     }
 
     /**
-     * All fields associated to the {@linkplain #text text}.
+     * All fields associated with the {@linkplain #text text}.
      *
      * <p>This map shall not be modified after this {@code FormattedCharacterIterator} become
      * visible to the user. If this map could be modified, then we would need to override the

@@ -541,7 +541,7 @@ public class SEPortrayerTest {
 
     /**
      * Portray using and aggregated resource.
-     * Test expect presentations to be correctly associated to each resource but on the same layer.
+     * Test expect presentations to be correctly associated with each resource but on the same layer.
      */
     @Test
     public void testAggregateResource() {

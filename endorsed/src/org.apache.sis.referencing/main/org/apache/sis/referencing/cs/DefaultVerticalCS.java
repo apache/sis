@@ -39,7 +39,7 @@ import org.apache.sis.measure.Units;
  *   <li>"Sigma-level depth" (used in oceanography) as a dimensionless quantity.</li>
  * </ul>
  *
- * The above examples show the variety of units of measurement which can be associated to vertical positions.
+ * The above examples show the variety of units of measurement which can be associated with vertical positions.
  *
  * <table class="sis">
  * <caption>Permitted associations</caption>

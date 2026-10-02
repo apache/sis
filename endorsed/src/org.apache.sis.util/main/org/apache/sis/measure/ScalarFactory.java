@@ -36,7 +36,7 @@ interface ScalarFactory<Q extends Quantity<Q>> {
      * most units of measurement.
      *
      * @param  value  the value of the quantity to create.
-     * @param  unit   the unit of measurement associated to the given value.
+     * @param  unit   the unit of measurement associated with the given value.
      * @return a quantity with the given value and unit of measurement.
      */
     Q create(double value, Unit<Q> unit);
@@ -48,7 +48,7 @@ interface ScalarFactory<Q extends Quantity<Q>> {
      * since conversion to Kelvin implies an offset.
      *
      * @param  value       the value of the quantity to create.
-     * @param  unit        the unit of measurement associated to the given value.
+     * @param  unit        the unit of measurement associated with the given value.
      * @param  systemUnit  {@link Unit#getSystemUnit()}, opportunistically provided because already known by the caller.
      * @param  toSystem    {@code unit.getConverterTo(systemUnit)}, provided because already known by the caller.
      * @return a quantity with the given value and unit of measurement, or

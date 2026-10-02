@@ -309,7 +309,7 @@ public class InfoStatements implements Localized, AutoCloseable {
      * It is invoked again for each table or query to analyze.
      *
      * <p>This method may be invoked with a null {@code source} and empty {@code columns}
-     * for ensuring that {@link #geometryColumns} is initialized but without executing it.</p>
+     * to ensure that {@link #geometryColumns} is initialized but without executing it.</p>
      *
      * @param  analyzer  the opaque temporary object used for analyzing the database schema.
      * @param  source    the table for which to get all geometry columns. May be null if {@code columns} is empty.
@@ -440,7 +440,7 @@ public class InfoStatements implements Localized, AutoCloseable {
      * or equivalent (depending on the {@link SpatialSchema}).
      *
      * @param  srid  the Spatial Reference Identifier (SRID) to resolve as a CRS object.
-     * @return the CRS associated to the given SRID, or {@code null} if the SRID is zero.
+     * @return the CRS associated with the given SRID, or {@code null} if the SRID is zero.
      * @throws DataStoreContentException if the CRS cannot be fetched. Possible reasons are:
      *         no entry found in the {@code "SPATIAL_REF_SYS"} table, or more than one entry is found,
      *         or a single entry exists but has no WKT definition and its authority code is unsupported by SIS.
@@ -774,7 +774,7 @@ public class InfoStatements implements Localized, AutoCloseable {
      * This method does not cache the result. Caching should be done by the caller.
      *
      * @param  crs  the <abbr>CRS</abbr> to search.
-     * @return <abbr>SRID</abbr> associated to the given <abbr>CRS</abbr>.
+     * @return <abbr>SRID</abbr> associated with the given <abbr>CRS</abbr>.
      * @throws Exception if an SQL error, parsing error or other error occurred.
      */
     private SRID findOrAddCRS(final CoordinateReferenceSystem crs) throws Exception {
@@ -842,7 +842,7 @@ public class InfoStatements implements Localized, AutoCloseable {
                 }
             }
             /*
-             * Tried all identifiers associated to the CRS and found no match.
+             * Tried all identifiers associated with the CRS and found no match.
              * It may be because the CRS has no identifier at all. Search for
              * possible identifiers in the EPSG database, then try them.
              */

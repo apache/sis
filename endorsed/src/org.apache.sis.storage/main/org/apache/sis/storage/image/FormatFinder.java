@@ -199,7 +199,7 @@ final class FormatFinder implements AutoCloseable {
 
     /**
      * Returns the user-specified reader or searches for a reader that claims to be able to read the storage input.
-     * This method tries first the readers associated to the file suffix. If no reader is found, then this method
+     * This method tries first the readers associated with the file suffix. If no reader is found, then this method
      * tries all other readers.
      *
      * @return the reader, or {@code null} if none could be found.

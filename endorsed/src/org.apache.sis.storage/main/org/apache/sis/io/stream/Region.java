@@ -381,7 +381,7 @@ public final class Region {
 
         /**
          * Computes the subregion to read for filling a raster which uses the given sample model.
-         * Before to invoke this method, the caller shall set the {@link #regionLower}, {@link #regionUpper}
+         * Before invoking this method, the caller shall set the {@link #regionLower}, {@link #regionUpper}
          * and {@link #subsampling} arrays (if non-null) to the pixel coordinates of the subregion to read.
          * Subclasses of {@link org.apache.sis.storage.tiling.TiledGridCoverageResource} can do as below:
          *

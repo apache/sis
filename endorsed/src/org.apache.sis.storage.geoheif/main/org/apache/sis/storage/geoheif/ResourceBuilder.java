@@ -435,7 +435,7 @@ final class ResourceBuilder {
                 }
                 /*
                  * JPEG compression, handled like `UNCI` except that the payload is decoded by Image I/O.
-                 * Contrarily to the `UNCI` case, it is okay to build the `Image` instance now because
+                 * Contrary to the `UNCI` case, it is okay to build the `Image` instance now because
                  * the constructor will not ask for the sample model.
                  */
                 case ItemInfoEntry.JPEG: {

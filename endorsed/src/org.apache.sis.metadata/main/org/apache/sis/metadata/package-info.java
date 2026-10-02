@@ -62,7 +62,7 @@
  *
  * <h2>How Metadata are handled</h2>
  * Metadata objects in SIS are mostly containers: they provide getter and setter methods for manipulating the values
- * associated to properties (for example the {@code title} property of a {@code Citation} object), but provide few logic.
+ * associated with properties (for example the {@code title} property of a {@code Citation} object), but provide few logic.
  * The package {@link org.apache.sis.metadata.iso} and its sub-packages are the main examples of such containers.
  *
  * <p>In addition, the metadata modules provide support methods for handling the metadata objects through Java Reflection.

@@ -737,30 +737,30 @@ public abstract class Builder<B extends Builder<B>> {
     }
 
     /**
-     * Replaces the names associated to the given authority by the given new names.
+     * Replaces the names associated with the given authority by the given new names.
      * More specifically:
      *
      * <ul>
-     *   <li>The first occurrence of a name associated to {@code authority} will be replaced by a new name
+     *   <li>The first occurrence of a name associated with {@code authority} will be replaced by a new name
      *       with the same authority and the local part defined by {@code replacements[0]}.</li>
-     *   <li>The second occurrence of a name associated to {@code authority} will be replaced by a new name
+     *   <li>The second occurrence of a name associated with {@code authority} will be replaced by a new name
      *       with the same authority and the local part defined by {@code replacements[1]}.</li>
      *   <li><i>etc.</i> until one of the following conditions is met:
      *     <ul>
-     *       <li>There are no more names associated to the given authority in this {@code Builder}, in which case
+     *       <li>There are no more names associated with the given authority in this {@code Builder}, in which case
      *           new names are inserted for all remaining elements in the {@code replacements} array.</li>
      *       <li>There are no more elements in the {@code replacements} array, in which case all remaining
-     *           names associated to the given authority in this {@code Builder} are removed.</li>
+     *           names associated with the given authority in this {@code Builder} are removed.</li>
      *     </ul>
      *   </li>
      * </ul>
      *
      * This method could also be understood as a {@code setNames(Citation, ...)} method, except that it modifies
-     * only the names associated to the given authority and preserves the same order as previous names.
+     * only the names associated with the given authority and preserves the same order as previous names.
      *
      * @param  authority     the authority of the names to replaces.
      * @param  replacements  the new local parts for the names to replace,
-     *         or {@code null} or an empty array for removing all names associated to the given authority.
+     *         or {@code null} or an empty array for removing all names associated with the given authority.
      * @return {@code this}, for method call chaining.
      *
      * @since 0.6
@@ -788,7 +788,7 @@ public abstract class Builder<B extends Builder<B>> {
                 continue;       // Current name is not for the authority we are looking for.
             }
             /*
-             * Found a name associated to the given authority. Process to the replacement if we still
+             * Found a name associated with the given authority. Process to the replacement if we still
              * have some elements to take in the `replacements` array, otherwise remove the name.
              */
             if (next < length) {
@@ -836,30 +836,30 @@ public abstract class Builder<B extends Builder<B>> {
     }
 
     /**
-     * Replaces the identifiers associated to the given authority by the given new identifiers.
+     * Replaces the identifiers associated with the given authority by the given new identifiers.
      * More specifically:
      *
      * <ul>
-     *   <li>The first occurrence of an identifier associated to {@code authority} will be replaced by
+     *   <li>The first occurrence of an identifier associated with {@code authority} will be replaced by
      *       a new identifier with the same authority and the code defined by {@code replacements[0]}.</li>
-     *   <li>The second occurrence of an identifier associated to {@code authority} will be replaced by a
+     *   <li>The second occurrence of an identifier associated with {@code authority} will be replaced by a
      *       new identifier with the same authority and the local part defined by {@code replacements[1]}.</li>
      *   <li><i>etc.</i> until one of the following conditions is met:
      *     <ul>
-     *       <li>There are no more identifiers associated to the given authority in this {@code Builder}, in which case
+     *       <li>There are no more identifiers associated with the given authority in this {@code Builder}, in which case
      *           new identifiers are inserted for all remaining elements in the {@code replacements} array.</li>
      *       <li>There are no more elements in the {@code replacements} array, in which case all remaining
-     *           identifiers associated to the given authority in this {@code Builder} are removed.</li>
+     *           identifiers associated with the given authority in this {@code Builder} are removed.</li>
      *     </ul>
      *   </li>
      * </ul>
      *
      * This method could also be understood as a {@code setIdentifiers(Citation, ...)} method, except that it modifies
-     * only the identifiers associated to the given authority and preserves the same order as previous identifiers.
+     * only the identifiers associated with the given authority and preserves the same order as previous identifiers.
      *
      * @param  authority     the authority of the names to replaces.
      * @param  replacements  the new local parts for the names to replace,
-     *         or {@code null} or an empty array for removing all names associated to the given authority.
+     *         or {@code null} or an empty array for removing all names associated with the given authority.
      * @return {@code this}, for method call chaining.
      *
      * @since 0.8

@@ -129,7 +129,7 @@ public class SimpleFeatureStore extends SQLStore {
      * The given identifier may be qualified with the schema name, or may be only the table name if there is no ambiguity.
      *
      * @param  identifier  identifier of the resource to fetch. Must be non-null.
-     * @return resource associated to the given identifier (never {@code null}).
+     * @return resource associated with the given identifier (never {@code null}).
      * @throws IllegalNameException if no resource is found for the given identifier, or if more than one resource is found.
      * @throws DataStoreException if another kind of error occurred while searching resources.
      */

@@ -197,7 +197,7 @@ public interface LenientComparable {
      *   <li>{@code A.equals(B)} implies {@code A.hashCode() == B.hashCode()};</li>
      * </ul>
      *
-     * This method is declared {@code final} in most <abbr>SIS</abbr> implementations for ensuring that
+     * This method is declared {@code final} in most <abbr>SIS</abbr> implementations to ensure that
      * subclasses override the above {@link #equals(Object, ComparisonMode)} method instead of this one.
      *
      * @param  other  the object to compare to {@code this}.

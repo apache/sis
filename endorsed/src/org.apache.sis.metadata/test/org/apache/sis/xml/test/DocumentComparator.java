@@ -271,7 +271,7 @@ public class DocumentComparator {
     }
 
     /**
-     * Compares the XML document specified at construction time. Before to invoke this
+     * Compares the XML document specified at construction time. Before invoking this
      * method, users may consider to add some values to the {@link #ignoredAttributes}
      * set.
      */

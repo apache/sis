@@ -397,7 +397,7 @@ final class StandardDefinitions {
 
     /**
      * EPSG codes of coordinate systems supported by this class. We provide constants only for
-     * coordinate systems because those codes appear directly in method bodies, contrarily to
+     * coordinate systems because those codes appear directly in method bodies, contrary to
      * other kinds of object where the code are stored in {@link CommonCRS} fields.
      */
     static final short ELLIPSOIDAL_2D = (short) 6422,

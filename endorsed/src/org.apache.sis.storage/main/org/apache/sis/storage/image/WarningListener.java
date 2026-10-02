@@ -25,7 +25,7 @@ import org.apache.sis.storage.event.StoreListeners;
 
 /**
  * A listener for warnings emitted during read or write operations.
- * This class forwards the warnings to the listeners associated to the data store.
+ * This class forwards the warnings to the listeners associated with the data store.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

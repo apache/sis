@@ -235,7 +235,7 @@ abstract class Section<T> extends GridPane implements EventHandler<ActionEvent> 
      * This method does nothing if the given {@code value} is null.
      *
      * @param  label  a {@link Vocabulary.Keys} for the label of the line to add.
-     * @param  value  the value associated to the label, or {@code null} if none.
+     * @param  value  the value associated with the label, or {@code null} if none.
      */
     final void addLine(final short label, final String value) {
         if (value == null) {

@@ -68,7 +68,7 @@ public final class WKTKeywordsTest extends TestCase {
 
     /**
      * Verifies that {@link SingleCRS}, {@link CoordinateReferenceSystem} and {@link Datum} base types
-     * contain all WKT keywords associated to subtypes.
+     * contain all WKT keywords associated with subtypes.
      */
     @Test
     public void verifyTypeHierarchy() {
@@ -82,7 +82,7 @@ public final class WKTKeywordsTest extends TestCase {
     }
 
     /**
-     * Verify that the specified {@code base} type contain all WKT keywords associated to specified subtypes.
+     * Verify that the specified {@code base} type contain all WKT keywords associated with specified subtypes.
      */
     @SafeVarargs
     private static <T> void verifyTypeHierarchy(final Class<T> base, final Class<? extends T>... subtypes) {

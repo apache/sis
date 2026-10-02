@@ -89,7 +89,7 @@ public interface TreeTable {
 
     /**
      * A node in a tree combined with a row in a table. A {@code TreeTable.Node} can be seen as a
-     * tree node associated to a single {@linkplain #getUserObject() user object} (like ordinary trees),
+     * tree node associated with a single {@linkplain #getUserObject() user object} (like ordinary trees),
      * augmented with the capability to describe some aspects of the user object in predefined columns.
      * The list of allowed columns is given by the {@link TreeTable#getColumns()} method.
      *
@@ -113,7 +113,7 @@ public interface TreeTable {
      * </ul></td></tr>
      * </table>
      *
-     * In addition, each {@code Node} can be associated to an arbitrary object by the
+     * In addition, each {@code Node} can be associated with an arbitrary object by the
      * {@link #getUserObject()} method. This object is not used directly by the tree tables.
      *
      * <h2>Default implementation</h2>
@@ -244,7 +244,7 @@ public interface TreeTable {
         }
 
         /**
-         * Returns the user object associated to this node.
+         * Returns the user object associated with this node.
          * The user object is for information purpose only and does not appear in the rendered tree.
          * It is typically a Java object whose content is split into the various table columns.
          *

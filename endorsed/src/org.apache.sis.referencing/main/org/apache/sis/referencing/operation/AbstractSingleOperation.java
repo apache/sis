@@ -226,7 +226,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * making sure that the parameters are compatible with the ones expected by the operation method.
      * This method should be invoked by constructors only, after {@link #method} has been initialized.
      *
-     * <p>If {@code ignore} is non-null, then parameters associated to {@link Boolean#TRUE} may be hidden.
+     * <p>If {@code ignore} is non-null, then parameters associated with {@link Boolean#TRUE} may be hidden.
      * This situation happens when this operation has been initialized from a <em>defining conversion</em>
      * and the caller refined the parameters using information provided by the math transform factory.
      * On one hand, we want to take advantage of additional information present in {@code definition}
@@ -431,7 +431,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
                 }
             }
             /*
-             * Sometimes the descriptors associated to ParameterValues need to be updated, for example because
+             * Sometimes the descriptors associated with ParameterValues need to be updated, for example because
              * the descriptors in OperationMethod contain more information (remarks, etc.). Those updates, if
              * needed, are applied on-the-fly by the copy operation below, using the information provided by
              * the `replacements` map.

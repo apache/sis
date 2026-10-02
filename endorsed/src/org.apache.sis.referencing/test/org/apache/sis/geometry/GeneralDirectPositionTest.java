@@ -54,7 +54,7 @@ public final class GeneralDirectPositionTest extends TestCase {
 
     /**
      * Tests the {@link GeneralDirectPosition#formatTo(Formatter)} method.
-     * Contrarily to {@code toString()}, the precision depends on the CRS.
+     * Contrary to {@code toString()}, the precision depends on the CRS.
      */
     @Test
     public void testFormatWKT() {

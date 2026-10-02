@@ -202,9 +202,9 @@ final class RawRasterStore extends RasterStore {
     }
 
     /**
-     * Returns the metadata associated to the raw binary file.
+     * Returns the metadata associated with the raw binary file.
      *
-     * @return the metadata associated to the raw binary.
+     * @return the metadata associated with the raw binary.
      * @throws DataStoreException if an error occurred during the parsing process.
      */
     @Override

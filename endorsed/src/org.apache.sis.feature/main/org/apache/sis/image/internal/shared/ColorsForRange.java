@@ -55,7 +55,7 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
 
     /**
      * The range of sample values as originally specified.
-     * Contrarily to {@link #sampleRange}, this range will not be modified by {@code compact()}.
+     * Contrary to {@link #sampleRange}, this range will not be modified by {@code compact()}.
      * This is used for fetching colors from {@link #inheritedColors} if {@link #colors} is null.
      */
     private final NumberRange<?> originalSampleRange;
@@ -85,7 +85,7 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
 
     /**
      * {@code true} if this entry should be taken as data, or {@code false} if it should be ignored.
-     * Entry to ignore are entries associated to NaN values.
+     * Entry to ignore are entries associated with NaN values.
      */
     final boolean isData;
 

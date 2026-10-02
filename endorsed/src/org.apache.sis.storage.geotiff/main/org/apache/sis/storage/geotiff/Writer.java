@@ -265,7 +265,7 @@ final class Writer extends IOBase implements OverviewIterator, Flushable {
 
     /**
      * Ensures that the reader and writer positions are consistent. It is caller's responsibility to invoke
-     * {@link #flush()} before to invoke {@code synchronize(reader, true)}, unless the write operation failed.
+     * {@link #flush()} before invoking {@code synchronize(reader, true)}, unless the write operation failed.
      * In the latter case, the caller should cancel the write operation if possible.
      *
      * @param  reader  the reader, or {@code null} if none.

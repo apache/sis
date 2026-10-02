@@ -115,7 +115,7 @@ public final class GridGroup<C extends Quantity<C>, T extends Quantity<T>> exten
      * elements should declare the same filename parameters, so the selected element should not matter).
      *
      * @param  tiles      the tiles computed by {@link TileOrganizer}.
-     * @param  grids      sub-grids associated to tiles computed by {@link TileOrganizer}.
+     * @param  grids      sub-grids associated with tiles computed by {@link TileOrganizer}.
      * @param  gridToCRS  conversion from grid indices to "real world" coordinates.
      * @param  gridSize   number of cells along the <var>x</var> and <var>y</var> axes in the grid.
      * @throws IOException declared because {@link Tile#getRegion()} declares it, but should not happen.

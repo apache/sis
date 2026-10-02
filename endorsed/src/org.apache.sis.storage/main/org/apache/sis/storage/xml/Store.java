@@ -190,7 +190,7 @@ final class Store extends URIDataStore implements Filter {
     }
 
     /**
-     * Returns the metadata associated to the unmarshalled object, or {@code null} if none.
+     * Returns the metadata associated with the unmarshalled object, or {@code null} if none.
      * The current implementation performs the following choice:
      *
      * <ul>
@@ -201,7 +201,7 @@ final class Store extends URIDataStore implements Filter {
      *
      * Other cases may be added in any future SIS version.
      *
-     * @return the metadata associated to the unmarshalled object, or {@code null} if none.
+     * @return the metadata associated with the unmarshalled object, or {@code null} if none.
      * @throws DataStoreException if an error occurred during the unmarshalling process.
      */
     @Override

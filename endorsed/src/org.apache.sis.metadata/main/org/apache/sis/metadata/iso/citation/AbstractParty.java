@@ -183,7 +183,7 @@ public class AbstractParty extends ISOMetadata implements Party {
      * <h4>Unified identifiers view</h4>
      * In this SIS implementation, the collection returned by this method includes the XML identifiers
      * ({@linkplain IdentifierSpace#ID ID}, {@linkplain IdentifierSpace#UUID UUID}, <i>etc.</i>),
-     * thus providing a unified view of every kind of identifiers associated to this party.
+     * thus providing a unified view of every kind of identifiers associated with this party.
      *
      * <h4>XML marshalling note</h4>
      * The {@code <mac:identifier>} element marshalled to XML will exclude all the above cited identifiers,

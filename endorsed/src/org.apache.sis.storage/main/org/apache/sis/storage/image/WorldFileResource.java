@@ -143,7 +143,7 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
 
     /**
      * Returns the index of the image to read or write in the image file. This is usually 0.
-     * Note that contrarily to {@link #getIdentifier()}, this index is not guaranteed to be constant.
+     * Note that contrary to {@link #getIdentifier()}, this index is not guaranteed to be constant.
      */
     final int getImageIndex() {
         return imageIndex;

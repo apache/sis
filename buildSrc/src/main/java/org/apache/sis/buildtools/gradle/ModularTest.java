@@ -31,7 +31,7 @@ import org.gradle.api.tasks.testing.Test;
 
 /**
  * Extension to Gradle {@link Test} task.
- * Contrarily to other {@code Modular*} classes in this package,
+ * Contrary to other {@code Modular*} classes in this package,
  * this extension replaces completely the Gradle's default task.
  *
  * @author  Martin Desruisseaux (Geomatys)

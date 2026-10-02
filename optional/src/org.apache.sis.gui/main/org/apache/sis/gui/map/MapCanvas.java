@@ -810,7 +810,7 @@ public abstract class MapCanvas extends PlanarCanvas {
 
     /**
      * Resets the map view to its default zoom level and default position with no rotation.
-     * Contrarily to {@link #clear()}, this method does not remove the map content.
+     * Contrary to {@link #clear()}, this method does not remove the map content.
      *
      * @see #clear()
      */

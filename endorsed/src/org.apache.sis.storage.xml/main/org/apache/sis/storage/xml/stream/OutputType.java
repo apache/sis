@@ -156,7 +156,7 @@ enum OutputType {
     /**
      * Returns a reader for the data written by the given writer, or {@code null} if we cannot read the data.
      * If non-null, the value returned by this method is a snapshot of the given stream content, i.e. changes
-     * in the output stream will not affect the returned input stream or reader. In particular, contrarily to
+     * in the output stream will not affect the returned input stream or reader. In particular, contrary to
      * {@link org.apache.sis.io.stream.IOUtilities#toInputStream(AutoCloseable)} this method does not
      * invalidate the output stream.
      *

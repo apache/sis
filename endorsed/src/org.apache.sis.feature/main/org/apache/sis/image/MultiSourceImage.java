@@ -56,7 +56,7 @@ abstract class MultiSourceImage extends WritableComputedImage {
     private final int minX, minY, width, height;
 
     /**
-     * Index of the first tile. Contrarily to pixel coordinates,
+     * Index of the first tile. Contrary to pixel coordinates,
      * the tile coordinate space does not need to be the same for all images.
      */
     private final int minTileX, minTileY;

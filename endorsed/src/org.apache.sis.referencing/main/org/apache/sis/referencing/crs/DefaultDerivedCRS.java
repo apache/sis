@@ -77,7 +77,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * <table class="sis">
  *   <caption>Derived CRS types</caption>
  *   <tr><th>Type</th>                   <th>Conditions</th></tr>
- *   <tr><td>{@link GeodeticCRS}</td>    <td>Base CRS is also a {@code GeodeticCRS} and is associated to the same type of coordinate system.</td></tr>
+ *   <tr><td>{@link GeodeticCRS}</td>    <td>Base CRS is also a {@code GeodeticCRS} and is associated with the same type of coordinate system.</td></tr>
  *   <tr><td>{@link VerticalCRS}</td>    <td>Base CRS is also a {@code VerticalCRS} and coordinate system is a {@code VerticalCS}.</td></tr>
  *   <tr><td>{@link TemporalCRS}</td>    <td>Base CRS is also a {@code TemporalCRS} and coordinate system is a {@code TimeCS}.</td></tr>
  *   <tr><td>{@link ParametricCRS}</td>  <td>Base CRS is also a {@code ParametricCRS} and coordinate system is a {@code ParametricCS}.</td></tr>
@@ -293,7 +293,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS implements DerivedCRS 
                 case WKTKeywords.EngineeringCRS: {
                     /*
                      * This case may happen for baseCRS of kind GeodeticCRS, ProjectedCRS or EngineeringCRS.
-                     * But only the latter is associated to EngineeringDatum; the two formers are associated
+                     * But only the latter is associated with EngineeringDatum; the two formers are associated
                      * to GeodeticDatum. Consequently, we can implement the EngineeringCRS.getDatum() method
                      * only if the base CRS is itself of kind EngineeringCRS.  Otherwise we will return the
                      * "type-neutral" DefaultDerivedCRS implementation.

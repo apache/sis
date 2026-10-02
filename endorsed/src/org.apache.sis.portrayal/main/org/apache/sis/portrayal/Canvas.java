@@ -535,7 +535,7 @@ public class Canvas extends Observable implements Localized {
      * @param  newValue  the new Coordinate Reference System in which to transform all data before displaying.
      * @param  anchor    the point to keep at fixed display coordinates, expressed in any compatible CRS.
      *                   If {@code null}, defaults to {@linkplain #getPointOfInterest(boolean) point of interest}.
-     *                   If non-null, the anchor must be associated to a CRS.
+     *                   If non-null, the anchor must be associated with a CRS.
      * @throws NullPointerException if the given CRS is null.
      * @throws MismatchedDimensionException if the given CRS does not have the number of dimensions of the display device.
      * @throws RenderException if the objective CRS cannot be set to the given value for another reason.
@@ -766,7 +766,7 @@ public class Canvas extends Observable implements Localized {
 
     /**
      * Actually sets the conversion from objective CRS to display coordinate system.
-     * Contrarily to other setter methods, this method does not notify listeners about that change;
+     * Contrary to other setter methods, this method does not notify listeners about that change;
      * it is caller responsibility to fire a {@link TransformChangeEvent} after all fields are updated.
      * This design choice is because this method is usually invoked as part of a larger set of changes.
      *

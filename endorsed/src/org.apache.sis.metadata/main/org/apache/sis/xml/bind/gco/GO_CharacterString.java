@@ -75,7 +75,7 @@ import org.opengis.util.ControlledVocabulary;
 public class GO_CharacterString {
     /*
      * Numerical values below are ordered: if two or more values are defined (thoerically not legal,
-     * but we try to be robust), the value associated to the highest constant has precedence.
+     * but we try to be robust), the value associated with the highest constant has precedence.
      */
     /**
      * Value assigned to {@link #type} if the character string

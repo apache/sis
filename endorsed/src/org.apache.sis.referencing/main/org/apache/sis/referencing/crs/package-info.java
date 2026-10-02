@@ -60,12 +60,12 @@
  *
  * In addition Apache SIS provides two distinct classes for geographic and geocentric CRS where OGC/ISO defines
  * a single {@code GeodeticCRS} type. OGC/ISO distinguishes the geographic/geocentric cases according the type
- * of the coordinate system associated to that CRS:
+ * of the coordinate system associated with that CRS:
  *
  * <ul>
- *   <li>A geodetic CRS associated to an {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal CS}
+ *   <li>A geodetic CRS associated with an {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal CS}
  *       is geographic.</li>
- *   <li>A geodetic CRS associated to a {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical} or
+ *   <li>A geodetic CRS associated with a {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical} or
  *       {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian CS} is geocentric.</li>
  * </ul>
  *

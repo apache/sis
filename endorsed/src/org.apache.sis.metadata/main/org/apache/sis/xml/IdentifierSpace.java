@@ -26,7 +26,7 @@ import org.apache.sis.xml.bind.NonMarshalledAuthority;
  * Some identifier namespaces that are handled in a special way. The identifier namespaces are
  * usually defined as authorities in the {@link org.apache.sis.metadata.iso.citation.Citations}
  * class. However, a few identifiers defined in the {@code gco:ObjectIdentification} XML attribute
- * group are handled in a special way. For example, identifiers associated to the {@link #HREF}
+ * group are handled in a special way. For example, identifiers associated with the {@link #HREF}
  * space are marshalled in the outer property element, as in the example below:
  *
  * {@snippet lang="xml" :

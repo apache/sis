@@ -269,7 +269,7 @@ public final class DefaultMetadataTest extends TestCase {
         assertEquals(creation, metadata.getDateStamp().toInstant());
         /*
          * Invoking the deprecated setters shall modify the CitationDate object
-         * associated to DateType.CREATION.
+         * associated with DateType.CREATION.
          */
         creation = Instant.parse("2014-10-06T00:00:00Z");
         metadata.setDateStamp(Date.from(creation));

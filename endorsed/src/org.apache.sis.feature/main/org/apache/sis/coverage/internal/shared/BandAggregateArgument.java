@@ -426,7 +426,7 @@ next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may 
     /**
      * If the same sources are repeated many times, merges each repetition in a single reference.
      * The {@link #sources()} and {@link #bandsPerSource(boolean)} values are modified in-place.
-     * The bands associated to each source reference are merged together, but not necessarily in the same order.
+     * The bands associated with each source reference are merged together, but not necessarily in the same order.
      * Caller must perform a "band select" operation using the array returned by this method
      * in order to reconstitute the band order specified by the user.
      *

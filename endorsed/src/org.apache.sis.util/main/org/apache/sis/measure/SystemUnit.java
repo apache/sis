@@ -38,7 +38,7 @@ import org.apache.sis.math.Fraction;
 
 /**
  * Implementation of base, alternate and derived units (see {@link AbstractUnit} for a description of unit kinds).
- * A {@code SystemUnit} is a base or alternate unit if associated to a base {@link UnitDimension}, or is a derived
+ * A {@code SystemUnit} is a base or alternate unit if associated with a base {@link UnitDimension}, or is a derived
  * units otherwise. No other type is allowed since {@code SystemUnit} is always a combination of fundamental units
  * without scale factor or offset.
  *
@@ -208,14 +208,14 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
     public Map<SystemUnit<?>, Integer> getBaseUnits() {
         final Map<UnitDimension,Integer> dim = dimension.getBaseDimensions();
         if (dim == null) {
-            return null;            // This unit is associated to a base dimension.
+            return null;            // This unit is associated with a base dimension.
         }
         return ObjectConverters.derivedKeys(dim, DimToUnit.INSTANCE, Integer.class);
     }
 
     /**
      * Returns the base units used by Apache SIS implementations.
-     * Contrarily to {@link #getBaseUnits()}, this method never returns {@code null}.
+     * Contrary to {@link #getBaseUnits()}, this method never returns {@code null}.
      */
     @Override
     final Map<SystemUnit<?>, Fraction> getBaseSystemUnits() {
@@ -263,7 +263,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
         }
 
         /**
-         * Returns the unit associated to the given dimension, or {@code null} if none.
+         * Returns the unit associated with the given dimension, or {@code null} if none.
          */
         @Override
         public SystemUnit<?> apply(final UnitDimension dim) {
@@ -407,7 +407,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      *
      * @param  symbol  the new symbol for the alternate unit.
      * @return the alternate unit.
-     * @throws IllegalArgumentException if the specified symbol is already associated to a different unit.
+     * @throws IllegalArgumentException if the specified symbol is already associated with a different unit.
      */
     @Override
     @SuppressWarnings("unchecked")

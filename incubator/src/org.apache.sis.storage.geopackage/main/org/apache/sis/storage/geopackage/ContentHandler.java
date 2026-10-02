@@ -58,7 +58,7 @@ public interface ContentHandler {
      *
      * <h4>Default implementation</h4>
      * The default implementation returns {@code null}.
-     * This is suitable to read-only Geopackage files.
+     * This is suitable for read-only Geopackage files.
      *
      * @param  dao       the data access object to use for low-level operations.
      * @param  resource  the resource to write.

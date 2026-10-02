@@ -305,7 +305,7 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
         /*
          * Before to add the axis to a newly created builder, verify if we wrongly associated
          * the ellipsoidal height to Geographic builder before. The issue is that ellipsoidal
-         * height can be associated to either Geographic or Projected CRS.  If we do not have
+         * height can be associated with either Geographic or Projected CRS.  If we do not have
          * more information, our first bet is Geographic. If our bet appears to be wrong, the
          * block below fixes it.
          */
@@ -465,7 +465,7 @@ previous:   for (int i = components.size(); --i >= 0;) {
 
     /**
      * Unconditionally creates a coordinate reference system, overwriting current {@link #referenceSystem} value.
-     * The {@link #datum} field must be initialized before to invoke this method.
+     * The {@link #datum} field must be initialized before invoking this method.
      */
     private void createFromDatum(final Decoder decoder, final boolean grid)
             throws FactoryException, DataStoreException, IOException

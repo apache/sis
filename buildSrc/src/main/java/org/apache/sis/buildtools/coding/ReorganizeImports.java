@@ -585,7 +585,7 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
 
     /**
      * Compares the import statements between all branches.
-     * A flag is associated to each import statement for remembering which branches use it.
+     * A flag is associated with each import statement for remembering which branches use it.
      *
      * <h4>Performance note</h4>
      * Current implementation is not efficient because for each equal key,

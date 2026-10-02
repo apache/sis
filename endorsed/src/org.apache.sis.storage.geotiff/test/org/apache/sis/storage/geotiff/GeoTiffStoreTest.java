@@ -215,7 +215,7 @@ public final class GeoTiffStoreTest extends DataStoreTestCase {
             throws TransformException, DataStoreException, IOException
     {
         /*
-         * We need a CRS which has no EPSG code for ensuring that the test write the same GeoTIFF keys
+         * We need a CRS which has no EPSG code to ensure that the test write the same GeoTIFF keys
          * with or without the presence of an EPSG database on machine which is building this project.
          */
         final var crs =  HardCodedConversions.mercator(HardCodedCRS.JUPITER);

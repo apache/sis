@@ -124,7 +124,7 @@ final class Tracer {
 
         /**
          * Bitset telling which corners have a value greater than this isoline level {@linkplain #value}.
-         * Each corner is associated to one of the bits illustrated below, where bit (0) is the less significant.
+         * Each corner is associated with one of the bits illustrated below, where bit (0) is the less significant.
          * Note that this bit order is different than the order used in Wikipedia "Marching squares" article.
          * The order used in this class allows more direct bitwise operations as described in next section.
          *

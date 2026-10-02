@@ -453,8 +453,8 @@ public class Resources extends IndexedResourceBundle {
         public static final short NoSuchAuthorityCode_3 = 49;
 
         /**
-         * No operation method found for name or identifier “{0}”. Only methods associated to Java code
-         * are supported. See {1} for the list of available methods.
+         * No operation method found for name or identifier “{0}”. Only methods associated with Java
+         * code are supported. See {1} for the list of available methods.
          */
         public static final short NoSuchOperationMethod_2 = 50;
 

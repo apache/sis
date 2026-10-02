@@ -135,14 +135,14 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
 
     /**
      * Convenience {@code EntryIterator} implementation which iterates over a list of key candidates.
-     * All keys associated to a null value will be skipped.
+     * All keys associated with a null value will be skipped.
      *
      * @see AbstractMap#entryIterator()
      */
     protected final class KeyIterator extends EntryIterator<K,V> {
         /** The key candidates.              */ private final K[] keys;
         /** Index of current key.            */ private int index = -1;
-        /** Value associated to current key. */ private V value;
+        /** Value associated with current key. */ private V value;
 
         /**
          * Creates a new iterator over the given key candidates.
@@ -157,7 +157,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
         }
 
         /**
-         * Moves to the next key associated to a non-null value.
+         * Moves to the next key associated with a non-null value.
          *
          * @return {@code false} if this method reached iteration end.
          */
@@ -192,7 +192,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
     protected static class IteratorAdapter<K,V> extends EntryIterator<K,V> {
         /**
          * The standard iterator to which to delegate the work.
-         * It is safe to change this value before to invoke {@link #next()}.
+         * It is safe to change this value before invoking {@link #next()}.
          */
         protected Iterator<Entry<K,V>> it;
 

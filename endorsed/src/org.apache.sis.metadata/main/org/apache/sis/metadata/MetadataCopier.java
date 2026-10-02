@@ -225,7 +225,7 @@ public class MetadataCopier extends MetadataVisitor<Object> {
     }
 
     /**
-     * Verifies if the given metadata value is a map or a collection before to invoke
+     * Verifies if the given metadata value is a map or a collection before invoking
      * {@link #copyRecursively(Class, Object)} for metadata elements.  This method is
      * invoked by {@link PropertyAccessor#walkWritable(MetadataVisitor, Object, Object)}.
      */

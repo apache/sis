@@ -334,7 +334,7 @@ public class ResampledImage extends ComputedImage {
      * {@link Math#round(double)} is the desired behavior for nearest-neighbor interpolation, but the buffer given
      * to {@link Interpolation#interpolate(DoubleBuffer, int, double, double, double[], int)} is filled with values
      * at coordinates determined by {@link Math#floor(double)} semantic. Because the buffer has only one value,
-     * {@code interpolate(…)} has no way to look at neighbor values for the best match (contrarily to what other
+     * {@code interpolate(…)} has no way to look at neighbor values for the best match (contrary to what other
      * interpolation implicitly do, through mathematics). The 0.5 offset is necessary for compensating.
      *
      * @param  span  the width or height of the support region for interpolations.

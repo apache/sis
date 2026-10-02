@@ -409,7 +409,7 @@ final class EnvelopeOperation extends AbstractOperation {
                         /*
                          * Try to get CRS from property characteristic. Usually `at` is null and we fallback
                          * on the coordinate operation computed at construction time. In the rare case where
-                         * a CRS characteristic is associated to a particular feature, setting `op` to null
+                         * a CRS characteristic is associated with a particular feature, setting `op` to null
                          * will cause a new coordinate operation to be searched.
                          */
                         final var at = ((Attribute<?>) feature.getProperty(attributeNames[i]))

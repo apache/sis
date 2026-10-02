@@ -439,7 +439,7 @@ public class Errors extends IndexedResourceBundle {
         public static final short IllegalMapping_2 = 70;
 
         /**
-         * Member “{0}” cannot be associated to type “{1}”.
+         * Member “{0}” cannot be associated with type “{1}”.
          */
         public static final short IllegalMemberType_2 = 71;
 
@@ -694,7 +694,7 @@ public class Errors extends IndexedResourceBundle {
         public static final short NilObject_1 = 120;
 
         /**
-         * No value is associated to “{0}”.
+         * No value is associated with “{0}”.
          */
         public static final short NoSuchValue_1 = 121;
 

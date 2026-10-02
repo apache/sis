@@ -20,7 +20,7 @@ import org.apache.sis.storage.folder.UnstructuredAggregate;
 
 
 /**
- * The different views (aggregation, etc.) which may be associated to a resource item.
+ * The different views (aggregation, etc.) which may be associated with a resource item.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

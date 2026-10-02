@@ -25,7 +25,7 @@ import org.apache.sis.util.internal.shared.Numerics;
 
 /**
  * A message format which adjust automatically the number of fraction digits needed for formatting numbers.
- * Callers need to invoke {@link #configure(Object[])} before to invoke any {@code format(…)} method.
+ * Callers need to invoke {@link #configure(Object[])} before invoking any {@code format(…)} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

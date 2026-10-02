@@ -280,7 +280,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      *
      * @param  properties  the properties to be given to the reference system.
      * @param  datum       the datum to which to transform coordinates before formatting the MGRS references,
-     *                     or {@code null} for inferring the datum from the CRS associated to each coordinate.
+     *                     or {@code null} for inferring the datum from the CRS associated with each coordinate.
      */
     public MilitaryGridReferenceSystem(final Map<String,?> properties, final CommonCRS datum) {
         super(properties, types());
@@ -662,7 +662,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
 
         /**
          * Encodes the given position into a MGRS reference.
-         * The given position must have a Coordinate Reference System (CRS) associated to it.
+         * The given position must have a Coordinate Reference System (CRS) associated with it.
          *
          * @param  position  the coordinate to encode.
          * @return MGRS encoding of the given position.
@@ -715,7 +715,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
 
         /**
          * Returns an iterator over all MGRS references that intersect the given envelope.
-         * The given envelope must have a Coordinate Reference System (CRS) associated to it.
+         * The given envelope must have a Coordinate Reference System (CRS) associated with it.
          * If the CRS is geographic, the envelope is allowed to span the anti-meridian.
          * The MGRS references may be returned in any iteration order.
          *
@@ -741,7 +741,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
 
         /**
          * Returns a stream of all MGRS references that intersect the given envelope.
-         * The given envelope must have a Coordinate Reference System (CRS) associated to it.
+         * The given envelope must have a Coordinate Reference System (CRS) associated with it.
          * If the CRS is geographic, the envelope is allowed to span the anti-meridian.
          * The MGRS references may be returned in any order.
          *
@@ -768,7 +768,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
 
         /**
          * Decodes the given MGRS reference into a position and an envelope.
-         * The Coordinate Reference System (CRS) associated to the returned position depends on the given reference.
+         * The Coordinate Reference System (CRS) associated with the returned position depends on the given reference.
          *
          * @param  reference  MGRS string to decode.
          * @return a new position with the longitude at coordinate 0 and latitude at coordinate 1.
@@ -2268,7 +2268,7 @@ parse:                  switch (part) {
 
         /**
          * Returns the index after the last digit in a sequence of ASCII characters.
-         * Leading whitespaces must have been skipped before to invoke this method.
+         * Leading whitespaces must have been skipped before invoking this method.
          */
         private static int endOfDigits(final CharSequence reference, int i, final int end) {
             while (i < end) {

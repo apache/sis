@@ -101,7 +101,7 @@ public abstract class WindowHandler {
 
     /**
      * Methods to be invoked last by constructors, after everything else succeeded.
-     * Construction must be completed before to invoke this method because this call will notify listeners.
+     * Construction must be completed before invoking this method because this call will notify listeners.
      *
      * @return {@code this} for method call chaining.
      */
@@ -301,7 +301,7 @@ public abstract class WindowHandler {
     /**
      * Makes a "best effort" for helping the garbage-collector to release memory.
      * This method is for internal usage by {@code WindowHandler} and subclasses only.
-     * Caller shall remove this handler from the windows list before to invoke this method.
+     * Caller shall remove this handler from the windows list before invoking this method.
      */
     void dispose() {
         assert manager.main != this;                // Because listener is not registered for main window.

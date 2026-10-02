@@ -59,7 +59,7 @@ import org.apache.sis.measure.Longitude;
  * transformation applicable to the widest North American surface. But if the user provides a context saying that
  * he wants to transform coordinates in Texas, then Apache SIS may return another coordinate transformation with
  * different {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa-Wolf parameters} more suitable
- * to Texas, but not suitable to the rest of North-America.
+ * to Texas, but not suitable for the rest of North-America.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.7

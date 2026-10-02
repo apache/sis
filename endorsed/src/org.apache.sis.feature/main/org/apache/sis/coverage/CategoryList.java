@@ -109,7 +109,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     /**
      * Minimum and maximum values (inclusive) of {@link Category#converse} for each category.
      * For each category at index {@code i}, the converse minimum is at index {@code i*2} and
-     * the converse maximum is at index {@code i*2+1}.  This information is used for ensuring
+     * the converse maximum is at index {@code i*2+1}. This information is used to ensure
      * that extrapolated values (i.e. the result of a conversion when the input value was not
      * in the range of any category) do not accidentally fall in the range of another category.
      * This field may be {@code null} if there is no need to perform such verification because
@@ -402,7 +402,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     /**
      * Returns the <i>transfer function</i> from sample values to real values, including conversion of
      * "no data" values to NaNs. Callers shall ensure that there is at least one quantitative category
-     * before to invoke this method.
+     * before invoking this method.
      *
      * @see SampleDimension#getTransferFunction()
      */

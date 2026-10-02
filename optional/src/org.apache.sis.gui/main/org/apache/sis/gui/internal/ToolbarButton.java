@@ -40,12 +40,12 @@ import org.apache.sis.util.ArraysExt;
 public abstract class ToolbarButton implements EventHandler<ActionEvent> {
     /**
      * The property to use in {@link Node#getProperties()} for storing instances of this class.
-     * Values associated to this key shall be arrays of {@code Control[]} type.
+     * Values associated with this key shall be arrays of {@code Control[]} type.
      */
     private static final String PROPERTY_KEY = "org.apache.sis.gui.ToolbarButtons";
 
     /**
-     * Gets and removes the toolbar buttons associated to the given content pane. Those buttons
+     * Gets and removes the toolbar buttons associated with the given content pane. Those buttons
      * should have been specified by a previous call to {@link #insert(Node, Control...)}.
      * They will be requested by {@link org.apache.sis.gui.dataset.WindowHandler} only once,
      * which is why we remove them afterward.

@@ -35,7 +35,7 @@ import org.apache.sis.storage.internal.Resources;
  * Helper class for mapping {@link GenericName} instances and their shortened names to features.
  * The features are typically represented by instances of {@link org.opengis.feature.FeatureType}
  * or {@link org.opengis.coverage.Coverage} (sometimes seen as a kind of features), but this class
- * actually puts no restriction on the kind of object associated to {@code GenericName}s;
+ * actually puts no restriction on the kind of object associated with {@code GenericName}s;
  * {@link DataStore} implementations are free to choose their internal object.
  * Those objects can be stored and fetched using the {@code String} representation of their name
  * as given by {@link GenericName#toString()}, or a shortened name when there is no ambiguity.
@@ -58,7 +58,7 @@ import org.apache.sis.storage.internal.Resources;
  *     assert binding.get(null,     "bar") == myFooBar;    // Allowed only if there is no ambiguity.
  *     }
  *
- * Note that contrarily to the standard {@link java.util.Map#get(Object)} method contract, the {@link #get get(…)}
+ * Note that contrary to the standard {@link java.util.Map#get(Object)} method contract, the {@link #get get(…)}
  * method defined in this class throws an exception instead of returning {@code null} if no unambiguous mapping
  * can be established for the given name. This behavior allows {@code FeatureNaming} to produce an error message
  * telling why the operation cannot succeed.
@@ -111,7 +111,7 @@ public class FeatureNaming<E> {
     private final Map<String, Set<String>> aliases;
 
     /**
-     * The user-specified values associated to names and aliases. If a value is absent, it may means either that the
+     * The user-specified values associated with names and aliases. If a value is absent, it may means either that the
      * given name does not exist, or that the given name is an ambiguous alias. Those two cases can be distinguished
      * by checking if the key exists in the {@link #aliases} map.
      */
@@ -148,11 +148,11 @@ public class FeatureNaming<E> {
     }
 
     /**
-     * Returns the value associated to the given name (case sensitive).
+     * Returns the value associated with the given name (case sensitive).
      *
      * @param  store  the data store for which to get a value, or {@code null} if unknown.
      * @param  name   the name for which to get a value.
-     * @return value associated to the given object.
+     * @return value associated with the given object.
      * @throws IllegalNameException if the given name was not found or is ambiguous.
      */
     public E get(final DataStore store, final String name) throws IllegalNameException {
@@ -171,7 +171,7 @@ public class FeatureNaming<E> {
             final Iterator<String> it = nc.iterator();
             params = new CharSequence[] {name(store), it.next(), it.next(), name};
         } else {
-            return null;    // Name was explicitly associated to null value (actually not allowed by current API).
+            return null;    // Name was explicitly associated with null value (actually not allowed by current API).
         }
         throw new IllegalNameException(locale(store), key, params);
     }
@@ -192,7 +192,7 @@ public class FeatureNaming<E> {
             final Set<String> fullNames = aliases.get(key);             // Null is synonymous of singleton(key).
             if (fullNames == null || fullNames.contains(key)) {
                 /*
-                 * If we already had a value for the given name and if that value was associated to a user-specified
+                 * If we already had a value for the given name and if that value was associated with a user-specified
                  * name (not to an alias of that name), then we have a name collision. Restore the previous value.
                  */
                 if (values.put(key, previous) != value) {
@@ -213,7 +213,7 @@ public class FeatureNaming<E> {
             if (fullNames.size() > 1) {
                 /*
                  * If there is more than one GenericName for the same alias, we have an ambiguity.
-                 * Remove any value associated to that alias, unless the value was associated to
+                 * Remove any value associated with that alias, unless the value was associated with
                  * exactly the user-specified name (not an alias). The `get` method in this class
                  * will know when the value is missing because of ambiguous name.
                  */
@@ -233,8 +233,8 @@ public class FeatureNaming<E> {
     }
 
     /**
-     * Removes the value associated to the given name.
-     * If no value is associated to the given name, then this method does nothing.
+     * Removes the value associated with the given name.
+     * If no value is associated with the given name, then this method does nothing.
      *
      * @param  store  the data store for which to remove a value, or {@code null} if unknown.
      * @param  name   the name for which to remove value.
@@ -288,7 +288,7 @@ public class FeatureNaming<E> {
     /**
      * Adds a value in a pseudo multi-values map. The multi-values map is simulated by a map of sets.
      * The map can be initially empty: sets will be created as needed, with an optimization for the
-     * common case where the majority of keys are associated to exactly one value.
+     * common case where the majority of keys are associated with exactly one value.
      * Null values are accepted.
      *
      * @param  <K>    the type of key elements in the map.

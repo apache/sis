@@ -156,7 +156,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     private final DataType dataType;
 
     /**
-     * The grid geometry associated to this variable, computed by {@link ChannelDecoder#getGridCandidates()} when first needed.
+     * The grid geometry associated with this variable, computed by {@link ChannelDecoder#getGridCandidates()} when first needed.
      * May stay {@code null} if the variable is not a data cube. We do not need disambiguation between the case where
      * the grid has not yet been computed and the case where the computation has been done with {@code null} result,
      * because {@link #findGrid(GridAdjustment)} should be invoked only once per variable.
@@ -551,10 +551,10 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     }
 
     /**
-     * Returns the names of all attributes associated to this variable.
+     * Returns the names of all attributes associated with this variable.
      * The returned set is unmodifiable.
      *
-     * @return names of all attributes associated to this variable.
+     * @return names of all attributes associated with this variable.
      */
     @Override
     public Collection<String> getAttributeNames() {

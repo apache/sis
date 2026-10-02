@@ -22,7 +22,7 @@ import org.opengis.referencing.operation.MathTransform;
 
 
 /**
- * GeoTIFF keys associated to values needed for building {@link CoordinateReferenceSystem} instances
+ * GeoTIFF keys associated with values needed for building {@link CoordinateReferenceSystem} instances
  * and {@link MathTransform} "grid to CRS". In this class, field names are GeoTIFF key names, except
  * for the following departures:
  *

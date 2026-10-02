@@ -537,7 +537,7 @@ pathTree:   for (int j=0; ; j++) {
 
     /**
      * Returns a map of all JAR files or class directories found in the given paths,
-     * associated to a description obtained from their {@code META-INF/MANIFEST.MF}.
+     * associated with a description obtained from their {@code META-INF/MANIFEST.MF}.
      *
      * @param  paths      the paths using the {@link File#pathSeparatorChar} separator.
      * @param  classpath  whether to scan the class-path manifest attribute.

@@ -467,7 +467,7 @@ public class ImageRenderer {
     }
 
     /**
-     * Returns the value associated to the given property.
+     * Returns the value associated with the given property.
      * The properties recognized by current implementation are:
      *
      * <ul>
@@ -478,7 +478,7 @@ public class ImageRenderer {
      * </ul>
      *
      * @param  key  the property for which to get a value.
-     * @return value associated to the given property, or {@code null} if none.
+     * @return value associated with the given property, or {@code null} if none.
      *
      * @since 1.1
      */
@@ -492,12 +492,12 @@ public class ImageRenderer {
     }
 
     /**
-     * Adds a value associated to a property. This method can be invoked only once for each {@code key}.
+     * Adds a value associated with a property. This method can be invoked only once for each {@code key}.
      * Those properties will be given to the image created by the {@link #createImage()} method.
      *
      * @param  key    key of the property to set.
      * @param  value  value to associate to the given key.
-     * @throws IllegalArgumentException if a value is already associated to the given key.
+     * @throws IllegalArgumentException if a value is already associated with the given key.
      *
      * @since 1.1
      */
@@ -749,10 +749,10 @@ public class ImageRenderer {
      * Creates an image with the data specified by the last call to a {@code setData(…)} method.
      * The image upper-left corner is located at the position given by {@link #getBounds()}.
      * The two-dimensional {@linkplain #getImageGeometry(int) image geometry} is stored as
-     * a property associated to the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY} key.
-     * The dimensions of the source grid that are represented in the image are associated to the
+     * a property associated with the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY} key.
+     * The dimensions of the source grid that are represented in the image are associated with the
      * {@value org.apache.sis.image.PlanarImage#XY_DIMENSIONS_KEY} key.
-     * The sample dimensions are stored as a property associated to the
+     * The sample dimensions are stored as a property associated with the
      * {@value org.apache.sis.image.PlanarImage#SAMPLE_DIMENSIONS_KEY} key.
      *
      * <p>The default implementation returns an instance of {@link java.awt.image.WritableRenderedImage}

@@ -176,7 +176,7 @@ public class Messages extends IndexedResourceBundle {
         public static final short IgnoredPropertiesAfterFirst_1 = 20;
 
         /**
-         * Ignored property associated to ‘{0}’.
+         * Ignored property associated with ‘{0}’.
          */
         public static final short IgnoredPropertyAssociatedTo_1 = 21;
 
@@ -196,7 +196,7 @@ public class Messages extends IndexedResourceBundle {
         public static final short InsertDuration_2 = 23;
 
         /**
-         * No object associated to the “{0}” JNDI name.
+         * No object associated with the “{0}” JNDI name.
          */
         public static final short JNDINotSpecified_1 = 24;
 

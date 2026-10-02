@@ -83,7 +83,7 @@ public final class ArrayEnvelopeTest extends TestCase {
 
     /**
      * Tests the {@link ArrayEnvelope#formatTo(Formatter)} method.
-     * Contrarily to {@code toString()}, the precision depends on the CRS.
+     * Contrary to {@code toString()}, the precision depends on the CRS.
      */
     @Test
     public void testFormatWKT() {

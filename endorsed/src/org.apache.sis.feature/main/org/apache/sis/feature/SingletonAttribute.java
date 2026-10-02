@@ -26,7 +26,7 @@ import org.opengis.feature.AttributeType;
 /**
  * An instance of an {@linkplain DefaultAttributeType attribute type} containing at most one value.
  * The majority of features types contain attributes restricted to such [0 … 1] cardinality.
- * While {@link MultiValuedAttribute} would be suitable to all cases, this {@code SingletonAttribute}
+ * While {@link MultiValuedAttribute} would be suitable for all cases, this {@code SingletonAttribute}
  * consumes less memory.
  *
  * <h2>Limitations</h2>

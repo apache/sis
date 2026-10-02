@@ -98,7 +98,7 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
     }
 
     /**
-     * Returns {@code true} if the node associated to this list is already the parent of the given
+     * Returns {@code true} if the node associated with this list is already the parent of the given
      * node, {@code false} if the given node has no parent, or throws an exception otherwise.
      *
      * @param  node  the node for which to check the parent.
@@ -118,7 +118,7 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
     /**
      * Sets or clears the parent of the given node. This method doesn't need to care about the
      * current node parent, since {@code TreeNodeList} will take care of removing the tree node
-     * from its previous parent before to invoke this method.
+     * from its previous parent before invoking this method.
      *
      * <p>The {@code mode} argument specifies the parent value to set, as one of the following
      * values:</p>

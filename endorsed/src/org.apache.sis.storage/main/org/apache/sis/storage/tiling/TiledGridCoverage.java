@@ -73,7 +73,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  *
  * <p><b>Design note:</b> {@code TiledGridCoverage} uses the same cell coordinates as the originating
  * {@link TiledGridCoverageResource} (when no subsampling) because those two classes use {@code long} integers.
- * There is no integer overflow to avoid, contrarily to tile matrix indices described below.</p>
+ * There is no integer overflow to avoid, contrary to tile matrix indices described below.</p>
  *
  * <h2>Tile matrix coordinate (<abbr>TMC</abbr>)</h2>
  * In each {@code TiledGridCoverage}, indices of tiles starts at (0, 0, …).
@@ -498,7 +498,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * <h4>Design note</h4>
      * This is value is the number of <em>pixels per element</em>, not <em>samples per element</em>.
      * This distinction is important in the case of {@link SinglePixelPackedSampleModel}, for which
-     * this method returns 1 (contrarily to the number of samples per element which would be greater than 1).
+     * this method returns 1 (contrary to the number of samples per element which would be greater than 1).
      *
      * @return number of pixels in a single bank element. This is often 1.
      *

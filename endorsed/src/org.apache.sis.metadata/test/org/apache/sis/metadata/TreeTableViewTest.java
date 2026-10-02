@@ -230,7 +230,7 @@ public final class TreeTableViewTest extends TestCase {
         assertNull  (                               node.getValue(MetadataColumn.NIL_REASON));
         /*
          * Set the first element to nil, then check that the second element has not been impacted.
-         * Contrarily to the previous test, this test modifies a collection elements instead of the
+         * Contrary to the previous test, this test modifies a collection elements instead of the
          * property as a whole.
          */
         node.setValue(MetadataColumn.NIL_REASON, NilReason.INAPPLICABLE);

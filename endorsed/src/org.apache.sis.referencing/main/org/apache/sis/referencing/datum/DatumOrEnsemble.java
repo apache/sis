@@ -112,7 +112,7 @@ public final class DatumOrEnsemble {
 
     /**
      * Returns the datum or datum ensemble of a coordinate operation from <var>source</var> to <var>target</var>.
-     * If the two given coordinate reference systems are associated to equal datum (ignoring metadata),
+     * If the two given coordinate reference systems are associated with equal datum (ignoring metadata),
      * then this method returns the <var>target</var> datum. Otherwise, this method returns
      * the largest ensemble which fully contains the datum or datum ensemble of the other <abbr>CRS</abbr>.
      * That largest common ensemble is interpreted as the new target of the operation result.
@@ -136,7 +136,7 @@ public final class DatumOrEnsemble {
 
     /**
      * Returns the datum (preferred) or ensemble (fallback) of the given geodetic <abbr>CRS</abbr>.
-     * If the given <abbr>CRS</abbr> is associated to a non-null datum, then this method returns that datum.
+     * If the given <abbr>CRS</abbr> is associated with a non-null datum, then this method returns that datum.
      * Otherwise, this method returns the <abbr>CRS</abbr> datum ensemble as a pseudo-datum.
      *
      * <h4>Common properties</h4>
@@ -157,7 +157,7 @@ public final class DatumOrEnsemble {
 
     /**
      * Returns the datum (preferred) or ensemble (fallback) of the given vertical <abbr>CRS</abbr>.
-     * If the given <abbr>CRS</abbr> is associated to a non-null datum, then this method returns that datum.
+     * If the given <abbr>CRS</abbr> is associated with a non-null datum, then this method returns that datum.
      * Otherwise, this method returns the <abbr>CRS</abbr> datum ensemble as a pseudo-datum.
      *
      * @param  crs  the coordinate reference system for which to get the datum or datum ensemble, or {@code null}.
@@ -171,7 +171,7 @@ public final class DatumOrEnsemble {
 
     /**
      * Returns the datum (preferred) or ensemble (fallback) of the given temporal <abbr>CRS</abbr>.
-     * If the given <abbr>CRS</abbr> is associated to a non-null datum, then this method returns that datum.
+     * If the given <abbr>CRS</abbr> is associated with a non-null datum, then this method returns that datum.
      * Otherwise, this method returns the <abbr>CRS</abbr> datum ensemble as a pseudo-datum.
      *
      * <h4>Common property</h4>
@@ -191,7 +191,7 @@ public final class DatumOrEnsemble {
 
     /**
      * Returns the datum (preferred) or ensemble (fallback) of the given parametric <abbr>CRS</abbr>.
-     * If the given <abbr>CRS</abbr> is associated to a non-null datum, then this method returns that datum.
+     * If the given <abbr>CRS</abbr> is associated with a non-null datum, then this method returns that datum.
      * Otherwise, this method returns the <abbr>CRS</abbr> datum ensemble as a pseudo-datum.
      *
      * @param  crs  the coordinate reference system for which to get the datum or datum ensemble, or {@code null}.
@@ -207,7 +207,7 @@ public final class DatumOrEnsemble {
 
     /**
      * Returns the datum (preferred) or ensemble (fallback) of the given engineering <abbr>CRS</abbr>.
-     * If the given <abbr>CRS</abbr> is associated to a non-null datum, then this method returns that datum.
+     * If the given <abbr>CRS</abbr> is associated with a non-null datum, then this method returns that datum.
      * Otherwise, this method returns the <abbr>CRS</abbr> datum ensemble as a pseudo-datum.
      *
      * @param  crs  the coordinate reference system for which to get the datum or datum ensemble, or {@code null}.
@@ -221,7 +221,7 @@ public final class DatumOrEnsemble {
 
     /**
      * Returns the datum or pseudo-datum of the result of an operation between the given geodetic <abbr>CRS</abbr>s.
-     * If the two given coordinate reference systems are associated to equal (ignoring metadata) datum,
+     * If the two given coordinate reference systems are associated with equal (ignoring metadata) datum,
      * then this method returns the <var>target</var> datum. Otherwise, this method returns a pseudo-datum
      * for the largest ensemble which fully contains the datum or datum ensemble of the other <abbr>CRS</abbr>.
      * That largest common ensemble is interpreted as the new target of the operation result.
@@ -302,7 +302,7 @@ public final class DatumOrEnsemble {
 
     /**
      * Returns the datum or pseudo-datum of a coordinate operation from <var>source</var> to <var>target</var>.
-     * If the two given coordinate reference systems are associated to the same datum, then this method returns
+     * If the two given coordinate reference systems are associated with the same datum, then this method returns
      * the <var>target</var> datum. Otherwise, this method returns a pseudo-datum for the largest ensemble which
      * fully contains the datum or datum ensemble of the other <abbr>CRS</abbr>. If none of the <var>source</var>
      * or <var>target</var> datum ensembles met that criterion, then this method returns an empty value.
@@ -532,7 +532,7 @@ public final class DatumOrEnsemble {
      * <ul>
      *   <li>If the given <abbr>CRS</abbr> is an instance of {@link SingleCRS} and its datum
      *       is a {@link GeodeticDatum}, then this method returns the datum ellipsoid.</li>
-     *   <li>Otherwise, if the given <abbr>CRS</abbr> is an instance of {@link SingleCRS}, is associated to a
+     *   <li>Otherwise, if the given <abbr>CRS</abbr> is an instance of {@link SingleCRS}, is associated with a
      *       {@link DatumEnsemble}, and all members of the ensemble have equal (ignoring metadata) ellipsoid,
      *       then returns that ellipsoid.</li>
      *   <li>Otherwise, if the given <abbr>CRS</abbr> is an instance of {@link CompoundCRS}, then this method
@@ -572,7 +572,7 @@ public final class DatumOrEnsemble {
      * <ul>
      *   <li>If the given <abbr>CRS</abbr> is an instance of {@link SingleCRS} and its datum
      *       is a {@link VerticalDatum}, then this method returns the realization method.</li>
-     *   <li>Otherwise, if the given <abbr>CRS</abbr> is an instance of {@link SingleCRS}, is associated to a
+     *   <li>Otherwise, if the given <abbr>CRS</abbr> is an instance of {@link SingleCRS}, is associated with a
      *       {@link DatumEnsemble}, and all members of the ensemble have equal (ignoring metadata) realization
      *       methods, then returns that method.</li>
      *   <li>Otherwise, if the given <abbr>CRS</abbr> is an instance of {@link CompoundCRS}, then this method
@@ -685,7 +685,7 @@ public final class DatumOrEnsemble {
     }
 
     /**
-     * If the given object is a datum ensemble or a <abbr>CRS</abbr> associated to a datum ensemble, returns its accuracy.
+     * If the given object is a datum ensemble or a <abbr>CRS</abbr> associated with a datum ensemble, returns its accuracy.
      *
      * @param  object  the object from which to get the ensemble accuracy, or {@code null}.
      * @return the datum ensemble accuracy if the given object is a datum ensemble.

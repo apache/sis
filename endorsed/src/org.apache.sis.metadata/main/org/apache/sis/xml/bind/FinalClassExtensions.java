@@ -107,7 +107,7 @@ public final class FinalClassExtensions {
      * Returns the property of the given final type, or {@code null} if none.
      *
      * @param  instance  the {@link String} (or other final class) specific instance.
-     * @return the property associated to the given instance, or {@code null} if none.
+     * @return the property associated with the given instance, or {@code null} if none.
      */
     public static Object property(final Object instance) {
         /*
