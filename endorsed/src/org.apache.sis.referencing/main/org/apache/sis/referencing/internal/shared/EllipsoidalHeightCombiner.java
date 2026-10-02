@@ -198,8 +198,8 @@ public final class EllipsoidalHeightCombiner {
             final CoordinateSystem cs = crs.getCoordinateSystem();
             if (cs.getDimension() == 2 && (isProjected || cs instanceof EllipsoidalCS)) {
                 /*
-                 * ProjectedCRS are guaranteed to be associated to CartesianCS, so we do not test that.
-                 * GeodeticCRS may be associated to either CartesianCS or EllipsoidalCS, but this method
+                 * ProjectedCRS are guaranteed to be associated with CartesianCS, so we do not test that.
+                 * GeodeticCRS may be associated with either CartesianCS or EllipsoidalCS, but this method
                  * shall accept only EllipsoidalCS. Actually we should accept only GeographicCRS, but we
                  * relax this condition by accepting GeodeticCRS with EllipsoidalCS.
                  */

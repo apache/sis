@@ -34,7 +34,7 @@ import org.apache.sis.math.Vector;
  *
  * The unsigned data types are not defined in netCDF classical version. However, those data types
  * can be inferred from their signed counterpart if the latter have a {@code "_Unsigned = true"}
- * attribute associated to the variable.
+ * attribute associated with the variable.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

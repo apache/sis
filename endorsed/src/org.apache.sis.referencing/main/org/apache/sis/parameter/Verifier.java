@@ -126,7 +126,7 @@ final class Verifier {
                 if (value != null) {
                     /*
                      * Verify the value type before to perform unit conversion. This will indirectly verifies that the value
-                     * is an instance of `java.lang.Number` or an array of numbers because non-null units are associated to
+                     * is an instance of `java.lang.Number` or an array of numbers because non-null units are associated with
                      * `MeasurementRange` in SIS implementation, which accepts only numeric values.
                      */
                     if (!expectedClass.isInstance(value)) {

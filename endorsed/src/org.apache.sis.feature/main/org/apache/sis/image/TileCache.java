@@ -139,7 +139,7 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
         }
 
         /**
-         * Removes the raster associated to this key. This method is invoked for all tiles in an image being disposed.
+         * Removes the raster associated with this key. This method is invoked for all tiles in an image being disposed.
          * The disposal may happen either by an explicit call to {@link ComputedImage#dispose()}, or because the image
          * has been {@linkplain ComputedTiles#dispose() garbage collected}.
          */

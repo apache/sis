@@ -30,11 +30,11 @@ import org.apache.sis.xml.NilObject;
  * why the value returned by the {@code getFoo()} method (using reflection) is missing.
  * This map contains only the properties that are mandatory.
  *
- * <p>Contrarily to other map views, this map may contain entries associated to null values.
+ * <p>Contrary to other map views, this map may contain entries associated with null values.
  * It happens when a mandatory property is missing, but nevertheless no reason is provided.
  * So {@code containsValue(null)} can be used for checking if a metadata is invalid.</p>
  *
- * <p>Contrarily to other map views, this map is state-full.
+ * <p>Contrary to other map views, this map is state-full.
  * Only one instance should be created per metadata object.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -103,7 +103,7 @@ final class NilReasonMap extends PropertyMap<NilReason> {
 
     /**
      * Returns the number of entries in this map.
-     * Note that some entries may be associated to null values.
+     * Note that some entries may be associated with null values.
      */
     @Override
     public int size() {
@@ -117,7 +117,7 @@ final class NilReasonMap extends PropertyMap<NilReason> {
 
     /**
      * Returns whether this map contains an entry for the property at the given index.
-     * The value associated to that entry may be null.
+     * The value associated with that entry may be null.
      *
      * @param  index   property index, using the numbering for all properties.
      * @return whether this map contains a value, potentially null, for the specified property.

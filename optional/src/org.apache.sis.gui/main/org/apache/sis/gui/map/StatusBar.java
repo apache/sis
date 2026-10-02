@@ -261,7 +261,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * <p>This transform may change continuously as a result of gesture events such as zooms and pans.
      * It is possible to set explicitly a value to this property, but the specified value may be overwritten
      * by the next gesture event. Therefore, setting an explicit value is more useful when this status bar is
-     * <em>not</em> associated to a {@link MapCanvas}. For example, it may be associated to a
+     * <em>not</em> associated with a {@link MapCanvas}. For example, it may be associated with a
      * {@link org.apache.sis.gui.coverage.GridView} instead).</p>
      *
      * <h4>Setting a value explicitly</h4>

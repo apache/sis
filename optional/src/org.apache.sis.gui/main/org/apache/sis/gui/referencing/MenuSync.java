@@ -57,7 +57,7 @@ final class MenuSync extends SimpleObjectProperty<ReferenceSystem> implements Ev
     private static final String REFERENCE_SYSTEM_KEY = "ReferenceSystem";
 
     /**
-     * Sentinel value associated to {@link #REFERENCE_SYSTEM_KEY} for requesting the {@link CRSChooser}.
+     * Sentinel value associated with {@link #REFERENCE_SYSTEM_KEY} for requesting the {@link CRSChooser}.
      */
     private static final String CHOOSER = "CHOOSER";
 

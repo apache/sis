@@ -157,7 +157,7 @@ public final class LibraryLoader<F extends NativeFunctions, S extends DataStoreP
      * Searches the native library in the default library path. If the native library is not found on the library path,
      * defaults to {@link SymbolLookup#loaderLookup()} for allowing users to invoke {@link System#loadLibrary(String)}
      * as a fallback. The method handlers created with this instance are valid for the Java Virtual Machine lifetime,
-     * i.e. they will be associated to the {@linkplain Arena#global() global arena}.
+     * i.e. they will be associated with the {@linkplain Arena#global() global arena}.
      *
      * <p><em>It is caller's responsibility to ensure that this method is invoked at most once per library.</em>
      * Invoking this method many times for the same library may cause unpredictable behavior.</p>

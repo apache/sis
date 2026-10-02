@@ -41,9 +41,9 @@ import org.opengis.metadata.Identifier;
 
 
 /**
- * Base class of <abbr>CRS</abbr> associated to a datum.
+ * Base class of <abbr>CRS</abbr> associated with a datum.
  *
- * @param  <D>  the type of datum associated to this <abbr>CRS</abbr>.
+ * @param  <D>  the type of datum associated with this <abbr>CRS</abbr>.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */

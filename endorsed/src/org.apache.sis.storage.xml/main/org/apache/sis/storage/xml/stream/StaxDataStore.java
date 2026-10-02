@@ -224,7 +224,7 @@ public abstract class StaxDataStore extends URIDataStore {
      * Returns a valid indentation value from the given property value.
      * Value -1 means to format everything on a single line.
      *
-     * @param  indentation  value associated to {@link OptionKey#INDENTATION}.
+     * @param  indentation  value associated with {@link OptionKey#INDENTATION}.
      * @return indentation to use, or -1 for formatting on a single line.
      */
     private static byte indentation(final Integer indentation) {
@@ -277,7 +277,7 @@ public abstract class StaxDataStore extends URIDataStore {
         }
 
         /**
-         * Returns configuration associated to the given key, or {@code null} if none.
+         * Returns configuration associated with the given key, or {@code null} if none.
          *
          * @param  key  one of {@link XML#LOCALE}, {@link XML#TIMEZONE} or {@link XML#WARNING_FILTER}.
          * @return the configuration for the given key, or {@code null} if none or if the given key is invalid.

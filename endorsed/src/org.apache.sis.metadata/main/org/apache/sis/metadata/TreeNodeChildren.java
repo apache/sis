@@ -186,7 +186,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
     }
 
     /**
-     * If a simple value should be associated to the parent node, returns that value or the type of that value.
+     * If a simple value should be associated with the parent node, returns that value or the type of that value.
      * Otherwise returns {@code null}. The title is identified by {@link TitleProperty} annotation on the class.
      * If {@code wantTypeOnly} is {@code true}, then the returned object can be safety cast to {@link Class}.
      *
@@ -217,7 +217,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
     }
 
     /**
-     * Sets the value associated to the parent node, if possible.
+     * Sets the value associated with the parent node, if possible.
      * The returned Boolean tells whether the value has been written.
      */
     final boolean setParentTitle(final Object value) {

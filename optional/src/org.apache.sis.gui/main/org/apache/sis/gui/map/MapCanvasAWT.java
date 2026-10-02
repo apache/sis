@@ -92,7 +92,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
 
     /**
      * A buffer where to draw the content of the map for the region to be displayed.
-     * This buffer uses ARGB color model, contrarily to the {@link RenderedImage} of
+     * This buffer uses ARGB color model, contrary to the {@link RenderedImage} of
      * {@link org.apache.sis.coverage.grid.GridCoverage} which may have any color model.
      * This buffered image will contain only the visible region of the map;
      * it may be a zoom over a small region.

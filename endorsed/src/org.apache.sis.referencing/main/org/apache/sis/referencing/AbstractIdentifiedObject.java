@@ -327,7 +327,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * <h4>Shortcuts</h4>
      * The {@code "authority"}, {@code "code"}, {@code "codespace"} and {@code "version"} properties
      * are shortcuts for building a name. Their values are ignored if the {@code "name"} property is
-     * already associated to an {@link Identifier} value instead of a {@link String}.  Likewise, the
+     * already associated with an {@link Identifier} value instead of a {@link String}.  Likewise, the
      * {@code "scope"} and {@code "domainOfValidity"} shortcuts are ignored if the {@code "domains"}
      * property is provided.
      *

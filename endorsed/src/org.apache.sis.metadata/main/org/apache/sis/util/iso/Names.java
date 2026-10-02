@@ -374,7 +374,7 @@ public final class Names {
     }
 
     /**
-     * Returns the Java class associated to the given type name.
+     * Returns the Java class associated with the given type name.
      * The method performs the following choices:
      *
      * <ul>
@@ -406,7 +406,7 @@ public final class Names {
      * </ul>
      *
      * @param  type  the type name from which to infer a Java class.
-     * @return the Java class associated to the given {@code TypeName},
+     * @return the Java class associated with the given {@code TypeName},
      *         or {@code null} if there is no mapping from the given name to a Java class.
      * @throws UnknownNameException if a mapping from the given name to a Java class was expected to exist
      *         (typically because of the {@linkplain DefaultTypeName#scope() scope}) but the lookup failed.

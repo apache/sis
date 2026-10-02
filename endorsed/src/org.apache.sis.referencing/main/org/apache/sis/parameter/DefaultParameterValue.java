@@ -876,7 +876,7 @@ convert:            if (componentType != null) {
      *
      * <ul>
      *   <li>This method does not perform any type conversion. Type conversion, if desired, should be
-     *       applied by the public {@code setValue(…)} methods before to invoke this protected method.</li>
+     *       applied by the public {@code setValue(…)} methods before invoking this protected method.</li>
      *   <li>This method does not clone the given value. In particular, references to {@code int[]} and
      *       {@code double[]} arrays are stored <em>as-is</em>.</li>
      * </ul>
@@ -887,7 +887,7 @@ convert:            if (componentType != null) {
      * or to be notified about value changes.
      *
      * @param  newValue  the parameter value, or {@code null} to restore the default.
-     * @param  unit      the unit associated to the new parameter value, or {@code null}.
+     * @param  unit      the unit associated with the new parameter value, or {@code null}.
      * @throws InvalidParameterValueException if the type of {@code value} is inappropriate for this parameter,
      *         or if the value is illegal for some other reason (for example the value is numeric and out of range).
      *

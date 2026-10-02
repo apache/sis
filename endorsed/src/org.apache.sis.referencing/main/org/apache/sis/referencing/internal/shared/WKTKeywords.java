@@ -181,7 +181,7 @@ public final class WKTKeywords {
             vertical    = "vertical";
 
     /**
-     * Mapping between types of object and WKT keywords. Each GeoAPI interfaces is associated to one
+     * Mapping between types of object and WKT keywords. Each GeoAPI interfaces is associated with one
      * or many WKT keywords: new keywords defined by version 2 (sometimes with synonymous) and legacy
      * keywords defined by WKT 1.
      *

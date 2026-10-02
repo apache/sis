@@ -18,7 +18,7 @@ package org.apache.sis.storage.geotiff.base;
 
 
 /**
- * Enumeration values associated to some {@link GeoKeys}. In this class, field names are close to GeoTIFF code values.
+ * Enumeration values associated with some {@link GeoKeys}. In this class, field names are close to GeoTIFF code values.
  * For that reason, many of those field names do not follow usual Java convention for constants.
  *
  * @author  Rémi Maréchal (Geomatys)
@@ -96,7 +96,7 @@ public final class GeoCodes {
     public static final int NUM_GEOKEYS = 46;
 
     /**
-     * Number of GeoTIFF key associated to values of type {@code double}.
+     * Number of GeoTIFF key associated with values of type {@code double}.
      *
      * <p>This field should be part of {@link GeoKeys}, but is declared here because we
      * need to avoid public constants that are not GeoKey names in {@code GeoKeys}.</p>

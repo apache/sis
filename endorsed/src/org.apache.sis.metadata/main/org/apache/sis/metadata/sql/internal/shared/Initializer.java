@@ -133,12 +133,12 @@ public abstract class Initializer {
     protected abstract void createSchema(Connection connection) throws SQLException;
 
     /**
-     * Invoked when the JNDI data source associated to {@code "jdbc/SpatialMetadata"} changed.
+     * Invoked when the JNDI data source associated with {@code "jdbc/SpatialMetadata"} changed.
      */
     protected abstract void dataSourceChanged();
 
     /**
-     * A JNDI listener for being informed of changes in the {@link DataSource} associated to {@code "jdbc/SpatialMetadata"}.
+     * A JNDI listener for being informed of changes in the {@link DataSource} associated with {@code "jdbc/SpatialMetadata"}.
      * This listener clears the {@link Initializer#source} field, so the next call to {@link Initializer#getDataSource()}
      * will fetch a new one. This listener is registered only if {@link Initializer#source} has been fetched from JNDI.
      */
@@ -185,7 +185,7 @@ public abstract class Initializer {
         }
 
         /**
-         * Invoked when the data source associated to {@code "jdbc/SpatialMetadata"} changed.
+         * Invoked when the data source associated with {@code "jdbc/SpatialMetadata"} changed.
          * This method clears the {@link Initializer#source}, unregisters this listener (a new one
          * will be registered later if a new data source is created) and notifies other SIS modules.
          *

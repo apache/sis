@@ -400,7 +400,7 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
      * <h4>Prerequisite</h4>
      * <ul>
      *   <li>{@link #build(StoreListeners, long, long, Instant)} must have been invoked successfully before this method.</li>
-     *   <li>{@link ImageFileDirectory} must have filled its part of metadata before to invoke this method.</li>
+     *   <li>{@link ImageFileDirectory} must have filled its part of metadata before invoking this method.</li>
      * </ul>
      *
      * This method invokes {@link MetadataBuilder#newGridRepresentation(MetadataBuilder.GridType)}
@@ -421,7 +421,7 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
         if (metadata.addSpatialRepresentation(description, gridGeometry, true)) {
             /*
              * Whether the pixel value is thought of as filling the cell area or is considered as point measurements at
-             * the vertices of the grid (not in the interior of a cell).  This is determined by the value associated to
+             * the vertices of the grid (not in the interior of a cell).  This is determined by the value associated with
              * GeoKeys.RasterType, which can be GeoCodes.RasterPixelIsArea or GeoCodes.RasterPixelIsPoint.
              *
              * Note: the pixel orientation (UPPER_LEFT versus CENTER) should be kept consistent with the discussion in

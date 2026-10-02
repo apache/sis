@@ -340,7 +340,7 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
      * <p>This method should not perform other cleaning work because it is not guaranteed to be invoked.
      * In some case, there is nothing preventing this weak reference to be garbage collected before this
      * {@code dispose()} method is invoked. The case is: if {@code ComputedTiles} is not registered as a
-     * {@link TileObserver} and if {@link TileCache#GLOBAL} does not contain any tile associated to this
+     * {@link TileObserver} and if {@link TileCache#GLOBAL} does not contain any tile associated with this
      * {@link ComputedImage} in its key.</p>
      *
      * @see ComputedImage#dispose()

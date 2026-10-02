@@ -202,9 +202,9 @@ final class RawRasterStore extends RasterStore {
     }
 
     /**
-     * Returns the metadata associated to the raw binary file.
+     * Returns the metadata associated with the raw binary file.
      *
-     * @return the metadata associated to the raw binary.
+     * @return the metadata associated with the raw binary.
      * @throws DataStoreException if an error occurred during the parsing process.
      */
     @Override
@@ -550,9 +550,11 @@ final class RawRasterStore extends RasterStore {
      * @throws DataStoreException if an error occurred while closing this data store.
      */
     @Override
+    @SuppressWarnings("ConvertToTryWithResources")
     public void close() throws DataStoreException {
         try {
             listeners.close();                      // Should never fail.
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final ChannelDataInput input = this.input;
             if (input != null) try {
                 input.channel.close();

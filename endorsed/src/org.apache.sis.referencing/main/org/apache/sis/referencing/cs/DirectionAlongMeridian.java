@@ -110,7 +110,7 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
     /**
      * Returns the direction along meridian for the specified axis direction, or {@code null} if none.
      *
-     * <p>TIP: caller can check {@link AxisDirections#isUserDefined(AxisDirection)} before to invoke this method
+     * <p>TIP: caller can check {@link AxisDirections#isUserDefined(AxisDirection)} before invoking this method
      * for avoiding {@code DirectionAlongMeridian} initialization in the common case where it is not needed.</p>
      */
     public static DirectionAlongMeridian parse(final AxisDirection direction) {

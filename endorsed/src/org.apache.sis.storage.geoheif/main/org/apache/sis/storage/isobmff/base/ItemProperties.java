@@ -68,7 +68,7 @@ public final class ItemProperties extends ContainerBox {
     }
 
     /**
-     * All properties associated to the same item identifier. Instances of this class are created
+     * All properties associated with the same item identifier. Instances of this class are created
      * by {@link #collect(Map)} and should be short lived, only the time needed by the caller for
      * processing the properties.
      */

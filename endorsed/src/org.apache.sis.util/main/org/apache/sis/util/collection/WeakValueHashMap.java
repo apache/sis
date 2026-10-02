@@ -467,7 +467,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
         static final Wildcard ANY_VALUE = new Wildcard(true);
         static final Wildcard NO_VALUE  = new Wildcard(false);
 
-        /** Whether the key shall be associated to a value. */
+        /** Whether the key shall be associated with a value. */
         private final boolean present;
 
         /** Creates the {@link #ANY_VALUE} or {@link #NO_VALUE} constant. */
@@ -551,8 +551,8 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
 
     /**
      * Associates the specified value with the specified key in this map if no value were previously associated.
-     * If another value is already associated to the given key, then the map is left unchanged and the current
-     * value is returned. Otherwise the specified value is associated to the key using a {@link WeakReference}
+     * If another value is already associated with the given key, then the map is left unchanged and the current
+     * value is returned. Otherwise the specified value is associated with the key using a {@link WeakReference}
      * and {@code null} is returned.
      *
      * @param  key    key with which the specified value is to be associated.
@@ -572,7 +572,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     }
 
     /**
-     * Returns the value associated to the given key, computing the value if it does not exist.
+     * Returns the value associated with the given key, computing the value if it does not exist.
      * This implementation is thread-safe.
      *
      * @param  key      key of the value to get.

@@ -335,7 +335,7 @@ public final class DataStoreOpener extends Task<DataStore> {
 
     /**
      * Removes the given data store from cache and closes it. It is caller's responsibility
-     * to ensure that the given data store is not used anymore before to invoke this method.
+     * to ensure that the given data store is not used anymore before invoking this method.
      * This method should be invoked from JavaFX thread for making sure there is no new usage
      * of the given data store starting while we are closing it. However, after the data store
      * has been removed from the cache, the close action is performed in a background thread.

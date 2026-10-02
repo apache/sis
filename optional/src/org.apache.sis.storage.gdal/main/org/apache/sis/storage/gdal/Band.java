@@ -335,7 +335,7 @@ final class Band {
     }
 
     /**
-     * Advise driver of upcoming read requests. Contrarily to the above {@code read(…)} method which receives
+     * Advise driver of upcoming read requests. Contrary to the above {@code read(…)} method which receives
      * a rectangle for one tile at a time, the rectangle received by this method is for all tiles to be read.
      *
      * @param  gdal             set of handles for invoking <abbr>GDAL</abbr> functions.

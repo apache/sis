@@ -70,7 +70,7 @@ public enum ComponentType {
 
     /**
      * Alpha/transparency component (A).
-     * Arbitrarily associated to <abbr>RGB</abbr> color space.
+     * Arbitrarily associated with <abbr>RGB</abbr> color space.
      */
     ALPHA(ColorSpace.TYPE_RGB),
 

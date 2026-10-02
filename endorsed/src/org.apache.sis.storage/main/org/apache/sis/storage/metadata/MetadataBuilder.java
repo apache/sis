@@ -852,7 +852,7 @@ public class MetadataBuilder {
      */
     public final void addDefaultMetadata(final AbstractResource resource, final StoreListeners listeners) throws DataStoreException {
         if (getTitle() == null) {
-            // Note: title is mandatory in ISO metadata, contrarily to the identifier.
+            // Note: title is mandatory in ISO metadata, contrary to the identifier.
             resource.getIdentifier().ifPresent((name) -> addTitle(new Sentence(name)));
         }
         resource.getEnvelope().ifPresent((envelope) -> addExtent(envelope, listeners));
@@ -1077,7 +1077,7 @@ public class MetadataBuilder {
      * </ul>
      *
      * @param  language  a language used for documenting data and/or metadata, or {@code null} for no-operation.
-     * @param  encoding  the encoding associated to the locale, or {@code null} if unspecified.
+     * @param  encoding  the encoding associated with the locale, or {@code null} if unspecified.
      * @param  scope     whether the language applies to data, to metadata or to both.
      */
     public final void addLanguage(final Locale language, final Charset encoding, final Scope scope) {
@@ -3254,7 +3254,7 @@ public class MetadataBuilder {
     /**
      * Appends information from the metadata of a component.
      * This is a helper method for building the metadata of an aggregate.
-     * Aggregate metadata should be set before to invoke this method, in particular:
+     * Aggregate metadata should be set before invoking this method, in particular:
      *
      * <ul>
      *   <li>The aggregated resource {@linkplain #addTitle(CharSequence) title}.</li>

@@ -40,7 +40,7 @@ import org.apache.sis.pending.jdk.JDK19;
 
 
 /**
- * Implementation of the map of identifiers associated to {@link org.apache.sis.xml.IdentifiedObject} instances.
+ * Implementation of the map of identifiers associated with {@link org.apache.sis.xml.IdentifiedObject} instances.
  * This base class implements an unmodifiable map, but the {@link ModifiableIdentifierMap} subclass adds write
  * capabilities.
  *
@@ -63,10 +63,10 @@ import org.apache.sis.pending.jdk.JDK19;
  *
  * <ul>
  *   <li>All getter methods (including the iterators and the values returned by the {@code put}
- *       and {@code remove} methods) return only the identifier code associated to the first
+ *       and {@code remove} methods) return only the identifier code associated with the first
  *       occurrence of each authority. Any subsequent occurrences of the same authorities are
  *       silently ignored.</li>
- *   <li>All setter methods <em>may</em> affect <em>all</em> identifiers previously associated to
+ *   <li>All setter methods <em>may</em> affect <em>all</em> identifiers previously associated with
  *       the given authority, not just the first occurrence. The only guarantee is that the list
  *       is update in such a way that the effect of setter methods are visible to subsequent calls
  *       to getter methods.</li>

@@ -653,7 +653,7 @@ public final class Types {
     /**
      * Returns an international string for the values in the given properties map, or {@code null} if none.
      * This method is used when a property in a {@link java.util.Map} may have many localized variants.
-     * For example, the given map may contain a {@code "remarks"} property defined by values associated to
+     * For example, the given map may contain a {@code "remarks"} property defined by values associated with
      * the {@code "remarks_en"} and {@code "remarks_fr"} keys, for English and French locales respectively.
      *
      * <p>If the given map is {@code null}, then this method returns {@code null}.
@@ -671,11 +671,11 @@ public final class Types {
      * @param  properties  the map from which to get the string values for an international string, or {@code null}.
      * @param  prefix      the prefix of keys to use for creating the international string.
      * @return the international string, or {@code null} if the given map is null or does not contain values
-     *         associated to keys starting with the given prefix.
+     *         associated with keys starting with the given prefix.
      * @throws IllegalArgumentException if a key starts by the given prefix and:
      *         <ul>
      *           <li>The key suffix is an illegal {@link Locale} code,</li>
-     *           <li>or the value associated to that key is a not a {@link CharSequence}.</li>
+     *           <li>or the value associated with that key is a not a {@link CharSequence}.</li>
      *         </ul>
      *
      * @see Locales#parse(String, int)

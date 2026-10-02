@@ -85,7 +85,7 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
      * then {@code method3D} is "Cylindrical to Cartesian".</div>
      *
      * This method is used for {@link org.opengis.referencing.operation.CoordinateOperation} WKT formatting.
-     * Contrarily to {@link #method}, this {@code method3D} is never used for {@link MathTransform} WKT.
+     * Contrary to {@link #method}, this {@code method3D} is never used for {@link MathTransform} WKT.
      * Instead, the latter case is represented by a concatenation of {@link #method} with a pass-through.
      */
     final transient OperationMethod method3D;

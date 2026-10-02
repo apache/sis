@@ -44,6 +44,7 @@ import org.opengis.parameter.InvalidParameterCardinalityException;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.UnsupportedEncodingException;
 import org.apache.sis.storage.metadata.MetadataBuilder;
 import org.apache.sis.storage.netcdf.base.DataType;
 import org.apache.sis.storage.netcdf.base.Decoder;
@@ -172,7 +173,7 @@ public final class ChannelDecoder extends Decoder {
     /**
      * Contains all {@link #variables}, but as a map for faster lookup by name. The same {@link VariableInfo}
      * instance may be repeated in two entries if the original variable name contains upper case letters.
-     * In such case, the value is repeated and associated to a key in all lower case key letters.
+     * In such case, the value is repeated and associated with a key in all lower case key letters.
      *
      * @see #findVariable(String)
      */
@@ -244,7 +245,7 @@ public final class ChannelDecoder extends Decoder {
          */
         int version = input.readInt();
         if ((version & 0xFFFFFF00) != MAGIC_NUMBER) {
-            throw new DataStoreContentException(errors().getString(Errors.Keys.UnexpectedFileFormat_2, FORMAT_NAME, getFilename()));
+            throw new UnsupportedEncodingException(errors().getString(Errors.Keys.UnexpectedFileFormat_2, FORMAT_NAME, getFilename()));
         }
         /*
          * Check the version number.
@@ -253,7 +254,7 @@ public final class ChannelDecoder extends Decoder {
         switch (version) {
             case 1:  is64bits = false; break;
             case 2:  is64bits = true;  break;
-            default: throw new DataStoreContentException(errors().getString(Errors.Keys.UnsupportedFormatVersion_2, FORMAT_NAME, version));
+            default: throw new UnsupportedEncodingException(errors().getString(Errors.Keys.UnsupportedFormatVersion_2, FORMAT_NAME, version));
             // If more cases are added, remember to increment the MAX_VERSION constant.
         }
         numrecs = input.readInt();
@@ -432,7 +433,7 @@ public final class ChannelDecoder extends Decoder {
             return;
         }
         args[0] = tagPath(tagName(tag));
-        throw new DataStoreContentException(errors().getString(key, tagPath(tagName(tag))));
+        throw new DataStoreContentException(errors().getString(key, args));
     }
 
     /**
@@ -991,7 +992,7 @@ public final class ChannelDecoder extends Decoder {
 
     /**
      * Adds to the given set all variables of the given names. This operation is performed when the set of axes is
-     * specified by a {@code "coordinates"} attribute associated to a data variable, or by customized conventions
+     * specified by a {@code "coordinates"} attribute associated with a data variable, or by customized conventions
      * specified by {@link org.apache.sis.storage.netcdf.base.Convention#namesOfAxisVariables(Variable)}.
      *
      * @param  names       names of variables containing axis data, or {@code null} if none.

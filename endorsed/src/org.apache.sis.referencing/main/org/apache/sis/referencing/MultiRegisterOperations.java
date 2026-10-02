@@ -223,7 +223,7 @@ public class MultiRegisterOperations extends AbstractFactory implements Register
 
     /**
      * Returns an instance for the specified version of the geodetic registry.
-     * A non-null authority must have been {@linkplain #withAuthority(String) specified} before to invoke this method.
+     * A non-null authority must have been {@linkplain #withAuthority(String) specified} before invoking this method.
      * If an area of interest was specified, the same area of interest is reused.
      *
      * @param  newValue  the desired version, or {@code null} for the default version.

@@ -30,7 +30,7 @@ import java.util.Objects;
  */
 final class Server {
     /**
-     * Default value when user did not specified explicitly a protocol.
+     * Default value when user did not specify explicitly a protocol.
      * In such case, the default protocol is <abbr>HTTPS</abbr>.
      *
      * <p>Protocol can also be defined with:</p>
@@ -41,7 +41,7 @@ final class Server {
     static final boolean DEFAULT_IS_HTTPS = true;
 
     /**
-     * An arbitrary value when the user did not specified explicitly a port.
+     * An arbitrary value when the user did not specify explicitly a port.
      * In such case, no port is assigned and the default is chosen by Java.
      * Note that "no port" is not the same as "default port" for this class,
      * since the default ports for <abbr>HTTP</abbr> and <abbr>HTTPS</abbr> are hard-coded

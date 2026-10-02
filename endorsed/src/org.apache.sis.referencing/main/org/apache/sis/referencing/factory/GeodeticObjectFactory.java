@@ -93,7 +93,7 @@ import org.apache.sis.referencing.legacy.DefaultUserDefinedCS;
  * while information provided in explicit arguments have an impact on coordinate transformation results.
  *
  * <p>The following table lists the keys recognized by the {@code GeodeticObjectFactory} default implementation,
- * together with the type of values associated to those keys.
+ * together with the type of values associated with those keys.
  * A value for the {@code "name"} key is mandatory for all objects, while all other properties are optional.
  * {@code GeodeticObjectFactory} methods ignore all unknown properties.</p>
  *

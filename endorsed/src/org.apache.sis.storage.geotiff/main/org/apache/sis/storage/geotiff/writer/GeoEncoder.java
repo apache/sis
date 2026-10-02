@@ -1062,7 +1062,7 @@ public final class GeoEncoder {
     }
 
     /**
-     * Logs a warning saying that no value is associated to the given key.
+     * Logs a warning saying that no value is associated with the given key.
      *
      * @param  key  the GeoKey for which we found no value.
      */

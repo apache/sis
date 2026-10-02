@@ -67,7 +67,7 @@ import org.apache.sis.util.internal.shared.Strings;
 public interface CoverageModifier {
     /**
      * Returns modifier specified in the options of the given storage connector.
-     * This convenience method fetches the value associated to {@link OptionKey#COVERAGE_MODIFIER}.
+     * This convenience method fetches the value associated with {@link OptionKey#COVERAGE_MODIFIER}.
      * If there is no such value, then this method returns the {@link #DEFAULT} instance.
      *
      * @param  connector  the storage connector from which to get the modifier.

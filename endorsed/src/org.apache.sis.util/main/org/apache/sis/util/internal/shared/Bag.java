@@ -25,7 +25,7 @@ import org.apache.sis.util.ArraysExt;
  * A collection in which elements order does not matter (as in {@link java.util.Set})
  * but in which duplicated elements are allowed (as in {@link java.util.List}).
  * The "bag" word is used in ISO specifications for such kind of collection.
- * This base class is suitable to collection returned by {@link java.util.Map#values()};
+ * This base class is suitable for collection returned by {@link java.util.Map#values()};
  * it is not necessarily a good fit for all other subtypes of {@link AbstractCollection}.
  *
  * <p>This abstract class implements the {@link #equals(Object)} and {@link #hashCode()} methods.

@@ -359,7 +359,7 @@ replace:    if (Character.isWhitespace(c)) {
 
     /**
      * Parses the given text starting at the given position.
-     * Contrarily to {@link #parse(String)}, this method does not accept spaces as a separator between date and time.
+     * Contrary to {@link #parse(String)}, this method does not accept spaces as a separator between date and time.
      *
      * @param  text      the text to parse.
      * @param  position  position where to start the parsing.

@@ -132,7 +132,7 @@ final class Transformer {
 
     /**
      * Returns the area of interest. It is caller's responsibility to verify that
-     * {@link #hasAreaOfInterest()} returned {@code true} before to invoke this method.
+     * {@link #hasAreaOfInterest()} returned {@code true} before invoking this method.
      */
     final GeographicBoundingBox getAreaOfInterest() {
         return new DefaultGeographicBoundingBox(westBoundLongitude, eastBoundLongitude,

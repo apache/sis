@@ -62,7 +62,7 @@ public abstract class NamedElement {
 
     /**
      * Creates a name for a {@code NamedElement} made of other components.
-     * Current implementation returns a separated list of component names.
+     * Current implementation returns a separate list of component names.
      *
      * @param  components  the component of the named object.
      * @param  count       number of valid elements in the {@code components} array.

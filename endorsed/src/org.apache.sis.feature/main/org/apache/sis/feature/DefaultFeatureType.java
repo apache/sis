@@ -635,7 +635,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * Returns {@code true} if the given base type may be the same or a super-type of the given type, using only
      * the name as a criterion. This is a faster check than {@link #isAssignableFrom(FeatureType)}.
      *
-     * <p>Performance note: callers should verify that {@code base != type} before to invoke this method.</p>
+     * <p>Performance note: callers should verify that {@code base != type} before invoking this method.</p>
      */
     static boolean maybeAssignableFrom(final FeatureType base, final FeatureType type) {
         if (type instanceof DefaultFeatureType) {

@@ -174,7 +174,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
 
     /**
      * The declared accuracy on ground, or {@code null} if unspecified. The accuracy applies to the same axes
-     * than {@link #groundPrecision}. But contrarily to {@code groundPrecision}, the accuracy does not change
+     * than {@link #groundPrecision}. But contrary to {@code groundPrecision}, the accuracy does not change
      * the number of fraction digits used by {@link NumberFormat}. Instead, it causes a text such as "± 30 m"
      * to be appended after the coordinates.
      *
@@ -474,7 +474,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     }
 
     /**
-     * Returns the coordinate reference system to use if no CRS is explicitly associated to a given {@code DirectPosition}.
+     * Returns the coordinate reference system to use if no CRS is explicitly associated with a given {@code DirectPosition}.
      * This CRS determines the type of format to use for each coordinate (number, angle or date) and the number of fraction
      * digits to use for achieving a {@linkplain #setGroundPrecision(Quantity) specified precision on ground}.
      *
@@ -485,7 +485,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     }
 
     /**
-     * Sets the coordinate reference system to use if no CRS is explicitly associated to a given {@code DirectPosition}.
+     * Sets the coordinate reference system to use if no CRS is explicitly associated with a given {@code DirectPosition}.
      * This CRS is only a default; positions given in another CRS are <strong>not</strong> automatically transformed to
      * that CRS before formatting.
      *
@@ -977,12 +977,12 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     }
 
     /**
-     * Configures the formats for {@link #groundPrecision} value. Contrarily to {@link #applyPrecision(int)},
+     * Configures the formats for {@link #groundPrecision} value. Contrary to {@link #applyPrecision(int)},
      * this method modifies the default formats provided by {@link #getFormat(Class)}. They are the formats
      * stored in the {@link #sharedFormats} array. Those formats are used as fallback when the {@link #formats}
      * array does not provide more specific format.
      *
-     * <p>It is caller responsibility to ensure that {@link #groundPrecision} is non-null before to invoke this
+     * <p>It is caller responsibility to ensure that {@link #groundPrecision} is non-null before invoking this
      * method.</p>
      *
      * @param  crs  the target CRS in the conversion from ground units to CRS units.
@@ -1339,7 +1339,7 @@ abort:  if (dimensions != 0 && groundAccuracy != null) try {
      * @param  pattern    the pattern as specified in {@link DecimalFormat}, {@link AngleFormat}
      *                    or {@link SimpleDateFormat} javadoc.
      * @return {@code true} if the pattern has been applied, or {@code false} if {@code valueType} does not
-     *         specify a known type or if the format associated to that type does not support patterns.
+     *         specify a known type or if the format associated with that type does not support patterns.
      * @throws IllegalArgumentException if the given pattern is invalid.
      */
     public boolean applyPattern(final Class<?> valueType, final String pattern) {

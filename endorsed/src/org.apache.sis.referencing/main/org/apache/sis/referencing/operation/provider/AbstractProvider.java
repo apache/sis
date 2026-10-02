@@ -229,7 +229,7 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      * An arbitrary ellipsoid name such as "source" or "target" is used. The returned ellipsoid should be used
      * only for the time needed for building the math transform (because the returned ellipsoid lacks metadata).
      *
-     * <p>Callers should try to get the ellipsoid from the {@link Context} before to invoke this method,
+     * <p>Callers should try to get the ellipsoid from the {@link Context} before invoking this method,
      * because the original object contains more accurate information (e.g., whether inverse flattening
      * is the defining parameter instead of semi-major axis length).</p>
      *

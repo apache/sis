@@ -52,7 +52,7 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  *
  * <p>The {@link ImageView} should not be modified by caller. Instead, the {@link #clear(ImageView)}
  * method should be invoked for setting the image to null, because this class also manages properties
- * associated to the {@link ImageView}.</p>
+ * associated with the {@link ImageView}.</p>
  *
  * <p>Current implementation returns statistics on sample values as a side-product.
  * The statistics may be null if they were not computed.

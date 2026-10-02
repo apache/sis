@@ -615,7 +615,7 @@ valid:  if (i >= 0 && i < steps.size()) {
         }
         /*
          * The last row of the simplified matrix should have been moved to the last row of the `moved` matrix.
-         * That row is not associated to a dimension of coordinate tuples, and is usually only [0 0 0 … 0 1].
+         * That row is not associated with a dimension of coordinate tuples, and is usually only [0 0 0 … 0 1].
          * The row is already at the correct location if `simplified` is square, but needs to be moved if the
          * `simplified` matrix is reducing the number of dimensions (i.e. has less rows than `moved` matrix).
          * Implementation note: we don't proceed by modifying `tgtRow` in above loop because of complication

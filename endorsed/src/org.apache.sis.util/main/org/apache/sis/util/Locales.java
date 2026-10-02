@@ -248,7 +248,7 @@ filter: for (final Locale locale : locales) {
      *
      * <h4>Example</h4>
      * This method is useful when language codes are appended to a base property or resource name.
-     * For example, a dictionary may define the {@code "remarks"} property by values associated to the
+     * For example, a dictionary may define the {@code "remarks"} property by values associated with the
      * {@code "remarks_en"} and {@code "remarks_fr"} keys, for English and French locales respectively.
      *
      * @param  code  the language code, which may be followed by country code.

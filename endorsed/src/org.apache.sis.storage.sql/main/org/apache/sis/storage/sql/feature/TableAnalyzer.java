@@ -164,7 +164,7 @@ final class TableAnalyzer extends FeatureAnalyzer {
     final Column[] createAttributes() throws Exception {
         /*
          * Get all columns in advance because `completeIntrospection(…)`
-         * needs to be invoked before to invoke `database.getMapping(column)`.
+         * needs to be invoked before invoking `database.getMapping(column)`.
          */
         final var columns = new LinkedHashMap<String,Column>();
         final String quote = analyzer.metadata.getIdentifierQuoteString();

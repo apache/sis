@@ -60,7 +60,7 @@ public final class StandardDefinitionsTest extends TestCase {
 
     /**
      * Verifies value of the {@link StandardDefinitions#GREENWICH} code.
-     * This method is for ensuring consistency between hard-coded constants.
+     * This method is to ensure consistency between hard-coded constants.
      */
     @Test
     public void verifyGreenwichCode() {

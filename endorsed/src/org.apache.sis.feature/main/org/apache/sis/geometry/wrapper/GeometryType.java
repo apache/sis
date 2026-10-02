@@ -193,7 +193,7 @@ public enum GeometryType {
     /**
      * Declares that this enumeration value identifies a collection containing the components of the given class.
      * Invocation order matter: the last call for a given {@code component} will determine the collection class
-     * associated to that component.
+     * associated with that component.
      */
     private void contains(final GeometryType component) {
         related = component;
@@ -277,7 +277,7 @@ public enum GeometryType {
             NameSpace scope = namespace;
             if (scope == null) {
                 /*
-                 * The `Names.createTypeName(…)` method creates a `TypeName` associated to the
+                 * The `Names.createTypeName(…)` method creates a `TypeName` associated with the
                  * `org.opengis.geometry.Geometry` type, which is not necessarily what we want.
                  * So we keep only the namespace.
                  */

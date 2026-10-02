@@ -110,7 +110,7 @@ public final class CharSequenceSubstitutionTest extends TestCase {
 
     /**
      * Tests the anchor in the country property of an address element.
-     * Contrarily to {@link #testAnchorForString()}, this method can test both marshalling and unmarshalling.
+     * Contrary to {@link #testAnchorForString()}, this method can test both marshalling and unmarshalling.
      *
      * @throws JAXBException if the (un)marshalling failed.
      */

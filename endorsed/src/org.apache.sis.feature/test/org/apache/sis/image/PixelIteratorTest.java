@@ -1055,7 +1055,7 @@ public class PixelIteratorTest extends TestCase {
          */
         int i = getIndexOf(x, y) * numBands;
         /*
-         * Iteration verification happens here. Note that contrarily to 'verifyIteration(boolean)' method,
+         * Iteration verification happens here. Note that contrary to 'verifyIteration(boolean)' method,
          * we use a do … while loop instead of a while loop because the call to 'moveTo(x, y)' should be
          * understood as an implicit 'next()' method call.
          */

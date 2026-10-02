@@ -56,7 +56,7 @@ public final class Quantities {
      * with {@link #create(double, Unit)}.
      *
      * @param  value  the quantity magnitude.
-     * @param  unit   symbol of the unit of measurement associated to the given value.
+     * @param  unit   symbol of the unit of measurement associated with the given value.
      * @return a quantity of the given type for the given value and unit of measurement.
      * @throws MeasurementParseException if the given symbol cannot be parsed.
      */
@@ -69,7 +69,7 @@ public final class Quantities {
      *
      * @param  <Q>    the quantity type (e.g. {@link Length}, {@link Angle}, {@link Time}, <i>etc.</i>).
      * @param  value  the quantity magnitude.
-     * @param  unit   the unit of measurement associated to the given value.
+     * @param  unit   the unit of measurement associated with the given value.
      * @return a quantity of the given type for the given value and unit of measurement.
      * @throws IllegalArgumentException if the given unit class is not a supported implementation.
      *
@@ -141,7 +141,7 @@ public final class Quantities {
      * @param  <Q>      the quantity type (e.g. {@link Length}, {@link Angle}, {@link Time}, <i>etc.</i>), or {@code null}.
      * @param  quantity the quantity to convert to the specific subtype.
      * @return the given quantity as a specific subtype (may be {@code quantity} itself), or {@code null} if the given quantity was null.
-     * @throws IllegalArgumentException if the unit class associated to the given quantity is not a supported implementation.
+     * @throws IllegalArgumentException if the unit class associated with the given quantity is not a supported implementation.
      */
     @SuppressWarnings("unchecked")
     public static <Q extends Quantity<Q>> Q castOrCopy(final Quantity<Q> quantity) {

@@ -400,7 +400,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     }
 
     /**
-     * Returns the type associated to the given attribute name, or {@code null} if none.
+     * Returns the type associated with the given attribute name, or {@code null} if none.
      * This method is functionally equivalent to (omitting the check for null value):
      *
      * {@snippet lang="java" :

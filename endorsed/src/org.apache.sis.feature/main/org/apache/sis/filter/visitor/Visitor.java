@@ -55,7 +55,7 @@ import org.opengis.filter.ComparisonOperatorName;
  */
 public abstract class Visitor<R,A> {
     /**
-     * All filters known to this visitor. May contain an entry associated to the {@code null} key,
+     * All filters known to this visitor. May contain an entry associated with the {@code null} key,
      * which specifies the action to execute when a {@link Filter} instance is null or has a null type.
      *
      * @see #setFilterHandler(CodeList, BiConsumer)
@@ -63,7 +63,7 @@ public abstract class Visitor<R,A> {
     protected final Map<CodeList<?>, BiConsumer<Filter<R>, A>> filters;
 
     /**
-     * All expressions known to this visitor. May contain an entry associated to the {@code null} key,
+     * All expressions known to this visitor. May contain an entry associated with the {@code null} key,
      * which specifies the action to execute when an {@link Expression} instance is null.
      *
      * @see #setExpressionHandler(String, BiConsumer)

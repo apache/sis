@@ -135,7 +135,7 @@ public abstract class Variable extends Node {
     private Map<Long,String> enumeration;
 
     /**
-     * The grid associated to this variable, or {@code null} if none or not yet computed.
+     * The grid associated with this variable, or {@code null} if none or not yet computed.
      * The grid needs to be computed if {@link #gridDetermined} is {@code false}.
      *
      * @see #gridDetermined
@@ -609,7 +609,7 @@ public abstract class Variable extends Node {
                     }
                     /*
                      * The first time that we find a label that may allow us to associate this variable dimension with a
-                     * grid dimension, build a map of all labels associated to dimensions. We reuse the existing `domain`
+                     * grid dimension, build a map of all labels associated with dimensions. We reuse the existing `domain`
                      * map; there is no confusion since the keys are not of the same class.
                      */
                     if (isIncomplete) {
@@ -906,7 +906,7 @@ public abstract class Variable extends Node {
      * variable is not an enumeration. This method returns a direct reference to internal map
      * (no clone, no unmodifiable wrapper); <strong>Do not modify the returned map.</strong>
      *
-     * @return the ordinals and values associated to ordinals, or {@code null} if none.
+     * @return the ordinals and values associated with ordinals, or {@code null} if none.
      *
      * @see #setEnumeration(Map)
      */

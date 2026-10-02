@@ -75,7 +75,7 @@ public final class GridCoverageBuilderTest extends TestCase {
 
     /**
      * Tests {@link GridCoverageBuilder#build()} with various properties defined.
-     * Before to invoke this method, caller must invoke a {@code GridCoverageBuilder.setValues(…)} method
+     * Before invoking this method, caller must invoke a {@code GridCoverageBuilder.setValues(…)} method
      * with an image or raster of size 5×8 pixels. This method starts by an attempt to build the coverage
      * with no other property set, then add properties like sample dimensions and grid extent one by one.
      *

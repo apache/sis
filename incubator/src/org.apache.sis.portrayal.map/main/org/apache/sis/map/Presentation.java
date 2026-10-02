@@ -66,7 +66,7 @@ public abstract class Presentation {
     /**
      * Returns the original map layer the feature comes from.
      *
-     * @return MapLayer can be null if the presentation is not associated to a layer.
+     * @return MapLayer can be null if the presentation is not associated with a layer.
      */
     public MapLayer getLayer() {
         return layer;
@@ -93,7 +93,7 @@ public abstract class Presentation {
      * Returns the original candidate having this presentation.
      * This is often a Coverage or a Feature.
      *
-     * @return can be null if the presentation is not associated to any identifiable object.
+     * @return can be null if the presentation is not associated with any identifiable object.
      */
     public Feature getCandidate() {
         return candidate;

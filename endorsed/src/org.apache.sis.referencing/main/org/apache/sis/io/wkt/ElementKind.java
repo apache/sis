@@ -33,7 +33,7 @@ import org.opengis.referencing.datum.DatumEnsemble;
 
 /**
  * Kind of an element in a <i>Well Known Text</i>.
- * Different kinds of elements can be associated to different {@linkplain Colors colors}.
+ * Different kinds of elements can be associated with different {@linkplain Colors colors}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5

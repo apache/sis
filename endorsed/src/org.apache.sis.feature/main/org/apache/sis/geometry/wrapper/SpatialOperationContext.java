@@ -97,7 +97,7 @@ public final class SpatialOperationContext implements Serializable {
     private final Unit<?> systemUnit;
 
     /**
-     * Index of the geometry associated to the common CRS, or -1 if none.
+     * Index of the geometry associated with the common CRS, or -1 if none.
      * This is used for avoiding unnecessary check of its CRS.
      */
     private final int skipIndex;
@@ -114,7 +114,7 @@ public final class SpatialOperationContext implements Serializable {
      * @param  areaOfInterest  approximate geographic area of geometries, or {@code null} if unspecified.
      * @param  literal         if a geometry operand is a literal, that literal. Otherwise {@code null}.
      * @param  systemUnit      if the CRS needs to be in some units of measurement, the {@link Unit#getSystemUnit()} value.
-     * @param  skipIndex       index of the geometry associated to {@code commonCRS}, or -1 if none.
+     * @param  skipIndex       index of the geometry associated with {@code commonCRS}, or -1 if none.
      * @throws FactoryException if an error occurred while fetching {@code literal} CRS.
      * @throws TransformException if a coordinate conversion was required but failed.
      * @throws IncommensurableException if a coordinate system does not use the expected units.
@@ -231,7 +231,7 @@ public final class SpatialOperationContext implements Serializable {
 select: if (commonCRS == null) {
             /*
              * If there is a restriction on the unit of measurement, check if an existing CRS
-             * met that criterion. We do this check before to invoke `suggestCommonTarget(…)`
+             * met that criterion. We do this check before invoking `suggestCommonTarget(…)`
              * because that method may replace `ProjectedCRS` by `GeographicCRS` in order to
              * cover a larger area, and we usually want the `ProjectedCRS`.
              */

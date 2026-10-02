@@ -271,7 +271,7 @@ public class GeodeticCalculator {
      * relax this restriction, we should revisit the package-private API in order to commit to a safer protected API.</p>
      *
      * @param  crs         the reference system for the {@link DirectPosition} arguments and return values.
-     * @param  ellipsoid   ellipsoid associated to the geodetic component of given CRS.
+     * @param  ellipsoid   ellipsoid associated with the geodetic component of given CRS.
      */
     GeodeticCalculator(final CoordinateReferenceSystem crs, final Ellipsoid ellipsoid) {
         final GeographicCRS geographic = ReferencingUtilities.toNormalizedGeographicCRS(crs, true, true);
@@ -394,7 +394,7 @@ public class GeodeticCalculator {
     /**
      * Sets the starting point as coordinates in arbitrary reference system. This method transforms the given
      * coordinates to geographic coordinates, then delegates to {@link #setStartGeographicPoint(double, double)}.
-     * If the given point is not associated to a Coordinate Reference System (CRS), then this method assumes
+     * If the given point is not associated with a Coordinate Reference System (CRS), then this method assumes
      * the CRS specified at construction time.
      *
      * @param  point  the starting point in any coordinate reference system.
@@ -461,7 +461,7 @@ public class GeodeticCalculator {
     /**
      * Sets the destination as coordinates in arbitrary reference system. This method transforms the given
      * coordinates to geographic coordinates, then delegates to {@link #setEndGeographicPoint(double, double)}.
-     * If the given point is not associated to a Coordinate Reference System (CRS), then this method assumes
+     * If the given point is not associated with a Coordinate Reference System (CRS), then this method assumes
      * the CRS specified at construction time.
      *
      * @param  position  the destination (end point) in any coordinate reference system.

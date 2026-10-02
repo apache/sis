@@ -23,7 +23,7 @@
  *
  * <p>{@link org.apache.sis.coverage.grid.GridCoverage2D}
  * is a two-dimensional slice in a <var>n</var>-dimensional cube of data.
- * Despite its name, {@code GridCoverage2D} instances can be associated to <var>n</var>-dimensional
+ * Despite its name, {@code GridCoverage2D} instances can be associated with <var>n</var>-dimensional
  * {@linkplain org.opengis.geometry.Envelope envelopes} providing that only two dimensions have a
  * {@link org.apache.sis.coverage.grid.GridExtent#getSize(int) grid span} greater than 1.</p>
  *

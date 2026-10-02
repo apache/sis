@@ -555,7 +555,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * <p>Each ({@link Locale}, {@link Charset}) entry is equivalent to an instance of ISO 19115 {@code PT_Locale}
      * class. The language code and the character set are mandatory elements in ISO standard. Consequently, this map
      * should not contain null key or null values, but Apache SIS implementations is tolerant for historical reasons.
-     * The same character set may be associated to many languages.</p>
+     * The same character set may be associated with many languages.</p>
      *
      * @return language(s) and character set(s) used for documenting metadata.
      *

@@ -85,7 +85,7 @@ public abstract class ComputedByteChannel implements ReadableByteChannel {
 
     /**
      * Creates the data input stream to use for getting uncompressed data.
-     * The source {@link ChannelDataInput} must be on the start position before to invoke this method.
+     * The source {@link ChannelDataInput} must be on the start position before invoking this method.
      *
      * <p>This method tries to create a buffer of the size of scanline stride, or a multiple of that size,
      * for performance reasons. A well adjusted buffer size reduces calls to {@link ByteBuffer#compact()},

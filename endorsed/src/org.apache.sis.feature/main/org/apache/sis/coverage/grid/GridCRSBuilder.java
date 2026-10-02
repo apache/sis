@@ -79,7 +79,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
 /**
  * Builder for coordinate reference system which is derived from the coverage <abbr>CRS</abbr>
  * by the inverse of the "grid to <abbr>CRS</abbr>" transform. Those <abbr>CRS</abbr> describe
- * coordinates associated to the grid extent. This class provides two factory methods:
+ * coordinates associated with the grid extent. This class provides two factory methods:
  *
  * <ul>
  *   <li>{@link #forCoverage(GridGeometry, PixelInCell, Identifier)}</li>
@@ -246,7 +246,7 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
      * @param  grid    grid geometry of the coverage.
      * @param  anchor  the cell part to map (center or corner).
      * @param  name    name of the derived or engineering <abbr>CRS</abbr> to create.
-     * @return a derived, engineering or compound <abbr>CRS</abbr> for cell indices associated to the grid extent.
+     * @return a derived, engineering or compound <abbr>CRS</abbr> for cell indices associated with the grid extent.
      * @throws InvalidGeodeticParameterException if characteristics of the grid geometry disallow this operation.
      * @throws FactoryException if another error occurred during the use of a referencing factory.
      */
@@ -289,7 +289,7 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
      * @param  derivative  derivative of the transform from cell indices to envelope coordinates, or {@code null}.
      * @param  isLinear    whether the derivative come from a linear transform.
      * @param  name        name of the engineering datum.
-     * @return an engineering <abbr>CRS</abbr> for cell indices associated to the grid extent.
+     * @return an engineering <abbr>CRS</abbr> for cell indices associated with the grid extent.
      * @throws FactoryException if an error occurred during the use of a referencing factory.
      *
      * @see GridExtent#toEnvelope(MathTransform, Identifier)
@@ -351,7 +351,7 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
      *
      * <p>After return, {@link #separator} contains information about the transform for this component.
      * Caller can get the dimensions that have been used. Caller shall invoke {@code transform.clear()}
-     * before to invoke this method again.</p>
+     * before invoking this method again.</p>
      *
      * @param  name     name of the derived or compound <abbr>CRS</abbr> to create.
      * @param  baseCRS  real world <abbr>CRS</abbr> or component of that <abbr>CRS</abbr>.

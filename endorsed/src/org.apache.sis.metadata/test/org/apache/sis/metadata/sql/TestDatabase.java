@@ -69,7 +69,7 @@ import org.apache.sis.test.TestCase;
  */
 public class TestDatabase implements AutoCloseable {
     /**
-     * The lock to use for ensuring that there is no collision between tests using the PostgreSQL database.
+     * The lock to use to ensure that there is no collision between tests using the PostgreSQL database.
      * Example:
      *
      * {@snippet lang="java" :

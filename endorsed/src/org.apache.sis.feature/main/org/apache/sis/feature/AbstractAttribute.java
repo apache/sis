@@ -369,7 +369,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
 
     /**
      * Returns the characteristics, or an empty map if the characteristics have not yet been built.
-     * Contrarily to {@link #characteristics()}, this method does not create the map. This method
+     * Contrary to {@link #characteristics()}, this method does not create the map. This method
      * is suitable when then caller only wants to read the map and does not plan to write anything.
      */
     final Map<String,Attribute<?>> characteristicsReadOnly() {

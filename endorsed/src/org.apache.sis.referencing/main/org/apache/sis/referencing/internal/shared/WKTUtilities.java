@@ -130,7 +130,7 @@ public final class WKTUtilities {
 
     /**
      * Converts the given object in a {@code FormattableObject} instance. Callers should verify that the
-     * given object is not already an instance of {@code FormattableObject} before to invoke this method.
+     * given object is not already an instance of {@code FormattableObject} before invoking this method.
      * This method returns {@code null} if it cannot convert the object.
      *
      * @param  object    the object to wrap.

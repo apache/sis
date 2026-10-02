@@ -64,7 +64,7 @@ final class Generator extends ScriptProvider {
     /**
      * Provides a connection to the "SpatialMetadata" database.
      * The connection <abbr>URL</abbr> references the following directory in the compilation output directory:
-     * <code>{@value EmbeddedResources#DIRECTORY}/Databases/{@value Initializer#DATABASE}</code>
+     * <code>{@value EmbeddedResources#DIRECTORY}/{@value EmbeddedResources#DATABASES}/{@value Initializer#DATABASE}</code>
      */
     private final JDBCDataSource dataSource;
 
@@ -80,15 +80,15 @@ final class Generator extends ScriptProvider {
         while (!target.getFileName().toString().startsWith("org.apache.sis."));
         target = target.resolve(EmbeddedResources.DIRECTORY);
         if (Files.isDirectory(target)) {
-            target = target.resolve("Databases");
+            target = target.resolve(EmbeddedResources.DATABASES);
             sourceEPSG = null;
         } else {
             // We don't use `Files.createDirectories(…)` for safety against creation of undesirable directories.
             target = Files.createDirectory(target);
-            target = Files.createDirectory(target.resolve("Databases"));
+            target = Files.createDirectory(target.resolve(EmbeddedResources.DATABASES));
             sourceEPSG = directoryOf(ScriptProvider.class);
         }
-        dataSource.setURL("jdbc:hsqldb:file:" + target.resolve(Initializer.DATABASE).toString());
+        dataSource.setURL("jdbc:hsqldb:file:" + target.resolve(Initializer.DATABASE));
     }
 
     /**

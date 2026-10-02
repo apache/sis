@@ -369,14 +369,14 @@ public final class GeoJSONMapper {
 
 
     /**
-     * Extract the coordinate reference system associated to the primary geometry
+     * Extract the coordinate reference system associated with the primary geometry
      * of input data type.
      *
      * @implNote
      * Primary geometry is determined using {@link #getDefaultGeometry(org.opengis.feature.FeatureType) }.
      *
      * @param type The data type to extract reference system from.
-     * @return The CRS associated to the default geometry of this data type, or
+     * @return The CRS associated with the default geometry of this data type, or
      * a null value if we cannot determine what is the primary geometry of the
      * data type. Note that a null value is also returned if a geometry property
      * is found, but no CRS characteristics is associated with it.

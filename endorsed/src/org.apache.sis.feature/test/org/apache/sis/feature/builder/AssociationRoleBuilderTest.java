@@ -39,7 +39,7 @@ public final class AssociationRoleBuilderTest extends TestCase {
     }
 
     /**
-     * Tests the name, designation, definition, description and multiplicity associated to the role.
+     * Tests the name, designation, definition, description and multiplicity associated with the role.
      */
     @Test
     public void testMetadata() {

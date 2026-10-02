@@ -362,7 +362,7 @@ public class RenderingData implements CloneAccess {
     /**
      * Loads a new grid coverage if {@linkplain #data} is null or if the pyramid level changed.
      * It is caller's responsibility to ensure that {@link #coverageLoader} has a non-null value
-     * and is using the right resource before to invoke this method.
+     * and is using the right resource before invoking this method.
      *
      * <p>Caller should invoke {@link #ensureImageLoaded(GridCoverage, GridExtent, boolean)}
      * after this method (this is not done automatically).</p>
@@ -586,7 +586,7 @@ public class RenderingData implements CloneAccess {
     /**
      * Sets the coordinate reference system of the display. This method does nothing if the CRS was already set.
      * <em>It does not verify if CRS is the same</em>, it is caller responsibility to clear {@link #changeOfCRS}
-     * before to invoke this method for forcing a change of CRS.
+     * before invoking this method for forcing a change of CRS.
      *
      * <p>This method updates the following fields only:</p>
      * <ul>

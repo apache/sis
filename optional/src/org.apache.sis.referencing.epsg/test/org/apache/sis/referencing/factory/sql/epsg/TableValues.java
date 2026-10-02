@@ -31,7 +31,7 @@ import org.apache.sis.util.StringBuilders;
 
 
 /**
- * The values associated to an {@code INSERT INTO "Table"} statement.
+ * The values associated with an {@code INSERT INTO "Table"} statement.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */

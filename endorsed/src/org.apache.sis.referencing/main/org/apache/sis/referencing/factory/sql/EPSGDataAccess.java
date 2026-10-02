@@ -178,7 +178,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     /**
      * EPSG codes of parameters containing the EPSG code of another object.
      * Those parameters are integers (stored as {@code double} in the database)
-     * without unit (i.e., associated to {@link Units#UNITY} in the database).
+     * without unit (i.e., associated with {@link Units#UNITY} in the database).
      */
     private static final Set<Integer> EPSG_CODE_PARAMETERS = Set.of(
         1048,   // The EPSG code for the CRS that should be used to interpolate gridded data.
@@ -623,7 +623,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * @param  cacheKey  object class or {@link TableInfo#toCacheKey(IdentifiedObject)} value.
      * @param  source    the table from which to get the authority codes, or {@code null} for automatic.
      * @param  publish   whether the returned authority codes will be given to a user outside this package.
-     * @return the map of authority codes associated to their names, or {@code null} if unsupported.
+     * @return the map of authority codes associated with their names, or {@code null} if unsupported.
      * @throws FactoryException if access to the underlying database failed.
      *
      * @see #getAuthorityCodes(Class)
@@ -1742,7 +1742,7 @@ search: try (ResultSet result = executeMetadataQuery("Deprecation",
                      *   GEOCENTRIC CRS
                      *
                      *   NOTE: all values must be extracted from the `ResultSet`
-                     *         before to invoke any `owner.createFoo(…)` method.
+                     *         before invoking any `owner.createFoo(…)` method.
                      * ────────────────────────────────────────────────────────────────────── */
                     case "geocentric": {
                         final String csCode    = getString(code, result, 8);

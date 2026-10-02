@@ -301,7 +301,7 @@ public class GpkgStore extends SQLStore implements WritableAggregate {
      * Searches for a resource identified by the given identifier.
      *
      * @param  identifier  identifier of the resource to fetch. Must be non-null.
-     * @return resource associated to the given identifier (never {@code null}).
+     * @return resource associated with the given identifier (never {@code null}).
      * @throws IllegalNameException if no resource is found for the given identifier, or if more than one resource is found.
      * @throws DataStoreException if another kind of error occurred while searching resources.
      */

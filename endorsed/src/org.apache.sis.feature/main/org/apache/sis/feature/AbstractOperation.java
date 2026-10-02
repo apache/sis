@@ -125,7 +125,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
      * Returns a map that can be used for creating the {@link #getResult()} type.
      * This method can be invoked for subclass constructor with the user supplied map in argument.
      * If the given map contains at least one key prefixed by {@value #RESULT_PREFIX}, then the values
-     * associated to those keys will be used.
+     * associated with those keys will be used.
      *
      * @param  identification  the map given by user to sub-class constructor.
      */

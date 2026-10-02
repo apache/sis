@@ -50,7 +50,7 @@ import org.apache.sis.util.resources.Errors;
 /**
  * Builder of transforms between coordinate systems.
  * This class performs only axis swapping, unit conversions and change of coordinate system type.
- * This class does not handle datum shifts. All <abbr>CRS</abbr> associated to the <abbr>CS</abbr>
+ * This class does not handle datum shifts. All <abbr>CRS</abbr> associated with the <abbr>CS</abbr>
  * must use the same datum.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -63,7 +63,7 @@ final class CoordinateSystemTransformBuilder extends MathTransformBuilder {
 
     /**
      * The ellipsoid of the source and/or the target. Usually, only one of the source or target
-     * is associated to an ellipsoid. If an ellipsoid is specified for both source and target,
+     * is associated with an ellipsoid. If an ellipsoid is specified for both source and target,
      * then it must be the same ellipsoid because this builder is not for datum change.
      */
     private Ellipsoid ellipsoid;

@@ -30,6 +30,6 @@
  * More precisely, ISO-19170 define a DGGRS as a sub-type of CRS (https://docs.ogc.org/as/20-040r3/20-040r3.html#tab-DGG_ReferenceSystem).
  * This choice would result a complete review of the CRS API to handle positions which are not numeric.
  *
- * As a matter of fact we have choosen to extend ReferingByIdentifiers (ISO-19112) instead.
+ * As a matter of fact we have chosen to extend ReferingByIdentifiers (ISO-19112) instead.
  */
 package org.apache.sis.referencing.dggs;

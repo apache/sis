@@ -23,7 +23,7 @@ import java.awt.image.RenderedImage;
 
 /**
  * A request for tiles from a rendered image.
- * Contrarily to {@link TiledGridCoverage.AOI}, this request works with arbitrary {@link RenderedImage} and does
+ * Contrary to {@link TiledGridCoverage.AOI}, this request works with arbitrary {@link RenderedImage} and does
  * not manage a tile cache. Tile caching is assumed to be managed by the {@code RenderedImage} implementation.
  * This class is designed for use with {@link Spliterator} with parallelism.
  *

@@ -28,7 +28,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * The name of an attribute type associated to a {@linkplain DefaultMemberName member name}.
+ * The name of an attribute type associated with a {@linkplain DefaultMemberName member name}.
  * {@code DefaultTypeName} can be instantiated by any of the following methods:
  *
  * <ul>
@@ -168,27 +168,27 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
      *     <ul>
      *       <li>If the name is {@code "CharacterString"}, {@code "Integer"}, {@code "Real"} or other recognized names
      *           (see {@linkplain DefaultTypeName class javadoc}),
-     *           then the corresponding Java class is associated to this type name.</li>
+     *           then the corresponding Java class is associated with this type name.</li>
      *       <li>Otherwise {@link UnknownNameException} is thrown.</li>
      *     </ul>
      *   </li>
      *   <li>Else if the scope is {@code "class"}, then:
      *     <ul>
      *       <li>If the name is accepted by {@link Class#forName(String)},
-     *           then that Java class is associated to this type name.</li>
+     *           then that Java class is associated with this type name.</li>
      *       <li>Otherwise {@link UnknownNameException} is thrown.</li>
      *     </ul>
      *   </li>
      *   <li>Else if the scope {@linkplain DefaultNameSpace#isGlobal() is global}, then:
      *     <ul>
      *       <li>If the name is one of the names recognized in {@code "OGC"} scope (see above),
-     *           then the corresponding class is associated to this type name.</li>
-     *       <li>Otherwise no Java class is associated to this type name.
+     *           then the corresponding class is associated with this type name.</li>
+     *       <li>Otherwise no Java class is associated with this type name.
      *           No exception is thrown because names in the global namespace could be anything;
      *           this constructor cannot know if the given name was wrong.</li>
      *     </ul>
      *   </li>
-     *   <li>Otherwise no Java class is associated to this type name,
+     *   <li>Otherwise no Java class is associated with this type name,
      *       because this method cannot check the validity of names in other namespaces.</li>
      * </ul>
      *

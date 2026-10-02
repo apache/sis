@@ -366,7 +366,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
          * this is the right side. For inner join we arbitrarily take the left side in accordance with public
          * class javadoc, which suggests to put the most costly or larger set on the left side.
          *
-         * <p>Only one iteration will be performed on those features, contrarily to the other side where we may
+         * <p>Only one iteration will be performed on those features, contrary to the other side where we may
          * iterate over the same elements many times.</p>
          */
         private final Spliterator<Feature> mainIterator;

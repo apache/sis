@@ -90,7 +90,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
      *
      * <ul>
      *   <li>{@code sql[ALL_CODES]}      is a statement for querying all codes.</li>
-     *   <li>{@code sql[NAME_FOR_CODE]}  is a statement for querying the name associated to a single code.</li>
+     *   <li>{@code sql[NAME_FOR_CODE]}  is a statement for querying the name associated with a single code.</li>
      *   <li>{@code sql[CODES_FOR_NAME]} is a statement for querying the code(s) for an object of a given name.</li>
      * </ul>
      *
@@ -204,7 +204,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
     }
 
     /**
-     * Puts codes associated to the given name in the given collection.
+     * Puts codes associated with the given name in the given collection.
      *
      * @param  name   the name of the object to search.
      * @param  addTo  the collection where to add the codes.
@@ -311,7 +311,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
     }
 
     /**
-     * Returns the object name associated to the given authority code, or {@code null} if none.
+     * Returns the object name associated with the given authority code, or {@code null} if none.
      * If there is no name for the object being queried, then this method returns {@code null}.
      *
      * @param  code  the code for which to get the description. May be a string or an integer.

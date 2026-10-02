@@ -216,11 +216,11 @@ public final class TreeNodeTest extends TestCase {
               "Edition",
               "Cited responsible party (1 of 2)",
                 "Organisation",
-                  "Name",                               // In COMPACT mode, this value is associated to "Organisation" node.
+                  "Name",                               // In COMPACT mode, this value is associated with "Organisation" node.
                 "Role",
               "Cited responsible party (2 of 2)",
                 "Individual",
-                  "Name",                               // In COMPACT mode, this value is associated to "Individual" node.
+                  "Name",                               // In COMPACT mode, this value is associated with "Individual" node.
                   "Contact info",
                     "Address",
                       "Electronic mail address",
@@ -246,11 +246,11 @@ public final class TreeNodeTest extends TestCase {
               "edition",
               "citedResponsibleParty",
                 "party",
-                  "name",                               // In COMPACT mode, this value is associated to "party" node.
+                  "name",                               // In COMPACT mode, this value is associated with "party" node.
                 "role",
               "citedResponsibleParty",
                 "party",
-                  "name",                               // In COMPACT mode, this value is associated to "party" node.
+                  "name",                               // In COMPACT mode, this value is associated with "party" node.
                   "contactInfo",
                     "address",
                       "electronicMailAddress",
@@ -276,11 +276,11 @@ public final class TreeNodeTest extends TestCase {
               null,         // edition
               ZERO,         // citedResponsibleParty
                 ZERO,       // party (organisation)
-                  null,     // name                         — in COMPACT mode, this value is associated to "party" node.
+                  null,     // name                         — in COMPACT mode, this value is associated with "party" node.
                 null,       // role
               ONE,          // citedResponsibleParty
                 ZERO,       // party (individual)
-                  null,     // name                         — in COMPACT mode, this value is associated to "party" node.
+                  null,     // name                         — in COMPACT mode, this value is associated with "party" node.
                   ZERO,     // contactInfo
                     ZERO,   // address
                       ZERO, // electronicMailAddress

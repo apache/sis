@@ -740,7 +740,7 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         assertNull(operation.getMathTransform());
         /*
          * Fetch the "WGS 72 / UTM zone 10N" projected CRS.
-         * The operation associated to this CRS should now define the source and target CRS.
+         * The operation associated with this CRS should now define the source and target CRS.
          */
         final ProjectedCRS crs = factory.createProjectedCRS("32210");
         final CoordinateOperation projection = crs.getConversionFromBase();

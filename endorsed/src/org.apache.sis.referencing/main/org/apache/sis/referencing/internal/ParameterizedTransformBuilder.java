@@ -644,7 +644,7 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
     /**
      * Creates the parameterized transform. The operation method is given by {@link #getMethod()}
      * and the parameter values should have been set on the group returned by {@link #parameters()}
-     * before to invoke this constructor.
+     * before invoking this constructor.
      *
      * @return the parameterized transform.
      * @throws FactoryException if the transform creation failed.
@@ -898,7 +898,7 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
 
     /**
      * Checks whether {@link #swapAndScaleAxes(MathTransform)} should accept to adjust the number of dimensions.
-     * This method is for catching errors caused by wrong coordinate systems associated to a parameterized transform,
+     * This method is for catching errors caused by wrong coordinate systems associated with a parameterized transform,
      * keeping in mind that it is not {@link DefaultMathTransformFactory} job to handle changes between arbitrary CRS
      * (those changes are handled by {@link org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory}).
      *

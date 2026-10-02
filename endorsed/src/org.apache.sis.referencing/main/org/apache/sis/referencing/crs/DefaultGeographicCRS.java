@@ -237,12 +237,12 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     }
 
     /**
-     * Returns the prime meridian which is indirectly (through a datum) associated to this <abbr>CRS</abbr>.
+     * Returns the prime meridian which is indirectly (through a datum) associated with this <abbr>CRS</abbr>.
      * If the {@linkplain #getDatum() datum} is non-null, then this method returns the datum prime meridian.
      * Otherwise, if all members of the {@linkplain #getDatumEnsemble() datum ensemble} use the same prime meridian,
      * then this method returns that meridian.
      *
-     * @return the prime meridian indirectly associated to this <abbr>CRS</abbr>.
+     * @return the prime meridian indirectly associated with this <abbr>CRS</abbr>.
      * @throws NoSuchElementException if there is no datum and the ensemble does not contain at least one member.
      * @throws GeodeticException if the prime meridian is not the same for all members of the datum ensemble.
      *
@@ -253,12 +253,12 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     }
 
     /**
-     * Returns the ellipsoid which is indirectly (through a datum) associated to this <abbr>CRS</abbr>.
+     * Returns the ellipsoid which is indirectly (through a datum) associated with this <abbr>CRS</abbr>.
      * If the {@linkplain #getDatum() datum} is non-null, then this method returns the datum ellipsoid.
      * Otherwise, if all members of the {@linkplain #getDatumEnsemble() datum ensemble} use the same ellipsoid,
      * then this method returns that ellipsoid.
      *
-     * @return the ellipsoid indirectly associated to this <abbr>CRS</abbr>.
+     * @return the ellipsoid indirectly associated with this <abbr>CRS</abbr>.
      * @throws NoSuchElementException if there is no datum and the ensemble does not contain at least one member.
      * @throws GeodeticException if the ellipsoid is not the same for all members of the datum ensemble.
      *
@@ -269,7 +269,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     }
 
     /**
-     * Returns the geodetic reference frame associated to this geographic CRS.
+     * Returns the geodetic reference frame associated with this geographic CRS.
      * This property may be null if this <abbr>CRS</abbr> is related to an object
      * identified only by a {@linkplain #getDatumEnsemble() datum ensemble}.
      *

@@ -273,7 +273,7 @@ public final class CRS {
      *
      * @param  code  the authority code.
      * @return the Coordinate Reference System for the given authority code.
-     * @throws NoSuchAuthorityCodeException if there is no known CRS associated to the given code.
+     * @throws NoSuchAuthorityCodeException if there is no known CRS associated with the given code.
      * @throws FactoryException if the CRS creation failed for another reason.
      *
      * @see #getAuthorityFactory(String)
@@ -714,7 +714,7 @@ public final class CRS {
      *
      * <p>Likewise, for finding an operation for transforming pixel coordinates between two rasters, use the
      * {@linkplain org.apache.sis.coverage.grid.GridGeometry#createTransformTo grid geometry method} instead.
-     * That latter method will take care of rasters spanning the anti-meridian, contrarily to the operations
+     * That latter method will take care of rasters spanning the anti-meridian, contrary to the operations
      * returned by this {@code CRS} class.</p>
      *
      * @param  sourceCRS       the <abbr>CRS</abbr> of source coordinates.
@@ -993,7 +993,7 @@ public final class CRS {
      * <ol>
      *   <li>First, it checks the {@linkplain DefaultObjectDomain#getDomainOfValidity() domain of validity}
      *       associated with the given CRS. Only geographic extents that are instances of
-     *       {@link BoundingPolygon} associated to the given CRS are taken in account for this first step.</li>
+     *       {@link BoundingPolygon} associated with the given CRS are taken in account for this first step.</li>
      *   <li>If the above step did not found found any bounding polygon, then the
      *       {@linkplain #getGeographicBoundingBox(CoordinateReferenceSystem) geographic bounding boxes}
      *       are used as a fallback and transformed to the given CRS.</li>
@@ -1078,7 +1078,7 @@ public final class CRS {
 
     /**
      * Returns the epoch to which the coordinates of stations defining the dynamic CRS are referenced.
-     * If the CRS is associated to a {@linkplain DynamicReferenceFrame dynamic datum}, then the epoch
+     * If the CRS is associated with a {@linkplain DynamicReferenceFrame dynamic datum}, then the epoch
      * of that datum is returned. Otherwise if the CRS is {@linkplain CompoundCRS compound}, then this
      * method requires that all dynamic components have the same epoch.
      *
@@ -1150,7 +1150,7 @@ public final class CRS {
 
     /**
      * Returns the number of dimensions of the given <abbr>CRS</abbr>, or 0 if {@code null}.
-     * This method also returns 0 if the <abbr>CRS</abbr> is associated to a null coordinate system.
+     * This method also returns 0 if the <abbr>CRS</abbr> is associated with a null coordinate system.
      *
      * <p>This is convenience method for cases such as <abbr>CRS</abbr> separated in optional components.
      * For example, a class may have an optional {@link VerticalCRS} component allowed to be {@code null}.

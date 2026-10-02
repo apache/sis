@@ -46,7 +46,7 @@ public abstract class ColorColumnHandler<S> implements Callback<TableColumn.Cell
     }
 
     /**
-     * Sets the color(s) associated to the given row item and returns the color type (solid or gradient).
+     * Sets the color(s) associated with the given row item and returns the color type (solid or gradient).
      * The color type does not necessarily depend on the given {@code ColorRamp}; it may depend on the row
      * item instead, at implementation choice. The type determines which control (color picker, combo box,
      * <i>etc.</i>) will be shown if user wants to edit the color.
@@ -58,7 +58,7 @@ public abstract class ColorColumnHandler<S> implements Callback<TableColumn.Cell
     protected abstract ColorRamp.Type applyColors(S row, ColorRamp colors);
 
     /**
-     * Returns the color associated to given row as an observable value.
+     * Returns the color associated with given row as an observable value.
      *
      * @param  row  the row item for which to get color to show in color cell. Never {@code null}.
      * @return the color(s) to use for the given row, or {@code null} for default.

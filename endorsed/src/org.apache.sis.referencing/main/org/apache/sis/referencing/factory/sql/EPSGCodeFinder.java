@@ -669,7 +669,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
          *
          * @param  object  the object to search in the database.
          * @param  source  information about the table where to search for the object.
-         * @throws SQLException if an error occurred while searching for codes associated to names.
+         * @throws SQLException if an error occurred while searching for codes associated with names.
          * @throws FactoryException if an error occurred while fetching the set of code candidates.
          */
         CodeCandidates(final IdentifiedObject object, final TableInfo source) throws SQLException, FactoryException {
@@ -710,7 +710,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
          *
          * @param  addTo  an initially empty collection where to add the codes.
          * @return whether at least one code has been added to the given collection.
-         * @throws SQLException if an error occurred while searching for codes associated to names.
+         * @throws SQLException if an error occurred while searching for codes associated with names.
          * @throws FactoryException if an error occurred while fetching the set of code candidates.
          */
         private boolean fetchMoreCodes(final Collection<Integer> addTo) throws SQLException, FactoryException {

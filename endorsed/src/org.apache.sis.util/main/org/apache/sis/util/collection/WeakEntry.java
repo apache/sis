@@ -45,7 +45,7 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
     static final int MIN_CAPACITY = 7;
 
     /**
-     * The mask to apply on hash code values for ensuring positive values.
+     * The mask to apply on hash code values to ensure positive values.
      */
     static final int HASH_MASK = Integer.MAX_VALUE;
 

@@ -549,13 +549,13 @@ public class GridCoverageBuilder {
     }
 
     /**
-     * Adds a value associated to an image property. This method can be invoked only once for each {@code key}.
+     * Adds a value associated with an image property. This method can be invoked only once for each {@code key}.
      * Those properties will be given to the {@link RenderedImage} created by the {@link #build()} method.
      *
      * @param  key    key of the property to set.
      * @param  value  value to associate to the given key.
      * @return {@code this} for method invocation chaining.
-     * @throws IllegalArgumentException if a value is already associated to the given key.
+     * @throws IllegalArgumentException if a value is already associated with the given key.
      *
      * @since 1.1
      */

@@ -279,7 +279,7 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
     @Override
     protected Grid findGrid(final GridAdjustment adjustment) throws IOException, DataStoreException {
         /*
-         * In some netCDF files, more than one grid could be associated to a variable. If the names of the
+         * In some netCDF files, more than one grid could be associated with a variable. If the names of the
          * variables to use as coordinate system axes have been specified, use those names for filtering.
          * Otherwise no filtering is applied (which is the common case). If more than one grid fit, take
          * the first grid having the largest number of dimensions.
@@ -338,9 +338,9 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
     }
 
     /**
-     * Returns the names of all attributes associated to this variable.
+     * Returns the names of all attributes associated with this variable.
      *
-     * @return names of all attributes associated to this variable.
+     * @return names of all attributes associated with this variable.
      */
     @Override
     public Collection<String> getAttributeNames() {

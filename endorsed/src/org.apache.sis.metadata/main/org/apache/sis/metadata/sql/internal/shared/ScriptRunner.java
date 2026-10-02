@@ -459,7 +459,7 @@ public class ScriptRunner implements AutoCloseable {
     /**
      * Runs the script from the given reader. Lines are read and grouped up to the
      * terminal {@value #END_OF_STATEMENT} character, then sent to the database.
-     * Note that contrarily to {@link #run(String, InputStream)},
+     * Note that contrary to {@link #run(String, InputStream)},
      * this method does <strong>not</strong> close the given reader.
      *
      * @param  filename  name of the SQL script being executed. This is used only for error reporting.

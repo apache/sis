@@ -26,7 +26,7 @@ import org.apache.sis.system.Shutdown;
 /**
  * Weak reference to a service which depends on a native library.
  * Each native library is identified by the unique identifier of the file which has been loaded.
- * Exactly one service ({@link DataStoreProvider}) is associated to each native library.
+ * Exactly one service ({@link DataStoreProvider}) is associated with each native library.
  *
  * <h2>Restriction</h2>
  * The current implementation does not allow two services to share the same native library.

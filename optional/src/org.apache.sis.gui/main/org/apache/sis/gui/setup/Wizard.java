@@ -591,7 +591,7 @@ final class Wizard extends FileFilter implements ActionListener, PropertyChangeL
     /**
      * Searches recursively for the {@value #SELECT} button in the given container. This is used for
      * locating the "Open" button in {@link JFileChooser}. Caller needs to temporarily change button
-     * text to {@value #SELECT} before to invoke this method. We cannot search directly for "Open"
+     * text to {@value #SELECT} before invoking this method. We cannot search directly for "Open"
      * text because that text may be localized.
      *
      * @param  c  the container where to search for the {@value #SELECT} button.

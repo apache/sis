@@ -86,12 +86,12 @@ final class GridSlice implements Comparable<GridSlice> {
     private final long[] offset;
 
     /**
-     * Adds a new slice to the group of slices associated to compatible CRS and "grid to CRS" transform.
+     * Adds a new slice to the group of slices associated with compatible CRS and "grid to CRS" transform.
      * The CRS comparisons ignore metadata and the transform comparisons ignore integer translations.
      * This method takes a synchronization lock on the given list.
      *
      * @param  order     the order of this slice relative to other slices.
-     * @param  resource  resource associated to this slice.
+     * @param  resource  resource associated with this slice.
      * @param  bySample  the list where to search for a group.
      * @param  strategy  algorithm to apply when more than one grid coverage can be found at the same grid index.
      * @throws NoninvertibleTransformException if the transform is not invertible.

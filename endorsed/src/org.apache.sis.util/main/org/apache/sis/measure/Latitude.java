@@ -108,7 +108,7 @@ public final class Latitude extends Angle {
 
     /**
      * Constructs a newly allocated object containing the latitude value of the given position.
-     * For this method, the latitude value is defined as the angular value associated to the first axis
+     * For this method, the latitude value is defined as the angular value associated with the first axis
      * oriented toward {@linkplain AxisDirection#NORTH North} or {@linkplain AxisDirection#SOUTH South}.
      * Note that this is not necessarily the <i>geodetic latitudes</i> used in
      * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS};
@@ -119,7 +119,7 @@ public final class Latitude extends Angle {
      * then a unit conversion is applied.</p>
      *
      * @param  position  the coordinate from which to extract the latitude value in degrees.
-     * @throws IllegalArgumentException if the given coordinate it not associated to a CRS,
+     * @throws IllegalArgumentException if the given coordinate it not associated with a CRS,
      *         or if no axis oriented toward North or South is found, or if that axis does
      *         not use {@linkplain Units#isAngular angular units}.
      *

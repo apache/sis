@@ -101,7 +101,7 @@ public final class SyncWindowList extends TabularWidget implements ListChangeLis
     }
 
     /**
-     * The table showing values associated to colors.
+     * The table showing values associated with colors.
      */
     private final TableView<Link> table;
 

@@ -36,7 +36,7 @@ import org.apache.sis.util.internal.shared.Strings;
 /**
  * Names and types of fields read by <abbr>OGR</abbr> with binding code for getting values.
  * This is a mapping to the {@code OGRFieldType} enumeration in the C/C++ <abbr>API</abbr>.
- * Each <abbr>OGR</abbr> type is associated to a {@linkplain #getJavaClass() Java class}
+ * Each <abbr>OGR</abbr> type is associated with a {@linkplain #getJavaClass() Java class}
  * and to a Java code for getting the value from a given {@code OGRFeatureH} instance.
  *
  * <h4>Multi-threading</h4>

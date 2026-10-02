@@ -342,7 +342,7 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
 
         /**
          * Encodes the given position into an identifier.
-         * The given position must have a Coordinate Reference System (CRS) associated to it.
+         * The given position must have a Coordinate Reference System (CRS) associated with it.
          *
          * @param  position  the coordinate to encode.
          * @return identifier of the given position.

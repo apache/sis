@@ -227,7 +227,7 @@ public abstract class TransformTestCase<G> extends TestCase {
 
     /**
      * Tests conversion from a UTM projection to geographic CRS where the resulting envelope crosses the anti-meridian.
-     * Contrarily to {@link #testTransformOverAntiMeridian()}, the longitude range is outside the [-180 … +180]° range.
+     * Contrary to {@link #testTransformOverAntiMeridian()}, the longitude range is outside the [-180 … +180]° range.
      * This is because the projection has a large central meridian which is added to the result.
      *
      * @throws FactoryException if an error occurred while creating the operation.

@@ -108,7 +108,7 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
      *
      * <p>The {@code fromValues} argument gives the descriptors declared in each {@code <gml:ParameterValue>}
      * instances of a {@code <gml:ParameterValueGroup>} or {@code <gml:AbstractSingleOperation>} element.
-     * Contrarily to the {@code descriptors} argument, the {@code fromValues} instances should have non-null
+     * Contrary to the {@code descriptors} argument, the {@code fromValues} instances should have non-null
      * {@link ParameterDescriptor#getValueClass()} property inferred by SIS from the parameter value.</p>
      *
      * <p>So the preferred descriptors from more complete to less complete are:</p>

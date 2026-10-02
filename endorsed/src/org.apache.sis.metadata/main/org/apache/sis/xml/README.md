@@ -23,7 +23,7 @@ Both share the same syntax:
   This is used for avoiding to repeat all super-class properties in sub-classes.
   It has no other meaning, i.e. the class hierarchy is not retained at runtime.
 * The "!" character in "_Class_ !_reason_" skips the association of current namespace to that class
-  (but namespace will still be associated to the properties). _Reason_ is a free text.
+  (but namespace will still be associated with the properties). _Reason_ is a free text.
   This is used with deprecated classes that do not exist anymore in the new namespace
   (often because the class has been renamed).
 

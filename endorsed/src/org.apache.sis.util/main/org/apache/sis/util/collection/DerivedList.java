@@ -109,7 +109,7 @@ class DerivedList<S,E> extends AbstractList<E> implements Serializable {
 
     /**
      * An iterator over the elements in the source list, converted on-the-fly to elements of type {@code <E>}.
-     * Contrarily to {@link DerivedIterator}, this iterator does not skip null elements.
+     * Contrary to {@link DerivedIterator}, this iterator does not skip null elements.
      */
     private static final class Iter<S,E> implements Iterator<E> {
         /** The iterator over source elements. */

@@ -213,7 +213,7 @@ class TransformingNamespaces implements NamespaceContext {
         /** The next value to be returned by {@link #next()}, or {@code null} if not yet fetched. */
         private String next;
 
-        /** Creates a new iterator for the prefixes associated to the given namespace URI. */
+        /** Creates a new iterator for the prefixes associated with the given namespace URI. */
         Prefixes(final NamespaceContext context, final Iterator<Map.Entry<String,String>> exports,
                  final String namespaceURI)
         {

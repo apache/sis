@@ -68,7 +68,7 @@ final class ContextualParameter<T> extends DefaultParameterValue<T> {
      * (except value type).
      *
      * @param  value  the parameter value, or {@code null} to restore the default.
-     * @param  unit   the unit associated to the new parameter value, or {@code null}.
+     * @param  unit   the unit associated with the new parameter value, or {@code null}.
      */
     @Override
     protected void setValue(final Object value, final Unit<?> unit) {

@@ -257,7 +257,7 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
      * if present, or fallback on {@code source.getPointOfInterest(true)} otherwise.
      * Subclasses can override this method for using a different point of interest.</p>
      *
-     * <p>The CRS associated to the position shall be {@link PlanarCanvas#getObjectiveCRS()}.
+     * <p>The CRS associated with the position shall be {@link PlanarCanvas#getObjectiveCRS()}.
      * For performance reason, this is not verified by this {@code CanvasFollower} class.</p>
      *
      * @return objective coordinates in source canvas where displacements, zooms and rotations

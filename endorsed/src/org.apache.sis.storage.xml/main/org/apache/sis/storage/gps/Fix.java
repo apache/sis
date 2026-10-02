@@ -81,7 +81,7 @@ public enum Fix {
     }
 
     /**
-     * The GPX names associated to the enumeration values.
+     * The GPX names associated with the enumeration values.
      */
     private static final Map<String,Fix> VALUES = new HashMap<>(6);
     static {

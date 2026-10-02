@@ -270,7 +270,7 @@ public final class XML {
      * For example, the resolution of <abbr>URI</abbr>s relatively to the base document can be controlled
      * with an {@link javax.xml.transform.URIResolver} specified to the {@link ReferenceResolver} constructor.
      * Other methods can also be overridden for using some domain-specific knowledge,
-     * for example by searching in a database the value associated to specific {@code xlink:href} values.
+     * for example by searching in a database the value associated with specific {@code xlink:href} values.
      * Users can define their search algorithm by subclassing {@link ReferenceResolver} and configuring
      * a unmarshaller as below:
      *

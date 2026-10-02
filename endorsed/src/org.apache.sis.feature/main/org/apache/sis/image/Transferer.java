@@ -171,7 +171,7 @@ abstract class Transferer {
     /**
      * Reads sample values from the {@linkplain #source} tile, applies the given operation for current
      * {@linkplain #region} and {@linkplain #band}, then writes results in the {@linkplain #target} tile.
-     * The {@linkplain #region} and the {@linkplain #band} number must be set before to invoke this method.
+     * The {@linkplain #region} and the {@linkplain #band} number must be set before invoking this method.
      *
      * @param  converter  the operation to apply on sample values in current region and current band number.
      * @throws TransformException if an error occurred during calculation.

@@ -837,7 +837,7 @@ public enum SQLMM implements FunctionIdentifier {
 
     /**
      * Returns a description of this SQLMM function.
-     * The Java types associated to arguments and return value depend on which geometry library is used.
+     * The Java types associated with arguments and return value depend on which geometry library is used.
      *
      * @param  library  the geometry library implementation to use.
      * @return description of this SQLMM function.

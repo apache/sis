@@ -610,7 +610,7 @@ public class ResourceExplorer extends Widget {
     }
 
     /**
-     * Adds a warning to the logger associated to the resource.
+     * Adds a warning to the logger associated with the resource.
      *
      * @param caller    the method to declare as the source of the warning.
      * @param resource  the resource for which an exception occurred.

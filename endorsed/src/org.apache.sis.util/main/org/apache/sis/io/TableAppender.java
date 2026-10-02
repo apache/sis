@@ -267,7 +267,7 @@ public class TableAppender extends Appender implements Flushable {
          * Following methods use Character.isWhitespace(…) instead of Character.isSpaceChar(…).
          * This has the effect of removing some ISO control characters (line feeds, tabulation,
          * etc.) from the border. If this policy is changed, search for other occurrences of
-         * `isWhitespace` in this class for ensuring consistency. Note however that the same
+         * `isWhitespace` in this class to ensure consistency. Note however that the same
          * policy is not necessarily applied everywhere.
          */
         final int length = separator.length();

@@ -276,7 +276,7 @@ public class Optimization {
     }
 
     /**
-     * Returns the value associated to the base type among all keys of the given map.
+     * Returns the value associated with the base type among all keys of the given map.
      * If no base type is found, then an arbitrary entry is used.
      * This method always removes exactly one entry from the map.
      */

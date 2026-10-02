@@ -68,7 +68,7 @@ abstract class Group<E> {
     final GridCoverageProcessor processor;
 
     /**
-     * Creates a new group of objects associated to some attribute defined by subclasses.
+     * Creates a new group of objects associated with some attribute defined by subclasses.
      */
     Group(final GridCoverageProcessor processor) {
         this.processor  = processor;

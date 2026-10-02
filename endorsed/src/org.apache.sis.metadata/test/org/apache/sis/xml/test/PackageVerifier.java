@@ -198,7 +198,7 @@ final class PackageVerifier {
                     final String ns = xmlns.namespaceURI();
                     final String cr = schemas.allXmlNS.put(pr, ns);
                     if (cr != null && !cr.equals(ns)) {
-                        throw new SchemaException(String.format("Prefix \"%s\" associated to two different namespaces:%n%s%n%s", pr, cr, ns));
+                        throw new SchemaException(String.format("Prefix \"%s\" associated with two different namespaces:%n%s%n%s", pr, cr, ns));
                     }
                     if (namespaceIsUsed.put(ns, Boolean.FALSE) != null) {
                         throw new SchemaException(String.format("Duplicated namespace in package %s:%n%s", name, ns));
@@ -318,7 +318,7 @@ final class PackageVerifier {
                     .append("Redundant namespace declaration: ").append(classNS).toString());
         }
         /*
-         * Verify that the namespace has a prefix associated to it in the package-info file.
+         * Verify that the namespace has a prefix associated with it in the package-info file.
          */
         if (namespaceIsUsed.put(classNS, Boolean.TRUE) == null) {
             throw new SchemaException(errorInClassMember(null)
@@ -336,7 +336,7 @@ final class PackageVerifier {
                         .append("Unexpected @Deprecated annotation.").toString());
             }
             /*
-             * Verify that class name exists, then verify its namespace (associated to the null key by convention).
+             * Verify that class name exists, then verify its namespace (associated with the null key by convention).
              */
             properties = schemas.getTypeDefinition(isoName);
             if (properties == null) {
@@ -346,7 +346,7 @@ final class PackageVerifier {
             final String expectedNS = properties.get(null).namespace;
             if (!classNS.equals(expectedNS)) {
                 throw new SchemaException(errorInClassMember(null)
-                        .append(isoName).append(" shall be associated to namespace ").append(expectedNS).toString());
+                        .append(isoName).append(" shall be associated with namespace ").append(expectedNS).toString());
             }
             if (codeList != null) return;                   // If the class was a code list, we are done.
         }

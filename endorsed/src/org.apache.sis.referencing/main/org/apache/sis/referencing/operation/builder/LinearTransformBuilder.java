@@ -336,7 +336,7 @@ search: for (int j=numPoints; --j >= 0;) {
     /**
      * Returns the offset where to store a target position for the given source position in the flattened array.
      * This method should be invoked only when this {@code LinearTransformBuilder} has been created for a grid
-     * of known size. Caller must have verified the array length before to invoke this method.
+     * of known size. Caller must have verified the array length before invoking this method.
      *
      * @throws IllegalArgumentException if a coordinate value is illegal.
      */
@@ -357,7 +357,7 @@ search: for (int j=numPoints; --j >= 0;) {
     /**
      * Returns the index where to store a target position for the given source position in the flattened array.
      * This method should be invoked only when this {@code LinearTransformBuilder} has been created for a grid
-     * of known size. Callers must have verified the position dimension before to invoke this method.
+     * of known size. Callers must have verified the position dimension before invoking this method.
      *
      * @throws IllegalArgumentException if a coordinate value is illegal.
      *
@@ -436,7 +436,7 @@ search: for (int j=numPoints; --j >= 0;) {
 
     /**
      * Returns the number of dimensions in the source grid, or -1 if this builder is not backed by a grid.
-     * Contrarily to the other {@code get*Dimensions()} methods, this method does not throw exception.
+     * Contrary to the other {@code get*Dimensions()} methods, this method does not throw exception.
      *
      * @see #getSourceDimensions()
      * @see #gridSize(int)
@@ -735,7 +735,7 @@ search: for (int j=numPoints; --j >= 0;) {
         }
 
         /**
-         * Creates a point from the given data at the given offset. Before to invoke this method,
+         * Creates a point from the given data at the given offset. Before invoking this method,
          * caller should verify index validity and that the coordinate does not contain NaN values.
          */
         final DirectPosition position(final double[][] data, final int offset) {
@@ -1035,7 +1035,7 @@ search:         for (int j=domain(); --j >= 0;) {
      * @param  source  the source coordinates. If this builder has been created with the {@link #LinearTransformBuilder(int...)} constructor,
      *                 then for every index <var>i</var> the {@code source[i]} value shall be in the [0 … {@code gridSize[i]}-1] range inclusive.
      *                 If this builder has been created with the {@link #LinearTransformBuilder()} constructor, then no constraint apply.
-     * @return the target coordinates associated to the given source, or {@code null} if none.
+     * @return the target coordinates associated with the given source, or {@code null} if none.
      * @throws IllegalArgumentException if this builder has been {@linkplain #LinearTransformBuilder(int...) created for a grid}
      *         but some source coordinates are out of index range.
      * @throws MismatchedDimensionException if the source position does not have the expected number of dimensions.

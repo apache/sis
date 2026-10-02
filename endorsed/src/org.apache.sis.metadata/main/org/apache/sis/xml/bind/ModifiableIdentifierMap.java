@@ -58,7 +58,7 @@ public final class ModifiableIdentifierMap extends IdentifierMapAdapter {
      * Sets the {@code xlink:href} value, which may be null. If an explicit {@code xlink:href} identifier exists,
      * then it will removed before to set the new {@code href} in the {@link XLink} object. The intent is to give
      * precedence to the {@link XLink#getHRef()} property in every cases where the {@code href} is parsable as a
-     * {@link URI}, and use the value associated to the {@code HREF} key only as a fallback when the string cannot
+     * {@link URI}, and use the value associated with the {@code HREF} key only as a fallback when the string cannot
      * be parsed.
      *
      * @param  href  the new value, or {@code null} for removing the value.
@@ -135,7 +135,7 @@ public final class ModifiableIdentifierMap extends IdentifierMapAdapter {
      *
      * <p>If the given {@code authority} is {@code HREF} and if the given string is parsable as a {@link URI},
      * then this method will actually store the value as the {@link XLink#getHRef()} property of the {@code XLink}
-     * associated to the {@code XLINK} key. Only if the given string cannot be parsed, then the value is stored
+     * associated with the {@code XLINK} key. Only if the given string cannot be parsed, then the value is stored
      * <i>as-is</i> under the {@code HREF} key.</p>
      *
      * @param  authority  the authority for which to set the code.
@@ -213,7 +213,7 @@ public final class ModifiableIdentifierMap extends IdentifierMapAdapter {
      * Sets the identifier associated with the given authority, and returns the previous value.
      *
      * <p>If the given {@code authority} is {@code HREF}, then this method will actually store the value
-     * as the {@link XLink#getHRef()} property of the {@code XLink} associated to the {@code XLINK} key.
+     * as the {@link XLink#getHRef()} property of the {@code XLink} associated with the {@code XLINK} key.
      * The previous {@code HREF} value, if any, is discarded.</p>
      *
      * @param  <T>        the identifier type.

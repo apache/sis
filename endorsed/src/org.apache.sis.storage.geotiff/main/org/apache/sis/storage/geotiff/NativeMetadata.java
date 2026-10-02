@@ -65,13 +65,13 @@ final class NativeMetadata extends GeoKeysLoader {
             Vocabulary.formatInternational(Vocabulary.Keys.Code));
 
     /**
-     * Column for the name associated to the tag.
+     * Column for the name associated with the tag.
      * Value may be null if the name is unknown.
      */
     private static final TableColumn<CharSequence> NAME = TableColumn.NAME;
 
     /**
-     * Column for the value associated to the tag.
+     * Column for the value associated with the tag.
      */
     private static final TableColumn<Object> VALUE = TableColumn.VALUE;
 

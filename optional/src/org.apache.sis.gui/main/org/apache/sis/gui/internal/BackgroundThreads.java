@@ -39,7 +39,7 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 /**
  * Provides the thread pool for JavaFX application. This thread pool is different than the pool used by
  * the {@link org.apache.sis.system.CommonExecutor} shared by the rest of Apache SIS library.
- * Contrarily to {@code CommonExecutor}, this {@code BackgroundThreads} class always allocates threads
+ * Contrary to {@code CommonExecutor}, this {@code BackgroundThreads} class always allocates threads
  * to new tasks immediately (no queuing of tasks), no matter if all processors are already busy or not.
  * The intent is to have quicker responsiveness to user actions, even at the cost of lower throughput.
  * Another difference is that the threads used by this class are not daemon threads in order to not stop

@@ -466,7 +466,7 @@ abstract class DefaultEvaluator implements GridCoverage.Evaluator {
 
     /**
      * Converts the specified geospatial position to grid coordinates.
-     * If the given position is associated to a non-null coordinate reference system (CRS) different than the
+     * If the given position is associated with a non-null coordinate reference system (CRS) different than the
      * {@linkplain #getCoverage() coverage} CRS, then this method automatically transforms that position to the
      * {@linkplain GridCoverage#getCoordinateReferenceSystem() coverage CRS} before to compute grid coordinates.
      *

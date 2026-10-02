@@ -54,7 +54,7 @@ import org.apache.sis.xml.internal.shared.InputFactory;
 /**
  * Supports for metadata encoded in XML inside a GeoTIFF tags.
  * This is a temporary object used only at parsing time.
- * Two TIFF tags are associated to XML data:
+ * Two TIFF tags are associated with XML data:
  *
  * <ul>
  *   <li>{@code GDAL_METADATA} (A480) stored as ASCII characters.</li>
@@ -232,13 +232,13 @@ public final class XMLMetadata implements Filter {
         private static final long serialVersionUID = -3656784393688796818L;
 
         /**
-         * Column for the name associated to the element.
+         * Column for the name associated with the element.
          * Should be same as {@code NativeMetadata.NAME}.
          */
         private static final TableColumn<CharSequence> NAME = TableColumn.NAME;
 
         /**
-         * Column for the value associated to the element.
+         * Column for the value associated with the element.
          * Should be same as {@code NativeMetadata.VALUE}.
          */
         private static final TableColumn<Object> VALUE = TableColumn.VALUE;

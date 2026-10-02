@@ -113,7 +113,7 @@ public class ImagePropertyExplorer extends Widget {
     /**
      * Whether {@link #visibleImageBounds} applies to the coordinate system of an image.
      * This is initially {@code true} for an image specified by {@link CoverageCanvas} and become {@code false}
-     * after a {@link ResampledImage} is found. Images not present in this map are implicitly associated to the
+     * after a {@link ResampledImage} is found. Images not present in this map are implicitly associated with the
      * {@code false} value.
      *
      * <p>This map is also opportunistically used for avoiding never-ending recursion
@@ -175,7 +175,7 @@ public class ImagePropertyExplorer extends Widget {
 
     /**
      * A row in the table showing image layout. The inherited {@link String} property is the label to show in
-     * the first column. That label never change, contrarily to the {@link #xp} and {@link #yp} property values
+     * the first column. That label never change, contrary to the {@link #xp} and {@link #yp} property values
      * which are updated every time that we need to update the content for a new image.
      */
     private static final class LayoutRow extends ImmutableObjectProperty<String> {
@@ -421,7 +421,7 @@ public class ImagePropertyExplorer extends Widget {
             });
         }
         /*
-         * Table of image properties. Contrarily to the layout table, the set of rows in
+         * Table of image properties. Contrary to the layout table, the set of rows in
          * this property table may change at any time. At most one row can be selected.
          * We do not register a listener on the row selection; instead we wait for the
          * details pane to become visible.
@@ -564,7 +564,7 @@ public class ImagePropertyExplorer extends Widget {
         imageUseBoundsCS.clear();
         setTreeNode(sourcesRoot, newValue, imageUseBoundsCS, visibleImageBounds != null);
         /*
-         * Remove entries associated to value `false` since our default value is `false`.
+         * Remove entries associated with value `false` since our default value is `false`.
          * The intent is to avoid unnecessary `RenderedImage` references for reducing the
          * risk of memory retention.
          */

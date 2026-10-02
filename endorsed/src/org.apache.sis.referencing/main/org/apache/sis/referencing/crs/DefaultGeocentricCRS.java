@@ -234,7 +234,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
     }
 
     /**
-     * Returns the geodetic reference frame associated to this geocentric CRS.
+     * Returns the geodetic reference frame associated with this geocentric CRS.
      * This property may be null if this <abbr>CRS</abbr> is related to an object
      * identified only by a {@linkplain #getDatumEnsemble() datum ensemble}.
      *

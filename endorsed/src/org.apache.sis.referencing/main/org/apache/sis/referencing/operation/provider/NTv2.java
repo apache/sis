@@ -287,7 +287,7 @@ public final class NTv2 extends AbstractProvider {
         private final boolean isV2;
 
         /**
-         * {@code true} if the {@code header} map contains at least one key associated to a null value.
+         * {@code true} if the {@code header} map contains at least one key associated with a null value.
          */
         private boolean hasUnrecognized;
 
@@ -610,7 +610,7 @@ public final class NTv2 extends AbstractProvider {
          *
          * @param  key        key of the value to search.
          * @param  mandatory  whether to throw an exception if the value is not found.
-         * @return value associated to the given key, or {@code null} if none and not mandatory.
+         * @return value associated with the given key, or {@code null} if none and not mandatory.
          */
         private Object get(final String key, final boolean mandatory) throws FactoryException {
             final Object value = header.get(key);
@@ -622,13 +622,13 @@ public final class NTv2 extends AbstractProvider {
 
         /**
          * Returns the value for the given key, or throws an exception if the value is not found.
-         * Before to fail if the key is not found, this method searches for a value associated to
+         * Before to fail if the key is not found, this method searches for a value associated with
          * an alternative name. That alternative should be the name used in legacy NTv1.
          *
          * @param  key  key of the value to search.
          * @param  alt  alternative key name, or name used in NTv1, or {@code null} if none.
          * @param  kv1  name used in NTv1, or {@code null} if none.
-         * @return value associated to the given key (never {@code null}).
+         * @return value associated with the given key (never {@code null}).
          */
         private Object get(final String key, final String alt, final String kv1) throws FactoryException {
             Object value = header.get(key);

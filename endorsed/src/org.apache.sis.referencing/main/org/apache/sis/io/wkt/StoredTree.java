@@ -41,7 +41,7 @@ import org.apache.sis.referencing.internal.shared.WKTKeywords;
  * </ul>
  *
  * This class does not store {@link Element} instances directly because {@code Element}s are not easily shareable.
- * Contrarily to {@code Element} design, {@code StoredTree} needs unmodifiable {@link Element#children} list and
+ * Contrary to {@code Element} design, {@code StoredTree} needs unmodifiable {@link Element#children} list and
  * needs to store {@link Element#offset} values in separated arrays. Those changes make possible to have many
  * {@code StoredTree} instances sharing the same {@code Node} instances in the common case where some WKT elements
  * are repeated in many trees.
@@ -368,7 +368,7 @@ final class StoredTree implements Serializable {
 
     /**
      * A helper class for compressing a tree of {@link Element}s as a tree of {@link Node}s.
-     * Contrarily to {@code Element} instances, {@code Node}s instances can be shared between many trees.
+     * Contrary to {@code Element} instances, {@code Node}s instances can be shared between many trees.
      * Each instances shall be used for constructing only one {@link Node}. After node construction, this
      * instance lives longer in the {@link #sharedValues} map for sharing {@link #offsets} arrays.
      *
@@ -543,7 +543,7 @@ final class StoredTree implements Serializable {
      * </ol>
      *
      * If any of above values is missing, the corresponding array element is left unchanged.
-     * Callers should set all array elements to {@code null} before to invoke this method.
+     * Callers should set all array elements to {@code null} before invoking this method.
      *
      * @param  fullId  where to store code space, code, version, authority.
      */

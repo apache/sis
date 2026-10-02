@@ -164,7 +164,7 @@ abstract class Transformer {
     final List<Attribute> renamedAttributes;
 
     /**
-     * The namespaces associated to prefixes in the source. When unmarshalling, this is for the namespaces in
+     * The namespaces associated with prefixes in the source. When unmarshalling, this is for the namespaces in
      * the source XML document (e.g. using legacy ISO 19139:2007 standard). When marshalling, this is for the
      * namespaces in the JAXB annotations (e.g. using newer ISO 19115-3 standard).  This is used for handling
      * {@code xsi:type} attribute values.
@@ -184,7 +184,7 @@ abstract class Transformer {
 
     /**
      * Removes the trailing slash in given URI, if any. It is caller's responsibility
-     * to ensure that the URI is not null and not empty before to invoke this method.
+     * to ensure that the URI is not null and not empty before invoking this method.
      */
     static String removeTrailingSlash(String uri) {
         final int end = uri.length() - 1;
@@ -329,7 +329,7 @@ abstract class Transformer {
                             }
                             /*
                              * Add a property into the above-defined class.
-                             * All properties are associated to above-defined namespace.
+                             * All properties are associated with above-defined namespace.
                              * A property may have an alias (e.g. "center/centre").
                              */
                             case 2: {                                                   // New attribute in above type.
@@ -577,7 +577,7 @@ abstract class Transformer {
     /**
      * Returns the prefix to use for a name in a new namespace.
      *
-     * @param  previous   the prefix associated to old namespace.
+     * @param  previous   the prefix associated with old namespace.
      * @param  namespace  the new namespace URI.
      * @return prefix to use for the new namespace.
      * @throws XMLStreamException if an error occurred while fetching the prefix.

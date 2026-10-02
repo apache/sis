@@ -276,7 +276,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     private final Map<Unit<?>,String> unitToLabel;
 
     /**
-     * Units associated to a given label (in addition to the system-wide {@link UnitRegistry}).
+     * Units associated with a given label (in addition to the system-wide {@link UnitRegistry}).
      * This map is the converse of {@link #unitToLabel}. The {@link Unit} instances may differ from the ones
      * specified by user since {@link AbstractUnit#symbol} may have been set to the label specified by the user.
      * The labels may contain some characters normally not allowed in unit symbols, like white spaces.
@@ -392,7 +392,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * Attaches a label to the specified unit. A <i>label</i> can be a substitute to either the
      * {@linkplain AbstractUnit#getSymbol() unit symbol} or the {@link AbstractUnit#getName() unit name},
      * depending on the {@linkplain #getStyle() format style}.
-     * If the specified label is already associated to another unit, then the previous association is discarded.
+     * If the specified label is already associated with another unit, then the previous association is discarded.
      *
      * <h4>Restriction on character set</h4>
      * Current implementation accepts only {@linkplain Character#isLetter(int) letters},
@@ -1109,7 +1109,7 @@ appPow: if (unit == null) {
      * The product operator can be either {@code '.'} (ASCII) or {@code '⋅'} (Unicode) character.
      * Exponent after symbol can be decimal digits as in “m2” or a superscript as in “m²”.</p>
      *
-     * <p>Note that contrarily to {@link #parseObject(String, ParsePosition)}, this method never return {@code null}.
+     * <p>Note that contrary to {@link #parseObject(String, ParsePosition)}, this method never return {@code null}.
      * If an error occurs at parsing time, an unchecked {@link MeasurementParseException} is thrown.</p>
      *
      * @param  symbols  the unit symbols to parse.

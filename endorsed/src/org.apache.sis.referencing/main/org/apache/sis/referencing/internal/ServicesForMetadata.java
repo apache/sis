@@ -402,7 +402,7 @@ public final class ServicesForMetadata extends ReferencingServices {
     }
 
     /**
-     * Creates a two-dimensional geographic position associated to the default geographic CRS.
+     * Creates a two-dimensional geographic position associated with the default geographic CRS.
      * Axis order is (longitude, latitude).
      *
      * @param  λ  the longitude value.

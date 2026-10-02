@@ -67,7 +67,7 @@ public final class LocaleAndCharset implements Node {
     private final Node node;
 
     /**
-     * Creates a new node for the given entry. The user object associated to
+     * Creates a new node for the given entry. The user object associated with
      * the given node must be an instance of {@code Map.Entry<Locale,Charset>}.
      *
      * @param  node  the node to wrap.
@@ -119,7 +119,7 @@ public final class LocaleAndCharset implements Node {
     }
 
     /**
-     * Returns the user object associated to this node. For this node, that object is the key (a {@link Locale}) of the
+     * Returns the user object associated with this node. For this node, that object is the key (a {@link Locale}) of the
      * map entry. For the {@link Child}, the user object will be the value (a {@link Charset}) of the same map entry.
      */
     @Override
@@ -128,7 +128,7 @@ public final class LocaleAndCharset implements Node {
     }
 
     /**
-     * Returns the value associated to the given column of this node. This method delegates to the wrapped node,
+     * Returns the value associated with the given column of this node. This method delegates to the wrapped node,
      * then extract the key component of the map entry if the requested column is the value.
      */
     @Override
@@ -163,13 +163,13 @@ public final class LocaleAndCharset implements Node {
 
     /**
      * Returns the list of children, which is implemented by this class itself.
-     * The children are {@link Charset} values associated to the {@link Locale}.
+     * The children are {@link Charset} values associated with the {@link Locale}.
      * The list contains O or 1 element.
      */
     @Override
     public Collection<Node> getChildren() {
         return new AbstractList<Node>() {
-            /** Returns the number {@link Charset} associated to the {@link Locale}, which is 0 or 1. */
+            /** Returns the number {@link Charset} associated with the {@link Locale}, which is 0 or 1. */
             @Override public int size() {
                 return keyOrValue(node.getUserObject(), false) != null ? 1 : 0;
             }
@@ -361,7 +361,7 @@ public final class LocaleAndCharset implements Node {
             }
         }
         /*
-         * If an encoding was defined before invocation of this method and is not associated to any
+         * If an encoding was defined before invocation of this method and is not associated with any
          * locale specified in `newValues`, preserve that encoding in an entry with null locale.
          * Note: `locales` is non-null if `encoding` is non-null.
          */

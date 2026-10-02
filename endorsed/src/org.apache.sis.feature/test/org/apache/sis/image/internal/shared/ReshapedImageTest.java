@@ -57,19 +57,19 @@ public final class ReshapedImageTest extends TestCase {
 
     /**
      * Expected number of tiles. Shall be initialized by test method
-     * before to invoke {@link #verifyLayout(ReshapedImage)}.
+     * before invoking {@link #verifyLayout(ReshapedImage)}.
      */
     private int numXTiles, numYTiles;
 
     /**
      * Expected values of image size. Shall be initialized by test
-     * method before to invoke {@link #verifyLayout(ReshapedImage)}.
+     * method before invoking {@link #verifyLayout(ReshapedImage)}.
      */
     private int width, height;
 
     /**
      * Expected values of tile grid offset. Shall be initialized by test
-     * method before to invoke {@link #verifyLayout(ReshapedImage)}.
+     * method before invoking {@link #verifyLayout(ReshapedImage)}.
      */
     private int tileXOffset, tileYOffset;
 

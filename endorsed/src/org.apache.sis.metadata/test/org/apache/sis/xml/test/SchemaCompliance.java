@@ -78,7 +78,7 @@ public final class SchemaCompliance extends SchemaInformation {
     private final Path classRootDirectory;
 
     /**
-     * The namespaces associated to prefixes, as declared by JAXB {@link XmlNs} annotations.
+     * The namespaces associated with prefixes, as declared by JAXB {@link XmlNs} annotations.
      * Used for verifying that no prefix is defined twice for different namespaces.
      *
      * <p>This field is not really related to schema loading process. But we keep it in this class for

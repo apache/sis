@@ -305,7 +305,7 @@ public final class MultiAuthoritiesFactoryTest extends TestCaseWithLogs {
                                         + "2=http://www.opengis.net/def/crs/MOCK/0/5714&"
                                         + "1=http://www.opengis.net/def/crs/MOCK/0/4326");
         /*
-         * Contrarily to URN, the HTTP form shall not accept Datum + CoordinateSystem combination.
+         * Contrary to URN, the HTTP form shall not accept Datum + CoordinateSystem combination.
          */
         var e = assertThrows(FactoryException.class,
                 () -> factory.createObject("http://www.opengis.net/def/crs-compound?"

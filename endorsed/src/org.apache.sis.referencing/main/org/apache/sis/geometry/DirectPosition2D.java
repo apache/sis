@@ -219,7 +219,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * Returns a sequence of numbers that hold the coordinate of this position in its reference system.
      *
      * <div class="note"><b>API note:</b>
-     * This method is final for ensuring consistency with the {@code x} and {@code y} fields, which are public.</div>
+     * This method is final to ensure consistency with the {@code x} and {@code y} fields, which are public.</div>
      *
      * @return the coordinate.
      *
@@ -234,7 +234,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * Returns the coordinate at the specified dimension.
      *
      * <div class="note"><b>API note:</b>
-     * This method is final for ensuring consistency with the {@code x} and {@code y} fields, which are public.</div>
+     * This method is final to ensure consistency with the {@code x} and {@code y} fields, which are public.</div>
      *
      * @param  dimension  the dimension in the range 0 to 1 inclusive.
      * @return the coordinate at the specified dimension.

@@ -31,7 +31,7 @@ import jakarta.xml.bind.annotation.adapters.XmlAdapter;
  * <p>This interface is mostly for handling extensions to metadata profile provided as extension,
  * like the {@code FRA} extension for France provided in the {@code org.apache.sis.profile.france} module.</p>
  *
- * <p><b>WARNING:</b> there is currently no mechanism for ensuring that the registration performed
+ * <p><b>WARNING:</b> there is currently no mechanism to ensure that the registration performed
  * by an {@code AdapterReplacement} instance does not overwrite the registration performed by an
  * other {@code AdapterReplacement} instance. This is okay as long as the instances are defined
  * only in SIS. However, we will need to revisit this issue if we move this interface to public API.</p>

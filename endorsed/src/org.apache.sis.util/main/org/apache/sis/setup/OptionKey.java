@@ -239,7 +239,7 @@ public class OptionKey<T> implements Serializable {
     }
 
     /**
-     * Returns the type of values associated to this option key.
+     * Returns the type of values associated with this option key.
      *
      * @return the type of values.
      */

@@ -94,7 +94,7 @@ final class CoverageControls extends ViewAndControls {
         }
         /*
          * "Layers" section with the following controls:
-         *    - Tree of layers associated to the coverage (styling, isolines, visual indication of loaded tiles).
+         *    - Tree of layers associated with the coverage (styling, isolines, visual indication of loaded tiles).
          *    - Configuration panel for the selected layer.
          */
         final var layers = new MapContextView(resources);

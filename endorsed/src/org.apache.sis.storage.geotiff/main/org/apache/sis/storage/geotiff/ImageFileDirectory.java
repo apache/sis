@@ -1972,8 +1972,8 @@ final class ImageFileDirectory extends DataCube {
      *
      * @param  tag1      the TIFF tag with inconsistent length.
      * @param  tag2      the TIFF tag used as a reference.
-     * @param  actual    length of list associated to {@code tag1}.
-     * @param  expected  length of list associated to {@code tag2}.
+     * @param  actual    length of list associated with {@code tag1}.
+     * @param  expected  length of list associated with {@code tag2}.
      */
     private void ensureSameLength(final short tag1, final short tag2, final int actual, final int expected) {
         if (actual != expected) {

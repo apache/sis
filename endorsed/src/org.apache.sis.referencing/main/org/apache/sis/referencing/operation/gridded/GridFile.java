@@ -48,7 +48,7 @@ import org.apache.sis.util.resources.Messages;
  * the parameter.
  *
  * <p>Instances of this class should be temporary.
- * This is an helper class for loading data and discarded after the loading completed.</p>
+ * This is a helper class for loading data and discarded after the loading completed.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
