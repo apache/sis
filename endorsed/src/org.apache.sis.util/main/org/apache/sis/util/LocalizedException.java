@@ -46,13 +46,16 @@ import org.opengis.util.InternationalString;
  * other exception usually lost their localization capability.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.7
  *
  * @see Exceptions#getLocalizedMessage(Throwable, Locale)
  * @see org.apache.sis.storage.DataStore#setLocale(Locale)
  *
  * @since 0.8
+ *
+ * @deprecated Rarely used in practice and support is unequal.
  */
+@Deprecated(since = "1.7", forRemoval = true)
 public interface LocalizedException {
     /**
      * Returns the message in the {@linkplain Locale#getDefault() default locale}.
