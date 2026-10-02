@@ -522,7 +522,7 @@ public class GridDerivation {
      *   <li>This method cannot be used together with another {@code subgrid(…)} method.</li>
      *   <li>{@linkplain #rounding(GridRoundingMode) Rounding mode}, {@linkplain #clipping(GridClippingMode) clipping mode},
      *       {@linkplain #margin(int...) margin} and {@linkplain #chunkSize(int...) chunk size},
-     *       if different than default values, should be set before to invoke this method.</li>
+     *       if different than default values, should be set before invoking this method.</li>
      *   <li>{@linkplain #slice(DirectPosition) Slicing} can be applied after this method.</li>
      *   <li>This method does not reduce the number of dimensions of the grid geometry.
      *       For dimensionality reduction, see {@link GridGeometry#selectDimensions(int[])}.</li>
@@ -711,7 +711,7 @@ public class GridDerivation {
      *   <li>This method cannot be used together with another {@code subgrid(…)} method.</li>
      *   <li>{@linkplain #rounding(GridRoundingMode) Rounding mode}, {@linkplain #clipping(GridClippingMode) clipping mode},
      *       {@linkplain #margin(int...) margin} and {@linkplain #chunkSize(int...) chunk size},
-     *       if different than default values, should be set before to invoke this method.</li>
+     *       if different than default values, should be set before invoking this method.</li>
      *   <li>{@linkplain #slice(DirectPosition) Slicing} can be applied after this method.</li>
      *   <li>This method does not reduce the number of dimensions of the grid geometry.
      *       For dimensionality reduction, see {@link GridGeometry#selectDimensions(int[])}.</li>
@@ -1014,7 +1014,7 @@ public class GridDerivation {
      *   <li>This method cannot be used together with another {@code subgrid(…)} method.</li>
      *   <li>{@linkplain #rounding(GridRoundingMode) Rounding mode}, {@linkplain #clipping(GridClippingMode) clipping mode},
      *       {@linkplain #margin(int...) margin} and {@linkplain #chunkSize(int...) chunk size},
-     *       if different than default values, should be set before to invoke this method.</li>
+     *       if different than default values, should be set before invoking this method.</li>
      *   <li>{@linkplain #slice(DirectPosition) Slicing} can be applied after this method.</li>
      *   <li>This method does not reduce the number of dimensions of the grid geometry.
      *       For dimensionality reduction, see {@link GridGeometry#selectDimensions(int[])}.</li>
@@ -1142,7 +1142,7 @@ public class GridDerivation {
      * <ul>
      *   <li>This method can be invoked after {@link #subgrid(Envelope, double...)}, but not before.</li>
      *   <li>If a non-default rounding mode is desired, it should be {@linkplain #rounding(GridRoundingMode) specified}
-     *       before to invoke this method.</li>
+     *       before invoking this method.</li>
      *   <li>This method does not reduce the number of dimensions of the grid geometry.
      *       For dimensionality reduction, see {@link GridGeometry#selectDimensions(int[])}.</li>
      *   <li>If the given point is known to be expressed in the same CRS as the grid geometry,

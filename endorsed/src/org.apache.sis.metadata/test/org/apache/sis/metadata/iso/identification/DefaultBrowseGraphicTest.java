@@ -255,7 +255,7 @@ public final class DefaultBrowseGraphicTest extends TestCase {
                      "<gco:CharacterString>file:/catalog/image2.png</gco:CharacterString>");
         /*
          * Test again with the same element value, but in reverse order.
-         * We do that for ensuring that FileName still has precedence.
+         * We do that to ensure that FileName still has precedence.
          */
         testWarnings("<gco:CharacterString>file:/catalog/image2.png</gco:CharacterString>",
                      "<gcx:FileName src=\"file:/catalog/image.png\">image.png</gcx:FileName>");

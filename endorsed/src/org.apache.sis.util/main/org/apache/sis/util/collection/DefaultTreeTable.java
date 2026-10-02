@@ -90,7 +90,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
     private transient List<TableColumn<?>> columns;
 
     /**
-     * The index of values associated to each column. This is used by the {@link Node}
+     * The index of values associated with each column. This is used by the {@link Node}
      * implementation for storing values in a single flat array. After creation, this
      * map shall be read-only since many {@code Node} instances may share it.
      *
@@ -392,7 +392,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         private List<TreeTable.Node> children;
 
         /**
-         * The index of values associated to each column. This map is used by the
+         * The index of values associated with each column. This map is used by the
          * {@link #getValue(TableColumn)} and {@link #setValue(TableColumn, Object)}
          * methods for identifying the index where to store values in the {@link #values} array.
          *

@@ -211,7 +211,7 @@ public final class GridDerivationTest extends TestCase {
 
     /**
      * Tests {@link GridDerivation#subgrid(Envelope, double...)}.
-     * Contrarily to {@link #testSubExtent()}, this method checks the full {@link GridGeometry}.
+     * Contrary to {@link #testSubExtent()}, this method checks the full {@link GridGeometry}.
      *
      * @throws TransformException if an error occurred during computation.
      */

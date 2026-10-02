@@ -259,7 +259,7 @@ public class FeatureTable extends TableView<AbstractFeature> {
         getItems().clear();
         final boolean update = (type != null) && !type.equals(featureType);
         /*
-         * The feature type must be set before to invoke `createColumns(…)` because it is used not only
+         * The feature type must be set before invoking `createColumns(…)` because it is used not only
          * by that method, but also by the listener registered in `FeatureTable(other)` constructor.
          */
         featureType = type;

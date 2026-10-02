@@ -298,7 +298,7 @@ public final class GridGeometryTest extends TestCase {
         assertNull(grid.envelope);
         /*
          * Deriving a grid geometry with an identity transform should result in resolutions set to 1.
-         * This is needed for ensuring the validity of the grid geometry of the base level of a pyramid.
+         * This is needed to ensure the validity of the grid geometry of the base level of a pyramid.
          */
         GridGeometry withResolution = new GridGeometry(grid, extent, MathTransforms.identity(2));
         assertArrayEquals(new double[] {1, 1}, withResolution.getResolution(false));

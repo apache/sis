@@ -122,7 +122,7 @@ public class DomainLinearizer {
     }
 
     /**
-     * Returns the grid coverage processor associated to this linearizer.
+     * Returns the grid coverage processor associated with this linearizer.
      */
     private GridCoverageProcessor processor() {
         if (processor == null) {

@@ -30,7 +30,7 @@ import org.apache.sis.util.collection.TreeTable;
 
 /**
  * Provides basic operations using Java reflection for metadata implementations.
- * All {@code AbstractMetadata} instances shall be associated to a {@link MetadataStandard}.
+ * All {@code AbstractMetadata} instances shall be associated with a {@link MetadataStandard}.
  * The metadata standard is given by the {@link #getStandard()} method and is typically a
  * constant fixed by the subclass.
  *
@@ -222,7 +222,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      *
      * <h4>Multi-values entries</h4>
      * Calls to {@code put(…)} replace the previous value, with one noticeable exception: if the metadata
-     * property associated to the given key is a {@link java.util.Collection} but the given value is a single
+     * property associated with the given key is a {@link java.util.Collection} but the given value is a single
      * element (not a collection), then the given value is {@linkplain java.util.Collection#add(Object) added}
      * to the existing collection. In other words, the returned map behaves as a <i>multi-values map</i>
      * for the properties that allow multiple values. If the intent is to unconditionally discard all previous

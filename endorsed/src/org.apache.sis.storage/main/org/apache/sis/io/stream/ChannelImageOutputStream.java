@@ -28,7 +28,7 @@ import javax.imageio.stream.ImageOutputStream;
 
 /**
  * An {@code ImageOutputStream} backed by {@code ChannelDataInput} and {@code ChannelDataOutput}.
- * Contrarily to most other I/O frameworks in the standard JDK, {@code ImageOutputStream} is read/write.
+ * Contrary to most other I/O frameworks in the standard JDK, {@code ImageOutputStream} is read/write.
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

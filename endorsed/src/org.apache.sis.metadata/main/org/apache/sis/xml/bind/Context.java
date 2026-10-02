@@ -169,7 +169,7 @@ public final class Context extends MarshalContext {
 
     /**
      * The {@code XLink} reference resolver for converting relative URL to absolute URL.
-     * Contrarily to {@link #resolver}, this instance depends on the document being read.
+     * Contrary to {@link #resolver}, this instance depends on the document being read.
      * If {@code null}, then {@link ExternalLinkHandler#DEFAULT} is assumed.
      */
     private final ExternalLinkHandler linkHandler;
@@ -187,12 +187,12 @@ public final class Context extends MarshalContext {
     private final ValueConverter converter;
 
     /**
-     * The objects associated to XML identifiers in the current document.
+     * The objects associated with XML identifiers in the current document.
      * Map keys are {@code gml:id} attribute values, and map values are the identified objects.
      * At marhalling time, this map is used for avoiding duplicated identifiers in the same XML document.
      * At unmarshalling time, this is used for getting a previously unmarshalled object from its identifier.
      *
-     * <p>By convention, the {@code null} key is associated to the whole document. This convention is used if
+     * <p>By convention, the {@code null} key is associated with the whole document. This convention is used if
      * the document being unmarshalled is part of a larger document and was referenced by {@code xlink:href}.
      * In such case, this map is also a value of the {@link #documentToXmlids} map.</p>
      *
@@ -226,7 +226,7 @@ public final class Context extends MarshalContext {
     private final Map<Object, Map<String, Object>> documentToXmlids;
 
     /**
-     * All identified objects associated to a global identifier (not {@code gml:id}).
+     * All identified objects associated with a global identifier (not {@code gml:id}).
      * This map differs from {@link #xmlidToObject} in that it is not local to the current document,
      * but instead contains all identified objects in all documents parsed since the root document.
      * The keys of this map cannot be {@code gml:id} attribute values, because the latter are local.
@@ -657,7 +657,7 @@ public final class Context extends MarshalContext {
      *
      * @param  context  the current context, or {@code null} if none.
      * @param  id       the identifier for which to get the object.
-     * @return the object associated to the given identifier, or {@code null} if none.
+     * @return the object associated with the given identifier, or {@code null} if none.
      */
     public static Object getObjectForID(final Context context, final String id) {
         return (context != null) ? context.xmlidToObject.get(id) : null;
@@ -702,7 +702,7 @@ public final class Context extends MarshalContext {
      *
      * @param  systemId  document identifier (without the fragment part) as an {@link URI} or a {@link String}.
      * @param  fragment  the fragment part of the URI, or {@code null} for the whole document.
-     * @return the object associated to the given identifier, or {@code null} if none,
+     * @return the object associated with the given identifier, or {@code null} if none,
      *         or {@link #INVALID_OBJECT} if a parsing was previously attempted and failed.
      */
     public final Object getExternalObjectForID(final Object systemId, final String fragment) {

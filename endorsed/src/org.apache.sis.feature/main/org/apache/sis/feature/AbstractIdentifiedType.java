@@ -93,7 +93,7 @@ public class AbstractIdentifiedType implements Deprecable, Serializable {
      * Key for the <code>{@value}</code> property to be given to the constructor.
      * This is used for setting the value to be returned by {@link #isDeprecated()}.
      *
-     * <p>If this property is set to {@code true}, then the value associated to {@link #DESCRIPTION_KEY}
+     * <p>If this property is set to {@code true}, then the value associated with {@link #DESCRIPTION_KEY}
      * should give the replacement (e.g. <q>superceded by …</q>).</p>
      *
      * @see #isDeprecated()
@@ -252,7 +252,7 @@ public class AbstractIdentifiedType implements Deprecable, Serializable {
      * @param  prefix          the prefix of keys to use for creating the international string.
      * @param  inheritFrom     the type from which to inherit a value if none is specified in the map, or {@code null}.
      * @return the international string, or {@code null} if the given map is null or does not contain values
-     *         associated to keys starting with the given prefix.
+     *         associated with keys starting with the given prefix.
      */
     private static InternationalString toInternationalString(
             final Map<String,?> identification, final String prefix, final AbstractIdentifiedType inheritFrom)

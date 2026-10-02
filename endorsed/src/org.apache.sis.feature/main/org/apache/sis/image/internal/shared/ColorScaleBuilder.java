@@ -439,7 +439,7 @@ public final class ColorScaleBuilder {
     /**
      * Potentially rescales the range of values of the main category for the given color model.
      * This method can be invoked when the color model may use a range of values different than the range
-     * specified by categories. It may happen if the color ramp associated to the quantitative category has
+     * specified by categories. It may happen if the color ramp associated with the quantitative category has
      * been stretched dynamically using a "recolor" operation. We want to preserve that user customization,
      * but we have no explicit information about which category to modify. This method does an heuristic
      * choice based on the category having the largest intersection with the color model value range.
@@ -551,7 +551,7 @@ reuse:  if (source != null) {
         final var builder = new SampleDimension.Builder();
         /*
          * We will use the byte values range [0 … 255] with 0 reserved in priority for the most transparent pixels.
-         * The first loop below processes NaN values, which are usually the ones associated to transparent pixels.
+         * The first loop below processes NaN values, which are usually the ones associated with transparent pixels.
          * The second loop (from 0 to `deferred`) will process everything else.
          */
         for (int i=0; i<count; i++) {
@@ -566,7 +566,7 @@ reuse:  if (source != null) {
                     final double value = sourceRange.getMinDouble();
                     /*
                      * In the usual case where we have a mix of quantitative and qualitative categories,
-                     * the qualitative ones (typically "no data" categories) are associated to NaN.
+                     * the qualitative ones (typically "no data" categories) are associated with NaN.
                      * Values are real only if all categories are qualitatives (e.g. a thematic map).
                      * In such case we will create pseudo-quantitative categories for the purpose of
                      * computing a transfer function, but those categories should not be returned to user.
@@ -658,7 +658,7 @@ reuse:  if (source != null) {
 
     /**
      * Returns a color model with colors interpolated in the ranges of values determined by constructors.
-     * This method builds up the color model from each set of colors associated to ranges in the given array.
+     * This method builds up the color model from each set of colors associated with ranges in the given array.
      * Returned instances of {@link ColorModel} are shared among all callers in the running virtual machine.
      *
      * <h4>Compact mode</h4>

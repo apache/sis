@@ -555,10 +555,10 @@ check:  if (it.hasNext()) {
         }
 
         /**
-         * Returns the ellipsoid which is indirectly (through a datum) associated to this datum ensemble.
+         * Returns the ellipsoid which is indirectly (through a datum) associated with this datum ensemble.
          * If all members of the ensemble use the same ellipsoid, then this method returns that ellipsoid.
          *
-         * @return the ellipsoid indirectly associated to this datum ensemble.
+         * @return the ellipsoid indirectly associated with this datum ensemble.
          * @throws NoSuchElementException if the ensemble does not contain at least one member.
          * @throws GeodeticException if the ellipsoid is not the same for all members of the datum ensemble.
          */
@@ -568,10 +568,10 @@ check:  if (it.hasNext()) {
         }
 
         /**
-         * Returns the prime meridian which is indirectly (through a datum) associated to this datum ensemble.
+         * Returns the prime meridian which is indirectly (through a datum) associated with this datum ensemble.
          * If all members of the ensemble use the same prime meridian, then this method returns that meridian.
          *
-         * @return the prime meridian indirectly associated to this datum ensemble.
+         * @return the prime meridian indirectly associated with this datum ensemble.
          * @throws NoSuchElementException if the ensemble does not contain at least one member.
          * @throws GeodeticException if the prime meridian is not the same for all members of the datum ensemble.
          */
@@ -663,10 +663,10 @@ check:  if (it.hasNext()) {
         }
 
         /**
-         * Returns the temporal origin which is indirectly (through a datum) associated to this datum ensemble.
+         * Returns the temporal origin which is indirectly (through a datum) associated with this datum ensemble.
          * If all members of the ensemble use the same temporal origin, then this method returns that origin.
          *
-         * @return the temporal origin indirectly associated to this datum ensemble.
+         * @return the temporal origin indirectly associated with this datum ensemble.
          * @throws NoSuchElementException if the ensemble does not contain at least one member.
          * @throws GeodeticException if the temporal origin is not the same for all members of the datum ensemble.
          */

@@ -41,7 +41,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * <div class="preformat">{@code MD_Identifier}
  * {@code   └─code……………} Alphanumeric value identifying an instance in the namespace.</div>
  *
- * One or more {@code Identifier} instances can be associated to some metadata objects like
+ * One or more {@code Identifier} instances can be associated with some metadata objects like
  * {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultOperation operation},
  * {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatform platform},
  * {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultInstrument instrument},

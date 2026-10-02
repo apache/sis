@@ -61,7 +61,7 @@ public abstract class UpdatableWrite<V> implements CheckedContainer<V> {
     }
 
     /**
-     * Creates a pseudo-updatable associated to no value at the current output position.
+     * Creates a pseudo-updatable associated with no value at the current output position.
      * This variant can be used when the caller only want to record the position, with no write operation.
      *
      * @param  output  stream where to write the value.
@@ -346,7 +346,7 @@ public abstract class UpdatableWrite<V> implements CheckedContainer<V> {
     /**
      * Writes the updated value in the specified output stream.
      * It is caller's responsibility to mark and reset the stream position
-     * before to invoke this method if desired.
+     * before invoking this method if desired.
      *
      * @param  output  the output stream to update.
      * @throws IOException if an error occurred while writing to the output.

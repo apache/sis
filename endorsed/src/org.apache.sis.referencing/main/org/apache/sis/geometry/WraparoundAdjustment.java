@@ -456,7 +456,7 @@ public class WraparoundAdjustment {
                         } else {
                             /*
                              * Same reasoning as above with sign reverted and lower/upper variables interchanged.
-                             * In this block, `upperToValidEnd` and `lowerToValidEnd` are negative, contrarily to
+                             * In this block, `upperToValidEnd` and `lowerToValidEnd` are negative, contrary to
                              * above block where they were positive.
                              */
                             final double cycles = Math.max(Math.ceil (upperToValidStart),

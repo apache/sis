@@ -235,7 +235,7 @@ public abstract class AnnotationConsistencyCheck extends TestCaseWithLogs {
      * {@link Namespaces#getPreferredPrefix(String, String)}.</p>
      *
      * @param  impl  the implementation class ({@link CodeList} or {@link Enum} type).
-     * @param  uml   the UML associated to the class or the method.
+     * @param  uml   the UML associated with the class or the method.
      * @return the expected namespace.
      * @throws IllegalArgumentException if the given UML is unknown to this method.
      *

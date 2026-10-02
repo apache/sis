@@ -730,7 +730,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     /**
      * Invoked by JAXB after unmarshalling. If the {@code <gml:OperationMethod>} element does not contain
      * any {@code <gml:parameter>}, we assume that this is a valid parameterless operation (as opposed to
-     * an operation with unknown parameters). We need this assumption because, contrarily to GeoAPI model,
+     * an operation with unknown parameters). We need this assumption because, contrary to GeoAPI model,
      * the GML schema does not differentiate "no parameters" from "unspecified parameters".
      */
     private void afterUnmarshal(final Unmarshaller unmarshaller, final Object parent) {

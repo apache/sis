@@ -524,7 +524,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     }
 
     /**
-     * Casts the specified range to the specified type.  If this class is associated to a unit of measurement,
+     * Casts the specified range to the specified type.  If this class is associated with a unit of measurement,
      * then this method converts the {@code range} unit to the same unit as this instance.
      * This method is overridden by {@link MeasurementRange} only in the way described above.
      *

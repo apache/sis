@@ -318,12 +318,12 @@ public class DefaultTemporalCRS extends AbstractSingleCRS<TemporalDatum> impleme
     }
 
     /**
-     * Returns the temporal origin which is indirectly (through a datum) associated to this <abbr>CRS</abbr>.
+     * Returns the temporal origin which is indirectly (through a datum) associated with this <abbr>CRS</abbr>.
      * If the {@linkplain #getDatum() datum} is non-null, then this method returns the datum origin.
      * Otherwise, if all members of the {@linkplain #getDatumEnsemble() datum ensemble} use the same origin,
      * then this method returns that origin.
      *
-     * @return the origin indirectly associated to this <abbr>CRS</abbr>.
+     * @return the origin indirectly associated with this <abbr>CRS</abbr>.
      * @throws NullPointerException if an origin, which are mandatory, is null.
      * @throws GeodeticException if the origin is not the same for all members of the datum ensemble.
      *

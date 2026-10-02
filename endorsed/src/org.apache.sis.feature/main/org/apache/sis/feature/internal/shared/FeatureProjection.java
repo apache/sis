@@ -100,7 +100,7 @@ public final class FeatureProjection extends Record implements UnaryOperator<Abs
 
     /**
      * Expressions to apply on the source feature for fetching the property values of the projected feature.
-     * This array has the same length as {@link #propertiesToCopy} and each expression is associated to the
+     * This array has the same length as {@link #propertiesToCopy} and each expression is associated with the
      * property at the same index.
      */
     private final Expression<? super AbstractFeature, ?>[] expressions;

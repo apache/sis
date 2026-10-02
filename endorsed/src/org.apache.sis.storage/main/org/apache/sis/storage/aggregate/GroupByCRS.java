@@ -42,7 +42,7 @@ final class GroupByCRS<E> extends Group<E> {
     private final CoordinateReferenceSystem crs;
 
     /**
-     * Creates a new group of objects associated to the given CRS.
+     * Creates a new group of objects associated with the given CRS.
      *
      * @param  parent  the parent group in which this group is a child.
      * @param  crs  coordinate reference system of this group, or {@code null}.

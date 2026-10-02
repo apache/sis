@@ -559,7 +559,7 @@ scan:   for (final GeneralParameterValue param : actual.values()) {
 
     /**
      * Invoked by JAXB for setting the group parameter descriptor. Those parameter are redundant with
-     * the parameters associated to the values given to {@link #setValues(GeneralParameterValue[])},
+     * the parameters associated with the values given to {@link #setValues(GeneralParameterValue[])},
      * except for the group identification (name, <i>etc.</i>) and for any optional parameters which
      * were not present in the above {@code GeneralParameterValue} array.
      *

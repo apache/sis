@@ -179,7 +179,7 @@ abstract class TransformedEvent<E extends XMLEvent> implements XMLEvent {
     }
 
     /**
-     * The {@code "xsi:type"} attribute. Contrarily to other attributes, the name is unchanged compared
+     * The {@code "xsi:type"} attribute. Contrary to other attributes, the name is unchanged compared
      * to the original attribute; instead the value is different. Even in unchanged, the {@link QName}
      * is specified at construction time because it is required by the parent class.
      */

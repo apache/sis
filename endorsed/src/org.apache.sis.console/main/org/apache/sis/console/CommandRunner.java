@@ -428,7 +428,7 @@ abstract class CommandRunner {
      * Returns the exception to throw for an invalid option.
      *
      * @param  key    the requested option.
-     * @param  value  the value associated to the specified option.
+     * @param  value  the value associated with the specified option.
      * @param  cause  cause of the invalidity, or {@code null} if none.
      * @return the exception to throw.
      */
@@ -466,7 +466,7 @@ abstract class CommandRunner {
     /**
      * Shows the help instructions for a specific command. This method is invoked instead of {@link #run()}
      * if the user provided the {@code --help} option. The default implementation builds a description
-     * from the texts associated to the given {@code resourceKey} in various resource bundles provided in
+     * from the texts associated with the given {@code resourceKey} in various resource bundles provided in
      * this {@code org.apache.sis.console} module. Subclasses can override if needed.
      *
      * @param  resourceKey  the key for the resource to print. This is usually {@link #commandName} in lower-cases.

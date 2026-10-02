@@ -271,7 +271,7 @@ public abstract class TypeBuilder implements Localized {
      *
      * In addition to the path specified by the {@code components} array, the name may also contain
      * a namespace specified by the last call to {@link FeatureTypeBuilder#setNameSpace(CharSequence)}.
-     * But contrarily to the specified components, the namespace will not be visible in the name
+     * But contrary to the specified components, the namespace will not be visible in the name
      * {@linkplain org.apache.sis.util.iso.DefaultScopedName#toString() string representation} unless the
      * {@linkplain org.apache.sis.util.iso.DefaultScopedName#toFullyQualifiedName() fully qualified name} is requested.
      *

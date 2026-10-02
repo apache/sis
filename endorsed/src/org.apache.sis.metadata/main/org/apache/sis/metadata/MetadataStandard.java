@@ -76,7 +76,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *       The setter method does not need to be defined in the interface.</li>
  * </ul>
  *
- * An instance of {@code MetadataStandard} is associated to every {@link AbstractMetadata} objects.
+ * An instance of {@code MetadataStandard} is associated with every {@link AbstractMetadata} objects.
  * The {@code AbstractMetadata} base class usually form the basis of ISO 19115 implementations but
  * can also be used for other standards.
  *
@@ -547,7 +547,7 @@ public class MetadataStandard implements Serializable {
      * one interface for convenience.</p>
      *
      * <p>This method does not check whether the interface is cached. However, if this method finds an interface,
-     * then it caches the result in {@link #accessors} if there is no value already associated to the given key.</p>
+     * then it caches the result in {@link #accessors} if there is no value already associated with the given key.</p>
      *
      * <p>This method ignores dependencies. Fallback on metadata standard dependencies shall be done by the caller.</p>
      *
@@ -568,7 +568,7 @@ public class MetadataStandard implements Serializable {
             /*
              * Get every interfaces from the supplied class in declaration order,
              * including the ones declared in the super-class. The Boolean value
-             * tells whether the type is supported. Types associated to `FALSE`
+             * tells whether the type is supported. Types associated with `FALSE`
              * shall be ignored.
              */
             final var interfaces = new LinkedHashMap<Class<?>, Boolean>();
@@ -1029,7 +1029,7 @@ public class MetadataStandard implements Serializable {
      * remove(…)} operations if the underlying metadata object contains setter methods.
      * The {@code remove(…)} method is implemented by a call to {@code put(…, null)}.
      * Note that whether the entry appears as effectively removed from the map or just cleared
-     * (i.e. associated to a null value) depends on the {@code valuePolicy} argument.
+     * (i.e. associated with a null value) depends on the {@code valuePolicy} argument.
      *
      * <h4>Keys and values</h4>
      * The keys are case-insensitive and can be either the JavaBeans property name, the getter method name
@@ -1040,7 +1040,7 @@ public class MetadataStandard implements Serializable {
      *
      * <h4>Multi-values entries</h4>
      * Calls to {@code put(…)} replace the previous value, with one noticeable exception: if the metadata
-     * property associated to the given key is a {@link java.util.Collection} but the given value is a single
+     * property associated with the given key is a {@link java.util.Collection} but the given value is a single
      * element (not a collection), then the given value is {@linkplain java.util.Collection#add(Object) added}
      * to the existing collection. In other words, the returned map behaves as a <i>multi-values map</i>
      * for the properties that allow multiple values. If the intent is to unconditionally discard all previous
@@ -1188,7 +1188,7 @@ public class MetadataStandard implements Serializable {
      * Nodes can be removed by invoking the {@link java.util.Iterator#remove()} method on the
      * {@linkplain org.apache.sis.util.collection.TreeTable.Node#getChildren() children} iterator.
      * Note that whether the child appears as effectively removed from the node or just cleared
-     * (i.e. associated to a null value) depends on the {@code valuePolicy} argument.
+     * (i.e. associated with a null value) depends on the {@code valuePolicy} argument.
      *
      * <h4>Disambiguating instances that implement more than one metadata interface</h4>
      * If the given {@code metadata} instance implements more than one interface recognized by this

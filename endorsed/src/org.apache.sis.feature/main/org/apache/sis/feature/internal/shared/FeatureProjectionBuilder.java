@@ -611,7 +611,7 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
         /**
          * Sets the coordinate reference system that characterizes the values of this attribute.
          *
-         * @param  crs  coordinate reference system associated to attribute values, or {@code null}.
+         * @param  crs  coordinate reference system associated with attribute values, or {@code null}.
          * @return {@code this} for method calls chaining.
          */
         public Item setCRS(final CoordinateReferenceSystem crs) {
@@ -625,7 +625,7 @@ public final class FeatureProjectionBuilder extends FeatureTypeBuilder {
         /**
          * Returns whether the property built by this item is equivalent to the given property.
          * The caller should have verified that {@link #hasModifiedProperties} is {@code false}
-         * before to invoke this method, because the implementation performs a filtering based
+         * before invoking this method, because the implementation performs a filtering based
          * on the property name only. This is that way for accepting differences in metadata.
          *
          * @param  property  the property to compare.

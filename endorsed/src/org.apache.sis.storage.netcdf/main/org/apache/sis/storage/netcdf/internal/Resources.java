@@ -220,7 +220,7 @@ public class Resources extends IndexedResourceBundle {
 
         /**
          * Variable “{1}” in file “{0}” has {2,number} dimensions but only {3,number} can be associated
-         * to a coordinate reference system.
+         * with a coordinate reference system.
          */
         public static final short UnmappedDimensions_4 = 19;
 

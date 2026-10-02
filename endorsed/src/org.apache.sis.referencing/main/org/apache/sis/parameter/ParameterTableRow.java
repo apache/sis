@@ -369,7 +369,7 @@ final class ParameterTableRow {
                 writeColor(out, RESET, colors != null);
                 it.remove();
                 /*
-                 * Write the footnote number if there is a remark associated to this parameter.
+                 * Write the footnote number if there is a remark associated with this parameter.
                  * We write the remark only for the first name or identifier.
                  */
                 if (remarks != 0) {

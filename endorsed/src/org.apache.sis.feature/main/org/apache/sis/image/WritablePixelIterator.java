@@ -34,7 +34,7 @@ import org.apache.sis.util.ArgumentChecks;
  * or write values in a different destination image than the source image. Source and destination
  * images must use the same sample model and the same coordinates (both for pixels and tiles).
  *
- * <p>Contrarily to {@code PixelIterator}, {@code WritablePixelIterator} needs to be closed after
+ * <p>Contrary to {@code PixelIterator}, {@code WritablePixelIterator} needs to be closed after
  * iteration in order to release tiles. Example:</p>
  *
  * {@snippet lang="java" :

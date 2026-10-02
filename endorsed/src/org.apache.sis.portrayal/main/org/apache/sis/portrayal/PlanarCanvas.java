@@ -159,7 +159,7 @@ public abstract class PlanarCanvas extends Canvas {
 
     /**
      * Sets the conversion from objective CRS to display coordinate system.
-     * Contrarily to other setter methods, this method does not notify listeners about that change;
+     * Contrary to other setter methods, this method does not notify listeners about that change;
      * it is caller responsibility to send a {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} change event.
      * This method does not update the {@value #POINT_OF_INTEREST_PROPERTY} property;
      * the point of interest may move outside the view area as a result of this method call.

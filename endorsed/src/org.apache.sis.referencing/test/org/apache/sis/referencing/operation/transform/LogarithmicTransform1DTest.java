@@ -55,7 +55,7 @@ public final class LogarithmicTransform1DTest extends MathTransformTestCase {
      * Tests the current transform using random values as input points, and
      * comparing with the expected values computed using the given coefficients.
      *
-     * The {@link #transform} field must be set before to invoke this method.
+     * The {@link #transform} field must be set before invoking this method.
      *
      * @param  expectedType  the expected base type of the math transform.
      * @param  base          the exponent base given to the {@link LogarithmicTransform1D} constructor.

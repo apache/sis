@@ -135,13 +135,13 @@ public enum ComparisonMode {
      *
      * <h4>Application to datum ensembles</h4>
      * Two Coordinate Reference Systems (<abbr>CRS</abbr>) may be considered compatible when
-     * one <abbr>CRS</abbr> is associated to a datum and the other <abbr>CRS</abbr> is associated to a datum ensemble,
+     * one <abbr>CRS</abbr> is associated with a datum and the other <abbr>CRS</abbr> is associated with a datum ensemble,
      * but the former can be considered as the {@linkplain org.apache.sis.referencing.datum.DatumOrEnsemble#isLegacyDatum
      * legacy definition} of the latter. This comparison mode can check, among other criteria,
      * whether the datum and the datum ensemble share a common authority code.
      *
      * <p><b>Example:</b> {@code EPSG:9:4326} and {@code EPSG:10:4326}, which are both the same (at least conceptually)
-     * geographic <abbr>CRS</abbr> associated to the authority code 4326 in the <abbr>EPSG</abbr> geodetic dataset,
+     * geographic <abbr>CRS</abbr> associated with the authority code 4326 in the <abbr>EPSG</abbr> geodetic dataset,
      * but as defined in version 9 and 10 respectively of the <abbr>EPSG</abbr> database.
      * They are the <abbr>CRS</abbr> definitions before and after the introduction of datum ensemble in the schema.</p>
      *

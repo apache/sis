@@ -355,7 +355,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
 
     /**
      * Adds the name of the given resource to the given map. This is used for resolving name collision: any entry
-     * associated to two values or more will have the resources renamed by {@link #resolveNameCollision(Decoder)}.
+     * associated with two values or more will have the resources renamed by {@link #resolveNameCollision(Decoder)}.
      */
     private void addToNameMap(final Map<GenericName,List<RasterResource>> byName) {
         byName.computeIfAbsent(identifier, (key) -> new ArrayList<>()).add(this);
@@ -694,7 +694,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
             /*
              * The following block is executed only if all bands are in a single variable, and the bands dimension is
              * the last one (in "natural" order). In such case, the sample model to construct is a BandedSampleModel.
-             * Contrarily to PixelInterleavedSampleModel (the case when the band dimension is first), banded sample
+             * Contrary to PixelInterleavedSampleModel (the case when the band dimension is first), banded sample
              * model force us to split the buffer in a buffer for each band.
              */
             if (bandDimension > 0) {                // Really > 0, not >= 0.

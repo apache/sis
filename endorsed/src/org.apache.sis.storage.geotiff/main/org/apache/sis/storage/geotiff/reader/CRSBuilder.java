@@ -127,7 +127,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
     static final int PRIMEM = 0, ELLIPSOID = 1, DATUM = 2, GCRS = 3;
 
     /**
-     * Keys that may be used in the value associated to {@link GeoKeys#GeodeticCitation}.
+     * Keys that may be used in the value associated with {@link GeoKeys#GeodeticCitation}.
      * For each element in this array at index {@code i}, the {@code i/2} value is equal to the
      * {@code DATUM}, {@code ELLIPSOID} or {@code PRIMEM} constant for the corresponding type.
      */
@@ -249,7 +249,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
     }
 
     /**
-     * Returns a map with the given name associated to {@value org.opengis.referencing.IdentifiedObject#NAME_KEY}.
+     * Returns a map with the given name associated with {@value org.opengis.referencing.IdentifiedObject#NAME_KEY}.
      * The given name shall be either an instance of {@link String} or {@link Identifier}.
      * This is a helper method for creating geodetic objects with {@link #getCRSFactory()}.
      */
@@ -691,7 +691,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
      * If no unit is specified, the default is degrees.
      *
      * @param  key  key of the unit to fetch.
-     * @return the unit of measurement associated to the given key, or the default value.
+     * @return the unit of measurement associated with the given key, or the default value.
      */
     private Unit<Angle> createAngularUnit(final UnitKey key) throws FactoryException {
         return createUnit(key, Angle.class, Units.DEGREE);
@@ -702,7 +702,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
      * If no unit is specified, the default is metre.
      *
      * @param  key  key of the unit to fetch.
-     * @return the unit of measurement associated to the given key, or the default value.
+     * @return the unit of measurement associated with the given key, or the default value.
      */
     private Unit<Length> createLinearUnit(final UnitKey key) throws FactoryException {
         return createUnit(key, Length.class, Units.METRE);
@@ -718,9 +718,9 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
      * @param  key           information about the keys to use for fetching the unit of measurement.
      * @param  quantity      {@link Length} for a linear unit, or {@link Angle} for an angular unit.
      * @param  defaultValue  the unit of measurement to return if no value is found in the GeoTIFF file.
-     * @return the unit of measurement associated to the given key, or the default value.
+     * @return the unit of measurement associated with the given key, or the default value.
      *
-     * @throws NoSuchElementException if {@code codeKey} value is {@link GeoCodes#userDefined} and no value is associated to {@code scaleKey}.
+     * @throws NoSuchElementException if {@code codeKey} value is {@link GeoCodes#userDefined} and no value is associated with {@code scaleKey}.
      * @throws NumberFormatException  if a numeric value was stored as a string and cannot be parsed.
      * @throws ClassCastException     if the unit of measurement identified by the EPSG code is not of the expected quantity.
      */

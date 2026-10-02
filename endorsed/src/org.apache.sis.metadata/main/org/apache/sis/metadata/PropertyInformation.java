@@ -123,7 +123,7 @@ final class PropertyInformation<E> extends SimpleIdentifier           // Impleme
      * @param  getter       the getter method defined in the interface.
      * @param  elementType  the value type, either the method return type if not a collection,
      *                      or the type of elements in the collection otherwise.
-     * @param  range        the range of valid values, or {@code null} if none. This information is associated to the
+     * @param  range        the range of valid values, or {@code null} if none. This information is associated with the
      *                      implementation method rather than the interface one, because it is specific to SIS.
      */
     @SuppressWarnings({"unchecked","rawtypes","LocalVariableHidesMemberVariable"})

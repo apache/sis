@@ -82,7 +82,7 @@ public final class WritableUntiledImage extends BufferedImage {
     private volatile int writeCount;
 
     /**
-     * The value associated to the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY} key.
+     * The value associated with the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY} key.
      * May be a {@code Function<RenderedImage, GridGeometry} if the grid geometry is computed when
      * first requested. This is {@code null} if there is no such property.
      *
@@ -120,7 +120,7 @@ public final class WritableUntiledImage extends BufferedImage {
     }
 
     /**
-     * Sets the value associated to the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY} key.
+     * Sets the value associated with the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY} key.
      * If the grid geometry is known in advance, it will be used. Otherwise the grid geometry will be
      * computed when first requested using the given supplier.
      *
@@ -150,12 +150,12 @@ public final class WritableUntiledImage extends BufferedImage {
     }
 
     /**
-     * Returns the property associated to the given key.
+     * Returns the property associated with the given key.
      * If the key is {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY},
      * then the {@link GridGeometry} will be computed when first needed.
      *
      * @param  name  name of the property to get.
-     * @return property value associated to the given name, or {@link #UndefinedProperty} if none.
+     * @return property value associated with the given name, or {@link #UndefinedProperty} if none.
      * @throws ImagingOpException if the property value cannot be computed.
      */
     @Override

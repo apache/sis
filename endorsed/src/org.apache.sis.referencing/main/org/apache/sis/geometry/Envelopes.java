@@ -1147,7 +1147,7 @@ poles:  for (int i=0; i<dimension; i++) {
     };
 
     /**
-     * Returns the time range of the first dimension associated to a temporal CRS.
+     * Returns the time range of the first dimension associated with a temporal CRS.
      * This convenience method converts floating point values to instants using
      * {@link org.apache.sis.referencing.crs.DefaultTemporalCRS#toInstant(double)}.
      *

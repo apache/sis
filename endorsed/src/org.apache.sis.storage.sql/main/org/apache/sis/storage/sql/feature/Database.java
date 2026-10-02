@@ -387,7 +387,7 @@ public class Database<G> extends Syntax {
             ignoredTables.put(crsTable,  null);  // `null` means that we have not yet checked if the table exists.
             ignoredTables.put(geomTable, null);
             /*
-             * Check if the database contains at least one "ignored" tables associated to `Boolean.TRUE`.
+             * Check if the database contains at least one "ignored" tables associated with `Boolean.TRUE`.
              * If many tables are found, ensure that the catalog and schema names are the same. If this
              * is not the case, no (catalog,schema) will be used and the search for spatial tables will
              * rely on the database "search path".
@@ -481,7 +481,7 @@ public class Database<G> extends Syntax {
      * @param  store               the data store for which we are creating a model. Used only in case of error.
      * @param  analyzer            the opaque temporary object used for analyzing the database schema.
      * @param  tableNames          qualified name of the tables. Specified by users at construction time.
-     * @param  queries             additional resources associated to SQL queries. Specified by users at construction time.
+     * @param  queries             additional resources associated with SQL queries. Specified by users at construction time.
      * @param  customizer          user-specified modification to the features, or {@code null} if none.
      * @param  spatialInformation  statements for fetching SRID, geometry types, <i>etc.</i>
      * @throws SQLException if a database error occurred while reading metadata.

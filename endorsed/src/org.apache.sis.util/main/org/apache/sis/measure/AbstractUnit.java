@@ -335,7 +335,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
 
     /**
      * Returns the base units used by Apache SIS implementations.
-     * Contrarily to {@link #getBaseUnits()}, this method never returns {@code null}.
+     * Contrary to {@link #getBaseUnits()}, this method never returns {@code null}.
      */
     abstract Map<SystemUnit<?>, Fraction> getBaseSystemUnits();
 

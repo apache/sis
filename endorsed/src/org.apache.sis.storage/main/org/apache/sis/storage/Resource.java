@@ -271,7 +271,7 @@ public interface Resource {
          * </ul>
          *
          * This method can be used for exporting the resource to a <abbr>ZIP</abbr> file if the given
-         * destination directory is associated to the file system of the {@code jdk.zipfs} module.
+         * destination directory is associated with the file system of the {@code jdk.zipfs} module.
          *
          * <h4>Default implementation</h4>
          * The default implementation performs a {@linkplain Files#copy(Path, Path, CopyOption...) copy operation}
@@ -316,7 +316,7 @@ public interface Resource {
 
         /**
          * Deletes the files used by the enclosing resource.
-         * The {@link DataStore} that contains the resource should be closed before to invoke this method.
+         * The {@link DataStore} that contains the resource should be closed before invoking this method.
          * This is not an atomic operation. If an exception is thrown, some files may still remain.
          *
          * <h4>Default implementation</h4>

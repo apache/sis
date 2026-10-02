@@ -562,7 +562,7 @@ public final class NilReason implements Serializable {
 
     /**
      * Returns the nil reason for the ordinal value extracted from the given floating point value.
-     * Caller should have verified that the value is NaN before to invoke this method.
+     * Caller should have verified that the value is NaN before invoking this method.
      *
      * @param  value  the floating point value for which to search the nil reason.
      * @return the nil reason, or {@code null} if none has been found for the given ordinal.

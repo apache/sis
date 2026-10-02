@@ -80,7 +80,7 @@ final class GroupByTransform extends Group<GridSlice> implements Comparator<Grid
     private int searchDimension;
 
     /**
-     * Creates a new group of objects associated to the given transform.
+     * Creates a new group of objects associated with the given transform.
      *
      * @param  parent     the parent group in which this group is a child.
      * @param  geometry   geometry of the grid coverage or resource.

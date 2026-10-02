@@ -39,7 +39,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
 
     /**
      * Number of <em>bytes</em> between a sample value of a pixel and the same sample value of the next pixel.
-     * Contrarily to similar fields in other classes, the value in this class is expressed in <em>bytes</em>
+     * Contrary to similar fields in other classes, the value in this class is expressed in <em>bytes</em>
      * rather than a count of sample values because this stride will be applied to {@link ByteBuffer} no matter
      * the data type.
      */
@@ -47,7 +47,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
 
     /**
      * Number of <em>bytes</em> between a column in a row and the same column in the next row.
-     * Contrarily to similar fields in other classes, the value in this class is expressed in <em>bytes</em>
+     * Contrary to similar fields in other classes, the value in this class is expressed in <em>bytes</em>
      * rather than a count of sample values because this stride will be applied to {@link ByteBuffer} no matter
      * the data type.
      *

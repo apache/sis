@@ -67,12 +67,12 @@ public final class CoordinateSystems {
     }
 
     /**
-     * Returns whether the given coordinate system can be associated to a {@link org.opengis.referencing.crs.GeodeticCRS}.
+     * Returns whether the given coordinate system can be associated with a {@link org.opengis.referencing.crs.GeodeticCRS}.
      * This is true for instances of {@link EllipsoidalCS}, {@link CartesianCS} and {@link SphericalCS},
      * and false for all other types of coordinate system.
      *
      * @param  cs  the coordinate system to test (can be {@code null}).
-     * @return whether the given coordinate system can be associated to a geodetic CRS.
+     * @return whether the given coordinate system can be associated with a geodetic CRS.
      *
      * @see #getSingleComponents(CoordinateSystem)
      * @since 1.3

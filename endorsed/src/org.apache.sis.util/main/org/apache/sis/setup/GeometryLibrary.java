@@ -50,7 +50,7 @@ public enum GeometryLibrary {
      *   <tr><td>{@link GeometryType#AREAL}</td>  <td>{@code java.awt.Shape}</td></tr>
      * </table>
      *
-     * Note that contrarily to JTS and ESRI libraries,
+     * Note that contrary to JTS and ESRI libraries,
      * a point does not extend any root geometry class in Java2D.
      */
     JAVA2D("Java2D"),
@@ -129,7 +129,7 @@ public enum GeometryLibrary {
     }
 
     /**
-     * Returns the name of this geometry library in a way suitable to user interfaces.
+     * Returns the name of this geometry library in a way suitable for user interfaces.
      * This is the same as {@link #name()} but sometime with different cases.
      * For example, {@link #JAVA2D} is shown as {@code "Java2D"}.
      *

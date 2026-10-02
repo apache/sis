@@ -79,7 +79,7 @@ public class MergedProperties extends AbstractMap<String,Object> {
      * If there is no default value, invokes {@link #invisibleEntry(Object)} in last resort.
      *
      * @param  key  the key for which to get the value.
-     * @return the value associated to the given key, or {@code null} if none.
+     * @return the value associated with the given key, or {@code null} if none.
      */
     @Override
     public Object get(final Object key) {
@@ -104,7 +104,7 @@ public class MergedProperties extends AbstractMap<String,Object> {
      * SIS, so we do no want to expose this implementation details.
      *
      * @param  key  the key for which to get the value.
-     * @return the value associated to the given key, or {@code null} if none.
+     * @return the value associated with the given key, or {@code null} if none.
      */
     protected Object invisibleEntry(final Object key) {
         return null;

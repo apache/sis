@@ -361,10 +361,10 @@ cellsize:       if (value != null) {
     }
 
     /**
-     * Returns the metadata associated to the ASII grid file.
+     * Returns the metadata associated with the ASII grid file.
      * The returned object contains only the metadata that can be computed without reading the whole image.
      *
-     * @return the metadata associated to the ASCII grid file.
+     * @return the metadata associated with the ASCII grid file.
      * @throws DataStoreException if an error occurred during the parsing process.
      */
     @Override

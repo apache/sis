@@ -407,7 +407,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * In this SIS implementation, the collection returned by this method includes the XML identifiers
      * ({@linkplain IdentifierSpace#ID ID}, {@linkplain IdentifierSpace#UUID UUID}, <i>etc.</i>),
      * as well as the {@linkplain #getISBN() ISBN} and {@linkplain #getISSN() ISSN} codes, thus
-     * providing a unified view of every kind of identifiers associated to this citation.
+     * providing a unified view of every kind of identifiers associated with this citation.
      *
      * <h4>XML marshalling note</h4>
      * The {@code <cit:identifier>} element marshalled to XML will exclude all the above cited identifiers,

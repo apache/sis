@@ -125,9 +125,9 @@ public enum ValueExistencePolicy {
     NON_EMPTY,
 
     /**
-     * Same as {@code NON_EMPTY}, but with the addition of titles associated to metadata objects.
-     * Metadata objects such as {@link Citation} are normally associated to no textual value.
-     * Texts are rather associated to <em>properties</em> of the metadata object.
+     * Same as {@code NON_EMPTY}, but with the addition of titles associated with metadata objects.
+     * Metadata objects such as {@link Citation} are normally associated with no textual value.
+     * Texts are rather associated with <em>properties</em> of the metadata object.
      * But some metadata classes have a property which can summarize the whole object.
      * For example, for {@link org.opengis.metadata.citation.Citation} objects, this property
      * is the {@linkplain org.opengis.metadata.citation.Citation#getTitle() citation title}.

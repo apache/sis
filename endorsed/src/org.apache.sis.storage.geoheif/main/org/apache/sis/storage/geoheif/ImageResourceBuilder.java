@@ -64,7 +64,7 @@ import org.apache.sis.pending.jdk.JDK18;
 
 /**
  * Helper class for building the grid geometry and sample dimensions of a grid coverage.
- * Also opportunistically builds the coverage metadata associated to the resource.
+ * Also opportunistically builds the coverage metadata associated with the resource.
  *
  * @author Johann Sorel (Geomatys)
  * @author Martin Desruisseaux (Geomatys)

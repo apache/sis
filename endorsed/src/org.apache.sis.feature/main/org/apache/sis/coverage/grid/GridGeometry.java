@@ -1026,7 +1026,7 @@ public class GridGeometry implements LenientComparable, Serializable {
 
     /**
      * Returns the coordinate reference system of the given envelope if defined, or {@code null} if none.
-     * Contrarily to {@link #getCoordinateReferenceSystem()}, this method does not throw exception.
+     * Contrary to {@link #getCoordinateReferenceSystem()}, this method does not throw exception.
      */
     private static CoordinateReferenceSystem getCoordinateReferenceSystem(final Envelope envelope) {
         return (envelope != null) ? envelope.getCoordinateReferenceSystem() : null;
@@ -1856,7 +1856,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * <ul>
      *   <li>an explicit identity "grid to <abbr>CRS</abbr>" transform, and</li>
-     *   <li>an {@link EngineeringCRS} associated to an engineering datum
+     *   <li>an {@link EngineeringCRS} associated with an engineering datum
      *       of the name given by the {@code datum} argument.</li>
      * </ul>
      *
@@ -1919,7 +1919,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @param  name    name of the CRS to create.
      * @param  anchor  the cell part to map (center or corner).
-     * @return a derived CRS for coordinates (cell indices) associated to the grid extent.
+     * @return a derived CRS for coordinates (cell indices) associated with the grid extent.
      * @throws IncompleteGridGeometryException if the CRS or "grid to CRS" transform is missing.
      *
      * @since 1.3
@@ -1951,7 +1951,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * created by (for example) {@link org.apache.sis.referencing.CRS#findOperation CRS.findOperation(…)}.
      * Otherwise (if there is no grid to <abbr>CRS</abbr> transform or no real-world <abbr>CRS</abbr>),
      * then this method creates an {@link org.opengis.referencing.crs.EngineeringCRS} instance
-     * associated to an engineering datum identified by the given {@code name}.
+     * associated with an engineering datum identified by the given {@code name}.
      *
      * <h4>Recommendation about the name</h4>
      * The {@code name} argument is not very important when this method creates {@link DerivedCRS} instances,
@@ -1967,7 +1967,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @param  name    name of the <abbr>CRS</abbr> to create.
      * @param  anchor  the cell part to map (center or corner).
-     * @return a derived, engineering or compound <abbr>CRS</abbr> for cell indices associated to the grid extent.
+     * @return a derived, engineering or compound <abbr>CRS</abbr> for cell indices associated with the grid extent.
      * @throws InvalidGeodeticParameterException if characteristics of this grid geometry disallow this operation.
      * @throws FactoryException if another error occurred during the use of a referencing factory.
      *
@@ -2027,7 +2027,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         ArgumentChecks.ensureNonNull("anchor", anchor);
         /*
          * Inverse `source` and `target` because `CoordinateOperationFinder.inverse(…)` does an
-         * effort for using `WraparoundTransform` only if needed (contrarily to `gridToCRS(…)`).
+         * effort for using `WraparoundTransform` only if needed (contrary to `gridToCRS(…)`).
          */
         final var finder = new CoordinateOperationFinder(target, this);
         finder.verifyPresenceOfCRS(false);

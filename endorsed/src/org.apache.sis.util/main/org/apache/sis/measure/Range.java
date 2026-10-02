@@ -71,9 +71,9 @@ import org.apache.sis.util.collection.CheckedContainer;
  * which may contain one or many {@code Range} instances. Consequently, this {@code Range} class
  * is closely related, but not identical, to the ISO 19123 definition or range.</p>
  *
- * <p>Ranges are not necessarily numeric. Numeric and non-numeric ranges can be associated to
+ * <p>Ranges are not necessarily numeric. Numeric and non-numeric ranges can be associated with
  * discrete coverages, while typically only
- * numeric ranges can be associated to continuous coverages.</p>
+ * numeric ranges can be associated with continuous coverages.</p>
  *
  * <h2>Immutability and thread safety</h2>
  * This class and the {@link NumberRange} / {@link MeasurementRange} subclasses are immutable,
@@ -629,7 +629,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      *       <li>They have equal {@linkplain #isMaxIncluded() inclusive maximum} flag.</li>
      *     </ul>
      *   <li>Any other requirement added by subclasses.
-     *       In particular {@link MeasurementRange} compares also the units of measurement.</li>
+     *       In particular {@link MeasurementRange} also compares the units of measurement.</li>
      * </ul>
      *
      * Note that this method may return {@code true} even if the bounds are not strictly identical.
@@ -777,7 +777,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * Returns {@code true} if the given number is formatted with only one character.
      * We will use less space if the minimum and maximum values are formatted using
      * only one digit. This method assumes that we have verified that the element type
-     * is an integer type before to invoke this method.
+     * is an integer type before invoking this method.
      */
     private static boolean isCompact(final Comparable<?> value, final boolean ifNull) {
         if (value == null) {

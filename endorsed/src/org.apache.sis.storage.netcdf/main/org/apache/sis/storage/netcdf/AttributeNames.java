@@ -662,7 +662,7 @@ public class AttributeNames {
         public final String ROLE;
 
         /**
-         * The role to use as a fallback if no attribute value is associated to the {@link #ROLE} key.
+         * The role to use as a fallback if no attribute value is associated with the {@link #ROLE} key.
          */
         public final Role DEFAULT_ROLE;
 
@@ -675,7 +675,7 @@ public class AttributeNames {
          * @param url          the attribute name for the responsible's URL.
          * @param email        the attribute name for the responsible's email address.
          * @param role         the attribute name for the responsible party role.
-         * @param defaultRole  the role to use as a fallback if no attribute value is associated to the {@code role} key.
+         * @param defaultRole  the role to use as a fallback if no attribute value is associated with the {@code role} key.
          *
          * @since 0.8
          */
@@ -976,11 +976,11 @@ public class AttributeNames {
 
         /**
          * The default ISO 19115 dimension name type, or {@code null} if none.
-         * By default, {@link DimensionNameType#COLUMN} is associated to longitudes and {@link DimensionNameType#ROW}
+         * By default, {@link DimensionNameType#COLUMN} is associated with longitudes and {@link DimensionNameType#ROW}
          * to latitudes since geographic maps in netCDF files are typically shown horizontally.
          *
          * <p>The default associations may not be always correct since the columns and rows can be anything.
-         * Strictly speaking, the dimension name types shall be associated to the <em>grid axes</em> rather
+         * Strictly speaking, the dimension name types shall be associated with the <em>grid axes</em> rather
          * than the <em>coordinate system axes</em>. However, the default association is correct in the common case
          * (for netCDF files) where there is no axis swapping in the <i>grid to CRS</i> conversion.</p>
          */
@@ -1136,7 +1136,7 @@ public class AttributeNames {
 
     /**
      * The {@value} attribute name for the designation associated with a range element.
-     * This attribute can be associated to {@linkplain VariableSimpleIF variables}.
+     * This attribute can be associated with {@linkplain VariableSimpleIF variables}.
      * If specified, they shall be one flag name for each {@linkplain #FLAG_MASKS flag mask},
      * {@linkplain #FLAG_VALUES flag value} and {@linkplain #FLAG_MEANINGS flag meaning}.
      *

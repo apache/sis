@@ -31,7 +31,7 @@ import org.apache.sis.metadata.simple.SimpleMetadata;
 /**
  * A dummy implementation of {@link org.opengis.metadata.Metadata} with minimal XML (un)marshalling capability.
  * Used for testing marshalling of legacy ISO 19139:2007 attributes.
- * Contrarily to {@link org.apache.sis.metadata.iso.DefaultMetadata}, this mock does not set automatically
+ * Contrary to {@link org.apache.sis.metadata.iso.DefaultMetadata}, this mock does not set automatically
  * the {@link org.apache.sis.xml.XML#LOCALE} attribute according the {@code <mdb:defaultLocale>} element.
  * So this mock makes easier to test localization aspects without the interference of automatic mechanism.
  *

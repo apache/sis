@@ -301,7 +301,7 @@ public final class SelectionClause extends SQLBuilder {
     /**
      * Declares that the <abbr>SQL</abbr> fragment contains at least one function.
      * Java methods that format a <abbr>SQL</abbr> fragment should invoke this method
-     * last for ensuring that the topmost function has precedence.
+     * last to ensure that the topmost function has precedence.
      *
      * @param returnType the return type of the function.
      */

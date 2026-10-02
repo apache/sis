@@ -299,7 +299,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
         countryCount.merge(c.country, 1, (o, n) -> n+1);
         /*
          * Associations using Relation.Direction.EXPORT.
-         * Contrarily to the IMPORT case, those associations can contain many values.
+         * Contrary to the IMPORT case, those associations can contain many values.
          */
         final Collection<?> actualParks = (Collection<?>) feature.getPropertyValue("parks");
         assertNotNull(actualParks);

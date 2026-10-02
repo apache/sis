@@ -121,7 +121,7 @@ public final class DoubleDouble extends Number implements Comparable<DoubleDoubl
     };
 
     /**
-     * The errors associated to the values in the {@link #VALUES} array.
+     * The errors associated with the values in the {@link #VALUES} array.
      *
      * <p>Tips:</p>
      * <ul>

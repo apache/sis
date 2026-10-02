@@ -288,7 +288,7 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
 
     /**
      * Unconditionally adds the logging message to the {@link #messages} list.
-     * Contrarily to {@link #isLoggable(LogRecord)}, this method does not check
+     * Contrary to {@link #isLoggable(LogRecord)}, this method does not check
      * ownership or the log level.
      *
      * @param  record  the log record to add to the {@link #messages} list.

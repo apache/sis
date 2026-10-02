@@ -202,7 +202,7 @@ public abstract class MapProjection extends AbstractProvider {
      * Validates the given parameter value. This method duplicates the verification already
      * done by {@link org.apache.sis.parameter.DefaultParameterValue#setValue(Object, Unit)}.
      * But we check again because we have no guarantee that the parameters given by the user
-     * were instances of {@code DefaultParameterValue}, or that the descriptor associated to
+     * were instances of {@code DefaultParameterValue}, or that the descriptor associated with
      * the user-specified {@code ParameterValue} has sufficient information.
      *
      * @param  descriptor  the descriptor that specify the parameter to validate.

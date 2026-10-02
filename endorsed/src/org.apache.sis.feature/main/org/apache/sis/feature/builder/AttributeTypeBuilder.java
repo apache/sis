@@ -94,7 +94,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     private boolean isIdentifier;
 
     /**
-     * Builders for the characteristics associated to the attribute.
+     * Builders for the characteristics associated with the attribute.
      */
     final List<CharacteristicTypeBuilder<?>> characteristics;
 
@@ -218,7 +218,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      *
      * In addition to the path specified by the {@code components} array, the name may also contain
      * a namespace specified by the last call to {@link FeatureTypeBuilder#setNameSpace(CharSequence)}.
-     * But contrarily to the specified components, the namespace will not be visible in the name
+     * But contrary to the specified components, the namespace will not be visible in the name
      * {@linkplain org.apache.sis.util.iso.DefaultScopedName#toString() string representation} unless the
      * {@linkplain org.apache.sis.util.iso.DefaultScopedName#toFullyQualifiedName() fully qualified name} is requested.
      *
@@ -391,10 +391,10 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     }
 
     /**
-     * Returns the unit of measurement associated to attribute values.
+     * Returns the unit of measurement associated with attribute values.
      * This convenience method returns the value of the characteristic set by {@link #setUnit(Unit)}.
      *
-     * @return the unit of measurement associated to attribute values, or {@code null}.
+     * @return the unit of measurement associated with attribute values, or {@code null}.
      */
     public Unit<?> getUnit() {
         return (Unit<?>) getCharacteristic(AttributeConvention.UNIT_CHARACTERISTIC);
@@ -408,7 +408,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * <p>This is a convenience method for {@link #addCharacteristic(Class)} with a value
      * of type {@link Unit} and a conventional name.</p>
      *
-     * @param  unit  unit of measurement associated to attribute values, or {@code null}.
+     * @param  unit  unit of measurement associated with attribute values, or {@code null}.
      * @return {@code this} for allowing method calls chaining.
      *
      * @see #characteristics()
@@ -418,10 +418,10 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     }
 
     /**
-     * Returns the coordinate reference system associated to attribute values.
+     * Returns the coordinate reference system associated with attribute values.
      * This convenience method returns the value of the characteristic set by {@link #setCRS(CoordinateReferenceSystem)}.
      *
-     * @return the coordinate reference system associated to attribute values, or {@code null}.
+     * @return the coordinate reference system associated with attribute values, or {@code null}.
      */
     public CoordinateReferenceSystem getCRS() {
         return (CoordinateReferenceSystem) getCharacteristic(AttributeConvention.CRS_CHARACTERISTIC);
@@ -435,7 +435,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * <p>This is a convenience method for {@link #addCharacteristic(Class)} with a value
      * of type {@link CoordinateReferenceSystem} and a conventional name.</p>
      *
-     * @param  crs  coordinate reference system associated to attribute values, or {@code null}.
+     * @param  crs  coordinate reference system associated with attribute values, or {@code null}.
      * @return {@code this} for allowing method calls chaining.
      *
      * @see #characteristics()
@@ -662,7 +662,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     }
 
     /**
-     * Returns {@code true} if {@link AttributeRole#IDENTIFIER_COMPONENT} has been associated to this attribute.
+     * Returns {@code true} if {@link AttributeRole#IDENTIFIER_COMPONENT} has been associated with this attribute.
      */
     @Override
     boolean isIdentifier() {

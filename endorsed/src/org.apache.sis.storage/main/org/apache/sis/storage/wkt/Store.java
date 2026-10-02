@@ -141,12 +141,12 @@ final class Store extends URIDataStore {
     }
 
     /**
-     * Returns the metadata associated to the parsed objects, or {@code null} if none.
+     * Returns the metadata associated with the parsed objects, or {@code null} if none.
      * The current implementation retains only instances of {@link ReferenceSystem}
      * and ignore other objects. The identification information {@code Citation} is
      * set to the CRS name and identifier, unless there is ambiguity.
      *
-     * @return the metadata associated to the parsed object, or {@code null} if none.
+     * @return the metadata associated with the parsed object, or {@code null} if none.
      * @throws DataStoreException if an error occurred during the parsing process.
      */
     @Override

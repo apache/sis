@@ -170,7 +170,7 @@ public enum URIDataStoreOption {
     }
 
     /**
-     * Returns the parameter associated to this enumeration.
+     * Returns the parameter associated with this enumeration.
      *
      * @return the parameter (never {@code null}).
      * @throws IllegalStateException if the parameter has not yet been initialized.

@@ -65,7 +65,7 @@ public final class Legacy {
     /**
      * Key for the <code>{@value}</code> property to be given to {@code DerivedCRS} constructors.
      * This is used for specifying which interface the derived CRS should implement.
-     * If no value is associated to this key, then the interface will be inferred
+     * If no value is associated with this key, then the interface will be inferred
      * from the type of the base CRS and the derived coordinate system.
      *
      * <p>Value shall be an instance of {@code Class} such as {@code EngineeringCRS.class}.

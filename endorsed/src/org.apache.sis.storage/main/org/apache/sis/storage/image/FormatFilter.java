@@ -174,7 +174,7 @@ enum FormatFilter {
 
     /**
      * Creates a new reader for the given input. Caller needs to invoke this method with an initially empty
-     * {@code deferred} map, which will be populated by this method. Providers associated to {@code TRUE}
+     * {@code deferred} map, which will be populated by this method. Providers associated with {@code TRUE}
      * should be tested again by the caller with an {@link ImageInputStream} created by the caller.
      * This is intentionally not done automatically by {@link StorageConnector}.
      *
@@ -216,7 +216,7 @@ enum FormatFilter {
 
     /**
      * Creates a new writer for the given output. Caller needs to invoke this method with an initially empty
-     * {@code deferred} map, which will be populated by this method. Providers associated to {@code TRUE}
+     * {@code deferred} map, which will be populated by this method. Providers associated with {@code TRUE}
      * should be tested again by the caller with an {@link ImageOutputStream} created by the caller.
      * This is intentionally not done automatically by {@link StorageConnector}.
      *

@@ -47,9 +47,9 @@ public abstract class Node extends NamedElement {
     }
 
     /**
-     * Returns the names of all attributes associated to this variable.
+     * Returns the names of all attributes associated with this variable.
      *
-     * @return names of all attributes associated to this variable.
+     * @return names of all attributes associated with this variable.
      */
     public abstract Collection<String> getAttributeNames();
 

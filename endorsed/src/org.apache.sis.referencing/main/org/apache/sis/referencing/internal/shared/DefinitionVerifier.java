@@ -299,7 +299,7 @@ public final class DefinitionVerifier {
 
     /**
      * Indicates in which part of CRS description a difference has been found. Numerical values must match the number
-     * in the {@code {choice}} instruction in the message associated to {@link Resources.Keys#NonConformCRS_3}.
+     * in the {@code {choice}} instruction in the message associated with {@link Resources.Keys#NonConformCRS_3}.
      */
     private static final int METHOD=0, CONVERSION=1, CS=2, ELLIPSOID=3, PRIME_MERIDIAN=4, DATUM=5, OTHER=6;
 

@@ -632,7 +632,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * Returns {@code true} if the given base type may be the same or a super-type of the given type, using only
      * the name as a criterion. This is a faster check than {@link #isAssignableFrom(DefaultFeatureType)}.
      *
-     * <p>Performance note: callers should verify that {@code base != type} before to invoke this method.</p>
+     * <p>Performance note: callers should verify that {@code base != type} before invoking this method.</p>
      *
      * <p><b>API note:</b> a non-static method would be more elegant in this "SIS for GeoAPI 3.0" branch.
      * However this method needs to be static in other SIS branches, because they work with interfaces

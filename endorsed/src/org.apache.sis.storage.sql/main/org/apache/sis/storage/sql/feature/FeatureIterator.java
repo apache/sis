@@ -279,7 +279,7 @@ final class FeatureIterator implements Spliterator<AbstractFeature>, AutoCloseab
                      *
                      * We do not cache dependencies for `Relation.Direction.EXPORT`
                      * (when another table references this table) because that direction can return
-                     * a lot of instances, contrarily to `IMPORT` which returns only one instance.
+                     * a lot of instances, contrary to `IMPORT` which returns only one instance.
                      * Furthermore, instances fetched from `Direction.EXPORT` cannot be
                      * shared by feature instances, so caching would be useless here.
                      */

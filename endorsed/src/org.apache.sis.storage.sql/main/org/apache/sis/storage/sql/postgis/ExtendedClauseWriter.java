@@ -28,7 +28,7 @@ import org.apache.sis.pending.geoapi.filter.SpatialOperatorName;
  * with PostGIS-specific syntax where useful.
  *
  * This class adds the search by bounding box using the {@code &&} operator.
- * Note that contrarily to standard operators such as {@code ST_Intersects},
+ * Note that contrary to standard operators such as {@code ST_Intersects},
  * the {@code &&} operator does not verify the <abbr>CRS</abbr>.
  * No error message is raised is case of mismatched CRS.
  *

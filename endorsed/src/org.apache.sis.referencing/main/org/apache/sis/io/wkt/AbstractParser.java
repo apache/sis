@@ -344,7 +344,7 @@ abstract class AbstractParser implements Parser {
      * Subclasses will typically get the name of the first element and delegate to a specialized method
      * such as {@code parseAxis(…)}, {@code parseEllipsoid(…)}, {@code parseTimeDatum(…)}, <i>etc</i>.
      *
-     * <p>Callers should clear {@link #ignoredElements} before to invoke this method.
+     * <p>Callers should clear {@link #ignoredElements} before invoking this method.
      * Cleaning {@link #warnings} can be done for safety but should not be necessary.</p>
      *
      * @param  element  the element to be parsed.
@@ -397,7 +397,7 @@ abstract class AbstractParser implements Parser {
     }
 
     /**
-     * Parses the given unit name or symbol. Contrarily to other {@code parseFoo()} methods,
+     * Parses the given unit name or symbol. Contrary to other {@code parseFoo()} methods,
      * this method has no {@link ParsePosition} and expects the given string to be the full unit symbol.
      */
     final Unit<?> parseUnit(final String text) throws MeasurementParseException {

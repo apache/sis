@@ -102,7 +102,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  * <h2>Choosing the range of longitude values</h2>
  * Geographic CRS typically have longitude values in the [-180 … +180]° range, but the [0 … 360]°
  * range is also occasionally used. Users of this class need to ensure that this envelope CRS is
- * associated to axes having the desired {@linkplain CoordinateSystemAxis#getMinimumValue() minimum}
+ * associated with axes having the desired {@linkplain CoordinateSystemAxis#getMinimumValue() minimum}
  * and {@linkplain CoordinateSystemAxis#getMaximumValue() maximum value}.
  *
  * <h2>Note on positive and negative zeros</h2>
@@ -551,7 +551,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
     }
 
     /**
-     * Returns the time range of the first dimension associated to a temporal CRS.
+     * Returns the time range of the first dimension associated with a temporal CRS.
      * This convenience method converts floating point values to instants using
      * {@link org.apache.sis.referencing.crs.DefaultTemporalCRS#toInstant(double)}.
      *

@@ -114,7 +114,7 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
          * Creates a new target with the same sample dimensions and visible band as the given image.
          * This is a convenience constructor for operations producing the same kind of data than an
          * existing image, taken as a template. The list of sample dimensions is fetched from the
-         * image property associated to the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY} key.
+         * image property associated with the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY} key.
          *
          * @param model     sample model of the computed image to colorize (mandatory).
          * @param template  the image from which to get the sample dimensions and visible band, or {@code null} if none.

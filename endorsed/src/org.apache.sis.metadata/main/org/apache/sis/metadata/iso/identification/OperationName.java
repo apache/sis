@@ -50,7 +50,7 @@ final class OperationName extends DefaultOperationMetadata {
     }
 
     /**
-     * For every instance of {@link DefaultCoupledResource} associated to an operation of kind {@code OperationName},
+     * For every instance of {@link DefaultCoupledResource} associated with an operation of kind {@code OperationName},
      * replaces the operation by a "real" {@link DefaultOperationMetadata} of the same name, if any.
      *
      * <p>This method updates the elements in the {@code coupledResources} collection in-place.

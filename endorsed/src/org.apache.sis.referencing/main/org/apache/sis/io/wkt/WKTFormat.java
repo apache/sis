@@ -604,7 +604,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     /**
      * Sets the preferred authority for choosing the projection and parameter names.
      * If non-null, the given priority will have precedence over the authority usually
-     * associated to the {@linkplain #getConvention() convention}. A {@code null} value
+     * associated with the {@linkplain #getConvention() convention}. A {@code null} value
      * restore the default behavior.
      *
      * @param  authority  the new authority, or {@code null} for inferring it from the convention.
@@ -867,7 +867,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * @param  name  the name to assign to the WKT fragment (case-sensitive). Must be a valid Unicode identifier.
      * @param  wkt   the Well Know Text (WKT) fragment represented by the given identifier.
      * @throws IllegalArgumentException if the given name is not a valid Unicode identifier
-     *         or if a fragment is already associated to that name.
+     *         or if a fragment is already associated with that name.
      * @throws ParseException if an error occurred while parsing the given WKT.
      */
     public void addFragment(final String name, final String wkt) throws IllegalArgumentException, ParseException {
@@ -894,7 +894,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @param  name        the Unicode identifier to assign to the WKT fragment.
      * @param  definition  root of the WKT fragment to add.
-     * @throws IllegalArgumentException if a fragment is already associated to the given name.
+     * @throws IllegalArgumentException if a fragment is already associated with the given name.
      */
     final void addFragment(final String name, final StoredTree definition) {
         if (fragments(true).putIfAbsent(name, definition) != null) {
@@ -927,7 +927,7 @@ public class WKTFormat extends CompoundFormat<Object> {
                 results.add(parser.textToTree(wkt, pos));
                 if (aliasKey == null) break;
                 /*
-                 * If we find a separator (usually a coma), search for another element. Contrarily to equivalent
+                 * If we find a separator (usually a coma), search for another element. Contrary to equivalent
                  * loop in `Element(AbstractParser, …)` constructor, we do not parse number or dates because we
                  * do not have a way as reliable as above-cited constructor to differentiate the kind of value.
                  */

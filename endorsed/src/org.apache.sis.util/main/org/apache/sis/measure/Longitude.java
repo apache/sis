@@ -95,7 +95,7 @@ public final class Longitude extends Angle {
 
     /**
      * Constructs a newly allocated object containing the longitude value of the given position.
-     * For this method, the longitude value is defined as the angular value associated to the first axis
+     * For this method, the longitude value is defined as the angular value associated with the first axis
      * oriented toward {@linkplain AxisDirection#EAST East} or {@linkplain AxisDirection#WEST West}.
      * Note that this is not necessarily the <i>geodetic longitudes</i> used in
      * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS};
@@ -106,7 +106,7 @@ public final class Longitude extends Angle {
      * then a unit conversion is applied.</p>
      *
      * @param  position  the coordinate from which to extract the longitude value in degrees.
-     * @throws IllegalArgumentException if the given coordinate it not associated to a CRS,
+     * @throws IllegalArgumentException if the given coordinate it not associated with a CRS,
      *         or if no axis oriented toward East or West is found, or if that axis does
      *         not use {@linkplain Units#isAngular angular units}.
      *

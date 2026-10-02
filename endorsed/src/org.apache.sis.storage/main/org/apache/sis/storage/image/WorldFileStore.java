@@ -226,7 +226,7 @@ public class WorldFileStore extends PRJDataStore {
      * Identifiers used by a resource. Identifiers must be unique in the data store,
      * so after an identifier has been used it cannot be reused anymore even if the
      * resource having that identifier has been removed.
-     * Values associated to identifiers tell whether the resource still exist.
+     * Values associated with identifiers tell whether the resource still exist.
      *
      * @see WorldFileResource#getIdentifier()
      */

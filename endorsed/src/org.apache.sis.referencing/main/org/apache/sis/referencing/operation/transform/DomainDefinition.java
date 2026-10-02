@@ -29,7 +29,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 
 /**
  * Specification about how to estimate a domain of validity for transforms.
- * Contrarily to {@linkplain CRS#getDomainOfValidity(CoordinateReferenceSystem) CRS domain of validity},
+ * Contrary to {@linkplain CRS#getDomainOfValidity(CoordinateReferenceSystem) CRS domain of validity},
  * this class estimates a domain based on mathematical behavior only, not on "real world" considerations.
  * For example, the Mercator projection tends to infinity when approaching poles, so it is recommended to
  * not use it above some latitude threshold, typically 80° or 84°. The exact limit is arbitrary.

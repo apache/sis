@@ -353,7 +353,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
     }
 
     /**
-     * Tests WKT 2 formatting. Contrarily to the WKT 1 formatting, in this case it does not matter
+     * Tests WKT 2 formatting. Contrary to the WKT 1 formatting, in this case it does not matter
      * if we mix the units of measurement because the unit is declared for each parameter and axis.
      *
      * @throws FactoryException if the CRS creation failed.

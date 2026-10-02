@@ -193,7 +193,7 @@ public enum Arithmetic {
     /**
      * Returns the product of the given numbers. If any argument is null (zero),
      * then this method returns {@code null} regardless the value of the other argument.
-     * In particular, 0 × NaN = 0 instead of NaN (contrarily to standard floating point).
+     * In particular, 0 × NaN = 0 instead of NaN (contrary to standard floating point).
      * This is intentional and a strong requirement for supporting matrix multiplication
      * and inversion where some dimensions have unknown (NaN) scale factor.
      *

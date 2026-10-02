@@ -22,7 +22,7 @@ import java.util.Objects;
 /**
  * An instance of an {@linkplain DefaultAssociationRole association role} containing at most one value.
  * The majority of features types contain associations restricted to such [0 … 1] cardinality.
- * While {@link MultiValuedAssociation} would be suitable to all cases, this {@code SingletonAssociation}
+ * While {@link MultiValuedAssociation} would be suitable for all cases, this {@code SingletonAssociation}
  * consumes less memory.
  *
  * <h2>Limitations</h2>

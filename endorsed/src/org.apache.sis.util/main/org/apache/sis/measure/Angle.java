@@ -147,7 +147,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
      * @param  positive  axis direction of positive values.
      * @param  negative  axis direction of negative values.
      * @return angular value in degrees.
-     * @throws IllegalArgumentException if the given coordinate it not associated to a CRS,
+     * @throws IllegalArgumentException if the given coordinate it not associated with a CRS,
      *         or if no axis oriented toward the given directions is found, or if that axis
      *         does not use {@linkplain Units#isAngular angular units}.
      */

@@ -166,7 +166,7 @@ public final class Styles {
     /**
      * Creates a grid pane of two columns and an arbitrary number of rows.
      * Each row contains a (label, control) pair, with all growths and shrinks applied on the second column.
-     * The controls must be associated to the given labels by {@link Label#getLabelFor()}.
+     * The controls must be associated with the given labels by {@link Label#getLabelFor()}.
      * If a label is {@code null}, then no row is created for that label.
      *
      * @param  row       index of the first row. If different than 0, then it is caller responsibility

@@ -324,7 +324,7 @@ final class FeatureStream extends DeferredStream<AbstractFeature> {
 
     /**
      * Counts the number of elements in the table. This method uses a simpler SQL statement than the one
-     * associated to the table. For example if a property is an association to another feature, the SQL
+     * associated with the table. For example if a property is an association to another feature, the SQL
      * statement will contain only the foreigner key values, not an inner join to the other feature table.
      */
     @Override

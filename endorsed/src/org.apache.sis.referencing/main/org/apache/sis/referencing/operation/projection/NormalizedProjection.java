@@ -405,10 +405,10 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * All descriptors in the map shall comply to the following constraints:
      *
      * <ul>
-     *   <li>Descriptors associated to {@link ParameterRole#SEMI_MAJOR}, {@link ParameterRole#SEMI_MINOR SEMI_MINOR},
+     *   <li>Descriptors associated with {@link ParameterRole#SEMI_MAJOR}, {@link ParameterRole#SEMI_MINOR SEMI_MINOR},
      *     {@link ParameterRole#FALSE_EASTING FALSE_EASTING} and {@link ParameterRole#FALSE_NORTHING FALSE_NORTHING}
      *     shall have the same linear unit of measurement (usually metre).</li>
-     *   <li>Descriptors associated to angular measures ({@link ParameterRole#CENTRAL_MERIDIAN} and
+     *   <li>Descriptors associated with angular measures ({@link ParameterRole#CENTRAL_MERIDIAN} and
      *     {@link ParameterRole#LATITUDE_OF_CONFORMAL_SPHERE_RADIUS LATITUDE_OF_CONFORMAL_SPHERE_RADIUS})
      *     shall use degrees.</li>
      * </ul>

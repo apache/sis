@@ -52,9 +52,9 @@ abstract class TemporalObject implements IdentifiedObject, LenientComparable, Se
     }
 
     /**
-     * Returns all identifiers associated to this temporal object.
+     * Returns all identifiers associated with this temporal object.
      *
-     * @return all identifiers associated to this object, or an empty collection if none.
+     * @return all identifiers associated with this object, or an empty collection if none.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")

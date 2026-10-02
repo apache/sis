@@ -229,7 +229,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      *   <li>If a string has been explicitly {@linkplain #add(Locale, String) added} for
      *       {@code Locale.ROOT}, then that string is returned.</li>
      *   <li>Otherwise, acknowledging that UML identifiers in OGC/ISO specifications are primarily
-     *       expressed in the English language, this method looks for strings associated to
+     *       expressed in the English language, this method looks for strings associated with
      *       {@link Locale#US} as an approximation of "unlocalized" strings.</li>
      *   <li>If no English string was found, then this method looks for a string for the
      *       {@linkplain Locale#getDefault() system default locale}.</li>

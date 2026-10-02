@@ -97,7 +97,7 @@ public final class PositionalAccuracyConstantTest extends TestCase {
     }
 
     /**
-     * Asserts that the numerical accuracy associated to the given metadata is the expected value.
+     * Asserts that the numerical accuracy associated with the given metadata is the expected value.
      *
      * @param metadata  the metadata to test.
      * @param expected  the expected accuracy value.

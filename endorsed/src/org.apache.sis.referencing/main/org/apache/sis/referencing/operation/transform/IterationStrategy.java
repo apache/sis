@@ -25,7 +25,7 @@ package org.apache.sis.referencing.operation.transform;
  * overlaps the region of the array to be read, it may be necessary to iterate over the points
  * in reverse order or to copy some points in a temporary array.
  * The {@link #suggest(int, int, int, int, int)  suggest(…)} method in this class returns a strategy
- * suitable to the {@code transform} arguments.
+ * suitable for the {@code transform} arguments.
  *
  * <h2>Usage</h2>
  * The following code gives a skeleton for a {@code AbstractMathTransform} implementation

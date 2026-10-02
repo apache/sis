@@ -556,7 +556,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable, Prin
      *     </ul>
      *   </li>
      *   <li>The {@linkplain DefaultParameterDescriptor#getDefaultValue() default value}
-     *       to return if there is no value associated to the above-cited name or alias.</li>
+     *       to return if there is no value associated with the above-cited name or alias.</li>
      *   <li>The {@linkplain DefaultParameterDescriptor#getUnit() unit of measurement}
      *       (if any) of numerical value to return.</li>
      *   <li>The {@linkplain DefaultParameterDescriptor#getValueClass() type} of value to return.</li>

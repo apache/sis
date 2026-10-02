@@ -65,7 +65,7 @@ public enum Predictor {
     /**
      * Returns the predictor for the given code.
      *
-     * @param  code  value associated to <abbr>TIFF</abbr> "predictor" tag.
+     * @param  code  value associated with <abbr>TIFF</abbr> "predictor" tag.
      * @return predictor for the given code.
      */
     public static Predictor valueOf(final int code) {

@@ -203,7 +203,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * Returns a sequence of numbers that hold the coordinates of this position in its reference system.
      *
      * <div class="note"><b>API note:</b>
-     * This method is final for ensuring consistency with the {@link #coordinates}, array field, which is public.</div>
+     * This method is final to ensure consistency with the {@link #coordinates}, array field, which is public.</div>
      *
      * @return a copy of the {@link #coordinates coordinates} array.
      *
@@ -237,7 +237,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * Returns the coordinate at the specified dimension.
      *
      * <div class="note"><b>API note:</b>
-     * This method is final for ensuring consistency with the {@link #coordinates}, array field, which is public.</div>
+     * This method is final to ensure consistency with the {@link #coordinates}, array field, which is public.</div>
      *
      * @param  dimension  the dimension in the range 0 to {@linkplain #getDimension() dimension}-1.
      * @return the coordinate at the specified dimension.

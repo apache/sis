@@ -416,7 +416,7 @@ public final class Matrices {
      *
      * <ul>
      *   <li>If some {@code srcAxes} directions cannot be mapped to {@code dstAxes} directions, then the transform
-     *       will silently drops the coordinates associated to those extra source axis directions.</li>
+     *       will silently drops the coordinates associated with those extra source axis directions.</li>
      *   <li>If some {@code dstAxes} directions cannot be mapped to {@code srcAxes} directions,
      *       then an exception will be thrown.</li>
      * </ul>

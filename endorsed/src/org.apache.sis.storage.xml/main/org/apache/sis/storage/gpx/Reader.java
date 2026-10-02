@@ -120,7 +120,7 @@ final class Reader extends StaxStreamReader {
 
     /**
      * Returns {@code true} if the current position of the given reader is the closing {@code </gpx>} tag.
-     * The reader event should be {@link #END_ELEMENT} before to invoke this method.
+     * The reader event should be {@link #END_ELEMENT} before invoking this method.
      */
     private boolean isEndGPX() {
         assert reader.isEndElement();

@@ -155,7 +155,7 @@ public class FeatureComparator {
      * Compares the feature instances or feature types specified at construction time.
      * If there is any aspect to ignore during comparisons, then the {@link #ignoredProperties},
      * {@link #ignoredCharacteristics}, {@link #ignoreDefinition}, {@link #ignoreDesignation} or
-     * {@link #ignoreDescription} flags should be set before to invoke this method.
+     * {@link #ignoreDescription} flags should be set before invoking this method.
      *
      * @throws AssertionError if the test fails.
      */

@@ -18,7 +18,7 @@ package org.apache.sis.storage.folder;
 
 import java.util.Map;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -109,14 +109,14 @@ class Store extends URIDataStore implements StoreResource, UnstructuredAggregate
      *
      * @see #getMetadata()
      */
-    private transient Metadata metadata;
+    private Metadata metadata;
 
     /**
      * Resources in the folder given at construction time, created when first needed.
      *
      * @see #components()
      */
-    transient Collection<Resource> components;
+    Collection<Resource> components;
 
     /**
      * The provider to use for probing the directory content, opening files and creating new files.
@@ -126,10 +126,10 @@ class Store extends URIDataStore implements StoreResource, UnstructuredAggregate
     protected final DataStoreProvider componentProvider;
 
     /**
-     * {@code true} if {@link #sharedRepository(Path)} has already been invoked for {@link #locationAsPath}.
+     * {@code true} if {@link #sharedDirectoryReported()} has already been invoked for {@link #locationAsPath}.
      * This is used for avoiding to report the same message many times.
      */
-    private transient boolean sharedRepositoryReported;
+    private boolean sharedDirectoryReported;
 
     /**
      * A structured view of this aggregate, or {@code null} if not net computed.
@@ -137,7 +137,7 @@ class Store extends URIDataStore implements StoreResource, UnstructuredAggregate
      *
      * @see #getStructuredView()
      */
-    private transient Resource structuredView;
+    private Resource structuredView;
 
     /**
      * Creates a new folder store from the given file, path or URI.
@@ -283,51 +283,50 @@ class Store extends URIDataStore implements StoreResource, UnstructuredAggregate
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public synchronized Collection<Resource> components() throws DataStoreException {
         if (components == null) {
-            final var resources = new ArrayList<DataStore>();
+            final var resources = new LinkedHashMap<Path, DataStore>();  // May contain null values for auxiliary files.
             final var nameFactory = DefaultNameFactory.provider();
+            DataStoreException closeErrors = null;
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(locationAsPath, this)) {
-                for (final Path candidate : stream) {
-                    /*
-                     * The candidate path may be a symbolic link to a file that we have previously read.
-                     * In such case, use the existing data store.   A use case is a directory containing
-                     * hundred of GeoTIFF files all accompanied by ".prj" files having identical content.
-                     * (Note: those ".prj" files should be invisible since they should be identified as
-                     * GeoTIFF auxiliary files, but current Store implementation does not know that).
-                     */
-                    final Path real = candidate.toRealPath();
-                    DataStore next = children.get(real);
-                    if (next instanceof Store) {
-                        ((Store) next).sharedRepository(real);          // Warn about directories only.
+                for (final Path childPath : stream) {
+                    final Path realPath = childPath.toRealPath();
+                    if (resources.containsKey(realPath)) {
+                        // Resource already added as an auxiliary file of another resource (for example, a ".prj" file).
+                        continue;
                     }
-                    if (next == null) {
+                    /*
+                     * The path of the child may be a symbolic link to a file that we have already read
+                     * in another directory. In such case, use (actually share) the existing data store.
+                     */
+                    DataStore child = children.get(realPath);
+                    if (child == null) {
                         /*
                          * The candidate file has never been read before. Try to read it now.
-                         * If the file format is unknown (UnsupportedStorageException), we will
-                         * check if we can open it as a child folder store before to skip it.
+                         * If the file format is unknown (UnsupportedStorageException),
+                         * try to open the path as a child folder store.
                          */
-                        final StorageConnector connector = new StorageConnector(configuration, candidate);
+                        final var connector = new StorageConnector(configuration, childPath);
                         connector.setOption(OptionKey.PARENT_LISTENERS, listeners);
                         connector.setOption(OptionKey.OPEN_OPTIONS, new StandardOpenOption[] {
                             StandardOpenOption.READ         // Restrict to read-only mode.
                         });
                         try {
                             if (componentProvider == null) {
-                                next = DataStores.open(connector);          // May throw UnsupportedStorageException.
+                                child = DataStores.open(connector);          // May throw UnsupportedStorageException.
                             } else if (componentProvider.probeContent(connector).isSupported()) {
-                                next = componentProvider.open(connector);   // Open a file of specified format.
-                            } else if (Files.isDirectory(candidate)) {
-                                next = new Store(this, connector, nameFactory);        // Open a sub-directory.
+                                child = componentProvider.open(connector);   // Open a file of specified format.
+                            } else if (Files.isDirectory(childPath)) {
+                                child = new Store(this, connector, nameFactory);    // Open a sub-directory.
                             } else {
                                 connector.closeAllExcept(null);             // Not the format specified at construction time.
                                 continue;
                             }
                         } catch (UnsupportedStorageException ex) {
-                            if (!Files.isDirectory(candidate)) {
+                            if (!Files.isDirectory(childPath)) {
                                 connector.closeAllExcept(null);
                                 listeners.warning(Level.FINE, null, ex);
                                 continue;
                             }
-                            next = new Store(this, connector, nameFactory);
+                            child = new Store(this, connector, nameFactory);
                         } catch (DataStoreException ex) {
                             try {
                                 connector.closeAllExcept(null);
@@ -336,20 +335,26 @@ class Store extends URIDataStore implements StoreResource, UnstructuredAggregate
                             }
                             throw ex;
                         }
-                        /*
-                         * At this point we got the data store. It could happen that a store for
-                         * the same file has been added concurrently, so we need to check again.
-                         */
-                        final DataStore existing = children.putIfAbsent(real, next);
-                        if (existing != null) {
-                            next.close();
-                            next = existing;
-                            if (next instanceof Store) {
-                                ((Store) next).sharedRepository(real);      // Warn about directories only.
+                    }
+                    /*
+                     * If the resource has auxiliary files and if we opened some of them as standalone resources,
+                     * close and exclude the latter. The null value is for remembering to not open that file again.
+                     */
+                    resources.put(realPath, child);
+                    for (final Path auxiliary : child.getFileSet().map(FileSet::getPaths).orElse(List.of())) {
+                        if (!realPath.equals(auxiliary)) {
+                            final DataStore existing = resources.put(auxiliary.toRealPath(), null);
+                            if (existing != null && !children.containsKey(realPath)) try {
+                                existing.close();
+                            } catch (DataStoreException ex) {
+                                if (closeErrors == null) {
+                                    closeErrors = ex;
+                                } else {
+                                    closeErrors.addSuppressed(ex);
+                                }
                             }
                         }
                     }
-                    resources.add(next);
                 }
             } catch (DirectoryIteratorException | UncheckedIOException ex) {
                 // The cause is an IOException (no other type allowed).
@@ -359,7 +364,45 @@ class Store extends URIDataStore implements StoreResource, UnstructuredAggregate
             } catch (BackingStoreException ex) {
                 throw ex.unwrapOrRethrow(DataStoreException.class);
             }
-            components = Containers.copyToImmutableList(resources, Resource.class);
+            /*
+             * Finished the iteration over all directory entries. Remove auxiliary files (null values).
+             * For non-null values, check if the store has already been opened in another directory.
+             * It may happen if the directory tree contains symbolic links.
+             */
+            for (var it = resources.entrySet().iterator(); it.hasNext();) {
+                final Map.Entry<Path, DataStore> entry = it.next();
+                final DataStore next = entry.getValue();
+                if (next == null) {
+                    it.remove();
+                    continue;
+                }
+                final Path realPath = entry.getKey();
+                final DataStore existing = children.putIfAbsent(realPath, next);
+                if (existing != null) {
+                    entry.setValue(existing);
+                    /*
+                     * Logs a warning if the path is a directory which has already been read.
+                     * It may happen if the directory tree contains symbolic links.
+                     * The warning will be reported one time per directory.
+                     */
+                    if (existing instanceof Store && ((Store) existing).sharedDirectoryReported()) {
+                        listeners.warning(message(Resources.Keys.SharedDirectory_1, realPath));
+                    }
+                    try {
+                        next.close();
+                    } catch (DataStoreException ex) {
+                        if (closeErrors == null) {
+                            closeErrors = ex;
+                        } else {
+                            closeErrors.addSuppressed(ex);
+                        }
+                    }
+                }
+            }
+            components = Containers.copyToImmutableList(resources.values(), Resource.class);
+            if (closeErrors != null) {
+                listeners.warning(Level.FINE, null, closeErrors);
+            }
         }
         return components;              // Safe because unmodifiable list.
     }
@@ -372,17 +415,13 @@ class Store extends URIDataStore implements StoreResource, UnstructuredAggregate
     }
 
     /**
-     * Logs a warning about a file that could be read, but happen to be a directory that we have read previously.
-     * We could add the existing {@link Aggregate} instance in the parent {@code Aggregate} that we are building,
-     * but doing so may create a cycle. Current version logs a warning instead because users may not be prepared
-     * to handle cycles. Note that we have no guarantee that a cycle really exists at this stage, only that it may
-     * exist.
+     * Whether to logs a warning about a file that could be read,
+     * but happens to be a directory that we have read before.
      */
-    private void sharedRepository(final Path candidate) {
-        if (!sharedRepositoryReported) {
-            sharedRepositoryReported = true;
-            listeners.warning(message(Resources.Keys.SharedDirectory_1, candidate));
-        }
+    private synchronized boolean sharedDirectoryReported() {
+        final boolean r = sharedDirectoryReported;
+        sharedDirectoryReported = true;
+        return r;
     }
 
     /**

@@ -78,7 +78,7 @@ public final class AttributeConventionTest extends TestCase {
         assertFalse(AttributeConvention.characterizedByCRS(attribute));
         assertFalse(attribute.characteristics().containsKey(AttributeConvention.CRS));
         /*
-         * Creates an attribute associated to an attribute (i.e. a "characteristic") for storing
+         * Creates an attribute associated with an attribute (i.e. a "characteristic") for storing
          * the Coordinate Reference System of the "geometry" attribute. Then test again.
          */
         final var characteristic = new DefaultAttributeType<CoordinateReferenceSystem>(
@@ -107,7 +107,7 @@ public final class AttributeConventionTest extends TestCase {
         assertFalse(AttributeConvention.characterizedByMaximalLength(attribute));
         assertNull(AttributeConvention.getMaximalLengthCharacteristic(null, attribute));
         /*
-         * Creates an attribute associated to an attribute (i.e. a "characteristic") for storing
+         * Creates an attribute associated with an attribute (i.e. a "characteristic") for storing
          * the maximal length of the "name" attribute. Then test again.
          */
         final var characteristic = new DefaultAttributeType<Integer>(

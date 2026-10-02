@@ -221,7 +221,7 @@ public final class Cloner {
      * This method may be convenient when there is only one object to clone, otherwise instantiating a new
      * {@code Cloner} object is more efficient.
      *
-     * <p>Callers should test {@code if (object instanceof Cloneable)} before to invoke this method.</p>
+     * <p>Callers should test {@code if (object instanceof Cloneable)} before invoking this method.</p>
      *
      * @param  object  the object to clone, or {@code null}.
      * @return the given object (which may be {@code null}) or a clone of the given object.

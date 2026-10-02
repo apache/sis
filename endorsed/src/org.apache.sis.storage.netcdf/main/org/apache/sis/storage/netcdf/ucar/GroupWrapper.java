@@ -50,7 +50,7 @@ final class GroupWrapper extends Node {
     }
 
     /**
-     * Returns the names of all attributes associated to this node.
+     * Returns the names of all attributes associated with this node.
      */
     @Override
     public Collection<String> getAttributeNames() {

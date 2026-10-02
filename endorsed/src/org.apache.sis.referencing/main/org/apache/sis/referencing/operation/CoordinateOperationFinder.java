@@ -98,7 +98,7 @@ import org.apache.sis.temporal.TemporalDate;
  *   <li>If the above authority factory does not know about the specified CRS, then this class tries to
  *       infer the coordinate operation by itself. The CRS type is examined and the work is dispatched
  *       to one or many of the {@code createOperationStep(…)} protected methods defined in this class.
- *       Those methods use properties associated to the CRS, including {@code BOUNDCRS} or {@code TOWGS84}
+ *       Those methods use properties associated with the CRS, including {@code BOUNDCRS} or {@code TOWGS84}
  *       elements found in <i>Well Known Text</i> (WKT).
  *
  *       <div class="note"><b>Note:</b> the use of elements like {@code TOWGS84} is known as the
@@ -133,7 +133,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      *
      * <ul>
      *   <li>If the value is an instance of {@link Integer}, then this is the number
-     *       of identifiers derived from the identifier associated to the key.</li>
+     *       of identifiers derived from the identifier associated with the key.</li>
      *   <li>Otherwise the key is itself an {@link Identifier} derived from another
      *       identifier, and the value is that identifier.</li>
      * </ul>

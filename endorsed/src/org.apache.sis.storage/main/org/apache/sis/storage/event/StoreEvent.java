@@ -76,11 +76,11 @@ public abstract class StoreEvent extends EventObject implements Localized {
     }
 
     /**
-     * Returns the locale associated to this event, or {@code null} if unspecified.
+     * Returns the locale associated with this event, or {@code null} if unspecified.
      * That locale may be used for formatting messages related to this event.
      * The event locale is typically inherited from the {@link DataStore} locale.
      *
-     * @return the locale associated to this event (typically specified by the data store),
+     * @return the locale associated with this event (typically specified by the data store),
      *         or {@code null} if unknown.
      *
      * @see DataStore#getLocale()

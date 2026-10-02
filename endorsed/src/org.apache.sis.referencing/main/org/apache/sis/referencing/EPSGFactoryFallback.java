@@ -244,7 +244,7 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
     }
 
     /**
-     * Returns a coordinate system for the given EPSG code. Contrarily to other kinds of objects,
+     * Returns a coordinate system for the given EPSG code. Contrary to other kinds of objects,
      * coordinate systems are not cached because we cannot use {@link CommonCRS} as a store for
      * them (because all enumerated values use the same coordinate systems). The lack of caching
      * should not be an issue since standalone CS objects (without CRS) are rarely be needed.

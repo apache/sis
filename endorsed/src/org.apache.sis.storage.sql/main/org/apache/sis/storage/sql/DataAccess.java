@@ -51,7 +51,7 @@ import org.apache.sis.util.resources.Errors;
  * but also whether to acquire a {@linkplain ReadWriteLock#readLock() read lock}
  * or a {@linkplain ReadWriteLock#writeLock() write lock} if locking is needed.
  *
- * <p>This object shall be used in a {@code try ... finally} block for ensuring that the connection
+ * <p>This object shall be used in a {@code try ... finally} block to ensure that the connection
  * is closed and the lock (if any) released. Note that the <abbr>SQL</abbr> connection does not need
  * to be closed by users, because it will be closed by the {@link #close()} method of this data access
  * object. Example:</p>
@@ -211,7 +211,7 @@ public class DataAccess implements AutoCloseable {
     }
 
     /**
-     * Returns the coordinate reference system associated to the given identifier. The spatial reference
+     * Returns the coordinate reference system associated with the given identifier. The spatial reference
      * system identifiers (<abbr>SRID</abbr>) are the primary keys of the {@code "SPATIAL_REF_SYS"} table
      * (the name of that table may vary depending on which spatial schema standard is used).
      * Those identifiers are specific to each database and are not necessarily related to EPSG codes.
@@ -230,9 +230,9 @@ public class DataAccess implements AutoCloseable {
      * applied. It is data producer's responsibility to provide definitions with the expected axis order.
      *
      * @param  srid  a primary key value of the {@code "SPATIAL_REF_SYS"} table.
-     * @return the <abbr>CRS</abbr> associated to the given <abbr>SRID</abbr>, or {@code null} if the given
-     *         <abbr>SRID</abbr> is a code explicitly associated to an undefined <abbr>CRS</abbr>.
-     * @throws NoSuchDataException if no <abbr>CRS</abbr> is associated to the given <abbr>SRID</abbr>.
+     * @return the <abbr>CRS</abbr> associated with the given <abbr>SRID</abbr>, or {@code null} if the given
+     *         <abbr>SRID</abbr> is a code explicitly associated with an undefined <abbr>CRS</abbr>.
+     * @throws NoSuchDataException if no <abbr>CRS</abbr> is associated with the given <abbr>SRID</abbr>.
      * @throws DataStoreReferencingException if the <abbr>CRS</abbr> definition cannot be parsed.
      * @throws DataStoreException if the query failed for another reason.
      */
@@ -258,7 +258,7 @@ public class DataAccess implements AutoCloseable {
     }
 
     /**
-     * Returns the <abbr>SRID</abbr> associated to the given spatial reference system.
+     * Returns the <abbr>SRID</abbr> associated with the given spatial reference system.
      * This method is the converse of {@link #findCRS(int)}.
      *
      * <h4>Potential write operation</h4>

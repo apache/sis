@@ -159,7 +159,7 @@ abstract class DynamicOptimization<T> {
 
         /**
          * Optimizes the original filter using the given setting.
-         * The target feature type shall be set by the caller before to invoke this method.
+         * The target feature type shall be set by the caller before invoking this method.
          *
          * @param  optimizer  the optimization to apply on the original filter.
          * @return the optimized filter, or {@link #original} if no change.
@@ -286,7 +286,7 @@ abstract class DynamicOptimization<T> {
 
         /**
          * Optimizes the original expressions using the given setting.
-         * The target feature type shall be set by the caller before to invoke this method.
+         * The target feature type shall be set by the caller before invoking this method.
          *
          * @param  optimizer  the optimization to apply on the original expression.
          * @return the optimized expression, or {@link #original} if no change.

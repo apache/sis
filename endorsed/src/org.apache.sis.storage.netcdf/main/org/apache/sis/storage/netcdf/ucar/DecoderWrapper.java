@@ -532,7 +532,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
             List<CoordinateSystem> systems = List.of();
             if (file instanceof NetcdfDataset) {
                 /*
-                 * We take all coordinate systems as associated to a grid. As an alternative,
+                 * We take all coordinate systems as associated with a grid. As an alternative,
                  * we tried to invoke `getFeatureDataSet()` and cast to UCAR `GridDataset`,
                  * but it causes the loading of large data for an end result often the same.
                  */

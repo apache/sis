@@ -96,7 +96,7 @@ import org.apache.sis.referencing.operation.transform.MathTransformBuilder;
  *       (i.e. search coordinate operation paths specified by authorities like the ones listed
  *       in the EPSG dataset), which is the preferred approach.</li>
  *   <li>{@link CoordinateOperationFinder} adds an <dfn>early-binding</dfn> approach
- *       (i.e. find a coordinate operation path by inspecting the properties associated to the CRS).
+ *       (i.e. find a coordinate operation path by inspecting the properties associated with the CRS).
  *       That approach is used only as a fallback when the late-binding approach gave no result.</li>
  * </ul>
  *

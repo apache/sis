@@ -139,7 +139,7 @@ final class NonSquareMatrix extends GeneralMatrix {
      *
      * <p>Conversely, if the matrix has more rows than columns (in a system of linear equations, the system would
      * be <i>overdetermined</i>), then we omit the rows containing only zero or NaN values. After the matrix
-     * inversion, we insert columns having only zero values for the dimensions associated to those rows.
+     * inversion, we insert columns having only zero values for the dimensions associated with those rows.
      * Semantically, the inverse matrix is a (x₁,y₁,z,t) → (x₂,y₂) transform that just discards the coordinate values
      * at the dimensions corresponding to those rows.</p>
      */

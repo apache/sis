@@ -69,7 +69,7 @@ public final class ScopedIdentifier<T> {
     /**
      * Stores an identified object for this identifier.
      * The identifier is typically {@link org.opengis.referencing.IdentifiedObject#getIdentifiers()}.
-     * If the given identifier is already associated to another identified object, a warning is logged.
+     * If the given identifier is already associated with another identified object, a warning is logged.
      * This method can be invoked many times if an object has many identifiers.
      *
      * @param  base    limit to follow when storing the object for parent interfaces.
@@ -102,10 +102,10 @@ public final class ScopedIdentifier<T> {
     }
 
     /**
-     * Returns the object associated to this scoped identifier.
+     * Returns the object associated with this scoped identifier.
      *
      * @param  context  the unmarshalling context. Shall not be null.
-     * @return the object associated to this scoped identifier, or {@code null} if none.
+     * @return the object associated with this scoped identifier, or {@code null} if none.
      */
     public T get(final Context context) {
         final Object value = context.identifiedObjects.get(this);

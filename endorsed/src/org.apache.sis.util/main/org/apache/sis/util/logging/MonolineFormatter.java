@@ -292,7 +292,7 @@ public class MonolineFormatter extends Formatter {
      * Constructs a {@code MonolineFormatter} configured for the given handler.
      *
      * <h4>Auto-configuration from the handler</h4>
-     * Formatters are often associated to a particular handler. If this handler is known, giving it at
+     * Formatters are often associated with a particular handler. If this handler is known, giving it at
      * construction time can help this formatter to configure itself. This handler is only a hint - it
      * will not be modified, and no reference to that handler will be kept by this constructor.
      *
@@ -533,7 +533,7 @@ loop:   for (int i=0; ; i++) {
 
     /**
      * Sets the color to use for the given level, or {@code null} for removing colorization.
-     * This method should be invoked only if this formatter is associated to a {@link Handler}
+     * This method should be invoked only if this formatter is associated with a {@link Handler}
      * writing to a terminal supporting <i>ANSI escape codes</i>
      * (a.k.a. ECMA-48, ISO/IEC 6429 and X3.64 standards).
      *
@@ -951,7 +951,7 @@ loop:   for (int i=0; ; i++) {
      * This method performs the following choices:
      *
      * <ul>
-     *   <li>If a {@link ConsoleHandler} is associated to the root logger, then:
+     *   <li>If a {@link ConsoleHandler} is associated with the root logger, then:
      *     <ul>
      *       <li>If that handler already uses a {@code MonolineFormatter}, then the existing formatter is returned.</li>
      *       <li>Otherwise the {@code ConsoleHandler} formatter is replaced by a new {@code MonolineFormatter} instance,
@@ -980,7 +980,7 @@ loop:   for (int i=0; ; i++) {
      * This method performs the following steps:
      *
      * <ul>
-     *   <li>If a {@link ConsoleHandler} is associated to the given logger, then:
+     *   <li>If a {@link ConsoleHandler} is associated with the given logger, then:
      *     <ul>
      *       <li>If that handler already uses a {@code MonolineFormatter}, then the existing formatter is returned.</li>
      *       <li>Otherwise the {@code ConsoleHandler} formatter is replaced by a new {@code MonolineFormatter} instance,

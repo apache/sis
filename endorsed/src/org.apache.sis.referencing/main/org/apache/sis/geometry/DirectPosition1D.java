@@ -150,7 +150,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * Returns a sequence of numbers that hold the coordinate of this position in its reference system.
      *
      * <div class="note"><b>API note:</b>
-     * This method is final for ensuring consistency with the {@link #coordinate} field, which is public.</div>
+     * This method is final to ensure consistency with the {@link #coordinate} field, which is public.</div>
      *
      * @return the coordinates.
      *
@@ -165,7 +165,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * Returns the coordinate at the specified dimension.
      *
      * <div class="note"><b>API note:</b>
-     * This method is final for ensuring consistency with the {@link #coordinate} field, which is public.</div>
+     * This method is final to ensure consistency with the {@link #coordinate} field, which is public.</div>
      *
      * @param  dimension  the dimension, which must be 0.
      * @return the {@link #coordinate}.

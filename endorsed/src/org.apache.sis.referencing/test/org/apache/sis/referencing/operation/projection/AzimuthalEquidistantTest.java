@@ -108,7 +108,7 @@ public class AzimuthalEquidistantTest extends MapProjectionTestCase {
 
     /**
      * Tests with the point published in EPSG guidance note.
-     * Callers must set {@link #tolerance} before to invoke this method.
+     * Callers must set {@link #tolerance} before invoking this method.
      *
      * @param  semiMajor {@link #CLARKE_A}, or an alternative value if desired.
      * @param  semiMinor {@link #CLARKE_B}, or an alternative value if desired.

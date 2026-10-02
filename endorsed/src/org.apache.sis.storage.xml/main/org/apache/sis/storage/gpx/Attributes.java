@@ -19,7 +19,7 @@ package org.apache.sis.storage.gpx;
 
 /**
  * GPX attribute names in XML files.
- * Contrarily to {@link Tags}, attributes in GPX files have no namespace.
+ * Contrary to {@link Tags}, attributes in GPX files have no namespace.
  * Unless otherwise noticed by a "(v1.0)" or "(v1.1)" text in the javadoc,
  * attributes in this class apply to all supported GPX versions.
  *

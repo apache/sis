@@ -30,7 +30,7 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 /**
  * Tests the {@link Envelope2D} class.
  * Most tests are actually performed by {@link AbstractEnvelopeTest}, which compare
- * {@link GeneralEnvelope} results with {@code Envelope2D} results for ensuring consistency.
+ * {@link GeneralEnvelope} results with {@code Envelope2D} results to ensure consistency.
  * This class adds only some tests that are specific to {@code Envelope2D} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)

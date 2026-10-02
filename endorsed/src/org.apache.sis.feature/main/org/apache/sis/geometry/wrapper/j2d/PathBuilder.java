@@ -168,7 +168,7 @@ public class PathBuilder {
      * Applies a custom filtering on the coordinates of a polyline or polygon.
      * The default implementation does nothing. Subclasses can override this method for changing or removing some
      * coordinate values. For example, a subclass could decimate points using Ramer–Douglas–Peucker algorithm.
-     * Contrarily to {@link #filterChunk(double[], int, int)}, this method is invoked when the coordinates of
+     * Contrary to {@link #filterChunk(double[], int, int)}, this method is invoked when the coordinates of
      * the full polyline or polygon are available. If polyline points need to be transformed before to build
      * the final geometry, this is the right place to do so.
      *

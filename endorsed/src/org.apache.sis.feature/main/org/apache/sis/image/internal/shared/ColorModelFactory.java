@@ -164,7 +164,7 @@ public final class ColorModelFactory {
      * @param  dataType     one of the {@link DataBuffer} constants.
      * @param  numBands     the number of bands (usually 1).
      * @param  visibleBand  the visible band (usually 0).
-     * @param  colors       colors associated to their range of values.
+     * @param  colors       colors associated with their range of values.
      *
      * @see #createPiecewise(int, int, int, ColorsForRange[])
      */
@@ -257,7 +257,7 @@ public final class ColorModelFactory {
      * @param  dataType     one of the {@link DataBuffer} constants.
      * @param  numBands     the number of bands (usually 1).
      * @param  visibleBand  the visible band (usually 0).
-     * @param  colors       colors associated to their range of values.
+     * @param  colors       colors associated with their range of values.
      */
     private ColorModelFactory(final int dataType, final int numBands, final int visibleBand, final ColorModelFactory colors) {
         this.dataType    = dataType;
@@ -344,11 +344,11 @@ public final class ColorModelFactory {
     }
 
     /**
-     * Returns the color model associated to this {@code ColorModelFactory} instance.
+     * Returns the color model associated with this {@code ColorModelFactory} instance.
      * This method always returns a unique color model instance,
      * even if this {@code ColorModelFactory} instance is new.
      *
-     * @return the color model associated to this instance.
+     * @return the color model associated with this instance.
      */
     private ColorModel getColorModel() {
         synchronized (PIECEWISES) {
@@ -425,7 +425,7 @@ public final class ColorModelFactory {
 
     /**
      * Returns a color model interpolated for the given ranges and colors.
-     * This method builds up the color model from each set of colors associated to ranges in the given entries.
+     * This method builds up the color model from each set of colors associated with ranges in the given entries.
      * Returned instances of {@link ColorModel} are shared among all callers in the running virtual machine.
      *
      * <p>The given ranges are rounded to nearest integers and clamped to the range of 32 bits integer values.
@@ -439,7 +439,7 @@ public final class ColorModelFactory {
      *                      the {@code visibleBand} and ignore the others, but the existence of all {@code numBands} will
      *                      be at least tolerated. Supplemental bands, even invisible, are useful for processing.
      * @param  visibleBand  the band to be made visible (usually 0). All other bands, if any, will be ignored.
-     * @param  colors       the colors associated to ranges of sample values.
+     * @param  colors       the colors associated with ranges of sample values.
      * @return a color model suitable for {@link RenderedImage} objects with values in the given ranges.
      */
     static ColorModel createPiecewise(final int dataType, final int numBands, final int visibleBand,
@@ -804,7 +804,7 @@ public final class ColorModelFactory {
      *
      * <p>A gray scale color model is preferred to an index color model because gray scale gives
      * directly the intensity, while index color model is indirect (need to lookup in a table).
-     * Therefore, sample values associated to gray scale can be interpolated while sample values
+     * Therefore, sample values associated with gray scale can be interpolated while sample values
      * that are indexes cannot be interpolated easily.</p>
      */
     private static boolean isGrayScale(final int[] ARGB) {

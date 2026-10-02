@@ -236,7 +236,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
 
     /**
      * Returns telephone numbers at which the organization or individual may be contacted.
-     * This method returns the first telephone number associated to {@code TelephoneType.VOICE}
+     * This method returns the first telephone number associated with {@code TelephoneType.VOICE}
      * or {@code TelephoneType.FACSIMILE FACSIMILE}.
      *
      * @return telephone numbers at which the organization or individual may be contacted, or {@code null}.

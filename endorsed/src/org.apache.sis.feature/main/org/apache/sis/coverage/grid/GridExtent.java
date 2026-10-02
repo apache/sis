@@ -415,7 +415,7 @@ public class GridExtent implements Serializable, LenientComparable {
     /**
      * Suggests a grid dimension name for the given coordinate system axis.
      * Note that grid axes are not necessarily in the same order as CRS axes.
-     * This method may be used when the caller knows which CRS axis will be associated to a grid axis.
+     * This method may be used when the caller knows which CRS axis will be associated with a grid axis.
      *
      * @param  axis  the coordinate system axis for which to get a suggested grid dimension name.
      * @return suggested grid dimension for the given CRS axis.
@@ -1263,7 +1263,7 @@ public class GridExtent implements Serializable, LenientComparable {
     /**
      * Transforms this grid extent to a "real world" envelope using the given transform.
      * The given transform shall map <em>cell corners</em> to real world coordinates.
-     * The returned envelope is not associated to any <abbr>CRS</abbr> since the target
+     * The returned envelope is not associated with any <abbr>CRS</abbr> since the target
      * of the given transform is unknown.
      *
      * @param  cornerToCRS  a transform from <em>cell corners</em> to real world coordinates.
@@ -1412,7 +1412,7 @@ public class GridExtent implements Serializable, LenientComparable {
                 if (coordinates[srcDim + dimension] == 0 && coordinates[srcDim] == 0) {
                     /*
                      * At this point we found a grid dimension with [0 … 0] range. Only this specific range is processed because
-                     * it is assumed associated to NaN scale factors in the `gridToCRS` matrix, since the resolution is computed
+                     * it is assumed associated with NaN scale factors in the `gridToCRS` matrix, since the resolution is computed
                      * by 0/0.  We require the range to be [0 … 0] instead of [n … n] because if grid indices are not zero, then
                      * we would need to know the scale factors for computing the offset.
                      */
@@ -1456,7 +1456,7 @@ public class GridExtent implements Serializable, LenientComparable {
             /*
              * If above block has been unable to fix all NaN values, fix the remaining NaNs by copying the corresponding
              * coordinates from the fallback envelope. It should happen only for dimensions with a thickness of 1, i.e.
-             * when `low == high` but not necessarily `low == 0` and `high == 0` (contrarily to above block). We use this
+             * when `low == high` but not necessarily `low == 0` and `high == 0` (contrary to above block). We use this
              * fallback is last resort because the envelope may be less reliable than values computed from `gridToCRS`.
              */
             if (fallback != null) {

@@ -47,7 +47,7 @@ final class SubdatasetList extends AbstractList<Subdataset> {
     private final String[] urls;
 
     /**
-     * The description associated to each <abbr>URL</abbr>.
+     * The description associated with each <abbr>URL</abbr>.
      * May contain null values.
      */
     private final String[] descriptions;
@@ -76,7 +76,7 @@ final class SubdatasetList extends AbstractList<Subdataset> {
         this.parent = parent;
         this.driver = driver;
         /*
-         * URLs of all sub-dataset, optionally associated to their descriptions.
+         * URLs of all sub-dataset, optionally associated with their descriptions.
          * Keys are metadata keys. Values at index 0 are the URLs. Values at index 1 are descriptions.
          */
         final var subdatasets = new LinkedHashMap<String, String[]>(metadata.size());

@@ -75,8 +75,8 @@ final class PropertyComparator implements Comparator<Method> {
      *     </ul>
      *   </li>
      *
-     *   <li>Key is associated to an index that specify its position in descending order.
-     *       For example, the property associated to integer 0 shall be sorted last.
+     *   <li>Key is associated with an index that specify its position in descending order.
+     *       For example, the property associated with integer 0 shall be sorted last.
      *       This descending order is only an implementation convenience.</li>
      * </ul>
      */

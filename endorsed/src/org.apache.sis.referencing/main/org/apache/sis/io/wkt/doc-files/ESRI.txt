@@ -5,7 +5,7 @@
 # used for extending the set of CRS with custom definitions.
 #
 # Each Coordinate Reference System (or other geodetic object)
-# is defined by a string in WKT format. The key associated to
+# is defined by a string in WKT format. The key associated with
 # each object is given by the ID[…] or AUTHORITY[…] element,
 # which is typically the last element of a WKT string and is
 # mandatory for definitions in this file.

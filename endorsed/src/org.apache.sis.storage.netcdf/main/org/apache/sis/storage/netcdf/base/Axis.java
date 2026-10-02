@@ -101,8 +101,8 @@ public final class Axis extends NamedElement {
     final AxisDirection direction;
 
     /**
-     * The indices of the grid dimension associated to this axis. The length of this array is often 1.
-     * But if more than one grid dimension is associated to this axis (i.e. if the wrapped netCDF axis
+     * The indices of the grid dimension associated with this axis. The length of this array is often 1.
+     * But if more than one grid dimension is associated with this axis (i.e. if the wrapped netCDF axis
      * is an instance of {@link ucar.nc2.dataset.CoordinateAxis2D}),  then the first value is the grid
      * dimension which seems most closely oriented toward this axis direction. We do that for allowing
      * {@code MetadataReader.addSpatialRepresentationInfo(…)} method to get the most appropriate value
@@ -177,12 +177,12 @@ public final class Axis extends NamedElement {
     }
 
     /**
-     * Constructs a new axis associated to an arbitrary number of grid dimensions. The given arrays are stored
+     * Constructs a new axis associated with an arbitrary number of grid dimensions. The given arrays are stored
      * as-in (not cloned) and their content may be modified after construction by {@link Grid#getAxes(Decoder)}.
      *
      * @param  abbreviation          axis abbreviation, also identifying its type. This is a controlled vocabulary.
      * @param  direction             direction of positive values ("up" or "down"), or {@code null} if unknown.
-     * @param  gridDimensionIndices  indices of grid dimension associated to this axis, initially in netCDF order.
+     * @param  gridDimensionIndices  indices of grid dimension associated with this axis, initially in netCDF order.
      * @param  gridSizes             number of cell elements along above grid dimensions, as unsigned integers.
      * @param  dimension             number of valid elements in {@code gridDimensionIndices} and {@code gridSizes}.
      * @param  coordinates           coordinates of the localization grid used by this axis.
@@ -368,9 +368,9 @@ public final class Axis extends NamedElement {
      *
      * <ul>
      *   <li>If this method returns 0, then axis coordinates vary mostly in columns.
-     *       Or to be more accurate, in first grid dimension (in netCDF order) associated to this axis.</li>
+     *       Or to be more accurate, in first grid dimension (in netCDF order) associated with this axis.</li>
      *   <li>If this method returns 1, then axis coordinates vary mostly in rows.
-     *       Or to be more accurate, in second grid dimension (in netCDF order) associated to this axis.</li>
+     *       Or to be more accurate, in second grid dimension (in netCDF order) associated with this axis.</li>
      * </ul>
      *
      * If a grid has <var>n</var> dimensions but we copy in an array of length 2 the dimensions used by this
@@ -582,7 +582,7 @@ public final class Axis extends NamedElement {
          */
         final String alt = coordinates.getAttributeAsString(CDM.LONG_NAME);
         if (alt != null && !similar(alt, name)) {
-            properties.put(org.apache.sis.referencing.ImmutableIdentifier.DESCRIPTION_KEY, alt);   // Description associated to primary name.
+            properties.put(org.apache.sis.referencing.ImmutableIdentifier.DESCRIPTION_KEY, alt);   // Description associated with primary name.
             if (!similar(alt, standardName)) {
                 aliases.add(new NamedIdentifier(null, alt));                        // Additional alias.
             }
@@ -695,7 +695,7 @@ public final class Axis extends NamedElement {
                 }
             }
             /*
-             * In netCDF files, axes are sometimes associated to two-dimensional localization grids.
+             * In netCDF files, axes are sometimes associated with two-dimensional localization grids.
              * If this is the case, then the following block checks if we can reduce those grids to
              * one-dimensional vector. For example, the following localisation grids:
              *

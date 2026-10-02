@@ -197,7 +197,7 @@ public class StorageConnector implements Serializable {
     private static final byte CLEAR_ON_RESET = 4;
 
     /**
-     * Handler to {@code StorageConnector.createFoo()} methods associated to given storage types.
+     * Handler to {@code StorageConnector.createFoo()} methods associated with given storage types.
      * Each {@code createFoo()} method may be invoked once for opening an input stream, character
      * reader, database connection, <i>etc</i> from user supplied path, URI, <i>etc</i>.
      *
@@ -219,7 +219,7 @@ public class StorageConnector implements Serializable {
     }
 
     /**
-     * List of types recognized by {@link #getStorageAs(Class)}, associated to the methods for opening stream
+     * List of types recognized by {@link #getStorageAs(Class)}, associated with the methods for opening stream
      * of those types. This map shall contain every types documented in {@link #getStorageAs(Class)} javadoc.
      * {@code null} values means to use {@link ObjectConverters} for that particular type.
      */
@@ -313,12 +313,12 @@ public class StorageConnector implements Serializable {
      * The {@code null} reference can appear in various places:
      *
      * <ul>
-     *   <li>A non-existent entry (equivalent to an entry associated to the {@code null} value) means that the value
+     *   <li>A non-existent entry (equivalent to an entry associated with the {@code null} value) means that the value
      *       has not yet been computed.</li>
      *   <li>A {@linkplain Coupled#isValid valid entry} with {@link Coupled#view} set to {@code null} means the value
      *       has been computed and we have determined that {@link #getStorageAs(Class)} shall return {@code null} for
      *       that type.</li>
-     *   <li>By convention, the {@code null} key is associated to the {@link #storage} value.</li>
+     *   <li>By convention, the {@code null} key is associated with the {@link #storage} value.</li>
      * </ul>
      *
      * An empty map means that this {@code StorageConnector} has been closed.
@@ -1813,7 +1813,7 @@ public class StorageConnector implements Serializable {
      * This method does <strong>not</strong> {@linkplain #reset(Coupled) reset} the view.
      *
      * @param  type  the view type, or {@code null} for the {@link #storage} container.
-     * @return information associated to the given type. May be {@code null} if the view has never been
+     * @return information associated with the given type. May be {@code null} if the view has never been
      *         requested before. {@link Coupled#view} may be {@code null} if the view has been requested
      *         and we determined that none can be created.
      */
@@ -1928,7 +1928,7 @@ public class StorageConnector implements Serializable {
         /*
          * The "AutoCloseable.close() is not indempotent" problem
          * ------------------------------------------------------
-         * We will need a set of objects to close without duplicated values. For example, the values associated to the
+         * We will need a set of objects to close without duplicated values. For example, the values associated with the
          * `ImageInputStream.class` and `DataInput.class` keys are often the same instance.  We must avoid duplicated
          * values because `ImageInputStream.close()` is not indempotent,  i.e.  invoking their `close()` method twice
          * will throw an IOException.

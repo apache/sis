@@ -81,7 +81,7 @@ import org.apache.sis.test.GeoapiAssert;
 
 /**
  * Tests {@link CoordinateOperationFinder}.
- * Contrarily to {@link CoordinateOperationRegistryTest}, tests in this class are run without EPSG geodetic dataset.
+ * Contrary to {@link CoordinateOperationRegistryTest}, tests in this class are run without EPSG geodetic dataset.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -507,7 +507,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
 
     /**
      * Returns test coordinates for a transformation between {@link #AGD66()} and WGS84.
-     * We use this method for ensuring that {@link #testPositionVectorTransformation()}
+     * We use this method to ensure that {@link #testPositionVectorTransformation()}
      * and {@link DefaultCoordinateOperationFactoryTest#testPositionVectorTransformation()}
      * use the same data, as specified in {@link #AGD66()} contract.
      *

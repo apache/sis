@@ -52,7 +52,7 @@ public final class TemporalObjects {
     }
 
     /**
-     * Creates an instant for the given Java temporal instant associated to the indeterminate value.
+     * Creates an instant for the given Java temporal instant associated with the indeterminate value.
      * This is used for creating "before" or "after" instant.
      *
      * @param  position       the date and/or time for which to create instant.

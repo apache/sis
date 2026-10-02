@@ -101,7 +101,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  * </div></div>
  *
  * <h2>Envelope validation</h2>
- * If and only if this envelope is associated to a non-null CRS, then constructors and setter methods
+ * If and only if this envelope is associated with a non-null CRS, then constructors and setter methods
  * in this class perform the following checks:
  *
  * <ul>
@@ -152,8 +152,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
 
     /**
      * Constructs an envelope defined by two corners given as direct positions.
-     * If at least one corner is associated to a CRS, then the new envelope will also
-     * be associated to that CRS.
+     * If at least one corner is associated with a CRS, then the new envelope will also
+     * be associated with that CRS.
      *
      * @param  lowerCorner  the limits in the direction of decreasing coordinate values for each dimension.
      * @param  upperCorner  the limits in the direction of increasing coordinate values for each dimension.

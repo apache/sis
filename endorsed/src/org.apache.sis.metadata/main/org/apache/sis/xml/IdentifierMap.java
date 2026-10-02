@@ -23,7 +23,7 @@ import org.opengis.metadata.citation.Citation;
 
 /**
  * A map view of some or all identifiers in an {@linkplain IdentifiedObject identified object}.
- * Each {@linkplain java.util.Map.Entry map entry} is associated to an {@link Identifier} where
+ * Each {@linkplain java.util.Map.Entry map entry} is associated with an {@link Identifier} where
  * {@linkplain java.util.Map.Entry#getKey() key} is the {@linkplain Identifier#getAuthority()
  * identifier authority} and the {@linkplain java.util.Map.Entry#getValue() value} is the
  * {@linkplain Identifier#getCode() identifier code}.
@@ -43,7 +43,7 @@ import org.opengis.metadata.citation.Citation;
  */
 public interface IdentifierMap extends Map<Citation,String> {
     /**
-     * Returns the identifier associated to the given namespace,
+     * Returns the identifier associated with the given namespace,
      * or {@code null} if this map contains no mapping of the
      * specialized type for the namespace.
      *

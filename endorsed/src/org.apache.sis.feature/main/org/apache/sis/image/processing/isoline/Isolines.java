@@ -192,7 +192,7 @@ public final class Isolines {
     }
 
     /**
-     * Returns a provider of {@link PixelIterator} suitable to isoline computations.
+     * Returns a provider of {@link PixelIterator} suitable for isoline computations.
      * It is critical that iterators use {@link SequenceType#LINEAR} iterator order.
      */
     static PixelIterator.Builder iterators() {

@@ -36,7 +36,7 @@ final class UserProperties extends ImageAdapter {
      * The user-specified properties which may overwrite source image properties.
      * This is a reference to the map specified at construction time, not a copy.
      * No copy is done for allowing the use of instances doing deferred computation.
-     * It is legal to have {@code null} value associated to keys: the meaning is not
+     * It is legal to have {@code null} value associated with keys: the meaning is not
      * the same as "undefined properties".
      *
      * <p>This {@code UserProperties} class shall not modify the content of this map.</p>

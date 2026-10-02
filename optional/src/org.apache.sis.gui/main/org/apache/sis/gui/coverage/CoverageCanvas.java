@@ -559,7 +559,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @param  newValue  the new Coordinate Reference System in which to resample the coverage before displaying.
      * @param  anchor    the point to keep at fixed display coordinates, expressed in any compatible CRS.
      *                   If {@code null}, defaults to {@linkplain #getPointOfInterest(boolean) point of interest}.
-     *                   If non-null, the anchor must be associated to a CRS.
+     *                   If non-null, the anchor must be associated with a CRS.
      * @throws RenderException if the objective CRS cannot be set to the given value.
      *
      * @hidden because nothing new to said.

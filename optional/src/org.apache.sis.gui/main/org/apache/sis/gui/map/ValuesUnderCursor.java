@@ -276,7 +276,7 @@ public abstract class ValuesUnderCursor {
     }
 
     /**
-     * Returns whether a status bar is associated to this instance.
+     * Returns whether a status bar is associated with this instance.
      * If {@code false}, then it is useless to compute values for {@link #prototype(String, Iterable)}.
      */
     final boolean usePrototype() {

@@ -93,7 +93,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
             if (object instanceof ISOMetadata && Containers.isNullOrEmpty(((ISOMetadata) object).identifiers)) {
                 /*
                  * If the other object is an ISOMetadata instance,  take a look at its `identifiers` collection
-                 * before to invoke object.getIdentifiers() in order to avoid unnecessary initialization of its
+                 * before invoking object.getIdentifiers() in order to avoid unnecessary initialization of its
                  * backing collection. We do this optimization because the vast majority of metadata objects do
                  * not have `identifiers` collection.
                  *
@@ -136,7 +136,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
     // --------------------------------------------------------------------------------------
 
     /**
-     * Returns all identifiers associated to this object (from conceptual model and from XML document).
+     * Returns all identifiers associated with this object (from conceptual model and from XML document).
      * This collection may contain identifiers from different sources:
      *
      * <ul class="verbose">

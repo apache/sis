@@ -64,7 +64,7 @@ public class ItemData extends Box implements ByteRanges.Reader {
     public final long size;
 
     /**
-     * Creates a new box. Contrarily to other constructors,
+     * Creates a new box. Contrary to other constructors,
      * this constructor does not read the payload immediately.
      *
      * @param  reader  the reader from which to read the fields.

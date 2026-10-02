@@ -1301,7 +1301,7 @@ loop:   while (hasRemaining()) {
      * <h4>Usage</h4>
      * This method is used when a {@link ChannelDataInput} and a {@link ChannelDataOutput} are wrapping
      * the same {@link java.nio.channels.ByteChannel} and used alternatively for reading and writing.
-     * After a read operation, {@code in.yield(out)} should be invoked for ensuring that the output
+     * After a read operation, {@code in.yield(out)} should be invoked to ensure that the output
      * position is valid for the new channel position.
      *
      * @param  takeOver  the {@link ChannelDataOutput} which will continue operations after this instance.

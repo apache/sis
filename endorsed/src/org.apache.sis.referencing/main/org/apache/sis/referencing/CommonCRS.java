@@ -105,7 +105,7 @@ import static org.apache.sis.pending.geoapi.referencing.MissingMethods.getDatumE
  *       in this enumeration are effectively shortcuts for object definitions in the EPSG database.</li>
  *   <li>If there is no EPSG database available, or if the query failed, or if there is no EPSG definition
  *       for an object, then {@code CommonCRS} fallbacks on hard-coded values with minimal information.
- *       The {@linkplain AbstractIdentifiedObject#getIdentifiers() identifier} associated to the returned
+ *       The {@linkplain AbstractIdentifiedObject#getIdentifiers() identifier} associated with the returned
  *       object should be interpreted as "see that EPSG code for more complete definition".</li>
  * </ul>
  *
@@ -473,7 +473,7 @@ public enum CommonCRS {
      *   <li>The {@code crs} is either an instance of {@link SingleCRS},
      *       or an instance of {@link org.opengis.referencing.crs.CompoundCRS}
      *       with an {@linkplain CRS#getHorizontalComponent horizontal component}.</li>
-     *   <li>The {@code crs} or the horizontal component of {@code crs} is associated to a {@link GeodeticDatum}.</li>
+     *   <li>The {@code crs} or the horizontal component of {@code crs} is associated with a {@link GeodeticDatum}.</li>
      *   <li>The geodetic reference frame either<ul>
      *     <li>has the same <abbr>EPSG</abbr> code as one of the {@code CommonCRS} enumeration values, or</li>
      *     <li>has no <abbr>EPSG</abbr> code but is {@linkplain Utilities#equalsIgnoreMetadata equal, ignoring metadata},
@@ -719,7 +719,7 @@ public enum CommonCRS {
      *   <tr><td>WGS 84</td>                   <td>{@link #WGS84}</td>  <td>4979</td></tr>
      * </table></blockquote>
      *
-     * @return the three-dimensional geographic CRS associated to this enum.
+     * @return the three-dimensional geographic CRS associated with this enum.
      *
      * @see CRS#forCode(String)
      * @see DefaultGeographicCRS
@@ -774,7 +774,7 @@ public enum CommonCRS {
      * {@link GeodeticCRS} parent interface. This is because ISO 19111 does not defines specific interface
      * for the geocentric case. Users should assign the return value to a {@code GeodeticCRS} type.</div>
      *
-     * @return the geocentric CRS associated to this enum.
+     * @return the geocentric CRS associated with this enum.
      *
      * @see CRS#forCode(String)
      * @see DefaultGeocentricCRS
@@ -820,7 +820,7 @@ public enum CommonCRS {
      * {@link GeodeticCRS} parent interface. This is because ISO 19111 does not defines specific interface
      * for the geocentric case. Users should assign the return value to a {@code GeodeticCRS} type.</div>
      *
-     * @return the geocentric CRS associated to this enum.
+     * @return the geocentric CRS associated with this enum.
      *
      * @see DefaultGeocentricCRS
      *
@@ -858,7 +858,7 @@ public enum CommonCRS {
     }
 
     /**
-     * Returns the geodetic reference frame associated to this geodetic object.
+     * Returns the geodetic reference frame associated with this geodetic object.
      * The following table summarizes the datums or datum ensembles known to this class,
      * together with an enumeration value that can be used for fetching that datum:
      *
@@ -885,7 +885,7 @@ public enum CommonCRS {
      * is connected to an <abbr>EPSG</abbr> geodetic dataset and the version of that dataset.</p>
      *
      * @param  acceptEnsemble  whether to return datum ensemble as a pseudo-datum.
-     * @return the datum or (optionally) datum ensemble associated to this enum, or {@code null}
+     * @return the datum or (optionally) datum ensemble associated with this enum, or {@code null}
      *         if the result is a datum ensemble and {@code acceptEnsemble} is {@code false}.
      *
      * @see #forDatum(CoordinateReferenceSystem)
@@ -915,7 +915,7 @@ public enum CommonCRS {
     }
 
     /**
-     * Returns the datum ensemble associated to this geodetic object.
+     * Returns the datum ensemble associated with this geodetic object.
      * The following table summarizes the datum ensembles known to this class,
      * together with an enumeration value that can be used for fetching that ensemble:
      *
@@ -930,7 +930,7 @@ public enum CommonCRS {
      * geodetic dataset and the version of that dataset. In some version, a datum ensemble may be defined as
      * an ordinary datum.
      *
-     * @return the datum ensemble associated to this enum, or {@code null} if none.
+     * @return the datum ensemble associated with this enum, or {@code null} if none.
      *
      * @since 1.5
      */
@@ -939,7 +939,7 @@ public enum CommonCRS {
     }
 
     /**
-     * Returns the ellipsoid associated to this geodetic object.
+     * Returns the ellipsoid associated with this geodetic object.
      * The following table summarizes the ellipsoids known to this class,
      * together with an enumeration value that can be used for fetching that ellipsoid:
      *
@@ -954,7 +954,7 @@ public enum CommonCRS {
      *   <tr><td>World Geodetic System (WGS) 1984</td> <td>{@link #WGS84}</td>  <td>7030</td></tr>
      * </table></blockquote>
      *
-     * @return the ellipsoid associated to this enum.
+     * @return the ellipsoid associated with this enum.
      *
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid
      */
@@ -979,7 +979,7 @@ public enum CommonCRS {
     }
 
     /**
-     * Returns the prime meridian associated to this geodetic object.
+     * Returns the prime meridian associated with this geodetic object.
      * The following table summarizes the prime meridians known to this class,
      * together with an enumeration value that can be used for fetching that prime meridian:
      *
@@ -989,7 +989,7 @@ public enum CommonCRS {
      *   <tr><td>Greenwich</td>     <td>{@link #WGS84}</td> <td>8901</td></tr>
      * </table></blockquote>
      *
-     * @return the prime meridian associated to this enum.
+     * @return the prime meridian associated with this enum.
      *
      * @see org.apache.sis.referencing.datum.DefaultPrimeMeridian
      */
@@ -1014,7 +1014,7 @@ public enum CommonCRS {
     }
 
     /**
-     * Returns the geographic CRS associated to the given object, or {@code null} if none.
+     * Returns the geographic CRS associated with the given object, or {@code null} if none.
      */
     private static GeographicCRS geographic(final IdentifiedObject object) {
         return (object instanceof GeographicCRS) ? (GeographicCRS) object : null;
@@ -1037,7 +1037,7 @@ public enum CommonCRS {
     }
 
     /**
-     * Returns the ellipsoid associated to the given object, or {@code null} if none.
+     * Returns the ellipsoid associated with the given object, or {@code null} if none.
      */
     private static Ellipsoid ellipsoid(final IdentifiedObject object) {
         if (object instanceof Ellipsoid) {
@@ -1053,7 +1053,7 @@ public enum CommonCRS {
     }
 
     /**
-     * Returns the prime meridian associated to the given object, or {@code null} if none.
+     * Returns the prime meridian associated with the given object, or {@code null} if none.
      */
     private static PrimeMeridian primeMeridian(final IdentifiedObject object) {
         if (object instanceof PrimeMeridian) {
@@ -1092,7 +1092,7 @@ public enum CommonCRS {
      *           North for positive latitudes (including positive zero) or
      *           South for negative latitudes (including negative zero).
      *           The latitude magnitude is ignored, except for the special cases documented below
-     *           and for ensuring that the latitude is inside the [-90 … 90]° range.</li>
+     *           and to ensure that the latitude is inside the [-90 … 90]° range.</li>
      *       <li>The value of the <var>longitude</var> argument determines the 6°-width zone,
      *           numbered from 1 for the zone starting at 180°W up to 60 for the zone finishing at 180°E.
      *           Longitudes outside the [-180 … 180]° range will be rolled as needed before to compute the zone.</li>
@@ -1418,7 +1418,7 @@ public enum CommonCRS {
         }
 
         /**
-         * Returns the coordinate reference system associated to this vertical object.
+         * Returns the coordinate reference system associated with this vertical object.
          * The following table summarizes the CRS known to this class,
          * together with an enumeration value that can be used for fetching that CRS:
          *
@@ -1431,7 +1431,7 @@ public enum CommonCRS {
          *   <tr><td>Mean Sea Level height</td>     <td>{@link #MEAN_SEA_LEVEL}</td>     <td>5714</td></tr>
          * </table></blockquote>
          *
-         * @return the CRS associated to this enum.
+         * @return the CRS associated with this enum.
          *
          * @see DefaultVerticalCRS
          */
@@ -1459,7 +1459,7 @@ public enum CommonCRS {
         }
 
         /**
-         * Creates the coordinate system associated to this vertical object.
+         * Creates the coordinate system associated with this vertical object.
          * This is used only for CRS not identified by an EPSG code.
          * This method does not cache the coordinate system.
          */
@@ -1481,7 +1481,7 @@ public enum CommonCRS {
         }
 
         /**
-         * Returns the datum associated to this vertical object.
+         * Returns the datum associated with this vertical object.
          * The following table summarizes the datum known to this class,
          * together with an enumeration value that can be used for fetching that datum:
          *
@@ -1493,7 +1493,7 @@ public enum CommonCRS {
          *   <tr><td>Mean Sea Level</td>            <td>{@link #MEAN_SEA_LEVEL}</td>     <td>5100</td></tr>
          * </table></blockquote>
          *
-         * @return the datum associated to this enum.
+         * @return the datum associated with this enum.
          *
          * @see DefaultVerticalDatum
          */
@@ -1525,14 +1525,14 @@ public enum CommonCRS {
         }
 
         /**
-         * Returns the vertical CRS associated to the given object, or {@code null} if none.
+         * Returns the vertical CRS associated with the given object, or {@code null} if none.
          */
         private static VerticalCRS crs(final IdentifiedObject object) {
             return (object instanceof VerticalCRS) ? (VerticalCRS) object : null;
         }
 
         /**
-         * Returns the datum associated to the given object, or {@code null} if none.
+         * Returns the datum associated with the given object, or {@code null} if none.
          */
         private static VerticalDatum datum(final IdentifiedObject object) {
             if (object instanceof VerticalDatum) {
@@ -1776,7 +1776,7 @@ public enum CommonCRS {
         }
 
         /**
-         * Returns the coordinate reference system associated to this temporal object.
+         * Returns the coordinate reference system associated with this temporal object.
          * The following table summarizes the CRS known to this class,
          * together with an enumeration value that can be used for fetching that CRS:
          *
@@ -1792,7 +1792,7 @@ public enum CommonCRS {
          *   <tr><td>Java {@link Date}</td>  <td>{@link #JAVA}</td></tr>
          * </table></blockquote>
          *
-         * @return the CRS associated to this enum.
+         * @return the CRS associated with this enum.
          *
          * @see DefaultTemporalCRS
          */
@@ -1815,7 +1815,7 @@ public enum CommonCRS {
         }
 
         /**
-         * Creates the coordinate system associated to this temporal object.
+         * Creates the coordinate system associated with this temporal object.
          * This method does not cache the coordinate system.
          */
         @SuppressWarnings("fallthrough")
@@ -1844,7 +1844,7 @@ public enum CommonCRS {
         }
 
         /**
-         * Returns the datum associated to this temporal object.
+         * Returns the datum associated with this temporal object.
          * The following table summarizes the datum known to this class,
          * together with an enumeration value that can be used for fetching that datum:
          *
@@ -1858,7 +1858,7 @@ public enum CommonCRS {
          *   <tr><td>Unix/POSIX or Java</td> <td>{@link #UNIX}</td></tr>
          * </table></blockquote>
          *
-         * @return the datum associated to this enum.
+         * @return the datum associated with this enum.
          *
          * @see DefaultTemporalDatum
          */
@@ -1881,14 +1881,14 @@ public enum CommonCRS {
         }
 
         /**
-         * Returns the temporal CRS associated to the given object, or {@code null} if none.
+         * Returns the temporal CRS associated with the given object, or {@code null} if none.
          */
         private static TemporalCRS crs(final IdentifiedObject object) {
             return (object instanceof TemporalCRS) ? (TemporalCRS) object : null;
         }
 
         /**
-         * Returns the datum associated to the given object, or {@code null} if none.
+         * Returns the datum associated with the given object, or {@code null} if none.
          */
         private static TemporalDatum datum(final IdentifiedObject object) {
             if (object instanceof TemporalDatum) {
@@ -2005,9 +2005,9 @@ public enum CommonCRS {
         }
 
         /**
-         * Returns the coordinate reference system associated to this engineering object.
+         * Returns the coordinate reference system associated with this engineering object.
          *
-         * @return the CRS associated to this enumeration value.
+         * @return the CRS associated with this enumeration value.
          */
         public synchronized EngineeringCRS crs() {
             if (crs == null) {
@@ -2055,9 +2055,9 @@ public enum CommonCRS {
         }
 
         /**
-         * Returns the datum associated to this engineering object.
+         * Returns the datum associated with this engineering object.
          *
-         * @return the datum associated to this enumeration value.
+         * @return the datum associated with this enumeration value.
          */
         public EngineeringDatum datum() {
             return datum;

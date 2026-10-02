@@ -108,7 +108,7 @@ import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
  * <ol>
  *   <li>Created as a step while creating a {@linkplain org.apache.sis.referencing.operation.AbstractCoordinateOperation
  *       coordinate operation} from the EPSG database.</li>
- *   <li>Associated to a {@link DefaultGeodeticDatum} with the WGS 84 {@linkplain #getTargetDatum() target datum} for
+ *   <li>Associated with a {@link DefaultGeodeticDatum} with the WGS 84 {@linkplain #getTargetDatum() target datum} for
  *       providing the parameter values to display in the {@code TOWGS84[…]} element of <i>Well Known Text</i>
  *       (WKT) version 1. Note that WKT version 2 does not have {@code TOWGS84[…]} element anymore.</li>
  *   <li>Specified at {@code DefaultGeodeticDatum} construction time for arbitrary target datum.

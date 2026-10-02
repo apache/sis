@@ -58,7 +58,7 @@ public final class DefaultQuantitativeResultTest extends TestCase {
 
     /**
      * Tests {@link DefaultQuantitativeResult#isEmpty()}. The {@code isEmpty()} method needs a special check
-     * for the deprecated {@code "errorStatistic"} property because, contrarily to other deprecated properties,
+     * for the deprecated {@code "errorStatistic"} property because, contrary to other deprecated properties,
      * that one has no replacement. Consequently, no non-deprecated property is set as a result of redirection.
      * Because by default {@code isEmpty()} ignores deprecated properties,
      * it can cause {@link DefaultQuantitativeResult} to be wrongly considered as empty.

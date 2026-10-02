@@ -605,7 +605,7 @@ public final class ResampledGridCoverageTest extends TestCase {
     }
 
     /**
-     * Tests resampling of an image associated to a coordinate system using the 0 to 360° range of longitude.
+     * Tests resampling of an image associated with a coordinate system using the 0 to 360° range of longitude.
      * The image crosses the 180° longitude. The resampling does not involve map projection.
      *
      * @throws TransformException if some coordinates cannot be transformed to the target grid geometry.
@@ -640,7 +640,7 @@ public final class ResampledGridCoverageTest extends TestCase {
     }
 
     /**
-     * Tests map reprojection of an image associated to a coordinate system using the 0 to 360° range of longitude.
+     * Tests map reprojection of an image associated with a coordinate system using the 0 to 360° range of longitude.
      *
      * @throws TransformException if some coordinates cannot be transformed to the target grid geometry.
      */

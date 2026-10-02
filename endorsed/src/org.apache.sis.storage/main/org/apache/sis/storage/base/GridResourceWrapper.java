@@ -240,7 +240,7 @@ public abstract class GridResourceWrapper implements GridCoverageResource {
     }
 
     /**
-     * Closes the data store associated to the resource, then discards the resource.
+     * Closes the data store associated with the resource, then discards the resource.
      * This method does not verify if the data store is still used by other resources.
      * This method can be invoked asynchronously for interrupting a long reading process.
      *

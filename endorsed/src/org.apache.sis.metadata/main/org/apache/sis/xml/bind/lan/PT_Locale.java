@@ -34,7 +34,7 @@ import org.apache.sis.util.collection.Containers;
 
 
 /**
- * A {@link Locale} associated to {@link Charset}.
+ * A {@link Locale} associated with {@link Charset}.
  * This class wraps the value in an XML element as specified by ISO 19115-3 standard.
  * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  * This wrapper formats the locale like below:

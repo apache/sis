@@ -374,7 +374,7 @@ public final class ParameterMarshallingTest extends TestCase.WithLogs {
      * @param  alias       the expected OGC alias.
      * @param  value       the expected value.
      * @param  unit        the expected unit of measurement for both the value and the descriptor.
-     * @param  descriptor  the expected parameter descriptor associated to the parameter value.
+     * @param  descriptor  the expected parameter descriptor associated with the parameter value.
      * @param  parameter   the parameter value to verify.
      */
     private static void verifyParameter(final int code, final String name, final String alias,

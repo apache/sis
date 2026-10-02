@@ -39,7 +39,7 @@ import org.apache.sis.util.resources.Errors;
  *       Usage of {@code MeasurementRange} with integer types is possible, but no convenience
  *       method is provided for integers because they are usually not representative of the
  *       nature of physical measurements.</li>
- *   <li>{@link #unit()} for getting the unit of measurement associated to this range.</li>
+ *   <li>{@link #unit()} for getting the unit of measurement associated with this range.</li>
  *   <li>{@link #convertTo(Unit)} for converting the unit of measurement.</li>
  *   <li>{@link #castTo(Class)} for casting the range values to another type.</li>
  * </ul>
@@ -318,7 +318,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     }
 
     /**
-     * Casts the specified range to the specified type. If this class is associated to a unit of
+     * Casts the specified range to the specified type. If this class is associated with a unit of
      * measurement, then this method convert the {@code range} unit to the same unit as this
      * instance.
      *

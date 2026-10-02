@@ -37,7 +37,7 @@ import org.apache.sis.util.internal.shared.Strings;
  * restricted to the directory specified by {@link DataDirectory}.
  *
  * <p>Instances of this class should be temporary.
- * This is an helper class for loading data and discarded after the loading completed.</p>
+ * This is a helper class for loading data and discarded after the loading completed.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
@@ -185,7 +185,7 @@ public class DataURI {
     /**
      * Creates a channel for reading bytes from the file at the path specified at construction time.
      * This method tries to open using the file system before to open from the <abbr>URL</abbr>.
-     * Caller should have verified authorization before to invoke this method.
+     * Caller should have verified authorization before invoking this method.
      *
      * @return a channel for reading bytes from the file.
      * @throws IOException if the channel cannot be created.
@@ -201,7 +201,7 @@ public class DataURI {
     /**
      * Creates a buffered reader for reading characters from the file at the path specified at construction time.
      * This method tries to open using the file system before to open from the <abbr>URL</abbr>.
-     * Caller should have verified authorization before to invoke this method.
+     * Caller should have verified authorization before invoking this method.
      *
      * @return a channel for reading bytes from the file.
      * @throws IOException if the reader cannot be created.

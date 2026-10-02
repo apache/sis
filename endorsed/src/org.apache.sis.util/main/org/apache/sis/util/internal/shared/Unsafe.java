@@ -57,7 +57,7 @@ public final class Unsafe {
 
     /**
      * Sets the element at the given index in the given list. This method bypasses the compiler type safety checks.
-     * This method should be invoked only when the caller has done its best effort for ensuring that the element is
+     * This method should be invoked only when the caller has done its best effort to ensure that the element is
      * an instance of the required type, or when the target list has good chances to be a checked collection.
      *
      * @param  target   the list where to set the element. Should preferably be a checked collection.
@@ -72,15 +72,15 @@ public final class Unsafe {
     }
 
     /**
-     * Merges the value associated to the given key. This method bypasses the compiler type safety checks.
-     * This method should be invoked only when the caller has done its best effort for ensuring that the
+     * Merges the value associated with the given key. This method bypasses the compiler type safety checks.
+     * This method should be invoked only when the caller has done its best effort to ensure that the
      * value and the merge function have compatible types.
      *
      * @param  target  the map where to merge a value.
      * @param  key     key of the value to merge.
      * @param  value   value to merge.
      * @param  remappingFunction the function to apply for merging the given value with the existing one.
-     * @return the new value associated to the key.
+     * @return the new value associated with the key.
      */
     @ConditionallySafe
     @SuppressWarnings("unchecked")
@@ -90,7 +90,7 @@ public final class Unsafe {
 
     /**
      * Sets the value of a map entry. This method bypasses the compiler type safety checks.
-     * This method should be invoked only when the caller has done its best effort for ensuring
+     * This method should be invoked only when the caller has done its best effort to ensure
      * that the value is an instance of the expected type, or if the map is a checked collection.
      *
      * @param  target  the entry where to set a value. Should be an entry from a checked collection.

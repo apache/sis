@@ -69,7 +69,7 @@ import org.opengis.metadata.citation.Citation;
  */
 public interface IdentifiedObject {
     /**
-     * Returns all identifiers associated to this object. Each {@linkplain Identifier#getCode()
+     * Returns all identifiers associated with this object. Each {@linkplain Identifier#getCode()
      * identifier code} shall be unique in the {@linkplain Identifier#getAuthority() identifier
      * authority} name space. Examples of namespace are:
      *
@@ -90,7 +90,7 @@ public interface IdentifiedObject {
      * Note that XML ID attribute are actually unique only in the scope of the XML document
      * being processed.
      *
-     * @return all identifiers associated to this object, or an empty collection if none.
+     * @return all identifiers associated with this object, or an empty collection if none.
      *
      * @see org.apache.sis.metadata.iso.citation.DefaultCitation#getIdentifiers()
      * @see org.apache.sis.metadata.iso.acquisition.DefaultObjective#getIdentifiers()

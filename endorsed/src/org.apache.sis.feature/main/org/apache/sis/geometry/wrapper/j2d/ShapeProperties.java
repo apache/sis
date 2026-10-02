@@ -116,7 +116,7 @@ final class ShapeProperties {
 
     /**
      * {@link #coordinates(double)} implementation for the double-precision case.
-     * The {@link #isPolygon} field needs to be set before to invoke this method.
+     * The {@link #isPolygon} field needs to be set before invoking this method.
      *
      * @param  it  path iterator of the geometry for which to get the coordinate tuples.
      * @return coordinate tuples as (<var>x</var>,<var>y</var>) tuples.
@@ -172,7 +172,7 @@ final class ShapeProperties {
 
     /**
      * {@link #coordinates(double)} implementation for the single-precision case.
-     * The {@link #isPolygon} field needs to be set before to invoke this method.
+     * The {@link #isPolygon} field needs to be set before invoking this method.
      *
      * @param  it  path iterator of the geometry for which to get the coordinate tuples.
      * @return coordinate tuples as (<var>x</var>,<var>y</var>) tuples.

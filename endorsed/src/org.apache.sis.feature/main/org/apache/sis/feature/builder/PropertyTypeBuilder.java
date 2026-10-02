@@ -247,7 +247,7 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
     }
 
     /**
-     * Returns {@code true} if {@link AttributeRole#IDENTIFIER_COMPONENT} has been associated to this property.
+     * Returns {@code true} if {@link AttributeRole#IDENTIFIER_COMPONENT} has been associated with this property.
      */
     boolean isIdentifier() {
         return false;

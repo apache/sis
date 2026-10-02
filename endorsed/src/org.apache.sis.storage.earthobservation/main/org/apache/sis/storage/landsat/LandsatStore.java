@@ -199,7 +199,7 @@ public class LandsatStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Returns the value associated to {@code LANDSAT_SCENE_ID} in the Landsat metadata file.
+     * Returns the value associated with {@code LANDSAT_SCENE_ID} in the Landsat metadata file.
      * This value is fetched from
      * <code>{@linkplain #getMetadata()}/identificationInfo/citation/identifier</code>.
      *

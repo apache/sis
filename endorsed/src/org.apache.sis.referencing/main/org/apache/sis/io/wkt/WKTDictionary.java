@@ -65,8 +65,8 @@ import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**
- * A factory providing CRS objects parsed from WKT definitions associated to authority codes.
- * Each WKT definition is associated to a key according the <var>authority:version:code</var>
+ * A factory providing CRS objects parsed from WKT definitions associated with authority codes.
+ * Each WKT definition is associated with a key according the <var>authority:version:code</var>
  * pattern where <var>code</var> is mandatory and <var>authority:version</var> are optional.
  * Coordinate Reference Systems or other kinds of objects are created from WKT definitions
  * when a {@code create(…)} method is invoked for the first time for a given key.
@@ -123,7 +123,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * <h3>Late validation</h3>
  * WKT keywords and geodetic parameters inside WKT elements are validated only when {@link #createObject(String)}
  * is invoked. If an error occurs at this stage, only the CRS (or other geodetic object) for the code given to
- * the {@code createFoo(…)} method become invalid. Objects associated to other codes are not impacted.
+ * the {@code createFoo(…)} method become invalid. Objects associated with other codes are not impacted.
  *
  * <h2>Multi-threading</h2>
  * This class is thread-safe but not necessarily concurrent.
@@ -188,7 +188,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     private final ReadWriteLock lock;
 
     /**
-     * CRS definitions associated to <var>authority:version:code</var> keys.
+     * CRS definitions associated with <var>authority:version:code</var> keys.
      * Keys are authority codes, ignoring code space (authority) and version.
      * For example, in "EPSG:9.1:4326" the key would be only "4326".
      * Values can be one of the following 4 types:
@@ -443,7 +443,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     /**
      * Adds to this factory all definitions read from the given source.
      * Each Coordinate Reference System (or other geodetic object) is defined by a string in WKT format.
-     * The key associated to each object is given by the {@code ID[…]} or {@code AUTHORITY[…]} element,
+     * The key associated with each object is given by the {@code ID[…]} or {@code AUTHORITY[…]} element,
      * which is typically the last element of a WKT string and is mandatory for definitions in this file.
      *
      * <p>WKT strings can span many lines. All lines after the first line shall be indented with at least
@@ -635,7 +635,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
          * when first needed.
          *
          * <p>If {@link #aliasKey} is non-null, the first WKT is taken as a {@linkplain WKTFormat#addFragment
-         * fragment} associated to the given alias. All other WKT (if any) are taken as definitions of CRS or
+         * fragment} associated with the given alias. All other WKT (if any) are taken as definitions of CRS or
          * other objects.</p>
          *
          * @throws ParseException if an error occurred while parsing the WKT string.
@@ -665,7 +665,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     /**
      * Adds the definition of a CRS (or other geodetic objects) from a tree of WKT elements.
      * The authority code is inferred from the {@code ID[…]} or {@code AUTHORITY[…]} element.
-     * Caller must own the write lock before to invoke this method.
+     * Caller must own the write lock before invoking this method.
      * {@link #updateAuthority()} should be invoked after this method.
      *
      * @param  tree  a tree of WKT elements.
@@ -699,7 +699,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
      * Each non-blank {@link String} shall contain the complete definition of exactly one geodetic object.
      * A geodetic object cannot have its definition split in two or more {@link String}s.
      *
-     * <p>The key associated to each object is given by the {@code ID[…]} or {@code AUTHORITY[…]} element,
+     * <p>The key associated with each object is given by the {@code ID[…]} or {@code AUTHORITY[…]} element,
      * which is typically the last element of a WKT string and is mandatory. WKT strings can contain line
      * separators for human readability.</p>
      *
@@ -1012,7 +1012,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     }
 
     /**
-     * Returns the object associated to the given code.
+     * Returns the object associated with the given code.
      *
      * @param  code    value allocated by authority.
      * @param  create  whether to create {@link IdentifiedObject} from {@link StoredTree}.

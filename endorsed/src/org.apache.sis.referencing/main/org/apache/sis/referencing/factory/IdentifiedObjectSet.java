@@ -299,7 +299,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
                      * object but we do not put it in this IdentifiedObjectSet. This behavior is as if this method
                      * has been invoked before the concurrent removal happened.
                      */
-                    if (objects.containsKey(code)) {        // Needed because code may be associated to null value.
+                    if (objects.containsKey(code)) {        // Needed because code may be associated with null value.
                         final T c = objects.putIfAbsent(code, object);
                         if (c != null) {
                             object = c;                     // The object has been created concurrently.

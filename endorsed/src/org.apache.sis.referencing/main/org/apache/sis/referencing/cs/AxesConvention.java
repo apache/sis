@@ -120,7 +120,7 @@ public enum AxesConvention implements AxisFilter {
     /**
      * The axis order as they were specified in the original coordinate system.
      * The first time that a {@code forConvention(…)} method is invoked on a new coordinate system (CS),
-     * a reference to that original CS is associated to this enumeration value and can be retrieved from
+     * a reference to that original CS is associated with this enumeration value and can be retrieved from
      * any derived object.
      *
      * @since 1.5

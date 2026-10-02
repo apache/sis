@@ -42,7 +42,7 @@ import org.apache.sis.util.collection.Containers;
  * of the grid geometry information.
  *
  * <p>{@code GridWrapper} instances do not contain data; they are only about the geometry of grids.
- * Many netCDF variables may be associated to the same {@code GridWrapper} instance.</p>
+ * Many netCDF variables may be associated with the same {@code GridWrapper} instance.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

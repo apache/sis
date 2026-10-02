@@ -58,7 +58,7 @@ final class WritableStore extends Store implements WritableAggregate {
 
     /**
      * Creates a new folder store from the given file, path or URI.
-     * Contrarily to the {@link Store} parent class, the {@code format} is mandatory for writable stores.
+     * Contrary to the {@link Store} parent class, the {@code format} is mandatory for writable stores.
      * This is not verified by this constructor; it should be verified by {@link StoreProvider} instead.
      */
     WritableStore(DataStoreProvider provider, StorageConnector connector, Path path, DataStoreProvider format)

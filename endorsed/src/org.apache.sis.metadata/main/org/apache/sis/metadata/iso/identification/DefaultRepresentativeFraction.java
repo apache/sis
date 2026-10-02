@@ -351,7 +351,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     // --------------------------------------------------------------------------------------
 
     /**
-     * Returns all identifiers associated to this object, or an empty collection if none.
+     * Returns all identifiers associated with this object, or an empty collection if none.
      * Those identifiers are marshalled in XML as {@code id} or {@code uuid} attributes.
      */
     @Override

@@ -302,7 +302,7 @@ public class RecentReferenceSystems {
 
     /**
      * Sets the reference systems, area of interest and "referencing by grid indices" systems.
-     * Contrarily to other methods in this class, this method can be invoked from any thread.
+     * Contrary to other methods in this class, this method can be invoked from any thread.
      * This method performs the following tasks, where the methods cited below are invoked from the JavaFX thread:
      *
      * <ul>
@@ -642,7 +642,7 @@ public class RecentReferenceSystems {
         /*
          * Finished to filter the `systemsOrCodes` list: all elements are now guaranteed to be
          * `ReferenceSystem` instances with no duplicated values. Copy those reference systems
-         * in a separated list as a protection against concurrent changes in `systemsOrCodes`,
+         * in a separate list as a protection against concurrent changes in `systemsOrCodes`,
          * and for retaining only the reference systems that are valid in the area of interest.
          * We do not remove hidden CRS because they may become valid later if the AOI changes.
          */

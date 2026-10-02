@@ -187,7 +187,7 @@ abstract class MimeTypeDetector {
 
     /**
      * Returns the MIME type, or {@code null} if unknown.
-     * The call shall have already skipped the {@code "<?xml "} characters before to invoke this method.
+     * The call shall have already skipped the {@code "<?xml "} characters before invoking this method.
      *
      * @throws IOException if an error occurred while reading the bytes or characters.
      */
