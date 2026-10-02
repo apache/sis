@@ -60,7 +60,7 @@ import org.apache.sis.util.internal.shared.Constants;
  * Instances of this data store are created by {@link NetcdfStoreProvider#open(StorageConnector)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.6
+ * @version 1.7
  *
  * @see NetcdfStoreProvider
  *

@@ -167,18 +167,25 @@ public class SQLBuilder extends Syntax {
      * Appends an identifier between quote characters.
      * If the identifier contains quotes, the quotes will be doubled.
      *
+     * @todo Replace by {@link Connection#enquoteIdentifier(String, boolean)}
+     * when we will be allowed to compile for JDK26.
+     *
      * @param  name  the identifier to append.
      * @return this builder, for method call chaining.
      */
     public final SQLBuilder appendIdentifier(final String name) {
-        int i = buffer.append(identifierQuote).length();
-        buffer.append(name);
-        while ((i = buffer.indexOf(identifierQuote, i)) >= 0) {
-            final int n = identifierQuote.length();
-            buffer.insert(i += n, identifierQuote);
-            i += n;
+        if (identifierQuote.isEmpty()) {
+            buffer.append(name);
+        } else {
+            int i = buffer.append(identifierQuote).length();
+            buffer.append(name);
+            while ((i = buffer.indexOf(identifierQuote, i)) >= 0) {
+                final int n = identifierQuote.length();
+                buffer.insert(i += n, identifierQuote);
+                i += n;
+            }
+            buffer.append(identifierQuote);
         }
-        buffer.append(identifierQuote);
         return this;
     }
 
@@ -205,6 +212,8 @@ public class SQLBuilder extends Syntax {
      * The name part is quoted only if {@code quoteName} is {@code true}.
      * Unquoted names are useful when the name is for built-in functions,
      * which often use the lower/upper case convention of the database.
+     * In the latter case, the caller must ensure that the {@code name}
+     * does not contain the quote character.
      *
      * <h4>Simplification</h4>
      * If the given catalog is equal to the {@linkplain Connection#getCatalog() catalog which was current} when
@@ -261,6 +270,9 @@ public class SQLBuilder extends Syntax {
     /**
      * Appends a value in a {@code SELECT} or {@code INSERT} statement.
      * The value is written between quotes.
+     *
+     * @todo Replace by {@link Connection#enquoteLiteral(String)} when we will be allowed to compile for JDK26.
+     * This is important for MySQL/MariaDB, which may use the backslash as an escaping character.
      *
      * @param  value  the value to append, or {@code null}.
      * @return this builder, for method call chaining.

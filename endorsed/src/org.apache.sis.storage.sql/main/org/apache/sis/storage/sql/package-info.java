@@ -53,10 +53,15 @@
  * those other features are created at the same time as the parent feature. There is no lazy instantiation yet.
  * Performances should be okay if each parent feature references only a small amount of children.</p>
  *
+ * <h2>Security</h2>
+ * MySQL/MariaDB databases should set the <abbr>SQL</abbr> mode to at least {@code NO_BACKSLASH_ESCAPES}.
+ * See <a href="https://mariadb.com/docs/server/server-management/variables-and-modes/sql_mode#no_backslash_escapes">
+ * MariaDB documentation</a>.
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.6
+ * @version 1.7
  * @since   1.0
  */
 package org.apache.sis.storage.sql;

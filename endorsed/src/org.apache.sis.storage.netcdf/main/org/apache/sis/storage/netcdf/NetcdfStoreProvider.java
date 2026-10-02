@@ -67,7 +67,7 @@ import org.apache.sis.util.internal.shared.Constants;
  * the part of the caller. However, the {@link NetcdfStore} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.7
  *
  * @see NetcdfStore
  *
@@ -315,10 +315,8 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                 keepOpen = path;
             } catch (IOException | DataStoreException s) {
                 e.addSuppressed(s);
-                throw e;
-            } else {
-                throw e;
             }
+            throw e;
         } else {
             keepOpen = connector.getStorage();
             decoder = createByReflection(keepOpen, true, geomlib, listeners);
