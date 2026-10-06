@@ -90,7 +90,7 @@ import org.apache.sis.system.Loggers;
  * method and by accepting buffer in the {@link #create(Object, boolean)} method.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 1.6
+ * @version 1.7
  *
  * @see org.apache.sis.util.collection.IntegerList
  *
@@ -912,12 +912,17 @@ search:     for (;;) {
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Vector subSampling(final int first, final int step, final int length) {
-        final int size = size();
-        if (step == 1 && first == 0 && length == size) {
+        int limit = size();
+        if (step == 1 && first == 0 && length == limit) {
             return this;
         }
-        final long last = first + step * (length - 1L);
-        if (first < 0 || first >= size || last < 0 || last >= size || length < 0) {
+        ArgumentChecks.ensurePositive("length", length);
+        long last = first;
+        if (length != 0) {
+            last += step * (length - 1L);
+            limit--;
+        }
+        if ((first | last) < 0 || Math.max(first, last) > limit) {
             final short key;
             final Object arg1, arg2;
             if (step == 1) {

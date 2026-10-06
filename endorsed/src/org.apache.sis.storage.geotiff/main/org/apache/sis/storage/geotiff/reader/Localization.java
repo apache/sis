@@ -40,6 +40,7 @@ import org.apache.sis.math.Vector;
  * if another data store needs similar functionality in the future.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Jonatas Fischer
  */
 final class Localization {
     /**
@@ -80,7 +81,7 @@ final class Localization {
      * @param  addTo           if non-null, add the transform result to this map.
      * @return the "grid to CRS" transform backed by the localization grid.
      */
-    private static MathTransform localizationGrid(final Vector modelTiePoints, final Map<Envelope,MathTransform> addTo)
+    private static MathTransform localizationGrid(final Vector modelTiePoints, final Map<Envelope, MathTransform> addTo)
             throws FactoryException, TransformException
     {
         final int size = modelTiePoints.size();
@@ -89,7 +90,7 @@ final class Localization {
         final Vector x = modelTiePoints.subSampling(0, RECORD_LENGTH, n);
         final Vector y = modelTiePoints.subSampling(1, RECORD_LENGTH, n);
         try {
-            final LocalizationGridBuilder grid = new LocalizationGridBuilder(x, y);
+            final var grid = new LocalizationGridBuilder(x, y);
             final LinearTransform sourceToGrid = grid.getSourceToGrid();
             final double[] coordinates = new double[2];
             for (int i=0; i<size; i += RECORD_LENGTH) {
@@ -124,8 +125,12 @@ final class Localization {
              *    │         2        │ 3 │
              *    └──────────────────┴───┘
              *                    splitX
+             *
+             * If the irregular spacing is on a single axis, then the threshold of the other axis is NaN,
+             * the comparisons against it are always false and only two of the four parts receive points.
+             * The empty parts are skipped.
              */
-            final Set<Double> uniques = new HashSet<>(100);
+            final var uniques = new HashSet<Double>(100);
             final double splitX = threshold(x, uniques);
             final double splitY = threshold(y, uniques);
             if (Double.isNaN(splitX) && Double.isNaN(splitY)) {
@@ -180,13 +185,15 @@ final class Localization {
              * valid only in a sub-area. Put those information in a map for MathTransforms.specialize(…).
              */
             MathTransform global = null;
-            final Map<Envelope,MathTransform> specialization = new LinkedHashMap<>(4);
+            final var specialization = new LinkedHashMap<Envelope, MathTransform>(4);
             for (int i=0; i<indices.length; i++) {
                 final Vector sub = modelTiePoints.pick(indices[i]);
-                if (i == largestPart) {
-                    global = localizationGrid(sub, null);
-                } else {
-                    localizationGrid(sub, specialization);
+                if (!sub.isEmpty()) {
+                    if (i == largestPart) {
+                        global = localizationGrid(sub, null);
+                    } else {
+                        localizationGrid(sub, specialization);
+                    }
                 }
             }
             return MathTransforms.specialize(global, specialization);
