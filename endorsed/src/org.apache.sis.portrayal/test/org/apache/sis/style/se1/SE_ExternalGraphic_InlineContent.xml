@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- ExternalGraphic with its image embedded as base64 InlineContent. -->
+<se:PointSymbolizer xmlns:se="http://www.opengis.net/se">
+    <se:Graphic>
+        <se:ExternalGraphic>
+            <se:InlineContent encoding="base64">iVBORw0KGgoAAAANSUhEUg==</se:InlineContent>
+            <se:Format>image/png</se:Format>
+        </se:ExternalGraphic>
+    </se:Graphic>
+</se:PointSymbolizer>

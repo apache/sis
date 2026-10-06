@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TextSymbolizer xmlns="http://www.opengis.net/se"
+    xmlns:sld="http://www.opengis.net/sld"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:ogc="http://www.opengis.net/ogc"
+    xmlns:gml="http://www.opengis.net/gml"
+    uom="http://www.opengeospatial.org/se/units/foot">
+    <Geometry><ogc:PropertyName>geom</ogc:PropertyName></Geometry>
+    <Label><ogc:Literal>aField</ogc:Literal></Label>
+    <Font>
+        <SvgParameter name="font-family"><ogc:Literal>arial</ogc:Literal></SvgParameter>
+        <SvgParameter name="font-family"><ogc:Literal>serif</ogc:Literal></SvgParameter>
+        <SvgParameter name="font-size"><ogc:Literal>17</ogc:Literal></SvgParameter>
+        <SvgParameter name="font-style"><ogc:Literal>italic</ogc:Literal></SvgParameter>
+        <SvgParameter name="font-weight"><ogc:Literal>bold</ogc:Literal></SvgParameter>
+    </Font>
+    <LabelPlacement>
+        <PointPlacement>
+            <AnchorPoint>
+                <AnchorPointX><ogc:Literal>0.5</ogc:Literal></AnchorPointX>
+                <AnchorPointY><ogc:Literal>0.5</ogc:Literal></AnchorPointY>
+            </AnchorPoint>
+            <Displacement>
+                <DisplacementX><ogc:Literal>0</ogc:Literal></DisplacementX>
+                <DisplacementY><ogc:Literal>0</ogc:Literal></DisplacementY>
+            </Displacement>
+            <Rotation><ogc:Literal>0</ogc:Literal></Rotation>
+        </PointPlacement>
+    </LabelPlacement>
+    <Halo>
+        <Radius><ogc:Literal>5.0</ogc:Literal></Radius>
+        <Fill>
+            <SvgParameter name="fill"><ogc:Literal>#FFAFAF</ogc:Literal></SvgParameter>
+            <SvgParameter name="fill-opacity"><ogc:Literal>0.52</ogc:Literal></SvgParameter>
+        </Fill>
+    </Halo>
+    <Fill>
+        <SvgParameter name="fill"><ogc:Literal>#FFC800</ogc:Literal></SvgParameter>
+        <SvgParameter name="fill-opacity"><ogc:Literal>1.0</ogc:Literal></SvgParameter>
+    </Fill>
+</TextSymbolizer>

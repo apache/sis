@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<PolygonSymbolizer xmlns="http://www.opengis.net/se"
+    xmlns:sld="http://www.opengis.net/sld"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:ogc="http://www.opengis.net/ogc"
+    xmlns:gml="http://www.opengis.net/gml"
+    uom="http://www.opengeospatial.org/se/units/foot">
+    <Geometry><ogc:PropertyName>geom</ogc:PropertyName></Geometry>
+    <Fill>
+        <SvgParameter name="fill"><ogc:Literal>#0000FF</ogc:Literal></SvgParameter>
+        <SvgParameter name="fill-opacity"><ogc:Literal>1.0</ogc:Literal></SvgParameter>
+    </Fill>
+    <Stroke>
+        <SvgParameter name="stroke"><ogc:Literal>#FF0000</ogc:Literal></SvgParameter>
+        <SvgParameter name="stroke-dasharray">3.0 6.0</SvgParameter>
+        <SvgParameter name="stroke-dashoffset"><ogc:Literal>2.3</ogc:Literal></SvgParameter>
+        <SvgParameter name="stroke-linecap"><ogc:Literal>butt</ogc:Literal></SvgParameter>
+        <SvgParameter name="stroke-linejoin"><ogc:Literal>bevel</ogc:Literal></SvgParameter>
+        <SvgParameter name="stroke-opacity"><ogc:Literal>0.4</ogc:Literal></SvgParameter>
+        <SvgParameter name="stroke-width"><ogc:Literal>13</ogc:Literal></SvgParameter>
+    </Stroke>
+    <Displacement>
+        <DisplacementX><ogc:Literal>9.0</ogc:Literal></DisplacementX>
+        <DisplacementY><ogc:Literal>7.0</ogc:Literal></DisplacementY>
+    </Displacement>
+    <PerpendicularOffset><ogc:Literal>5</ogc:Literal></PerpendicularOffset>
+</PolygonSymbolizer>

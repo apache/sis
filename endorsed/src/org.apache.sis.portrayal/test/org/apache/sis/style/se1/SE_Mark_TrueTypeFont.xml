@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- A Mark referencing a glyph from a TrueType font through the ttf: WellKnownName syntax. -->
+<se:PointSymbolizer xmlns:se="http://www.opengis.net/se">
+    <se:Graphic>
+        <se:Mark>
+            <se:WellKnownName>ttf:FontAwesome?char=0xf124</se:WellKnownName>
+        </se:Mark>
+    </se:Graphic>
+</se:PointSymbolizer>

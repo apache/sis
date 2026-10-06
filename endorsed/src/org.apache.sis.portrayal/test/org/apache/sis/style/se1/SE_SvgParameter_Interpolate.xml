@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- An Interpolate function picking a fill color from a numeric property through a few InterpolationPoints. -->
+<se:PolygonSymbolizer xmlns:se="http://www.opengis.net/se" xmlns:ogc="http://www.opengis.net/ogc">
+    <se:Fill>
+        <se:SvgParameter name="fill">
+            <se:Interpolate mode="linear" method="color" fallbackValue="#FF0000">
+                <se:LookupValue><ogc:PropertyName>band_1_mean</ogc:PropertyName></se:LookupValue>
+                <se:InterpolationPoint>
+                    <se:Data>0</se:Data>
+                    <se:Value><ogc:Literal>#0000FF</ogc:Literal></se:Value>
+                </se:InterpolationPoint>
+                <se:InterpolationPoint>
+                    <se:Data>128</se:Data>
+                    <se:Value><ogc:Literal>#00FF00</ogc:Literal></se:Value>
+                </se:InterpolationPoint>
+                <se:InterpolationPoint>
+                    <se:Data>255</se:Data>
+                    <se:Value><ogc:Literal>#FF0000</ogc:Literal></se:Value>
+                </se:InterpolationPoint>
+            </se:Interpolate>
+        </se:SvgParameter>
+    </se:Fill>
+</se:PolygonSymbolizer>
