@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- "TM_Overalps" is spelled thus in the OGC Filter Encoding 1.1 schema; the typo is intentional here. -->
+<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml">
+    <ogc:TM_Overalps>
+        <ogc:PropertyName>feature_property_name</ogc:PropertyName>
+        <gml:TimePeriod gml:id="tp1">
+            <gml:beginPosition>2005-05-17T00:00:00Z</gml:beginPosition>
+            <gml:endPosition>2005-05-23T00:00:00Z</gml:endPosition>
+        </gml:TimePeriod>
+    </ogc:TM_Overalps>
+</ogc:Filter>

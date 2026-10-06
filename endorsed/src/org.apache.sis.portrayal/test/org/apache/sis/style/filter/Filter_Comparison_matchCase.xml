@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The "matchCase" attribute is defined by Filter Encoding 1.1 only. -->
+<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+    <ogc:And>
+        <ogc:PropertyIsEqualTo matchCase="false">
+            <ogc:PropertyName>feature_property_name</ogc:PropertyName>
+            <ogc:Literal>Some Text</ogc:Literal>
+        </ogc:PropertyIsEqualTo>
+        <ogc:PropertyIsNotEqualTo matchCase="true">
+            <ogc:PropertyName>other_property_name</ogc:PropertyName>
+            <ogc:Literal>Other Text</ogc:Literal>
+        </ogc:PropertyIsNotEqualTo>
+        <ogc:PropertyIsLike wildCard="*" singleChar="#" escapeChar="!" matchCase="false">
+            <ogc:PropertyName>third_property_name</ogc:PropertyName>
+            <ogc:Literal>*text*</ogc:Literal>
+        </ogc:PropertyIsLike>
+    </ogc:And>
+</ogc:Filter>

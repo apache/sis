@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+   <ogc:PropertyIsNull>
+      <ogc:PropertyName>feature_property_name</ogc:PropertyName>
+   </ogc:PropertyIsNull>
+</ogc:Filter>
+

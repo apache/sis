@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml">
+    <ogc:Equals>
+        <ogc:PropertyName>feature_property_name</ogc:PropertyName>
+        <gml:Polygon srsName="urn:x-ogc:def:crs:EPSG:6.11.2:4326">
+            <gml:exterior>
+                <gml:LinearRing>
+                    <gml:posList>48.0 18.0 52.0 18.0 52.0 21.0 48.0 21.0 48.0 18.0</gml:posList>
+                </gml:LinearRing>
+            </gml:exterior>
+        </gml:Polygon>
+    </ogc:Equals>
+</ogc:Filter>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+   <ogc:PropertyIsLike wildCard="*" singleChar="#" escapeChar="!">
+      <ogc:PropertyName>LAST_NAME</ogc:PropertyName>
+      <ogc:Literal>JOHN*</ogc:Literal>
+   </ogc:PropertyIsLike>
+</ogc:Filter>
+
+

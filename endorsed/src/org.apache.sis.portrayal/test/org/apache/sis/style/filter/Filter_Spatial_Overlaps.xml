@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml">
+   <ogc:Overlaps>
+      <ogc:PropertyName>Geometry</ogc:PropertyName>
+      <gml:Polygon srsName="http://www.opengis.net/gml/srs/epsg.xml#63266405">
+          <gml:outerBoundaryIs>
+             <gml:LinearRing>
+                <gml:posList>46.0 11.0 49.0 11.0 49.0 14.0 46.0 14.0 46.0 11.0</gml:posList>
+             </gml:LinearRing>
+          </gml:outerBoundaryIs>
+      </gml:Polygon>
+   </ogc:Overlaps>
+</ogc:Filter>
+
+
+
