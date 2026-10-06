@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- A NamedLayer referencing a pre-defined style by name instead of carrying one inline. -->
+<NamedLayer xmlns="http://www.opengis.net/sld">
+    <Name>named_layer</Name>
+    <NamedStyle>
+        <Name>named_style</Name>
+    </NamedStyle>
+</NamedLayer>

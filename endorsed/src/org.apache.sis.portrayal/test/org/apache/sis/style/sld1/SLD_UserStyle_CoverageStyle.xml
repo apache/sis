@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- A UserStyle wrapping a se:CoverageStyle, mixing the sld: and se: namespaces. -->
+<sld:UserStyle xmlns:sld="http://www.opengis.net/sld" xmlns:se="http://www.opengis.net/se" xmlns:ogc="http://www.opengis.net/ogc">
+    <se:Name>coverage_user_style</se:Name>
+    <sld:IsDefault>true</sld:IsDefault>
+    <se:CoverageStyle>
+        <se:Rule>
+            <se:RasterSymbolizer>
+                <se:Opacity><ogc:Literal>0.5</ogc:Literal></se:Opacity>
+            </se:RasterSymbolizer>
+        </se:Rule>
+    </se:CoverageStyle>
+</sld:UserStyle>

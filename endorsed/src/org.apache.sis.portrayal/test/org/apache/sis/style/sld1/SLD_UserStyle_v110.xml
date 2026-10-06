@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<UserStyle xmlns="http://www.opengis.net/sld" 
+    xmlns:sld="http://www.opengis.net/sld" 
+    xmlns:xlink="http://www.w3.org/1999/xlink" 
+    xmlns:ogc="http://www.opengis.net/ogc" 
+    xmlns:gml="http://www.opengis.net/gml"
+    xmlns:se="http://www.opengis.net/se">
+        
+    <se:Name>name</se:Name>
+    <se:Description>
+        <se:Title>title</se:Title>
+        <se:Abstract>abstract</se:Abstract>
+    </se:Description>
+    
+    <IsDefault>true</IsDefault>
+       
+    <se:FeatureTypeStyle/>
+    <se:FeatureTypeStyle/>
+    <se:FeatureTypeStyle/>
+       
+</UserStyle>

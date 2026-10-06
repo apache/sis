@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- A UserLayer fetching its data from a remote WCS instead of carrying it inline. -->
+<UserLayer xmlns="http://www.opengis.net/sld" xmlns:se="http://www.opengis.net/se" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <se:Name>user_layer</se:Name>
+    <RemoteOWS>
+        <Service>WCS</Service>
+        <se:OnlineResource xlink:type="simple" xlink:href="http://example.org/coverages"/>
+    </RemoteOWS>
+</UserLayer>
