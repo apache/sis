@@ -1,0 +1,17 @@
+{
+  "validTime" : 1630560671227,
+  "outerFrame" : {
+    "authority" : "/geopose/1.0",
+    "id" : "LTP-ENU",
+    "parameters" : "longitude=1.4442&latitude=43.6047&height=150.000"
+  },
+  "frameChain" : [ {
+    "authority" : "/geopose/1.0",
+    "id" : "LTP-ENU",
+    "parameters" : "longitude=1.4450&latitude=43.6050&height=151.000"
+  }, {
+    "authority" : "/geopose/1.0",
+    "id" : "LTP-ENU",
+    "parameters" : "longitude=1.4460&latitude=43.6060&height=152.000"
+  } ]
+}
