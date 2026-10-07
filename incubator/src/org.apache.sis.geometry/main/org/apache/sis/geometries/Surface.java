@@ -86,11 +86,11 @@ public sealed interface Surface extends Orientable
     /**
      * The area of this Surface, as measured in the spatial reference system of this Surface.
      *
-     * <p>TODO / Limitation: implementations label the returned quantity in square metres, but its
-     * magnitude is computed in the units of the coordinate system axes. On a geographic coordinate
-     * reference system that magnitude is therefore an amount of square degrees reported as square
-     * metres. Computing a true area on the reference surface, as required by ISO 19107 REQ. 11,
-     * remains to be done.</p>
+     * <p>TODO / Limitation: the area is computed as a planar area in the units of the coordinate
+     * system axes, and the returned quantity is labelled with the square of the unit of the first
+     * axis. On a geographic coordinate reference system the result is therefore an amount of square
+     * degrees, reported as such. Computing a true area on the reference surface, as required by
+     * ISO 19107 REQ. 11, remains to be done.</p>
      *
      * <p>Difference with ISO-19107, the Area type has been changed to Quantity to
      * handle temporal geometries and crs-less geometries.</p>

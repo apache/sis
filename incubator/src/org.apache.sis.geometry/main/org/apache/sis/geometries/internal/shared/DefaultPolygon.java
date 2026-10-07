@@ -18,16 +18,17 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.List;
 import java.util.Objects;
-import org.locationtech.jts.geom.GeometryFactory;
 import javax.measure.Quantity;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.measure.Quantities;
-import org.apache.sis.measure.Units;
 
 
 /**
@@ -89,7 +90,74 @@ public non-sealed class DefaultPolygon extends AbstractGeometry implements Polyg
     @Override
     public Quantity<?> getArea() {
         //TODO : fallback on JTS until implemented
-        return Quantities.create(Geometries.asJTS(this, false, new GeometryFactory()).getArea(), Units.SQUARE_METRE);
+        return Quantities.create(asJTS().getArea(), Geometries.getAreaUnit(this));
+    }
+
+    @Override
+    public Quantity<?> getPerimeter() {
+        //TODO : fallback on JTS until implemented
+        return Quantities.create(asJTS().getLength(), Geometries.getLinearUnit(this));
+    }
+
+    @Override
+    public Point getCentroid() {
+        if (isEmpty()) {
+            // The centroid of the empty set is undefined.
+            return null;
+        }
+        //TODO : fallback on JTS until implemented
+        return (Point) fromJTS(asJTS().getCentroid());
+    }
+
+    @Override
+    public Point getPointOnSurface() {
+        if (isEmpty()) {
+            // The empty set has no interior position.
+            return null;
+        }
+        //TODO : fallback on JTS until implemented
+        return (Point) fromJTS(asJTS().getInteriorPoint());
+    }
+
+    /**
+     * Returns the same point as {@link #getPointOnSurface()}, which is the name
+     * given by OGC Simple Feature Access to the operation ISO 19107 calls the
+     * representative point.
+     */
+    @Override
+    public Point getRepresentativePoint() {
+        return getPointOnSurface();
+    }
+
+    @Override
+    public Geometry getBoundary() {
+        if (isEmpty()) {
+            // The boundary of the empty set is empty.
+            return GeometryFactory.createEmpty(getCoordinateReferenceSystem());
+        }
+        //TODO : fallback on JTS until implemented
+        return fromJTS(asJTS().getBoundary());
+    }
+
+    /**
+     * Returns the same geometry as {@link #getBoundary()}, which is the name given by
+     * {@link org.apache.sis.geometries.Surface} to the same ISO 19107 operation.
+     */
+    @Override
+    public Geometry boundary() {
+        return getBoundary();
+    }
+
+    @Override
+    public boolean isSimple() {
+        //TODO : fallback on JTS until implemented
+        return asJTS().isSimple();
+    }
+
+    @Override
+    public boolean isValid() {
+        //TODO : fallback on JTS until implemented
+        return asJTS().isValid();
     }
 
 }

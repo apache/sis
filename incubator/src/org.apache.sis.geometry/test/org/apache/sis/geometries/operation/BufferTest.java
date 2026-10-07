@@ -18,6 +18,7 @@ package org.apache.sis.geometries.operation;
 
 import javax.measure.Quantity;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.Surface;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
@@ -25,7 +26,10 @@ import static org.apache.sis.geometries.operation.TestData.POINT_A;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 
@@ -62,12 +66,7 @@ public class BufferTest {
         new TestCase(EMPTY_1, Quantities.create( 10, Units.METRE), EMPTY_1, null),
         new TestCase(EMPTY_1, Quantities.create(  0, Units.METRE), EMPTY_1, null),
         new TestCase(EMPTY_1, Quantities.create(-10, Units.METRE), EMPTY_1, null),
-        new TestCase(EMPTY_1, Quantities.create( 10, Units.UNITY), EMPTY_1, null),
-        /*
-         * TODO
-         */
-        new TestCase(POINT_A, Quantities.create( 10, Units.METRE), null, UnsupportedOperationException.class),
-        new TestCase(POINT_A, Quantities.create(  0, Units.METRE), null, UnsupportedOperationException.class)
+        new TestCase(EMPTY_1, Quantities.create( 10, Units.UNITY), EMPTY_1, null)
     };
 
     /**
@@ -86,5 +85,36 @@ public class BufferTest {
                 }
             }
         }
+    }
+
+    /**
+     * Tests that growing a buffer around a point gives a surface approximating a disk.
+     * The operation is delegated to JTS, which approximates the disk by a polygon inscribed
+     * in it. The area of that polygon is therefore slightly less than the area of the disk,
+     * by an amount which depends on the number of segments used by JTS for each quadrant.
+     * This test verifies only that the result is close to the disk, not the exact number
+     * of segments.
+     */
+    @Test
+    public void testBufferOfPoint() {
+        final double radius = 10;
+        final Geometry result = new GeometryProcessor().buffer(POINT_A, Quantities.create(radius, Units.METRE));
+        assertFalse(result.isEmpty(), "The buffer of a point with a positive radius is not empty.");
+
+        final Surface surface = assertInstanceOf(Surface.class, result, "The buffer of a point is a surface.");
+        final double area = surface.getArea().getValue().doubleValue();
+        final double disk = Math.PI * radius * radius;
+        assertTrue(area <= disk, () -> "Inscribed polygon area " + area + " cannot exceed disk area " + disk);
+        assertTrue(area >= 0.95 * disk, () -> "Area " + area + " is too far from the disk area " + disk);
+    }
+
+    /**
+     * Tests that a buffer of radius zero around a point gives an empty geometry:
+     * a point has no surface to preserve.
+     */
+    @Test
+    public void testBufferOfPointWithZeroRadius() {
+        final Geometry result = new GeometryProcessor().buffer(POINT_A, Quantities.create(0, Units.METRE));
+        assertTrue(result.isEmpty(), "The buffer of a point with a radius of zero is empty.");
     }
 }

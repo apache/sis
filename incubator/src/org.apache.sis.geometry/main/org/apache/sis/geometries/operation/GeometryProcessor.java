@@ -25,7 +25,6 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.measure.Quantity;
-import javax.measure.Unit;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -82,7 +81,9 @@ public final class GeometryProcessor {
             // There is no position to grow a buffer around, whatever the radius.
             return geom;
         }
-        throw new UnsupportedOperationException();
+
+        //TODO : fallback on JTS until implemented, this loss the attributes !
+        return fromJTS(jts(geom).buffer(radius.getValue().doubleValue()), geom);
     }
 
     /**
@@ -122,11 +123,11 @@ public final class GeometryProcessor {
      * Because the geometries are closed, it is possible to find a point on each geometric object involved, such that
      * the distance between these 2 points is the returned distance between their geometric objects.
      *
-     * <p>TODO / Limitation: the returned quantity is labelled in metres, but its magnitude is the plain
-     * Pythagorean distance computed in the units of the coordinate system axes. On a geographic
-     * coordinate reference system that magnitude is therefore an amount of degrees reported as
-     * metres. Computing a true geodesic distance on the reference surface, as required by
-     * ISO 19107 REQ. 11, remains to be done.</p>
+     * <p>TODO / Limitation: the magnitude is the plain Pythagorean distance computed in the units
+     * of the coordinate system axes, and the returned quantity is labelled with the unit of the
+     * first axis. On a geographic coordinate reference system the result is therefore an amount
+     * of degrees, reported as such. Computing a true geodesic distance on the reference surface,
+     * as required by ISO 19107 REQ. 11, remains to be done.</p>
      *
      * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
      * handle temporal geometries and crs-less geometries.</p>
@@ -143,11 +144,12 @@ public final class GeometryProcessor {
         }
         if (geom1 instanceof Point pt1) {
             if (geom2 instanceof Point pt2) {
-                return Quantities.create(Distance.distance(pt1, pt2), getUnit(pt1));
+                return Quantities.create(Distance.distance(pt1, pt2), Geometries.getLinearUnit(pt1));
             }
         }
 
-        throw new UnsupportedOperationException();
+        //TODO : fallback on JTS until implemented
+        return Quantities.create(jts(geom1).distance(jts(geom2)), Geometries.getLinearUnit(geom1));
     }
 
     /**
@@ -615,11 +617,4 @@ public final class GeometryProcessor {
         return Geometries.fromJTS(result, true);
     }
 
-    private static Unit getUnit(Geometry geometry) {
-        return getUnit(geometry.getCoordinateReferenceSystem());
-    }
-
-    private static Unit getUnit(CoordinateReferenceSystem crs) {
-        return crs.getCoordinateSystem().getAxis(0).getUnit();
-    }
 }

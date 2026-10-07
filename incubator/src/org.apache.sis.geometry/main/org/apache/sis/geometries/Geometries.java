@@ -698,6 +698,74 @@ public final class Geometries {
     }
 
     /**
+     * Returns the unit of measurement in which the coordinates of the given geometry are expressed,
+     * taken from the first axis of its coordinate system. This is the unit in which lengths computed
+     * on that geometry, such as a {@linkplain Curve#getLength() curve length} or a
+     * {@linkplain Surface#getPerimeter() perimeter}, are expressed.
+     *
+     * @param  geom  the geometry from which to get the coordinate unit.
+     * @return unit of the first coordinate system axis, or {@link Units#UNITY} if the geometry
+     *         has no coordinate reference system.
+     */
+    @SuppressWarnings("rawtypes")
+    public static Unit getLinearUnit(final Geometry geom) {
+        return productOfAxisUnits(geom, 1);
+    }
+
+    /**
+     * Returns the unit in which an {@linkplain Surface#getArea() area} computed on the given
+     * geometry is expressed, as the product of the units of the two first coordinate system axes.
+     *
+     * @param  geom  the geometry from which to get the area unit.
+     * @return product of the units of the two first axes, or {@link Units#UNITY} if the geometry
+     *         has no coordinate reference system or if that system is not at least 2-dimensional.
+     */
+    @SuppressWarnings("rawtypes")
+    public static Unit getAreaUnit(final Geometry geom) {
+        return productOfAxisUnits(geom, 2);
+    }
+
+    /**
+     * Returns the unit in which a {@linkplain Solid#getVolume() volume} computed on the given
+     * geometry is expressed, as the product of the units of the three first coordinate system axes.
+     *
+     * @param  geom  the geometry from which to get the volume unit.
+     * @return product of the units of the three first axes, or {@link Units#UNITY} if the geometry
+     *         has no coordinate reference system or if that system is not at least 3-dimensional.
+     */
+    @SuppressWarnings("rawtypes")
+    public static Unit getVolumeUnit(final Geometry geom) {
+        return productOfAxisUnits(geom, 3);
+    }
+
+    /**
+     * Returns the product of the units of the {@code n} first axes of the coordinate system of
+     * the given geometry. Each axis is read separately because nothing requires the axes of a
+     * coordinate system to share a unit.
+     *
+     * @param  geom  the geometry from which to get the units.
+     * @param  n     number of leading axes to multiply.
+     * @return product of the units of the {@code n} first axes, or {@link Units#UNITY} if the
+     *         geometry has no coordinate reference system or has less than {@code n} dimensions.
+     */
+    @SuppressWarnings("rawtypes")
+    private static Unit productOfAxisUnits(final Geometry geom, final int n) {
+        final CoordinateReferenceSystem crs = geom.getCoordinateReferenceSystem();
+        if (crs == null) {
+            return Units.UNITY;
+        }
+        final CoordinateSystem cs = crs.getCoordinateSystem();
+        if (cs.getDimension() < n) {
+            return Units.UNITY;
+        }
+        Unit unit = cs.getAxis(0).getUnit();
+        for (int i = 1; i < n; i++) {
+            unit = unit.multiply(cs.getAxis(i).getUnit());
+        }
+        return unit;
+    }
+
+    /**
      * Returns the sum of the two given quantities, expressed in the unit of the first one,
      * or dimensionless if either operand is dimensionless.
      *
