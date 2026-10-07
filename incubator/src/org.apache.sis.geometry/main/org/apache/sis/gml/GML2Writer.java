@@ -88,7 +88,7 @@ public final class GML2Writer extends AbstractGMLWriter {
     @Override
     protected void writePoint(final Point g, final String srsName, final boolean declareNamespace) throws XMLStreamException {
         writeStart(GML2Tags.POINT, srsName, declareNamespace);
-        writeCoordinates(g.asDataPoint());
+        writeCoordinates(g.getDataPoints());
         writer.writeEndElement();
     }
 

@@ -99,7 +99,7 @@ public abstract class PointTest extends GeometryTest {
     @Test
     public void testAsDataPoint() {
         final Point point = createPoint2D();
-        final DataPoints points = point.asDataPoint();
+        final DataPoints points = point.getDataPoints();
         assertNotNull(points);
         assertEquals(1, points.size(), "A point is a sequence of a single position.");
         assertFalse(points.isEmpty());

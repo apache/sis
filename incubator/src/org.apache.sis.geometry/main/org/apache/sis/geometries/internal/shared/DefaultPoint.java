@@ -64,7 +64,7 @@ public non-sealed class DefaultPoint extends AbstractGeometry implements Point {
     }
 
     @Override
-    public DataPoints asDataPoint() {
+    public DataPoints getDataPoints() {
         return points;
     }
 

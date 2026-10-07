@@ -22,7 +22,6 @@ import javax.measure.Quantity;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.solid.Polyhedron;
 import org.apache.sis.geometries.surface.MultiPolygon;
@@ -96,11 +95,6 @@ public non-sealed class DefaultPolyhedron extends AbstractGeometry implements Po
 
     @Override
     public Quantity<?> getVolume() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public DataPoints getDataPoints() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

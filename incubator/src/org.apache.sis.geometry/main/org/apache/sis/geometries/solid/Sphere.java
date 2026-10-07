@@ -31,6 +31,7 @@ import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.SinglePositionDataPoints;
 import org.apache.sis.geometries.surface.ParametricCurveSurface;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector;
@@ -136,7 +137,7 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
 
     @Override
     public DataPointsType getDataPointsType() {
-        return DataPointsType.EMPTY;
+        return getDataPoints().getType();
     }
 
     /**
@@ -207,11 +208,6 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
     }
 
     @Override
-    public DataPoints getDataPoints() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public GeometryType getHorizontalCurveType() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -244,6 +240,15 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
     @Override
     public Identifier getName() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    /**
+     * Returns the center of this sphere, as a sequence of one position. A sphere is defined by
+     * that position and by its radius, so the center is the only position it holds.
+     */
+    @Override
+    public DataPoints getDataPoints() {
+        return new SinglePositionDataPoints(this::getCenter);
     }
 
 }

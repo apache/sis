@@ -21,9 +21,11 @@ import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.coordinate.GriddedSurface;
 import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.internal.shared.ConcatenatedDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultCurvePolygon;
 
 
@@ -77,6 +79,15 @@ public sealed interface CurvePolygon extends Surface
     @Override
     default DataPointsType getDataPointsType() {
         return getExteriorRing().getDataPointsType();
+    }
+
+    /**
+     * Returns the positions of the curves bounding this surface, the exterior one first,
+     * then the interior ones in the order this surface holds them.
+     */
+    @Override
+    default DataPoints getDataPoints() {
+        return ConcatenatedDataPoints.of(getExteriorRing(), getInteriorRings());
     }
 
     /**

@@ -18,6 +18,7 @@ package org.apache.sis.geometries.internal.shared;
 
 import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
 
@@ -95,6 +96,15 @@ public non-sealed class DefaultArcByCenterPoint extends AbstractGeometry impleme
     @Override
     public Envelope getEnvelope() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    /**
+     * Returns the center of this arc, as a sequence of one position. An arc by center point is
+     * defined by that position and by angles, so the center is the only position it holds.
+     */
+    @Override
+    public DataPoints getDataPoints() {
+        return center.getDataPoints();
     }
 
 }

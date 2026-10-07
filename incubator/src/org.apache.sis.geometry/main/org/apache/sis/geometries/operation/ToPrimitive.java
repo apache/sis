@@ -90,7 +90,7 @@ public final class ToPrimitive {
      * Transform MultiPoint to Primitive.
      */
     public static MeshPrimitive.Points toPrimitive(MultiPoint geometry) throws OperationException {
-        final ArrayDataPoints array = toArraySequence(geometry.asDataPoints());
+        final ArrayDataPoints array = toArraySequence(geometry.getDataPoints());
         final MeshPrimitive.Points primitive = new MeshPrimitive.Points();
         for (String name : array.getAttributeNames()) {
             primitive.setAttribute(name, array.getAttribute(name));

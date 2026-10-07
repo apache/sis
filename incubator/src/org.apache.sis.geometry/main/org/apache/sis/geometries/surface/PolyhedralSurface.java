@@ -20,10 +20,13 @@ import java.util.List;
 import javax.measure.Quantity;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.SurfaceInterpolation;
+import org.apache.sis.geometries.internal.shared.ConcatenatedDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultPolyhedralSurface;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
@@ -163,6 +166,20 @@ public sealed interface PolyhedralSurface<T extends Polygon> extends /*GeometryC
      */
     default boolean isClosed() {
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Returns the positions of the patches of this surface, in the order this surface holds
+     * them. A position shared by two patches appears as many times as it is held.
+     */
+    @Override
+    default DataPoints getDataPoints() {
+        final int n = getNumPatches();
+        final Geometry[] patches = new Geometry[n];
+        for (int i = 0; i < n; i++) {
+            patches[i] = getPatchN(i);
+        }
+        return ConcatenatedDataPoints.of(patches);
     }
 
 }

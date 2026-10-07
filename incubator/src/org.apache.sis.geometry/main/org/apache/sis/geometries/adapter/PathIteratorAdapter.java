@@ -180,7 +180,7 @@ final class PathIteratorAdapter implements PathIterator {
         if (geometry instanceof LineString) {
             sequences = List.of(((LineString) geometry).getDataPoints());
         } else if (geometry instanceof Point) {
-            sequences = List.of(((Point) geometry).asDataPoint());
+            sequences = List.of(((Point) geometry).getDataPoints());
         } else if (geometry instanceof Polygon) {
             return new RingIterator((Polygon) geometry);
         } else if (geometry instanceof GeometryCollection) {

@@ -82,7 +82,7 @@ final class GeometryAssert {
 
         if (expected instanceof Point e) {
             final Point a = (Point) actual;
-            assertSequenceEquals(e.asDataPoint(), a.asDataPoint(), tolerance);
+            assertSequenceEquals(e.getDataPoints(), a.getDataPoints(), tolerance);
         } else if (expected instanceof LineString e) {                  // Also covers LinearRing.
             final LineString a = (LineString) actual;
             assertSequenceEquals(e.getDataPoints(), a.getDataPoints(), tolerance);

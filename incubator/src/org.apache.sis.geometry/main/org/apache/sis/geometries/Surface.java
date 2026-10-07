@@ -213,10 +213,8 @@ public sealed interface Surface extends Orientable
      * @see ISO 19107:2019 - 6.4.25.8
      */
     @UML(identifier="dataPoint", specification=ISO_19107)
-    default DataPoints getDataPoints() {
-        //TODO
-        throw new UnsupportedOperationException();
-    }
+    @Override
+    DataPoints getDataPoints();
 
     /**
      * Positions used to build the geometry of this surface, the way they are used depending on the interpolation.

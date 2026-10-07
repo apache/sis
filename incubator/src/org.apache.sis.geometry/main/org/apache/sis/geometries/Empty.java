@@ -19,6 +19,7 @@ package org.apache.sis.geometries;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.apache.sis.geometries.internal.shared.DefaultEmpty;
+import org.apache.sis.geometries.internal.shared.EmptyDataPoints;
 
 
 /**
@@ -162,6 +163,14 @@ public sealed interface Empty extends Geometry
     @Override
     default Point getRepresentativePoint() {
         return null;
+    }
+
+    /**
+     * Returns an empty sequence: the empty set holds no position.
+     */
+    @Override
+    default DataPoints getDataPoints() {
+        return new EmptyDataPoints(getCoordinateReferenceSystem(), getDataPointsType());
     }
 
 }

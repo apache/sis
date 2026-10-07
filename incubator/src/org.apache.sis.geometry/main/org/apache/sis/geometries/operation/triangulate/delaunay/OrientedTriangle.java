@@ -313,4 +313,10 @@ public final class OrientedTriangle extends AbstractGeometry implements Triangle
         return (int) result;
     }
 
+
+    @Override
+    public DataPoints getDataPoints() {
+        return this;
+    }
+
 }

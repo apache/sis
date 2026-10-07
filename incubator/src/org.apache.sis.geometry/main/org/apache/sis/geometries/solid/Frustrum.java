@@ -18,10 +18,12 @@ package org.apache.sis.geometries.solid;
 
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Plane;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.ConcatenatedDataPoints;
 
 
 /**
@@ -70,6 +72,15 @@ public final class Frustrum extends AbstractGeometry {
     @Override
     public Envelope getEnvelope() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    /**
+     * Returns the positions of the planes delimiting this frustum,
+     * in the order this frustum holds them.
+     */
+    @Override
+    public DataPoints getDataPoints() {
+        return ConcatenatedDataPoints.of(planes);
     }
 
 }

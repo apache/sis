@@ -488,6 +488,23 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         /**
+         * Returns the positions this primitive draws, in the order it draws them. When the
+         * primitive carries an index, the positions appear in the order that index names them,
+         * and a position the index names several times appears as many times.
+         */
+        @Override
+        public DataPoints getDataPoints() {
+            final int[] indices;
+            if (index == null) {
+                indices = new int[Math.toIntExact(getPositions().getLength())];
+                for (int i = 0; i < indices.length; i++) indices[i] = i;
+            } else {
+                indices = index.toArrayInt();
+            }
+            return new Sequence(this, indices);
+        }
+
+        /**
          * Change positions.
          * Caution : changing the positions will change the primitive CRS,
          *           the positions crs is used as primitive CRS.
@@ -1191,17 +1208,6 @@ public sealed interface MeshPrimitive extends Geometry
             super(Type.LINE_STRIP);
         }
 
-        @Override
-        public DataPoints getDataPoints() {
-            final int[] indices;
-            if (index == null) {
-                indices = new int[Math.toIntExact(getPositions().getLength())];
-                for (int i = 0; i < indices.length; i++) indices[i] = i;
-            } else {
-                indices = index.toArrayInt();
-            }
-            return new Sequence(this, indices);
-        }
     }
 
     public static final class Triangles extends Abs implements TIN {

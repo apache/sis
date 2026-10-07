@@ -19,7 +19,6 @@ package org.apache.sis.geometries.internal.shared;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
-import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.CompoundCurve;
 import org.apache.sis.maths.Array;
@@ -101,8 +100,4 @@ public non-sealed class DefaultCompoundCurve extends AbstractGeometry implements
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
-    public DataPoints getDataPoints() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 }

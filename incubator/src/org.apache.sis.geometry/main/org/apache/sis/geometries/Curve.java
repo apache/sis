@@ -104,6 +104,7 @@ public sealed interface Curve extends Orientable
      * @see ISO 19107:2019 - 6.4.18.3
      */
     @UML(identifier="dataPoint", specification=ISO_19107)
+    @Override
     DataPoints getDataPoints();
 
     /**

@@ -19,6 +19,7 @@ package org.apache.sis.geometries.solid.polyhedron;
 import java.util.List;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
@@ -194,6 +195,22 @@ public abstract sealed class AbstractPolyhedron extends AbstractGeometry impleme
         final Array positions = NDArrays.subset(vertices, face);
         final LinearRing ring = GeometryFactory.createLinearRing(GeometryFactory.createSequence(positions));
         return GeometryFactory.createPolygon(ring, null);
+    }
+
+
+    /**
+     * Unsupported: the vertices of these shapes are a constant shared by every instance, not
+     * state of one of them. Returning them would either let one instance move the vertices of
+     * all the others, or hand out a sequence which refuses every write, so neither answers the
+     * contract of {@link org.apache.sis.geometries.Geometry#getDataPoints()}.
+     *
+     * @return never returns.
+     * @throws UnsupportedOperationException always.
+     */
+    @Override
+    public DataPoints getDataPoints() {
+        throw new UnsupportedOperationException("The vertices of a " + getClass().getSimpleName()
+                + " are a shared constant, not positions of this instance.");
     }
 
 }

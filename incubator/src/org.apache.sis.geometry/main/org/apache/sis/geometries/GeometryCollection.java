@@ -22,7 +22,9 @@ import org.opengis.annotation.UML;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.curve.MultiCurve;
 import org.apache.sis.geometries.curve.ProductCurve;
+import org.apache.sis.geometries.internal.shared.ConcatenatedDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultGeometryCollection;
+import org.apache.sis.geometries.internal.shared.EmptyDataPoints;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.solid.MultiPolyhedron;
@@ -186,6 +188,23 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
     default DataPointsType getDataPointsType() {
         if (getNumGeometries() == 0) return null;
         return getGeometryN(0).getDataPointsType();
+    }
+
+    /**
+     * Returns the positions of the elements of this collection, in the order this collection
+     * holds them. A position held by two elements appears as many times as it is held.
+     */
+    @Override
+    default DataPoints getDataPoints() {
+        final int n = getNumGeometries();
+        if (n == 0) {
+            return new EmptyDataPoints(getCoordinateReferenceSystem());
+        }
+        final Geometry[] elements = new Geometry[n];
+        for (int i = 0; i < n; i++) {
+            elements[i] = getGeometryN(i);
+        }
+        return ConcatenatedDataPoints.of(elements);
     }
 
 }

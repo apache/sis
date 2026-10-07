@@ -136,10 +136,10 @@ public final class JTSAdapter {
         if (geom == null) {
             return null;
         } else if (geom instanceof Point cdt) {
-            final CoordinateSequence cs = toCoordinateSequence(cdt.asDataPoint(), copy, gf);
+            final CoordinateSequence cs = toCoordinateSequence(cdt.getDataPoints(), copy, gf);
             jts = new org.locationtech.jts.geom.Point(cs, gf);
         } else if (geom instanceof MultiPoint cdt) {
-            final CoordinateSequence cs = toCoordinateSequence(cdt.asDataPoints(), copy, gf);
+            final CoordinateSequence cs = toCoordinateSequence(cdt.getDataPoints(), copy, gf);
             jts = gf.createMultiPoint(cs);
         } else if (geom instanceof LinearRing cdt) {
             final CoordinateSequence cs = toCoordinateSequence(cdt.getDataPoints(), copy, gf);

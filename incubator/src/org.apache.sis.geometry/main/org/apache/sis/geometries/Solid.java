@@ -125,9 +125,8 @@ public sealed interface Solid extends Primitive
      * @see ISO 19107:2019 - 6.4.28.5
      */
     @UML(identifier="dataPoint", specification=ISO_19107)
-    default DataPoints getDataPoints() {
-        throw new UnsupportedOperationException();
-    }
+    @Override
+    DataPoints getDataPoints();
 
     /**
      * Positions used to build the geometry of this solid, the way they are used depending on the interpolation.

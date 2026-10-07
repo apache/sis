@@ -70,7 +70,7 @@ public non-sealed class DefaultMultiPoint extends AbstractGeometry implements Mu
     }
 
     @Override
-    public DataPoints asDataPoints() {
+    public DataPoints getDataPoints() {
         return points;
     }
 

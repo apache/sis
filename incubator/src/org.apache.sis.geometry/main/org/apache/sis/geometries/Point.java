@@ -102,7 +102,8 @@ public sealed interface Point extends Primitive
      *
      * @return this point as a sequence of one data point.
      */
-    default DataPoints asDataPoint() {
+    @Override
+    default DataPoints getDataPoints() {
         return new DataPoints() {
             @Override
             public CoordinateReferenceSystem getCoordinateReferenceSystem() {

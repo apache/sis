@@ -119,7 +119,7 @@ public final class To3D {
      * Add Z axis to Point.
      */
     public static Point to3D(Point base, CoordinateReferenceSystem crs3d, Consumer<Tuple> zeditor) {
-        final DataPoints copy3d = to3d(base.asDataPoint(), crs3d, zeditor);
+        final DataPoints copy3d = to3d(base.getDataPoints(), crs3d, zeditor);
         return GeometryFactory.createPoint(copy3d);
     }
 

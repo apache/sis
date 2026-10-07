@@ -65,7 +65,8 @@ public sealed interface MultiPoint<T extends Point> extends GeometryCollection<T
     /**
      * View this multipoint as a point sequence
      */
-    default DataPoints asDataPoints() {
+    @Override
+    default DataPoints getDataPoints() {
         return new DataPoints() {
             @Override
             public CoordinateReferenceSystem getCoordinateReferenceSystem() {
