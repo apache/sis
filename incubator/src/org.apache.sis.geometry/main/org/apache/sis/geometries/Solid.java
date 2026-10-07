@@ -83,28 +83,6 @@ public sealed interface Solid extends Primitive
     }
 
     /**
-     * Shells bounding this solid, each of them a closed surface without boundary.
-     *
-     * <p>Constraints:</p>
-     * <ul>
-     *   <li>At least one shell.</li>
-     *   <li>Every shell is a cycle, therefore a closed composite surface having an empty boundary.</li>
-     *   <li>The shells are oriented outward: the upward normal of each of them faces away from the
-     *       interior of this solid.</li>
-     *   <li>The shell with the largest envelope is the exterior one, which is well defined only
-     *       because the enclosing coordinate space is a 3-dimensional Euclidean space.</li>
-     * </ul>
-     *
-     * @return boundary of this solid.
-     *
-     * @see ISO 19107:2019 - 6.4.28.2
-     */
-    @UML(identifier="boundary", specification=ISO_19107)
-    default Geometry getBoundary() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
      * Sum of the areas of all the boundary surfaces of this solid.
      *
      * <p>Difference with ISO-19107, the Area type has been changed to Quantity to

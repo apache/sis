@@ -127,7 +127,7 @@ public sealed interface Empty extends Geometry
      */
     @UML(identifier="boundary", specification=ISO_19107)
     @Override
-    default Geometry boundary() {
+    default Geometry getBoundary() {
         return this;
     }
 

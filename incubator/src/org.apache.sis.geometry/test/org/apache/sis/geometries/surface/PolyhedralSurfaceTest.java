@@ -356,14 +356,6 @@ public class PolyhedralSurfaceTest {
     }
 
     /**
-     * Test of {@code boundary()}.
-     */
-    @Test
-    @Disabled("Not implemented yet.")
-    public void testBoundary() {
-    }
-
-    /**
      * Test of {@code userProperties()}.
      */
     @Test

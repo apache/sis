@@ -139,15 +139,6 @@ public non-sealed class DefaultPolygon extends AbstractGeometry implements Polyg
         return fromJTS(asJTS().getBoundary());
     }
 
-    /**
-     * Returns the same geometry as {@link #getBoundary()}, which is the name given by
-     * {@link org.apache.sis.geometries.Surface} to the same ISO 19107 operation.
-     */
-    @Override
-    public Geometry boundary() {
-        return getBoundary();
-    }
-
     @Override
     public boolean isSimple() {
         //TODO : fallback on JTS until implemented

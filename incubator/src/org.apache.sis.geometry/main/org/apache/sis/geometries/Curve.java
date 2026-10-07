@@ -217,7 +217,7 @@ public sealed interface Curve extends Orientable
      */
     @UML(identifier="boundary", specification=ISO_19107)
     @Override
-    default Geometry boundary() {
+    default Geometry getBoundary() {
         if (isEmpty() || isClosed()) {
             return GeometryFactory.createEmpty(getCoordinateReferenceSystem());
         }

@@ -95,7 +95,7 @@ public non-sealed class DefaultMultiPoint extends AbstractGeometry implements Mu
     }
 
     @Override
-    public Geometry boundary() {
+    public Geometry getBoundary() {
         if (isEmpty()) {
             // The boundary of the empty set is empty.
             return GeometryFactory.createEmpty(getCoordinateReferenceSystem());

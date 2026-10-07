@@ -116,12 +116,12 @@ public abstract class EmptyTest {
     }
 
     /**
-     * Test of {@code boundary()}.
+     * Test of {@code getBoundary()}.
      */
     @Test
-    public void testBoundary() {
+    public void testGetBoundary() {
         final Empty empty = createEmpty(CRS_2D);
-        final Geometry boundary = empty.boundary();
+        final Geometry boundary = empty.getBoundary();
         assertSame(empty, boundary);
         assertTrue(boundary.isEmpty());
     }

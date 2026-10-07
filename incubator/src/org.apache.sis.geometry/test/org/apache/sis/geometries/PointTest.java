@@ -191,12 +191,12 @@ public abstract class PointTest {
     }
 
     /**
-     * Test of {@code boundary()}.
+     * Test of {@code getBoundary()}.
      */
     @Test
-    public void testBoundary() {
+    public void testGetBoundary() {
         final Point point = createPoint2D();
-        final Geometry boundary = point.boundary();
+        final Geometry boundary = point.getBoundary();
         assertNotNull(boundary);
         assertTrue(boundary.isEmpty(), "The boundary of a point is the empty set.");
         assertEquals(GeometryType.EMPTY, boundary.getGeometryType());

@@ -180,11 +180,11 @@ public class LineStringTest {
     }
 
     /**
-     * Test of {@code boundary()}.
+     * Test of {@code getBoundary()}.
      */
     @Test
     @Disabled("Not implemented yet.")
-    public void testBoundary() {
+    public void testGetBoundary() {
     }
 
     /**

@@ -358,7 +358,7 @@ public final class GeometryProcessor {
                  */
                 final Geometry other = geom1.isEmpty() ? geom2 : geom1;
                 final int interior = other.getTopologicDimension();
-                final int boundary = other.boundary().getTopologicDimension();
+                final int boundary = other.getBoundary().getTopologicDimension();
                 if (geom1.isEmpty()) {
                     dimensions[6] = interior;       // Exterior of geom1 ∩ interior of geom2.
                     dimensions[7] = boundary;       // Exterior of geom1 ∩ boundary of geom2.
