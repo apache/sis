@@ -164,18 +164,12 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
 
     @Override
     public int hashCode() {
-        return 37 * attributes.hashCode();
+        return DataPoints.hashCode(this);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!(obj instanceof ArrayDataPoints)) {
-            return false;
-        }
-        return attributes.equals(((ArrayDataPoints) obj).attributes);
+        return DataPoints.equals(this, obj);
     }
 
     /**

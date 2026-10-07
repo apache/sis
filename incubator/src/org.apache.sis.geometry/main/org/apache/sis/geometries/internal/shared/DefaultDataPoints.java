@@ -91,4 +91,13 @@ public final class DefaultDataPoints implements DataPoints {
         points.get(index).setAttribute(name, value);
     }
 
+    @Override
+    public int hashCode() {
+        return DataPoints.hashCode(this);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return DataPoints.equals(this, obj);
+    }
 }

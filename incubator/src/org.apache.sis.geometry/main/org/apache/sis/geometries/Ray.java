@@ -19,9 +19,9 @@ package org.apache.sis.geometries;
 import java.util.Objects;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector;
-import org.apache.sis.maths.Vectors;
 
 
 /**
@@ -32,15 +32,40 @@ import org.apache.sis.maths.Vectors;
  */
 public final class Ray extends AbstractGeometry{
 
-    private Tuple<?> position;
+    /**
+     * Must contain a single point.
+     */
+    private final DataPoints points;
+
     private Vector<?> direction;
 
-    public Ray(int dimension) {
-        this(Vectors.createDouble(dimension),Vectors.createDouble(dimension));
+    /**
+     * Creates a ray starting from the given position.
+     * The reference system of the ray is the one of that position.
+     *
+     * @param  position   the position the ray starts from, not null.
+     * @param  direction  the direction the ray extends toward, not null.
+     */
+    public Ray(Tuple<?> position, Vector<?> direction) {
+        points = GeometryFactory.createSequence(NDArrays.of(position.getSampleSystem(), position.getDataType(), 1));
+        points.setPosition(0, position);
+        this.direction = direction;
     }
 
-    public Ray(Tuple<?> position, Vector<?> direction) {
-        this.position = position;
+    /**
+     * Creates a ray starting from the single position of the given sequence.
+     * The sequence is taken as-is, so the caller may give the ray the attributes
+     * carried by that sequence.
+     *
+     * @param  points     the position the ray starts from, as a sequence of exactly one position.
+     * @param  direction  the direction the ray extends toward, not null.
+     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     */
+    public Ray(DataPoints points, Vector<?> direction) {
+        if (points.size() != 1) {
+            throw new IllegalArgumentException("Ray sequence must contain one point");
+        }
+        this.points = points;
         this.direction = direction;
     }
 
@@ -49,12 +74,16 @@ public final class Ray extends AbstractGeometry{
         return GeometryType.RAY;
     }
 
+    public DataPoints getDataPoints() {
+        return points;
+    }
+
     public Tuple<?> getPosition() {
-        return position;
+        return points.getPosition(0);
     }
 
     public void setPosition(Tuple<?> position) {
-        this.position = position;
+        points.setPosition(0, position);
     }
 
     public Vector<?> getDirection() {
@@ -67,6 +96,7 @@ public final class Ray extends AbstractGeometry{
 
     @Override
     public BBox getEnvelope() {
+        final Tuple<?> position = getPosition();
         final int dim = direction.getDimension();
         final BBox bbox = new BBox(dim);
         for (int i=0;i<dim;i++){
@@ -89,17 +119,17 @@ public final class Ray extends AbstractGeometry{
 
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return points.getCoordinateReferenceSystem();
     }
 
     @Override
     public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        points.setCoordinateReferenceSystem(crs);
     }
 
     @Override
     public DataPointsType getDataPointsType() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return points.getType();
     }
 
     @Override
@@ -111,7 +141,7 @@ public final class Ray extends AbstractGeometry{
             return false;
         }
         final Ray other = (Ray) obj;
-        if (this.position != other.position && (this.position == null || !this.position.equals(other.position))) {
+        if (!Objects.equals(this.points, other.points)) {
             return false;
         }
         return this.direction == other.direction || (this.direction != null && this.direction.equals(other.direction));
@@ -120,7 +150,7 @@ public final class Ray extends AbstractGeometry{
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 89 * hash + Objects.hashCode(this.position);
+        hash = 89 * hash + Objects.hashCode(this.points);
         hash = 89 * hash + Objects.hashCode(this.direction);
         return hash;
     }

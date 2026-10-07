@@ -84,7 +84,6 @@ import org.apache.sis.measure.Units;
 public sealed interface Geometry
         permits Primitive,
                 GeometryCollection,
-                OrientedGeometry,
                 Empty,
                 Prism,
                 MeshPrimitive,
