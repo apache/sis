@@ -17,12 +17,6 @@
 package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Geometry;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
-import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
-import static org.apache.sis.geometries.operation.TestData.POINT_A;
-import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
-import static org.apache.sis.geometries.operation.TestData.POINT_B;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,7 +29,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DisjointTest {
+public class DisjointTest extends AbstractD9IMTest {
     /**
      * The inputs and expected result of a single test of {@code disjoint(Geometry, Geometry)}.
      *
@@ -45,9 +39,9 @@ public class DisjointTest {
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
     private record TestCase(Geometry input,
-                         Geometry other,
-                         Boolean expected,
-                         Class<? extends Exception> error)
+                            Geometry other,
+                            Boolean expected,
+                            Class<? extends Exception> error)
     {
     }
 
@@ -56,14 +50,27 @@ public class DisjointTest {
      */
     private static final TestCase[] ENTRIES = {
         // The empty set has no position in common with any geometry.
-        new TestCase(EMPTY_1,   NON_EMPTY, true, null),
-        new TestCase(NON_EMPTY, EMPTY_1,   true, null),
-        new TestCase(EMPTY_1,   EMPTY_1,   true, null),
-        new TestCase(EMPTY_1,   EMPTY_2,   true, null),
+        new TestCase(EMPTY_1,       NON_EMPTY,        true,  null),
+        new TestCase(NON_EMPTY,     EMPTY_1,          true,  null),
+        new TestCase(EMPTY_1,       EMPTY_1,          true,  null),
+        new TestCase(EMPTY_1,       EMPTY_2,          true,  null),
         // points
-        new TestCase(POINT_A, POINT_A_BIS, false, null),
-        new TestCase(POINT_A, POINT_B,     true,  null),
-        new TestCase(POINT_B, POINT_A,     true,  null)
+        new TestCase(POINT_A,       POINT_A_BIS,      false, null),
+        new TestCase(POINT_A,       POINT_B,          true,  null),
+        new TestCase(POINT_B,       POINT_A,          true,  null),
+        /*
+         * Disjunction is the negation of intersection, and is verified here on the same pairs.
+         */
+        new TestCase(POINT_OUTSIDE, SQUARE,           true,  null),
+        new TestCase(POINT_CENTER,  SQUARE,           false, null),
+        new TestCase(POINT_CENTER,  SQUARE_WITH_HOLE, true,  null),
+        new TestCase(POINT_OUTSIDE, LINE_BOTTOM,      true,  null),
+        new TestCase(LINE_BOTTOM,   LINE_FAR,         true,  null),
+        new TestCase(LINE_BOTTOM,   LINE_DIAGONAL,    false, null),
+        new TestCase(LINE_FAR,      SQUARE,           true,  null),
+        new TestCase(SQUARE,        SQUARE_DISJOINT,  true,  null),
+        new TestCase(SQUARE,        SQUARE_TOUCHING,  false, null),
+        new TestCase(MULTI_POLYGON, LINE_INSIDE,      false, null)
     };
 
     /**

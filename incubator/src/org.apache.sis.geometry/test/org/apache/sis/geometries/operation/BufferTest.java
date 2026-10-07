@@ -21,8 +21,6 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
-import static org.apache.sis.geometries.operation.TestData.POINT_A;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,7 +36,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class BufferTest {
+public class BufferTest extends AbstractD9IMTest {
     /**
      * The inputs and expected result of a single test of {@code buffer(Geometry, Quantity)}.
      *
@@ -48,9 +46,9 @@ public class BufferTest {
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
     private record TestCase(Geometry input,
-                               Quantity<?> radius,
-                               Geometry expected,
-                               Class<? extends Exception> error)
+                            Quantity<?> radius,
+                            Geometry expected,
+                            Class<? extends Exception> error)
     {
     }
 
@@ -114,7 +112,7 @@ public class BufferTest {
      */
     @Test
     public void testBufferOfPointWithZeroRadius() {
-        final Geometry result = new GeometryProcessor().buffer(POINT_A, Quantities.create(0, Units.METRE));
+        final Geometry result = new GeometryProcessor().buffer(POINT_A, Quantities.create(  0, Units.METRE));
         assertTrue(result.isEmpty(), "The buffer of a point with a radius of zero is empty.");
     }
 }

@@ -36,7 +36,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class TransformTest {
+public class TransformTest extends AbstractD9IMTest {
 
     private static final CoordinateReferenceSystem CRS_SOURCE;
     private static final CoordinateReferenceSystem CRS_TARGET = CommonCRS.WGS84.geocentric();
@@ -109,7 +109,6 @@ public class TransformTest {
         ).equals(result.getTexCoords(0), 0.0));
     }
 
-
     /**
      * Test geometry transform modify position, normal, tangent attributes
      * and other attributes are left unchanged.
@@ -138,9 +137,9 @@ public class TransformTest {
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
     private record TestCase(Geometry input,
-                         CoordinateReferenceSystem crs,
-                         Geometry expected,
-                         Class<? extends Exception> error)
+                            CoordinateReferenceSystem crs,
+                            Geometry expected,
+                            Class<? extends Exception> error)
     {
     }
 
@@ -154,8 +153,8 @@ public class TransformTest {
          * geometry in the target reference system, and the transform of a point should be its
          * position converted to that system.
          */
-        new TestCase(TestData.EMPTY_1, CRS_TARGET, null, UnsupportedOperationException.class),
-        new TestCase(TestData.POINT_A, CRS_TARGET, null, UnsupportedOperationException.class)
+        new TestCase(EMPTY_1, CRS_TARGET, null, UnsupportedOperationException.class),
+        new TestCase(POINT_A, CRS_TARGET, null, UnsupportedOperationException.class)
     };
 
     /**

@@ -18,15 +18,9 @@ package org.apache.sis.geometries;
 
 import java.util.List;
 import java.util.Map;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometry.GeneralDirectPosition;
-import org.apache.sis.maths.DataType;
-import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Tuple;
-import org.apache.sis.maths.Vector;
-import org.apache.sis.maths.Vectors;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
@@ -44,11 +38,7 @@ import org.junit.jupiter.api.Disabled;
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class PointTest {
-
-    protected static final CoordinateReferenceSystem CRS_2D = CommonCRS.WGS84.normalizedGeographic();
-    protected static final CoordinateReferenceSystem CRS_3D = CommonCRS.WGS84.geographic3D();
-
+public abstract class PointTest extends GeometryTest {
     private static final double[] POSITION_2D = {10, 5};
     private static final double[] POSITION_3D = {10, 5, 100};
 
@@ -78,9 +68,6 @@ public abstract class PointTest {
         return createPoint(CRS_3D, POSITION_3D.clone());
     }
 
-    /**
-     * Test of {@code getPosition()}.
-     */
     @Test
     public void testGetPosition() {
         final Tuple<?> position = createPoint2D().getPosition();
@@ -90,9 +77,6 @@ public abstract class PointTest {
         assertArrayEquals(POSITION_3D, createPoint3D().getPosition().toArrayDouble());
     }
 
-    /**
-     * Test of {@code getAttribute(String)}.
-     */
     @Test
     public void testGetAttribute() {
         final Point point = createPoint2D();
@@ -102,9 +86,6 @@ public abstract class PointTest {
         assertNull(point.getAttribute("Not an attribute of this point."));
     }
 
-    /**
-     * Test of {@code setAttribute(String, Tuple)}.
-     */
     @Test
     public void testSetAttribute() {
         final Point point = createPoint2D();
@@ -115,9 +96,6 @@ public abstract class PointTest {
                           "Setting the positions attribute shall move the point.");
     }
 
-    /**
-     * Test of {@code asDataPoint()}.
-     */
     @Test
     public void testAsDataPoint() {
         final Point point = createPoint2D();
@@ -131,26 +109,17 @@ public abstract class PointTest {
         assertNotNull(points.getType());
     }
 
-    /**
-     * Test of {@code getGeometryType()}.
-     */
     @Test
     public void testGetGeometryType() {
         assertEquals(GeometryType.POINT, createPoint2D().getGeometryType());
     }
 
-    /**
-     * Test of {@code getTopologicDimension()}.
-     */
     @Test
     public void testGetTopologicDimension() {
         assertEquals(0, createPoint2D().getTopologicDimension());
         assertEquals(0, createPoint3D().getTopologicDimension());
     }
 
-    /**
-     * Test of {@code getSegments()}.
-     */
     @Test
     public void testGetSegments() {
         final List<Primitive> segments = createPoint2D().getSegments();
@@ -158,41 +127,26 @@ public abstract class PointTest {
         assertTrue(segments.isEmpty(), "A point cannot be decomposed.");
     }
 
-    /**
-     * Test of {@code isCycle()}.
-     */
     @Test
     public void testIsCycle() {
         assertTrue(createPoint2D().isCycle(), "The boundary of a point is empty.");
     }
 
-    /**
-     * Test of {@code isSimple()}.
-     */
     @Test
     public void testIsSimple() {
         assertTrue(createPoint2D().isSimple(), "A single location can neither self-intersect nor self-tangent.");
     }
 
-    /**
-     * Test of {@code isValid()}.
-     */
     @Test
     public void testIsValid() {
         assertTrue(createPoint2D().isValid());
     }
 
-    /**
-     * Test of {@code isEmpty()}.
-     */
     @Test
     public void testIsEmpty() {
         assertFalse(createPoint2D().isEmpty(), "A point always has a location.");
     }
 
-    /**
-     * Test of {@code getBoundary()}.
-     */
     @Test
     public void testGetBoundary() {
         final Point point = createPoint2D();
@@ -203,63 +157,42 @@ public abstract class PointTest {
         assertEquals(CRS_2D, boundary.getCoordinateReferenceSystem());
     }
 
-    /**
-     * Test of {@code getClosure()}.
-     */
     @Test
     public void testGetClosure() {
         final Point point = createPoint2D();
         assertSame(point, point.getClosure(), "A point contains its empty boundary, therefore it is its own closure.");
     }
 
-    /**
-     * Test of {@code getCentroid()}.
-     */
     @Test
     public void testGetCentroid() {
         final Point point = createPoint2D();
         assertSame(point, point.getCentroid(), "A point is its own centroid.");
     }
 
-    /**
-     * Test of {@code getRepresentativePoint()}.
-     */
     @Test
     public void testGetRepresentativePoint() {
         final Point point = createPoint2D();
         assertSame(point, point.getRepresentativePoint(), "A point is interior to itself.");
     }
 
-    /**
-     * Test of {@code getMaximalComplex()}.
-     */
     @Test
     @Disabled
     public void testGetMaximalComplex() {
         // todo
     }
 
-    /**
-     * Test of {@code getMetadata()}.
-     */
     @Test
     @Disabled
     public void testGetMetadata() {
         // todo
     }
 
-    /**
-     * Test of {@code getCoordinateReferenceSystem()}.
-     */
     @Test
     public void testGetCoordinateReferenceSystem() {
         assertEquals(CRS_2D, createPoint2D().getCoordinateReferenceSystem());
         assertEquals(CRS_3D, createPoint3D().getCoordinateReferenceSystem());
     }
 
-    /**
-     * Test of {@code setCoordinateReferenceSystem(CoordinateReferenceSystem)}.
-     */
     @Test
     public void testSetCoordinateReferenceSystem() {
         final Point point = createPoint2D();
@@ -276,9 +209,6 @@ public abstract class PointTest {
                           "Changing the reference system shall not move the coordinates.");
     }
 
-    /**
-     * Test of {@code getAttributesType()}.
-     */
     @Test
     public void testGetAttributesType() {
         final Point point = createPoint2D();
@@ -293,36 +223,24 @@ public abstract class PointTest {
         assertEquals(CRS_2D, type.getAttributeSystem(DataPointsType.ATT_POSITION).getCoordinateReferenceSystem());
     }
 
-    /**
-     * Test of {@code getDimension()}.
-     */
     @Test
     public void testGetDimension() {
         assertEquals(2, createPoint2D().getDimension());
         assertEquals(3, createPoint3D().getDimension());
     }
 
-    /**
-     * Test of {@code is3D()}.
-     */
     @Test
     public void testIs3D() {
         assertFalse(createPoint2D().is3D());
         assertTrue (createPoint3D().is3D());
     }
 
-    /**
-     * Test of {@code getSpatialDimension()}.
-     */
     @Test
     public void testGetSpatialDimension() {
         assertEquals(2, createPoint2D().getSpatialDimension());
         assertEquals(3, createPoint3D().getSpatialDimension());
     }
 
-    /**
-     * Test of {@code getBoundaryType()}.
-     */
     @Test
     @Disabled
     public void testGetBoundaryType() {
@@ -333,9 +251,6 @@ public abstract class PointTest {
         assertThrows(UnsupportedOperationException.class, () -> point.getBoundaryType());
     }
 
-    /**
-     * Test of {@code getEnvelope()}.
-     */
     @Test
     public void testGetEnvelope() {
         final Point point = createPoint2D();
@@ -350,36 +265,24 @@ public abstract class PointTest {
         }
     }
 
-    /**
-     * Test of {@code vectorToPoint(DirectPosition)}.
-     */
     @Test
     @Disabled
     public void testVectorToPoint() {
         // TODO
     }
 
-    /**
-     * Test of {@code bearing(DirectPosition)}.
-     */
     @Test
     @Disabled
     public void testBearing() {
         // TODO
     }
 
-    /**
-     * Test of {@code pointAtDistance(Vector)}.
-     */
     @Test
     @Disabled
     public void testPointAtDistance() {
         // TODO
     }
 
-    /**
-     * Test of {@code userProperties()}.
-     */
     @Test
     public void testUserProperties() {
         final Point point = createPoint2D();

@@ -27,33 +27,21 @@ import org.junit.jupiter.api.Test;
  * @author Johann Sorel (Geomatys)
  */
 public class RealFunctionTest {
-    /**
-     * Test of {@code getName()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetName() {
     }
 
-    /**
-     * Test of {@code getDomain()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetDomain() {
     }
 
-    /**
-     * Test of {@code getMetadata()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetMetadata() {
     }
 
-    /**
-     * Test of {@code value(double)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testValue() {

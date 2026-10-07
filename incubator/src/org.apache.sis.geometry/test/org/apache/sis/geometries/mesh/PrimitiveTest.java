@@ -19,6 +19,7 @@ package org.apache.sis.geometries.mesh;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.GeometryTest;
 import org.apache.sis.maths.NDArrays;
 
 // Test dependencies
@@ -30,8 +31,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class PrimitiveTest {
-
+public class PrimitiveTest extends GeometryTest {
     /**
      * Test remove duplicate method.
      * In this test vertex 0 and 3 are duplicates.

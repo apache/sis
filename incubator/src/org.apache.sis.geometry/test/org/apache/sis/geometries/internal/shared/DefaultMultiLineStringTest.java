@@ -16,6 +16,13 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.curve.MultiLineString;
+
 // Test dependencies
 import org.apache.sis.geometries.curve.MultiLineStringTest;
 
@@ -26,4 +33,20 @@ import org.apache.sis.geometries.curve.MultiLineStringTest;
  * @author Johann Sorel (Geomatys)
  */
 public class DefaultMultiLineStringTest extends MultiLineStringTest {
+
+    @Override
+    protected MultiLineString createMultiLineString(final CoordinateReferenceSystem crs, final double[]... lines) {
+        final LineString[] elements = new LineString[lines.length];
+        for (int i = 0; i < elements.length; i++) {
+            elements[i] = new DefaultLineString(sequence(crs, lines[i]));
+        }
+        return new DefaultMultiLineString(crs, elements);
+    }
+
+    /**
+     * Creates the positions of a geometry from a flat list of ordinate values.
+     */
+    private static DataPoints sequence(final CoordinateReferenceSystem crs, final double... coordinates) {
+        return new ArrayDataPoints(NDArrays.of(SampleSystem.of(crs), coordinates));
+    }
 }

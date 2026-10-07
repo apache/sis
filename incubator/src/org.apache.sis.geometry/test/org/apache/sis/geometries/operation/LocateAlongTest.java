@@ -18,8 +18,6 @@ package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.DataPointsType;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
-import static org.apache.sis.geometries.operation.TestData.POINT_A;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,7 +30,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class LocateAlongTest {
+public class LocateAlongTest extends AbstractD9IMTest {
     /**
      * The inputs and expected result of a single test of {@code locateAlong(Geometry, double)}.
      *
@@ -42,10 +40,10 @@ public class LocateAlongTest {
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
     private record TestCase(Geometry input,
-                         String attName,
-                         double mValue,
-                         Geometry expected,
-                         Class<? extends Exception> error)
+                            String attName,
+                            double mValue,
+                            Geometry expected,
+                            Class<? extends Exception> error)
     {
     }
 

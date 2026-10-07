@@ -19,6 +19,7 @@ package org.apache.sis.geometries.surface;
 // Test dependencies
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.GeometryTest;
 
 
 /**
@@ -26,42 +27,27 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class MultiSurfaceTest {
-    /**
-     * Test of {@code getGeometryType()}.
-     */
+public class MultiSurfaceTest extends GeometryTest {
     @Test
     @Disabled("Not implemented yet.")
     public void testGetGeometryType() {
     }
 
-    /**
-     * Test of {@code getElementType()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetElementType() {
     }
 
-    /**
-     * Test of {@code getArea()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetArea() {
     }
 
-    /**
-     * Test of {@code getCentroid()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetCentroid() {
     }
 
-    /**
-     * Test of {@code getPointOnSurface()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetPointOnSurface() {

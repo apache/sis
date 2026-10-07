@@ -16,7 +16,15 @@
  */
 package org.apache.sis.geometries.curve;
 
+import javax.measure.Quantity;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryTest;
+import org.apache.sis.geometries.point.MultiPoint;
+import org.apache.sis.measure.Units;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -26,458 +34,351 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class LineStringTest {
+public abstract class LineStringTest extends GeometryTest {
     /**
-     * Test of {@code getGeometryType()}.
+     * A horizontal segment of length 10, from (0 0) to (10 0).
      */
+    private static final double[] SEGMENT = {0,0, 10,0};
+
+    /**
+     * The diagonal of a square of 10 × 10, of length 10√2.
+     */
+    private static final double[] DIAGONAL = {0,0, 10,10};
+
+    /**
+     * A curve crossing itself at (5 5). It is valid, a curve being allowed to cross itself,
+     * but it is not simple.
+     */
+    private static final double[] SELF_CROSSING = {0,0, 10,10, 10,0, 0,10};
+
+    protected LineStringTest() {
+    }
+
+    /**
+     * Creates a curve through the given positions in the given coordinate reference system.
+     *
+     * @param  crs          the coordinate reference system of the curve to create, not null.
+     * @param  coordinates  the coordinates of the positions, in the axis order of the given system.
+     * @return a new curve through the given positions, never null.
+     */
+    protected abstract LineString createLineString(CoordinateReferenceSystem crs, double... coordinates);
+
     @Test
     @Disabled("Not implemented yet.")
     public void testGetGeometryType() {
     }
 
-    /**
-     * Test of {@code getInterpolation()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetInterpolation() {
     }
 
-    /**
-     * Test of {@code asLine(Length, Length)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testAsLine() {
     }
 
-    /**
-     * Test of {@code getNumPoints()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetNumPoints() {
     }
 
-    /**
-     * Test of {@code getPointN(int)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetPointN() {
     }
 
-    /**
-     * Test of {@code getControlPoints()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetControlPoints() {
     }
 
-    /**
-     * Test of {@code getCoordinateReferenceSystem()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetCoordinateReferenceSystem() {
     }
 
-    /**
-     * Test of {@code setCoordinateReferenceSystem(CoordinateReferenceSystem)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testSetCoordinateReferenceSystem() {
     }
 
-    /**
-     * Test of {@code getAttributesType()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetAttributesType() {
     }
 
-    /**
-     * Test of {@code isLine()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testIsLine() {
     }
 
-    /**
-     * Test of {@code getEnvelope()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetEnvelope() {
     }
 
-    /**
-     * Test of {@code getTopologicDimension()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
     }
 
-    /**
-     * Test of {@code getDataPoints()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetDataPoints() {
     }
 
     /**
-     * Test of {@code getLength()}.
+     * The length is measured in the units of the coordinate system axes: stating it in metres would
+     * claim a measurement on the reference surface, which is not what is computed.
      */
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetLength() {
+        final Quantity<?> length = createLineString(CRS_2D, SEGMENT).getLength();
+        assertEquals(10, length.getValue().doubleValue(), TOLERANCE, "A horizontal segment of 10.");
+        assertEquals(Units.DEGREE, length.getUnit(), "The length shall use the unit of the axes.");
+        assertEquals(10 * Math.sqrt(2), createLineString(CRS_2D, DIAGONAL).getLength().getValue().doubleValue(),
+                     TOLERANCE, "The diagonal of a square of 10 × 10.");
     }
 
-    /**
-     * Test of {@code getStartPoint()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetStartPoint() {
     }
 
-    /**
-     * Test of {@code getEndPoint()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetEndPoint() {
     }
 
-    /**
-     * Test of {@code isClosed()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testIsClosed() {
     }
 
-    /**
-     * Test of {@code isCycle()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testIsCycle() {
     }
 
-    /**
-     * Test of {@code isRing()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testIsRing() {
     }
 
     /**
-     * Test of {@code getBoundary()}.
+     * The boundary of an open curve is its two end positions.
      */
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetBoundary() {
+        final Geometry boundary = createLineString(CRS_2D, SEGMENT).getBoundary();
+        final MultiPoint<?> ends = assertInstanceOf(MultiPoint.class, boundary,
+                "The boundary of an open curve is its two end positions.");
+        assertEquals(2, ends.getNumGeometries());
     }
 
-    /**
-     * Test of {@code getKnots()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetKnots() {
     }
 
-    /**
-     * Test of {@code getStartConstrParam()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetStartConstrParam() {
     }
 
-    /**
-     * Test of {@code getEndConstrParam()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetEndConstrParam() {
     }
 
-    /**
-     * Test of {@code getStartParam()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetStartParam() {
     }
 
-    /**
-     * Test of {@code getEndParam()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetEndParam() {
     }
 
-    /**
-     * Test of {@code getNumDerivativesInterior()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetNumDerivativesInterior() {
     }
 
-    /**
-     * Test of {@code getNumDerivativesStart()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetNumDerivativesStart() {
     }
 
-    /**
-     * Test of {@code getNumDerivativesEnd()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetNumDerivativesEnd() {
     }
 
-    /**
-     * Test of {@code getReverse()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetReverse() {
     }
 
-    /**
-     * Test of {@code constrParam(double)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testConstrParam() {
     }
 
-    /**
-     * Test of {@code getLength(DirectPosition, DirectPosition)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetLength_DirectPosition_DirectPosition() {
     }
 
-    /**
-     * Test of {@code getLength(double, double)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetLength_double_double() {
     }
 
-    /**
-     * Test of {@code param(Length)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testParam() {
     }
 
-    /**
-     * Test of {@code paramForPoint(DirectPosition)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testParamForPoint() {
     }
 
-    /**
-     * Test of {@code tangent(Length)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testTangent_Length() {
     }
 
-    /**
-     * Test of {@code tangent(double)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testTangent_double() {
     }
 
-    /**
-     * Test of {@code subCurve(double, double)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testSubCurve_double_double() {
     }
 
-    /**
-     * Test of {@code subCurve(Length, Length)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testSubCurve_Length_Length() {
     }
 
-    /**
-     * Test of {@code getOrientationSign()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetOrientationSign() {
     }
 
-    /**
-     * Test of {@code getProxy()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetProxy() {
     }
 
-    /**
-     * Test of {@code getPrimitive()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetPrimitive() {
     }
 
-    /**
-     * Test of {@code getBoundaryType()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetBoundaryType() {
     }
 
-    /**
-     * Test of {@code getDimension(DirectPosition)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetDimension() {
     }
 
-    /**
-     * Test of {@code getSegments()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetSegments() {
     }
 
-    /**
-     * Test of {@code getMetadata()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetMetadata() {
     }
 
-    /**
-     * Test of {@code getDimension(DirectPosition)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetDimension_DirectPosition() {
     }
 
-    /**
-     * Test of {@code is3D()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testIs3D() {
     }
 
-    /**
-     * Test of {@code getSpatialDimension()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetSpatialDimension() {
     }
 
-    /**
-     * Test of {@code getGeometryType2()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetGeometryType2() {
     }
 
     /**
-     * Test of {@code getCentroid()}.
+     * The centroid of a curve is weighted by length, and is therefore the middle of a segment.
      */
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetCentroid() {
+        assertPositionEquals(5, 0, createLineString(CRS_2D, SEGMENT).getCentroid());
+        assertPositionEquals(5, 5, createLineString(CRS_2D, DIAGONAL).getCentroid());
     }
 
     /**
-     * Test of {@code getRepresentativePoint()}.
+     * Contrarily to the centroid, the returned position shall lie on the curve, but which position
+     * is returned is left to the implementation. The segment under test being horizontal, lying on
+     * it means having a null second ordinate and a first ordinate within the range of the segment.
      */
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetRepresentativePoint() {
+        final double[] position = createLineString(CRS_2D, SEGMENT).getRepresentativePoint()
+                                                                   .getPosition().toArrayDouble();
+        assertEquals(0, position[1], TOLERANCE, "The position shall lie on the segment.");
+        assertTrue(position[0] >= 0 && position[0] <= 10, "The position shall lie on the segment.");
     }
 
-    /**
-     * Test of {@code getClosure()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetClosure() {
     }
 
-    /**
-     * Test of {@code getMaximalComplex()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetMaximalComplex() {
     }
 
-    /**
-     * Test of {@code isEmpty()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testIsEmpty() {
     }
 
     /**
-     * Test of {@code isSimple()}.
+     * A curve is simple when it does not cross itself.
      */
     @Test
-    @Disabled("Not implemented yet.")
     public void testIsSimple() {
+        assertTrue (createLineString(CRS_2D, SEGMENT).isSimple(),       "A segment does not cross itself.");
+        assertTrue (createLineString(CRS_2D, DIAGONAL).isSimple(),      "A segment does not cross itself.");
+        assertFalse(createLineString(CRS_2D, SELF_CROSSING).isSimple(), "A curve crossing itself is not simple.");
     }
 
     /**
-     * Test of {@code isValid()}.
+     * Validity and simplicity are independent on a curve: a curve is allowed to cross itself and
+     * stays valid.
      */
     @Test
-    @Disabled("Not implemented yet.")
     public void testIsValid() {
+        assertTrue(createLineString(CRS_2D, SEGMENT).isValid(),       "A segment is a valid curve.");
+        assertTrue(createLineString(CRS_2D, SELF_CROSSING).isValid(), "A curve is allowed to cross itself.");
     }
 
-    /**
-     * Test of {@code userProperties()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testUserProperties() {

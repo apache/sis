@@ -371,7 +371,6 @@ public class IsoBandTest {
                 "Computed Polygon vertices "+Arrays.toString(coordinates)+"\ndoesn't match the expected polygon's coordinate     " +Arrays.toString(expected)+"\nup to permutation and order.");
     }
 
-
     @Test
     public void test2Above1Below() {
         final List<Polygon> testedPolygons = new ArrayList<>();
@@ -403,7 +402,6 @@ public class IsoBandTest {
         assertTrue(assertPolygonEquals(expected, coordinates, tolerance),
                 "Computed Polygon vertices "+Arrays.toString(coordinates)+"\ndoesn't match the expected polygon's coordinate     " +Arrays.toString(expected)+"\nup to permutation and order.");
     }
-
 
     @Test
     public void test1Above1In1Below() {

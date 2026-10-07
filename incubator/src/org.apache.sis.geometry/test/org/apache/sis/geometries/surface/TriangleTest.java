@@ -18,6 +18,7 @@ package org.apache.sis.geometries.surface;
 
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.GeometryTest;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
@@ -34,90 +35,57 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class TriangleTest {
-    /**
-     * Test of {@code getGeometryType()}.
-     */
+public class TriangleTest extends GeometryTest {
     @Test
     @Disabled("Not implemented yet.")
     public void testGetGeometryType() {
     }
 
-    /**
-     * Test of {@code getExteriorRing()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetExteriorRing() {
     }
 
-    /**
-     * Test of {@code getInteriorRings()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetInteriorRings() {
     }
 
-    /**
-     * Test of {@code getCoordinateReferenceSystem()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetCoordinateReferenceSystem() {
     }
 
-    /**
-     * Test of {@code setCoordinateReferenceSystem(CoordinateReferenceSystem)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testSetCoordinateReferenceSystem() {
     }
 
-    /**
-     * Test of {@code getEnvelope()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetEnvelope() {
     }
 
-    /**
-     * Test of {@code getArea()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetArea() {
     }
 
-    /**
-     * Test of {@code distance(Tuple)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testDistance() {
     }
 
-    /**
-     * Test of {@code interpolate(double[])}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testInterpolate() {
     }
 
-    /**
-     * Test of {@code getBarycentricValue2D(double, double, double, double, double, double, double, double, double, boolean)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetBarycentricValue2D() {
     }
 
-    /**
-     * Test of {@code interpolate2D(Double, Double, Double, Double)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testInterpolate2D() {

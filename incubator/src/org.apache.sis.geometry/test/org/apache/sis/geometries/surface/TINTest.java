@@ -19,6 +19,7 @@ package org.apache.sis.geometries.surface;
 // Test dependencies
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.GeometryTest;
 
 
 /**
@@ -26,18 +27,12 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class TINTest {
-    /**
-     * Test of {@code getGeometryType()}.
-     */
+public class TINTest extends GeometryTest {
     @Test
     @Disabled("Not implemented yet.")
     public void testGetGeometryType() {
     }
 
-    /**
-     * Test of {@code getInterpolation()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetInterpolation() {

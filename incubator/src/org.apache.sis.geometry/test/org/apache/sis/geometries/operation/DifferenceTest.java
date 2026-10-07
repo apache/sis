@@ -17,17 +17,11 @@
 package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Geometry;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_RESULT;
-import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
-import static org.apache.sis.geometries.operation.TestData.POINT_A;
-import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
-import static org.apache.sis.geometries.operation.TestData.POINT_B;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 
@@ -36,7 +30,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DifferenceTest {
+public class DifferenceTest extends AbstractD9IMTest {
     /**
      * The inputs and expected result of a single test of {@code difference(Geometry, Geometry)}.
      *
@@ -46,9 +40,9 @@ public class DifferenceTest {
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
     private record TestCase(Geometry input,
-                         Geometry other,
-                         Geometry expected,
-                         Class<? extends Exception> error)
+                            Geometry other,
+                            Geometry expected,
+                            Class<? extends Exception> error)
     {
     }
 
@@ -57,12 +51,12 @@ public class DifferenceTest {
      */
     private static final TestCase[] ENTRIES = {
         // ∅ − A = ∅ and A − ∅ = A, which are both the first operand.
-        new TestCase(EMPTY_1,   NON_EMPTY, EMPTY_1,   null),
-        new TestCase(NON_EMPTY, EMPTY_1,   NON_EMPTY, null),
-        new TestCase(EMPTY_1,   EMPTY_2,   EMPTY_1,   null),
+        new TestCase(EMPTY_1,   NON_EMPTY,   EMPTY_1,      null),
+        new TestCase(NON_EMPTY, EMPTY_1,     NON_EMPTY,    null),
+        new TestCase(EMPTY_1,   EMPTY_2,     EMPTY_1,      null),
         // points
-        new TestCase(POINT_A, POINT_B,     POINT_A,      null),
-        new TestCase(POINT_A, POINT_A_BIS, EMPTY_RESULT, null)
+        new TestCase(POINT_A,   POINT_B,     POINT_A,      null),
+        new TestCase(POINT_A,   POINT_A_BIS, EMPTY_RESULT, null)
     };
 
     /**
@@ -82,4 +76,19 @@ public class DifferenceTest {
             }
         }
     }
+
+    /**
+     * Tests {@code difference(Geometry, Geometry)} on two surfaces. Removing a surface from
+     * another one leaves the part of the first one which the second does not cover.
+     */
+    @Test
+    public void testDifferenceOfSurfaces() {
+        final GeometryProcessor processor = new GeometryProcessor();
+        assertEquals(75, areaOf(processor.difference(SQUARE, SQUARE_OVERLAP)), TOLERANCE, "A square of area 100 less the area of 25 it shares with another one.");
+        assertEquals(96, areaOf(processor.difference(SQUARE, SQUARE_INNER)), TOLERANCE, "A square of area 100 less an inner square of area 4, which digs a hole.");
+        assertEquals(100, areaOf(processor.difference(SQUARE, SQUARE_DISJOINT)), TOLERANCE, "Removing a disjoint surface changes nothing.");
+        assertEquals(100, areaOf(processor.difference(SQUARE, SQUARE_TOUCHING)), TOLERANCE, "Removing a surface sharing only an edge changes no area.");
+        assertTrue(processor.difference(SQUARE, SQUARE_BIS).isEmpty(), "Removing a square from itself leaves nothing.");
+    }
+
 }

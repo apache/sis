@@ -19,6 +19,7 @@ package org.apache.sis.geometries.curve;
 // Test dependencies
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.GeometryTest;
 
 
 /**
@@ -26,10 +27,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class EllipticArcTest {
-    /**
-     * Test of {@code getInterpolation()}.
-     */
+public class EllipticArcTest extends GeometryTest {
     @Test
     @Disabled("Not implemented yet.")
     public void testGetInterpolation() {

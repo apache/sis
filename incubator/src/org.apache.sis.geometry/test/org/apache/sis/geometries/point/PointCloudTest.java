@@ -27,41 +27,26 @@ import org.junit.jupiter.api.Test;
  * @author Johann Sorel (Geomatys)
  */
 public class PointCloudTest {
-    /**
-     * Test of {@code getRange()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetRange() {
     }
 
-    /**
-     * Test of {@code getNumPoints()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetNumPoints() {
     }
 
-    /**
-     * Test of {@code getPoint(long)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetPoint() {
     }
 
-    /**
-     * Test of {@code subCloud(Length, Envelope)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testSubCloud() {
     }
 
-    /**
-     * Test of {@code simplicialComplex(int, Length, Envelope)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testSimplicialComplex() {

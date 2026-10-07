@@ -24,9 +24,6 @@ import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CommonCRS;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
-import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,7 +35,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DistanceTest {
+public class DistanceTest extends AbstractD9IMTest {
 
     private static final SampleSystem CRS2D = SampleSystem.of(CommonCRS.WGS84.geographic());
 
@@ -78,9 +75,9 @@ public class DistanceTest {
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
     private record TestCase(Geometry input,
-                         Geometry other,
-                         Quantity<?> expected,
-                         Class<? extends Exception> error)
+                            Geometry other,
+                            Quantity<?> expected,
+                            Class<? extends Exception> error)
     {
     }
 
@@ -94,27 +91,27 @@ public class DistanceTest {
          * The unit reported is metre in both cases; see the limitation documented on
          * `GeometryProcessor.distance(Geometry, Geometry)`.
          */
-        new TestCase(POINT_10_5, POINT_10_5_BIS, Quantities.create(0.0, Units.DEGREE), null),
-        new TestCase(POINT_10_5, POINT_10_6,     Quantities.create(1.0, Units.DEGREE), null),
-        new TestCase(POINT_10_6, POINT_10_5,     Quantities.create(1.0, Units.DEGREE), null),
+        new TestCase(POINT_10_5,       POINT_10_5_BIS,   Quantities.create(0.0, Units.DEGREE), null),
+        new TestCase(POINT_10_5,       POINT_10_6,       Quantities.create(1.0, Units.DEGREE), null),
+        new TestCase(POINT_10_6,       POINT_10_5,       Quantities.create(1.0, Units.DEGREE), null),
         /*
          * TODO / Limitation: only the first two axes are taken in account, therefore two points
          * at the same horizontal position are reported at a distance of zero whatever the
          * difference of their heights.
          */
-        new TestCase(POINT_3D_LOW, POINT_3D_HIGH, Quantities.create(0.0, Units.DEGREE), null),
+        new TestCase(POINT_3D_LOW,     POINT_3D_HIGH,    Quantities.create(0.0, Units.DEGREE), null),
         /*
          * The operation computes in the coordinate reference system of the first geometry,
          * and does not transform the second one.
          */
-        new TestCase(POINT_GEOGRAPHIC, POINT_NORMALIZED, null, OperationException.class),
+        new TestCase(POINT_GEOGRAPHIC, POINT_NORMALIZED, null,                                 OperationException.class),
         /*
          * The distance from an empty geometry to any geometry, including itself, is infinite.
          */
-        new TestCase(EMPTY_1,   NON_EMPTY, INFINITY, null),
-        new TestCase(NON_EMPTY, EMPTY_1,   INFINITY, null),
-        new TestCase(EMPTY_1,   EMPTY_1,   INFINITY, null),
-        new TestCase(EMPTY_1,   EMPTY_2,   INFINITY, null)
+        new TestCase(EMPTY_1,          NON_EMPTY,        INFINITY,                             null),
+        new TestCase(NON_EMPTY,        EMPTY_1,          INFINITY,                             null),
+        new TestCase(EMPTY_1,          EMPTY_1,          INFINITY,                             null),
+        new TestCase(EMPTY_1,          EMPTY_2,          INFINITY,                             null)
     };
 
     /**
@@ -134,4 +131,41 @@ public class DistanceTest {
             }
         }
     }
+
+    /**
+     * Tests {@code distance(Geometry, Geometry)} between geometries which are not positions.
+     * The distance is the shortest one between any position of the first geometry and any
+     * position of the second one, and is therefore zero as soon as the two geometries meet.
+     *
+     * <p>A tolerance threshold is used because two of the expected distances are irrational,
+     * contrarily to the distances between the positions tested above.</p>
+     */
+    @Test
+    public void testDistanceBetweenShapes() {
+        final GeometryProcessor processor = new GeometryProcessor();
+        assertEquals(20, distance(processor, LINE_BOTTOM, LINE_FAR), TOLERANCE, "Two parallel curves 20 apart.");
+        assertEquals(10, distance(processor, SQUARE, LINE_FAR), TOLERANCE, "A curve 10 above the top edge of a square.");
+        assertEquals(0, distance(processor, SQUARE, SQUARE_TOUCHING), TOLERANCE, "Two squares sharing an edge.");
+        assertEquals(0, distance(processor, SQUARE, POINT_CENTER), TOLERANCE, "A position inside a square.");
+        assertEquals(0, distance(processor, SQUARE, LINE_CROSSING), TOLERANCE, "A curve passing through a square.");
+        /*
+         * From (20 20) to the nearest corner (10 10) of the square, and from that same corner
+         * to the nearest corner (20 20) of the other square.
+         */
+        final double diagonal = 10 * Math.sqrt(2);
+        assertEquals(diagonal, distance(processor, POINT_OUTSIDE, SQUARE), TOLERANCE, "A position diagonally away from the nearest corner of a square.");
+        assertEquals(diagonal, distance(processor, SQUARE, SQUARE_DISJOINT), TOLERANCE, "Two squares diagonally away from each other.");
+    }
+
+    /**
+     * Returns the distance between the two given geometries as a plain number.
+     */
+    private static double distance(final GeometryProcessor processor,
+                                   final Geometry source, final Geometry target)
+    {
+        final Quantity<?> result = processor.distance(source, target);
+        assertEquals(Units.DEGREE, result.getUnit(), "The distance shall be expressed in the unit of the axes.");
+        return result.getValue().doubleValue();
+    }
+
 }

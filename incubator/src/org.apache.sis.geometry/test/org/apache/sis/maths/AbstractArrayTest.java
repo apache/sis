@@ -42,7 +42,6 @@ public abstract class AbstractArrayTest {
      */
     protected abstract Array create(int dim, int length);
 
-
     /**
      * Root test method, delegates to other methods.
      */

@@ -27,17 +27,11 @@ import org.junit.jupiter.api.Test;
  * @author Johann Sorel (Geomatys)
  */
 public class PolynomialArcTest {
-    /**
-     * Test of {@code getDegree()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetDegree() {
     }
 
-    /**
-     * Test of {@code function(int)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testFunction() {

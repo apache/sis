@@ -56,8 +56,7 @@ public class To3DTest {
         final Geometry result = new GeometryProcessor().to3D(point, CRS2DZ, (Tuple t) -> t.set(2, 15));
         assertInstanceOf(Point.class, result);
         assertEquals(CRS2DZ, result.getCoordinateReferenceSystem());
-        assertArrayEquals(new double[] {10.0, 5.0, 15.0},
-                          ((Point) result).getPosition().toArrayDouble(), 0.0);
+        assertArrayEquals(new double[] {10.0, 5.0, 15.0}, ((Point) result).getPosition().toArrayDouble(), 0.0);
     }
 
     @Test

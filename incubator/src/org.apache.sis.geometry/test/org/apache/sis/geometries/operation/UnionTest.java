@@ -18,12 +18,6 @@ package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.point.MultiPoint;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
-import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
-import static org.apache.sis.geometries.operation.TestData.POINT_A;
-import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
-import static org.apache.sis.geometries.operation.TestData.POINT_B;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,7 +31,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class UnionTest {
+public class UnionTest extends AbstractD9IMTest {
     /**
      * The inputs and expected result of a single test of {@code union(Geometry, Geometry)}.
      *
@@ -47,9 +41,9 @@ public class UnionTest {
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
     private record TestCase(Geometry input,
-                         Geometry other,
-                         Geometry expected,
-                         Class<? extends Exception> error)
+                            Geometry other,
+                            Geometry expected,
+                            Class<? extends Exception> error)
     {
     }
 
@@ -58,10 +52,10 @@ public class UnionTest {
      */
     private static final TestCase[] ENTRIES = {
         // ∅ ∪ A = A and A ∪ ∅ = A: the result is the operand which is not empty.
-        new TestCase(EMPTY_1,   NON_EMPTY, NON_EMPTY, null),
-        new TestCase(NON_EMPTY, EMPTY_1,   NON_EMPTY, null),
-        new TestCase(EMPTY_1,   EMPTY_2,   EMPTY_2,   null),
-        new TestCase(POINT_A, POINT_A_BIS, POINT_A, null)
+        new TestCase(EMPTY_1,   NON_EMPTY,   NON_EMPTY, null),
+        new TestCase(NON_EMPTY, EMPTY_1,     NON_EMPTY, null),
+        new TestCase(EMPTY_1,   EMPTY_2,     EMPTY_2,   null),
+        new TestCase(POINT_A,   POINT_A_BIS, POINT_A,   null)
     };
 
     /**
@@ -91,8 +85,23 @@ public class UnionTest {
         final Geometry result = new GeometryProcessor().union(POINT_A, POINT_B);
         assertInstanceOf(MultiPoint.class, result, "The union of two distinct points is a set of two points.");
         final MultiPoint<?> points = (MultiPoint<?>) result;
-        assertEquals(TestData.CRS_2D, points.getCoordinateReferenceSystem());
+        assertEquals(CRS_2D, points.getCoordinateReferenceSystem());
         assertEquals(2, points.getNumGeometries());
-        TestData.assertPositionsEqual(points, POINT_A, POINT_B);
+        assertPositionsEqual(points, POINT_A, POINT_B);
     }
+
+    /**
+     * Tests {@code union(Geometry, Geometry)} on two surfaces. The area of the union of two
+     * overlapping surfaces is the sum of their areas less the area they have in common, and
+     * the union of two disjoint surfaces keeps both of them.
+     */
+    @Test
+    public void testUnionOfSurfaces() {
+        final GeometryProcessor processor = new GeometryProcessor();
+        assertEquals(175, areaOf(processor.union(SQUARE, SQUARE_OVERLAP)), TOLERANCE, "Two squares of area 100 sharing an area of 25.");
+        assertEquals(200, areaOf(processor.union(SQUARE, SQUARE_DISJOINT)), TOLERANCE, "Two disjoint squares of area 100.");
+        assertEquals(100, areaOf(processor.union(SQUARE, SQUARE_INNER)), TOLERANCE, "A square absorbs a square it contains.");
+        assertEquals(100, areaOf(processor.union(SQUARE, SQUARE_BIS)), TOLERANCE, "The union of a square with itself is that square.");
+    }
+
 }

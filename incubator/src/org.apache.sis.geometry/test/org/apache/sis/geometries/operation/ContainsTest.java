@@ -17,12 +17,6 @@
 package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Geometry;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
-import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
-import static org.apache.sis.geometries.operation.TestData.POINT_A;
-import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
-import static org.apache.sis.geometries.operation.TestData.POINT_B;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,7 +29,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class ContainsTest {
+public class ContainsTest extends AbstractD9IMTest {
     /**
      * The inputs and expected result of a single test of {@code contains(Geometry, Geometry)}.
      *
@@ -45,9 +39,9 @@ public class ContainsTest {
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
     private record TestCase(Geometry input,
-                         Geometry other,
-                         Boolean expected,
-                         Class<? extends Exception> error)
+                            Geometry other,
+                            Boolean expected,
+                            Class<? extends Exception> error)
     {
     }
 
@@ -56,15 +50,51 @@ public class ContainsTest {
      */
     private static final TestCase[] ENTRIES = {
         // The empty set is a superset of itself only, and a subset of every geometry.
-        new TestCase(EMPTY_1,   EMPTY_1,   true,  null),
-        new TestCase(EMPTY_1,   EMPTY_2,   true,  null),
-        new TestCase(EMPTY_1,   NON_EMPTY, false, null),
-        new TestCase(NON_EMPTY, EMPTY_1,   true,  null),
+        new TestCase(EMPTY_1,          EMPTY_1,            true,  null),
+        new TestCase(EMPTY_1,          EMPTY_2,            true,  null),
+        new TestCase(EMPTY_1,          NON_EMPTY,          false, null),
+        new TestCase(NON_EMPTY,        EMPTY_1,            true,  null),
        // points
-        new TestCase(POINT_A, POINT_A,     true,  null),
-        new TestCase(POINT_A, POINT_A_BIS, true,  null),
-        new TestCase(POINT_A, POINT_B,     false, null),
-        new TestCase(POINT_B, POINT_A,     false, null)
+        new TestCase(POINT_A,          POINT_A,            true,  null),
+        new TestCase(POINT_A,          POINT_A_BIS,        true,  null),
+        new TestCase(POINT_A,          POINT_B,            false, null),
+        new TestCase(POINT_B,          POINT_A,            false, null),
+        /*
+         * A surface and a position. Only the positions interior to the surface are contained:
+         * the center of a surface with a hole is in that hole and is therefore not.
+         *
+         * A position exactly on the boundary of a surface is left out of this table on purpose.
+         * That case is verified by `WithinTest`, which states the same thing the other way round
+         * without going through the point-in-polygon shortcut of `contains(Polygon, Point)`.
+         */
+        new TestCase(SQUARE,           POINT_CENTER,       true,  null),
+        new TestCase(SQUARE,           POINT_OUTSIDE,      false, null),
+        new TestCase(SQUARE_WITH_HOLE, POINT_CENTER,       false, null),
+        /*
+         * A curve and a position. An end position of the curve is on its boundary,
+         * and a geometry does not contain the positions of its own boundary.
+         */
+        new TestCase(LINE_BOTTOM,      POINT_ON_EDGE,      true,  null),
+        new TestCase(LINE_BOTTOM,      POINT_CORNER,       false, null),
+        /*
+         * A surface and a curve. A curve lying on the boundary of a surface is not contained
+         * by it, no position of that curve being interior to the surface.
+         */
+        new TestCase(SQUARE,           LINE_INSIDE,        true,  null),
+        new TestCase(SQUARE,           LINE_BOTTOM,        false, null),
+        new TestCase(SQUARE,           LINE_CROSSING,      false, null),
+        /*
+         * Two surfaces. Two surfaces at the same position contain each other.
+         */
+        new TestCase(SQUARE,           SQUARE_INNER,       true,  null),
+        new TestCase(SQUARE,           SQUARE_OVERLAP,     false, null),
+        new TestCase(SQUARE,           SQUARE_BIS,         true,  null),
+        /*
+         * Sets of geometries. A set is contained when all of its elements are.
+         */
+        new TestCase(SQUARE,           MULTI_POINT_INSIDE, true,  null),
+        new TestCase(SQUARE,           MULTI_POINT_SPREAD, false, null),
+        new TestCase(MULTI_POLYGON,    SQUARE,             true,  null)
     };
 
     /**

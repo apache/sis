@@ -22,17 +22,11 @@ import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.referencing.CommonCRS;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_RESULT;
-import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
-import static org.apache.sis.geometries.operation.TestData.POINT_A;
-import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
-import static org.apache.sis.geometries.operation.TestData.POINT_B;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
@@ -42,7 +36,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class IntersectionTest {
+public class IntersectionTest extends AbstractD9IMTest {
 
     private static final SampleSystem CRS2D = SampleSystem.of(CommonCRS.WGS84.geographic());
 
@@ -161,9 +155,9 @@ public class IntersectionTest {
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
     private record TestCase(Geometry input,
-                         Geometry other,
-                         Geometry expected,
-                         Class<? extends Exception> error)
+                            Geometry other,
+                            Geometry expected,
+                            Class<? extends Exception> error)
     {
     }
 
@@ -172,12 +166,12 @@ public class IntersectionTest {
      */
     private static final TestCase[] ENTRIES = {
         // ∅ ∩ A = ∅ and A ∩ ∅ = ∅: the result is the operand which is already empty.
-        new TestCase(EMPTY_1,   NON_EMPTY, EMPTY_1, null),
-        new TestCase(NON_EMPTY, EMPTY_1,   EMPTY_1, null),
-        new TestCase(EMPTY_1,   EMPTY_2,   EMPTY_1, null),
+        new TestCase(EMPTY_1,   NON_EMPTY,   EMPTY_1,      null),
+        new TestCase(NON_EMPTY, EMPTY_1,     EMPTY_1,      null),
+        new TestCase(EMPTY_1,   EMPTY_2,     EMPTY_1,      null),
         // points
-        new TestCase(POINT_A, POINT_A_BIS, POINT_A,      null),
-        new TestCase(POINT_A, POINT_B,     EMPTY_RESULT, null)
+        new TestCase(POINT_A,   POINT_A_BIS, POINT_A,      null),
+        new TestCase(POINT_A,   POINT_B,     EMPTY_RESULT, null)
     };
 
     /**
@@ -197,4 +191,24 @@ public class IntersectionTest {
             }
         }
     }
+
+    /**
+     * Tests {@code intersection(Geometry, Geometry)} on two surfaces.
+     * What two surfaces have in common is the surface covered by both of them.
+     */
+    @Test
+    public void testIntersectionOfSurfaces() {
+        final GeometryProcessor processor = new GeometryProcessor();
+        assertEquals(25, areaOf(processor.intersection(SQUARE, SQUARE_OVERLAP)), TOLERANCE, "Two squares of 10 × 10 offset by 5 along both axes.");
+        assertEquals(4, areaOf(processor.intersection(SQUARE, SQUARE_INNER)), TOLERANCE, "A square contained in another one.");
+        assertTrue(processor.intersection(SQUARE, SQUARE_DISJOINT).isEmpty(), "Two disjoint squares have nothing in common.");
+        /*
+         * Two surfaces sharing only an edge have a curve in common, not a surface:
+         * the dimension of the result is lower than the dimension of the operands.
+         */
+        final Geometry edge = processor.intersection(SQUARE, SQUARE_TOUCHING);
+        assertFalse(edge.isEmpty(), "Two surfaces sharing an edge have that edge in common.");
+        assertEquals(1, edge.getTopologicDimension(), "What two surfaces sharing only an edge have in common is a curve, not a surface.");
+    }
+
 }

@@ -16,6 +16,12 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.geometries.curve.LinearRing;
+
 // Test dependencies
 import org.apache.sis.geometries.curve.LinearRingTest;
 
@@ -26,4 +32,16 @@ import org.apache.sis.geometries.curve.LinearRingTest;
  * @author Johann Sorel (Geomatys)
  */
 public class DefaultLinearRingTest extends LinearRingTest {
+
+    @Override
+    protected LinearRing createLinearRing(final CoordinateReferenceSystem crs, final double... coordinates) {
+        return new DefaultLinearRing(sequence(crs, coordinates));
+    }
+
+    /**
+     * Creates the positions of a geometry from a flat list of ordinate values.
+     */
+    private static DataPoints sequence(final CoordinateReferenceSystem crs, final double... coordinates) {
+        return new ArrayDataPoints(NDArrays.of(SampleSystem.of(crs), coordinates));
+    }
 }

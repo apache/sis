@@ -27,17 +27,11 @@ import org.junit.jupiter.api.Test;
  * @author Johann Sorel (Geomatys)
  */
 public class FunctionArcTest {
-    /**
-     * Test of {@code getDomain()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetDomain() {
     }
 
-    /**
-     * Test of {@code function(FunctionArc, Vector)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testFunction() {

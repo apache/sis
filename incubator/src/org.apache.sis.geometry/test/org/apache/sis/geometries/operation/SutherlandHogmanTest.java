@@ -53,9 +53,9 @@ public final class SutherlandHogmanTest {
 
         final List<Tuple> result = SutherlandHodgman.clip(NDArrays.asList(subject), NDArrays.asList(clip));
         assertEquals(4,result.size());
-        assertEquals(new Vector2D.Double( 5,  8),result.get(0));
+        assertEquals(new Vector2D.Double(5,  8),result.get(0));
         assertEquals(new Vector2D.Double(10,  8),result.get(1));
         assertEquals(new Vector2D.Double(10, 20),result.get(2));
-        assertEquals(new Vector2D.Double( 5, 20),result.get(3));
+        assertEquals(new Vector2D.Double(5, 20),result.get(3));
     }
 }
