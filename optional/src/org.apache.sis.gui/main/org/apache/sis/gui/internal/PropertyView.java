@@ -31,6 +31,7 @@ import javafx.scene.Node;
 import javafx.scene.text.Font;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
@@ -41,6 +42,8 @@ import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.internal.shared.TableRowList;
+import org.apache.sis.gui.controls.FormatTableCellFactory;
 
 
 /**
@@ -80,6 +83,12 @@ public final class PropertyView implements Localized, ChangeListener<Number> {
      * This is built only when first needed.
      */
     private ListView<String> listView;
+
+    /**
+     * Shows the {@linkplain #value} as a table.
+     * This is built only when first needed.
+     */
+    private TableView<Object> tableView;
 
     /**
      * Shows the {@linkplain #value} as an image.
@@ -185,10 +194,11 @@ public final class PropertyView implements Localized, ChangeListener<Number> {
                     task.cancel(BackgroundThreads.NO_INTERRUPT_DURING_IO);
                 }
                 content = switch (newValue) {
-                    case null               -> null;
-                    case Throwable        c -> setText(c);
-                    case IdentifiedObject c -> setCRS(c);
-                    case Collection<?>    c -> setList(c.toArray());
+                    case null                -> null;
+                    case Throwable         c -> setText(c);
+                    case IdentifiedObject  c -> setCRS(c);
+                    case TableRowList<?,?> c -> setTable(c);
+                    case Collection<?>     c -> setList(c.toArray());
                     default -> newValue.getClass().isArray() ? setList(newValue)
                                 : setText(formats.formatValue(newValue, true));
                 };
@@ -233,7 +243,21 @@ public final class PropertyView implements Localized, ChangeListener<Number> {
         for (int i=0; i<list.length; i++) {
             list[i] = formats.formatValue(Array.get(array, i), true);
         }
-        listView.getItems().setAll(list);
+        node.getItems().setAll(list);
+        return node;
+    }
+
+    /**
+     * Sets the property value to the given table.
+     */
+    private Node setTable(final TableRowList<?,?> table) {
+        TableView<Object> node = tableView;
+        if (node == null) {
+            node = new TableView<>();
+            tableView = node;
+        }
+        node.getColumns().setAll(FormatTableCellFactory.createColumns(table.columns(), (i) -> table.createFormat(getLocale(), i)));
+        node.getItems().setAll(table);
         return node;
     }
 
@@ -264,6 +288,7 @@ public final class PropertyView implements Localized, ChangeListener<Number> {
      * @param  boundsChanged  whether {@link #visibleImageBounds} changed since last call.
      */
     private Node setImage(final RenderedImage image, final boolean boundsChanged) {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Pane imageCanvas = getImageCanvas();
         ImageView node = imageView;
         if (node == null) {
@@ -295,7 +320,7 @@ public final class PropertyView implements Localized, ChangeListener<Number> {
             imagePane.setHgap(0);
             imageView = node;
         }
-        final ImageConverter converter = new ImageConverter(image, visibleImageBounds, node, imageCanvas);
+        final var converter = new ImageConverter(image, visibleImageBounds, node, imageCanvas);
         if (converter.needsRun(boundsChanged)) {
             converter.setOnSucceeded((e) -> taskCompleted(converter.getValue()));
             converter.setOnFailed((e) -> {
@@ -338,7 +363,7 @@ public final class PropertyView implements Localized, ChangeListener<Number> {
         String mean  = null;
         if (statistics != null && statistics.length != 0) {
             final Statistics s = statistics[0];
-            final StringBuffer buffer = new StringBuffer();
+            final var buffer = new StringBuffer();
             formats.formatPair(s.minimum(), " … ", s.maximum(), buffer);
             range = buffer.toString();
 
@@ -380,6 +405,10 @@ public final class PropertyView implements Localized, ChangeListener<Number> {
         }
         if (listView != null) {
             listView.getItems().clear();
+        }
+        if (tableView != null) {
+            tableView.getItems().clear();
+            tableView.getColumns().clear();
         }
         if (imageView != null) {
             ImageConverter.clear(imageView);
