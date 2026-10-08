@@ -657,7 +657,7 @@ public final class Numerics {
      * @return the result of {@code action}.
      */
     @Workaround(library="JDK", version="10")
-    public static String useScientificNotationIfNeeded(final Format format, final Object value, final BiFunction<Format,Object,String> action) {
+    public static String useScientificNotationIfNeeded(final Format format, final Object value, final BiFunction<Format, Object, String> action) {
         if (value instanceof Number && format instanceof DecimalFormat) {
             final DecimalFormat df = (DecimalFormat) format;
             final int maxFD = df.getMaximumFractionDigits();
