@@ -18,12 +18,16 @@ package org.apache.sis.math;
 
 import java.io.Serializable;
 import java.nio.Buffer;
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.Arrays;
 import java.util.AbstractList;
 import java.util.RandomAccess;
 import java.util.StringJoiner;
 import java.util.Optional;
 import java.util.Objects;
+import java.util.stream.IntStream;
+import java.util.stream.DoubleStream;
 import java.util.function.IntSupplier;
 import static java.util.logging.Logger.getLogger;
 import org.apache.sis.measure.NumberRange;
@@ -242,7 +246,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * not {@link Float#TYPE}.
      *
      * <p>The information returned by this method is only indicative; it is not guaranteed to specify accurately
-     * this kind of objects returned by the {@link #get(int)} method. There is various situations where the types
+     * the kind of objects returned by the {@link #get(int)} method. There is various situations where the types
      * may not match:</p>
      *
      * <ul>
@@ -1504,6 +1508,19 @@ search:     for (;;) {
     }
 
     /**
+     * Returns all values in a stream of double precision floating point numbers.
+     *
+     * <p>The default implementation invokes {@link #doubleValue(int)} for all indices from 0 inclusive
+     * to {@link #size()} exclusive. Subclasses may override with more efficient implementation.</p>
+     *
+     * @return a stream of all floating point values in this vector.
+     * @since 1.7
+     */
+    public DoubleStream doubleStream() {
+        return IntStream.range(0, size()).mapToDouble(this::doubleValue);
+    }
+
+    /**
      * Copies all values in an array of double precision floating point numbers.
      * This method is for inter-operability with APIs requiring an array of primitive type.
      *
@@ -1601,6 +1618,35 @@ search:     for (;;) {
             }
         }
         return ArrayVector.newInstance(array, isUnsigned());
+    }
+
+    /**
+     * Suggests a format configured with a number of fraction digits adapted to the data contained in this vector.
+     * The format will not necessarily show all significant digits. Instead, this method can use heuristic rules
+     * for choosing a number of fraction digits sufficient for distinguishing the majority of the values.
+     *
+     * @param  locale  the desired locale.
+     * @return format configured for the data contained in this vector.
+     *
+     * @since 1.7
+     */
+    public NumberFormat createNumberFormat(final Locale locale) {
+        if (isInteger()) {
+            return NumberFormat.getIntegerInstance(locale);
+        }
+        final int digits;
+        final Number increment = increment(0);
+        if (increment != null) {
+            digits = DecimalFunctions.fractionDigitsForDelta(increment.doubleValue(), false);
+        } else {
+            final var stats = new Statistics(null);
+            doubleStream().forEach(stats);
+            digits = Numerics.suggestFractionDigits(stats);
+        }
+        final NumberFormat format = NumberFormat.getNumberInstance(locale);
+        format.setMinimumFractionDigits(digits);
+        format.setMaximumFractionDigits(digits);
+        return format;
     }
 
     /**

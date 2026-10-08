@@ -26,6 +26,7 @@ import java.nio.FloatBuffer;
 import java.nio.DoubleBuffer;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.DoubleStream;
 import java.util.function.IntSupplier;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
@@ -44,6 +45,7 @@ import org.apache.sis.measure.NumberRange;
  *
  * @param <E>  the base type of elements in the vector.
  */
+@SuppressWarnings("EqualsAndHashcode")
 abstract class ArrayVector<E extends Number> extends Vector implements CheckedContainer<E>, Serializable {
     /**
      * For cross-version compatibility.
@@ -305,6 +307,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Wraps this vector in a buffer. */
         @Override public Optional<Buffer> buffer() {
             return Optional.of(DoubleBuffer.wrap(array));
+        }
+
+        /** Returns a stream of current data. */
+        @Override public DoubleStream doubleStream() {
+            return Arrays.stream(array);
         }
 
         /** Returns a copy of current data as a floating point array. */
@@ -615,6 +622,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return Optional.of(LongBuffer.wrap(array));
         }
 
+        /** Returns a stream of current data. */
+        @Override public DoubleStream doubleStream() {
+            return Arrays.stream(array).mapToDouble((value) -> value);
+        }
+
         /** Applies hash code contract specified {@link Vector#hashCode()}. */
         @Override public final int hashCode() {
             return Arrays.hashCode(array);
@@ -746,6 +758,11 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Wraps this vector in a buffer. */
         @Override public final Optional<Buffer> buffer() {
             return Optional.of(IntBuffer.wrap(array));
+        }
+
+        /** Returns a stream of current data. */
+        @Override public DoubleStream doubleStream() {
+            return Arrays.stream(array).mapToDouble((value) -> value);
         }
 
         /** Applies hash code contract specified {@link Vector#hashCode()}. */

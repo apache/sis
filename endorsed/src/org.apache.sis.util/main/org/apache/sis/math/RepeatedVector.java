@@ -17,6 +17,8 @@
 package org.apache.sis.math;
 
 import java.io.Serializable;
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.IntSupplier;
 import org.apache.sis.measure.NumberRange;
@@ -283,5 +285,15 @@ opti:   if (count > 1 && cycleLength * occurrences >= size) {
             return new RepeatedVector(base, occurrences / step, cycleLength, length);
         }
         return super.createSubSampling(first, step, length);
+    }
+
+    /**
+     * Suggests a format configured to the data contained in this vector.
+     * Because this vector is a repetition of the {@linkplain #base} vector,
+     * delegating to the base vector is sufficient.
+     */
+    @Override
+    public NumberFormat createNumberFormat(final Locale locale) {
+        return base.createNumberFormat(locale);
     }
 }
