@@ -23,8 +23,8 @@ import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.Maths;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vectors;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -44,12 +44,12 @@ public final class Contains {
      * @param ring not null
      * @param point not null
      */
-    private static boolean contains(Array ring, Tuple<?> point) {
+    private static boolean contains(Array ring, Vector<?> point) {
         final Cursor cursor = ring.cursor();
 
         int windingNumber = 0;
-        Tuple<?> current;
-        Tuple<?> previous;
+        Vector<?> current;
+        Vector<?> previous;
         cursor.moveTo(0);
         current = cursor.samples();
         previous = Vectors.create(current.getSampleSystem(), current.getDataType());

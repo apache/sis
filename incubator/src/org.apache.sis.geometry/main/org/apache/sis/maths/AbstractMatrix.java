@@ -528,7 +528,7 @@ abstract class AbstractMatrix<T extends AbstractMatrix<T>> extends SimplifiedTra
     }
 
     @Override
-    public Tuple<?> transform(final ReadOnly.Tuple<?> vector, Tuple<?> dest) {
+    public Vector<?> transform(final ReadOnly.Vector<?> vector, Vector<?> dest) {
         final double[] array = new double[nbRow];
         transform(vector.toArrayDouble(), 0, array, 0, 1);
         if (dest == null) {

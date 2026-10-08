@@ -20,13 +20,13 @@ import java.util.List;
 import java.util.Map;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Disabled;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -70,7 +70,7 @@ public abstract class PointTest extends GeometryTest {
 
     @Test
     public void testGetPosition() {
-        final Tuple<?> position = createPoint2D().getPosition();
+        final Vector<?> position = createPoint2D().getPosition();
         assertNotNull(position);
         assertEquals(2, position.getDimension());
         assertArrayEquals(POSITION_2D, position.toArrayDouble());
@@ -80,7 +80,7 @@ public abstract class PointTest extends GeometryTest {
     @Test
     public void testGetAttribute() {
         final Point point = createPoint2D();
-        final Tuple<?> position = point.getAttribute(DataPointsType.ATT_POSITION);
+        final Vector<?> position = point.getAttribute(DataPointsType.ATT_POSITION);
         assertNotNull(position, "The coordinates are always carried by the positions attribute.");
         assertArrayEquals(POSITION_2D, position.toArrayDouble());
         assertNull(point.getAttribute("Not an attribute of this point."));
@@ -89,7 +89,7 @@ public abstract class PointTest extends GeometryTest {
     @Test
     public void testSetAttribute() {
         final Point point = createPoint2D();
-        final Tuple<?> moved = point.getPosition().copy();
+        final Vector<?> moved = point.getPosition().copy();
         moved.set(new double[] {20, 15});
         point.setAttribute(DataPointsType.ATT_POSITION, moved);
         assertArrayEquals(new double[] {20, 15}, point.getPosition().toArrayDouble(),

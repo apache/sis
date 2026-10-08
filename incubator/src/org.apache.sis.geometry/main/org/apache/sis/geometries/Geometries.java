@@ -55,8 +55,6 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Matrix3D;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Tuple;
-import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vector3D;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.measure.Quantities;
@@ -71,6 +69,7 @@ import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.SimpleInternationalString;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -610,7 +609,7 @@ public final class Geometries {
 
         int inc = -1;
         final Map<Integer, Integer> mapping = new HashMap<>();
-        final Map<String,List<Tuple<?>>> rebuild = new IdentityHashMap<>();
+        final Map<String,List<Vector<?>>> rebuild = new IdentityHashMap<>();
         final int[] index = indexArray.toArrayInt();
 
         for (String name : primitive.getDataPointsType().getAttributeNames()) {
@@ -626,7 +625,7 @@ public final class Geometries {
 
                 for (String name : rebuild.keySet()) {
                     final Array oldTa = primitive.getAttribute(name);
-                    final List<Tuple<?>> newTa = rebuild.get(name);
+                    final List<Vector<?>> newTa = rebuild.get(name);
                     newTa.add(newIndex, oldTa.get(oldIndex));
                 }
             }
@@ -636,7 +635,7 @@ public final class Geometries {
         //rebuild attributes arrays
         for (String name : rebuild.keySet()) {
             final Array oldTa = primitive.getAttribute(name);
-            final List<Tuple<?>> newTa = rebuild.get(name);
+            final List<Vector<?>> newTa = rebuild.get(name);
             final Array ta = NDArrays.of(newTa, oldTa.getSampleSystem(), oldTa.getDataType());
             primitive.setAttribute(name, ta);
         }

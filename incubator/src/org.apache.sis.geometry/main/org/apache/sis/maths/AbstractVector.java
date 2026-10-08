@@ -26,20 +26,20 @@ import org.apache.sis.referencing.CRS;
  *
  * @author Johann Sorel (Geomatys)
  */
-abstract class AbstractTuple<T extends AbstractTuple<T>> implements Tuple<T> {
+abstract class AbstractVector<T extends AbstractVector<T>> implements Vector<T> {
 
     protected final SampleSystem type;
 
-    public AbstractTuple(int dimension) {
+    public AbstractVector(int dimension) {
         this.type = SampleSystem.ofSize(dimension);
     }
 
-    public AbstractTuple(SampleSystem type) {
+    public AbstractVector(SampleSystem type) {
         ArgumentChecks.ensureNonNull("type", type);
         this.type = type;
     }
 
-    public AbstractTuple(CoordinateReferenceSystem crs) {
+    public AbstractVector(CoordinateReferenceSystem crs) {
         ArgumentChecks.ensureNonNull("crs", crs);
         this.type = SampleSystem.of(crs);
     }
@@ -66,10 +66,10 @@ abstract class AbstractTuple<T extends AbstractTuple<T>> implements Tuple<T> {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof ReadOnly.Tuple)) {
+        if (!(obj instanceof ReadOnly.Vector)) {
             return false;
         }
-        final ReadOnly.Tuple other = (ReadOnly.Tuple) obj;
+        final ReadOnly.Vector other = (ReadOnly.Vector) obj;
 
         final int dim = getDimension();
         if (dim != other.getDimension()) {

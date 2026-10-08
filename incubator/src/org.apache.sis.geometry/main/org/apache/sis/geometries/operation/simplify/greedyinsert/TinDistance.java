@@ -20,7 +20,7 @@ import java.util.function.BiFunction;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Maths;
-import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vector;
 
 
@@ -28,14 +28,14 @@ import org.apache.sis.maths.Vector;
  *
  * @author Johann Sorel (Geomatys)
  */
-final class TinDistance implements BiFunction<Tuple,Triangle,Double> {
+final class TinDistance implements BiFunction<Vector,Triangle,Double> {
 
     @Override
-    public Double apply(Tuple pt, Triangle triangle) {
+    public Double apply(Vector pt, Triangle triangle) {
         final DataPoints points = triangle.getExteriorRing().getDataPoints();
-        final Tuple p0 = points.getPosition(0);
-        final Tuple p1 = points.getPosition(1);
-        final Tuple p2 = points.getPosition(2);
+        final Vector p0 = points.getPosition(0);
+        final Vector p1 = points.getPosition(1);
+        final Vector p2 = points.getPosition(2);
         Vector normal = Maths.calculateNormal(p0, p1, p2);
         double planD = normal.dot(p0);
 

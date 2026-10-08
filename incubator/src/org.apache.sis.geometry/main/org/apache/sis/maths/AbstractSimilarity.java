@@ -255,7 +255,7 @@ public abstract class AbstractSimilarity<T extends AbstractSimilarity<T>> extend
     }
 
     @Override
-    public Tuple<?> transform(ReadOnly.Tuple<?> source, Tuple<?> out) {
+    public Vector<?> transform(ReadOnly.Vector<?> source, Vector<?> out) {
         return toAffine().transform(source, out);
     }
 
@@ -280,7 +280,7 @@ public abstract class AbstractSimilarity<T extends AbstractSimilarity<T>> extend
     }
 
     @Override
-    public Tuple<?> inverseTransform(ReadOnly.Tuple<?> source, Tuple<?> dest) {
+    public Vector<?> inverseTransform(ReadOnly.Vector<?> source, Vector<?> dest) {
         return toAffine().invert().transform(source, dest);
     }
 

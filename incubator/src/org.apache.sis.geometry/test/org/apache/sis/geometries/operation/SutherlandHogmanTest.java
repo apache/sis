@@ -17,7 +17,6 @@
 package org.apache.sis.geometries.operation;
 
 import java.util.List;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Vector2D;
 import org.apache.sis.maths.Array;
@@ -25,6 +24,7 @@ import org.apache.sis.maths.Array;
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -51,7 +51,7 @@ public final class SutherlandHogmanTest {
                 5.0, 8.0
             );
 
-        final List<Tuple> result = SutherlandHodgman.clip(NDArrays.asList(subject), NDArrays.asList(clip));
+        final List<Vector> result = SutherlandHodgman.clip(NDArrays.asList(subject), NDArrays.asList(clip));
         assertEquals(4,result.size());
         assertEquals(new Vector2D.Double(5,  8),result.get(0));
         assertEquals(new Vector2D.Double(10,  8),result.get(1));

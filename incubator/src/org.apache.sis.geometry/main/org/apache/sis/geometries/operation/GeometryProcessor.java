@@ -48,10 +48,10 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -436,7 +436,7 @@ public final class GeometryProcessor {
      * @param crs3d the result crs in 3d, if null an ellipsoid height is assumed
      * @param zeditor called to configure the Z value on each position, if null, value 0.0 will be used
      */
-    public Geometry to3D(Geometry geom, CoordinateReferenceSystem crs3d, Consumer<Tuple> zeditor) {
+    public Geometry to3D(Geometry geom, CoordinateReferenceSystem crs3d, Consumer<Vector> zeditor) {
         if (geom instanceof Point base) {
             return To3D.to3D(base, crs3d, zeditor);
         } else if (geom instanceof LineString base) {
@@ -457,7 +457,7 @@ public final class GeometryProcessor {
      * @param valueGenerator function to generate attribute value
      * @return new or modified geometry
      */
-    public Geometry compute(Geometry geom, String attributeName, SampleSystem attributeSystem, DataType attributeType, Function<Point,Tuple> valueGenerator) {
+    public Geometry compute(Geometry geom, String attributeName, SampleSystem attributeSystem, DataType attributeType, Function<Point,Vector> valueGenerator) {
         if (geom instanceof MeshPrimitive mp) {
             return ComputeAttribute.compute(mp, attributeName, attributeSystem, attributeType, valueGenerator);
         } else if (geom instanceof MultiMeshPrimitive<?> mp) {
@@ -533,7 +533,7 @@ public final class GeometryProcessor {
     public Geometry separateFaces(MeshPrimitive p) {
 
         final DataPointsType attributesType = p.getDataPointsType();
-        final Map<String,List<Tuple<?>>> atts = new HashMap<>();
+        final Map<String,List<Vector<?>>> atts = new HashMap<>();
 
         for (String name : attributesType.getAttributeNames()) {
             atts.put(name, new ArrayList<>());
@@ -542,7 +542,7 @@ public final class GeometryProcessor {
         MeshPrimitiveVisitor pv = new MeshPrimitiveVisitor(p) {
             @Override
             protected void visit(Point candidate) {
-                for (Entry<String,List<Tuple<?>>> entry : atts.entrySet()) {
+                for (Entry<String,List<Vector<?>>> entry : atts.entrySet()) {
                     entry.getValue().add(candidate.getAttribute(entry.getKey()));
                 }
             }
@@ -551,7 +551,7 @@ public final class GeometryProcessor {
             protected void visit(LineString candidate) {
                 final Point p0 = candidate.getPointN(0);
                 final Point p1 = candidate.getPointN(1);
-                for (Entry<String,List<Tuple<?>>> entry : atts.entrySet()) {
+                for (Entry<String,List<Vector<?>>> entry : atts.entrySet()) {
                     entry.getValue().add(p0.getAttribute(entry.getKey()));
                     entry.getValue().add(p1.getAttribute(entry.getKey()));
                 }
@@ -563,7 +563,7 @@ public final class GeometryProcessor {
                 final Point p0 = ring.getPointN(0);
                 final Point p1 = ring.getPointN(1);
                 final Point p2 = ring.getPointN(2);
-                for (Entry<String,List<Tuple<?>>> entry : atts.entrySet()) {
+                for (Entry<String,List<Vector<?>>> entry : atts.entrySet()) {
                     entry.getValue().add(p0.getAttribute(entry.getKey()));
                     entry.getValue().add(p1.getAttribute(entry.getKey()));
                     entry.getValue().add(p2.getAttribute(entry.getKey()));
@@ -588,7 +588,7 @@ public final class GeometryProcessor {
             default : type = MeshPrimitive.Type.TRIANGLES; break;
         }
         final MeshPrimitive sep = MeshPrimitive.create(type);
-        for (Entry<String,List<Tuple<?>>> entry : atts.entrySet()) {
+        for (Entry<String,List<Vector<?>>> entry : atts.entrySet()) {
             final String name = entry.getKey();
             final Array array = NDArrays.of(entry.getValue(), attributesType.getAttributeSystem(name), attributesType.getAttributeType(name));
             sep.setAttribute(name, array);

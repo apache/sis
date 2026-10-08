@@ -267,7 +267,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
     }
 
     @Override
-    public Tuple<?> transform(ReadOnly.Tuple<?> vector, Tuple<?> buffer) {
+    public Vector<?> transform(ReadOnly.Vector<?> vector, Vector<?> buffer) {
         if (buffer == null) buffer = new Vector3D.Double();
 
         if (vector instanceof Vector3D.Double v && buffer instanceof Vector3D.Double b) {
@@ -341,7 +341,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
      * @param euler in radians (heading/yaw , elevation/pitch , bank/roll)
      * @return this matrix
      */
-    public Matrix3D setFromEuler(ReadOnly.Tuple<?> euler){
+    public Matrix3D setFromEuler(ReadOnly.Vector<?> euler){
         set(Matrices.fromEuler(euler.toArrayDouble(), new double[3][3]), ROW_ORDER);
         return this;
     }
@@ -351,7 +351,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
      * @param rotationAxis rotation axis
      * @return this matrix
      */
-    public Matrix3D setFromAngle(final double angle, final ReadOnly.Tuple<?> rotationAxis){
+    public Matrix3D setFromAngle(final double angle, final ReadOnly.Vector<?> rotationAxis){
         final double fCos = Math.cos(angle);
         final double fSin = Math.sin(angle);
         final double fOneMinusCos = (1.0) - fCos;
@@ -403,7 +403,7 @@ public class Matrix3D extends AbstractMatrix<Matrix3D> {
      * @param zAxis values are copied in 3rd row
      * @return rotation matrix
      */
-    public Matrix3D setFromAxis(final ReadOnly.Tuple<?> xAxis, final ReadOnly.Tuple<?> yAxis, final ReadOnly.Tuple<?> zAxis){
+    public Matrix3D setFromAxis(final ReadOnly.Vector<?> xAxis, final ReadOnly.Vector<?> yAxis, final ReadOnly.Vector<?> zAxis){
         setToIdentity();
         this.setRow(0, xAxis.toArrayDouble());
         this.setRow(1, yAxis.toArrayDouble());

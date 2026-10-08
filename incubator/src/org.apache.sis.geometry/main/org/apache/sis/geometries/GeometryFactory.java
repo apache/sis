@@ -119,9 +119,9 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Range;
+import org.apache.sis.maths.Vector;
 
 
 /**

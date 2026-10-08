@@ -37,11 +37,11 @@ import org.apache.sis.geometries.surface.ParametricCurveSurface;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.util.ArgumentChecks;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.Identifier;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -268,14 +268,14 @@ public final class Ellipsoid extends AbstractGeometry implements ParametricCurve
      *
      * @return ellipsoid center.
      */
-    public Tuple<?> getCenter() {
+    public Vector<?> getCenter() {
         return points.getPosition(0);
     }
 
     /**
      * @param position new center of the ellipsoid
      */
-    public void setCenter(Tuple<?> position) {
+    public void setCenter(Vector<?> position) {
         points.setPosition(0, position);
     }
 
@@ -287,7 +287,7 @@ public final class Ellipsoid extends AbstractGeometry implements ParametricCurve
      */
     @Override
     public Envelope getEnvelope() {
-        final Tuple<?> center = getCenter();
+        final Vector<?> center = getCenter();
         final BBox env = new BBox(center, center);
         env.setCoordinateReferenceSystem(getCoordinateReferenceSystem());
         for (int i = 0, n = getDimension(); i < n; i++) {

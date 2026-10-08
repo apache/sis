@@ -25,8 +25,8 @@ import org.apache.sis.geometries.internal.shared.IndexedPoint;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vectors;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -59,7 +59,7 @@ public final class BBox extends GeneralEnvelope implements Geometry {
      * @param lower lower corner
      * @param upper upper corner
      */
-    public BBox(Tuple lower, Tuple upper) {
+    public BBox(Vector lower, Vector upper) {
         super(Vectors.asDirectPostion(lower), Vectors.asDirectPostion(upper));
     }
 
@@ -91,21 +91,21 @@ public final class BBox extends GeneralEnvelope implements Geometry {
         return GeometryType.BBOX;
     }
 
-    public void add(Tuple<?> position) throws MismatchedDimensionException {
+    public void add(Vector<?> position) throws MismatchedDimensionException {
         add(Vectors.asDirectPostion(position));
     }
 
     /**
      * {@inheritDoc }
      */
-    public Tuple<?> getLower() {
+    public Vector<?> getLower() {
         return Vectors.castOrWrap(super.getLowerCorner());
     }
 
     /**
      * {@inheritDoc }
      */
-    public Tuple<?> getUpper() {
+    public Vector<?> getUpper() {
         return Vectors.castOrWrap(super.getUpperCorner());
     }
 
@@ -176,10 +176,10 @@ public final class BBox extends GeneralEnvelope implements Geometry {
         }
 
         @Override
-        public Tuple<?> getPosition(int index) {
+        public Vector<?> getPosition(int index) {
             ensureValid(index);
             final int dim = getDimension();
-            final Tuple<?> position = Vectors.create(BBox.this.getCoordinateReferenceSystem(), DataType.DOUBLE);
+            final Vector<?> position = Vectors.create(BBox.this.getCoordinateReferenceSystem(), DataType.DOUBLE);
             for (int i = 0; i < dim; i++) {
                 position.set(i, (index == 0) ? getMinimum(i) : getMaximum(i));
             }
@@ -187,7 +187,7 @@ public final class BBox extends GeneralEnvelope implements Geometry {
         }
 
         @Override
-        public void setPosition(int index, Tuple<?> value) {
+        public void setPosition(int index, Vector<?> value) {
             ensureValid(index);
             final int dim = getDimension();
             for (int i = 0; i < dim; i++) {
@@ -200,12 +200,12 @@ public final class BBox extends GeneralEnvelope implements Geometry {
         }
 
         @Override
-        public Tuple<?> getAttribute(int index, String name) {
+        public Vector<?> getAttribute(int index, String name) {
             return DataPointsType.ATT_POSITION.equals(name) ? getPosition(index) : null;
         }
 
         @Override
-        public void setAttribute(int index, String name, Tuple<?> value) {
+        public void setAttribute(int index, String name, Vector<?> value) {
             if (!DataPointsType.ATT_POSITION.equals(name)) {
                 throw new IllegalArgumentException("A box holds no \"" + name + "\" attribute.");
             }

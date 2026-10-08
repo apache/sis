@@ -24,7 +24,7 @@ import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -148,25 +148,25 @@ public final class ConcatenatedDataPoints implements DataPoints {
     }
 
     @Override
-    public Tuple<?> getPosition(int index) {
+    public Vector<?> getPosition(int index) {
         final int i = sourceOf(index);
         return sources[i].getPosition(index - offsets[i]);
     }
 
     @Override
-    public void setPosition(int index, Tuple<?> value) {
+    public void setPosition(int index, Vector<?> value) {
         final int i = sourceOf(index);
         sources[i].setPosition(index - offsets[i], value);
     }
 
     @Override
-    public Tuple<?> getAttribute(int index, String name) {
+    public Vector<?> getAttribute(int index, String name) {
         final int i = sourceOf(index);
         return sources[i].getAttribute(index - offsets[i], name);
     }
 
     @Override
-    public void setAttribute(int index, String name, Tuple<?> value) {
+    public void setAttribute(int index, String name, Vector<?> value) {
         final int i = sourceOf(index);
         sources[i].setAttribute(index - offsets[i], name, value);
     }

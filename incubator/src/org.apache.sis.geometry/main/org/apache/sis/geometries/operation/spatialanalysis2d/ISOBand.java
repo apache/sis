@@ -33,9 +33,9 @@ import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import static org.apache.sis.geometries.operation.spatialanalysis2d.ISOLine.interpolateToArray;
 import org.apache.sis.geometries.surface.Triangle;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -80,17 +80,17 @@ public final class ISOBand {
             @Override
             protected void visit(Triangle candidate) {
                 final DataPoints points = candidate.getExteriorRing().getDataPoints();
-                Tuple t0 = points.getPosition(0);
-                Tuple t1 = points.getPosition(1);
-                Tuple t2 = points.getPosition(2);
+                Vector t0 = points.getPosition(0);
+                Vector t1 = points.getPosition(1);
+                Vector t2 = points.getPosition(2);
                 //sort points by Z, the point ordering to not matter for the algo
                 if (t0.get(Z) < t1.get(Z)) {
-                    Tuple t = t0;
+                    Vector t = t0;
                     t0 = t1;
                     t1 = t;
                 }
                 if (t1.get(Z) < t2.get(Z)) {
-                    Tuple t = t1;
+                    Vector t = t1;
                     t1 = t2;
                     t2 = t;
                     if (t0.get(Z) < t1.get(Z)) {

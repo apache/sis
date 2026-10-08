@@ -72,8 +72,8 @@ public interface Array extends NDArray {
      * @param index tuple index.
      * @return tuple values, tuple is a copy.
      */
-    default Tuple<?> get(long index) {
-        Tuple<?> tuple = Vectors.create(getSampleSystem(), getDataType());
+    default Vector<?> get(long index) {
+        Vector<?> tuple = Vectors.create(getSampleSystem(), getDataType());
         get(index, tuple);
         return tuple;
     }
@@ -84,13 +84,13 @@ public interface Array extends NDArray {
      * @param index tuple index.
      * @param buffer tuple to write into.
      */
-    void get(long index, Tuple<?> buffer);
+    void get(long index, Vector<?> buffer);
 
     /**
      * {@inheritDoc }
      */
     @Override
-    default void set(ReadOnly.Tuple<?> buffer) {
+    default void set(ReadOnly.Vector<?> buffer) {
         Cursor cursor = cursor();
         while (cursor.next()) {
             cursor.samples().set(buffer);
@@ -103,7 +103,7 @@ public interface Array extends NDArray {
      * @param index tuple index
      * @param buffer new tuple values.
      */
-    void set(long index, ReadOnly.Tuple<?> buffer);
+    void set(long index, ReadOnly.Vector<?> buffer);
 
     /**
      * Get tuple.
@@ -112,7 +112,7 @@ public interface Array extends NDArray {
      * @param buffer tuple to write into.
      */
     @Override
-    default void get(long[] index, Tuple<?> buffer) {
+    default void get(long[] index, Vector<?> buffer) {
         if (index.length != 1) throw new IllegalArgumentException("New shape must have a dimension of one");
         get(index[0], buffer);
     }
@@ -124,7 +124,7 @@ public interface Array extends NDArray {
      * @param buffer new tuple values.
      */
     @Override
-    default void set(long[] index, ReadOnly.Tuple<?> buffer) {
+    default void set(long[] index, ReadOnly.Vector<?> buffer) {
         if (index.length != 1) throw new IllegalArgumentException("New shape must have a dimension of one");
         set(index[0], buffer);
     }
@@ -150,8 +150,8 @@ public interface Array extends NDArray {
      * @param j
      */
     default void swap(long i, long j) {
-        final Tuple ti = get(i);
-        final Tuple tj = get(j);
+        final Vector ti = get(i);
+        final Vector tj = get(j);
         set(i, tj);
         set(j, ti);
     }
@@ -205,7 +205,7 @@ public interface Array extends NDArray {
     default byte[] toArrayByte(long offset, int nbTuple) {
         final int dimension = getDimension();
         final byte[] array = new byte[nbTuple*dimension];
-        final Tuple v = Vectors.createByte(dimension);
+        final Vector v = Vectors.createByte(dimension);
         long k = offset;
         for (int i = 0; i < nbTuple; i++, k++) {
             get(k, v);
@@ -223,7 +223,7 @@ public interface Array extends NDArray {
     default short[] toArrayShort(long offset, int nbTuple) {
         final int dimension = getDimension();
         final short[] array = new short[nbTuple*dimension];
-        final Tuple v = Vectors.createShort(dimension);
+        final Vector v = Vectors.createShort(dimension);
         long k = offset;
         for (int i = 0; i < nbTuple; i++, k++) {
             get(k, v);
@@ -241,7 +241,7 @@ public interface Array extends NDArray {
     default int[] toArrayInt(long offset, int nbTuple) {
         final int dimension = getDimension();
         final int[] array = new int[nbTuple*dimension];
-        final Tuple v = Vectors.createInt(dimension);
+        final Vector v = Vectors.createInt(dimension);
         long k = offset;
         for (int i = 0; i < nbTuple; i++, k++) {
             get(k, v);
@@ -298,7 +298,7 @@ public interface Array extends NDArray {
      */
     default Vector<?>[] toArray(long offset, long nbTuple) {
         return stream(false).skip(offset).limit(nbTuple)
-                .map((Tuple<?> t) -> Vectors.create(t.getSampleSystem(), t.getDataType()).set(t))
+                .map((Vector<?> t) -> Vectors.create(t.getSampleSystem(), t.getDataType()).set(t))
                 .toArray(Vector<?>[]::new);
     }
 
@@ -328,7 +328,7 @@ public interface Array extends NDArray {
         ArgumentChecks.ensureNonNull("crs", crs);
         final CoordinateReferenceSystem baseCrs = getCoordinateReferenceSystem();
         if (baseCrs == null) {
-            throw new TransformException("This TupleArray do not have a SampleSystem with a CRS");
+            throw new TransformException("This Array do not have a SampleSystem with a CRS");
         }
         final MathTransform trs = CRS.findOperation(baseCrs, crs, null).getMathTransform();
         setSampleSystem(SampleSystem.of(crs));
@@ -336,7 +336,7 @@ public interface Array extends NDArray {
     }
 
     /**
-     * Create a new TupleArray with a different datatype.
+     * Create a new Array with a different datatype.
      * @param type new data type, not null
      * @return retyped array, if the type is the same a copy is returned
      */
@@ -377,7 +377,7 @@ public interface Array extends NDArray {
      * @return tuple stream over this array.
      */
     @Override
-    default Stream<Tuple<?>> stream(boolean parallel) {
+    default Stream<Vector<?>> stream(boolean parallel) {
         return StreamSupport.stream(new ArraySpliterator(this), parallel);
     }
 
@@ -414,8 +414,8 @@ public interface Array extends NDArray {
             return false;
         }
         for (long i = 0; i < length; i++) {
-            Tuple v1 = get(i);
-            Tuple v2 = other.get(i);
+            Vector v1 = get(i);
+            Vector v2 = other.get(i);
             if (!v1.equals(v2, tolerance)) {
                 return false;
             }

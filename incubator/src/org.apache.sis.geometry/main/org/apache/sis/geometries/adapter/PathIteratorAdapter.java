@@ -27,9 +27,9 @@ import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.surface.Polygon;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -144,7 +144,7 @@ final class PathIteratorAdapter implements PathIterator {
         if (currentIndex == closingPoint) {
             return SEG_CLOSE;
         }
-        Tuple<?> position = coordinates.getPosition(currentIndex);
+        Vector<?> position = coordinates.getPosition(currentIndex);
         coords[0] = position.get(0);
         coords[1] = position.get(1);
         at.transform(coords, 0, coords, 0, 1);
@@ -162,7 +162,7 @@ final class PathIteratorAdapter implements PathIterator {
         if (currentIndex == closingPoint) {
             return SEG_CLOSE;
         }
-        Tuple<?> position = coordinates.getPosition(currentIndex);
+        Vector<?> position = coordinates.getPosition(currentIndex);
         coords[0] = (float) position.get(0);
         coords[1] = (float) position.get(1);
         at.transform(coords, 0, coords, 0, 1);

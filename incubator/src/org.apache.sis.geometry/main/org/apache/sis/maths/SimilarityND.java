@@ -145,14 +145,14 @@ public class SimilarityND extends AbstractSimilarity<SimilarityND> {
     }
 
     @Override
-    public SimilarityND setScale(ReadOnly.Tuple<?> scale) {
+    public SimilarityND setScale(ReadOnly.Vector<?> scale) {
         this.scale.set(scale);
         notifyChanged();
         return this;
     }
 
     @Override
-    public SimilarityND setTranslation(ReadOnly.Tuple<?> translation) {
+    public SimilarityND setTranslation(ReadOnly.Vector<?> translation) {
         this.translation.set(translation);
         notifyChanged();
         return this;

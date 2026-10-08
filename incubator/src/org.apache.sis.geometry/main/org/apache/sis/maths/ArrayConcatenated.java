@@ -100,19 +100,19 @@ final class ArrayConcatenated extends AbstractArray {
     }
 
     @Override
-    public Tuple<?> get(long index) {
+    public Vector<?> get(long index) {
         final int taidx = arrayIndex(index);
         return arrays[taidx].get(index - offsets[taidx]);
     }
 
     @Override
-    public void get(long index, Tuple<?> buffer) {
+    public void get(long index, Vector<?> buffer) {
         final int taidx = arrayIndex(index);
         arrays[taidx].get(index - offsets[taidx], buffer);
     }
 
     @Override
-    public void set(long index, ReadOnly.Tuple<?> buffer) {
+    public void set(long index, ReadOnly.Vector<?> buffer) {
         final int taidx = arrayIndex(index);
         arrays[taidx].set(index - offsets[taidx], buffer);
     }
@@ -157,7 +157,7 @@ final class ArrayConcatenated extends AbstractArray {
         private final Cursor[] cursors = new Cursor[arrays.length];
 
         @Override
-        public Tuple samples() {
+        public Vector samples() {
             final int taidx = arrayIndex(coordinate);
             if (cursors[taidx] == null) {
                 cursors[taidx] = arrays[taidx].cursor();

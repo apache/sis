@@ -46,7 +46,7 @@ public abstract class AbstractArrayTest {
      * Root test method, delegates to other methods.
      */
     @Test
-    public void testTupleArray() throws TransformException{
+    public void testArray() throws TransformException{
 
         final int[] supportedDimensions = getSupportedDimensions();
 
@@ -55,7 +55,7 @@ public abstract class AbstractArrayTest {
             final Array array = create(dim, 5);
             assertEquals(dim, array.getDimension());
             assertEquals(5, array.getLength());
-            testTupleArray(array);
+            testArray(array);
         }
 
     }
@@ -63,7 +63,7 @@ public abstract class AbstractArrayTest {
     /**
      * Test a single tuple array.
      */
-    private void testTupleArray(Array array) throws TransformException {
+    private void testArray(Array array) throws TransformException {
         testGetSet(array);
         testToArray(array);
         testToArrayWithRange(array);

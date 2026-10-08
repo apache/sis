@@ -21,7 +21,7 @@ package org.apache.sis.maths;
  *
  * @author Johann Sorel (Geomatys)
  */
-abstract class AbstractCursor extends AbstractTuple implements Cursor {
+abstract class AbstractCursor extends AbstractVector implements Cursor {
 
     private final Array array;
     protected long offset = -1;
@@ -32,7 +32,7 @@ abstract class AbstractCursor extends AbstractTuple implements Cursor {
     }
 
     @Override
-    public Tuple<?> samples() {
+    public Vector<?> samples() {
         return this;
     }
 

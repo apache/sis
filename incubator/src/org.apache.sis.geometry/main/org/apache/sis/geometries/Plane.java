@@ -22,7 +22,6 @@ import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector;
 
 
@@ -61,7 +60,7 @@ public final class Plane extends AbstractGeometry{
      * @param  position  the position the plane is centered on, not null.
      * @param  normal    the direction the plane is perpendicular to, not null.
      */
-    public Plane(Tuple<?> position, Vector<?> normal) {
+    public Plane(Vector<?> position, Vector<?> normal) {
         points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(position.getSampleSystem(), position.getDataType(), 1));
         points.setPosition(0, position);
         this.normal = normal;
@@ -93,11 +92,11 @@ public final class Plane extends AbstractGeometry{
         return points;
     }
 
-    public Tuple<?> getPosition() {
+    public Vector<?> getPosition() {
         return points.getPosition(0);
     }
 
-    public void setPosition(Tuple<?> position) {
+    public void setPosition(Vector<?> position) {
         points.setPosition(0, position);
     }
 
@@ -168,7 +167,7 @@ public final class Plane extends AbstractGeometry{
      */
     @Override
     public BBox getEnvelope() {
-        final Tuple<?> position = getPosition();
+        final Vector<?> position = getPosition();
         final int dim = normal.getDimension();
         final BBox bbox = new BBox(dim);
         /*

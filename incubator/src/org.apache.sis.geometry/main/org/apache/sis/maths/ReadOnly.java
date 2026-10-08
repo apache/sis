@@ -30,7 +30,7 @@ public final class ReadOnly {
 
     private ReadOnly(){}
 
-    public static interface Tuple<T extends Tuple<T>> {
+    public static interface Vector<T extends Vector<T>> {
 
         /**
          * @return sample system, never null.
@@ -185,7 +185,7 @@ public final class ReadOnly {
          *
          * @return tuple copy.
          */
-        default org.apache.sis.maths.Tuple<?> copy() {
+        default org.apache.sis.maths.Vector<?> copy() {
             org.apache.sis.maths.Vector<?> tuple = Vectors.create(getSampleSystem(), getDataType());
             tuple.set(this);
             return tuple;
@@ -230,7 +230,7 @@ public final class ReadOnly {
          * @param tolerance tolerance value for compare operation
          * @return true if tuples are value equal
          */
-        default boolean equals(ReadOnly.Tuple<?> other, double tolerance) {
+        default boolean equals(ReadOnly.Vector<?> other, double tolerance) {
             if (this == other) {
                 return true;
             }
@@ -262,9 +262,6 @@ public final class ReadOnly {
             }
             return true;
         }
-    }
-
-    public static interface Vector<T extends Vector<T>> extends Tuple<T>{
 
         /**
          * @return vector length
@@ -286,7 +283,7 @@ public final class ReadOnly {
          * @param other
          * @return cross product result
          */
-        default org.apache.sis.maths.Vector<?> cross(ReadOnly.Tuple<?> other) {
+        default org.apache.sis.maths.Vector<?> cross(ReadOnly.Vector<?> other) {
             double[] v1 = toArrayDouble();
             double[] v2 = other.toArrayDouble();
             double[] buffer = new double[v1.length];
@@ -302,7 +299,7 @@ public final class ReadOnly {
          * @param other
          * @return dot product result
          */
-        default double dot(ReadOnly.Tuple<?> other) {
+        default double dot(ReadOnly.Vector<?> other) {
             double dot = 0;
             for (int i=0,n=getDimension();i<n;i++){
                 dot += get(i) * other.get(i);
@@ -341,10 +338,6 @@ public final class ReadOnly {
             }
             return v;
         }
-
-        @Override
-        org.apache.sis.maths.Vector<?> copy();
-
     }
 
     public static interface Affine<T extends Affine<T>> extends Transform {
@@ -564,7 +557,7 @@ public final class ReadOnly {
          * @param dest tuple, can be null.
          * @return destination tuple.
          */
-        org.apache.sis.maths.Tuple<?> inverseTransform(ReadOnly.Tuple<?> source, org.apache.sis.maths.Tuple<?> dest);
+        org.apache.sis.maths.Vector<?> inverseTransform(ReadOnly.Vector<?> source, org.apache.sis.maths.Vector<?> dest);
 
         /**
          * Create a square matrix of size dimensions+1

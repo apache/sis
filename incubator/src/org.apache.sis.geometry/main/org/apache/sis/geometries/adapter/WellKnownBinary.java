@@ -40,8 +40,8 @@ import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.geometries.surface.TIN;
 import org.apache.sis.geometries.surface.Triangle;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -511,7 +511,7 @@ public final class WellKnownBinary {
     /**
      * Writes the ordinates of one position, followed by its measure if any.
      */
-    private void writePosition(final Output out, final Tuple<?> position, final Tuple<?> measure) {
+    private void writePosition(final Output out, final Vector<?> position, final Vector<?> measure) {
         for (int i = 0, n = position.getDimension(); i < n; i++) {
             out.writeDouble(position.get(i));
         }

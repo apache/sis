@@ -33,7 +33,6 @@ import org.apache.sis.geometries.internal.shared.DefaultTriangle;
 import org.apache.sis.geometries.operation.simplify.greedyinsert.WTriangle;
 import org.apache.sis.geometries.operation.triangulate.delaunay.OrientedTriangle;
 import org.apache.sis.maths.Maths;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vector2D;
 import org.apache.sis.maths.Vector3D;
@@ -118,7 +117,7 @@ public sealed interface Triangle extends Polygon
     @Override
     default Envelope getEnvelope() {
         final DataPoints exterior = getExteriorRing().getDataPoints();
-        final Tuple<?> first = exterior.getPosition(0);
+        final Vector<?> first = exterior.getPosition(0);
         final BBox env = new BBox(first, first);
         env.add(exterior.getPosition(1));
         env.add(exterior.getPosition(2));
@@ -129,9 +128,9 @@ public sealed interface Triangle extends Polygon
     @Override
     default Quantity<?> getArea() {
         final DataPoints points = getExteriorRing().getDataPoints();
-        final Tuple<?> a = points.getPosition(0);
-        final Tuple<?> b = points.getPosition(1);
-        final Tuple<?> c = points.getPosition(2);
+        final Vector<?> a = points.getPosition(0);
+        final Vector<?> b = points.getPosition(1);
+        final Vector<?> c = points.getPosition(2);
         final double area = (
                       a.get(0) * (b.get(1) - c.get(1))
                     + b.get(0) * (c.get(1) - a.get(1))
@@ -145,11 +144,11 @@ public sealed interface Triangle extends Polygon
      * @param pt point to evaluate
      * @return point distance to triangle
      */
-    default double distance(Tuple pt) {
+    default double distance(Vector pt) {
         final DataPoints exterior = getExteriorRing().getDataPoints();
-        final Tuple<?> p0 = exterior.getPosition(0);
-        final Tuple<?> p1 = exterior.getPosition(1);
-        final Tuple<?> p2 = exterior.getPosition(2);
+        final Vector<?> p0 = exterior.getPosition(0);
+        final Vector<?> p1 = exterior.getPosition(1);
+        final Vector<?> p2 = exterior.getPosition(2);
         Vector<?> normal = Maths.calculateNormal(p0, p1, p2);
         double planD = normal.dot(p0);
         return Maths.distance(pt, normal, planD);
@@ -290,7 +289,7 @@ public sealed interface Triangle extends Polygon
         }
 
         @Override
-        public Tuple getPosition() {
+        public Vector getPosition() {
             final DataPoints points = triangle.getExteriorRing().getDataPoints();
             switch (cornerIdx) {
                 case -1 :
@@ -311,7 +310,7 @@ public sealed interface Triangle extends Polygon
          * @return triangle corner attribute.
          */
         @Override
-        public Tuple getAttribute(String name) {
+        public Vector getAttribute(String name) {
             final DataPoints points = triangle.getExteriorRing().getDataPoints();
             switch (cornerIdx) {
                 case -1 :
@@ -325,16 +324,16 @@ public sealed interface Triangle extends Polygon
         }
 
         @Override
-        public void setAttribute(String name, Tuple tuple) {
+        public void setAttribute(String name, Vector tuple) {
             throw new UnsupportedOperationException("Not supported on interpolated points.");
         }
 
-        private Tuple interpolate(Tuple a, Tuple b, Tuple c, boolean normalize) {
+        private Vector interpolate(Vector a, Vector b, Vector c, boolean normalize) {
             if (a == null) {
                 //may happen if TIN has 0 sample dimensions.
                 return null;
             }
-            Tuple buffer = a.copy();
+            Vector buffer = a.copy();
             final int dimension = a.getDimension();
             switch (dimension) {
                 default :
@@ -350,7 +349,7 @@ public sealed interface Triangle extends Polygon
                 case 0 : //do nothing
             }
 
-            if (normalize) Vectors.castOrWrap(buffer).normalize();
+            if (normalize) buffer.normalize();
             return buffer;
         }
 

@@ -39,12 +39,12 @@ import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.surface.MultiPolygon;
 import org.apache.sis.geometries.surface.Polygon;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector2D;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -68,7 +68,7 @@ public final class ShapeConverterTest {
      * @param type      expected class of the actual geometry.
      * @param expected  expected coordinates of the actual geometry.
      */
-    private static void assertCoordinatesEqual(final Shape shape, final Class<?> type, final Tuple<?>... expected) {
+    private static void assertCoordinatesEqual(final Shape shape, final Class<?> type, final Vector<?>... expected) {
         assertCoordinatesEqual(ShapeConverter.create(shape, 0.0001), type, expected);
     }
 
@@ -80,18 +80,18 @@ public final class ShapeConverterTest {
      * @param type      expected class of the actual geometry.
      * @param expected  expected coordinates of the actual geometry.
      */
-    private static void assertCoordinatesEqual(final Geometry geometry, final Class<?> type, final Tuple<?>... expected) {
+    private static void assertCoordinatesEqual(final Geometry geometry, final Class<?> type, final Vector<?>... expected) {
         assertInstanceOf(type, geometry, "Geometry class");
         assertArrayEquals(expected, getCoordinates(geometry), "Coordinates");
     }
 
-    private static Tuple[] getCoordinates(Geometry geom) {
-        final List<Tuple> lst = new ArrayList();
+    private static Vector[] getCoordinates(Geometry geom) {
+        final List<Vector> lst = new ArrayList();
         getCoordinates(geom, lst);
-        return lst.toArray(Tuple[]::new);
+        return lst.toArray(Vector[]::new);
     }
 
-    private static void getCoordinates(Geometry geom, List<Tuple> lst) {
+    private static void getCoordinates(Geometry geom, List<Vector> lst) {
         if (geom instanceof Empty) {
             //nothing
         } else if (geom instanceof Point pt) {

@@ -205,7 +205,7 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
         return new Vector4D.Double(m03, m13, m23, 1);
     }
 
-    public void setTranslation(ReadOnly.Tuple<?> translation){
+    public void setTranslation(ReadOnly.Vector<?> translation){
         m03 = translation.get(0);
         m13 = translation.get(1);
         m23 = translation.get(2);
@@ -237,7 +237,7 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
      * @param euler angles in radians (heading/yaw , elevation/pitch , bank/roll)
      * @return Matrix4
      */
-    public Matrix4D setFromEuler(ReadOnly.Tuple<?> euler){
+    public Matrix4D setFromEuler(ReadOnly.Vector<?> euler){
         return set(Matrices.fromEuler(euler.toArrayDouble(), null), ROW_ORDER);
     }
 
@@ -331,7 +331,7 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
      * @param translation Tuple[3]
      * @return this matrix
      */
-    public Matrix4D setFromComponents(final MatrixND rotation, Tuple<?> scale, Tuple<?> translation){
+    public Matrix4D setFromComponents(final MatrixND rotation, Vector<?> scale, Vector<?> translation){
         setToIdentity();
         set(rotation);
         scale(new VectorND.Double(scale).extend(1).toArrayDouble());
@@ -350,7 +350,7 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
      * @param zAxis values are copied in 3rd row
      * @return this matrix
      */
-    public Matrix4D setFromAxis(final ReadOnly.Tuple<?> xAxis, final ReadOnly.Tuple<?> yAxis, final ReadOnly.Tuple<?> zAxis){
+    public Matrix4D setFromAxis(final ReadOnly.Vector<?> xAxis, final ReadOnly.Vector<?> yAxis, final ReadOnly.Vector<?> zAxis){
         setToIdentity();
         setRow(0, xAxis.toArrayDouble());
         setRow(1, yAxis.toArrayDouble());
@@ -456,7 +456,7 @@ public class Matrix4D extends AbstractMatrix<Matrix4D> {
     }
 
     @Override
-    public Tuple<?> transform(ReadOnly.Tuple<?> vector, Tuple<?> buffer) {
+    public Vector<?> transform(ReadOnly.Vector<?> vector, Vector<?> buffer) {
         if (buffer == null) buffer = new Vector4D.Double();
 
         if (vector instanceof Vector4D.Double && buffer instanceof Vector4D.Double) {

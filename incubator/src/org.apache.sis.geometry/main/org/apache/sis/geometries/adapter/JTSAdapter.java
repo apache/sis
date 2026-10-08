@@ -43,9 +43,8 @@ import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Tuple;
-import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -194,7 +193,7 @@ public final class JTSAdapter {
             final Cursor cursor = positions.cursor();
             int i = 0;
             while (cursor.next()) {
-                final Tuple samples = cursor.samples();
+                final Vector samples = cursor.samples();
                 samples.set(0, cs.getOrdinate(i, 0));
                 samples.set(1, cs.getOrdinate(i, 1));
                 if (dimension > 2) {
@@ -217,7 +216,7 @@ public final class JTSAdapter {
             final CoordinateSequence cs = gf.getCoordinateSequenceFactory().create(size, dimension);
 
             for (int i = 0; i < size; i++) {
-                Tuple position = ps.getPosition(i);
+                Vector position = ps.getPosition(i);
                 for (int d = 0; d < dimension; d++) {
                     cs.setOrdinate(i, d, position.get(d));
                 }
@@ -271,7 +270,7 @@ public final class JTSAdapter {
         }
 
         @Override
-        public Tuple getPosition(int index) {
+        public Vector getPosition(int index) {
             final Vector v = Vectors.create(crs, DataType.DOUBLE);
             for (int i = 0; i < dim; i++) {
                 v.set(i, jts.getOrdinate(index, i));
@@ -280,14 +279,14 @@ public final class JTSAdapter {
         }
 
         @Override
-        public void setPosition(int index, Tuple value) {
+        public void setPosition(int index, Vector value) {
             for (int i = 0; i < dim; i++) {
                 jts.setOrdinate(index, i, value.get(i));
             }
         }
 
         @Override
-        public Tuple getAttribute(int index, String name) {
+        public Vector getAttribute(int index, String name) {
             if (DataPointsType.ATT_POSITION.equals(name)) {
                 return getPosition(index);
             }
@@ -295,7 +294,7 @@ public final class JTSAdapter {
         }
 
         @Override
-        public void setAttribute(int index, String name, Tuple value) {
+        public void setAttribute(int index, String name, Vector value) {
             if (DataPointsType.ATT_POSITION.equals(name)) {
                 setPosition(index, value);
             } else {
@@ -325,7 +324,7 @@ public final class JTSAdapter {
 
         @Override
         public Coordinate getCoordinateCopy(int i) {
-            final Tuple<?> position = points.getPosition(i);
+            final Vector<?> position = points.getPosition(i);
             if (getDimension() == 2) {
                 return new CoordinateXY(position.get(0), position.get(1));
             } else {
@@ -335,7 +334,7 @@ public final class JTSAdapter {
 
         @Override
         public void getCoordinate(int index, Coordinate coord) {
-            final Tuple<?> position = points.getPosition(index);
+            final Vector<?> position = points.getPosition(index);
             coord.setX(position.get(0));
             coord.setY(position.get(1));
         }
@@ -362,7 +361,7 @@ public final class JTSAdapter {
 
         @Override
         public void setOrdinate(int index, int ordinateIndex, double value) {
-            final Tuple<?> position = points.getPosition(index);
+            final Vector<?> position = points.getPosition(index);
             position.set(ordinateIndex, value);
             points.setPosition(index, position);
         }

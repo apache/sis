@@ -20,7 +20,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -84,22 +84,22 @@ public final class EmptyDataPoints implements DataPoints {
     }
 
     @Override
-    public Tuple<?> getPosition(int index) {
+    public Vector<?> getPosition(int index) {
         throw new IndexOutOfBoundsException("This sequence holds no position.");
     }
 
     @Override
-    public void setPosition(int index, Tuple<?> value) {
+    public void setPosition(int index, Vector<?> value) {
         throw new IndexOutOfBoundsException("This sequence holds no position.");
     }
 
     @Override
-    public Tuple<?> getAttribute(int index, String name) {
+    public Vector<?> getAttribute(int index, String name) {
         throw new IndexOutOfBoundsException("This sequence holds no position.");
     }
 
     @Override
-    public void setAttribute(int index, String name, Tuple<?> value) {
+    public void setAttribute(int index, String name, Vector<?> value) {
         throw new IndexOutOfBoundsException("This sequence holds no position.");
     }
 

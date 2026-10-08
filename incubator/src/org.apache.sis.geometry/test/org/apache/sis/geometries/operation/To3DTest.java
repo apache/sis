@@ -22,7 +22,6 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
@@ -30,6 +29,7 @@ import org.apache.sis.referencing.CommonCRS;
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -53,7 +53,7 @@ public class To3DTest {
     @Test
     public void testPoint() {
         final Point point = GeometryFactory.DEFAULT.createPoint(CRS2D, 10.0, 5.0);
-        final Geometry result = new GeometryProcessor().to3D(point, CRS2DZ, (Tuple t) -> t.set(2, 15));
+        final Geometry result = new GeometryProcessor().to3D(point, CRS2DZ, (Vector t) -> t.set(2, 15));
         assertInstanceOf(Point.class, result);
         assertEquals(CRS2DZ, result.getCoordinateReferenceSystem());
         assertArrayEquals(new double[] {10.0, 5.0, 15.0}, ((Point) result).getPosition().toArrayDouble(), 0.0);
@@ -70,7 +70,7 @@ public class To3DTest {
                 6.0, 7.0
         ));
 
-        Geometry result = new GeometryProcessor().to3D(primitive, CRS3D, (Tuple t) -> t.set(2, 15));
+        Geometry result = new GeometryProcessor().to3D(primitive, CRS3D, (Vector t) -> t.set(2, 15));
         assertTrue(result instanceof MeshPrimitive);
         assertEquals(CRS3D, result.getCoordinateReferenceSystem());
         MeshPrimitive p = (MeshPrimitive) result;

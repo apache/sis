@@ -35,9 +35,9 @@ import org.apache.sis.geometries.curve.Rhumb;
 import org.apache.sis.geometries.curve.Spiral;
 import org.apache.sis.geometries.internal.shared.DefaultReversedCurve;
 import org.apache.sis.maths.Array;
-import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
+import org.apache.sis.maths.Vector;
 
 
 /**

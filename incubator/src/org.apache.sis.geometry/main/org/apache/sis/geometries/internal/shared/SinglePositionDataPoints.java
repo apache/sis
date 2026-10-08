@@ -23,7 +23,7 @@ import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -43,14 +43,14 @@ public final class SinglePositionDataPoints implements DataPoints {
      * How to reach the position of the geometry this view is built on. It is read on each call
      * rather than kept, so that replacing the position of the geometry is seen through this view.
      */
-    private final Supplier<Tuple<?>> position;
+    private final Supplier<Vector<?>> position;
 
     /**
      * Creates a view over the position the given supplier reads.
      *
      * @param  position  how to read the position of the geometry, not null.
      */
-    public SinglePositionDataPoints(final Supplier<Tuple<?>> position) {
+    public SinglePositionDataPoints(final Supplier<Vector<?>> position) {
         this.position = position;
     }
 
@@ -72,7 +72,7 @@ public final class SinglePositionDataPoints implements DataPoints {
      */
     @Override
     public DataPointsType getType() {
-        final Tuple<?> p = position.get();
+        final Vector<?> p = position.get();
         final SampleSystem ss = p.getSampleSystem();
         final DataType dt = p.getDataType();
         final DataPointsType.Template type = new DataPointsType.Template();
@@ -92,25 +92,25 @@ public final class SinglePositionDataPoints implements DataPoints {
     }
 
     @Override
-    public Tuple<?> getPosition(int index) {
+    public Vector<?> getPosition(int index) {
         ensureValid(index);
         return position.get();
     }
 
     @Override
-    public void setPosition(int index, Tuple<?> value) {
+    public void setPosition(int index, Vector<?> value) {
         ensureValid(index);
         position.get().set(value);
     }
 
     @Override
-    public Tuple<?> getAttribute(int index, String name) {
+    public Vector<?> getAttribute(int index, String name) {
         ensureValid(index);
         return DataPointsType.ATT_POSITION.equals(name) ? position.get() : null;
     }
 
     @Override
-    public void setAttribute(int index, String name, Tuple<?> value) {
+    public void setAttribute(int index, String name, Vector<?> value) {
         ensureValid(index);
         if (!DataPointsType.ATT_POSITION.equals(name)) {
             throw new IllegalArgumentException("This sequence holds no \"" + name + "\" attribute.");

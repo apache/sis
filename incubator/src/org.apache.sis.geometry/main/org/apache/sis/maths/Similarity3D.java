@@ -79,14 +79,14 @@ public final class Similarity3D extends AbstractSimilarity<Similarity3D> {
     }
 
     @Override
-    public Similarity3D setScale(ReadOnly.Tuple<?> scale) {
+    public Similarity3D setScale(ReadOnly.Vector<?> scale) {
         this.scale.set(scale);
         notifyChanged();
         return this;
     }
 
     @Override
-    public Similarity3D setTranslation(ReadOnly.Tuple<?> translation) {
+    public Similarity3D setTranslation(ReadOnly.Vector<?> translation) {
         this.translation.set(translation);
         notifyChanged();
         return this;

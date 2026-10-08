@@ -58,7 +58,6 @@ import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
@@ -68,6 +67,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -257,10 +257,10 @@ public final class Wrapper extends GeometryWrapper {
     @Override
     public Geometry mergePolylines(final Iterator<?> polylines) {
         final var lines = new ArrayList<LineString>();
-        final var coordinates = new ArrayList<Tuple<?>>();
+        final var coordinates = new ArrayList<Vector<?>>();
 add:    for (Geometry next = geometry;;) {
             if (next instanceof Point point) {
-                final Tuple<?> position = point.getPosition();
+                final Vector<?> position = point.getPosition();
                 if (isDefined(position)) {
                     coordinates.add(position);
                 } else {
@@ -292,7 +292,7 @@ add:    for (Geometry next = geometry;;) {
      * Returns whether all the coordinates of the given position are defined. A position having at
      * least one {@link Double#NaN} coordinate separates two paths in {@link #mergePolylines(Iterator)}.
      */
-    private static boolean isDefined(final Tuple<?> position) {
+    private static boolean isDefined(final Vector<?> position) {
         for (int i=0, n=position.getDimension(); i<n; i++) {
             if (Double.isNaN(position.get(i))) {
                 return false;
@@ -308,9 +308,9 @@ add:    for (Geometry next = geometry;;) {
      * @param  lines        where to add the line string, if such object is created.
      * @param  coordinates  positions of the line string to create. This list is cleared by this method.
      */
-    private static void addPolyline(final List<LineString> lines, final List<Tuple<?>> coordinates) {
+    private static void addPolyline(final List<LineString> lines, final List<Vector<?>> coordinates) {
         if (coordinates.size() >= 2) {
-            final Tuple<?> first = coordinates.get(0);
+            final Vector<?> first = coordinates.get(0);
             final Array positions = NDArrays.of(coordinates, first.getSampleSystem(), first.getDataType());
             lines.add(GeometryFactory.DEFAULT.createLineString(GeometryFactory.DEFAULT.createDataPoints(positions)));
         }
@@ -326,7 +326,7 @@ add:    for (Geometry next = geometry;;) {
      * @param  coordinates  positions accumulated so far, cleared by this method if they are used.
      * @param  line         the line string to append.
      */
-    private static void addPolyline(final List<LineString> lines, final List<Tuple<?>> coordinates, final LineString line) {
+    private static void addPolyline(final List<LineString> lines, final List<Vector<?>> coordinates, final LineString line) {
         if (coordinates.isEmpty()) {
             lines.add(line);
         } else {
@@ -440,7 +440,7 @@ add:    for (Geometry next = geometry;;) {
             case ST_GeometryN:        return ((GeometryCollection<?>) geometry).getGeometryN(toIndex(argument));
             case ST_Z: {
                 // A geometry of a two-dimensional system has no z value to report.
-                final Tuple<?> position = ((Point) geometry).getPosition();
+                final Vector<?> position = ((Point) geometry).getPosition();
                 return (position.getDimension() > Geometries.BIDIMENSIONAL) ? position.get(2) : Double.NaN;
             }
             case ST_IsMeasured: {

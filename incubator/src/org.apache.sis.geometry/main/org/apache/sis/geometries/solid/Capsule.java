@@ -28,9 +28,9 @@ import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -59,7 +59,7 @@ public final class Capsule extends AbstractGeometry{
      * @param  bottom  the center of the bottom sphere, not null.
      * @param  top     the center of the top sphere, not null.
      */
-    public Capsule(Tuple<?> bottom, Tuple<?> top) {
+    public Capsule(Vector<?> bottom, Vector<?> top) {
         points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(bottom.getSampleSystem(), bottom.getDataType(), 2));
         points.setPosition(0, bottom);
         points.setPosition(1, top);
@@ -92,28 +92,28 @@ public final class Capsule extends AbstractGeometry{
     /**
      * @return the center of the bottom sphere
      */
-    public Tuple<?> getBottom() {
+    public Vector<?> getBottom() {
         return points.getPosition(0);
     }
 
     /**
      * @param position new center of the bottom sphere
      */
-    public void setBottom(Tuple<?> position) {
+    public void setBottom(Vector<?> position) {
         points.setPosition(0, position);
     }
 
     /**
      * @return the center of the top sphere
      */
-    public Tuple<?> getTop() {
+    public Vector<?> getTop() {
         return points.getPosition(1);
     }
 
     /**
      * @param position new center of the top sphere
      */
-    public void setTop(Tuple<?> position) {
+    public void setTop(Vector<?> position) {
         points.setPosition(1, position);
     }
 
@@ -123,7 +123,7 @@ public final class Capsule extends AbstractGeometry{
      * an axis being real values even when the positions they are derived from are integers.
      */
     private Vector<?> getAxis() {
-        final Tuple<?> bottom = getBottom();
+        final Vector<?> bottom = getBottom();
         final Vector<?> axis = Vectors.create(bottom.getSampleSystem(), DataType.DOUBLE);
         axis.set(getTop());
         axis.subtract(bottom);
@@ -184,8 +184,8 @@ public final class Capsule extends AbstractGeometry{
      */
     @Override
     public BBox getEnvelope() {
-        final Tuple<?> bottom = getBottom();
-        final Tuple<?> top = getTop();
+        final Vector<?> bottom = getBottom();
+        final Vector<?> top = getTop();
         final int dim = points.getDimension();
         final BBox bbox = new BBox(dim);
         for (int i=0;i<dim;i++){

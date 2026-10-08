@@ -26,7 +26,7 @@ import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.maths.Maths;
-import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -245,7 +245,7 @@ public final class OrientedEdge extends AbstractGeometry implements LineString, 
     }
 
     @Override
-    public Tuple getPosition(int index) {
+    public Vector getPosition(int index) {
         switch (index) {
             case 0 : return (reversed ? structure.end : structure.start).getPosition().copy();
             case 1 : return (reversed ? structure.start : structure.end).getPosition().copy();
@@ -254,12 +254,12 @@ public final class OrientedEdge extends AbstractGeometry implements LineString, 
     }
 
     @Override
-    public void setPosition(int index, Tuple value) {
+    public void setPosition(int index, Vector value) {
         throw new UnsupportedOperationException("Not supported.");
     }
 
     @Override
-    public Tuple getAttribute(int index, String name) {
+    public Vector getAttribute(int index, String name) {
         if (DataPointsType.ATT_POSITION.equals(name)) {
             return getPosition(index);
         }
@@ -267,7 +267,7 @@ public final class OrientedEdge extends AbstractGeometry implements LineString, 
     }
 
     @Override
-    public void setAttribute(int index, String name, Tuple value) {
+    public void setAttribute(int index, String name, Vector value) {
         if (DataPointsType.ATT_POSITION.equals(name)) {
             setPosition(index, value);
             return;

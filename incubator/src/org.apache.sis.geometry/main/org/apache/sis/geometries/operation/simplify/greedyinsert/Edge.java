@@ -17,7 +17,7 @@
 package org.apache.sis.geometries.operation.simplify.greedyinsert;
 
 import org.apache.sis.maths.Maths;
-import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -27,8 +27,8 @@ import org.apache.sis.maths.Tuple;
 public final class Edge {
 
     private boolean obsolete = false;
-    public final Tuple p0;
-    public final Tuple p1;
+    public final Vector p0;
+    public final Vector p1;
     public WTriangle t0;
     public WTriangle t1;
     /**
@@ -38,7 +38,7 @@ public final class Edge {
      */
     private boolean constraint = false;
 
-    public Edge(Tuple p0, Tuple p1) {
+    public Edge(Vector p0, Vector p1) {
         if (p0.get(0) == p1.get(0) && p0.get(1) == p1.get(1)) {
             throw new IllegalArgumentException("Edge points XY are identical");
         }
@@ -57,7 +57,7 @@ public final class Edge {
     /**
      * @return true if point in on the edge
      */
-    public boolean isOnEdge(Tuple pt) {
+    public boolean isOnEdge(Vector pt) {
         assert (!obsolete);
         return Maths.isOnLine(p0, p1, pt);
     }
@@ -76,7 +76,7 @@ public final class Edge {
     /**
      * @return true if one of the two edge point is the same as given point.
      */
-    public boolean hasPoint(Tuple pt) {
+    public boolean hasPoint(Vector pt) {
         assert (!obsolete);
         return p0 == pt || p1 == pt;
     }

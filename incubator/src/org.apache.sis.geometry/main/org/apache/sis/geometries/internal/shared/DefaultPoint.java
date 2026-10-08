@@ -24,7 +24,7 @@ import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -43,7 +43,7 @@ public non-sealed class DefaultPoint extends AbstractGeometry implements Point {
         points = new ArrayDataPoints(NDArrays.of(SampleSystem.of(crs), DataType.DOUBLE, 1));
     }
 
-    public DefaultPoint(Tuple position) {
+    public DefaultPoint(Vector position) {
         points = new ArrayDataPoints(NDArrays.of(position.getSampleSystem(), position.getDataType(), 1));
         points.setPosition(0, position);
     }
@@ -89,17 +89,17 @@ public non-sealed class DefaultPoint extends AbstractGeometry implements Point {
     }
 
     @Override
-    public Tuple getAttribute(String name) {
+    public Vector getAttribute(String name) {
         return points.getAttribute(0, name);
     }
 
     @Override
-    public void setAttribute(String name, Tuple tuple) {
+    public void setAttribute(String name, Vector tuple) {
         points.setAttribute(0, name, tuple);
     }
 
     @Override
-    public Tuple getPosition() {
+    public Vector getPosition() {
         return points.getPosition(0);
     }
 

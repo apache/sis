@@ -200,29 +200,10 @@ public final class Vectors {
         if (pos instanceof Vector) {
             return (Vector) pos;
         } else {
-            final SampleSystem type;
-            final DataType dt;
-            if (pos instanceof Tuple) {
-                type = ((Tuple) pos).getSampleSystem();
-                dt = ((Tuple) pos).getDataType();
-            } else {
-                CoordinateReferenceSystem crs = pos.getCoordinateReferenceSystem();
-                type = crs != null ? SampleSystem.of(pos.getCoordinateReferenceSystem()) :
-                       SampleSystem.ofSize(pos.getDimension());
-                dt = DataType.DOUBLE;
-            }
-            final Vector v = create(type, dt);
-            v.set(pos);
-            return v;
-        }
-    }
-
-    public static Vector<?> castOrCopy(Tuple<?> pos) {
-        if (pos instanceof Vector) {
-            return (Vector) pos;
-        } else {
-            final SampleSystem type = pos.getSampleSystem();
-            final DataType dt = pos.getDataType();
+            final CoordinateReferenceSystem crs = pos.getCoordinateReferenceSystem();
+            final SampleSystem type = crs != null ? SampleSystem.of(pos.getCoordinateReferenceSystem()) :
+                   SampleSystem.ofSize(pos.getDimension());
+            final DataType dt = DataType.DOUBLE;
             final Vector v = create(type, dt);
             v.set(pos);
             return v;
@@ -232,23 +213,13 @@ public final class Vectors {
     public static Vector<?> castOrWrap(DirectPosition pos) {
         if (pos instanceof Vector) {
             return (Vector) pos;
-        } else if (pos instanceof Tuple) {
-            return new WrapTuple((Tuple) pos);
         } else {
             CoordinateReferenceSystem crs = pos.getCoordinateReferenceSystem();
             return crs == null ? new WrapDirectPostion(pos, pos.getDimension()) : new WrapDirectPostion(pos);
         }
     }
 
-    public static Vector<?> castOrWrap(Tuple<?> tuple) {
-        if (tuple instanceof Vector) {
-            return (Vector) tuple;
-        } else {
-            return new WrapTuple(tuple);
-        }
-    }
-
-    public static DirectPosition asDirectPostion(Tuple<?> tuple) {
+    public static DirectPosition asDirectPostion(Vector<?> tuple) {
         return new AsDirectPosition(tuple);
     }
     /**
@@ -257,20 +228,20 @@ public final class Vectors {
      * @param tuple not null
      * @return unmodifiable view of the tuple.
      */
-    public static Tuple<?> unmodifiable(Tuple<?> tuple) {
-        return new TupleUnmodifiable(tuple);
+    public static Vector<?> unmodifiable(Vector<?> tuple) {
+        return new VectorUnmodifiable(tuple);
     }
 
-    private static class WrapTuple extends AbstractTuple<WrapTuple> implements Vector<WrapTuple> {
+    private static class WrapTuple extends AbstractVector<WrapTuple> implements Vector<WrapTuple> {
 
-        private final Tuple<?> pos;
+        private final Vector<?> pos;
 
-        public WrapTuple(Tuple<?> pos, int size) {
+        public WrapTuple(Vector<?> pos, int size) {
             super(size);
             this.pos = pos;
         }
 
-        public WrapTuple(Tuple<?> pos) {
+        public WrapTuple(Vector<?> pos) {
             super(pos.getSampleSystem());
             this.pos = pos;
         }
@@ -301,7 +272,7 @@ public final class Vectors {
         }
     }
 
-    private static class WrapDirectPostion extends AbstractTuple<WrapDirectPostion> implements Vector<WrapDirectPostion> {
+    private static class WrapDirectPostion extends AbstractVector<WrapDirectPostion> implements Vector<WrapDirectPostion> {
 
         private final DirectPosition pos;
 
@@ -317,7 +288,7 @@ public final class Vectors {
 
         @Override
         public DataType getDataType() {
-            return (pos instanceof Tuple) ? ((Tuple) pos).getDataType() : DataType.DOUBLE;
+            return (pos instanceof Vector) ? ((Vector) pos).getDataType() : DataType.DOUBLE;
         }
 
         @Override
@@ -343,9 +314,9 @@ public final class Vectors {
 
     private static class AsDirectPosition implements DirectPosition {
 
-        private final Tuple tuple;
+        private final Vector tuple;
 
-        public AsDirectPosition(Tuple tuple) {
+        public AsDirectPosition(Vector tuple) {
             this.tuple = tuple;
         }
 
@@ -1824,7 +1795,7 @@ public final class Vectors {
      * @param unitVector unencoded unit vector value of size 3
      * @return encoded value
      */
-    public static Vector2D.Float toOctEncoding(ReadOnly.Tuple<?> unitVector){
+    public static Vector2D.Float toOctEncoding(ReadOnly.Vector<?> unitVector){
         ArgumentChecks.ensureCountBetween("dimension", true, 3, 3, unitVector.getDimension());
         final double x = unitVector.get(0);
         final double y = unitVector.get(1);
@@ -1847,7 +1818,7 @@ public final class Vectors {
      * @param unitVector unencoded unit vector value of size 3
      * @return encoded value
      */
-    public static Vector2D.UShort toOctUShort(ReadOnly.Tuple<?> unitVector){
+    public static Vector2D.UShort toOctUShort(ReadOnly.Vector<?> unitVector){
         final Vector2D.Float oct = toOctEncoding(unitVector);
         return new Vector2D.UShort(
             (short) ( (oct.x + 1f) / 2f * 65535f),
@@ -1861,7 +1832,7 @@ public final class Vectors {
      * @param unitVector unencoded unit vector value of size 3
      * @return encoded value
      */
-    public static byte[] toOctByte(ReadOnly.Tuple<?> unitVector){
+    public static byte[] toOctByte(ReadOnly.Vector<?> unitVector){
         final Vector2D.Float oct = toOctEncoding(unitVector);
         final byte[] b = new byte[2];
         b[0] = (byte) ( (oct.x + 1f) / 2f * 255f);
@@ -1947,7 +1918,7 @@ public final class Vectors {
      * @param quantizeRange resulting quantized values will range between 0 and this value inclusive.
      * @param buffer where quantized value is stored
      */
-    public static <R extends Tuple<?>> R toQuantizedEncoding(ReadOnly.Tuple<?> tuple, Envelope quantizeBox, int quantizeRange, R buffer) throws MismatchedDimensionException, TransformException {
+    public static <R extends Vector<?>> R toQuantizedEncoding(ReadOnly.Vector<?> tuple, Envelope quantizeBox, int quantizeRange, R buffer) throws MismatchedDimensionException, TransformException {
         final MathTransform trs = quantizedTransform(quantizeBox, quantizeRange);
         if (buffer == null) {
             final DataType dt = DataType.forRange(NumberRange.create(0, true, quantizeRange, true), true);

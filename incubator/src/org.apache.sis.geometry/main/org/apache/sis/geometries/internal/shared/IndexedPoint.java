@@ -20,7 +20,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
-import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -53,17 +53,17 @@ public non-sealed class IndexedPoint implements Point {
     }
 
     @Override
-    public Tuple getPosition() {
+    public Vector getPosition() {
         return parent.getPosition(index);
     }
 
     @Override
-    public Tuple getAttribute(String name) {
+    public Vector getAttribute(String name) {
         return parent.getAttribute(index, name);
     }
 
     @Override
-    public void setAttribute(String name, Tuple tuple) {
+    public void setAttribute(String name, Vector tuple) {
         parent.setAttribute(index, name, tuple);
     }
 

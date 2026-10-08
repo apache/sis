@@ -31,8 +31,8 @@ import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -92,12 +92,12 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
     }
 
     @Override
-    public Tuple getPosition(int index) {
+    public Vector getPosition(int index) {
         return positions.get(index);
     }
 
     @Override
-    public void setPosition(int index, Tuple value) {
+    public void setPosition(int index, Vector value) {
         positions.set(index, value);
     }
 
@@ -122,13 +122,13 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
     }
 
     @Override
-    public Tuple getAttribute(int index, String name) {
+    public Vector getAttribute(int index, String name) {
         final Array array = attributes.get(name);
         return (array != null) ? array.get(index) : null;
     }
 
     @Override
-    public void setAttribute(int index, String name, Tuple value) {
+    public void setAttribute(int index, String name, Vector value) {
         attributes.get(name).set(index, value);
     }
 
@@ -191,7 +191,7 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
         }
 
         @Override
-        public Tuple getPosition() {
+        public Vector getPosition() {
             final Cursor cursor = parent.positions.cursor();
             cursor.moveTo(index);
             return cursor.samples();
@@ -205,7 +205,7 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
         }
 
         @Override
-        public Tuple getAttribute(String key) {
+        public Vector getAttribute(String key) {
             final Array tupleGrid = parent.attributes.get(key);
             if (tupleGrid == null) return null;
             final Cursor cursor = tupleGrid.cursor();
@@ -214,7 +214,7 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
         }
 
         @Override
-        public void setAttribute(String name, Tuple tuple) {
+        public void setAttribute(String name, Vector tuple) {
             final Array tupleGrid = parent.attributes.get(name);
             if (tupleGrid == null) throw new IllegalArgumentException("Attribute " + name + " do not exist");
             final Cursor cursor = tupleGrid.cursor();

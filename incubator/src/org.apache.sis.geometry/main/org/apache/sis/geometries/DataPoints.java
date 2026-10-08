@@ -25,7 +25,7 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -101,7 +101,7 @@ public interface DataPoints {
      * @param index searched index
      * @return copy of the position
      */
-    Tuple<?> getPosition(int index);
+    Vector<?> getPosition(int index);
 
     /**
      * Set position attribute value.
@@ -109,7 +109,7 @@ public interface DataPoints {
      * @param index searched index
      * @param value new attribute value
      */
-    void setPosition(int index, Tuple<?> value);
+    void setPosition(int index, Vector<?> value);
 
     /**
      * Get attribute value.
@@ -118,7 +118,7 @@ public interface DataPoints {
      * @param name attribute name
      * @return copy of the attribute
      */
-    Tuple<?> getAttribute(int index, String name);
+    Vector<?> getAttribute(int index, String name);
 
     /**
      * Set attribute value.
@@ -127,10 +127,10 @@ public interface DataPoints {
      * @param name attribute name
      * @param value new attribute value
      */
-    void setAttribute(int index, String name, Tuple<?> value);
+    void setAttribute(int index, String name, Vector<?> value);
 
     /**
-     * Get all attribute values as a TupleArray.
+     * Get all attribute values as an Array.
      *
      * @param name attribute name
      * @return copy of all attribute values
@@ -157,7 +157,7 @@ public interface DataPoints {
         if (isEmpty()) {
             return null;
         }
-        final Tuple<?> start = getAttribute(0, name);
+        final Vector<?> start = getAttribute(0, name);
         final BBox env = new BBox(start, start);
         for (int i = 1, n = size(); i < n; i++) {
             env.add(getAttribute(i, name));

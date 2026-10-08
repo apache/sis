@@ -78,7 +78,7 @@ public non-sealed class DefaultNurbCurve extends AbstractGeometry implements Nur
     }
 
     Vector getControlPoint(int index) {
-        return Vectors.castOrWrap(controlPoints[index]);
+        return controlPoints[index];
     }
 
     /**

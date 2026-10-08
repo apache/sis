@@ -57,11 +57,11 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -400,7 +400,7 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
      *   <li>Otherwise, if {@code type} is {@link GeometryType#POLYGON}, then the components shall be
      *       a {@link LineString}[] with the first ring taken as the shell and all other rings as holes.</li>
      *   <li>Otherwise, the components shall be a {@link DataPoints} sequence, an {@link Array} of
-     *       positions, or an array or collection of {@link Point} or {@link Tuple} instances.</li>
+     *       positions, or an array or collection of {@link Point} or {@link Vector} instances.</li>
      * </ul>
      *
      * @param  type        type of geometry to create.
@@ -595,7 +595,7 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
     /**
      * Returns the given components as a sequence of positions. The components can be a
      * {@link DataPoints} sequence, an {@link Array} of positions, or an array or collection
-     * of {@link Point} or {@link Tuple} instances.
+     * of {@link Point} or {@link Vector} instances.
      *
      * @param  components  the components to read.
      * @return the positions of the given components.
@@ -610,11 +610,11 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
         }
         // The ClassCastException that may happen here is part of method contract.
         final Collection<?> source = (components instanceof Collection<?> c) ? c : Arrays.asList((Object[]) components);
-        final var tuples = new ArrayList<Tuple<?>>(source.size());
+        final var tuples = new ArrayList<Vector<?>>(source.size());
         for (final Object element : source) {
             final Object component = implementation(element);
             // The ClassCastException that may happen here is part of method contract.
-            tuples.add((component instanceof Point point) ? point.getPosition() : (Tuple<?>) component);
+            tuples.add((component instanceof Point point) ? point.getPosition() : (Vector<?>) component);
         }
         if (tuples.isEmpty()) {
             /*
@@ -624,7 +624,7 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
              */
             return GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(undefinedSystem(BIDIMENSIONAL), DataType.DOUBLE, 0));
         }
-        final Tuple<?> first = tuples.get(0);
+        final Vector<?> first = tuples.get(0);
         return GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(tuples, first.getSampleSystem(), first.getDataType()));
     }
 

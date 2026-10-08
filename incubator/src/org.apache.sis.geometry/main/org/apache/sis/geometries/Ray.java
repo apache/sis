@@ -20,7 +20,6 @@ import java.util.Objects;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector;
 
 
@@ -46,7 +45,7 @@ public final class Ray extends AbstractGeometry{
      * @param  position   the position the ray starts from, not null.
      * @param  direction  the direction the ray extends toward, not null.
      */
-    public Ray(Tuple<?> position, Vector<?> direction) {
+    public Ray(Vector<?> position, Vector<?> direction) {
         points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(position.getSampleSystem(), position.getDataType(), 1));
         points.setPosition(0, position);
         this.direction = direction;
@@ -78,11 +77,11 @@ public final class Ray extends AbstractGeometry{
         return points;
     }
 
-    public Tuple<?> getPosition() {
+    public Vector<?> getPosition() {
         return points.getPosition(0);
     }
 
-    public void setPosition(Tuple<?> position) {
+    public void setPosition(Vector<?> position) {
         points.setPosition(0, position);
     }
 
@@ -96,7 +95,7 @@ public final class Ray extends AbstractGeometry{
 
     @Override
     public BBox getEnvelope() {
-        final Tuple<?> position = getPosition();
+        final Vector<?> position = getPosition();
         final int dim = direction.getDimension();
         final BBox bbox = new BBox(dim);
         for (int i=0;i<dim;i++){

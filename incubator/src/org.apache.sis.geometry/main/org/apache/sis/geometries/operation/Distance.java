@@ -18,8 +18,8 @@ package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Point;
 import org.apache.sis.maths.Maths;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vectors;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -38,7 +38,7 @@ public final class Distance {
      * @param p2 second point
      * @return double, distance
      */
-    public static double distance(Tuple p1, Tuple p2){
+    public static double distance(Vector p1, Vector p2){
         return Math.sqrt(distanceSquare(p1, p2));
     }
 
@@ -49,7 +49,7 @@ public final class Distance {
      * @param p2 second point
      * @return double, distance
      */
-    public static double distanceSquare(Tuple p1, Tuple p2){
+    public static double distanceSquare(Vector p1, Vector p2){
         final double t0 = p1.get(0) - p2.get(0);
         final double t1 = p1.get(1) - p2.get(1);
         return t0*t0 + t1*t1;

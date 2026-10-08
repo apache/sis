@@ -28,8 +28,8 @@ import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Array;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -260,9 +260,9 @@ public final class MeshPrimitiveComparator {
         } else if (candidate instanceof Triangle) {
             final Triangle cdt = (Triangle) candidate;
             final DataPoints points = cdt.getExteriorRing().getDataPoints();
-            final Tuple c0 = points.getPosition(0);
-            final Tuple c1 = points.getPosition(1);
-            final Tuple c2 = points.getPosition(2);
+            final Vector c0 = points.getPosition(0);
+            final Vector c1 = points.getPosition(1);
+            final Vector c2 = points.getPosition(2);
             return c0.equals(c1)
                 || c0.equals(c2)
                 || c1.equals(c2);
