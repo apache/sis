@@ -333,15 +333,19 @@ public enum Type {
      * 8-bits byte that contains a 7-bit ASCII code. In a string of ASCII characters, the last byte must be NUL
      * (binary zero). The string length (including the NUL byte) is the {@code count} field before the string.
      * NUL bytes may also appear in the middle of the string for separating its content into multi-strings.
+     * NUL byte shall appear only once, not counting the padding byte after all strings.
+     *
      * <ul>
      *   <li>TIFF name: {@code ASCII}</li>
      *   <li>TIFF code: 2</li>
      * </ul>
+     *
+     * Non-standard extension: if NUL is missing, all remaining characters are taken anyway.
      */
     ASCII(TIFFTag.TIFF_ASCII, Byte.BYTES, false) {
         @Override public String[] readAsStrings(final ChannelDataInput input, final long length, final Charset charset) throws IOException {
             final byte[] chars = input.readBytes(Math.toIntExact(length));
-            String[] lines = new String[1];                     // We will usually have exactly one string.
+            String[] lines = new String[1];         // We will usually have exactly one string.
             int count = 0, lower = 0;
             for (int i=0; i<chars.length; i++) {
                 if (chars[i] == 0) {
@@ -349,6 +353,18 @@ public enum Type {
                         lines = Arrays.copyOf(lines, 2*count);
                     }
                     lines[count++] = new String(chars, lower, i-lower, charset);
+                    lower = i + 1;
+                }
+            }
+            // Non-standard extension: take remaining characters if any.
+            final int n = chars.length - lower;
+            if (n > 0) {
+                final String remaining = new String(chars, lower, n, charset).trim();
+                if (!remaining.isBlank()) {
+                    if (count >= lines.length) {
+                        return ArraysExt.append(lines, remaining);
+                    }
+                    lines[count++] = remaining;
                 }
             }
             return ArraysExt.resize(lines, count);
