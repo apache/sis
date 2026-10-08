@@ -42,6 +42,7 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
@@ -279,7 +280,7 @@ public final class JTSAdapter {
         }
 
         @Override
-        public void setPosition(int index, Vector value) {
+        public void setPosition(int index, ReadOnly.Vector value) {
             for (int i = 0; i < dim; i++) {
                 jts.setOrdinate(index, i, value.get(i));
             }
@@ -294,7 +295,7 @@ public final class JTSAdapter {
         }
 
         @Override
-        public void setAttribute(int index, String name, Vector value) {
+        public void setAttribute(int index, String name, ReadOnly.Vector value) {
             if (DataPointsType.ATT_POSITION.equals(name)) {
                 setPosition(index, value);
             } else {

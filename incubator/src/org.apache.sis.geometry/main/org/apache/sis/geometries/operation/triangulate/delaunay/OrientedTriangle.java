@@ -29,6 +29,7 @@ import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.surface.Triangle;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.referencing.internal.shared.ShapeUtilities;
 import org.apache.sis.maths.Vector;
 
@@ -284,7 +285,7 @@ public final class OrientedTriangle extends AbstractGeometry implements Triangle
     }
 
     @Override
-    public void setPosition(int index, Vector value) {
+    public void setPosition(int index, ReadOnly.Vector value) {
         throw new UnsupportedOperationException("Not supported.");
     }
 
@@ -297,7 +298,7 @@ public final class OrientedTriangle extends AbstractGeometry implements Triangle
     }
 
     @Override
-    public void setAttribute(int index, String name, Vector value) {
+    public void setAttribute(int index, String name, ReadOnly.Vector value) {
         if (DataPointsType.ATT_POSITION.equals(name)) {
             setPosition(index, value);
             return;

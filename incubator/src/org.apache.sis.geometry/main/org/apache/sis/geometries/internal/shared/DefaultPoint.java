@@ -23,6 +23,7 @@ import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 
@@ -94,7 +95,7 @@ public non-sealed class DefaultPoint extends AbstractGeometry implements Point {
     }
 
     @Override
-    public void setAttribute(String name, Vector tuple) {
+    public void setAttribute(String name, ReadOnly.Vector tuple) {
         points.setAttribute(0, name, tuple);
     }
 

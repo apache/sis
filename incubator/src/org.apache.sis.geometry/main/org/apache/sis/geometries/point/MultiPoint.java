@@ -26,6 +26,7 @@ import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.internal.shared.DefaultMultiPoint;
 import org.apache.sis.geometries.internal.shared.DefaultRawMultiPoint;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 
 
@@ -94,7 +95,7 @@ public sealed interface MultiPoint<T extends Point> extends GeometryCollection<T
             }
 
             @Override
-            public void setPosition(int index, Vector value) {
+            public void setPosition(int index, ReadOnly.Vector value) {
                 MultiPoint.this.getGeometryN(index).getPosition().set(value);
             }
 
@@ -104,7 +105,7 @@ public sealed interface MultiPoint<T extends Point> extends GeometryCollection<T
             }
 
             @Override
-            public void setAttribute(int index, String name, Vector value) {
+            public void setAttribute(int index, String name, ReadOnly.Vector value) {
                 MultiPoint.this.getGeometryN(index).setAttribute(name, value);
             }
 

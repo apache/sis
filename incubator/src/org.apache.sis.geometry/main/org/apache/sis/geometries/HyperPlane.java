@@ -22,6 +22,7 @@ import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 
 
@@ -80,20 +81,20 @@ public final class HyperPlane extends AbstractGeometry{
         return points;
     }
 
-    public Vector<?> getPosition() {
+    public ReadOnly.Vector<?> getPosition() {
         return points.getPosition(0);
     }
 
-    public void setPosition(Vector<?> position) {
+    public void setPosition(ReadOnly.Vector<?> position) {
         points.setPosition(0, position);
     }
 
-    public Vector<?> getNormal() {
+    public ReadOnly.Vector<?> getNormal() {
         return normal;
     }
 
-    public void setNormal(Vector<?> normal) {
-        this.normal = normal;
+    public void setNormal(ReadOnly.Vector<?> normal) {
+        this.normal = normal.copy();
     }
 
     /**
@@ -106,7 +107,7 @@ public final class HyperPlane extends AbstractGeometry{
      */
     @Override
     public BBox getEnvelope() {
-        final Vector<?> position = getPosition();
+        final ReadOnly.Vector<?> position = getPosition();
         final int dim = normal.getDimension();
         final BBox bbox = new BBox(dim);
         /*

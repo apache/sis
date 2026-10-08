@@ -30,6 +30,7 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.maths.Vector;
@@ -97,7 +98,7 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
     }
 
     @Override
-    public void setPosition(int index, Vector value) {
+    public void setPosition(int index, ReadOnly.Vector value) {
         positions.set(index, value);
     }
 
@@ -128,7 +129,7 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
     }
 
     @Override
-    public void setAttribute(int index, String name, Vector value) {
+    public void setAttribute(int index, String name, ReadOnly.Vector value) {
         attributes.get(name).set(index, value);
     }
 
@@ -214,7 +215,7 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
         }
 
         @Override
-        public void setAttribute(String name, Vector tuple) {
+        public void setAttribute(String name, ReadOnly.Vector tuple) {
             final Array tupleGrid = parent.attributes.get(name);
             if (tupleGrid == null) throw new IllegalArgumentException("Attribute " + name + " do not exist");
             final Cursor cursor = tupleGrid.cursor();

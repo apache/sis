@@ -30,6 +30,7 @@ import org.apache.sis.geometries.internal.shared.IndexedPoint;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Maths;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 
 
@@ -85,7 +86,7 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
         }
 
         @Override
-        public void setPosition(int index, Vector value) {
+        public void setPosition(int index, ReadOnly.Vector value) {
             throw new UnsupportedOperationException("Not supported.");
         }
 
@@ -98,7 +99,7 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
         }
 
         @Override
-        public void setAttribute(int index, String name, Vector value) {
+        public void setAttribute(int index, String name, ReadOnly.Vector value) {
             if (DataPointsType.ATT_POSITION.equals(name)) {
                 setPosition(index, value);
                 return;

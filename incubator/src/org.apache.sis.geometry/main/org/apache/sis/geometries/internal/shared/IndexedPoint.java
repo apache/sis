@@ -20,6 +20,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 
 
@@ -63,7 +64,7 @@ public non-sealed class IndexedPoint implements Point {
     }
 
     @Override
-    public void setAttribute(String name, Vector tuple) {
+    public void setAttribute(String name, ReadOnly.Vector tuple) {
         parent.setAttribute(index, name, tuple);
     }
 

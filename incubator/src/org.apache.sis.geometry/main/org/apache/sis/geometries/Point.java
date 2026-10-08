@@ -28,6 +28,7 @@ import org.apache.sis.geometries.internal.shared.DefaultPoint;
 import org.apache.sis.geometries.internal.shared.IndexedPoint;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.surface.Triangle;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 
 
@@ -94,7 +95,7 @@ public sealed interface Point extends Primitive
      * @param name  name of the attribute to set.
      * @param tuple new attribute value.
      */
-    void setAttribute(String name, Vector<?> tuple);
+    void setAttribute(String name, ReadOnly.Vector<?> tuple);
 
     /**
      * View this point as a single point sequence
@@ -132,7 +133,7 @@ public sealed interface Point extends Primitive
             }
 
             @Override
-            public void setPosition(int index, Vector<?> value) {
+            public void setPosition(int index, ReadOnly.Vector<?> value) {
                 if (index != 0) throw new IndexOutOfBoundsException();
                 Point.this.getPosition().set(value);
             }
@@ -144,7 +145,7 @@ public sealed interface Point extends Primitive
             }
 
             @Override
-            public void setAttribute(int index, String name, Vector<?> value) {
+            public void setAttribute(int index, String name, ReadOnly.Vector<?> value) {
                 if (index != 0) throw new IndexOutOfBoundsException();
                 Point.this.setAttribute(name, value);
             }

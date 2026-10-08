@@ -35,6 +35,7 @@ import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.surface.ParametricCurveSurface;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -200,14 +201,14 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
      *
      * @return sphere center.
      */
-    public Vector<?> getCenter() {
+    public ReadOnly.Vector<?> getCenter() {
         return points.getPosition(0);
     }
 
     /**
      * @param position new center of the sphere
      */
-    public void setCenter(Vector<?> position) {
+    public void setCenter(ReadOnly.Vector<?> position) {
         points.setPosition(0, position);
     }
 
@@ -216,7 +217,7 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
      */
     @Override
     public Envelope getEnvelope() {
-        final Vector<?> center = getCenter();
+        final Vector<?> center = getCenter().copy();
         final BBox env = new BBox(center, center);
         env.setCoordinateReferenceSystem(getCoordinateReferenceSystem());
         if (radius > 0) {

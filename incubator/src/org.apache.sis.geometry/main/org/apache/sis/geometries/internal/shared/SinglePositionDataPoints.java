@@ -22,6 +22,7 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 
@@ -98,7 +99,7 @@ public final class SinglePositionDataPoints implements DataPoints {
     }
 
     @Override
-    public void setPosition(int index, Vector<?> value) {
+    public void setPosition(int index, ReadOnly.Vector<?> value) {
         ensureValid(index);
         position.get().set(value);
     }
@@ -110,7 +111,7 @@ public final class SinglePositionDataPoints implements DataPoints {
     }
 
     @Override
-    public void setAttribute(int index, String name, Vector<?> value) {
+    public void setAttribute(int index, String name, ReadOnly.Vector<?> value) {
         ensureValid(index);
         if (!DataPointsType.ATT_POSITION.equals(name)) {
             throw new IllegalArgumentException("This sequence holds no \"" + name + "\" attribute.");

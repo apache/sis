@@ -24,6 +24,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.internal.shared.IndexedPoint;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
@@ -187,7 +188,7 @@ public final class BBox extends GeneralEnvelope implements Geometry {
         }
 
         @Override
-        public void setPosition(int index, Vector<?> value) {
+        public void setPosition(int index, ReadOnly.Vector<?> value) {
             ensureValid(index);
             final int dim = getDimension();
             for (int i = 0; i < dim; i++) {
@@ -205,7 +206,7 @@ public final class BBox extends GeneralEnvelope implements Geometry {
         }
 
         @Override
-        public void setAttribute(int index, String name, Vector<?> value) {
+        public void setAttribute(int index, String name, ReadOnly.Vector<?> value) {
             if (!DataPointsType.ATT_POSITION.equals(name)) {
                 throw new IllegalArgumentException("A box holds no \"" + name + "\" attribute.");
             }

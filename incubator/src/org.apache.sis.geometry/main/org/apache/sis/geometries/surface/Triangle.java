@@ -33,6 +33,7 @@ import org.apache.sis.geometries.internal.shared.DefaultTriangle;
 import org.apache.sis.geometries.operation.simplify.greedyinsert.WTriangle;
 import org.apache.sis.geometries.operation.triangulate.delaunay.OrientedTriangle;
 import org.apache.sis.maths.Maths;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vector2D;
 import org.apache.sis.maths.Vector3D;
@@ -324,7 +325,7 @@ public sealed interface Triangle extends Polygon
         }
 
         @Override
-        public void setAttribute(String name, Vector tuple) {
+        public void setAttribute(String name, ReadOnly.Vector tuple) {
             throw new UnsupportedOperationException("Not supported on interpolated points.");
         }
 

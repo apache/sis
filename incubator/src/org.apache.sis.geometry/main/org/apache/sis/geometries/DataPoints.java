@@ -24,6 +24,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 
@@ -109,7 +110,7 @@ public interface DataPoints {
      * @param index searched index
      * @param value new attribute value
      */
-    void setPosition(int index, Vector<?> value);
+    void setPosition(int index, ReadOnly.Vector<?> value);
 
     /**
      * Get attribute value.
@@ -127,7 +128,7 @@ public interface DataPoints {
      * @param name attribute name
      * @param value new attribute value
      */
-    void setAttribute(int index, String name, Vector<?> value);
+    void setAttribute(int index, String name, ReadOnly.Vector<?> value);
 
     /**
      * Get all attribute values as an Array.
