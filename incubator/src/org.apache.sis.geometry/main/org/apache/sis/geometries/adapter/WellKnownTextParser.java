@@ -208,8 +208,8 @@ final class WellKnownTextParser {
         applyFlags(readFlags());
         switch (keyword) {
             case Point.TYPE:              return parsePoint();
-            case LineString.TYPE:         return GeometryFactory.createLineString(readPointList());
-            case CircularString.TYPE:     return GeometryFactory.createCircularString(readPointList());
+            case LineString.TYPE:         return GeometryFactory.DEFAULT.createLineString(readPointList());
+            case CircularString.TYPE:     return GeometryFactory.DEFAULT.createCircularString(readPointList());
             case CompoundCurve.TYPE:      return parseCompoundCurve();
             case Polygon.TYPE:            return readPolygonBody();
             case Triangle.TYPE:           return readTriangleBody();
@@ -239,9 +239,9 @@ final class WellKnownTextParser {
      */
     private Geometry parsePoint() {
         if (readEmpty()) {
-            return GeometryFactory.createEmpty(crs());
+            return GeometryFactory.DEFAULT.createEmpty(crs());
         }
-        return GeometryFactory.createPoint(readSinglePosition());
+        return GeometryFactory.DEFAULT.createPoint(readSinglePosition());
     }
 
     /**
@@ -249,7 +249,7 @@ final class WellKnownTextParser {
      */
     private CompoundCurve parseCompoundCurve() {
         if (readEmpty()) {
-            return GeometryFactory.createCompoundCurve(crs());
+            return GeometryFactory.DEFAULT.createCompoundCurve(crs());
         }
         final List<Curve> curves = new ArrayList<>();
         expect('(');
@@ -257,7 +257,7 @@ final class WellKnownTextParser {
             curves.add(readCurve(false));
         } while (accept(','));
         expect(')');
-        return GeometryFactory.createCompoundCurve(curves.toArray(Curve[]::new));
+        return GeometryFactory.DEFAULT.createCompoundCurve(curves.toArray(Curve[]::new));
     }
 
     /**
@@ -265,7 +265,7 @@ final class WellKnownTextParser {
      */
     private CurvePolygon parseCurvePolygon() {
         if (readEmpty()) {
-            return GeometryFactory.createCurvePolygon(emptyRing(), List.of());
+            return GeometryFactory.DEFAULT.createCurvePolygon(emptyRing(), List.of());
         }
         final List<Curve> rings = new ArrayList<>();
         expect('(');
@@ -273,7 +273,7 @@ final class WellKnownTextParser {
             rings.add(readCurve(true));
         } while (accept(','));
         expect(')');
-        return GeometryFactory.createCurvePolygon(rings.get(0), new ArrayList<>(rings.subList(1, rings.size())));
+        return GeometryFactory.DEFAULT.createCurvePolygon(rings.get(0), new ArrayList<>(rings.subList(1, rings.size())));
     }
 
     /**
@@ -282,7 +282,7 @@ final class WellKnownTextParser {
      */
     private PolyhedralSurface<Polygon> parsePolyhedralSurface() {
         if (readEmpty()) {
-            return GeometryFactory.createPolyhedralSurface(crs(), new Polygon[0]);
+            return GeometryFactory.DEFAULT.createPolyhedralSurface(crs(), new Polygon[0]);
         }
         final List<Polygon> patches = new ArrayList<>();
         expect('(');
@@ -290,7 +290,7 @@ final class WellKnownTextParser {
             patches.add(readPolygonBody());
         } while (accept(','));
         expect(')');
-        return GeometryFactory.createPolyhedralSurface(patches.toArray(Polygon[]::new));
+        return GeometryFactory.DEFAULT.createPolyhedralSurface(patches.toArray(Polygon[]::new));
     }
 
     /**
@@ -298,7 +298,7 @@ final class WellKnownTextParser {
      */
     private TIN parseTIN() {
         if (readEmpty()) {
-            return GeometryFactory.createTIN(crs(), new Triangle[0]);
+            return GeometryFactory.DEFAULT.createTIN(crs(), new Triangle[0]);
         }
         final List<Triangle> patches = new ArrayList<>();
         expect('(');
@@ -306,7 +306,7 @@ final class WellKnownTextParser {
             patches.add(readTriangleBody());
         } while (accept(','));
         expect(')');
-        return GeometryFactory.createTIN(patches.toArray(Triangle[]::new));
+        return GeometryFactory.DEFAULT.createTIN(patches.toArray(Triangle[]::new));
     }
 
     /**
@@ -315,7 +315,7 @@ final class WellKnownTextParser {
      */
     private MultiPoint<?> parseMultiPoint() {
         if (readEmpty()) {
-            return GeometryFactory.createMultiPoint(crs());
+            return GeometryFactory.DEFAULT.createMultiPoint(crs());
         }
         final List<Point> points = new ArrayList<>();
         expect('(');
@@ -324,15 +324,15 @@ final class WellKnownTextParser {
                 // See parsePoint(): there is no empty point to put in the collection.
                 throw error("A " + MultiPoint.TYPE + " cannot hold an empty point");
             } else if (peek() == '(') {
-                points.add(GeometryFactory.createPoint(readSinglePosition()));
+                points.add(GeometryFactory.DEFAULT.createPoint(readSinglePosition()));
             } else {
                 final Coordinates c = new Coordinates();
                 c.add(readTuple());
-                points.add(GeometryFactory.createPoint(c.build()));
+                points.add(GeometryFactory.DEFAULT.createPoint(c.build()));
             }
         } while (accept(','));
         expect(')');
-        return GeometryFactory.createMultiPoint(points.toArray(Point[]::new));
+        return GeometryFactory.DEFAULT.createMultiPoint(points.toArray(Point[]::new));
     }
 
     /**
@@ -340,15 +340,15 @@ final class WellKnownTextParser {
      */
     private MultiLineString parseMultiLineString() {
         if (readEmpty()) {
-            return GeometryFactory.createMultiLineString(crs());
+            return GeometryFactory.DEFAULT.createMultiLineString(crs());
         }
         final List<LineString> members = new ArrayList<>();
         expect('(');
         do {
-            members.add(GeometryFactory.createLineString(readPointList()));
+            members.add(GeometryFactory.DEFAULT.createLineString(readPointList()));
         } while (accept(','));
         expect(')');
-        return GeometryFactory.createMultiLineString(members.toArray(LineString[]::new));
+        return GeometryFactory.DEFAULT.createMultiLineString(members.toArray(LineString[]::new));
     }
 
     /**
@@ -356,7 +356,7 @@ final class WellKnownTextParser {
      */
     private MultiPolygon parseMultiPolygon() {
         if (readEmpty()) {
-            return GeometryFactory.createMultiPolygon(crs());
+            return GeometryFactory.DEFAULT.createMultiPolygon(crs());
         }
         final List<Polygon> members = new ArrayList<>();
         expect('(');
@@ -364,7 +364,7 @@ final class WellKnownTextParser {
             members.add(readPolygonBody());
         } while (accept(','));
         expect(')');
-        return GeometryFactory.createMultiPolygon(members.toArray(Polygon[]::new));
+        return GeometryFactory.DEFAULT.createMultiPolygon(members.toArray(Polygon[]::new));
     }
 
     /**
@@ -374,7 +374,7 @@ final class WellKnownTextParser {
      */
     private MultiCurve<Curve> parseMultiCurve() {
         if (readEmpty()) {
-            return GeometryFactory.<Curve>createMultiCurve(crs());
+            return GeometryFactory.DEFAULT.<Curve>createMultiCurve(crs());
         }
         final List<Curve> members = new ArrayList<>();
         expect('(');
@@ -382,7 +382,7 @@ final class WellKnownTextParser {
             members.add(readCurve(false));
         } while (accept(','));
         expect(')');
-        return GeometryFactory.createMultiCurve(members.toArray(Curve[]::new));
+        return GeometryFactory.DEFAULT.createMultiCurve(members.toArray(Curve[]::new));
     }
 
     /**
@@ -391,7 +391,7 @@ final class WellKnownTextParser {
      */
     private MultiSurface<Surface> parseMultiSurface() {
         if (readEmpty()) {
-            return GeometryFactory.<Surface>createMultiSurface(crs());
+            return GeometryFactory.DEFAULT.<Surface>createMultiSurface(crs());
         }
         final List<Surface> members = new ArrayList<>();
         expect('(');
@@ -403,7 +403,7 @@ final class WellKnownTextParser {
             }
         } while (accept(','));
         expect(')');
-        return GeometryFactory.createMultiSurface(members.toArray(Surface[]::new));
+        return GeometryFactory.DEFAULT.createMultiSurface(members.toArray(Surface[]::new));
     }
 
     /**
@@ -412,7 +412,7 @@ final class WellKnownTextParser {
      */
     private GeometryCollection<Geometry> parseGeometryCollection() {
         if (readEmpty()) {
-            return GeometryFactory.<Geometry>createGeometryCollection(crs());
+            return GeometryFactory.DEFAULT.<Geometry>createGeometryCollection(crs());
         }
         final List<Geometry> members = new ArrayList<>();
         expect('(');
@@ -420,7 +420,7 @@ final class WellKnownTextParser {
             members.add(parseGeometry());
         } while (accept(','));
         expect(')');
-        return GeometryFactory.createGeometryCollection(members.toArray(Geometry[]::new));
+        return GeometryFactory.DEFAULT.createGeometryCollection(members.toArray(Geometry[]::new));
     }
 
     // ////////////////////////////////////////////////////////////////////////
@@ -437,8 +437,8 @@ final class WellKnownTextParser {
     private Curve readCurve(final boolean asRing) {
         if (peek() == '(') {
             final DataPoints points = readPointList();
-            return asRing ? GeometryFactory.createLinearRing(points)
-                          : GeometryFactory.createLineString(points);
+            return asRing ? GeometryFactory.DEFAULT.createLinearRing(points)
+                          : GeometryFactory.DEFAULT.createLineString(points);
         }
         return expectType(parseGeometry(), Curve.class, asRing ? CurvePolygon.TYPE : CompoundCurve.TYPE);
     }
@@ -448,10 +448,10 @@ final class WellKnownTextParser {
      */
     private Polygon readPolygonBody() {
         if (readEmpty()) {
-            return GeometryFactory.createPolygon(emptyRing(), List.of());
+            return GeometryFactory.DEFAULT.createPolygon(emptyRing(), List.of());
         }
         final List<LinearRing> rings = readRings();
-        return GeometryFactory.createPolygon(rings.get(0), new ArrayList<>(rings.subList(1, rings.size())));
+        return GeometryFactory.DEFAULT.createPolygon(rings.get(0), new ArrayList<>(rings.subList(1, rings.size())));
     }
 
     /**
@@ -459,13 +459,13 @@ final class WellKnownTextParser {
      */
     private Triangle readTriangleBody() {
         if (readEmpty()) {
-            return GeometryFactory.createTriangle(emptyRing());
+            return GeometryFactory.DEFAULT.createTriangle(emptyRing());
         }
         final List<LinearRing> rings = readRings();
         if (rings.size() != 1) {
             throw error("A " + Triangle.TYPE + " patch has no interior ring, but " + (rings.size() - 1) + " were given");
         }
-        return GeometryFactory.createTriangle(rings.get(0));
+        return GeometryFactory.DEFAULT.createTriangle(rings.get(0));
     }
 
     /**
@@ -475,7 +475,7 @@ final class WellKnownTextParser {
         final List<LinearRing> rings = new ArrayList<>();
         expect('(');
         do {
-            rings.add(GeometryFactory.createLinearRing(readPointList()));
+            rings.add(GeometryFactory.DEFAULT.createLinearRing(readPointList()));
         } while (accept(','));
         expect(')');
         return rings;
@@ -512,7 +512,7 @@ final class WellKnownTextParser {
      * Returns an empty ring, for the {@code EMPTY} form of the types which are made of rings.
      */
     private LinearRing emptyRing() {
-        return GeometryFactory.createLinearRing(new Coordinates().build());
+        return GeometryFactory.DEFAULT.createLinearRing(new Coordinates().build());
     }
 
     /**
@@ -678,12 +678,12 @@ final class WellKnownTextParser {
             if (size == 0) {
                 final Array empty = NDArrays.of(posSystem, DataType.DOUBLE, 0);
                 if (!hasM) {
-                    return GeometryFactory.createSequence(empty);
+                    return GeometryFactory.DEFAULT.createDataPoints(empty);
                 }
                 return createSequence(empty, NDArrays.of(MEASURE_SYSTEM, DataType.DOUBLE, 0));
             }
             if (!hasM) {
-                return GeometryFactory.createSequence(NDArrays.of(posSystem, Arrays.copyOf(values, count)));
+                return GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(posSystem, Arrays.copyOf(values, count)));
             }
             /*
              * The measure is the ordinate following the position ones in each tuple of the text,
@@ -705,7 +705,7 @@ final class WellKnownTextParser {
             final Map<String,Array> attributes = new LinkedHashMap<>(4);
             attributes.put(DataPointsType.ATT_POSITION, positions);
             attributes.put(DataPointsType.ATT_M, measures);
-            return GeometryFactory.createSequence(attributes);
+            return GeometryFactory.DEFAULT.createDataPoints(attributes);
         }
     }
 

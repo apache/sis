@@ -98,9 +98,9 @@ public class TriangleTest extends GeometryTest {
     public void constructorTest() {
 
         final Array positions = NDArrays.of(CommonCRS.WGS84.normalizedGeographic(), new double[]{0,0, 1,0, 0,1, 0,0});
-        final DataPoints points = GeometryFactory.createSequence(positions);
-        final LinearRing exterior = GeometryFactory.createLinearRing(points);
-        final Triangle triangle = GeometryFactory.createTriangle(exterior);
+        final DataPoints points = GeometryFactory.DEFAULT.createDataPoints(positions);
+        final LinearRing exterior = GeometryFactory.DEFAULT.createLinearRing(points);
+        final Triangle triangle = GeometryFactory.DEFAULT.createTriangle(exterior);
 
         assertNotNull(triangle.getExteriorRing());
         assertTrue(triangle.getInteriorRings().isEmpty());

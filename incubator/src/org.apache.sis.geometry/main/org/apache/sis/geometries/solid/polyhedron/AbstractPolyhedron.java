@@ -193,8 +193,8 @@ public abstract sealed class AbstractPolyhedron extends AbstractGeometry impleme
      */
     protected static Polygon toPolygon(Array vertices, int[] face) {
         final Array positions = NDArrays.subset(vertices, face);
-        final LinearRing ring = GeometryFactory.createLinearRing(GeometryFactory.createSequence(positions));
-        return GeometryFactory.createPolygon(ring, null);
+        final LinearRing ring = GeometryFactory.DEFAULT.createLinearRing(GeometryFactory.DEFAULT.createDataPoints(positions));
+        return GeometryFactory.DEFAULT.createPolygon(ring, null);
     }
 
 

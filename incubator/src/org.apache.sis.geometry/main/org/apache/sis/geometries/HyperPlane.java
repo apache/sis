@@ -50,7 +50,7 @@ public final class HyperPlane extends AbstractGeometry{
      * @param  normal    the direction the hyperplane is perpendicular to, not null.
      */
     public HyperPlane(Tuple<?> position, Vector<?> normal) {
-        points = GeometryFactory.createSequence(NDArrays.of(position.getSampleSystem(), position.getDataType(), 1));
+        points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(position.getSampleSystem(), position.getDataType(), 1));
         points.setPosition(0, position);
         this.normal = normal;
     }

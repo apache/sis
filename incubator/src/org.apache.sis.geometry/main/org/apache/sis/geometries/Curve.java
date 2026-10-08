@@ -220,9 +220,9 @@ public sealed interface Curve extends Orientable
     @Override
     default Geometry getBoundary() {
         if (isEmpty() || isClosed()) {
-            return GeometryFactory.createEmpty(getCoordinateReferenceSystem());
+            return GeometryFactory.DEFAULT.createEmpty(getCoordinateReferenceSystem());
         }
-        return GeometryFactory.createMultiPoint(getStartPoint(), getEndPoint());
+        return GeometryFactory.DEFAULT.createMultiPoint(getStartPoint(), getEndPoint());
     }
 
     /**
@@ -454,7 +454,7 @@ public sealed interface Curve extends Orientable
          * not a geometry. `DefaultReversedCurve` returns this curve back from its own `getReverse()`,
          * so wrapping never nests.
          */
-        return GeometryFactory.createReversed(this);
+        return GeometryFactory.DEFAULT.createReversed(this);
     }
 
     /**

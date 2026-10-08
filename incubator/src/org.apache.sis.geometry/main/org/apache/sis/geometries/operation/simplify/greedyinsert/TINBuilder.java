@@ -124,9 +124,9 @@ public final class TINBuilder {
         for (int i = 0, n = finished.size(); i < n; i++) {
             final WTriangle t = finished.get(i);
             final Array positions = NDArrays.of(Arrays.asList(t.p0, t.p1, t.p2, t.p0), t.p0.getSampleSystem(), t.p0.getDataType());
-            final DataPoints points = GeometryFactory.createSequence(positions);
-            final LinearRing exterior = GeometryFactory.createLinearRing(points);
-            triangles.add(GeometryFactory.createTriangle(exterior));
+            final DataPoints points = GeometryFactory.DEFAULT.createDataPoints(positions);
+            final LinearRing exterior = GeometryFactory.DEFAULT.createLinearRing(points);
+            triangles.add(GeometryFactory.DEFAULT.createTriangle(exterior));
         }
         return triangles;
     }

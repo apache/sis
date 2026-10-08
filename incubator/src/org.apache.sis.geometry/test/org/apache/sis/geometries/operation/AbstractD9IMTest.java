@@ -69,34 +69,34 @@ public abstract class AbstractD9IMTest {
      * An empty geometry. Together with {@link #EMPTY_2}, it allows to verify that the result of an
      * operation on the empty set depends on the emptiness of the operands, not on their identity.
      */
-    public static final Empty EMPTY_1 = GeometryFactory.createEmpty(CRS_2D);
+    public static final Empty EMPTY_1 = GeometryFactory.DEFAULT.createEmpty(CRS_2D);
 
     /**
      * Another empty geometry, distinct from {@link #EMPTY_1} but equal to it as a set of positions.
      */
-    public static final Empty EMPTY_2 = GeometryFactory.createEmpty(CRS_2D);
+    public static final Empty EMPTY_2 = GeometryFactory.DEFAULT.createEmpty(CRS_2D);
 
     /**
      * An arbitrary geometry which is not empty, used as the other operand of the operations
      * tested against the empty set.
      */
-    public static final Point NON_EMPTY = GeometryFactory.createPoint(CRS_2D, 10.0, 5.0);
+    public static final Point NON_EMPTY = GeometryFactory.DEFAULT.createPoint(CRS_2D, 10.0, 5.0);
 
     /**
      * An arbitrary point. Together with {@link #POINT_A_BIS}, it allows to verify that the result
      * of an operation on two points depends on their positions, not on their identity.
      */
-    public static final Point POINT_A = GeometryFactory.createPoint(CRS_2D, 10.0, 5.0);
+    public static final Point POINT_A = GeometryFactory.DEFAULT.createPoint(CRS_2D, 10.0, 5.0);
 
     /**
      * Another point, distinct from {@link #POINT_A} but at the same position.
      */
-    public static final Point POINT_A_BIS = GeometryFactory.createPoint(CRS_2D, 10.0, 5.0);
+    public static final Point POINT_A_BIS = GeometryFactory.DEFAULT.createPoint(CRS_2D, 10.0, 5.0);
 
     /**
      * A point at a position different than {@link #POINT_A}.
      */
-    public static final Point POINT_B = GeometryFactory.createPoint(CRS_2D, 20.0, 15.0);
+    public static final Point POINT_B = GeometryFactory.DEFAULT.createPoint(CRS_2D, 20.0, 15.0);
 
     /**
      * The empty geometry expected as the result of an operation which found no position,
@@ -104,7 +104,7 @@ public abstract class AbstractD9IMTest {
      * It is a distinct instance from {@link #EMPTY_1} on purpose: an operation builds its
      * result rather than returning an operand when neither operand is empty.
      */
-    public static final Empty EMPTY_RESULT = GeometryFactory.createEmpty(CRS_2D);
+    public static final Empty EMPTY_RESULT = GeometryFactory.DEFAULT.createEmpty(CRS_2D);
 
     /*
      * ────────────────────────────────────────────────────────────────────────────────────────

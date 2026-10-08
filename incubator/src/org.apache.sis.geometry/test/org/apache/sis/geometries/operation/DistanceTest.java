@@ -42,23 +42,23 @@ public class DistanceTest extends AbstractD9IMTest {
     /**
      * Two points at the same position, and a third one at a distance of 1 along the second axis.
      */
-    private static final Point POINT_10_5     = GeometryFactory.createPoint(CRS2D, 10.0, 5.0);
-    private static final Point POINT_10_5_BIS = GeometryFactory.createPoint(CRS2D, 10.0, 5.0);
-    private static final Point POINT_10_6     = GeometryFactory.createPoint(CRS2D, 10.0, 6.0);
+    private static final Point POINT_10_5     = GeometryFactory.DEFAULT.createPoint(CRS2D, 10.0, 5.0);
+    private static final Point POINT_10_5_BIS = GeometryFactory.DEFAULT.createPoint(CRS2D, 10.0, 5.0);
+    private static final Point POINT_10_6     = GeometryFactory.DEFAULT.createPoint(CRS2D, 10.0, 6.0);
 
     /**
      * Two points in a three-dimensional coordinate reference system, at the same horizontal
      * position but at different heights.
      */
     private static final SampleSystem CRS3D = SampleSystem.of(CommonCRS.WGS84.geographic3D());
-    private static final Point POINT_3D_LOW  = GeometryFactory.createPoint(CRS3D, 10.0, 5.0,   0.0);
-    private static final Point POINT_3D_HIGH = GeometryFactory.createPoint(CRS3D, 10.0, 5.0, 100.0);
+    private static final Point POINT_3D_LOW  = GeometryFactory.DEFAULT.createPoint(CRS3D, 10.0, 5.0,   0.0);
+    private static final Point POINT_3D_HIGH = GeometryFactory.DEFAULT.createPoint(CRS3D, 10.0, 5.0, 100.0);
 
     /**
      * Two points using coordinate reference systems which differ by their axis order.
      */
-    private static final Point POINT_GEOGRAPHIC = GeometryFactory.createPoint(CommonCRS.WGS84.geographic());
-    private static final Point POINT_NORMALIZED = GeometryFactory.createPoint(CommonCRS.WGS84.normalizedGeographic());
+    private static final Point POINT_GEOGRAPHIC = GeometryFactory.DEFAULT.createPoint(CommonCRS.WGS84.geographic());
+    private static final Point POINT_NORMALIZED = GeometryFactory.DEFAULT.createPoint(CommonCRS.WGS84.normalizedGeographic());
 
     /**
      * The distance from an empty geometry to any geometry, including itself, is infinite.

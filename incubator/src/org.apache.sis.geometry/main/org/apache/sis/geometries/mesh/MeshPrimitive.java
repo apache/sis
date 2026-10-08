@@ -1177,7 +1177,7 @@ public sealed interface MeshPrimitive extends Geometry
         @Override
         public LineString getGeometryN(int n) {
             final int[] indices = (index == null) ? new int[]{n*2, n*2+1} : index.toArrayInt(n*2, 2);
-            return GeometryFactory.createLineString(new Sequence(this, indices));
+            return GeometryFactory.DEFAULT.createLineString(new Sequence(this, indices));
         }
     }
 
@@ -1232,7 +1232,7 @@ public sealed interface MeshPrimitive extends Geometry
                 indices = Arrays.copyOf(indices, 4);
                 indices[3] = indices[0];
             }
-            return GeometryFactory.createTriangle(GeometryFactory.createLinearRing(new Sequence(this, indices)));
+            return GeometryFactory.DEFAULT.createTriangle(GeometryFactory.DEFAULT.createLinearRing(new Sequence(this, indices)));
         }
     }
 
@@ -1260,7 +1260,7 @@ public sealed interface MeshPrimitive extends Geometry
                 indices[2] = (int) index.get(2 + n).get(0);
             }
                 indices[3] = indices[0];
-            return GeometryFactory.createTriangle(GeometryFactory.createLinearRing(new Sequence(this, indices)));
+            return GeometryFactory.DEFAULT.createTriangle(GeometryFactory.DEFAULT.createLinearRing(new Sequence(this, indices)));
         }
     }
 
@@ -1298,7 +1298,7 @@ public sealed interface MeshPrimitive extends Geometry
             }
             indices[3] = indices[0];
 
-            return GeometryFactory.createTriangle(GeometryFactory.createLinearRing(new Sequence(this, indices)));
+            return GeometryFactory.DEFAULT.createTriangle(GeometryFactory.DEFAULT.createLinearRing(new Sequence(this, indices)));
         }
     }
 }

@@ -243,6 +243,10 @@ public enum GeometryType {
      */
     SPHERE,
     /**
+     * A {@linkplain #SPHERE} scaled by a distinct factor along each axis of the coordinate system.
+     */
+    ELLIPSOID,
+    /**
      * A solid bounded by a lateral surface and two parallel bases.
      */
     CYLINDER,

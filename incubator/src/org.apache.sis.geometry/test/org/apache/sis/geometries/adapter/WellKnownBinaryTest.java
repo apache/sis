@@ -212,7 +212,7 @@ public final class WellKnownBinaryTest {
      */
     @Test
     public void testEmptyGeometry() {
-        final Geometry empty = GeometryFactory.createEmpty(Geometries.getUndefinedCRS(2));
+        final Geometry empty = GeometryFactory.DEFAULT.createEmpty(Geometries.getUndefinedCRS(2));
         assertEquals("000000000700000000", hex(wkb.encode(empty)));
         assertEquals("000000000700000000", hex(empty.asBinary()));
     }
@@ -287,10 +287,10 @@ public final class WellKnownBinaryTest {
      */
     @Test
     public void testUnsupportedType() {
-        final DataPoints points = GeometryFactory.createSequence(
+        final DataPoints points = GeometryFactory.DEFAULT.createDataPoints(
                 NDArrays.of(SampleSystem.of(Geometries.getUndefinedCRS(2)), 0, 0, 1, 1));
-        assertThrows(IllegalArgumentException.class, () -> wkb.encode(GeometryFactory.createGeodesic(points)));
-        assertThrows(IllegalArgumentException.class, () -> wkb.encode(GeometryFactory.createRhumb(points)));
+        assertThrows(IllegalArgumentException.class, () -> wkb.encode(GeometryFactory.DEFAULT.createGeodesic(points)));
+        assertThrows(IllegalArgumentException.class, () -> wkb.encode(GeometryFactory.DEFAULT.createRhumb(points)));
     }
 
     /**
@@ -299,7 +299,7 @@ public final class WellKnownBinaryTest {
      */
     @Test
     public void testTooManyDimensions() {
-        final Point point = GeometryFactory.createPoint(Geometries.getUndefinedCRS(4), 1, 2, 3, 4);
+        final Point point = GeometryFactory.DEFAULT.createPoint(Geometries.getUndefinedCRS(4), 1, 2, 3, 4);
         assertThrows(IllegalArgumentException.class, () -> wkb.encode(point));
     }
 
@@ -380,7 +380,7 @@ public final class WellKnownBinaryTest {
          * The 0x20000000 bit announces the identifier, which follows the type code.
          * EPSG:4326 is 0x10E6.
          */
-        final Geometry point = GeometryFactory.createPoint(CommonCRS.WGS84.geographic(), 1, 2);
+        final Geometry point = GeometryFactory.DEFAULT.createPoint(CommonCRS.WGS84.geographic(), 1, 2);
         final byte[] bytes = ewkb.encode(point);
         assertEquals("00" + "20000001" + "000010E6" + ONE + TWO, hex(bytes));
         /*
@@ -401,9 +401,9 @@ public final class WellKnownBinaryTest {
     public void testExtendedIdentifierOnOutermostOnly() {
         final WellKnownBinary ewkb = new WellKnownBinary(WellKnownBinary.Flavor.EWKB);
         final CoordinateReferenceSystem crs = CommonCRS.WGS84.geographic();
-        final byte[] bytes = ewkb.encode(GeometryFactory.createMultiPoint(
-                GeometryFactory.createPoint(crs, 1, 2),
-                GeometryFactory.createPoint(crs, 3, 4)));
+        final byte[] bytes = ewkb.encode(GeometryFactory.DEFAULT.createMultiPoint(
+                GeometryFactory.DEFAULT.createPoint(crs, 1, 2),
+                GeometryFactory.DEFAULT.createPoint(crs, 3, 4)));
         assertEquals("00" + "20000004" + "000010E6" + "00000002"
                    + "00" + "00000001" + ONE   + TWO
                    + "00" + "00000001" + THREE + FOUR, hex(bytes));
@@ -461,7 +461,7 @@ public final class WellKnownBinaryTest {
          * The standard dialect rejects the high order bits of the extended one.
          */
         assertMalformed(ewkb.encode(wkt.decode("POINT Z (1 2 3)")));
-        assertMalformed(ewkb.encode(GeometryFactory.createPoint(CommonCRS.WGS84.geographic(), 1, 2)));
+        assertMalformed(ewkb.encode(GeometryFactory.DEFAULT.createPoint(CommonCRS.WGS84.geographic(), 1, 2)));
     }
 
     /**
@@ -471,7 +471,7 @@ public final class WellKnownBinaryTest {
     @Test
     public void testExtendedPrecedenceAndErrors() {
         final WellKnownBinary ewkb = new WellKnownBinary(WellKnownBinary.Flavor.EWKB);
-        final byte[] bytes = ewkb.encode(GeometryFactory.createPoint(CommonCRS.WGS84.geographic(), 1, 2));
+        final byte[] bytes = ewkb.encode(GeometryFactory.DEFAULT.createPoint(CommonCRS.WGS84.geographic(), 1, 2));
         final CoordinateReferenceSystem crs = Geometries.getUndefinedCRS(2);
         assertSame(crs, ewkb.decode(bytes, crs).getCoordinateReferenceSystem());
         /*

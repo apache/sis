@@ -214,7 +214,7 @@ public final class Intersection {
                         final double[] bary2 = Triangle.getBarycentricValue2D(x1, y1, x2, y2, x3, y3, p2.get(0), p2.get(1), 0.0, false);
                         final Point point1 = triangle.interpolate(bary1);
                         final Point point2 = triangle.interpolate(bary2);
-                        segments.add(GeometryFactory.createLineString(new DefaultDataPoints(point1, point2)));
+                        segments.add(GeometryFactory.DEFAULT.createLineString(new DefaultDataPoints(point1, point2)));
                     }
                 }
             } catch (TransformException ex) {
@@ -222,7 +222,7 @@ public final class Intersection {
             }
         }
 
-        final MultiLineString mline = GeometryFactory.createMultiLineString(segments.toArray(LineString[]::new));
+        final MultiLineString mline = GeometryFactory.DEFAULT.createMultiLineString(segments.toArray(LineString[]::new));
         final MeshPrimitive intersection = (MeshPrimitive) new GeometryProcessor().toPrimitive(mline);
         return intersection;
     }

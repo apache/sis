@@ -60,7 +60,7 @@ public final class Capsule extends AbstractGeometry{
      * @param  top     the center of the top sphere, not null.
      */
     public Capsule(Tuple<?> bottom, Tuple<?> top) {
-        points = GeometryFactory.createSequence(NDArrays.of(bottom.getSampleSystem(), bottom.getDataType(), 2));
+        points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(bottom.getSampleSystem(), bottom.getDataType(), 2));
         points.setPosition(0, bottom);
         points.setPosition(1, top);
     }

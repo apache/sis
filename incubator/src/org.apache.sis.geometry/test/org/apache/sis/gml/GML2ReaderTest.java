@@ -91,14 +91,14 @@ public final class GML2ReaderTest {
      * Creates a point sequence in the {@link #wgs84} CRS from a flat list of ordinates.
      */
     private DataPoints sequence(final double... ordinates) {
-        return GeometryFactory.createSequence(NDArrays.of(SampleSystem.of(wgs84), ordinates));
+        return GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(SampleSystem.of(wgs84), ordinates));
     }
 
     /**
      * Creates a closed rectangular ring in the {@link #wgs84} CRS.
      */
     private LinearRing ring(final double minX, final double minY, final double maxX, final double maxY) {
-        return GeometryFactory.createLinearRing(sequence(
+        return GeometryFactory.DEFAULT.createLinearRing(sequence(
                 minX, minY,
                 maxX, minY,
                 maxX, maxY,
@@ -113,7 +113,7 @@ public final class GML2ReaderTest {
     public void testPoint() throws Exception {
         final Geometry g = read(TestData.POINT);
         assertInstanceOf(Point.class, g);
-        assertGeometryEquals(GeometryFactory.createPoint(sequence(10.0, 20.0)), g);
+        assertGeometryEquals(GeometryFactory.DEFAULT.createPoint(sequence(10.0, 20.0)), g);
         assertCRS(wgs84, g);
     }
 
@@ -124,7 +124,7 @@ public final class GML2ReaderTest {
     public void testPointCoordForm() throws Exception {
         final Geometry g = read(TestData.POINT_COORD);
         assertInstanceOf(Point.class, g);
-        assertGeometryEquals(GeometryFactory.createPoint(sequence(10.0, 20.0)), g);
+        assertGeometryEquals(GeometryFactory.DEFAULT.createPoint(sequence(10.0, 20.0)), g);
         assertCRS(wgs84, g);
     }
 
@@ -135,7 +135,7 @@ public final class GML2ReaderTest {
     public void testLineString() throws Exception {
         final Geometry g = read(TestData.LINE_STRING);
         assertInstanceOf(LineString.class, g);
-        assertGeometryEquals(GeometryFactory.createLineString(sequence(0.0, 0.0, 10.0, 10.0, 20.0, 0.0)), g);
+        assertGeometryEquals(GeometryFactory.DEFAULT.createLineString(sequence(0.0, 0.0, 10.0, 10.0, 20.0, 0.0)), g);
         assertCRS(wgs84, g);
     }
 
@@ -146,7 +146,7 @@ public final class GML2ReaderTest {
     public void testLineStringCoordForm() throws Exception {
         final Geometry g = read(TestData.LINE_STRING_COORD);
         assertInstanceOf(LineString.class, g);
-        assertGeometryEquals(GeometryFactory.createLineString(sequence(0.0, 0.0, 10.0, 10.0, 20.0, 0.0)), g);
+        assertGeometryEquals(GeometryFactory.DEFAULT.createLineString(sequence(0.0, 0.0, 10.0, 10.0, 20.0, 0.0)), g);
         assertCRS(wgs84, g);
     }
 
@@ -168,7 +168,7 @@ public final class GML2ReaderTest {
     public void testPolygon() throws Exception {
         final Geometry g = read(TestData.POLYGON);
         assertInstanceOf(Polygon.class, g);
-        assertGeometryEquals(GeometryFactory.createPolygon(ring(0, 0, 10, 10), List.of(ring(2, 2, 4, 4))), g);
+        assertGeometryEquals(GeometryFactory.DEFAULT.createPolygon(ring(0, 0, 10, 10), List.of(ring(2, 2, 4, 4))), g);
         assertCRS(wgs84, g);
     }
 
@@ -194,9 +194,9 @@ public final class GML2ReaderTest {
     public void testMultiPoint() throws Exception {
         final Geometry g = read(TestData.MULTI_POINT);
         assertInstanceOf(MultiPoint.class, g);
-        assertGeometryEquals(GeometryFactory.createMultiPoint(
-                GeometryFactory.createPoint(sequence(0.0, 0.0)),
-                GeometryFactory.createPoint(sequence(10.0, 10.0))), g);
+        assertGeometryEquals(GeometryFactory.DEFAULT.createMultiPoint(
+                GeometryFactory.DEFAULT.createPoint(sequence(0.0, 0.0)),
+                GeometryFactory.DEFAULT.createPoint(sequence(10.0, 10.0))), g);
         assertCRS(wgs84, g);
     }
 
@@ -207,9 +207,9 @@ public final class GML2ReaderTest {
     public void testMultiLineString() throws Exception {
         final Geometry g = read(TestData.MULTI_LINE_STRING);
         assertInstanceOf(MultiLineString.class, g);
-        assertGeometryEquals(GeometryFactory.createMultiLineString(
-                GeometryFactory.createLineString(sequence(0.0, 0.0, 10.0, 10.0)),
-                GeometryFactory.createLineString(sequence(20.0, 20.0, 30.0, 30.0, 40.0, 20.0))), g);
+        assertGeometryEquals(GeometryFactory.DEFAULT.createMultiLineString(
+                GeometryFactory.DEFAULT.createLineString(sequence(0.0, 0.0, 10.0, 10.0)),
+                GeometryFactory.DEFAULT.createLineString(sequence(20.0, 20.0, 30.0, 30.0, 40.0, 20.0))), g);
         assertCRS(wgs84, g);
     }
 
@@ -220,9 +220,9 @@ public final class GML2ReaderTest {
     public void testMultiPolygon() throws Exception {
         final Geometry g = read(TestData.MULTI_POLYGON);
         assertInstanceOf(MultiPolygon.class, g);
-        assertGeometryEquals(GeometryFactory.createMultiPolygon(
-                GeometryFactory.createPolygon(ring(0, 0, 10, 10), null),
-                GeometryFactory.createPolygon(ring(20, 20, 30, 30), null)), g);
+        assertGeometryEquals(GeometryFactory.DEFAULT.createMultiPolygon(
+                GeometryFactory.DEFAULT.createPolygon(ring(0, 0, 10, 10), null),
+                GeometryFactory.DEFAULT.createPolygon(ring(20, 20, 30, 30), null)), g);
         assertCRS(wgs84, g);
     }
 
@@ -233,9 +233,9 @@ public final class GML2ReaderTest {
     public void testMultiGeometry() throws Exception {
         final Geometry g = read(TestData.MULTI_GEOMETRY);
         assertInstanceOf(GeometryCollection.class, g);
-        assertGeometryEquals(GeometryFactory.createGeometryCollection(
-                GeometryFactory.createPoint(sequence(0.0, 0.0)),
-                GeometryFactory.createLineString(sequence(10.0, 10.0, 20.0, 20.0))), g);
+        assertGeometryEquals(GeometryFactory.DEFAULT.createGeometryCollection(
+                GeometryFactory.DEFAULT.createPoint(sequence(0.0, 0.0)),
+                GeometryFactory.DEFAULT.createLineString(sequence(10.0, 10.0, 20.0, 20.0))), g);
         assertCRS(wgs84, g);
     }
 
@@ -247,7 +247,7 @@ public final class GML2ReaderTest {
     public void testMissingNamespace() throws Exception {
         final Geometry g = read(TestData.NO_NAMESPACE);
         assertInstanceOf(Point.class, g);
-        assertGeometryEquals(GeometryFactory.createPoint(sequence(10.0, 20.0)), g);
+        assertGeometryEquals(GeometryFactory.DEFAULT.createPoint(sequence(10.0, 20.0)), g);
         assertCRS(wgs84, g);
     }
 

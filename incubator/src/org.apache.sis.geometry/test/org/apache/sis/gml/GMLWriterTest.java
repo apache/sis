@@ -52,8 +52,8 @@ public final class GMLWriterTest extends TestCase {
      * the resulting XML document as a string.
      */
     private String write(final GMLVersion version) throws Exception {
-        final Point g = GeometryFactory.createPoint(
-                GeometryFactory.createSequence(NDArrays.of(SampleSystem.of(wgs84), 10.0, 20.0)));
+        final Point g = GeometryFactory.DEFAULT.createPoint(
+                GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(SampleSystem.of(wgs84), 10.0, 20.0)));
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         try (GMLWriter writer = new GMLWriter(out, version)) {
             writer.writeGeometry(g);

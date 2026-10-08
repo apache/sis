@@ -270,10 +270,10 @@ public abstract class ShapeConverter {
         }
 
         switch (geometryType) {
-            case 0:          return GeometryFactory.INSTANCE.createEmpty(Geometries.getUndefinedCRS(DIMENSION));
-            default:         return GeometryFactory.INSTANCE.createGeometryCollection(geometries.toArray(Geometry[]::new));
-            case POINT:      return GeometryFactory.INSTANCE.createMultiPoint(geometries.toArray(Point[]::new));
-            case LINESTRING: return GeometryFactory.INSTANCE.createMultiLineString(geometries.toArray(LineString[]::new));
+            case 0:          return GeometryFactory.DEFAULT.createEmpty(Geometries.getUndefinedCRS(DIMENSION));
+            default:         return GeometryFactory.DEFAULT.createGeometryCollection(geometries.toArray(Geometry[]::new));
+            case POINT:      return GeometryFactory.DEFAULT.createMultiPoint(geometries.toArray(Point[]::new));
+            case LINESTRING: return GeometryFactory.DEFAULT.createMultiLineString(geometries.toArray(LineString[]::new));
             case POLYGON:    break;
         }
         /*
@@ -313,14 +313,14 @@ public abstract class ShapeConverter {
         if (length != 0) {
             Geometry geometry;
             if (length == DIMENSION) {
-                geometry = GeometryFactory.INSTANCE.createPoint(toSequence(false));
+                geometry = GeometryFactory.DEFAULT.createPoint(toSequence(false));
                 geometryType |= POINT;
             } else {
                 if (isRing) {
-                    geometry = GeometryFactory.INSTANCE.createPolygon(GeometryFactory.INSTANCE.createLinearRing(toSequence(true)), null);
+                    geometry = GeometryFactory.DEFAULT.createPolygon(GeometryFactory.DEFAULT.createLinearRing(toSequence(true)), null);
                     geometryType |= POLYGON;
                 } else {
-                    geometry = GeometryFactory.INSTANCE.createLineString(toSequence(false));
+                    geometry = GeometryFactory.DEFAULT.createLineString(toSequence(false));
                     geometryType |= LINESTRING;
                 }
             }

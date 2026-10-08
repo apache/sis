@@ -224,7 +224,7 @@ public sealed interface Point extends Primitive
     @UML(identifier="boundary", specification=ISO_19107)
     @Override
     default Geometry getBoundary() {
-        return GeometryFactory.createEmpty(getCoordinateReferenceSystem());
+        return GeometryFactory.DEFAULT.createEmpty(getCoordinateReferenceSystem());
     }
 
     /**

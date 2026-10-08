@@ -286,7 +286,7 @@ public final class GML3Reader extends AbstractGMLReader {
         if (coordinates.size() != 1) {
             throw new DataStoreContentException("A GML 3 Point must contain exactly one coordinate tuple.");
         }
-        return GeometryFactory.createPoint(coordinates.build(crs));
+        return GeometryFactory.DEFAULT.createPoint(coordinates.build(crs));
     }
 
     /**
@@ -300,7 +300,7 @@ public final class GML3Reader extends AbstractGMLReader {
         if (coordinates.size() < 2) {
             throw new DataStoreContentException("A GML 3 LineString must contain at least two coordinate tuples.");
         }
-        return GeometryFactory.createLineString(coordinates.build(crs));
+        return GeometryFactory.DEFAULT.createLineString(coordinates.build(crs));
     }
 
     /**
@@ -314,7 +314,7 @@ public final class GML3Reader extends AbstractGMLReader {
         if (coordinates.size() < 4) {
             throw new DataStoreContentException("A GML 3 LinearRing must contain at least four coordinate tuples.");
         }
-        return GeometryFactory.createLinearRing(coordinates.build(crs));
+        return GeometryFactory.DEFAULT.createLinearRing(coordinates.build(crs));
     }
 
     /**
@@ -438,9 +438,9 @@ public final class GML3Reader extends AbstractGMLReader {
                                     linearHoles.add((LinearRing) hole);
                                 }
                             }
-                            return GeometryFactory.createPolygon((LinearRing) shell, linearHoles);
+                            return GeometryFactory.DEFAULT.createPolygon((LinearRing) shell, linearHoles);
                         }
-                        return GeometryFactory.createCurvePolygon(shell, holes);
+                        return GeometryFactory.DEFAULT.createCurvePolygon(shell, holes);
                     }
                     break;
                 }
@@ -510,7 +510,7 @@ public final class GML3Reader extends AbstractGMLReader {
                 }
                 case END_ELEMENT: {
                     if (GML2Tags.MULTI_POINT.equals(reader.getLocalName())) {
-                        return GeometryFactory.createMultiPoint(aggregateCRS(crs, members),
+                        return GeometryFactory.DEFAULT.createMultiPoint(aggregateCRS(crs, members),
                                 members.toArray(Point[]::new));
                     }
                     break;
@@ -548,10 +548,10 @@ public final class GML3Reader extends AbstractGMLReader {
                     if (enclosingTagName.equals(reader.getLocalName())) {
                         final CoordinateReferenceSystem fallback = aggregateCRS(crs, members);
                         if (allInstanceOf(members, LineString.class)) {
-                            return GeometryFactory.createMultiLineString(fallback,
+                            return GeometryFactory.DEFAULT.createMultiLineString(fallback,
                                     members.toArray(LineString[]::new));
                         }
-                        return GeometryFactory.createMultiCurve(fallback, members.toArray(Curve[]::new));
+                        return GeometryFactory.DEFAULT.createMultiCurve(fallback, members.toArray(Curve[]::new));
                     }
                     break;
                 }
@@ -588,10 +588,10 @@ public final class GML3Reader extends AbstractGMLReader {
                     if (enclosingTagName.equals(reader.getLocalName())) {
                         final CoordinateReferenceSystem fallback = aggregateCRS(crs, members);
                         if (allInstanceOf(members, Polygon.class)) {
-                            return GeometryFactory.createMultiPolygon(fallback,
+                            return GeometryFactory.DEFAULT.createMultiPolygon(fallback,
                                     members.toArray(Polygon[]::new));
                         }
-                        return GeometryFactory.createMultiSurface(fallback, members.toArray(Surface[]::new));
+                        return GeometryFactory.DEFAULT.createMultiSurface(fallback, members.toArray(Surface[]::new));
                     }
                     break;
                 }
@@ -622,7 +622,7 @@ public final class GML3Reader extends AbstractGMLReader {
                 }
                 case END_ELEMENT: {
                     if (GML2Tags.MULTI_GEOMETRY.equals(reader.getLocalName())) {
-                        return GeometryFactory.createGeometryCollection(aggregateCRS(crs, members),
+                        return GeometryFactory.DEFAULT.createGeometryCollection(aggregateCRS(crs, members),
                                 members.toArray(Geometry[]::new));
                     }
                     break;
@@ -680,7 +680,7 @@ public final class GML3Reader extends AbstractGMLReader {
                             throw new DataStoreContentException("A GML 3 Curve must contain at least one segment.");
                         }
                         return (segments.size() == 1) ? segments.get(0)
-                                : GeometryFactory.createCompoundCurve(crs, segments.toArray(Curve[]::new));
+                                : GeometryFactory.DEFAULT.createCompoundCurve(crs, segments.toArray(Curve[]::new));
                     }
                     break;
                 }
@@ -710,7 +710,7 @@ public final class GML3Reader extends AbstractGMLReader {
                         case GML3Tags.LINE_STRING_SEGMENT:
                         case GML3Tags.GEODESIC_STRING:
                         case GML3Tags.GEODESIC: {
-                            addTo.add(GeometryFactory.createLineString(parseCoordinateSequence(segment, crs).build(crs)));
+                            addTo.add(GeometryFactory.DEFAULT.createLineString(parseCoordinateSequence(segment, crs).build(crs)));
                             break;
                         }
                         /*
@@ -719,7 +719,7 @@ public final class GML3Reader extends AbstractGMLReader {
                          */
                         case GML3Tags.ARC:
                         case GML3Tags.ARC_STRING: {
-                            addTo.add(GeometryFactory.createCircularString(parseCoordinateSequence(segment, crs).build(crs)));
+                            addTo.add(GeometryFactory.DEFAULT.createCircularString(parseCoordinateSequence(segment, crs).build(crs)));
                             break;
                         }
                         case GML3Tags.ARC_BY_CENTER_POINT: {
@@ -809,7 +809,7 @@ public final class GML3Reader extends AbstractGMLReader {
                                         + " centre as either a pointProperty or exactly one coordinate tuple,"
                                         + " but " + coordinates.size() + " tuples were found.");
                             }
-                            center = GeometryFactory.createPoint(coordinates.build(crs));
+                            center = GeometryFactory.DEFAULT.createPoint(coordinates.build(crs));
                         }
                         if (Double.isNaN(radius)) {
                             throw new DataStoreContentException("A GML 3 ArcByCenterPoint must contain a radius element.");
@@ -819,7 +819,7 @@ public final class GML3Reader extends AbstractGMLReader {
                                     + " startAngle and an endAngle element.");
                         }
                         try {
-                            return GeometryFactory.createArcByCenterPoint(center, radius, unit, startAngle, endAngle);
+                            return GeometryFactory.DEFAULT.createArcByCenterPoint(center, radius, unit, startAngle, endAngle);
                         } catch (IllegalArgumentException e) {
                             throw new DataStoreContentException(e.getMessage(), e);
                         }
@@ -879,7 +879,7 @@ public final class GML3Reader extends AbstractGMLReader {
                         final Vector<?> direction = Vectors.createDouble(normal.length);
                         direction.set(normal);
                         try {
-                            return GeometryFactory.createArcByBulge(coordinates.build(crs), bulge, direction);
+                            return GeometryFactory.DEFAULT.createArcByBulge(coordinates.build(crs), bulge, direction);
                         } catch (IllegalArgumentException e) {
                             throw new DataStoreContentException(e.getMessage(), e);
                         }
@@ -977,7 +977,7 @@ public final class GML3Reader extends AbstractGMLReader {
             throws XMLStreamException, DataStoreContentException, DataStoreReferencingException
     {
         final List<Curve> members = parseCurveMembers(crs, GML3Tags.COMPOSITE_CURVE);
-        return GeometryFactory.createCompoundCurve(aggregateCRS(crs, members), members.toArray(Curve[]::new));
+        return GeometryFactory.DEFAULT.createCompoundCurve(aggregateCRS(crs, members), members.toArray(Curve[]::new));
     }
 
     /**
@@ -995,7 +995,7 @@ public final class GML3Reader extends AbstractGMLReader {
         if (members.size() == 1 && members.get(0) instanceof LinearRing single) {
             return single;
         }
-        return GeometryFactory.createCompoundCurve(aggregateCRS(crs, members), members.toArray(Curve[]::new));
+        return GeometryFactory.DEFAULT.createCompoundCurve(aggregateCRS(crs, members), members.toArray(Curve[]::new));
     }
 
     /**
@@ -1011,7 +1011,7 @@ public final class GML3Reader extends AbstractGMLReader {
                 reader.getAttributeValue(null, GML3Tags.ORIENTATION));
         final Curve base = parseSingleProperty(Curve.class, GML3Tags.BASE_CURVE,
                 GML3Tags.ORIENTABLE_CURVE, crs);
-        return reversed ? GeometryFactory.createReversed(base) : base;
+        return reversed ? GeometryFactory.DEFAULT.createReversed(base) : base;
     }
 
     // ////////////////////////////////////////////////////////////////////////
@@ -1075,18 +1075,18 @@ public final class GML3Reader extends AbstractGMLReader {
                 throw new DataStoreContentException("A GML 3 <" + enclosingTagName
                         + "> must contain only gml:Triangle patches.");
             }
-            return GeometryFactory.createTIN(fallback, patches.toArray(Triangle[]::new));
+            return GeometryFactory.DEFAULT.createTIN(fallback, patches.toArray(Triangle[]::new));
         }
         if (!allInstanceOf(patches, Polygon.class)) {
-            return GeometryFactory.createMultiSurface(fallback, patches.toArray(Surface[]::new));
+            return GeometryFactory.DEFAULT.createMultiSurface(fallback, patches.toArray(Surface[]::new));
         }
         if (patches.size() == 1) {
             return patches.get(0);
         }
         if (!patches.isEmpty() && allInstanceOf(patches, Triangle.class)) {
-            return GeometryFactory.createTIN(fallback, patches.toArray(Triangle[]::new));
+            return GeometryFactory.DEFAULT.createTIN(fallback, patches.toArray(Triangle[]::new));
         }
-        return GeometryFactory.createPolyhedralSurface(fallback, patches.toArray(Polygon[]::new));
+        return GeometryFactory.DEFAULT.createPolyhedralSurface(fallback, patches.toArray(Polygon[]::new));
     }
 
     /**
@@ -1112,7 +1112,7 @@ public final class GML3Reader extends AbstractGMLReader {
                             if (!(s instanceof Polygon p)) {
                                 throw new DataStoreContentException("A GML 3 Triangle patch must have a linear boundary.");
                             }
-                            addTo.add(GeometryFactory.createTriangle(p.getExteriorRing()));
+                            addTo.add(GeometryFactory.DEFAULT.createTriangle(p.getExteriorRing()));
                             break;
                         }
                         default: skipUntilEnd(); break;
@@ -1156,9 +1156,9 @@ public final class GML3Reader extends AbstractGMLReader {
                     if (GML3Tags.COMPOSITE_SURFACE.equals(reader.getLocalName())) {
                         final CoordinateReferenceSystem fallback = aggregateCRS(crs, members);
                         if (allInstanceOf(members, Polygon.class)) {
-                            return GeometryFactory.createPolyhedralSurface(fallback, members.toArray(Polygon[]::new));
+                            return GeometryFactory.DEFAULT.createPolyhedralSurface(fallback, members.toArray(Polygon[]::new));
                         }
-                        return GeometryFactory.createMultiSurface(fallback, members.toArray(Surface[]::new));
+                        return GeometryFactory.DEFAULT.createMultiSurface(fallback, members.toArray(Surface[]::new));
                     }
                     break;
                 }
@@ -1179,7 +1179,7 @@ public final class GML3Reader extends AbstractGMLReader {
                 reader.getAttributeValue(null, GML3Tags.ORIENTATION));
         final Surface base = parseSingleProperty(Surface.class, GML3Tags.BASE_SURFACE,
                 GML3Tags.ORIENTABLE_SURFACE, crs);
-        return reversed ? GeometryFactory.createReversed(base) : base;
+        return reversed ? GeometryFactory.DEFAULT.createReversed(base) : base;
     }
 
     // ////////////////////////////////////////////////////////////////////////
@@ -1223,7 +1223,7 @@ public final class GML3Reader extends AbstractGMLReader {
                         if (exterior == null) {
                             throw new DataStoreContentException("A GML 3 Solid must contain an exterior shell.");
                         }
-                        return GeometryFactory.createPolyhedron(exterior, interiors);
+                        return GeometryFactory.DEFAULT.createPolyhedron(exterior, interiors);
                     }
                     break;
                 }
@@ -1286,7 +1286,7 @@ public final class GML3Reader extends AbstractGMLReader {
                 }
                 case END_ELEMENT: {
                     if (GML3Tags.SHELL.equals(reader.getLocalName())) {
-                        return GeometryFactory.createMultiPolygon(aggregateCRS(crs, faces),
+                        return GeometryFactory.DEFAULT.createMultiPolygon(aggregateCRS(crs, faces),
                                 faces.toArray(Polygon[]::new));
                     }
                     break;
@@ -1318,7 +1318,7 @@ public final class GML3Reader extends AbstractGMLReader {
                 }
                 case END_ELEMENT: {
                     if (enclosingTagName.equals(reader.getLocalName())) {
-                        return GeometryFactory.createMultiPolyhedron(aggregateCRS(crs, members),
+                        return GeometryFactory.DEFAULT.createMultiPolyhedron(aggregateCRS(crs, members),
                                 members.toArray(Polyhedron[]::new));
                     }
                     break;

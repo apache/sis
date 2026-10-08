@@ -288,7 +288,7 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
     @Override
     public MultiPoint<?> createMultiPoint(final boolean isFloat, final Dimensions dimensions, final DoubleBuffer coordinates) {
         final int count = coordinates.remaining() / dimensions.count;
-        return GeometryFactory.createMultiPoint(readDataPoints(isFloat, dimensions, count, coordinates));
+        return GeometryFactory.DEFAULT.createMultiPoint(readDataPoints(isFloat, dimensions, count, coordinates));
     }
 
     /**
@@ -327,12 +327,12 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
         }
         addPath(paths, path, polygon, isFloat, dimensions, spatial);
         switch (paths.size()) {
-            case 0:  return GeometryFactory.createEmpty(undefinedCRS(spatial));
+            case 0:  return GeometryFactory.DEFAULT.createEmpty(undefinedCRS(spatial));
             case 1:  return paths.get(0);
             default: {
                 // An ArrayStoreException here would be a bug in our use of the `polygon` flag.
-                return polygon ? GeometryFactory.createMultiPolygon(paths.toArray(Polygon[]::new))
-                               : GeometryFactory.createMultiLineString(paths.toArray(LineString[]::new));
+                return polygon ? GeometryFactory.DEFAULT.createMultiPolygon(paths.toArray(Polygon[]::new))
+                               : GeometryFactory.DEFAULT.createMultiLineString(paths.toArray(LineString[]::new));
             }
         }
     }
@@ -359,8 +359,8 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
                 throw new IllegalArgumentException("Coordinates of a polygon shall make a closed ring.");
             }
             final DataPoints points = toDataPoints(path, isFloat, dimensions, spatial);
-            addTo.add(polygon ? GeometryFactory.createPolygon(GeometryFactory.createLinearRing(points), List.of())
-                              : GeometryFactory.createLineString(points));
+            addTo.add(polygon ? GeometryFactory.DEFAULT.createPolygon(GeometryFactory.DEFAULT.createLinearRing(points), List.of())
+                              : GeometryFactory.DEFAULT.createLineString(points));
         }
         path.clear();
     }
@@ -381,13 +381,13 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
             if (component instanceof Polygon polygon) {
                 polygons[i] = polygon;
             } else if (component instanceof LineString line) {
-                polygons[i] = GeometryFactory.createPolygon(toRing(line), List.of());
+                polygons[i] = GeometryFactory.DEFAULT.createPolygon(toRing(line), List.of());
             } else {
                 throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_3,
                         Strings.bracket("geometries", i), Polygon.class, Classes.getClass(component)));
             }
         }
-        return new Wrapper(GeometryFactory.createMultiPolygon(polygons));
+        return new Wrapper(GeometryFactory.DEFAULT.createMultiPolygon(polygons));
     }
 
     /**
@@ -415,12 +415,12 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
         switch (type) {
             case POINT: {
                 final DataPoints points = toDataPoints(components);
-                geometry = (points.size() == 1) ? GeometryFactory.createPoint(points)
-                                                : GeometryFactory.createMultiPoint(points).getCentroid();
+                geometry = (points.size() == 1) ? GeometryFactory.DEFAULT.createPoint(points)
+                                                : GeometryFactory.DEFAULT.createMultiPoint(points).getCentroid();
                 break;
             }
             case LINESTRING: {
-                geometry = GeometryFactory.createLineString(toDataPoints(components));
+                geometry = GeometryFactory.DEFAULT.createLineString(toDataPoints(components));
                 break;
             }
             case POLYGON: {
@@ -436,29 +436,29 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
                         if (i == 0) shell = ring;
                         else holes.add(ring);
                     }
-                    geometry = GeometryFactory.createPolygon(shell, holes);
+                    geometry = GeometryFactory.DEFAULT.createPolygon(shell, holes);
                 } else {
-                    geometry = GeometryFactory.createPolygon(
-                            GeometryFactory.createLinearRing(toDataPoints(components)), List.of());
+                    geometry = GeometryFactory.DEFAULT.createPolygon(
+                            GeometryFactory.DEFAULT.createLinearRing(toDataPoints(components)), List.of());
                 }
                 break;
             }
             case MULTIPOINT: {
                 geometry = (components instanceof Point[] points)
-                        ? GeometryFactory.createMultiPoint(points)
-                        : GeometryFactory.createMultiPoint(toDataPoints(components));
+                        ? GeometryFactory.DEFAULT.createMultiPoint(points)
+                        : GeometryFactory.DEFAULT.createMultiPoint(toDataPoints(components));
                 break;
             }
             case MULTILINESTRING: {
-                geometry = GeometryFactory.createMultiLineString((LineString[]) components);
+                geometry = GeometryFactory.DEFAULT.createMultiLineString((LineString[]) components);
                 break;
             }
             case MULTIPOLYGON: {
-                geometry = GeometryFactory.createMultiPolygon((Polygon[]) components);
+                geometry = GeometryFactory.DEFAULT.createMultiPolygon((Polygon[]) components);
                 break;
             }
             case GEOMETRYCOLLECTION: {
-                geometry = GeometryFactory.createGeometryCollection((Geometry[]) components);
+                geometry = GeometryFactory.DEFAULT.createGeometryCollection((Geometry[]) components);
                 break;
             }
             case GEOMETRY: {
@@ -606,7 +606,7 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
             return points;
         }
         if (components instanceof Array positions) {
-            return GeometryFactory.createSequence(positions);
+            return GeometryFactory.DEFAULT.createDataPoints(positions);
         }
         // The ClassCastException that may happen here is part of method contract.
         final Collection<?> source = (components instanceof Collection<?> c) ? c : Arrays.asList((Object[]) components);
@@ -622,10 +622,10 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
              * so the two-dimensional case is assumed, as everywhere else in the absence of
              * a coordinate reference system.
              */
-            return GeometryFactory.createSequence(NDArrays.of(undefinedSystem(BIDIMENSIONAL), DataType.DOUBLE, 0));
+            return GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(undefinedSystem(BIDIMENSIONAL), DataType.DOUBLE, 0));
         }
         final Tuple<?> first = tuples.get(0);
-        return GeometryFactory.createSequence(NDArrays.of(tuples, first.getSampleSystem(), first.getDataType()));
+        return GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(tuples, first.getSampleSystem(), first.getDataType()));
     }
 
     /**
@@ -633,6 +633,6 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
      * The ring shares the positions of the given curve, no copy is performed.
      */
     private static LinearRing toRing(final LineString line) {
-        return (line instanceof LinearRing ring) ? ring : GeometryFactory.createLinearRing(line.getDataPoints());
+        return (line instanceof LinearRing ring) ? ring : GeometryFactory.DEFAULT.createLinearRing(line.getDataPoints());
     }
 }

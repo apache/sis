@@ -120,7 +120,7 @@ public final class To3D {
      */
     public static Point to3D(Point base, CoordinateReferenceSystem crs3d, Consumer<Tuple> zeditor) {
         final DataPoints copy3d = to3d(base.getDataPoints(), crs3d, zeditor);
-        return GeometryFactory.createPoint(copy3d);
+        return GeometryFactory.DEFAULT.createPoint(copy3d);
     }
 
     /**
@@ -128,7 +128,7 @@ public final class To3D {
      */
     public static LineString to3D(LineString base, CoordinateReferenceSystem crs3d, Consumer<Tuple> zeditor) {
         final DataPoints copy3d = to3d(base.getDataPoints(), crs3d, zeditor);
-        return GeometryFactory.createLineString(copy3d);
+        return GeometryFactory.DEFAULT.createLineString(copy3d);
     }
 
     /**

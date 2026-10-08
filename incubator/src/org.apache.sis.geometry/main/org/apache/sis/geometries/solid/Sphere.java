@@ -27,15 +27,16 @@ import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
-import org.apache.sis.geometries.internal.shared.SinglePositionDataPoints;
 import org.apache.sis.geometries.surface.ParametricCurveSurface;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Tuple;
-import org.apache.sis.maths.Vector;
-import org.apache.sis.maths.Vectors;
 import org.apache.sis.util.ArgumentChecks;
 
 // Specific to the geoapi-4.0 branch:
@@ -70,7 +71,11 @@ import org.opengis.metadata.Identifier;
 @UML(identifier="Sphere", specification=ISO_19107)
 public final class Sphere extends AbstractGeometry implements ParametricCurveSurface {
 
-    private Tuple<?> center;
+    /**
+     * Must contain one point: the center of the sphere.
+     */
+    private final DataPoints points;
+
     private double radius = 1.0;
 
     /**
@@ -84,7 +89,7 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
      * @param crs sphere coordinate system, not null.
      */
     public Sphere(CoordinateReferenceSystem crs) {
-        center = Vectors.createDouble(crs);
+        points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(SampleSystem.of(crs), DataType.DOUBLE, 1));
     }
 
     /**
@@ -92,8 +97,7 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
      * @param radius radius new sphere radius, must be positive.
      */
     public Sphere(int dimension, double radius) {
-        this(Geometries.getUndefinedCRS(dimension));
-        this.radius = radius;
+        this(Geometries.getUndefinedCRS(dimension), radius);
     }
 
     /**
@@ -101,7 +105,33 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
      * @param radius radius new sphere radius, must be positive.
      */
     public Sphere(CoordinateReferenceSystem crs, double radius) {
-        center = Vectors.createDouble(crs);
+        this(crs);
+        this.radius = radius;
+    }
+
+    /**
+     * Creates a sphere centered on the single position of the given sequence. The sequence is
+     * taken as-is, so the caller may give the sphere the attributes carried by that sequence.
+     *
+     * @param  points  the center of the sphere.
+     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     */
+    public Sphere(DataPoints points) {
+        if (points.size() != 1) {
+            throw new IllegalArgumentException("Sphere sequence must contain one point");
+        }
+        this.points = points;
+    }
+
+    /**
+     * Creates a sphere of the given radius centered on the single position of the given sequence.
+     *
+     * @param  points  the center of the sphere.
+     * @param  radius  new sphere radius, must be positive.
+     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     */
+    public Sphere(DataPoints points, double radius) {
+        this(points);
         this.radius = radius;
     }
 
@@ -125,19 +155,17 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
         if (cs.getCoordinateSystem().getDimension() != getCoordinateReferenceSystem().getCoordinateSystem().getDimension()) {
             throw new IllegalArgumentException("New CRS dimension must be the same as previous CRS");
         }
-        Vector v = Vectors.create(cs, center.getDataType());
-        v.set(center);
-        center = v;
+        points.setCoordinateReferenceSystem(cs);
     }
 
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return center.getCoordinateReferenceSystem();
+        return points.getCoordinateReferenceSystem();
     }
 
     @Override
     public DataPointsType getDataPointsType() {
-        return getDataPoints().getType();
+        return points.getType();
     }
 
     /**
@@ -167,10 +195,20 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
     }
 
     /**
-     * @return sphere center, modifiable.
+     * Returns a copy of the sphere center. Writing in the returned tuple does not move this
+     * sphere; use {@link #setCenter(Tuple)} for that.
+     *
+     * @return sphere center.
      */
     public Tuple<?> getCenter() {
-        return center;
+        return points.getPosition(0);
+    }
+
+    /**
+     * @param position new center of the sphere
+     */
+    public void setCenter(Tuple<?> position) {
+        points.setPosition(0, position);
     }
 
     /**
@@ -184,7 +222,7 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
         if (radius > 0) {
             for (int i = 0, n = getDimension(); i < n; i++) {
                 double c = center.get(i);
-                env.setRange(0, c-radius, c+radius);
+                env.setRange(i, c-radius, c+radius);
             }
         }
         return env;
@@ -248,7 +286,7 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
      */
     @Override
     public DataPoints getDataPoints() {
-        return new SinglePositionDataPoints(this::getCenter);
+        return points;
     }
 
 }

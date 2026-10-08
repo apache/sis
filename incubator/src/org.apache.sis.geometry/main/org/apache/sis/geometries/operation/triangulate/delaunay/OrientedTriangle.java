@@ -39,7 +39,7 @@ import org.apache.sis.referencing.internal.shared.ShapeUtilities;
  */
 public final class OrientedTriangle extends AbstractGeometry implements Triangle, DataPoints {
 
-    private final LinearRing ring = GeometryFactory.createLinearRing(this);
+    private final LinearRing ring = GeometryFactory.DEFAULT.createLinearRing(this);
 
     private boolean obsolete = false;
     public final OrientedEdge ab;

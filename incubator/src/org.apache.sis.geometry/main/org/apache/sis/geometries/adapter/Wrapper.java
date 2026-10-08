@@ -282,9 +282,9 @@ add:    for (Geometry next = geometry;;) {
         }
         addPolyline(lines, coordinates);
         switch (lines.size()) {
-            case 0:  return GeometryFactory.createEmpty(crs);
+            case 0:  return GeometryFactory.DEFAULT.createEmpty(crs);
             case 1:  return lines.get(0);
-            default: return GeometryFactory.createMultiLineString(crs, lines.toArray(LineString[]::new));
+            default: return GeometryFactory.DEFAULT.createMultiLineString(crs, lines.toArray(LineString[]::new));
         }
     }
 
@@ -312,7 +312,7 @@ add:    for (Geometry next = geometry;;) {
         if (coordinates.size() >= 2) {
             final Tuple<?> first = coordinates.get(0);
             final Array positions = NDArrays.of(coordinates, first.getSampleSystem(), first.getDataType());
-            lines.add(GeometryFactory.createLineString(GeometryFactory.createSequence(positions)));
+            lines.add(GeometryFactory.DEFAULT.createLineString(GeometryFactory.DEFAULT.createDataPoints(positions)));
         }
         coordinates.clear();
     }
@@ -543,7 +543,7 @@ add:    for (Geometry next = geometry;;) {
             }
             case LINESTRING: {
                 if (isCollection(geometry)) break;
-                return GeometryFactory.createLineString(GeometryFactory.copy(geometry.getDataPoints()));
+                return GeometryFactory.DEFAULT.createLineString(GeometryFactory.DEFAULT.createDataPoints(geometry.getDataPoints()));
             }
             case POLYGON: {
                 if (!geometry.isEmpty() && geometry instanceof MultiLineString lines) {
@@ -554,33 +554,33 @@ add:    for (Geometry next = geometry;;) {
                     for (int i=1; i<count; i++) {
                         interiors.add(toRing(lines.getGeometryN(i)));
                     }
-                    return GeometryFactory.createPolygon(exterior, interiors);
+                    return GeometryFactory.DEFAULT.createPolygon(exterior, interiors);
                 }
                 if (isCollection(geometry)) break;
-                return GeometryFactory.createPolygon(toRing(geometry), List.of());
+                return GeometryFactory.DEFAULT.createPolygon(toRing(geometry), List.of());
             }
             case MULTIPOINT: {
                 if (geometry instanceof Point point) {
-                    return GeometryFactory.createMultiPoint(point);
+                    return GeometryFactory.DEFAULT.createMultiPoint(point);
                 }
-                return GeometryFactory.createMultiPoint(GeometryFactory.copy(geometry.getDataPoints()));
+                return GeometryFactory.DEFAULT.createMultiPoint(GeometryFactory.DEFAULT.createDataPoints(geometry.getDataPoints()));
             }
             case MULTILINESTRING: {
-                return GeometryFactory.createMultiLineString(crs,
-                        components(LineString.class, LineString[]::new, GeometryFactory::createLineString));
+                return GeometryFactory.DEFAULT.createMultiLineString(crs,
+                        components(LineString.class, LineString[]::new, GeometryFactory.DEFAULT::createLineString));
             }
             case MULTIPOLYGON: {
-                return GeometryFactory.createMultiPolygon(crs,
+                return GeometryFactory.DEFAULT.createMultiPolygon(crs,
                         components(Polygon.class, Polygon[]::new,
-                                   (points) -> GeometryFactory.createPolygon(GeometryFactory.createLinearRing(points), List.of())));
+                                   (points) -> GeometryFactory.DEFAULT.createPolygon(GeometryFactory.DEFAULT.createLinearRing(points), List.of())));
             }
             case GEOMETRYCOLLECTION: {
                 if (geometry instanceof Point point) {
-                    return GeometryFactory.createMultiPoint(point);
+                    return GeometryFactory.DEFAULT.createMultiPoint(point);
                 } else if (geometry instanceof LineString line) {
-                    return GeometryFactory.createMultiLineString(line);
+                    return GeometryFactory.DEFAULT.createMultiLineString(line);
                 } else if (geometry instanceof Polygon polygon) {
-                    return GeometryFactory.createMultiPolygon(polygon);
+                    return GeometryFactory.DEFAULT.createMultiPolygon(polygon);
                 }
                 break;
             }
@@ -612,7 +612,7 @@ add:    for (Geometry next = geometry;;) {
             } else if (isCollection(element)) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.NestedElementNotAllowed_1, GeometryCollection.class));
             } else {
-                components[i] = newComponent.apply(GeometryFactory.copy(element.getDataPoints()));
+                components[i] = newComponent.apply(GeometryFactory.DEFAULT.createDataPoints(element.getDataPoints()));
             }
         }
         return components;
@@ -634,7 +634,7 @@ add:    for (Geometry next = geometry;;) {
      * so that the returned ring does not share its data with the given geometry.
      */
     private static LinearRing toRing(final Geometry source) {
-        return GeometryFactory.createLinearRing(GeometryFactory.copy(source.getDataPoints()));
+        return GeometryFactory.DEFAULT.createLinearRing(GeometryFactory.DEFAULT.createDataPoints(source.getDataPoints()));
     }
 
     /**

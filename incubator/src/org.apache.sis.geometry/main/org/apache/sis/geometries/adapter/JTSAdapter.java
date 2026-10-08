@@ -76,47 +76,47 @@ public final class JTSAdapter {
         if (jts == null) {
             return null;
         } else if (jts.isEmpty()) {
-            return GeometryFactory.createEmpty(crs);
+            return GeometryFactory.DEFAULT.createEmpty(crs);
 
         } else if (jts instanceof org.locationtech.jts.geom.Point cdt) {
-            return GeometryFactory.createPoint(toDataPoints(cdt.getCoordinateSequence(), crs, copy));
+            return GeometryFactory.DEFAULT.createPoint(toDataPoints(cdt.getCoordinateSequence(), crs, copy));
 
         } else if (jts instanceof org.locationtech.jts.geom.MultiPoint cdt) {
-            return GeometryFactory.createMultiPoint(toDataPoints(jts.getFactory().getCoordinateSequenceFactory().create(cdt.getCoordinates()), crs, copy));
+            return GeometryFactory.DEFAULT.createMultiPoint(toDataPoints(jts.getFactory().getCoordinateSequenceFactory().create(cdt.getCoordinates()), crs, copy));
 
         } else if (jts instanceof org.locationtech.jts.geom.LinearRing cdt) {
-            return GeometryFactory.createLinearRing(toDataPoints(cdt.getCoordinateSequence(), crs, copy));
+            return GeometryFactory.DEFAULT.createLinearRing(toDataPoints(cdt.getCoordinateSequence(), crs, copy));
 
         } else if (jts instanceof org.locationtech.jts.geom.LineString cdt) {
-            return GeometryFactory.createLineString(toDataPoints(cdt.getCoordinateSequence(), crs, copy));
+            return GeometryFactory.DEFAULT.createLineString(toDataPoints(cdt.getCoordinateSequence(), crs, copy));
 
         } else if (jts instanceof org.locationtech.jts.geom.MultiLineString cdt) {
             final LineString[] strings = new LineString[cdt.getNumGeometries()];
             for (int i = 0; i < strings.length; i++) {
                 strings[i] = (LineString) fromJTS(cdt.getGeometryN(i), crs, copy);
             }
-            return GeometryFactory.createMultiLineString(strings);
+            return GeometryFactory.DEFAULT.createMultiLineString(strings);
         } else if (jts instanceof org.locationtech.jts.geom.Polygon cdt) {
             final LinearRing exterior = (LinearRing) fromJTS(cdt.getExteriorRing(), crs, copy);
             final List<LinearRing> interiors = new ArrayList<>(cdt.getNumInteriorRing());
             for (int i = 0, n = cdt.getNumInteriorRing(); i < n; i++) {
                 interiors.add((LinearRing) fromJTS(cdt.getInteriorRingN(i), crs, copy));
             }
-            return GeometryFactory.createPolygon(exterior, interiors);
+            return GeometryFactory.DEFAULT.createPolygon(exterior, interiors);
 
         } else if (jts instanceof org.locationtech.jts.geom.MultiPolygon cdt) {
             final Polygon[] geoms = new Polygon[cdt.getNumGeometries()];
             for (int i = 0; i < geoms.length; i++) {
                 geoms[i] = (Polygon) fromJTS(cdt.getGeometryN(i), crs, copy);
             }
-            return GeometryFactory.createMultiPolygon(geoms);
+            return GeometryFactory.DEFAULT.createMultiPolygon(geoms);
 
         } else if (jts instanceof org.locationtech.jts.geom.GeometryCollection cdt) {
             final Geometry[] geoms = new Geometry[cdt.getNumGeometries()];
             for (int i = 0; i < geoms.length; i++) {
                 geoms[i] = fromJTS(cdt.getGeometryN(i), crs, copy);
             }
-            return GeometryFactory.createGeometryCollection(geoms);
+            return GeometryFactory.DEFAULT.createGeometryCollection(geoms);
 
         } else {
             throw new IllegalArgumentException("Unknown JTS geometry type");

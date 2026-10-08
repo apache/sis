@@ -47,7 +47,7 @@ public final class Ray extends AbstractGeometry{
      * @param  direction  the direction the ray extends toward, not null.
      */
     public Ray(Tuple<?> position, Vector<?> direction) {
-        points = GeometryFactory.createSequence(NDArrays.of(position.getSampleSystem(), position.getDataType(), 1));
+        points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(position.getSampleSystem(), position.getDataType(), 1));
         points.setPosition(0, position);
         this.direction = direction;
     }

@@ -99,8 +99,10 @@ import org.apache.sis.geometries.internal.shared.DefaultSpiral;
 import org.apache.sis.geometries.internal.shared.DefaultTriangle;
 import org.apache.sis.geometries.internal.shared.DefaultTriangulatedSurface;
 import org.apache.sis.geometries.point.MultiPoint;
+import org.apache.sis.geometries.solid.Ellipsoid;
 import org.apache.sis.geometries.solid.MultiPolyhedron;
 import org.apache.sis.geometries.solid.Polyhedron;
+import org.apache.sis.geometries.solid.Sphere;
 import org.apache.sis.geometries.solid.BSplineSolid;
 import org.apache.sis.geometries.surface.BSplineSurface;
 import org.apache.sis.geometries.surface.BSplineSurfaceForm;
@@ -115,6 +117,7 @@ import org.apache.sis.geometries.surface.TIN;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.NumberRange;
@@ -122,141 +125,154 @@ import org.apache.sis.measure.Range;
 
 
 /**
+ * Factory for SIS Geometry.
  *
  * @author Johann Sorel (Geomatys)
  */
 public final class GeometryFactory {
 
-    public static GeometryFactory INSTANCE = new GeometryFactory();
+    public static GeometryFactory DEFAULT = new GeometryFactory();
 
     private GeometryFactory(){
     }
 
-    public static Empty createEmpty(CoordinateReferenceSystem crs) {
+    // ////////////////////////////////////////////////////////////////////////
+    // DataPoints /////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Create a new DataPoints from a 2D array of coordinates.
+     *
+     * @param positions in 2D
+     * @return created DataPoints
+     */
+    public DataPoints createDataPoints(double ... positions) {
+        return createDataPoints(2, positions);
+    }
+
+    public DataPoints createDataPoints(int dimension, double ... positions) {
+        return createDataPoints(Geometries.getUndefinedCRS(dimension), positions);
+    }
+
+    public DataPoints createDataPoints(CoordinateReferenceSystem crs, double ... positions) {
+        final Array array = NDArrays.of(crs, positions);
+        return createDataPoints(array);
+    }
+
+    /**
+     * Create a new DataPoints from a 2D array of coordinates.
+     *
+     * @param positions in 2D
+     * @return created DataPoints
+     */
+    public DataPoints createDataPoints(float ... positions) {
+        return createDataPoints(2, positions);
+    }
+
+    public DataPoints createDataPoints(int dimension, float ... positions) {
+        return createDataPoints(Geometries.getUndefinedCRS(dimension), positions);
+    }
+
+    public DataPoints createDataPoints(CoordinateReferenceSystem crs, float ... positions) {
+        final Array array = NDArrays.of(crs, positions);
+        return createDataPoints(array);
+    }
+
+    public DataPoints createDataPoints(Array positions) {
+        return GeometryFactory.this.createDataPoints(Collections.singletonMap(DataPointsType.ATT_POSITION, positions));
+    }
+
+    public DataPoints createDataPoints(Map<String, Array> attributes) {
+        return new ArrayDataPoints(attributes);
+    }
+
+    /**
+     * Returns a copy of the given DataPoints.
+     */
+    public DataPoints createDataPoints(final DataPoints source) {
+        final Map<String,Array> attributes = new LinkedHashMap<>();
+        for (final String name : source.getType().getAttributeNames()) {
+            attributes.put(name, source.getAttributeArray(name));
+        }
+        return createDataPoints(attributes);
+    }
+
+    // ////////////////////////////////////////////////////////////////////////
+    // Empty //////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////
+
+    public Empty createEmpty(CoordinateReferenceSystem crs) {
         final DataPointsType.Template attType = new DataPointsType.Template();
         attType.addOrReplaceAttribute(DataPointsType.ATT_POSITION, SampleSystem.of(crs), DataType.DOUBLE);
+        return createEmpty(attType);
+    }
+
+    public Empty createEmpty(DataPointsType attType) {
         return new DefaultEmpty(attType);
     }
 
-    public static Empty createEmpty(DataPointsType attType) {
-        return new DefaultEmpty(attType);
-    }
+    // ////////////////////////////////////////////////////////////////////////
+    // Points /////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////
 
-    public static Point createPoint(CoordinateReferenceSystem crs) {
+    public Point createPoint(CoordinateReferenceSystem crs) {
         return new DefaultPoint(crs);
     }
 
-    public static Point createPoint(CoordinateReferenceSystem crs, double ... position) {
+    public Point createPoint(CoordinateReferenceSystem crs, double ... position) {
         return new DefaultPoint(crs, position);
     }
 
-    public static Point createPoint(SampleSystem ss, double ... position) {
+    public Point createPoint(SampleSystem ss, double ... position) {
         return new DefaultPoint(ss, position);
     }
 
-    public static Point createPoint(DataPoints sequence) {
+    public Point createPoint(DataPoints sequence) {
         return new DefaultPoint(sequence);
     }
 
-    public static LineString createLineString(DataPoints sequence) {
-        return new DefaultLineString(sequence);
-    }
-
-    public static Geodesic createGeodesic(DataPoints sequence) {
-        return new DefaultGeodesic(sequence);
-    }
-
-    public static Rhumb createRhumb(DataPoints sequence) {
-        return new DefaultRhumb(sequence);
-    }
-
-    public static LinearRing createLinearRing(DataPoints sequence) {
-        return new DefaultLinearRing(sequence);
-    }
-
-    public static Polygon createPolygon(LinearRing exterior, List<LinearRing> interiors) {
-        return new DefaultPolygon(exterior, interiors);
-    }
-
-    public static Triangle createTriangle(LinearRing exterior) {
-        return new DefaultTriangle(exterior);
-    }
-
-    public static MultiPoint createMultiPoint(DataPoints sequence) {
+    public MultiPoint createMultiPoint(DataPoints sequence) {
         return new DefaultMultiPoint(sequence);
     }
 
-    public static MultiPoint createMultiPoint(Point ... geometries) {
+    public MultiPoint createMultiPoint(Point ... geometries) {
         return new DefaultRawMultiPoint(geometries);
     }
 
-    public static MultiLineString createMultiLineString(LineString ... geometries) {
-        return new DefaultMultiLineString(geometries);
-    }
-
-    public static <T extends Curve> MultiCurve<T> createMultiCurve(T ... geometries) {
-        return new DefaultMultiCurve<>(geometries);
-    }
-
-    public static MultiPolygon createMultiPolygon(Polygon ... geometries) {
-        return new DefaultMultiPolygon(geometries);
-    }
-
-    public static <T extends Surface> MultiSurface<T> createMultiSurface(T ... geometries) {
-        return new DefaultMultiSurface<>(geometries);
-    }
-
-    public static <T extends Geometry> GeometryCollection<T> createGeometryCollection(T ... geometries) {
-        return new DefaultGeometryCollection<>(geometries);
-    }
-
-    /*
-     * Variants taking an explicit coordinate reference system, used when the collection may be
-     * empty. An aggregate normally reports the CRS of its first element; with no element there is
-     * nothing to report, so the CRS has to be supplied by the caller.
-     */
-
-    public static MultiPoint createMultiPoint(CoordinateReferenceSystem crs, Point ... geometries) {
+    public MultiPoint createMultiPoint(CoordinateReferenceSystem crs, Point ... geometries) {
         return new DefaultRawMultiPoint(crs, geometries);
     }
 
-    public static MultiLineString createMultiLineString(CoordinateReferenceSystem crs, LineString ... geometries) {
-        return new DefaultMultiLineString(crs, geometries);
+    // ////////////////////////////////////////////////////////////////////////
+    // Curves /////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////
+
+    public LineString createLineString(DataPoints sequence) {
+        return new DefaultLineString(sequence);
     }
 
-    public static <T extends Curve> MultiCurve<T> createMultiCurve(CoordinateReferenceSystem crs, T ... geometries) {
-        return new DefaultMultiCurve<>(crs, geometries);
+    public LinearRing createLinearRing(DataPoints sequence) {
+        return new DefaultLinearRing(sequence);
     }
 
-    public static MultiPolygon createMultiPolygon(CoordinateReferenceSystem crs, Polygon ... geometries) {
-        return new DefaultMultiPolygon(crs, geometries);
+    public Geodesic createGeodesic(DataPoints sequence) {
+        return new DefaultGeodesic(sequence);
     }
 
-    public static <T extends Surface> MultiSurface<T> createMultiSurface(CoordinateReferenceSystem crs, T ... geometries) {
-        return new DefaultMultiSurface<>(crs, geometries);
+    public Rhumb createRhumb(DataPoints sequence) {
+        return new DefaultRhumb(sequence);
     }
 
-    public static <T extends Geometry> GeometryCollection<T> createGeometryCollection(CoordinateReferenceSystem crs, T ... geometries) {
-        return new DefaultGeometryCollection<>(crs, geometries);
+    public CircularString createCircularString(DataPoints sequence) {
+        return new DefaultCircularString(sequence);
     }
 
-    /*
-     * Curves and surfaces beyond the linear ones, and solids. These are what the GML 3 constructs
-     * `gml:Curve`, `gml:CompositeCurve`, `gml:Ring`, `gml:ArcString`, `gml:Surface`,
-     * `gml:CompositeSurface`, `gml:Solid`, `gml:CompositeSolid` and the two `gml:Orientable*`
-     * elements map onto.
-     */
-
-    public static CompoundCurve createCompoundCurve(Curve ... curves) {
+    public CompoundCurve createCompoundCurve(Curve ... curves) {
         return new DefaultCompoundCurve(curves);
     }
 
-    public static CompoundCurve createCompoundCurve(CoordinateReferenceSystem crs, Curve ... curves) {
+    public CompoundCurve createCompoundCurve(CoordinateReferenceSystem crs, Curve ... curves) {
         return new DefaultCompoundCurve(crs, curves);
-    }
-
-    public static CircularString createCircularString(DataPoints sequence) {
-        return new DefaultCircularString(sequence);
     }
 
     /**
@@ -269,7 +285,7 @@ public final class GeometryFactory {
      * @param  startAngle  bearing at which the arc starts, in decimal degrees.
      * @param  endAngle    bearing at which the arc ends, in decimal degrees.
      */
-    public static ArcByCenterPoint createArcByCenterPoint(Point center, double radius, Unit<?> radiusUnit,
+    public ArcByCenterPoint createArcByCenterPoint(Point center, double radius, Unit<?> radiusUnit,
             double startAngle, double endAngle)
     {
         return new DefaultArcByCenterPoint(center, radius, radiusUnit, startAngle, endAngle);
@@ -283,15 +299,9 @@ public final class GeometryFactory {
      * @param  bulge   distance from the midpoint of the chord to the arc, along {@code normal}.
      * @param  normal  direction the arc bulges towards, perpendicular to the chord.
      */
-    public static ArcByBulge createArcByBulge(DataPoints points, double bulge, Vector<?> normal) {
+    public ArcByBulge createArcByBulge(DataPoints points, double bulge, Vector<?> normal) {
         return new DefaultArcByBulge(points, bulge, normal);
     }
-
-    /*
-     * Conics, spirals and splines. These are the curves whose interpolation is neither linear nor
-     * a simple chain of circular arcs, and which ISO 19107 defines by a mathematical construction
-     * rather than by a list of positions alone.
-     */
 
     /**
      * Creates a chain of conic section arcs, each of them determined by five data points.
@@ -302,7 +312,7 @@ public final class GeometryFactory {
      *                        one per arc, or {@code null} if none.
      * @param  cycle          whether the conic closes on itself.
      */
-    public static Conic createConic(DataPoints points, Array controlPoints, boolean cycle) {
+    public Conic createConic(DataPoints points, Array controlPoints, boolean cycle) {
         return new DefaultConic(points, controlPoints, cycle);
     }
 
@@ -317,7 +327,7 @@ public final class GeometryFactory {
      *                        possibly empty.
      * @param  cycle          whether the chain closes on itself.
      */
-    public static Arc createArc(DataPoints points, Array controlPoints, List<Vector> radius, boolean cycle) {
+    public Arc createArc(DataPoints points, Array controlPoints, List<Vector> radius, boolean cycle) {
         return new DefaultArc(points, controlPoints, radius, cycle);
     }
 
@@ -331,7 +341,7 @@ public final class GeometryFactory {
      *                        must stay below a full turn, at least two of them are needed.
      * @param  radius         radius vectors of the arcs, possibly empty.
      */
-    public static Circle createCircle(DataPoints points, Array controlPoints, List<Vector> radius) {
+    public Circle createCircle(DataPoints points, Array controlPoints, List<Vector> radius) {
         return new DefaultCircle(points, controlPoints, radius);
     }
 
@@ -343,7 +353,7 @@ public final class GeometryFactory {
      * @param  controlPoints  centres of the ellipses of the arcs, or {@code null} if none.
      * @param  cycle          whether the arc closes on itself, making it a complete ellipse.
      */
-    public static EllipticArc createEllipticArc(DataPoints points, Array controlPoints, boolean cycle) {
+    public EllipticArc createEllipticArc(DataPoints points, Array controlPoints, boolean cycle) {
         return new DefaultEllipticArc(points, controlPoints, cycle);
     }
 
@@ -356,7 +366,7 @@ public final class GeometryFactory {
      * @param  startFrame  two or three mutually orthogonal unit vectors forming a right-handed frame
      *                     at the start point.
      */
-    public static Spiral createSpiral(DataPoints points, RealFunction curvature,
+    public Spiral createSpiral(DataPoints points, RealFunction curvature,
             RealFunction torsion, List<Vector> startFrame)
     {
         return new DefaultSpiral(points, curvature, torsion, startFrame);
@@ -372,7 +382,7 @@ public final class GeometryFactory {
      * @param  startFrame  two mutually orthogonal unit vectors forming a right-handed frame at the
      *                     start point, a clothoid being planar.
      */
-    public static Clothoid createClothoid(DataPoints points, RealFunction curvature, List<Vector> startFrame) {
+    public Clothoid createClothoid(DataPoints points, RealFunction curvature, List<Vector> startFrame) {
         return new DefaultClothoid(points, curvature, startFrame);
     }
 
@@ -390,7 +400,7 @@ public final class GeometryFactory {
      * @param  derivativeInterior  number of continuous derivatives at the interior knots,
      *                             at most {@code degree} − 1.
      */
-    public static PolynomialSpline createPolynomialSpline(DataPoints points, Array controlPoints,
+    public PolynomialSpline createPolynomialSpline(DataPoints points, Array controlPoints,
             double[] knots, int degree, SplineCurveForm curveForm, KnotType knotSpec,
             Vector derivativeAtStart, Vector derivativeAtEnd, int derivativeInterior)
     {
@@ -409,7 +419,7 @@ public final class GeometryFactory {
      * @param  derivativeAtStart  tangent imposed at the start point, or {@code null} if none.
      * @param  derivativeAtEnd    tangent imposed at the end point, or {@code null} if none.
      */
-    public static CubicSpline createCubicSpline(DataPoints points, Array controlPoints, double[] knots,
+    public CubicSpline createCubicSpline(DataPoints points, Array controlPoints, double[] knots,
             SplineCurveForm curveForm, KnotType knotSpec, Vector derivativeAtStart, Vector derivativeAtEnd)
     {
         return new DefaultCubicSpline(points, controlPoints, knots, curveForm, knotSpec,
@@ -429,7 +439,7 @@ public final class GeometryFactory {
      * @param  derivativeAtStart  derivative imposed at the start point, or {@code null} if none.
      * @param  derivativeAtEnd    derivative imposed at the end point, or {@code null} if none.
      */
-    public static Bezier createBezier(DataPoints points, Array controlPoints, double[] knots, int degree,
+    public Bezier createBezier(DataPoints points, Array controlPoints, double[] knots, int degree,
             SplineCurveForm curveForm, KnotType knotSpec, Vector derivativeAtStart, Vector derivativeAtEnd)
     {
         return new DefaultBezier(points, controlPoints, knots, degree, curveForm, knotSpec,
@@ -450,7 +460,7 @@ public final class GeometryFactory {
      * @param  knotSpec       distribution of the knots, or {@code null} if unspecified.
      * @param  rational       whether the control points are expressed in homogeneous coordinates.
      */
-    public static BSplineCurve createBSplineCurve(DataPoints points, Array controlPoints, double[] knots,
+    public BSplineCurve createBSplineCurve(DataPoints points, Array controlPoints, double[] knots,
             int degree, SplineCurveForm curveForm, KnotType knotSpec, boolean rational)
     {
         return new DefaultBSplineCurve(points, controlPoints, knots, degree, curveForm, knotSpec, rational);
@@ -465,7 +475,7 @@ public final class GeometryFactory {
      * @param  knots    knot values, whose multiplicities make the curve clamped or periodic.
      * @param  degree   degree of the basis functions.
      */
-    public static NurbCurve createNurbCurve(DataPoints points, double[] weights, double[] knots, int degree) {
+    public NurbCurve createNurbCurve(DataPoints points, double[] weights, double[] knots, int degree) {
         return new DefaultNurbCurve(points, weights, knots, degree);
     }
 
@@ -480,7 +490,7 @@ public final class GeometryFactory {
      * @param  refDirection  reference direction of the offset in a 3-dimensional coordinate system,
      *                       or {@code null} if the spatial dimension is 2.
      */
-    public static OffsetCurve createOffsetCurve(Curve baseCurve, Quantity<?> distance, Bearing refDirection) {
+    public OffsetCurve createOffsetCurve(Curve baseCurve, Quantity<?> distance, Bearing refDirection) {
         return new DefaultOffsetCurve(baseCurve, distance, refDirection);
     }
 
@@ -493,48 +503,67 @@ public final class GeometryFactory {
      *                         They are disjoint and together cover the whole coordinate system.
      * @param  elements        projections of the curve, one per projection of the coordinate system.
      */
-    public static ProductCurve createProductCurve(Range<?> parameterRange,
+    public ProductCurve createProductCurve(Range<?> parameterRange,
             List<Projection> projections, Curve ... elements)
     {
         return new DefaultProductCurve(parameterRange, projections, elements);
     }
 
-    public static CurvePolygon createCurvePolygon(Curve exterior, List<Curve> interiors) {
+    /**
+     * Returns a curve traversed in the opposite direction to the given one.
+     * This is what a GML {@code gml:OrientableCurve} with {@code orientation="-"} describes.
+     */
+    public Curve createReversed(Curve base) {
+        return new DefaultReversedCurve(base);
+    }
+
+    public MultiLineString createMultiLineString(LineString ... geometries) {
+        return new DefaultMultiLineString(geometries);
+    }
+
+    public MultiLineString createMultiLineString(CoordinateReferenceSystem crs, LineString ... geometries) {
+        return new DefaultMultiLineString(crs, geometries);
+    }
+
+    public <T extends Curve> MultiCurve<T> createMultiCurve(T ... geometries) {
+        return new DefaultMultiCurve<>(geometries);
+    }
+
+    public <T extends Curve> MultiCurve<T> createMultiCurve(CoordinateReferenceSystem crs, T ... geometries) {
+        return new DefaultMultiCurve<>(crs, geometries);
+    }
+
+    // ////////////////////////////////////////////////////////////////////////
+    // Surfaces ///////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////
+
+    public Polygon createPolygon(LinearRing exterior, List<LinearRing> interiors) {
+        return new DefaultPolygon(exterior, interiors);
+    }
+
+    public Triangle createTriangle(LinearRing exterior) {
+        return new DefaultTriangle(exterior);
+    }
+
+    public CurvePolygon createCurvePolygon(Curve exterior, List<Curve> interiors) {
         return new DefaultCurvePolygon(exterior, interiors);
     }
 
-    public static <T extends Polygon> PolyhedralSurface<T> createPolyhedralSurface(T ... patches) {
+    public <T extends Polygon> PolyhedralSurface<T> createPolyhedralSurface(T ... patches) {
         return new DefaultPolyhedralSurface<>(null, patches);
     }
 
-    public static <T extends Polygon> PolyhedralSurface<T> createPolyhedralSurface(CoordinateReferenceSystem crs, T[] patches) {
+    public <T extends Polygon> PolyhedralSurface<T> createPolyhedralSurface(CoordinateReferenceSystem crs, T[] patches) {
         return new DefaultPolyhedralSurface<>(crs, patches);
     }
 
-    public static TIN createTIN(Triangle ... patches) {
+    public TIN createTIN(Triangle ... patches) {
         return new DefaultTriangulatedSurface(patches);
     }
 
-    public static TIN createTIN(CoordinateReferenceSystem crs, Triangle[] patches) {
+    public TIN createTIN(CoordinateReferenceSystem crs, Triangle[] patches) {
         return new DefaultTriangulatedSurface(crs, patches);
     }
-
-    public static Polyhedron createPolyhedron(MultiPolygon exteriorShell, List<MultiPolygon> interiorShells) {
-        return new DefaultPolyhedron(exteriorShell, interiorShells);
-    }
-
-    public static MultiPolyhedron createMultiPolyhedron(Polyhedron ... solids) {
-        return new DefaultMultiPolyhedron(solids);
-    }
-
-    public static MultiPolyhedron createMultiPolyhedron(CoordinateReferenceSystem crs, Polyhedron ... solids) {
-        return new DefaultMultiPolyhedron(crs, solids);
-    }
-
-    /*
-     * Surfaces and solids defined over a rectangular parameter space, in which fixing all the
-     * parameters but one yields a family of section curves.
-     */
 
     /**
      * Creates a parametric curve surface using polylines as both horizontal and vertical curves,
@@ -548,7 +577,7 @@ public final class GeometryFactory {
      * @param  columns        number of columns in the parameter grid.
      * @param  knots          knot values, one sequence per surface parameter, or {@code null} if none.
      */
-    public static BilinearGrid createBilinearGrid(DataPoints points, List<DirectPosition> controlPoints,
+    public BilinearGrid createBilinearGrid(DataPoints points, List<DirectPosition> controlPoints,
             int rows, int columns, List<double[]> knots)
     {
         return new DefaultBilinearGrid(points, controlPoints, rows, columns, knots);
@@ -572,7 +601,7 @@ public final class GeometryFactory {
      * @param  polynomial     {@code true} if the surface is polynomial, {@code false} if the control
      *                        points are expressed in homogeneous coordinates, making it rational.
      */
-    public static BSplineSurface createBSplineSurface(DataPoints points, List<DirectPosition> controlPoints,
+    public BSplineSurface createBSplineSurface(DataPoints points, List<DirectPosition> controlPoints,
             int rows, int columns, List<double[]> knots, int degree, KnotType knotSpec,
             BSplineSurfaceForm surfaceForm, boolean polynomial)
     {
@@ -591,10 +620,72 @@ public final class GeometryFactory {
      * @param  knotsV         knot values along the <var>v</var> parameter.
      * @param  degree         degree of the basis functions.
      */
-    public static NurbSurface createNurbSurface(Vector<?>[][] controlPoints, double[][] weights,
+    public NurbSurface createNurbSurface(Vector<?>[][] controlPoints, double[][] weights,
             double[] knotsU, double[] knotsV, int degree)
     {
         return new DefaultNurbSurface(controlPoints, weights, knotsU, knotsV, degree);
+    }
+
+    /**
+     * Creates a sphere of the given radius centered on the single position of the given sequence.
+     * The sequence is taken as-is, so the caller may give the sphere the attributes carried by it.
+     *
+     * @param  points  the center of the sphere, as a sequence of exactly one position.
+     * @param  radius  radius of the sphere, must be positive.
+     * @return the sphere of the given center and radius.
+     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     */
+    public Sphere createSphere(DataPoints points, double radius) {
+        return new Sphere(points, radius);
+    }
+
+    /**
+     * Creates an ellipsoid of the given semi-axes centered on the single position of the given
+     * sequence. The sequence is taken as-is, so the caller may give the ellipsoid the attributes
+     * carried by it. An ellipsoid whose semi-axes are all equal is a {@linkplain #createSphere
+     * sphere} of that radius.
+     *
+     * @param  points    the center of the ellipsoid, as a sequence of exactly one position.
+     * @param  semiAxes  length of the semi-axis along each axis of the coordinate system,
+     *                   one value per dimension. Each of them must be positive.
+     * @return the ellipsoid of the given center and semi-axes.
+     * @throws IllegalArgumentException if the given sequence does not hold exactly one position,
+     *         or if the number of semi-axes is not the number of dimensions.
+     */
+    public Ellipsoid createEllipsoid(DataPoints points, double... semiAxes) {
+        return new Ellipsoid(points, semiAxes);
+    }
+
+    /**
+     * Returns a surface whose up-normal points the opposite way to the given one's.
+     * This is what a GML {@code gml:OrientableSurface} with {@code orientation="-"} describes.
+     */
+    public Surface createReversed(Surface base) {
+        return new DefaultReversedSurface(base);
+    }
+
+    public MultiPolygon createMultiPolygon(Polygon ... geometries) {
+        return new DefaultMultiPolygon(geometries);
+    }
+
+    public MultiPolygon createMultiPolygon(CoordinateReferenceSystem crs, Polygon ... geometries) {
+        return new DefaultMultiPolygon(crs, geometries);
+    }
+
+    public <T extends Surface> MultiSurface<T> createMultiSurface(T ... geometries) {
+        return new DefaultMultiSurface<>(geometries);
+    }
+
+    public <T extends Surface> MultiSurface<T> createMultiSurface(CoordinateReferenceSystem crs, T ... geometries) {
+        return new DefaultMultiSurface<>(crs, geometries);
+    }
+
+    // ////////////////////////////////////////////////////////////////////////
+    // Solids /////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////
+
+    public Polyhedron createPolyhedron(MultiPolygon exteriorShell, List<MultiPolygon> interiorShells) {
+        return new DefaultPolyhedron(exteriorShell, interiorShells);
     }
 
     /**
@@ -607,7 +698,7 @@ public final class GeometryFactory {
      * @param  columns        number of vertical columns in the parameter grid.
      * @param  files          number of depth files in the parameter grid.
      */
-    public static BSplineSolid createBSolidSpline(DataPoints points, List<DirectPosition> controlPoints,
+    public BSplineSolid createBSolidSpline(DataPoints points, List<DirectPosition> controlPoints,
             int rows, int columns, int files)
     {
         return new DefaultBSplineSolid(points, controlPoints, rows, columns, files);
@@ -620,42 +711,27 @@ public final class GeometryFactory {
      * @param  extrusionRange  lower and upper limits of the extrusion.
      * @param  extrusionCrs    coordinate reference system of the extrusion range.
      */
-    public static Prism createPrism(Geometry base, NumberRange<?> extrusionRange, SingleCRS extrusionCrs) {
+    public Prism createPrism(Geometry base, NumberRange<?> extrusionRange, SingleCRS extrusionCrs) {
         return new DefaultPrism(base, extrusionRange, extrusionCrs);
     }
 
-    /**
-     * Returns a curve traversed in the opposite direction to the given one.
-     * This is what a GML {@code gml:OrientableCurve} with {@code orientation="-"} describes.
-     */
-    public static Curve createReversed(Curve base) {
-        return new DefaultReversedCurve(base);
+    public MultiPolyhedron createMultiPolyhedron(Polyhedron ... solids) {
+        return new DefaultMultiPolyhedron(solids);
     }
 
-    /**
-     * Returns a surface whose up-normal points the opposite way to the given one's.
-     * This is what a GML {@code gml:OrientableSurface} with {@code orientation="-"} describes.
-     */
-    public static Surface createReversed(Surface base) {
-        return new DefaultReversedSurface(base);
+    public MultiPolyhedron createMultiPolyhedron(CoordinateReferenceSystem crs, Polyhedron ... solids) {
+        return new DefaultMultiPolyhedron(crs, solids);
     }
 
-    public static DataPoints createSequence(Array positions) {
-        return createSequence(Collections.singletonMap(DataPointsType.ATT_POSITION, positions));
+    // ////////////////////////////////////////////////////////////////////////
+    // Heterogeneous collections //////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////
+
+    public <T extends Geometry> GeometryCollection<T> createGeometryCollection(T ... geometries) {
+        return new DefaultGeometryCollection<>(geometries);
     }
 
-    public static DataPoints createSequence(Map<String, Array> attributes) {
-        return new ArrayDataPoints(attributes);
-    }
-
-    /**
-     * Returns a copy of the given DataPoints.
-     */
-    public static DataPoints copy(final DataPoints source) {
-        final Map<String,Array> attributes = new LinkedHashMap<>();
-        for (final String name : source.getType().getAttributeNames()) {
-            attributes.put(name, source.getAttributeArray(name));
-        }
-        return GeometryFactory.createSequence(attributes);
+    public <T extends Geometry> GeometryCollection<T> createGeometryCollection(CoordinateReferenceSystem crs, T ... geometries) {
+        return new DefaultGeometryCollection<>(crs, geometries);
     }
 }

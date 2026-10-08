@@ -178,7 +178,7 @@ public final class WellKnownTextTest {
      */
     @Test
     public void testEmptyGeometry() {
-        final Geometry empty = GeometryFactory.createEmpty(Geometries.getUndefinedCRS(2));
+        final Geometry empty = GeometryFactory.DEFAULT.createEmpty(Geometries.getUndefinedCRS(2));
         assertEquals("GEOMETRYCOLLECTION EMPTY", wkt.encode(empty));
     }
 
@@ -234,7 +234,7 @@ public final class WellKnownTextTest {
      */
     @Test
     public void testWholeNumbers() {
-        final Point point = GeometryFactory.createPoint(Geometries.getUndefinedCRS(3), 1, 2, 3);
+        final Point point = GeometryFactory.DEFAULT.createPoint(Geometries.getUndefinedCRS(3), 1, 2, 3);
         assertEquals("POINT Z (1 2 3)", wkt.encode(point));
     }
 
@@ -258,10 +258,10 @@ public final class WellKnownTextTest {
      */
     @Test
     public void testUnsupportedType() {
-        final DataPoints points = GeometryFactory.createSequence(
+        final DataPoints points = GeometryFactory.DEFAULT.createDataPoints(
                 NDArrays.of(SampleSystem.of(Geometries.getUndefinedCRS(2)), 0, 0, 1, 1));
-        assertThrows(IllegalArgumentException.class, () -> wkt.encode(GeometryFactory.createGeodesic(points)));
-        assertThrows(IllegalArgumentException.class, () -> wkt.encode(GeometryFactory.createRhumb(points)));
+        assertThrows(IllegalArgumentException.class, () -> wkt.encode(GeometryFactory.DEFAULT.createGeodesic(points)));
+        assertThrows(IllegalArgumentException.class, () -> wkt.encode(GeometryFactory.DEFAULT.createRhumb(points)));
     }
 
     /**
@@ -270,7 +270,7 @@ public final class WellKnownTextTest {
      */
     @Test
     public void testTooManyDimensions() {
-        final Point point = GeometryFactory.createPoint(Geometries.getUndefinedCRS(4), 1, 2, 3, 4);
+        final Point point = GeometryFactory.DEFAULT.createPoint(Geometries.getUndefinedCRS(4), 1, 2, 3, 4);
         assertThrows(IllegalArgumentException.class, () -> wkt.encode(point));
     }
 

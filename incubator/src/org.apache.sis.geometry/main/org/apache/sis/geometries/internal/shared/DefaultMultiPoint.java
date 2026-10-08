@@ -98,7 +98,7 @@ public non-sealed class DefaultMultiPoint extends AbstractGeometry implements Mu
     public Geometry getBoundary() {
         if (isEmpty()) {
             // The boundary of the empty set is empty.
-            return GeometryFactory.createEmpty(getCoordinateReferenceSystem());
+            return GeometryFactory.DEFAULT.createEmpty(getCoordinateReferenceSystem());
         }
         //TODO : fallback on JTS until implemented
         return fromJTS(asJTS().getBoundary());

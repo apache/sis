@@ -40,7 +40,7 @@ import org.apache.sis.maths.Tuple;
  */
 public final class WTriangle extends AbstractGeometry implements Triangle {
 
-    private final LinearRing ring = GeometryFactory.createLinearRing(new DataPoints() {
+    private final LinearRing ring = GeometryFactory.DEFAULT.createLinearRing(new DataPoints() {
         @Override
         public CoordinateReferenceSystem getCoordinateReferenceSystem() {
             return p0.getCoordinateReferenceSystem();

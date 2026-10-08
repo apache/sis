@@ -66,7 +66,7 @@ public final class Cylinder extends AbstractGeometry{
      * @param  top     the center of the top circle, not null.
      */
     public Cylinder(Tuple<?> bottom, Tuple<?> top) {
-        points = GeometryFactory.createSequence(NDArrays.of(bottom.getSampleSystem(), bottom.getDataType(), 2));
+        points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(bottom.getSampleSystem(), bottom.getDataType(), 2));
         points.setPosition(0, bottom);
         points.setPosition(1, top);
     }
