@@ -39,6 +39,7 @@ import org.apache.sis.storage.geotiff.base.Predictor;
 import org.apache.sis.storage.geotiff.base.GeoKeys;
 import org.apache.sis.storage.geotiff.base.Tags;
 import org.apache.sis.storage.geotiff.reader.Type;
+import org.apache.sis.storage.geotiff.reader.ColorMap;
 import org.apache.sis.storage.geotiff.reader.GeoKeysLoader;
 import org.apache.sis.storage.geotiff.reader.ModelTiePoints;
 import org.apache.sis.storage.geotiff.reader.XMLMetadata;
@@ -189,6 +190,10 @@ final class NativeMetadata extends GeoKeysLoader {
                             }
                             case (short) TAG_MODEL_TIE_POINT: {
                                 value = new ModelTiePoints(type.readAsVector(input, count));
+                                break;
+                            }
+                            case TAG_COLOR_MAP: {
+                                value = new ColorMap(type.readAsVector(input, count));
                                 break;
                             }
                             default: {

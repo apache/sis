@@ -85,9 +85,11 @@ public final class ModelTiePoints extends TableRowList<Vector, Double> {
     /**
      * Returns the column headers.
      * The returned array length is {@link #RECORD_LENGTH}.
+     *
+     * @param  locale  ignored.
      */
     @Override
-    public String[] columns() {
+    public String[] columns(final Locale locale) {
         return new String[] {"i", "j", "k", "x", "y", "z"};
     }
 

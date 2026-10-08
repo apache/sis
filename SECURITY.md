@@ -1,7 +1,8 @@
 # Security Policy
 
 Apache SIS does not store credentials (user logins or passwords).
-Logging may contain URLs used for connection to databases and paths to data files.
+JDBC URLs for connecting to databases or paths to opened data files
+may appear in log records or (only if the JavaFX application is used) in Java preferences.
 Prerequisites for running Apache SIS safely are listed below.
 
 
@@ -24,7 +25,7 @@ Some file formats can contain references (usually as URLs) to auxiliary files:
 * `PARAMETERFILE` elements in Well Known Text (WKT),
 * `xlink:href` attributes in Geographic Markup Language (GML),
 * Any coordinate operation working with a datum shift grid such as NADCON or NTv2,
-* Landsat scenes with bands in separated TIFF images.
+* Landsat scenes with bands stored in separate TIFF images.
 
 By default, Apache SIS opens referenced files only if they are on the same host
 and in the same directory as, or in a sub-directory of, the referencing file.

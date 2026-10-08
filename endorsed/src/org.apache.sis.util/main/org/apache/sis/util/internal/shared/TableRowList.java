@@ -43,9 +43,10 @@ public abstract class TableRowList<E, V> extends AbstractList<E> {
      * Returns the title of each column, in order.
      * The length of this array is the number of columns.
      *
+     * @param  locale  desired locale, or {@code null} for the default locale.
      * @return the column titles.
      */
-    public abstract String[] columns();
+    public abstract String[] columns(Locale locale);
 
     /**
      * Returns the value in the given column of the given row.
@@ -77,7 +78,7 @@ public abstract class TableRowList<E, V> extends AbstractList<E> {
     public String toString() {
         final var locale = Locale.getDefault();
         final var table = new TableAppender();
-        final String[] columns = columns();
+        final String[] columns = columns(locale);
         final Format[] formats = new Format[columns.length];
         table.setCellAlignment(TableAppender.ALIGN_RIGHT);
         table.setMultiLinesCells(true);

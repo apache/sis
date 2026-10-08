@@ -256,7 +256,8 @@ public final class PropertyView implements Localized, ChangeListener<Number> {
             node = new TableView<>();
             tableView = node;
         }
-        node.getColumns().setAll(FormatTableCellFactory.createColumns(table.columns(), (i) -> table.createFormat(getLocale(), i)));
+        final Locale locale = getLocale();
+        node.getColumns().setAll(FormatTableCellFactory.createColumns(table.columns(locale), (i) -> table.createFormat(locale, i)));
         node.getItems().setAll(table);
         return node;
     }

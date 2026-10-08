@@ -338,10 +338,10 @@ final class ImageFileDirectory extends DataCube {
      * <p>In a TIFF ColorMap, all the Red values come first, followed by all Green values, then all Blue values.
      * The number of values for each color is 1 {@literal <<} {@link #bitsPerSample}. Therefore, the {@code ColorMap}
      * vector for an 8-bit palette-color image would have 3 * 256 values. 0 represents the minimum intensity and 65535
-     * represents the maximum intensity. Black is represented by 0,0,0 and white by 65535, 65535, 65535.</p>
+     * represents the maximum intensity. Black is represented by {0, 0, 0} and white by {65535, 65535, 65535}.</p>
      *
      * <p>{@code ColorMap} must be included in all palette-color images.
-     * In Specification Supplement 1, support was added for color maps containing other then RGB values.
+     * In Specification Supplement 1, support was added for color maps containing other than RGB values.
      * This scheme includes the {@code Indexed} tag, with value 1, and a {@link #photometricInterpretation}
      * different from {@code PaletteColor}.</p>
      */
@@ -1289,7 +1289,7 @@ final class ImageFileDirectory extends DataCube {
             missingTag((short) TAG_BITS_PER_SAMPLE, 1, false, false);
         }
         if (colorMap != null) {
-            ensureSameLength((short) TAG_COLOR_MAP, (short) TAG_BITS_PER_SAMPLE, colorMap.size(),  3 * (1 << bitsPerSample));
+            ensureSameLength((short) TAG_COLOR_MAP, (short) TAG_BITS_PER_SAMPLE, colorMap.size(), 3 * (1 << bitsPerSample));
         }
         if (sampleFormat != FLOAT) {
             long minValue, maxValue;
