@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.geotiff;
 
-import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.LinkedHashMap;
@@ -41,6 +40,7 @@ import org.apache.sis.storage.geotiff.base.GeoKeys;
 import org.apache.sis.storage.geotiff.base.Tags;
 import org.apache.sis.storage.geotiff.reader.Type;
 import org.apache.sis.storage.geotiff.reader.GeoKeysLoader;
+import org.apache.sis.storage.geotiff.reader.ModelTiePoints;
 import org.apache.sis.storage.geotiff.reader.XMLMetadata;
 
 
@@ -116,7 +116,7 @@ final class NativeMetadata extends GeoKeysLoader {
         input.mark();
         try {
             input.seek(isClassic ? 2*Short.BYTES : 4*Short.BYTES);
-            final Set<Long> doneIFD = new HashSet<>();
+            final var doneIFD = new HashSet<Long>();
             long nextIFD;
             /*
              * Following loop is a simplified copy of `Reader.getImageFileDirectory(int)` method,
@@ -185,6 +185,10 @@ final class NativeMetadata extends GeoKeysLoader {
                                     // Fallback on showing array of numerical values.
                                     value = type.readAsVector(input, count);
                                 }
+                                break;
+                            }
+                            case (short) TAG_MODEL_TIE_POINT: {
+                                value = new ModelTiePoints(type.readAsVector(input, count));
                                 break;
                             }
                             default: {
@@ -278,6 +282,7 @@ final class NativeMetadata extends GeoKeysLoader {
                                             }
                                             return String.join(", ", items);
                                         });
+                                        break;
                                     }
                                 }
                             }

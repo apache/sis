@@ -21,6 +21,9 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Objects;
+import java.util.Locale;
+import java.text.Format;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.MathTransform;
@@ -29,20 +32,19 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
 import org.apache.sis.referencing.factory.InternalFactoryException;
+import org.apache.sis.util.internal.shared.TableRowList;
 import org.apache.sis.math.Vector;
 
 
 /**
  * The conversion or transformation from pixel coordinates to model coordinates.
+ * Used for analyzing the {@code TAG_MODEL_TIE_POINT} data from a GeoTIFF file.
  * The target CRS may be the image CRS if the image is "georeferenceable" instead of georeferenced.
- *
- * This code is provided in a separated class for making easier to move it to some shared location
- * if another data store needs similar functionality in the future.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Jonatas Fischer
  */
-final class Localization {
+public final class ModelTiePoints extends TableRowList<Vector, Double> {
     /**
      * Number of floating point values in each (I,J,K,X,Y,Z) record.
      */
@@ -57,9 +59,68 @@ final class Localization {
     private static final double PRECISION = 1E-6;
 
     /**
-     * Do not allow instantiation of this class.
+     * Coordinates of the model tie points read from GeoTIFF file.
      */
-    private Localization() {
+    private final Vector coordinates;
+
+    /**
+     * Creates a new localization grid.
+     *
+     * @param  coordinates  the model tie points read from GeoTIFF file.
+     */
+    public ModelTiePoints(final Vector coordinates) {
+        this.coordinates = coordinates;
+    }
+
+    /**
+     * Returns the number of rows in the model tie points.
+     *
+     * @return number of (I,J,K,X,Y,Z) records.
+     */
+    @Override
+    public int size() {
+        return coordinates.size() / RECORD_LENGTH;
+    }
+
+    /**
+     * Returns the column headers.
+     * The returned array length is {@link #RECORD_LENGTH}.
+     */
+    @Override
+    public String[] columns() {
+        return new String[] {"i", "j", "k", "x", "y", "z"};
+    }
+
+    /**
+     * Returns the value in the specified row and column.
+     */
+    @Override
+    public Double get(final int row, final int column) {
+        Objects.checkIndex(row, size());
+        Objects.checkIndex(column, RECORD_LENGTH);
+        return coordinates.doubleValue(row * RECORD_LENGTH + column);
+    }
+
+    /**
+     * Returns the source and (I,J,K,X,Y,Z) record in the given row.
+     */
+    @Override
+    public Vector get(int row) {
+        Objects.checkIndex(row, size());
+        row *= RECORD_LENGTH;
+        return coordinates.subList(row, row + RECORD_LENGTH);
+    }
+
+    /**
+     * Returns the format to use for the given column.
+     *
+     * @param  locale  the locale of the format to create.
+     * @param  column  the column for which to get a format.
+     */
+    @Override
+    public Format createFormat(final Locale locale, final int column) {
+        return coordinates.subSampling(Objects.checkIndex(column, RECORD_LENGTH), RECORD_LENGTH, size())
+                          .createNumberFormat(locale);
     }
 
     /**
@@ -69,8 +130,8 @@ final class Localization {
      * @param  modelTiePoints  the tie points to use for computing {@code gridToCRS}.
      * @return the grid geometry created from above properties. Never null.
      */
-    static MathTransform nonLinear(final Vector modelTiePoints) throws FactoryException, TransformException {
-        return localizationGrid(modelTiePoints, null);
+    final MathTransform nonLinear() throws FactoryException, TransformException {
+        return localizationGrid(coordinates, null);
     }
 
     /**

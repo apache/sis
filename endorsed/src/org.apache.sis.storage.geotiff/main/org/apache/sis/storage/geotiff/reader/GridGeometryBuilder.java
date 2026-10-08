@@ -228,7 +228,7 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
             int nearest = 0;                                // Index of the record nearest to origin.
             double distance = Double.POSITIVE_INFINITY;     // Distance squared of the nearest record.
             final int size = modelTiePoints.size();
-            for (int i=0; i<size; i += Localization.RECORD_LENGTH) {
+            for (int i=0; i<size; i += ModelTiePoints.RECORD_LENGTH) {
                 double t;
                 final double d = (t = modelTiePoints.doubleValue(i    )) * t
                                + (t = modelTiePoints.doubleValue(i + 1)) * t
@@ -252,7 +252,7 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
                 final int trCol  = affine.getNumCol() - 1;
                 for (int j=0; j<numDim; j++) {
                     final double src = -modelTiePoints.doubleValue(nearest + j);
-                    final double tgt =  modelTiePoints.doubleValue(nearest + j + Localization.RECORD_LENGTH / BIDIMENSIONAL);
+                    final double tgt =  modelTiePoints.doubleValue(nearest + j + ModelTiePoints.RECORD_LENGTH / BIDIMENSIONAL);
                     var t = DoubleDouble.of(src, decimal).multiply(affine.getNumber(j,j), decimal).add(tgt, decimal);
                     affine.setNumber(j, trCol, t);
                 }
@@ -362,7 +362,7 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
                 gridToCRS = factory.createAffineTransform(m);
             } else if (modelTiePoints != null) {
                 anchor    = PixelInCell.CELL_CENTER;
-                gridToCRS = Localization.nonLinear(modelTiePoints);
+                gridToCRS = new ModelTiePoints(modelTiePoints).nonLinear();
                 gridToCRS = factory.createPassThroughTransform(0, gridToCRS, spatialDimension - BIDIMENSIONAL);
                 if (temporalCRS != null) {
                     gridToCRS = MathTransforms.compound(gridToCRS, MathTransforms.linear(Double.NaN, timeCoordinate));

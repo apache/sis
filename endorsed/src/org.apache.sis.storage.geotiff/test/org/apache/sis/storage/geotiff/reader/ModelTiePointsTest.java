@@ -38,7 +38,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Jonatas Fischer
  */
-public final class LocalizationTest extends TestCase {
+public final class ModelTiePointsTest extends TestCase {
     /**
      * Tolerance threshold, in degrees, when comparing tie point coordinates.
      * This is about one metre, while the tie points of the grids tested here
@@ -55,7 +55,7 @@ public final class LocalizationTest extends TestCase {
     /**
      * Creates a new test case.
      */
-    public LocalizationTest() {
+    public ModelTiePointsTest() {
     }
 
     /**
@@ -95,7 +95,7 @@ public final class LocalizationTest extends TestCase {
     /**
      * Returns the pixel coordinates of {@value #GRID_SIZE} tie points spaced by the given step,
      * except the last point which is closer to its predecessor. This is the spacing of Sentinel 1
-     * images, and the reason why {@link Localization} splits irregular grids in four parts.
+     * images, and the reason why {@link ModelTiePoints} splits irregular grids in four parts.
      *
      * @param  step  step between two consecutive tie points, except the last two.
      * @param  last  step between the two last tie points.
@@ -121,7 +121,7 @@ public final class LocalizationTest extends TestCase {
      * @return the (I,J,K,X,Y,Z) records of the tie points.
      */
     private static Vector tiePoints(final double[] columns, final double[] rows) {
-        final double[] records = new double[columns.length * rows.length * Localization.RECORD_LENGTH];
+        final double[] records = new double[columns.length * rows.length * ModelTiePoints.RECORD_LENGTH];
         int p = 0;
         for (final double y : rows) {
             for (final double x : columns) {
@@ -147,11 +147,11 @@ public final class LocalizationTest extends TestCase {
      */
     private static void verify(final double[] columns, final double[] rows) throws Exception {
         final Vector tiePoints = tiePoints(columns, rows);
-        final MathTransform gridToCRS = Localization.nonLinear(tiePoints);
+        final MathTransform gridToCRS = new ModelTiePoints(tiePoints).nonLinear();
         assertNotNull(gridToCRS);
         final double[] source = new double[2];
         final double[] target = new double[2];
-        for (int i=0; i<tiePoints.size(); i += Localization.RECORD_LENGTH) {
+        for (int i=0; i<tiePoints.size(); i += ModelTiePoints.RECORD_LENGTH) {
             source[0] = tiePoints.doubleValue(i);
             source[1] = tiePoints.doubleValue(i+1);
             gridToCRS.transform(source, 0, target, 0, 1);
@@ -194,7 +194,7 @@ public final class LocalizationTest extends TestCase {
 
     /**
      * Tests a grid where the steps differ by one pixel on a single axis. Only two of the four parts
-     * in which {@code Localization} would split such a grid receive points; the empty parts shall
+     * in which {@code ModelTiePoints} would split such a grid receive points; the empty parts shall
      * not cause an {@link IndexOutOfBoundsException}.
      *
      * <p>This is the case of ICEYE Single Look Complex images of 114644 × 16714 pixels:
