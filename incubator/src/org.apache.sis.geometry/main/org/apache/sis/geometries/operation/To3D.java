@@ -32,9 +32,9 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.maths.Vector;
 
 
 /**

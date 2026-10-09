@@ -34,17 +34,15 @@ import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.surface.ParametricCurveSurface;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
-
-// Specific to the geoapi-3.1 branch:
-import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.util.ArgumentChecks;
 
-// Specific to the geoapi-4.0 branch:
-import org.apache.sis.maths.Vector;
+// Specific to the geoapi-3.1 branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

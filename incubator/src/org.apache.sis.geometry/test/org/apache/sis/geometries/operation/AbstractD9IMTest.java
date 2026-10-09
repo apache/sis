@@ -60,7 +60,7 @@ public abstract class AbstractD9IMTest {
     public static final CoordinateReferenceSystem CRS_2D = CommonCRS.WGS84.geographic();
 
     /**
-     * Tolerance threshold on the measurements computed by the operations. 
+     * Tolerance threshold on the measurements computed by the operations.
      * For floating point arithmetic errors.
      */
     protected static final double TOLERANCE = 1E-9;

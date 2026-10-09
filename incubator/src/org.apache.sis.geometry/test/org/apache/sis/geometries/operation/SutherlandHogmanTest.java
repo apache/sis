@@ -20,11 +20,11 @@ import java.util.List;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Vector2D;
 import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Vector;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
-import org.apache.sis.maths.Vector;
 
 
 /**

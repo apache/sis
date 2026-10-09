@@ -23,8 +23,8 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.maths.ReadOnly;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**

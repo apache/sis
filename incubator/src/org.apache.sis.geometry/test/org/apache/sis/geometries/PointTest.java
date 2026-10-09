@@ -21,12 +21,12 @@ import java.util.Map;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.maths.Vector;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Disabled;
-import org.apache.sis.maths.Vector;
 
 
 /**

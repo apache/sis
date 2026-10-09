@@ -21,10 +21,9 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-// Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;

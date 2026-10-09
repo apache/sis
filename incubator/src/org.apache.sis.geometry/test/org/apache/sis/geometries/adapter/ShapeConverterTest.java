@@ -40,11 +40,11 @@ import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.surface.MultiPolygon;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Vector2D;
+import org.apache.sis.maths.Vector;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.maths.Vector;
 
 
 /**

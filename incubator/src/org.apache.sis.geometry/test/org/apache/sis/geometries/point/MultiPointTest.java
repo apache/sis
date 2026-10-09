@@ -17,13 +17,13 @@
 package org.apache.sis.geometries.point;
 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.GeometryTest;
 import org.apache.sis.geometries.Point;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.GeometryTest;
 
 
 /**

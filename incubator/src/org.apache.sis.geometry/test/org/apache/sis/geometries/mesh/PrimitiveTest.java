@@ -19,12 +19,12 @@ package org.apache.sis.geometries.mesh;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.sis.geometries.Geometries;
-import org.apache.sis.geometries.GeometryTest;
 import org.apache.sis.maths.NDArrays;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.GeometryTest;
 
 
 /**

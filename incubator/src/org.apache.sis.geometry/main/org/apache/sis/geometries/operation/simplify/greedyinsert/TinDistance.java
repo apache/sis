@@ -21,7 +21,6 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.Vector;
-import org.apache.sis.maths.Vector;
 
 
 /**

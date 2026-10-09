@@ -17,8 +17,8 @@
 package org.apache.sis.util.internal.shared;
 
 import java.util.AbstractList;
-import java.text.Format;
 import java.util.Locale;
+import java.text.Format;
 import org.apache.sis.io.TableAppender;
 
 

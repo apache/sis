@@ -42,7 +42,7 @@ public abstract class GeometryTest {
     protected static final CoordinateReferenceSystem CRS_3D = CommonCRS.WGS84.geographic3D();
 
     /**
-     * Tolerance threshold on the measurements and on the coordinates. 
+     * Tolerance threshold on the measurements and on the coordinates.
      * For rounding errors of the floating point arithmetic.
      */
     protected static final double TOLERANCE = 1E-9;

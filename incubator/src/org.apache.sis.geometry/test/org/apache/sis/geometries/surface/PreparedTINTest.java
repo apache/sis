@@ -19,7 +19,6 @@ package org.apache.sis.geometries.surface;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
-import org.apache.sis.geometries.GeometryTest;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.NDArrays;
@@ -30,6 +29,7 @@ import org.apache.sis.referencing.CommonCRS;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.GeometryTest;
 
 
 /**

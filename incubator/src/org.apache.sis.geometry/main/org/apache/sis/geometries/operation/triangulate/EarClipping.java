@@ -29,9 +29,9 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Vector2D;
+import org.apache.sis.maths.Vector;
 import static org.apache.sis.maths.Vectors.*;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.maths.Vector;
 
 
 /**

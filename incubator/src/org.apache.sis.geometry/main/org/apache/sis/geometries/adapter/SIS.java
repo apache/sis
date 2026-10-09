@@ -57,11 +57,11 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.internal.shared.Strings;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.maths.Vector;
 
 
 /**

@@ -32,8 +32,8 @@ import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**

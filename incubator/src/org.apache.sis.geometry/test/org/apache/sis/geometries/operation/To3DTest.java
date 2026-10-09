@@ -23,13 +23,13 @@ import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
-import org.apache.sis.maths.Vector;
 
 
 /**

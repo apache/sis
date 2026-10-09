@@ -37,9 +37,9 @@ import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.maths.Vector;
 
 
 /**

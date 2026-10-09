@@ -38,6 +38,7 @@ import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Vector2D;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Vectors;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.referencing.GeodeticCalculator;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.iso.Names;
@@ -50,7 +51,6 @@ import org.apache.sis.storage.rs.CodeIterator;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.apache.sis.maths.Vector;
 
 
 /**
