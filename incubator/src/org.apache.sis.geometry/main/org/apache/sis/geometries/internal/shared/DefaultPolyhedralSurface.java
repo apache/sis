@@ -19,6 +19,7 @@ package org.apache.sis.geometries.internal.shared;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 
@@ -93,6 +94,11 @@ public non-sealed class DefaultPolyhedralSurface<T extends Polygon> extends Abst
     @Override
     public Envelope getEnvelope() {
         return envUnion(patches);
+    }
+
+    @Override
+    public Geometry getBoundary() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

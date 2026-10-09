@@ -734,4 +734,90 @@ public final class GeometryFactory {
     public <T extends Geometry> GeometryCollection<T> createGeometryCollection(CoordinateReferenceSystem crs, T ... geometries) {
         return new DefaultGeometryCollection<>(crs, geometries);
     }
+
+    // ////////////////////////////////////////////////////////////////////////
+    // Implicit shapes ////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Creates a ray starting from the given position.
+     * A ray is a line which extends to infinity in one direction only.
+     * The reference system of the ray is the one of the given position.
+     *
+     * @param  position   the position the ray starts from, not null.
+     * @param  direction  the direction the ray extends toward, not null.
+     * @return the ray starting from the given position.
+     */
+    public Ray createRay(Vector<?> position, Vector<?> direction) {
+        return new Ray(position, direction);
+    }
+
+    /**
+     * Creates a ray starting from the single position of the given sequence.
+     * The sequence is taken as-is, so the caller may give the ray the attributes carried by it.
+     *
+     * @param  points     the position the ray starts from, as a sequence of exactly one position.
+     * @param  direction  the direction the ray extends toward, not null.
+     * @return the ray starting from the position of the given sequence.
+     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     */
+    public Ray createRay(DataPoints points, Vector<?> direction) {
+        return new Ray(points, direction);
+    }
+
+    /**
+     * Creates a plane centered on the given position and perpendicular to the given normal.
+     * A plane is a sheet with no side, both of its faces belonging to it; for a surface which
+     * divides the space in two, see {@link #createHyperPlane(Vector, Vector)}. The plane is
+     * unbounded until {@link Plane#setSizeX(double)} and {@link Plane#setSizeZ(double)} give it
+     * finite extents, making it a quad.
+     * The reference system of the plane is the one of the given position.
+     *
+     * @param  position  the position the plane is centered on, not null.
+     * @param  normal    the direction the plane is perpendicular to, not null.
+     * @return the plane centered on the given position.
+     */
+    public Plane createPlane(Vector<?> position, Vector<?> normal) {
+        return new Plane(position, normal);
+    }
+
+    /**
+     * Creates a plane centered on the single position of the given sequence.
+     * The sequence is taken as-is, so the caller may give the plane the attributes carried by it.
+     *
+     * @param  points  the position the plane is centered on, as a sequence of exactly one position.
+     * @param  normal  the direction the plane is perpendicular to, not null.
+     * @return the plane centered on the position of the given sequence.
+     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     */
+    public Plane createPlane(DataPoints points, Vector<?> normal) {
+        return new Plane(points, normal);
+    }
+
+    /**
+     * Creates a hyperplane passing by the given position and perpendicular to the given normal.
+     * Unlike a {@linkplain #createPlane(Vector, Vector) plane}, a hyperplane divides the geometric
+     * space in two, and therefore has a side.
+     * The reference system of the hyperplane is the one of the given position.
+     *
+     * @param  position  a position the hyperplane passes by, not null.
+     * @param  normal    the direction the hyperplane is perpendicular to, not null.
+     * @return the hyperplane passing by the given position.
+     */
+    public HyperPlane createHyperPlane(Vector<?> position, Vector<?> normal) {
+        return new HyperPlane(position, normal);
+    }
+
+    /**
+     * Creates a hyperplane passing by the single position of the given sequence.
+     * The sequence is taken as-is, so the caller may give the hyperplane the attributes carried by it.
+     *
+     * @param  points  a position the hyperplane passes by, as a sequence of exactly one position.
+     * @param  normal  the direction the hyperplane is perpendicular to, not null.
+     * @return the hyperplane passing by the position of the given sequence.
+     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     */
+    public HyperPlane createHyperPlane(DataPoints points, Vector<?> normal) {
+        return new HyperPlane(points, normal);
+    }
 }

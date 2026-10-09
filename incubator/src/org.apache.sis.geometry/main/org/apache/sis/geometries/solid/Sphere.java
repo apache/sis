@@ -27,6 +27,7 @@ import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.SurfaceInterpolation;
@@ -227,6 +228,11 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
             }
         }
         return env;
+    }
+
+    @Override
+    public Geometry getBoundary() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     // methods from ParametricCurveSurface

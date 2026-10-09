@@ -119,6 +119,11 @@ public final class BBox extends GeneralEnvelope implements Geometry {
     }
 
     @Override
+    public Geometry getBoundary() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
     public synchronized Map<String, Object> userProperties() {
         if (properties == null) {
             properties = new HashMap<>();

@@ -23,6 +23,7 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.surface.CurvePolygon;
 
 
@@ -80,6 +81,11 @@ public non-sealed class DefaultCurvePolygon extends AbstractGeometry implements 
     @Override
     public Envelope getEnvelope() {
         return exterior.getEnvelope();
+    }
+
+    @Override
+    public Geometry getBoundary() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

@@ -21,6 +21,7 @@ import javax.measure.Quantity;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Orientable;
 import org.apache.sis.geometries.Primitive;
@@ -101,6 +102,11 @@ public non-sealed class DefaultReversedSurface extends AbstractGeometry implemen
     @Override
     public Envelope getEnvelope() {
         return base.getEnvelope();
+    }
+
+    @Override
+    public Geometry getBoundary() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

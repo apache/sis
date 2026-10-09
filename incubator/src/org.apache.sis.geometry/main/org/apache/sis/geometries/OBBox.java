@@ -137,6 +137,11 @@ public final class OBBox extends AbstractGeometry {
         return env;
     }
 
+    @Override
+    public Geometry getBoundary() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     /**
      * Build oriented bbox from given envelope.
      * @param env

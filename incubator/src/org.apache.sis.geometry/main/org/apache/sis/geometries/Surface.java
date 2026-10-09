@@ -139,6 +139,26 @@ public sealed interface Surface extends Orientable
     }
 
     /**
+     * Rings bounding this surface, each of them a simple closed curve having this surface on its left.
+     *
+     * <p>Constraints:</p>
+     * <ul>
+     *   <li>At least one ring.</li>
+     *   <li>Except on a plane, no ring is the exterior one, since the notion of unbounded exterior
+     *       does not apply.</li>
+     *   <li>In a 2-dimensional coordinate system the rings determine the surface completely,
+     *       and may therefore be used to build it.</li>
+     * </ul>
+     *
+     * @return boundary of this surface.
+     *
+     * @see ISO 19107:2019 - 6.4.25.2
+     */
+    @UML(identifier="boundary", specification=ISO_19107)
+    @Override
+    Geometry getBoundary();
+
+    /**
      * Interpolation mechanisms used between the data points of this surface.
      * The default is a polygonal interpolation.
      *

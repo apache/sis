@@ -578,10 +578,7 @@ public sealed interface Geometry
      * @see ISO 19107:2019 - 6.4.4.7, 6.4.25.2, 6.4.28.2, 10.8.3
      */
     @UML(identifier="boundary", specification=ISO_19107)
-    default Geometry getBoundary() {
-        //TODO remove this method default when all classes implement it.
-        throw new UnsupportedOperationException();
-    }
+    Geometry getBoundary();
 
     /**
      * Map of properties for user needs.

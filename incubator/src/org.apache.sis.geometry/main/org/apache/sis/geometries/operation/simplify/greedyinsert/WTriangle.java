@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
@@ -116,6 +117,11 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
     @Override
     public LinearRing getExteriorRing() {
         return ring;
+    }
+
+    @Override
+    public Geometry getBoundary() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     private static class Candidate implements Comparable<Candidate>{

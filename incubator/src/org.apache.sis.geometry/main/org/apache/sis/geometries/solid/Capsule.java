@@ -23,6 +23,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
@@ -200,6 +201,11 @@ public final class Capsule extends AbstractGeometry{
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
         return points.getCoordinateReferenceSystem();
+    }
+
+    @Override
+    public Geometry getBoundary() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

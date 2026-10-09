@@ -76,6 +76,11 @@ public final class MultiMeshPrimitive<T extends MeshPrimitive> extends AbstractG
     }
 
     @Override
+    public Geometry getBoundary() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
     public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) {
         for (MeshPrimitive p : primitives) {
             p.setCoordinateReferenceSystem(crs);

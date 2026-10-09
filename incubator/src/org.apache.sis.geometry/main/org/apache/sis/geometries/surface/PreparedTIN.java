@@ -31,6 +31,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometry.Envelopes;
@@ -152,6 +153,11 @@ public sealed interface PreparedTIN extends TIN
         }
 
         @Override
+        public Geometry getBoundary() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
         public boolean isEmpty() {
             return base.isEmpty();
         }
@@ -253,6 +259,11 @@ public sealed interface PreparedTIN extends TIN
         @Override
         public Envelope getEnvelope() {
             return all;
+        }
+
+        @Override
+        public Geometry getBoundary() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override

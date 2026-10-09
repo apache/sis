@@ -363,6 +363,11 @@ public sealed interface MeshPrimitive extends Geometry
             return NDArrays.computeRange(positions);
         }
 
+        @Override
+        public Geometry getBoundary() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
         public List<Geometry> getComponents() {
             final List<Geometry> elements = new ArrayList<>();
             MeshPrimitiveVisitor visitor = new MeshPrimitiveVisitor(this) {
