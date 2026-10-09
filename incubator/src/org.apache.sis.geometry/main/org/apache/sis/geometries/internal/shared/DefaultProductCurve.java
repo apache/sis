@@ -18,6 +18,7 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.List;
 import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.cs.Projection;
 import org.apache.sis.geometries.curve.ProductCurve;
 import org.apache.sis.maths.Array;
@@ -55,7 +56,7 @@ public non-sealed class DefaultProductCurve extends DefaultGeometryCollection<Cu
     public DefaultProductCurve(final Range<?> parameterRange, final List<Projection> projections,
             final Curve... elements)
     {
-        super(elements);
+        super(GeometryType.CURVE, elements);
         this.parameterRange = parameterRange;
         this.projections    = (projections == null) ? List.of() : List.copyOf(projections);
     }

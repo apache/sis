@@ -1,0 +1,161 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.geometries.curve;
+
+import javax.measure.Quantity;
+import javax.print.attribute.standard.MediaSize.ISO;
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.CurveInterpolation;
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.internal.shared.DefaultLine;
+import org.apache.sis.geometries.internal.shared.DefaultLineString;
+import org.apache.sis.maths.Array;
+
+
+/**
+ * A curve using a linear interpolation between two data points,
+ * each consecutive pair of points defining a line segment.
+ *
+ * <p>Constraints:</p>
+ * <ul>
+ *   <li>At least two data points, the first one being the {@linkplain #getStartPoint() start point}
+ *       and the last one the {@linkplain #getEndPoint() end point}.</li>
+ *   <li>The position at the construction parameter <var>λ</var> between two consecutive data points
+ *       <var>P<sub>i</sub></var> and <var>P<sub>i+1</sub></var> is
+ *       (1 − <var>λ</var>)⋅<var>P<sub>i</sub></var> + <var>λ</var>⋅<var>P<sub>i+1</sub></var>
+ *       for <var>λ</var> ∈ [0 … 1].</li>
+ * </ul>
+ *
+ * <p>Note: ISO 19107 names this class a {@code Line}, even if it has more than 2 points.</p>
+ *
+ * @author Johann Sorel (Geomatys)
+ *
+ * @see OGC Simple Feature Access 1.2.1 - 6.1.7
+ * @see ISO 19107:2019 - 7.1.2
+ */
+@UML(identifier="Line", specification=ISO_19107)
+public sealed interface Line extends Curve
+        permits DefaultLine
+{
+
+    /**
+     * Well-known text keyword of this geometry type.
+     */
+    static final String TYPE = "LINE";
+
+    /**
+     * Returns {@link GeometryType#LINE}.
+     *
+     * @see ISO 19107:2019 - 6.4.4.23
+     */
+    @Override
+    default GeometryType getGeometryType() {
+        return GeometryType.LINE;
+    }
+
+    /**
+     * Returns {@link CurveInterpolation#LINEAR}.
+     *
+     * @see ISO 19107:2019 - 7.1.2.2
+     */
+    @UML(identifier="interpolation", specification=ISO_19107)
+    @Override
+    default CurveInterpolation getInterpolation() {
+        return CurveInterpolation.LINEAR;
+    }
+
+    /**
+     * Returns {@code this}, since a line string is already a linear approximation of itself.
+     *
+     * @see ISO 19107:2019 - 6.4.18.17
+     */
+    @Override
+    default LineString asLine(Quantity<?> spacing, Quantity<?> offset) {
+        return new DefaultLineString(getDataPoints());
+    }
+
+    /**
+     * The number of Points in this LineString.
+     *
+     * @see OGC Simple Feature Access 1.2.1 - 6.1.7.2
+     * @return number of Points in this LineString.
+     */
+    default int getNumPoints() {
+        return getDataPoints().size();
+    }
+
+    /**
+     * Returns the specified Point N in this LineString.
+     *
+     * @see OGC Simple Feature Access 1.2.1 - 6.1.7.2
+     * @return the specified Point N in this LineString.
+     */
+    default Point getPointN(int n) {
+        return getDataPoints().getPoint(n);
+    }
+
+    /**
+     * @return null, a LineString has no control points
+     *
+     * @see ISO 19107:2019 - 6.4.18.2
+     */
+    @Override
+    default Array getControlPoints() {
+        return null;
+    }
+
+    @Override
+    default CoordinateReferenceSystem getCoordinateReferenceSystem() {
+        return getDataPoints().getCoordinateReferenceSystem();
+    }
+
+    @Override
+    default void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
+        getDataPoints().setCoordinateReferenceSystem(cs);
+    }
+
+    @Override
+    default DataPointsType getDataPointsType() {
+        return getDataPoints().getType();
+    }
+
+    /**
+     * A Line is a LineString with exactly 2 Points.
+     *
+     * @return true if lineString is a line.
+     */
+    default boolean isLine() {
+        return getDataPoints().size() == 2;
+    }
+
+    @Override
+    default Envelope getEnvelope() {
+        DataPoints points = getDataPoints();
+        if (points.isEmpty()) {
+            return null;
+        }
+        return points.getEnvelope();
+    }
+
+}

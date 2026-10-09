@@ -21,11 +21,13 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.solid.Polyhedron;
-import org.apache.sis.geometries.solid.Sphere;
+import org.apache.sis.geometries.surface.Sphere;
 import org.apache.sis.geometries.spherical.SphericalConvexPolygon;
 import org.apache.sis.geometries.surface.MultiPolygon;
 import org.apache.sis.geometries.surface.Polygon;
@@ -99,7 +101,7 @@ public abstract sealed class AbstractPolyhedron extends AbstractGeometry impleme
     }
 
     @Override
-    public Geometry getBoundary() {
+    public GeometryCollection<? extends Surface> getBoundary() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

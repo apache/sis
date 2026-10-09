@@ -18,6 +18,7 @@ package org.apache.sis.geometries.internal.shared;
 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.curve.MultiCurve;
 
 
@@ -32,7 +33,7 @@ public non-sealed class DefaultMultiCurve<T extends Curve> extends DefaultGeomet
     }
 
     public DefaultMultiCurve(CoordinateReferenceSystem fallbackCRS, T[] geometries) {
-        super(fallbackCRS, geometries);
+        super(GeometryType.CURVE, fallbackCRS, geometries);
     }
 
 }

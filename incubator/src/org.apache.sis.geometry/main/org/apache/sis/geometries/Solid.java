@@ -18,6 +18,7 @@ package org.apache.sis.geometries;
 
 import java.util.List;
 import javax.measure.Quantity;
+import org.apache.sis.geometries.internal.shared.DefaultSolid;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
@@ -56,7 +57,8 @@ import org.apache.sis.geometries.solid.Polyhedron;
  */
 @UML(identifier="Solid", specification=ISO_19107)
 public sealed interface Solid extends Primitive
-        permits ParametricCurveSolid,
+        permits DefaultSolid,
+                ParametricCurveSolid,
                 Polyhedron
 {
 
@@ -101,7 +103,7 @@ public sealed interface Solid extends Primitive
      */
     @UML(identifier="boundary", specification=ISO_19107)
     @Override
-    Geometry getBoundary();
+    GeometryCollection<? extends Surface> getBoundary();
 
     /**
      * Sum of the areas of all the boundary surfaces of this solid.

@@ -16,10 +16,12 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import java.util.Set;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 
 
@@ -29,6 +31,7 @@ import org.apache.sis.geometries.Point;
  */
 public non-sealed class DefaultGeometryCollection<T extends Geometry> extends AbstractGeometry implements GeometryCollection<T> {
 
+    private final GeometryType elementType;
     private final T[] geometries;
 
     /**
@@ -38,17 +41,23 @@ public non-sealed class DefaultGeometryCollection<T extends Geometry> extends Ab
      */
     private CoordinateReferenceSystem fallbackCRS;
 
-    public DefaultGeometryCollection(T[] geometries) {
-        this(null, geometries);
+    public DefaultGeometryCollection(GeometryType elementType, T[] geometries) {
+        this(elementType, null, geometries);
     }
 
     /**
      * Creates a collection which reports the given coordinate reference system
      * when {@code geometries} is empty.
      */
-    public DefaultGeometryCollection(CoordinateReferenceSystem fallbackCRS, T[] geometries) {
+    public DefaultGeometryCollection(GeometryType elementType, CoordinateReferenceSystem fallbackCRS, T[] geometries) {
+        this.elementType = elementType;
         this.geometries  = geometries;
         this.fallbackCRS = fallbackCRS;
+    }
+
+    @Override
+    public Set<GeometryType> getElementType() {
+        return Set.of(elementType);
     }
 
     @Override

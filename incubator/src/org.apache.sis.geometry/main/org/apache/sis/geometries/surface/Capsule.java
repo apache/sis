@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.solid;
+package org.apache.sis.geometries.surface;
 
 import java.util.Objects;
 import static org.opengis.annotation.Specification.ISO_12113;

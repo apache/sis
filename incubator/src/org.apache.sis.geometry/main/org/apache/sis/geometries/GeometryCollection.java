@@ -101,10 +101,7 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
      * @see ISO 19107:2019 - 6.4.31.2
      */
     @UML(identifier="elementType", specification=ISO_19107)
-    default Set<GeometryType> getElementType() {
-        //TODO
-        throw new UnsupportedOperationException();
-    }
+    Set<GeometryType> getElementType();
 
     /**
      * Returns whether this collection has no element.

@@ -18,11 +18,11 @@ the only requirement is Java 11 or later, except the GDAL module which requires
 Java 22. For launching the desktop application, requirements are Java 22 or later
 and JavaFX 24 or later.
 
-1) Unzip `apache-sis-1.6-bin.zip` in any directory.
-2) Invoke `./apache-sis-1.6/bin/sis` for the command-line.
-3) Invoke `./apache-sis-1.6/bin/sisfx` for the graphical application.
+1) Unzip `apache-sis-1.7-bin.zip` in any directory.
+2) Invoke `./apache-sis-1.7/bin/sis` for the command-line.
+3) Invoke `./apache-sis-1.7/bin/sisfx` for the graphical application.
 
-The `apache-sis-1.6/bin` directory may also be added to the `PATH` environment
+The `apache-sis-1.7/bin` directory may also be added to the `PATH` environment
 variable for making `sis` or `sisfx` invocations easier.
 
 
@@ -43,7 +43,7 @@ range of file formats like NcML files.
 License (see also LICENSE)
 ==========================
 
-Collective work: Copyright 2010-2023 The Apache Software Foundation.
+Collective work: Copyright 2010-2026 The Apache Software Foundation.
 
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
