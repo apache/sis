@@ -16,6 +16,50 @@
  */
 package org.apache.sis.geometries;
 
+import org.apache.sis.geometries.curve.Arc;
+import org.apache.sis.geometries.curve.ArcByBulge;
+import org.apache.sis.geometries.curve.ArcByCenterPoint;
+import org.apache.sis.geometries.curve.BSplineCurve;
+import org.apache.sis.geometries.curve.Bezier;
+import org.apache.sis.geometries.curve.Circle;
+import org.apache.sis.geometries.curve.CircularString;
+import org.apache.sis.geometries.curve.Clothoid;
+import org.apache.sis.geometries.curve.CompoundCurve;
+import org.apache.sis.geometries.curve.Conic;
+import org.apache.sis.geometries.curve.CubicSpline;
+import org.apache.sis.geometries.curve.EllipticArc;
+import org.apache.sis.geometries.curve.Geodesic;
+import org.apache.sis.geometries.curve.Line;
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.geometries.curve.LinearRing;
+import org.apache.sis.geometries.curve.MultiCurve;
+import org.apache.sis.geometries.curve.MultiLineString;
+import org.apache.sis.geometries.curve.NurbCurve;
+import org.apache.sis.geometries.curve.OffsetCurve;
+import org.apache.sis.geometries.curve.PolynomialSpline;
+import org.apache.sis.geometries.curve.ProductCurve;
+import org.apache.sis.geometries.curve.Rhumb;
+import org.apache.sis.geometries.curve.Spiral;
+import org.apache.sis.geometries.curve.SplineCurve;
+import org.apache.sis.geometries.point.MultiPoint;
+import org.apache.sis.geometries.solid.BSplineSolid;
+import org.apache.sis.geometries.solid.Capsule;
+import org.apache.sis.geometries.solid.Cylinder;
+import org.apache.sis.geometries.solid.Ellipsoid;
+import org.apache.sis.geometries.solid.Frustrum;
+import org.apache.sis.geometries.solid.MultiPolyhedron;
+import org.apache.sis.geometries.solid.Polyhedron;
+import org.apache.sis.geometries.solid.Sphere;
+import org.apache.sis.geometries.surface.BSplineSurface;
+import org.apache.sis.geometries.surface.BilinearGrid;
+import org.apache.sis.geometries.surface.CurvePolygon;
+import org.apache.sis.geometries.surface.MultiPolygon;
+import org.apache.sis.geometries.surface.MultiSurface;
+import org.apache.sis.geometries.surface.NurbSurface;
+import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.geometries.surface.PolyhedralSurface;
+import org.apache.sis.geometries.surface.TIN;
+import org.apache.sis.geometries.surface.Triangle;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 
@@ -41,227 +85,219 @@ public enum GeometryType {
     /**
      * The empty set, of topological dimension −1.
      */
-    EMPTY,
+    EMPTY(Empty.class),
     /**
      * The abstract root of all geometry types.
      */
-    GEOMETRY,
+    GEOMETRY(Geometry.class),
     /**
      * A collection behaving as the set union of its elements.
      */
-    COLLECTION,
+    COLLECTION(GeometryCollection.class),
 
     //point types
     /**
      * A single location, of topological dimension 0.
      */
-    POINT,
+    POINT(Point.class),
     /**
      * A collection of points.
      */
-    MULTIPOINT,
+    MULTIPOINT(MultiPoint.class),
 
     //curve types
     /**
      * A curve of unspecified interpolation, of topological dimension 1.
      */
-    CURVE,
+    CURVE(Curve.class),
     /**
      * A curve using a linear interpolation in the coordinate system.
      */
-    LINE,
+    LINE(Line.class),
     /**
      * A sequence of segments using a linear interpolation.
      */
-    LINESTRING,
+    LINESTRING(LineString.class),
     /**
      * A {@linkplain #LINESTRING} whose start point is its end point.
      */
-    LINEARRING,
+    LINEARRING(LinearRing.class),
     /**
      * A sequence of segments using a circular interpolation.
      */
-    CIRCULARSTRING,
+    CIRCULARSTRING(CircularString.class),
     /**
      * A curve made of contiguous curves of possibly different interpolations.
      */
-    COMPOUNDCURVE,
+    COMPOUNDCURVE(CompoundCurve.class),
     /**
      * A curve following the shortest path on the geometric reference surface.
      */
-    GEODESIC,
+    GEODESIC(Geodesic.class),
     /**
      * A curve of constant azimuth, also called loxodrome.
      */
-    RHUMB,
+    RHUMB(Rhumb.class),
     /**
      * A portion of a circle defined by three points.
      */
-    ARC,
+    ARC(Arc.class),
     /**
      * A portion of a circle defined by two points and a bulge factor.
      */
-    ARCBYBULGE,
+    ARCBYBULGE(ArcByBulge.class),
     /**
      * A portion of a circle defined by its center, its radius and two angles.
      */
-    ARCBYCENTERPOINT,
+    ARCBYCENTERPOINT(ArcByCenterPoint.class),
     /**
      * A closed {@linkplain #ARC}.
      */
-    CIRCLE,
+    CIRCLE(Circle.class),
     /**
      * A portion of an ellipse.
      */
-    ELLIPTICARC,
+    ELLIPTICARC(EllipticArc.class),
     /**
      * A curve defined by a conic section.
      */
-    CONIC,
+    CONIC(Conic.class),
     /**
      * A curve whose curvature varies linearly with its length, also called Euler spiral.
      */
-    CLOTHOID,
+    CLOTHOID(Clothoid.class),
     /**
      * A curve winding around a center point.
      */
-    SPIRAL,
+    SPIRAL(Spiral.class),
     /**
      * A curve at a constant distance from another curve.
      */
-    OFFSETCURVE,
+    OFFSETCURVE(OffsetCurve.class),
     /**
      * A curve defined as the product of two other curves.
      */
-    PRODUCTCURVE,
+    PRODUCTCURVE(ProductCurve.class),
     /**
      * A curve interpolated by spline functions.
      */
-    SPLINECURVE,
+    SPLINECURVE(SplineCurve.class),
     /**
      * A curve interpolated by B-spline basis functions.
      */
-    BSPLINECURVE,
+    BSPLINECURVE(BSplineCurve.class),
     /**
      * A curve interpolated by cubic polynomials.
      */
-    CUBICSPLINE,
+    CUBICSPLINE(CubicSpline.class),
     /**
      * A curve interpolated by polynomials of arbitrary degree.
      */
-    POLYNOMIALSPLINE,
+    POLYNOMIALSPLINE(PolynomialSpline.class),
     /**
      * A curve interpolated by Bernstein polynomials over its control points.
      */
-    BEZIER,
+    BEZIER(Bezier.class),
     /**
      * A curve interpolated by non-uniform rational B-spline basis functions.
      */
-    NURBSCURVE,
+    NURBSCURVE(NurbCurve.class),
     /**
      * A collection of curves.
      */
-    MULTICURVE,
+    MULTICURVE(MultiCurve.class),
     /**
      * A collection of {@linkplain #LINESTRING}.
      */
-    MULTILINESTRING,
+    MULTILINESTRING(MultiLineString.class),
 
     //surface types
     /**
      * A surface of unspecified interpolation, of topological dimension 2.
      */
-    SURFACE,
+    SURFACE(Surface.class),
     /**
      * A surface defined only by its boundary rings and a spanning surface.
      */
-    POLYGON,
+    POLYGON(Polygon.class),
     /**
      * A {@linkplain #POLYGON} with exactly three distinct non-collinear points and no interior ring.
      */
-    TRIANGLE,
+    TRIANGLE(Triangle.class),
     /**
      * A {@linkplain #POLYGON} whose rings may use any curve interpolation.
      */
-    CURVEPOLYGON,
+    CURVEPOLYGON(CurvePolygon.class),
     /**
      * A surface made of contiguous polygon patches.
      */
-    POLYHEDRALSURFACE,
+    POLYHEDRALSURFACE(PolyhedralSurface.class),
     /**
      * A {@linkplain #POLYHEDRALSURFACE} whose patches are triangles.
      */
-    TIN,
+    TIN(TIN.class),
     /**
      * A surface interpolated bilinearly over a grid of control points.
      */
-    BILINEARGRID,
-    /**
-     * A surface interpolated by spline functions.
-     */
-    SPLINESURFACE,
+    BILINEARGRID(BilinearGrid.class),
     /**
      * A surface interpolated by B-spline basis functions.
      */
-    BSPLINESURFACE,
+    BSPLINESURFACE(BSplineSurface.class),
     /**
      * A surface interpolated by non-uniform rational B-spline basis functions.
      */
-    NURBSSURFACE,
+    NURBSSURFACE(NurbSurface.class),
     /**
      * A collection of {@linkplain #POLYGON}.
      */
-    MULTIPOLYGON,
+    MULTIPOLYGON(MultiPolygon.class),
     /**
      * A collection of surfaces.
      */
-    MULTISURFACE,
+    MULTISURFACE(MultiSurface.class),
 
     //solid types
     /**
      * A solid of unspecified interpolation, of topological dimension 3.
      */
-    SOLID,
+    SOLID(Solid.class),
     /**
      * A solid bounded by planar faces.
      */
-    POLYHEDRON,
+    POLYHEDRON(Polyhedron.class),
     /**
      * A collection of {@linkplain #POLYHEDRON}.
      */
-    MULTIPOLYHEDRON,
-    /**
-     * A solid interpolated by spline functions, of topological dimension 3.
-     */
-    SPLINESOLID,
+    MULTIPOLYHEDRON(MultiPolyhedron.class),
     /**
      * A solid interpolated by B-spline basis functions.
      */
-    BSPLINESOLID,
+    BSPLINESOLID(BSplineSolid.class),
     /**
      * A solid bounded by the positions at a constant distance from a center point.
      */
-    SPHERE,
+    SPHERE(Sphere.class),
     /**
      * A {@linkplain #SPHERE} scaled by a distinct factor along each axis of the coordinate system.
      */
-    ELLIPSOID,
+    ELLIPSOID(Ellipsoid.class),
     /**
      * A solid bounded by a lateral surface and two parallel bases.
      */
-    CYLINDER,
+    CYLINDER(Cylinder.class),
     /**
      * A {@linkplain #CYLINDER} closed by a half-sphere at each end.
      */
-    CAPSULE,
+    CAPSULE(Capsule.class),
     /**
      * The portion of a solid lying between two parallel planes.
      */
-    FRUSTRUM,
+    FRUSTRUM(Frustrum.class),
     /**
      * A solid swept by translating a surface along a direction.
      */
-    PRISM,
+    PRISM(Prism.class),
 
     /*
      * Types having no equivalent in OGC Simple Feature Access.
@@ -269,17 +305,37 @@ public enum GeometryType {
     /**
      * A rectangle whose sides are parallel to the axes of the coordinate system.
      */
-    BBOX,
+    BBOX(BBox.class),
     /**
      * An unbounded flat surface in a three-dimensional coordinate system.
      */
-    PLANE,
+    PLANE(Plane.class),
     /**
      * A half-line, defined by an origin and a direction.
      */
-    RAY,
+    RAY(Ray.class),
     /**
      * The generalization of {@link #PLANE} to a coordinate system of any dimension.
      */
-    HYPERPLANE,
+    HYPERPLANE(HyperPlane.class);
+
+
+    final Class<? extends Geometry> javaClass;
+
+    private GeometryType(Class<? extends Geometry> c) {
+        this.javaClass = c;
+    }
+
+    public Class<? extends Geometry> getJavaClass() {
+        return javaClass;
+    }
+
+    public boolean isAssignableFrom(GeometryType type) {
+        return javaClass.isAssignableFrom(type.javaClass);
+    }
+
+    public boolean isInstance(Geometry geom) {
+        return javaClass.isInstance(geom);
+    }
+
 }

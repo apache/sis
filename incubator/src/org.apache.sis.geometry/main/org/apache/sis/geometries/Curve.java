@@ -28,6 +28,7 @@ import org.apache.sis.geometries.curve.CompoundCurve;
 import org.apache.sis.geometries.curve.Conic;
 import org.apache.sis.geometries.curve.FunctionCurve;
 import org.apache.sis.geometries.curve.Geodesic;
+import org.apache.sis.geometries.curve.Line;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.OffsetCurve;
 import org.apache.sis.geometries.curve.ProductCurve;
@@ -74,6 +75,7 @@ public sealed interface Curve extends Orientable
                 Conic,
                 FunctionCurve,
                 Geodesic,
+                Line,
                 LineString,
                 OffsetCurve,
                 ProductCurve,
