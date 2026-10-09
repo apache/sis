@@ -94,7 +94,7 @@ import static org.apache.sis.util.internal.shared.Constants.EPSG;
  * codes listed {@linkplain org.apache.sis.referencing.CRS#forCode(String) here}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 1.7
  * @since   1.1
  */
 public abstract class OptionalInstallations extends InstallationResources implements Localized {
@@ -108,7 +108,7 @@ public abstract class OptionalInstallations extends InstallationResources implem
      * Path to the <abbr>EPSG</abbr> scripts relative to the selected repository.
      * This is where to download the database after user has approved the terms of use.
      */
-    private static final String EPSG_DOWNLOAD_PATH = "/org/apache/sis/non-free/sis-epsg/1.6/sis-epsg-1.6.jar";
+    private static final String EPSG_DOWNLOAD_PATH = "/org/apache/sis/non-free/sis-epsg/1.7/sis-epsg-1.7.jar";
 
     /**
      * Estimation of the EPSG database size after installation, in megabytes.
