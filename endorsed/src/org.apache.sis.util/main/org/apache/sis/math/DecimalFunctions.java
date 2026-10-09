@@ -523,7 +523,7 @@ public final class DecimalFunctions {
     }
 
     /**
-     * Returns {@code true} if the given numbers or equal or differ only by {@code accurate}
+     * Returns {@code true} if the given numbers are equal or differ only by {@code accurate}
      * having more non-zero trailing decimal fraction digits than {@code approximate}.
      *
      * <table class="sis">

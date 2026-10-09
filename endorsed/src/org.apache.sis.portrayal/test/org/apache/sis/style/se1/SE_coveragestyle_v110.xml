@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<se:CoverageStyle version="1.1.0"
+    xmlns:se="http://www.opengis.net/se"
+    xmlns:sld="http://www.opengis.net/sld"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:ogc="http://www.opengis.net/ogc"
+    xmlns:gml="http://www.opengis.net/gml">
+    <se:Name>coverage_style_name</se:Name>
+    <se:Description>
+        <se:Title>Coverage style title</se:Title>
+        <se:Abstract>Coverage style abstract</se:Abstract>
+    </se:Description>
+    <se:CoverageName>the_coverage_name</se:CoverageName>
+    <se:SemanticTypeIdentifier>generic:raster</se:SemanticTypeIdentifier>
+    <se:Rule>
+        <se:Name>rule_name</se:Name>
+        <se:MinScaleDenominator>1000.0</se:MinScaleDenominator>
+        <se:MaxScaleDenominator>100000.0</se:MaxScaleDenominator>
+        <se:RasterSymbolizer uom="http://www.opengeospatial.org/se/units/pixel">
+            <se:Opacity><ogc:Literal>0.8</ogc:Literal></se:Opacity>
+            <se:ChannelSelection>
+                <se:GrayChannel>
+                    <se:SourceChannelName>band_1</se:SourceChannelName>
+                </se:GrayChannel>
+            </se:ChannelSelection>
+            <se:OverlapBehavior>LATEST_ON_TOP</se:OverlapBehavior>
+        </se:RasterSymbolizer>
+    </se:Rule>
+</se:CoverageStyle>

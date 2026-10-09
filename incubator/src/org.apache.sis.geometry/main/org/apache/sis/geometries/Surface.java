@@ -86,11 +86,11 @@ public sealed interface Surface extends Orientable
     /**
      * The area of this Surface, as measured in the spatial reference system of this Surface.
      *
-     * <p>TODO / Limitation: implementations label the returned quantity in square metres, but its
-     * magnitude is computed in the units of the coordinate system axes. On a geographic coordinate
-     * reference system that magnitude is therefore an amount of square degrees reported as square
-     * metres. Computing a true area on the reference surface, as required by ISO 19107 REQ. 11,
-     * remains to be done.</p>
+     * <p>TODO / Limitation: the area is computed as a planar area in the units of the coordinate
+     * system axes, and the returned quantity is labelled with the square of the unit of the first
+     * axis. On a geographic coordinate reference system the result is therefore an amount of square
+     * degrees, reported as such. Computing a true area on the reference surface, as required by
+     * ISO 19107 REQ. 11, remains to be done.</p>
      *
      * <p>Difference with ISO-19107, the Area type has been changed to Quantity to
      * handle temporal geometries and crs-less geometries.</p>
@@ -155,10 +155,8 @@ public sealed interface Surface extends Orientable
      * @see ISO 19107:2019 - 6.4.25.2
      */
     @UML(identifier="boundary", specification=ISO_19107)
-    default Geometry getBoundary() {
-        //TODO
-        throw new UnsupportedOperationException();
-    }
+    @Override
+    Geometry getBoundary();
 
     /**
      * Interpolation mechanisms used between the data points of this surface.
@@ -235,10 +233,8 @@ public sealed interface Surface extends Orientable
      * @see ISO 19107:2019 - 6.4.25.8
      */
     @UML(identifier="dataPoint", specification=ISO_19107)
-    default DataPoints getDataPoints() {
-        //TODO
-        throw new UnsupportedOperationException();
-    }
+    @Override
+    DataPoints getDataPoints();
 
     /**
      * Positions used to build the geometry of this surface, the way they are used depending on the interpolation.

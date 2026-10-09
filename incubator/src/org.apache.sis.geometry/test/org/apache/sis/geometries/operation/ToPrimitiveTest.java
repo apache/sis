@@ -48,7 +48,7 @@ public class ToPrimitiveTest {
 
     @Test
     public void testPoint() {
-        final Point point = GeometryFactory.createPoint(CRS2D, 1, 2);
+        final Point point = GeometryFactory.DEFAULT.createPoint(CRS2D, 1, 2);
         final Geometry result = new GeometryProcessor().toPrimitive(point);
         assertTrue(result instanceof MeshPrimitive);
         final MeshPrimitive primitive = (MeshPrimitive) result;
@@ -58,8 +58,8 @@ public class ToPrimitiveTest {
     @Test
     public void testLineString() {
         final Array positions = NDArrays.of(CRS2D, new double[]{0,1,2,3});
-        final DataPoints points = GeometryFactory.createSequence(positions);
-        final LineString line = GeometryFactory.createLineString(points);
+        final DataPoints points = GeometryFactory.DEFAULT.createDataPoints(positions);
+        final LineString line = GeometryFactory.DEFAULT.createLineString(points);
         final Geometry result = new GeometryProcessor().toPrimitive(line);
         assertTrue(result instanceof MeshPrimitive);
         final MeshPrimitive primitive = (MeshPrimitive) result;
@@ -69,9 +69,9 @@ public class ToPrimitiveTest {
     @Test
     public void testPolygon() {
         final Array positions = NDArrays.of(CRS2D, new double[]{0,1,2,3});
-        final DataPoints points = GeometryFactory.createSequence(positions);
-        final LinearRing exterior = GeometryFactory.createLinearRing(points);
-        final Polygon point = GeometryFactory.createPolygon(exterior, null);
+        final DataPoints points = GeometryFactory.DEFAULT.createDataPoints(positions);
+        final LinearRing exterior = GeometryFactory.DEFAULT.createLinearRing(points);
+        final Polygon point = GeometryFactory.DEFAULT.createPolygon(exterior, null);
         final Geometry result = new GeometryProcessor().toPrimitive(point);
         assertTrue(result instanceof MeshPrimitive);
         final MeshPrimitive primitive = (MeshPrimitive) result;
@@ -82,14 +82,14 @@ public class ToPrimitiveTest {
     public void testMultiLineString() {
         { //one line has 3 points, so we must obtain a MultiPrimitive
             final Array positions1 = NDArrays.of(CRS2D, new double[]{0,1,2,3});
-            final DataPoints points1 = GeometryFactory.createSequence(positions1);
-            final LineString line1 = GeometryFactory.createLineString(points1);
+            final DataPoints points1 = GeometryFactory.DEFAULT.createDataPoints(positions1);
+            final LineString line1 = GeometryFactory.DEFAULT.createLineString(points1);
 
             final Array positions2 = NDArrays.of(CRS2D, new double[]{3,4,5,6,7,8});
-            final DataPoints points2 = GeometryFactory.createSequence(positions2);
-            final LineString line2 = GeometryFactory.createLineString(points2);
+            final DataPoints points2 = GeometryFactory.DEFAULT.createDataPoints(positions2);
+            final LineString line2 = GeometryFactory.DEFAULT.createLineString(points2);
 
-            final MultiLineString mlines = GeometryFactory.createMultiLineString(line1, line2);
+            final MultiLineString mlines = GeometryFactory.DEFAULT.createMultiLineString(line1, line2);
 
             final Geometry result = new GeometryProcessor().toPrimitive(mlines);
             assertTrue(result instanceof MultiMeshPrimitive);
@@ -106,14 +106,14 @@ public class ToPrimitiveTest {
         }
         { //all linestrings are lines, we must obtain a Primitive.Lines
             final Array positions1 = NDArrays.of(CRS2D, new double[]{0,1,2,3});
-            final DataPoints points1 = GeometryFactory.createSequence(positions1);
-            final LineString line1 = GeometryFactory.createLineString(points1);
+            final DataPoints points1 = GeometryFactory.DEFAULT.createDataPoints(positions1);
+            final LineString line1 = GeometryFactory.DEFAULT.createLineString(points1);
 
             final Array positions2 = NDArrays.of(CRS2D, new double[]{3,4,5,6});
-            final DataPoints points2 = GeometryFactory.createSequence(positions2);
-            final LineString line2 = GeometryFactory.createLineString(points2);
+            final DataPoints points2 = GeometryFactory.DEFAULT.createDataPoints(positions2);
+            final LineString line2 = GeometryFactory.DEFAULT.createLineString(points2);
 
-            final MultiLineString mlines = GeometryFactory.createMultiLineString(line1, line2);
+            final MultiLineString mlines = GeometryFactory.DEFAULT.createMultiLineString(line1, line2);
 
             final Geometry result = new GeometryProcessor().toPrimitive(mlines);
             assertTrue(result instanceof MeshPrimitive.Lines);
@@ -129,8 +129,8 @@ public class ToPrimitiveTest {
     @Test
     public void testMultiPoint() {
         final Array positions1 = NDArrays.of(CRS2D, new double[]{0,1,2,3});
-        final DataPoints points = GeometryFactory.createSequence(positions1);
-        final MultiPoint mpoints = GeometryFactory.createMultiPoint(points);
+        final DataPoints points = GeometryFactory.DEFAULT.createDataPoints(positions1);
+        final MultiPoint mpoints = GeometryFactory.DEFAULT.createMultiPoint(points);
 
         final Geometry result = new GeometryProcessor().toPrimitive(mpoints);
         assertTrue(result instanceof MeshPrimitive);

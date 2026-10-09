@@ -51,8 +51,8 @@ import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vector1D;
 import org.apache.sis.maths.Vector3D;
@@ -291,7 +291,7 @@ public sealed interface MeshPrimitive extends Geometry
     {
 
         /**
-         * Checks tuplearray change for position is in the same crs as the geometry.
+         * Checks Array change for position is in the same crs as the geometry.
          */
         protected final LinkedHashMap<String,Array> attributes = new LinkedHashMap<>();
         protected Array index;
@@ -361,6 +361,11 @@ public sealed interface MeshPrimitive extends Geometry
                 return env;
             }
             return NDArrays.computeRange(positions);
+        }
+
+        @Override
+        public Geometry getBoundary() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         public List<Geometry> getComponents() {
@@ -485,6 +490,23 @@ public sealed interface MeshPrimitive extends Geometry
         @Override
         public Array getPositions() {
             return positions;
+        }
+
+        /**
+         * Returns the positions this primitive draws, in the order it draws them. When the
+         * primitive carries an index, the positions appear in the order that index names them,
+         * and a position the index names several times appears as many times.
+         */
+        @Override
+        public DataPoints getDataPoints() {
+            final int[] indices;
+            if (index == null) {
+                indices = new int[Math.toIntExact(getPositions().getLength())];
+                for (int i = 0; i < indices.length; i++) indices[i] = i;
+            } else {
+                indices = index.toArrayInt();
+            }
+            return new Sequence(this, indices);
         }
 
         /**
@@ -658,10 +680,10 @@ public sealed interface MeshPrimitive extends Geometry
             final Array normals = getNormals();
             if (normals != null) {
                 for (long i = 0, n = normals.getLength(); i < n; i++) {
-                    Tuple normal = normals.get(i);
+                    Vector normal = normals.get(i);
                     if (!normal.isFinite()) {
                         throw new IllegalArgumentException("Normal " + i + " is not finite. " + normal);
-                    } else if ( Math.abs(Vectors.castOrWrap(normal).length() - 1.0) > 1e-6) {
+                    } else if ( Math.abs(normal.length() - 1.0) > 1e-6) {
                         throw new IllegalArgumentException("Normal " + i + " is not unitary. " + normal);
                     }
                 }
@@ -673,7 +695,7 @@ public sealed interface MeshPrimitive extends Geometry
 
             final int dimension = ta.getDimension();
             final long length = ta.getLength();
-            final Tuple tuple = Vectors.createDouble(dimension);
+            final Vector tuple = Vectors.createDouble(dimension);
 
             for (int i = 0; i <length; i++) {
                 ta.get(i, tuple);
@@ -733,11 +755,11 @@ public sealed interface MeshPrimitive extends Geometry
                 final long size = vertices.getLength();
                 final Array normals = NDArrays.of(positions.getSampleSystem(), new float[(int)size * 3]);
                 final Cursor ncursor = normals.cursor();
-                final Vector nv = Vectors.castOrWrap(ncursor.samples());
-                final Tuple v0 = Vectors.createFloat(3);
-                final Tuple v1 = Vectors.createFloat(3);
-                final Tuple v2 = Vectors.createFloat(3);
-                Tuple normal = null;
+                final Vector nv = ncursor.samples();
+                final Vector v0 = Vectors.createFloat(3);
+                final Vector v1 = Vectors.createFloat(3);
+                final Vector v2 = Vectors.createFloat(3);
+                Vector normal = null;
 
                 // accumulate normal vectors
                 final int offset = 0;
@@ -876,7 +898,7 @@ public sealed interface MeshPrimitive extends Geometry
             setNormals(normals);
         }
 
-        private static boolean fastEquals(Tuple t1, Tuple t2) {
+        private static boolean fastEquals(Vector t1, Vector t2) {
             return t1.get(0) == t2.get(0) && t1.get(1) == t2.get(1) && t1.get(2) == t2.get(2);
         }
 
@@ -890,16 +912,16 @@ public sealed interface MeshPrimitive extends Geometry
         public void removeDuplicatesByPosition() {
 
             final Set<String> attNames = attributes.keySet();
-            final Map<String,List<Tuple<?>>> atts = new HashMap<>();
-            final List<Entry<List<Tuple<?>>,Array>> mapping = new ArrayList<>();
+            final Map<String,List<Vector<?>>> atts = new HashMap<>();
+            final List<Entry<List<Vector<?>>,Array>> mapping = new ArrayList<>();
             for (String attName : attNames) {
-                final List<Tuple<?>> lst = new ArrayList<>();
+                final List<Vector<?>> lst = new ArrayList<>();
                 atts.put(attName, lst);
                 mapping.add(new AbstractMap.SimpleImmutableEntry<>(lst, attributes.get(attName)));
             }
-            final List<Tuple<?>> aNewAttribute = mapping.get(0).getKey();
+            final List<Vector<?>> aNewAttribute = mapping.get(0).getKey();
 
-            final Map<Tuple, Integer> reindex = new HashMap<>();
+            final Map<Vector, Integer> reindex = new HashMap<>();
             final Cursor cursorIdx = index.cursor();
             final Cursor cursorPos = getPositions().cursor();
             final List<Vector1D.Int> newIndex = new ArrayList<>();
@@ -907,13 +929,13 @@ public sealed interface MeshPrimitive extends Geometry
             while (cursorIdx.next()) {
                 int idx = (int) cursorIdx.samples().get(0);
                 cursorPos.moveTo(idx);
-                final Tuple position = cursorPos.samples().copy();
+                final Vector position = cursorPos.samples().copy();
 
                 int newIdx = aNewAttribute.size();
                 Integer previous = reindex.putIfAbsent(position, newIdx);
                 if (previous == null) {
                     //copy attributes
-                    for (Entry<List<Tuple<?>>,Array> entry : mapping) {
+                    for (Entry<List<Vector<?>>,Array> entry : mapping) {
                         entry.getKey().add(entry.getValue().get(idx).copy());
                     }
                     newIndex.add(new Vector1D.Int(newIdx));
@@ -992,7 +1014,7 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         @Override
-        public Tuple getPosition() {
+        public Vector getPosition() {
             final Cursor cursor = parent.getPositions().cursor();
             cursor.moveTo(index);
             return cursor.samples();
@@ -1015,7 +1037,7 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         @Override
-        public Tuple getAttribute(String key) {
+        public Vector getAttribute(String key) {
             final Array tupleGrid = parent.attributes.get(key);
             if (tupleGrid == null) return null;
             final Cursor cursor = tupleGrid.cursor();
@@ -1024,7 +1046,7 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         @Override
-        public void setAttribute(String name, Tuple tuple) {
+        public void setAttribute(String name, ReadOnly.Vector tuple) {
             final Array tupleGrid = parent.attributes.get(name);
             if (tupleGrid == null) throw new IllegalArgumentException("Attribute " + name + " do not exist");
             final Cursor cursor = tupleGrid.cursor();
@@ -1055,7 +1077,7 @@ public sealed interface MeshPrimitive extends Geometry
             for (String name : properties) {
                 sb.append(" ");
                 sb.append(name);
-                final Tuple tuple = getAttribute(name);
+                final Vector tuple = getAttribute(name);
                 sb.append(Arrays.toString(tuple.toArrayDouble()));
             }
             return sb.toString();
@@ -1093,12 +1115,12 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         @Override
-        public Tuple getPosition(int index) {
+        public Vector getPosition(int index) {
             return primitive.getPositions().get(this.index[index]);
         }
 
         @Override
-        public Tuple getAttribute(int index, String name) {
+        public Vector getAttribute(int index, String name) {
             return primitive.getAttribute(name).get(this.index[index]);
         }
 
@@ -1108,12 +1130,12 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         @Override
-        public void setPosition(int index, Tuple value) {
+        public void setPosition(int index, ReadOnly.Vector value) {
             primitive.getPositions().set(this.index[index], value);
         }
 
         @Override
-        public void setAttribute(int index, String name, Tuple value) {
+        public void setAttribute(int index, String name, ReadOnly.Vector value) {
             primitive.getAttribute(name).set(this.index[index], value);
         }
 
@@ -1160,7 +1182,7 @@ public sealed interface MeshPrimitive extends Geometry
         @Override
         public LineString getGeometryN(int n) {
             final int[] indices = (index == null) ? new int[]{n*2, n*2+1} : index.toArrayInt(n*2, 2);
-            return GeometryFactory.createLineString(new Sequence(this, indices));
+            return GeometryFactory.DEFAULT.createLineString(new Sequence(this, indices));
         }
     }
 
@@ -1191,17 +1213,6 @@ public sealed interface MeshPrimitive extends Geometry
             super(Type.LINE_STRIP);
         }
 
-        @Override
-        public DataPoints getDataPoints() {
-            final int[] indices;
-            if (index == null) {
-                indices = new int[Math.toIntExact(getPositions().getLength())];
-                for (int i = 0; i < indices.length; i++) indices[i] = i;
-            } else {
-                indices = index.toArrayInt();
-            }
-            return new Sequence(this, indices);
-        }
     }
 
     public static final class Triangles extends Abs implements TIN {
@@ -1226,7 +1237,7 @@ public sealed interface MeshPrimitive extends Geometry
                 indices = Arrays.copyOf(indices, 4);
                 indices[3] = indices[0];
             }
-            return GeometryFactory.createTriangle(GeometryFactory.createLinearRing(new Sequence(this, indices)));
+            return GeometryFactory.DEFAULT.createTriangle(GeometryFactory.DEFAULT.createLinearRing(new Sequence(this, indices)));
         }
     }
 
@@ -1254,7 +1265,7 @@ public sealed interface MeshPrimitive extends Geometry
                 indices[2] = (int) index.get(2 + n).get(0);
             }
                 indices[3] = indices[0];
-            return GeometryFactory.createTriangle(GeometryFactory.createLinearRing(new Sequence(this, indices)));
+            return GeometryFactory.DEFAULT.createTriangle(GeometryFactory.DEFAULT.createLinearRing(new Sequence(this, indices)));
         }
     }
 
@@ -1292,7 +1303,7 @@ public sealed interface MeshPrimitive extends Geometry
             }
             indices[3] = indices[0];
 
-            return GeometryFactory.createTriangle(GeometryFactory.createLinearRing(new Sequence(this, indices)));
+            return GeometryFactory.DEFAULT.createTriangle(GeometryFactory.DEFAULT.createLinearRing(new Sequence(this, indices)));
         }
     }
 }

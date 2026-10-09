@@ -125,14 +125,14 @@ public final class JAXBGeometryAdapterTest {
      * Creates a point sequence in the {@link #wgs84} CRS from a flat list of ordinates.
      */
     private DataPoints sequence(final double... ordinates) {
-        return GeometryFactory.createSequence(NDArrays.of(SampleSystem.of(wgs84), ordinates));
+        return GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(SampleSystem.of(wgs84), ordinates));
     }
 
     /**
      * Creates a closed rectangular ring in the {@link #wgs84} CRS.
      */
     private LinearRing ring(final double minX, final double minY, final double maxX, final double maxY) {
-        return GeometryFactory.createLinearRing(sequence(
+        return GeometryFactory.DEFAULT.createLinearRing(sequence(
                 minX, minY,
                 maxX, minY,
                 maxX, maxY,
@@ -146,7 +146,7 @@ public final class JAXBGeometryAdapterTest {
     @Test
     @Disabled("TODO missing jaxb implementation")
     public void testPoint() throws Exception {
-        final Point expected = GeometryFactory.createPoint(sequence(10.0, 20.0));
+        final Point expected = GeometryFactory.DEFAULT.createPoint(sequence(10.0, 20.0));
 
         final String xml = marshal(new TestFeature("A", expected));
         assertTrue(xml.toLowerCase().contains("point"), () -> "Expected a GML Point element in: " + xml);
@@ -164,7 +164,7 @@ public final class JAXBGeometryAdapterTest {
     @Test
     @Disabled("TODO missing jaxb implementation")
     public void testPolygon() throws Exception {
-        final Polygon expected = GeometryFactory.createPolygon(ring(0, 0, 10, 10), List.of(ring(2, 2, 4, 4)));
+        final Polygon expected = GeometryFactory.DEFAULT.createPolygon(ring(0, 0, 10, 10), List.of(ring(2, 2, 4, 4)));
 
         final String xml = marshal(new TestFeature("B", expected));
         assertTrue(xml.toLowerCase().contains("polygon"), () -> "Expected a GML Polygon element in: " + xml);

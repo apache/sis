@@ -28,7 +28,7 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -44,7 +44,7 @@ public final class ComputeAttribute {
      * Compute attribute on Primitive.
      * Also works for ModelPrimitive.
      */
-    public static MeshPrimitive compute(MeshPrimitive base, String attributeName, SampleSystem attributeSystem, DataType attributeType, Function<Point,Tuple> valueGenerator) {
+    public static MeshPrimitive compute(MeshPrimitive base, String attributeName, SampleSystem attributeSystem, DataType attributeType, Function<Point,Vector> valueGenerator) {
         final org.apache.sis.geometries.mesh.MeshPrimitive copy3d = base.deepCopy();
 
         Array ta = copy3d.getAttribute(attributeName);
@@ -70,7 +70,7 @@ public final class ComputeAttribute {
      * Compute attribute on MultiPrimitive.
      * Also works for ModelPrimitive.
      */
-    public static MultiMeshPrimitive compute(MultiMeshPrimitive base, String attributeName, SampleSystem attributeSystem, DataType attributeType, Function<Point,Tuple> valueGenerator) {
+    public static MultiMeshPrimitive compute(MultiMeshPrimitive base, String attributeName, SampleSystem attributeSystem, DataType attributeType, Function<Point,Vector> valueGenerator) {
         final List<org.apache.sis.geometries.mesh.MeshPrimitive> news = new ArrayList<>();
         for (int i = 0, n = base.getNumGeometries(); i < n; i++) {
             Geometry p = base.getGeometryN(i);

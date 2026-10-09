@@ -16,28 +16,122 @@
  */
 package org.apache.sis.geometries;
 
+import java.util.Objects;
 import static org.opengis.annotation.Specification.ISO_12113;
 import org.opengis.annotation.UML;
-import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.internal.shared.AbstractOrientedGeometry;
+import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.Vector;
 
 
 /**
- * A hyperplane centered at the origin in local space, with normal along the +Y axis in local space.
- * The hyper plane divised the geometric space in two.
+ * A hyperplane divides the geometric space in two.
+ * It is build from a position and a normal.
  *
  * @author Johann Sorel (Geomatys)
  */
 @UML(identifier="Plane", specification=ISO_12113)
-public final class HyperPlane extends AbstractOrientedGeometry {
+public final class HyperPlane extends AbstractGeometry{
 
-    public HyperPlane() {
+    /**
+     * Must contain a single point.
+     */
+    private final DataPoints points;
+
+    private Vector<?> normal;
+
+    /**
+     * Creates a hyperplane passing by the given position.
+     * The reference system of the hyperplane is the one of that position.
+     *
+     * @param  position  a position the hyperplane passes by, not null.
+     * @param  normal    the direction the hyperplane is perpendicular to, not null.
+     */
+    public HyperPlane(Vector<?> position, Vector<?> normal) {
+        points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(position.getSampleSystem(), position.getDataType(), 1));
+        points.setPosition(0, position);
+        this.normal = normal;
+    }
+
+    /**
+     * Creates a hyperplane passing by the single position of the given sequence.
+     * The sequence is taken as-is, so the caller may give the hyperplane the attributes
+     * carried by that sequence.
+     *
+     * @param  points  a position the hyperplane passes by, as a sequence of exactly one position.
+     * @param  normal  the direction the hyperplane is perpendicular to, not null.
+     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     */
+    public HyperPlane(DataPoints points, Vector<?> normal) {
+        if (points.size() != 1) {
+            throw new IllegalArgumentException("HyperPlane sequence must contain one point");
+        }
+        this.points = points;
+        this.normal = normal;
     }
 
     @Override
     public GeometryType getGeometryType() {
         return GeometryType.HYPERPLANE;
+    }
+
+    public DataPoints getDataPoints() {
+        return points;
+    }
+
+    public ReadOnly.Vector<?> getPosition() {
+        return points.getPosition(0);
+    }
+
+    public void setPosition(ReadOnly.Vector<?> position) {
+        points.setPosition(0, position);
+    }
+
+    public ReadOnly.Vector<?> getNormal() {
+        return normal;
+    }
+
+    public void setNormal(ReadOnly.Vector<?> normal) {
+        this.normal = normal.copy();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>A hyperplane extends to infinity along every direction it contains. It is therefore
+     * bounded on one axis only when it is perpendicular to that axis, which happens when the
+     * normal is aligned with it. In every other case, including a normal which is null in all
+     * its dimensions, the hyperplane spans the whole space on every axis.</p>
+     */
+    @Override
+    public BBox getEnvelope() {
+        final ReadOnly.Vector<?> position = getPosition();
+        final int dim = normal.getDimension();
+        final BBox bbox = new BBox(dim);
+        /*
+         * Search the axis the normal is aligned with. There is one only if every other
+         * dimension of the normal is null, in which case the hyperplane is flat on it.
+         */
+        int flat = -1;
+        for (int i=0;i<dim;i++){
+            if (normal.get(i) != 0){
+                if (flat >= 0){
+                    flat = -1;
+                    break;
+                }
+                flat = i;
+            }
+        }
+        for (int i=0;i<dim;i++){
+            if (i == flat){
+                bbox.setRange(i, position.get(i), position.get(i));
+            } else {
+                bbox.setRange(i, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+            }
+        }
+        return bbox;
     }
 
     @Override
@@ -47,22 +141,44 @@ public final class HyperPlane extends AbstractOrientedGeometry {
 
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
+        return points.getCoordinateReferenceSystem();
+    }
+
+    @Override
+    public Geometry getBoundary() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        points.setCoordinateReferenceSystem(crs);
     }
 
     @Override
     public DataPointsType getDataPointsType() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return points.getType();
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final HyperPlane other = (HyperPlane) obj;
+        if (!Objects.equals(this.points, other.points)) {
+            return false;
+        }
+        return this.normal == other.normal || (this.normal != null && this.normal.equals(other.normal));
+    }
 
     @Override
-    public Envelope getUnorientedEnvelope() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public int hashCode() {
+        int hash = 3;
+        hash = 89 * hash + Objects.hashCode(this.points);
+        hash = 89 * hash + Objects.hashCode(this.normal);
+        return hash;
     }
 }

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ogc:SortBy xmlns:ogc="http://www.opengis.net/ogc">
+    <ogc:SortProperty>
+        <ogc:PropertyName>sf:str4Property</ogc:PropertyName>
+        <ogc:SortOrder>ASC</ogc:SortOrder>
+    </ogc:SortProperty>
+</ogc:SortBy>

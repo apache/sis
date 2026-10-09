@@ -32,10 +32,10 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -309,7 +309,7 @@ public final class Delaunay {
     private void insertPoint(long index) throws OperationException, IllegalArgumentException {
         if (index < 0 || index >= rootOffset) throw new IllegalArgumentException("Index do not exist : " + index);
         final Vertex vertex = new Vertex(pointsPlusRoot, index);
-        final Tuple position = vertex.getPosition();
+        final Vector position = vertex.getPosition();
 
         //find nearest vertex and tst all triangles using this vertex
         final long nearestVertex = tree.nearest(position).getValue();
@@ -452,7 +452,7 @@ public final class Delaunay {
         }
 
         { //special case : if edge is colinear to constraint segment
-            final Tuple endPosition = Z.getPosition();
+            final Vector endPosition = Z.getPosition();
             final double leftSide = Maths.lineSide(A_B.getStart().getPosition(), A_B.getEnd().getPosition(), endPosition);
             if (leftSide == 0) {
                 //on the edge, mark the edge as a constraint and start a new constraint from edge end
@@ -957,7 +957,7 @@ public final class Delaunay {
      */
     private OrientedEdge searchTriangle(long startIndex, long endIndex) throws OperationException {
         final Vertex end = new Vertex(pointsPlusRoot, endIndex);
-        final Tuple endPosition = end.getPosition();
+        final Vector endPosition = end.getPosition();
 
         OrientedEdge edge = indexToEdge[Math.toIntExact(startIndex)];
 

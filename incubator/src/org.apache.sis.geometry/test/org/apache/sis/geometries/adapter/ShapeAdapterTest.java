@@ -98,7 +98,7 @@ public final class ShapeAdapterTest {
      */
     @Test
     public void testPoint() {
-        initialize(GeometryFactory.createPoint(CARTESIAN_2D, 10, 20));
+        initialize(GeometryFactory.DEFAULT.createPoint(CARTESIAN_2D, 10, 20));
         assertSegmentEquals(PathIterator.SEG_MOVETO, 10, 20);
         assertTrue(iterator.isDone());
     }
@@ -108,7 +108,7 @@ public final class ShapeAdapterTest {
      */
     @Test
     public void testLineString() {
-        initialize(GeometryFactory.createLineString(new ArrayDataPoints(NDArrays.of(CARTESIAN_2D, new double[]{
+        initialize(GeometryFactory.DEFAULT.createLineString(new ArrayDataPoints(NDArrays.of(CARTESIAN_2D, new double[]{
             3,1,
             7,6,
             5,2
@@ -124,16 +124,16 @@ public final class ShapeAdapterTest {
      */
     @Test
     public void testMultiLineString() {
-        final LineString line1 = GeometryFactory.createLineString(new ArrayDataPoints(NDArrays.of(CARTESIAN_2D, new double[]{
+        final LineString line1 = GeometryFactory.DEFAULT.createLineString(new ArrayDataPoints(NDArrays.of(CARTESIAN_2D, new double[]{
             10, 12,
             5, 2
         })));
-        final LineString line2 = GeometryFactory.createLineString(new ArrayDataPoints(NDArrays.of(CARTESIAN_2D, new double[]{
+        final LineString line2 = GeometryFactory.DEFAULT.createLineString(new ArrayDataPoints(NDArrays.of(CARTESIAN_2D, new double[]{
             3, 1,
             7, 6,
             5, 2
         })));
-        initialize(GeometryFactory.createMultiLineString(line1, line2));
+        initialize(GeometryFactory.DEFAULT.createMultiLineString(line1, line2));
         assertSegmentEquals(PathIterator.SEG_MOVETO, 10, 12);
         assertSegmentEquals(PathIterator.SEG_LINETO, 5, 2);
         assertSegmentEquals(PathIterator.SEG_MOVETO, 3, 1);
@@ -147,13 +147,13 @@ public final class ShapeAdapterTest {
      */
     @Test
     public void testPolygon() {
-        final LinearRing ring = GeometryFactory.createLinearRing(new ArrayDataPoints(NDArrays.of(CARTESIAN_2D, new double[]{
+        final LinearRing ring = GeometryFactory.DEFAULT.createLinearRing(new ArrayDataPoints(NDArrays.of(CARTESIAN_2D, new double[]{
             3, 1,
             7, 6,
             5, 2,
             3, 1
         })));
-        initialize(GeometryFactory.createPolygon(ring, null));
+        initialize(GeometryFactory.DEFAULT.createPolygon(ring, null));
         assertSegmentEquals(PathIterator.SEG_MOVETO, 3, 1);
         assertSegmentEquals(PathIterator.SEG_LINETO, 7, 6);
         assertSegmentEquals(PathIterator.SEG_LINETO, 5, 2);
@@ -166,21 +166,21 @@ public final class ShapeAdapterTest {
      */
     @Test
     public void testMultiPolygon() {
-        final LinearRing ring1 = GeometryFactory.createLinearRing(new ArrayDataPoints(NDArrays.of(CARTESIAN_2D, new double[]{
+        final LinearRing ring1 = GeometryFactory.DEFAULT.createLinearRing(new ArrayDataPoints(NDArrays.of(CARTESIAN_2D, new double[]{
             3, 1,
             7, 6,
             5, 2,
             3, 1
         })));
-        final LinearRing ring2 = GeometryFactory.createLinearRing(new ArrayDataPoints(NDArrays.of(CARTESIAN_2D, new double[]{
+        final LinearRing ring2 = GeometryFactory.DEFAULT.createLinearRing(new ArrayDataPoints(NDArrays.of(CARTESIAN_2D, new double[]{
             12, 3,
             1, 9,
             4, 6,
             12, 3
         })));
-        final Polygon polygon1 = GeometryFactory.createPolygon(ring1, null);
-        final Polygon polygon2 = GeometryFactory.createPolygon(ring2, null);
-        initialize(GeometryFactory.createMultiPolygon(polygon1, polygon2));
+        final Polygon polygon1 = GeometryFactory.DEFAULT.createPolygon(ring1, null);
+        final Polygon polygon2 = GeometryFactory.DEFAULT.createPolygon(ring2, null);
+        initialize(GeometryFactory.DEFAULT.createMultiPolygon(polygon1, polygon2));
 
         // First polygon.
         assertSegmentEquals(PathIterator.SEG_MOVETO, 3, 1);
@@ -201,7 +201,7 @@ public final class ShapeAdapterTest {
      */
     @Test
     public void testAsDecimatedShapeLineString() {
-        final LineString line = GeometryFactory.createLineString(new ArrayDataPoints(NDArrays.of(CARTESIAN_2D, new double[]{
+        final LineString line = GeometryFactory.DEFAULT.createLineString(new ArrayDataPoints(NDArrays.of(CARTESIAN_2D, new double[]{
             0, 0,
             1, 0,
             2, 0

@@ -212,8 +212,8 @@ final class WellKnownBinaryParser {
         }
         switch (code % 1000) {
             case WellKnownBinary.Codes.POINT:               return parsePoint();
-            case WellKnownBinary.Codes.LINESTRING:          return GeometryFactory.createLineString(readPointList());
-            case WellKnownBinary.Codes.CIRCULARSTRING:      return GeometryFactory.createCircularString(readPointList());
+            case WellKnownBinary.Codes.LINESTRING:          return GeometryFactory.DEFAULT.createLineString(readPointList());
+            case WellKnownBinary.Codes.CIRCULARSTRING:      return GeometryFactory.DEFAULT.createCircularString(readPointList());
             case WellKnownBinary.Codes.COMPOUNDCURVE:       return parseCompoundCurve();
             case WellKnownBinary.Codes.POLYGON:             return readPolygonBody();
             case WellKnownBinary.Codes.TRIANGLE:            return readTriangleBody();
@@ -263,10 +263,10 @@ final class WellKnownBinaryParser {
             if (!Double.isNaN(ordinate)) {
                 final Coordinates c = new Coordinates();
                 c.add(tuple);
-                return GeometryFactory.createPoint(c.build());
+                return GeometryFactory.DEFAULT.createPoint(c.build());
             }
         }
-        return GeometryFactory.createEmpty(crs());
+        return GeometryFactory.DEFAULT.createEmpty(crs());
     }
 
     /**
@@ -275,13 +275,13 @@ final class WellKnownBinaryParser {
     private CompoundCurve parseCompoundCurve() {
         final int n = readCount();
         if (n == 0) {
-            return GeometryFactory.createCompoundCurve(crs());
+            return GeometryFactory.DEFAULT.createCompoundCurve(crs());
         }
         final Curve[] curves = new Curve[n];
         for (int i = 0; i < n; i++) {
             curves[i] = readMember(Curve.class, CompoundCurve.TYPE);
         }
-        return GeometryFactory.createCompoundCurve(curves);
+        return GeometryFactory.DEFAULT.createCompoundCurve(curves);
     }
 
     /**
@@ -291,14 +291,14 @@ final class WellKnownBinaryParser {
     private CurvePolygon parseCurvePolygon() {
         final int n = readCount();
         if (n == 0) {
-            return GeometryFactory.createCurvePolygon(emptyRing(), List.of());
+            return GeometryFactory.DEFAULT.createCurvePolygon(emptyRing(), List.of());
         }
         final Curve exterior = readMember(Curve.class, CurvePolygon.TYPE);
         final List<Curve> interiors = new ArrayList<>(n - 1);
         for (int i = 1; i < n; i++) {
             interiors.add(readMember(Curve.class, CurvePolygon.TYPE));
         }
-        return GeometryFactory.createCurvePolygon(exterior, interiors);
+        return GeometryFactory.DEFAULT.createCurvePolygon(exterior, interiors);
     }
 
     /**
@@ -307,13 +307,13 @@ final class WellKnownBinaryParser {
     private PolyhedralSurface<Polygon> parsePolyhedralSurface() {
         final int n = readCount();
         if (n == 0) {
-            return GeometryFactory.createPolyhedralSurface(crs(), new Polygon[0]);
+            return GeometryFactory.DEFAULT.createPolyhedralSurface(crs(), new Polygon[0]);
         }
         final Polygon[] patches = new Polygon[n];
         for (int i = 0; i < n; i++) {
             patches[i] = readMember(Polygon.class, PolyhedralSurface.TYPE);
         }
-        return GeometryFactory.createPolyhedralSurface(patches);
+        return GeometryFactory.DEFAULT.createPolyhedralSurface(patches);
     }
 
     /**
@@ -322,13 +322,13 @@ final class WellKnownBinaryParser {
     private TIN parseTIN() {
         final int n = readCount();
         if (n == 0) {
-            return GeometryFactory.createTIN(crs(), new Triangle[0]);
+            return GeometryFactory.DEFAULT.createTIN(crs(), new Triangle[0]);
         }
         final Triangle[] patches = new Triangle[n];
         for (int i = 0; i < n; i++) {
             patches[i] = readMember(Triangle.class, TIN.TYPE);
         }
-        return GeometryFactory.createTIN(patches);
+        return GeometryFactory.DEFAULT.createTIN(patches);
     }
 
     /**
@@ -337,14 +337,14 @@ final class WellKnownBinaryParser {
     private MultiPoint<?> parseMultiPoint() {
         final int n = readCount();
         if (n == 0) {
-            return GeometryFactory.createMultiPoint(crs());
+            return GeometryFactory.DEFAULT.createMultiPoint(crs());
         }
         final Point[] members = new Point[n];
         for (int i = 0; i < n; i++) {
             // See parsePoint(): an empty point decodes to Empty, which is not a Point.
             members[i] = readMember(Point.class, MultiPoint.TYPE);
         }
-        return GeometryFactory.createMultiPoint(members);
+        return GeometryFactory.DEFAULT.createMultiPoint(members);
     }
 
     /**
@@ -353,13 +353,13 @@ final class WellKnownBinaryParser {
     private MultiLineString parseMultiLineString() {
         final int n = readCount();
         if (n == 0) {
-            return GeometryFactory.createMultiLineString(crs());
+            return GeometryFactory.DEFAULT.createMultiLineString(crs());
         }
         final LineString[] members = new LineString[n];
         for (int i = 0; i < n; i++) {
             members[i] = readMember(LineString.class, MultiLineString.TYPE);
         }
-        return GeometryFactory.createMultiLineString(members);
+        return GeometryFactory.DEFAULT.createMultiLineString(members);
     }
 
     /**
@@ -368,13 +368,13 @@ final class WellKnownBinaryParser {
     private MultiPolygon parseMultiPolygon() {
         final int n = readCount();
         if (n == 0) {
-            return GeometryFactory.createMultiPolygon(crs());
+            return GeometryFactory.DEFAULT.createMultiPolygon(crs());
         }
         final Polygon[] members = new Polygon[n];
         for (int i = 0; i < n; i++) {
             members[i] = readMember(Polygon.class, MultiPolygon.TYPE);
         }
-        return GeometryFactory.createMultiPolygon(members);
+        return GeometryFactory.DEFAULT.createMultiPolygon(members);
     }
 
     /**
@@ -384,13 +384,13 @@ final class WellKnownBinaryParser {
     private MultiCurve<Curve> parseMultiCurve() {
         final int n = readCount();
         if (n == 0) {
-            return GeometryFactory.<Curve>createMultiCurve(crs());
+            return GeometryFactory.DEFAULT.createMultiCurve(crs());
         }
         final Curve[] members = new Curve[n];
         for (int i = 0; i < n; i++) {
             members[i] = readMember(Curve.class, MultiCurve.TYPE);
         }
-        return GeometryFactory.createMultiCurve(members);
+        return GeometryFactory.DEFAULT.createMultiCurve(members);
     }
 
     /**
@@ -400,13 +400,13 @@ final class WellKnownBinaryParser {
     private MultiSurface<Surface> parseMultiSurface() {
         final int n = readCount();
         if (n == 0) {
-            return GeometryFactory.<Surface>createMultiSurface(crs());
+            return GeometryFactory.DEFAULT.createMultiSurface(crs());
         }
         final Surface[] members = new Surface[n];
         for (int i = 0; i < n; i++) {
             members[i] = readMember(Surface.class, MultiSurface.TYPE);
         }
-        return GeometryFactory.createMultiSurface(members);
+        return GeometryFactory.DEFAULT.createMultiSurface(members);
     }
 
     /**
@@ -415,13 +415,13 @@ final class WellKnownBinaryParser {
     private GeometryCollection<Geometry> parseGeometryCollection() {
         final int n = readCount();
         if (n == 0) {
-            return GeometryFactory.<Geometry>createGeometryCollection(crs());
+            return GeometryFactory.DEFAULT.createGeometryCollection(crs());
         }
         final Geometry[] members = new Geometry[n];
         for (int i = 0; i < n; i++) {
             members[i] = parseGeometry();
         }
-        return GeometryFactory.createGeometryCollection(members);
+        return GeometryFactory.DEFAULT.createGeometryCollection(members);
     }
 
     // ////////////////////////////////////////////////////////////////////////
@@ -435,9 +435,9 @@ final class WellKnownBinaryParser {
     private Polygon readPolygonBody() {
         final List<LinearRing> rings = readRings();
         if (rings.isEmpty()) {
-            return GeometryFactory.createPolygon(emptyRing(), List.of());
+            return GeometryFactory.DEFAULT.createPolygon(emptyRing(), List.of());
         }
-        return GeometryFactory.createPolygon(rings.get(0), new ArrayList<>(rings.subList(1, rings.size())));
+        return GeometryFactory.DEFAULT.createPolygon(rings.get(0), new ArrayList<>(rings.subList(1, rings.size())));
     }
 
     /**
@@ -446,12 +446,12 @@ final class WellKnownBinaryParser {
     private Triangle readTriangleBody() {
         final List<LinearRing> rings = readRings();
         if (rings.isEmpty()) {
-            return GeometryFactory.createTriangle(emptyRing());
+            return GeometryFactory.DEFAULT.createTriangle(emptyRing());
         }
         if (rings.size() != 1) {
             throw error("A " + Triangle.TYPE + " patch has no interior ring, but " + (rings.size() - 1) + " were given");
         }
-        return GeometryFactory.createTriangle(rings.get(0));
+        return GeometryFactory.DEFAULT.createTriangle(rings.get(0));
     }
 
     /**
@@ -461,7 +461,7 @@ final class WellKnownBinaryParser {
         final int n = readCount();
         final List<LinearRing> rings = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
-            rings.add(GeometryFactory.createLinearRing(readPointList()));
+            rings.add(GeometryFactory.DEFAULT.createLinearRing(readPointList()));
         }
         return rings;
     }
@@ -482,7 +482,7 @@ final class WellKnownBinaryParser {
      * Returns an empty ring, for the zero counts of the types which are made of rings.
      */
     private LinearRing emptyRing() {
-        return GeometryFactory.createLinearRing(new Coordinates().build());
+        return GeometryFactory.DEFAULT.createLinearRing(new Coordinates().build());
     }
 
     /**
@@ -619,12 +619,12 @@ final class WellKnownBinaryParser {
             if (size == 0) {
                 final Array empty = NDArrays.of(posSystem, DataType.DOUBLE, 0);
                 if (!hasM) {
-                    return GeometryFactory.createSequence(empty);
+                    return GeometryFactory.DEFAULT.createDataPoints(empty);
                 }
                 return createSequence(empty, NDArrays.of(MEASURE_SYSTEM, DataType.DOUBLE, 0));
             }
             if (!hasM) {
-                return GeometryFactory.createSequence(NDArrays.of(posSystem, Arrays.copyOf(values, count)));
+                return GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(posSystem, Arrays.copyOf(values, count)));
             }
             /*
              * The measure is the ordinate following the position ones in each tuple of the bytes,
@@ -646,7 +646,7 @@ final class WellKnownBinaryParser {
             final Map<String,Array> attributes = new LinkedHashMap<>(4);
             attributes.put(DataPointsType.ATT_POSITION, positions);
             attributes.put(DataPointsType.ATT_M, measures);
-            return GeometryFactory.createSequence(attributes);
+            return GeometryFactory.DEFAULT.createDataPoints(attributes);
         }
     }
 

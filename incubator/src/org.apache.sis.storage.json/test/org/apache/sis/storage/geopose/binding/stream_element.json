@@ -1,0 +1,10 @@
+{
+  "streamElement" : {
+    "frame" : {
+      "authority" : "/geopose/1.0",
+      "id" : "LTP-ENU",
+      "parameters" : "longitude=1.4450&latitude=43.6050&height=151.000"
+    },
+    "validTime" : 1630560671227
+  }
+}

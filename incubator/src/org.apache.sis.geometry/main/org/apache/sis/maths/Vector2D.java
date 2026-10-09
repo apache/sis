@@ -21,7 +21,7 @@ package org.apache.sis.maths;
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class Vector2D<T extends Vector2D<T>> extends AbstractTuple<T> implements Vector<T> {
+public abstract class Vector2D<T extends Vector2D<T>> extends AbstractVector<T> {
 
     public Vector2D() {
         super(2);
@@ -83,7 +83,7 @@ public abstract class Vector2D<T extends Vector2D<T>> extends AbstractTuple<T> i
             this.y = array[1];
         }
 
-        public Byte(ReadOnly.Tuple<?> tuple) {
+        public Byte(ReadOnly.Vector<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 2);
             set(tuple);
@@ -244,7 +244,7 @@ public abstract class Vector2D<T extends Vector2D<T>> extends AbstractTuple<T> i
             this.y = array[1];
         }
 
-        public UByte(ReadOnly.Tuple<?> tuple) {
+        public UByte(ReadOnly.Vector<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 2);
             set(tuple);
@@ -405,7 +405,7 @@ public abstract class Vector2D<T extends Vector2D<T>> extends AbstractTuple<T> i
             this.y = array[1];
         }
 
-        public Short(ReadOnly.Tuple<?> tuple) {
+        public Short(ReadOnly.Vector<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 2);
             set(tuple);
@@ -566,7 +566,7 @@ public abstract class Vector2D<T extends Vector2D<T>> extends AbstractTuple<T> i
             this.y = array[1];
         }
 
-        public UShort(ReadOnly.Tuple<?> tuple) {
+        public UShort(ReadOnly.Vector<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 2);
             set(tuple);
@@ -727,7 +727,7 @@ public abstract class Vector2D<T extends Vector2D<T>> extends AbstractTuple<T> i
             this.y = array[1];
         }
 
-        public Int(ReadOnly.Tuple<?> tuple) {
+        public Int(ReadOnly.Vector<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 2);
             set(tuple);
@@ -888,7 +888,7 @@ public abstract class Vector2D<T extends Vector2D<T>> extends AbstractTuple<T> i
             this.y = array[1];
         }
 
-        public UInt(ReadOnly.Tuple<?> tuple) {
+        public UInt(ReadOnly.Vector<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 2);
             set(tuple);
@@ -1049,7 +1049,7 @@ public abstract class Vector2D<T extends Vector2D<T>> extends AbstractTuple<T> i
             this.y = array[1];
         }
 
-        public Long(ReadOnly.Tuple<?> tuple) {
+        public Long(ReadOnly.Vector<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 2);
             set(tuple);
@@ -1210,7 +1210,7 @@ public abstract class Vector2D<T extends Vector2D<T>> extends AbstractTuple<T> i
             this.y = array[1];
         }
 
-        public Float(ReadOnly.Tuple<?> tuple) {
+        public Float(ReadOnly.Vector<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 2);
             set(tuple);
@@ -1310,7 +1310,7 @@ public abstract class Vector2D<T extends Vector2D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public Float add(ReadOnly.Tuple<?> other) {
+        public Float add(ReadOnly.Vector<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
@@ -1320,7 +1320,7 @@ public abstract class Vector2D<T extends Vector2D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public Float subtract(ReadOnly.Tuple<?> other) {
+        public Float subtract(ReadOnly.Vector<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
@@ -1421,7 +1421,7 @@ public abstract class Vector2D<T extends Vector2D<T>> extends AbstractTuple<T> i
             this.y = array[1];
         }
 
-        public Double(ReadOnly.Tuple<?> tuple) {
+        public Double(ReadOnly.Vector<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 2);
             set(tuple);
@@ -1521,7 +1521,7 @@ public abstract class Vector2D<T extends Vector2D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public Double add(ReadOnly.Tuple<?> other) {
+        public Double add(ReadOnly.Vector<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
@@ -1531,7 +1531,7 @@ public abstract class Vector2D<T extends Vector2D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public Double subtract(ReadOnly.Tuple<?> other) {
+        public Double subtract(ReadOnly.Vector<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }

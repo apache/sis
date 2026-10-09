@@ -33,9 +33,9 @@ import org.apache.sis.geometries.curve.MultiCurve;
 import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.surface.MultiSurface;
 import org.apache.sis.geometries.surface.Polygon;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -245,7 +245,7 @@ abstract class AbstractGMLWriter implements GMLGeometryWriter {
     /**
      * Appends the ordinates of one coordinate tuple to the given buffer, separated by spaces.
      */
-    protected static void appendTuple(final StringBuilder sb, final Tuple<?> tuple) {
+    protected static void appendTuple(final StringBuilder sb, final Vector<?> tuple) {
         for (int i = 0, n = tuple.getDimension(); i < n; i++) {
             if (i != 0) sb.append(' ');
             sb.append(tuple.get(i));

@@ -25,7 +25,7 @@ package org.apache.sis.maths;
  */
 public interface Cursor {
 
-    Tuple<?> samples();
+    Vector<?> samples();
 
     /**
      * Get the current tuple coordinate.

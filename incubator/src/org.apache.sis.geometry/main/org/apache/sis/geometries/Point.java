@@ -28,7 +28,7 @@ import org.apache.sis.geometries.internal.shared.DefaultPoint;
 import org.apache.sis.geometries.internal.shared.IndexedPoint;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.surface.Triangle;
-import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 
 
@@ -48,7 +48,7 @@ import org.apache.sis.maths.Vector;
  *
  * <p>Difference with ISO 19107: a point differs from a {@link org.opengis.geometry.DirectPosition}
  * in that it is an object with a system-provided identity, whereas a direct position is a data type
- * whose only identity is its own value. This interface exposes the location as a {@link Tuple}
+ * whose only identity is its own value. This interface exposes the location as a {@link Vector}
  * instead of a direct position, in order to accommodate additional attributes like in GLTF or
  * GPU models.</p>
  *
@@ -79,7 +79,7 @@ public sealed interface Point extends Primitive
      * @see ISO 19107:2019 - 6.4.13.2
      */
     @UML(identifier="position", specification=ISO_19107)
-    Tuple<?> getPosition();
+    Vector<?> getPosition();
 
     /**
      * Returns tuple for given name.
@@ -87,7 +87,7 @@ public sealed interface Point extends Primitive
      * @param name seached attribute name
      * @return attribute or null.
      */
-    Tuple<?> getAttribute(String name);
+    Vector<?> getAttribute(String name);
 
     /**
      * Sets the value of the attribute of the given name.
@@ -95,14 +95,15 @@ public sealed interface Point extends Primitive
      * @param name  name of the attribute to set.
      * @param tuple new attribute value.
      */
-    void setAttribute(String name, Tuple<?> tuple);
+    void setAttribute(String name, ReadOnly.Vector<?> tuple);
 
     /**
      * View this point as a single point sequence
      *
      * @return this point as a sequence of one data point.
      */
-    default DataPoints asDataPoint() {
+    @Override
+    default DataPoints getDataPoints() {
         return new DataPoints() {
             @Override
             public CoordinateReferenceSystem getCoordinateReferenceSystem() {
@@ -126,25 +127,25 @@ public sealed interface Point extends Primitive
             }
 
             @Override
-            public Tuple getPosition(int index) {
+            public Vector getPosition(int index) {
                 if (index != 0) throw new IndexOutOfBoundsException();
                 return Point.this.getPosition();
             }
 
             @Override
-            public void setPosition(int index, Tuple<?> value) {
+            public void setPosition(int index, ReadOnly.Vector<?> value) {
                 if (index != 0) throw new IndexOutOfBoundsException();
                 Point.this.getPosition().set(value);
             }
 
             @Override
-            public Tuple getAttribute(int index, String name) {
+            public Vector getAttribute(int index, String name) {
                 if (index != 0) throw new IndexOutOfBoundsException();
                 return Point.this.getAttribute(name);
             }
 
             @Override
-            public void setAttribute(int index, String name, Tuple<?> value) {
+            public void setAttribute(int index, String name, ReadOnly.Vector<?> value) {
                 if (index != 0) throw new IndexOutOfBoundsException();
                 Point.this.setAttribute(name, value);
             }
@@ -222,8 +223,8 @@ public sealed interface Point extends Primitive
      */
     @UML(identifier="boundary", specification=ISO_19107)
     @Override
-    default Geometry boundary() {
-        return GeometryFactory.createEmpty(getCoordinateReferenceSystem());
+    default Geometry getBoundary() {
+        return GeometryFactory.DEFAULT.createEmpty(getCoordinateReferenceSystem());
     }
 
     /**
@@ -250,7 +251,7 @@ public sealed interface Point extends Primitive
 
     @Override
     default Envelope getEnvelope() {
-        final Tuple<?> first = getPosition();
+        final Vector<?> first = getPosition();
         final BBox env = new BBox(first, first);
         env.setCoordinateReferenceSystem(getCoordinateReferenceSystem());
         return env;

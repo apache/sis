@@ -27,49 +27,31 @@ import org.junit.jupiter.api.Test;
  * @author Johann Sorel (Geomatys)
  */
 public class RealPolynomialTest {
-    /**
-     * Test of {@code getName()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetName() {
     }
 
-    /**
-     * Test of {@code getDomain()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetDomain() {
     }
 
-    /**
-     * Test of {@code getMetadata()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetMetadata() {
     }
 
-    /**
-     * Test of {@code getDegree()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetDegree() {
     }
 
-    /**
-     * Test of {@code getC()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetC() {
     }
 
-    /**
-     * Test of {@code value(double)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testValue() {

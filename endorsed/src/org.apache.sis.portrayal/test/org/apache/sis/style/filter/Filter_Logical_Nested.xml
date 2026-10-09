@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Logical operators nested more than one level deep, including Not around a composite. -->
+<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+    <ogc:Or>
+        <ogc:And>
+            <ogc:PropertyIsGreaterThan>
+                <ogc:PropertyName>feature_property_name</ogc:PropertyName>
+                <ogc:Literal>455</ogc:Literal>
+            </ogc:PropertyIsGreaterThan>
+            <ogc:PropertyIsLessThan>
+                <ogc:PropertyName>feature_property_name</ogc:PropertyName>
+                <ogc:Literal>457</ogc:Literal>
+            </ogc:PropertyIsLessThan>
+        </ogc:And>
+        <ogc:Not>
+            <ogc:Or>
+                <ogc:PropertyIsNull>
+                    <ogc:PropertyName>other_property_name</ogc:PropertyName>
+                </ogc:PropertyIsNull>
+                <ogc:PropertyIsEqualTo>
+                    <ogc:PropertyName>other_property_name</ogc:PropertyName>
+                    <ogc:Literal>0</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+            </ogc:Or>
+        </ogc:Not>
+    </ogc:Or>
+</ogc:Filter>

@@ -16,6 +16,10 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.point.MultiPoint;
+
 // Test dependencies
 import org.apache.sis.geometries.point.MultiPointTest;
 
@@ -26,4 +30,17 @@ import org.apache.sis.geometries.point.MultiPointTest;
  * @author Johann Sorel (Geomatys)
  */
 public class DefaultRawMultiPointTest extends MultiPointTest {
+
+    /**
+     * Creates the set from an array of positions rather than from a sequence of positions,
+     * which is the difference between this implementation and {@link DefaultMultiPoint}.
+     */
+    @Override
+    protected MultiPoint<?> createMultiPoint(final CoordinateReferenceSystem crs, final double... coordinates) {
+        final Point[] points = new Point[coordinates.length / 2];
+        for (int i = 0; i < points.length; i++) {
+            points[i] = new DefaultPoint(crs, coordinates[i*2], coordinates[i*2 + 1]);
+        }
+        return new DefaultRawMultiPoint(crs, points);
+    }
 }

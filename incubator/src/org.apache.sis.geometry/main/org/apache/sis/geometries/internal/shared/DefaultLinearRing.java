@@ -31,4 +31,14 @@ public non-sealed class DefaultLinearRing extends DefaultLineString implements L
         super(points);
     }
 
+    /**
+     * Returns {@code true}: a linear ring is simple by definition.
+     * This restores the value defined by {@link LinearRing#isSimple()}, which the
+     * JTS fallback inherited from {@link DefaultLineString} would otherwise hide.
+     */
+    @Override
+    public boolean isSimple() {
+        return true;
+    }
+
 }

@@ -1,0 +1,30 @@
+{
+  "header" : {
+    "poseCount" : 2,
+    "startInstant" : 1630560671227,
+    "stopInstant" : 1630560681227,
+    "transitionModel" : {
+      "authority" : "/geopose/1.0",
+      "id" : "linear",
+      "parameters" : ""
+    }
+  },
+  "interPoseDuration" : 10000,
+  "outerFrame" : {
+    "authority" : "/geopose/1.0",
+    "id" : "LTP-ENU",
+    "parameters" : "longitude=1.4442&latitude=43.6047&height=150.000"
+  },
+  "innerFrameSeries" : [ {
+    "authority" : "/geopose/1.0",
+    "id" : "LTP-ENU",
+    "parameters" : "longitude=1.4450&latitude=43.6050&height=151.000"
+  }, {
+    "authority" : "/geopose/1.0",
+    "id" : "LTP-ENU",
+    "parameters" : "longitude=1.4460&latitude=43.6060&height=152.000"
+  } ],
+  "trailer" : {
+    "poseCount" : 2
+  }
+}

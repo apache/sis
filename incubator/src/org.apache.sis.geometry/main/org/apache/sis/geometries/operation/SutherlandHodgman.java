@@ -19,9 +19,9 @@ package org.apache.sis.geometries.operation;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.sis.maths.Maths;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -42,20 +42,20 @@ public final class SutherlandHodgman {
      * @param clip : sequence of Segment, must be counter-clockwise direction, first point must equals last
      * @return Sequence of tuple for the result polygon
      */
-    public static List<Tuple> clip(List<Tuple> subject, List<Tuple> clip){
-        final List<Tuple> outputList = new ArrayList<>(subject);
+    public static List<Vector> clip(List<Vector> subject, List<Vector> clip){
+        final List<Vector> outputList = new ArrayList<>(subject);
 
         for (int i = 0, n = clip.size() - 1; i < n; i++){
-            final Tuple<?> clipEdgeStart = clip.get(i);
-            final Tuple<?> clipEdgeEnd = clip.get(i + 1);
+            final Vector<?> clipEdgeStart = clip.get(i);
+            final Vector<?> clipEdgeEnd = clip.get(i + 1);
 
-            final List<Tuple> inputList = new ArrayList<>(outputList);
+            final List<Vector> inputList = new ArrayList<>(outputList);
             if (inputList.isEmpty()) break;
             outputList.clear();
 
-            Tuple start = inputList.get(inputList.size() - 1);
+            Vector start = inputList.get(inputList.size() - 1);
             for (int k = 0, kn = inputList.size(); k < kn; k++){
-                final Tuple<?> end = inputList.get(k);
+                final Vector<?> end = inputList.get(k);
 
                 if (isInside(clipEdgeStart, clipEdgeEnd, end)){
                     if (!isInside(clipEdgeStart, clipEdgeEnd, start)){
@@ -72,11 +72,11 @@ public final class SutherlandHodgman {
         return outputList;
     }
 
-    private static boolean isInside(Tuple<?> edgeStart, Tuple<?> edgeEnd, Tuple<?> point){
+    private static boolean isInside(Vector<?> edgeStart, Vector<?> edgeEnd, Vector<?> point){
         return Maths.lineSide(edgeStart, edgeEnd, point) > 0;
     }
 
-    private static Tuple computeIntersection(Tuple<?> start1, Tuple<?> end1, Tuple<?> start2, Tuple<?> end2){
+    private static Vector computeIntersection(Vector<?> start1, Vector<?> end1, Vector<?> start2, Vector<?> end2){
         final double[] buffer1 = new double[start2.getDimension()];
         final double[] buffer2 = new double[start2.getDimension()];
         final double[] ratio = new double[2];

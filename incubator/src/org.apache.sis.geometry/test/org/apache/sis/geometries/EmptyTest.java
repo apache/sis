@@ -22,7 +22,6 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
-import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,17 +38,7 @@ import org.junit.jupiter.api.Disabled;
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class EmptyTest {
-    /**
-     * An arbitrary two-dimensional coordinate reference system used by the tests.
-     */
-    protected static final CoordinateReferenceSystem CRS_2D = CommonCRS.WGS84.normalizedGeographic();
-
-    /**
-     * An arbitrary three-dimensional coordinate reference system used by the tests.
-     */
-    protected static final CoordinateReferenceSystem CRS_3D = CommonCRS.WGS84.geographic3D();
-
+public abstract class EmptyTest extends GeometryTest {
     /**
      * Creates a new test case.
      */
@@ -66,69 +55,45 @@ public abstract class EmptyTest {
      */
     protected abstract Empty createEmpty(CoordinateReferenceSystem crs);
 
-    /**
-     * Test of {@code isEmpty()}.
-     */
     @Test
     public void testIsEmpty() {
         assertTrue(createEmpty(CRS_2D).isEmpty());
     }
 
-    /**
-     * Test of {@code getGeometryType()}.
-     */
     @Test
     public void testGetGeometryType() {
         assertEquals(GeometryType.EMPTY, createEmpty(CRS_2D).getGeometryType());
     }
 
-    /**
-     * Test of {@code getTopologicDimension()}.
-     */
     @Test
     public void testGetTopologicDimension() {
         assertEquals(-1, createEmpty(CRS_2D).getTopologicDimension());
         assertEquals(-1, createEmpty(CRS_3D).getTopologicDimension());
     }
 
-    /**
-     * Test of {@code isCycle()}.
-     */
     @Test
     public void testIsCycle() {
         assertTrue(createEmpty(CRS_2D).isCycle(), "The boundary of the empty set is empty.");
     }
 
-    /**
-     * Test of {@code isSimple()}.
-     */
     @Test
     public void testIsSimple() {
         assertTrue(createEmpty(CRS_2D).isSimple(), "The empty set has no anomalous position.");
     }
 
-    /**
-     * Test of {@code isValid()}.
-     */
     @Test
     public void testIsValid() {
         assertTrue(createEmpty(CRS_2D).isValid());
     }
 
-    /**
-     * Test of {@code boundary()}.
-     */
     @Test
-    public void testBoundary() {
+    public void testGetBoundary() {
         final Empty empty = createEmpty(CRS_2D);
-        final Geometry boundary = empty.boundary();
+        final Geometry boundary = empty.getBoundary();
         assertSame(empty, boundary);
         assertTrue(boundary.isEmpty());
     }
 
-    /**
-     * Test of {@code getClosure()}.
-     */
     @Test
     public void testGetClosure() {
         final Empty empty = createEmpty(CRS_2D);
@@ -137,9 +102,6 @@ public abstract class EmptyTest {
         assertTrue(closure.isEmpty());
     }
 
-    /**
-     * Test of {@code convexHull()}.
-     */
     @Test
     public void testConvexHull() {
         final Empty empty = createEmpty(CRS_2D);
@@ -148,34 +110,22 @@ public abstract class EmptyTest {
         assertTrue(hull.isEmpty());
     }
 
-    /**
-     * Test of {@code getCentroid()}.
-     */
     @Test
     public void testGetCentroid() {
         assertNull(createEmpty(CRS_2D).getCentroid(), "The centroid of the empty set is undefined.");
     }
 
-    /**
-     * Test of {@code getRepresentativePoint()}.
-     */
     @Test
     public void testGetRepresentativePoint() {
         assertNull(createEmpty(CRS_2D).getRepresentativePoint(), "The empty set has no interior position.");
     }
 
-    /**
-     * Test of {@code getCoordinateReferenceSystem()}.
-     */
     @Test
     public void testGetCoordinateReferenceSystem() {
         assertEquals(CRS_2D, createEmpty(CRS_2D).getCoordinateReferenceSystem());
         assertEquals(CRS_3D, createEmpty(CRS_3D).getCoordinateReferenceSystem());
     }
 
-    /**
-     * Test of {@code setCoordinateReferenceSystem(CoordinateReferenceSystem)}.
-     */
     @Test
     public void testSetCoordinateReferenceSystem() {
         final Empty empty = createEmpty(CRS_2D);
@@ -189,9 +139,6 @@ public abstract class EmptyTest {
         assertEquals(CRS_3D, empty.getCoordinateReferenceSystem());
     }
 
-    /**
-     * Test of {@code getAttributesType()}.
-     */
     @Test
     public void testGetAttributesType() {
         final Empty empty = createEmpty(CRS_2D);
@@ -205,18 +152,12 @@ public abstract class EmptyTest {
         assertEquals(CRS_2D, type.getAttributeSystem(DataPointsType.ATT_POSITION).getCoordinateReferenceSystem());
     }
 
-    /**
-     * Test of {@code getDimension()}.
-     */
     @Test
     public void testGetDimension() {
         assertEquals(2, createEmpty(CRS_2D).getDimension());
         assertEquals(3, createEmpty(CRS_3D).getDimension());
     }
 
-    /**
-     * Test of {@code getDimension(DirectPosition)}.
-     */
     @Test
     public void testGetDimension_DirectPosition() {
         final Empty empty = createEmpty(CRS_2D);
@@ -229,27 +170,18 @@ public abstract class EmptyTest {
         assertThrows(UnsupportedOperationException.class, () -> empty.getDimension(position));
     }
 
-    /**
-     * Test of {@code is3D()}.
-     */
     @Test
     public void testIs3D() {
         assertFalse(createEmpty(CRS_2D).is3D());
         assertTrue (createEmpty(CRS_3D).is3D());
     }
 
-    /**
-     * Test of {@code getSpatialDimension()}.
-     */
     @Test
     public void testGetSpatialDimension() {
         assertEquals(2, createEmpty(CRS_2D).getSpatialDimension());
         assertEquals(3, createEmpty(CRS_3D).getSpatialDimension());
     }
 
-    /**
-     * Test of {@code getBoundaryType()}.
-     */
     @Test
     @Disabled
     public void testGetBoundaryType() {
@@ -261,9 +193,6 @@ public abstract class EmptyTest {
         assertThrows(UnsupportedOperationException.class, () -> empty.getBoundaryType());
     }
 
-    /**
-     * Test of {@code getEnvelope()}.
-     */
     @Test
     public void testGetEnvelope() {
         final Empty empty = createEmpty(CRS_2D);
@@ -275,9 +204,6 @@ public abstract class EmptyTest {
                    "The envelope of an empty geometry contains no position.");
     }
 
-    /**
-     * Test of {@code userProperties()}.
-     */
     @Test
     public void testUserProperties() {
         final Empty empty = createEmpty(CRS_2D);

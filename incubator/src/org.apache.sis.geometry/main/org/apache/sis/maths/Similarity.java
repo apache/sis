@@ -126,7 +126,7 @@ public interface Similarity<T extends Similarity<T>> extends ReadOnly.Similarity
      * @param scale new scale
      * @return this instance
      */
-    T setScale(ReadOnly.Tuple<?> scale);
+    T setScale(ReadOnly.Vector<?> scale);
 
     /**
      * Update the translation.
@@ -135,7 +135,7 @@ public interface Similarity<T extends Similarity<T>> extends ReadOnly.Similarity
      * @param translation new translation
      * @return this instance
      */
-    T setTranslation(ReadOnly.Tuple<?> translation);
+    T setTranslation(ReadOnly.Vector<?> translation);
 
     /**
      * Set transform from given matrix.

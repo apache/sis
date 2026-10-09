@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<se:RasterSymbolizer xmlns:se="http://www.opengis.net/se">
+    <se:ColorMap type="ramp">
+        <se:ColorMapEntry label="low" opacity="0" quantity="0.017" color="#440154"/>
+        <se:ColorMapEntry label="mid" quantity="0.510" color="#20908c"/>
+        <se:ColorMapEntry label="high" quantity="1" color="#fde725"/>
+    </se:ColorMap>
+</se:RasterSymbolizer>

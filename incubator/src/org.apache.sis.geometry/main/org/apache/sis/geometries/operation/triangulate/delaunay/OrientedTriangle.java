@@ -20,6 +20,7 @@ import java.awt.geom.Point2D;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
@@ -29,8 +30,9 @@ import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.surface.Triangle;
-import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.referencing.internal.shared.ShapeUtilities;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -39,7 +41,7 @@ import org.apache.sis.referencing.internal.shared.ShapeUtilities;
  */
 public final class OrientedTriangle extends AbstractGeometry implements Triangle, DataPoints {
 
-    private final LinearRing ring = GeometryFactory.createLinearRing(this);
+    private final LinearRing ring = GeometryFactory.DEFAULT.createLinearRing(this);
 
     private boolean obsolete = false;
     public final OrientedEdge ab;
@@ -209,9 +211,9 @@ public final class OrientedTriangle extends AbstractGeometry implements Triangle
                 B = C;
                 C = T;
             }
-            final Tuple posA = A.getPosition();
-            final Tuple posB = B.getPosition();
-            final Tuple posC = C.getPosition();
+            final Vector posA = A.getPosition();
+            final Vector posB = B.getPosition();
+            final Vector posC = C.getPosition();
             final double ax = posA.get(0);
             final double ay = posA.get(1);
             final Point2D.Double circleCentre = ShapeUtilities.circleCentre(ax, ay, posB.get(0), posB.get(1), posC.get(0), posC.get(1));
@@ -254,6 +256,11 @@ public final class OrientedTriangle extends AbstractGeometry implements Triangle
     }
 
     @Override
+    public Geometry getBoundary() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
     public DataPointsType getType() {
         return DataPointsType.EMPTY;
     }
@@ -274,7 +281,7 @@ public final class OrientedTriangle extends AbstractGeometry implements Triangle
     }
 
     @Override
-    public Tuple getPosition(int index) {
+    public Vector getPosition(int index) {
         return switch (index) {
             case 0, 3 -> a.getPosition().copy();
             case 1 -> b.getPosition().copy();
@@ -284,12 +291,12 @@ public final class OrientedTriangle extends AbstractGeometry implements Triangle
     }
 
     @Override
-    public void setPosition(int index, Tuple value) {
+    public void setPosition(int index, ReadOnly.Vector value) {
         throw new UnsupportedOperationException("Not supported.");
     }
 
     @Override
-    public Tuple getAttribute(int index, String name) {
+    public Vector getAttribute(int index, String name) {
         if (DataPointsType.ATT_POSITION.equals(name)) {
             return getPosition(index);
         }
@@ -297,7 +304,7 @@ public final class OrientedTriangle extends AbstractGeometry implements Triangle
     }
 
     @Override
-    public void setAttribute(int index, String name, Tuple value) {
+    public void setAttribute(int index, String name, ReadOnly.Vector value) {
         if (DataPointsType.ATT_POSITION.equals(name)) {
             setPosition(index, value);
             return;
@@ -311,6 +318,12 @@ public final class OrientedTriangle extends AbstractGeometry implements Triangle
         result = 31 * result + b.getIndex();
         result = 31 * result + c.getIndex();
         return (int) result;
+    }
+
+
+    @Override
+    public DataPoints getDataPoints() {
+        return this;
     }
 
 }

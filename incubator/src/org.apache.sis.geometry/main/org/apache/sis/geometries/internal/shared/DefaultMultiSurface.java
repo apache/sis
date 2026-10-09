@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.internal.shared;
 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.surface.MultiSurface;
 
@@ -33,6 +34,16 @@ public non-sealed class DefaultMultiSurface<T extends Surface> extends DefaultGe
 
     public DefaultMultiSurface(CoordinateReferenceSystem fallbackCRS, T[] geometries) {
         super(fallbackCRS, geometries);
+    }
+
+    /**
+     * Returns the same point as {@link #getRepresentativePoint()}, which is the name
+     * given by OGC Simple Feature Access to the operation ISO 19107 calls the
+     * representative point.
+     */
+    @Override
+    public Point getPointOnSurface() {
+        return getRepresentativePoint();
     }
 
 }

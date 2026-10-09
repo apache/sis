@@ -35,9 +35,9 @@ import org.apache.sis.geometries.curve.Rhumb;
 import org.apache.sis.geometries.curve.Spiral;
 import org.apache.sis.geometries.internal.shared.DefaultReversedCurve;
 import org.apache.sis.maths.Array;
-import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -104,6 +104,7 @@ public sealed interface Curve extends Orientable
      * @see ISO 19107:2019 - 6.4.18.3
      */
     @UML(identifier="dataPoint", specification=ISO_19107)
+    @Override
     DataPoints getDataPoints();
 
     /**
@@ -217,11 +218,11 @@ public sealed interface Curve extends Orientable
      */
     @UML(identifier="boundary", specification=ISO_19107)
     @Override
-    default Geometry boundary() {
+    default Geometry getBoundary() {
         if (isEmpty() || isClosed()) {
-            return GeometryFactory.createEmpty(getCoordinateReferenceSystem());
+            return GeometryFactory.DEFAULT.createEmpty(getCoordinateReferenceSystem());
         }
-        return GeometryFactory.createMultiPoint(getStartPoint(), getEndPoint());
+        return GeometryFactory.DEFAULT.createMultiPoint(getStartPoint(), getEndPoint());
     }
 
     /**
@@ -453,7 +454,7 @@ public sealed interface Curve extends Orientable
          * not a geometry. `DefaultReversedCurve` returns this curve back from its own `getReverse()`,
          * so wrapping never nests.
          */
-        return GeometryFactory.createReversed(this);
+        return GeometryFactory.DEFAULT.createReversed(this);
     }
 
     /**

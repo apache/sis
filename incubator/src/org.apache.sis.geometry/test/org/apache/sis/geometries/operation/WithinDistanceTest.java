@@ -20,10 +20,9 @@ import javax.measure.Quantity;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
-import static org.apache.sis.geometries.operation.TestData.POINT_A;
-import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
-import static org.apache.sis.geometries.operation.TestData.POINT_B;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,7 +35,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class WithinDistanceTest {
+public class WithinDistanceTest extends AbstractD9IMTest {
     /**
      * An arbitrary radius, smaller than the distance between the two points of the test cases.
      */
@@ -52,10 +51,10 @@ public class WithinDistanceTest {
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
     private record TestCase(Geometry input,
-                         Geometry other,
-                         Quantity<?> distance,
-                         Boolean expected,
-                         Class<? extends Exception> error)
+                            Geometry other,
+                            Quantity<?> distance,
+                            Boolean expected,
+                            Class<? extends Exception> error)
     {
     }
 
@@ -65,7 +64,7 @@ public class WithinDistanceTest {
     private static final TestCase[] ENTRIES = {
         new TestCase(EMPTY_1, POINT_A,     RADIUS, false, null),
         new TestCase(POINT_A, EMPTY_1,     RADIUS, false, null),
-        new TestCase(POINT_A, POINT_A_BIS, RADIUS, true, null),
+        new TestCase(POINT_A, POINT_A_BIS, RADIUS, true,  null),
         new TestCase(POINT_A, POINT_B,     RADIUS, false, null)
     };
 
@@ -86,4 +85,36 @@ public class WithinDistanceTest {
             }
         }
     }
+
+    /**
+     * Tests {@code withinDistance(Geometry, Geometry, Quantity)} between geometries which are
+     * not positions. The answer is {@code true} as soon as the shortest distance between the
+     * two geometries does not exceed the given one, the limit case included.
+     */
+    @Test
+    public void testWithinDistanceBetweenShapes() {
+        final GeometryProcessor processor = new GeometryProcessor();
+        assertTrue (processor.withinDistance(SQUARE, LINE_FAR, degrees(11)), "The distance is 10.");
+        assertTrue (processor.withinDistance(SQUARE, LINE_FAR, degrees(10)), "The distance is exactly the limit.");
+        assertFalse(processor.withinDistance(SQUARE, LINE_FAR, degrees(9)), "The distance is 10.");
+        /*
+         * The two squares are 10√2 apart, which is between 14 and 15.
+         */
+        assertTrue (processor.withinDistance(SQUARE, SQUARE_DISJOINT, degrees(15)), "The distance is 10√2.");
+        assertFalse(processor.withinDistance(SQUARE, SQUARE_DISJOINT, degrees(14)), "The distance is 10√2.");
+        /*
+         * Geometries which meet are within any distance, including a distance of zero.
+         */
+        assertTrue(processor.withinDistance(SQUARE, SQUARE_TOUCHING, degrees(0)), "Two squares sharing an edge are at a distance of zero.");
+        assertTrue(processor.withinDistance(SQUARE, POINT_CENTER, degrees(0)), "A position inside a square is at a distance of zero from it.");
+    }
+
+    /**
+     * Returns the given amount of degrees, the unit of the axes of the reference system
+     * used by the geometries of these tests.
+     */
+    private static Quantity<?> degrees(final double value) {
+        return Quantities.create(value, Units.DEGREE);
+    }
+
 }

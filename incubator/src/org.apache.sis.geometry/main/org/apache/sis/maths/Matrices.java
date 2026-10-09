@@ -453,7 +453,7 @@ public final class Matrices {
      * @param buffer Matrix 3x3
      * @return rotation matrix
      */
-    public static double[][] createRotation3(final double angle, final ReadOnly.Tuple<?> rotationAxis, double[][] buffer) {
+    public static double[][] createRotation3(final double angle, final ReadOnly.Vector<?> rotationAxis, double[][] buffer) {
 
         if (buffer == null){
             buffer = new double[3][3];
@@ -495,7 +495,7 @@ public final class Matrices {
      * @param buffer Matrix 4x4
      * @return rotation matrix
      */
-    public static double[][] createRotation4(final double angle, final ReadOnly.Tuple<?> rotationAxis, double[][] buffer) {
+    public static double[][] createRotation4(final double angle, final ReadOnly.Vector<?> rotationAxis, double[][] buffer) {
 
         if (buffer == null){
             buffer = new double[4][4];
@@ -625,7 +625,7 @@ public final class Matrices {
         rotateMatrix.multiply(mv);
 
         //calculate translation vector
-        final Tuple<?> translation = rotateMatrix.transform(forward, null);
+        final Vector<?> translation = rotateMatrix.transform(forward, null);
 
         //calculate roll matrix
 //        final Matrix4 rollMatrix = new Matrix4();

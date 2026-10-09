@@ -17,12 +17,6 @@
 package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Geometry;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
-import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
-import static org.apache.sis.geometries.operation.TestData.POINT_A;
-import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
-import static org.apache.sis.geometries.operation.TestData.POINT_B;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,7 +29,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class IntersectsTest {
+public class IntersectsTest extends AbstractD9IMTest {
     /**
      * The inputs and expected result of a single test of {@code intersects(Geometry, Geometry)}.
      *
@@ -45,9 +39,9 @@ public class IntersectsTest {
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
     private record TestCase(Geometry input,
-                         Geometry other,
-                         Boolean expected,
-                         Class<? extends Exception> error)
+                            Geometry other,
+                            Boolean expected,
+                            Class<? extends Exception> error)
     {
     }
 
@@ -56,14 +50,55 @@ public class IntersectsTest {
      */
     private static final TestCase[] ENTRIES = {
         // Negation of `disjoint(Geometry, Geometry)`.
-        new TestCase(EMPTY_1,   NON_EMPTY, false, null),
-        new TestCase(NON_EMPTY, EMPTY_1,   false, null),
-        new TestCase(EMPTY_1,   EMPTY_1,   false, null),
-        new TestCase(EMPTY_1,   EMPTY_2,   false, null),
+        new TestCase(EMPTY_1,            NON_EMPTY,        false, null),
+        new TestCase(NON_EMPTY,          EMPTY_1,          false, null),
+        new TestCase(EMPTY_1,            EMPTY_1,          false, null),
+        new TestCase(EMPTY_1,            EMPTY_2,          false, null),
         //points
-        new TestCase(POINT_A, POINT_A_BIS, true,  null),
-        new TestCase(POINT_A, POINT_B,     false, null),
-        new TestCase(POINT_B, POINT_A,     false, null)
+        new TestCase(POINT_A,            POINT_A_BIS,      true,  null),
+        new TestCase(POINT_A,            POINT_B,          false, null),
+        new TestCase(POINT_B,            POINT_A,          false, null),
+        /*
+         * A position and a surface. A position on the boundary of a surface meets it, and the
+         * center of a surface with a hole does not, that position being in the hole.
+         */
+        new TestCase(POINT_CENTER,       SQUARE,           true,  null),
+        new TestCase(POINT_ON_EDGE,      SQUARE,           true,  null),
+        new TestCase(POINT_OUTSIDE,      SQUARE,           false, null),
+        new TestCase(POINT_CENTER,       SQUARE_WITH_HOLE, false, null),
+        /*
+         * A position and a curve, the position being interior to the curve, an end of it,
+         * or on neither.
+         */
+        new TestCase(POINT_ON_EDGE,      LINE_BOTTOM,      true,  null),
+        new TestCase(POINT_CORNER,       LINE_BOTTOM,      true,  null),
+        new TestCase(POINT_OUTSIDE,      LINE_BOTTOM,      false, null),
+        /*
+         * Two curves crossing each other, sharing only an end position, or sharing nothing.
+         */
+        new TestCase(LINE_BOTTOM,        LINE_CROSSING,    true,  null),
+        new TestCase(LINE_BOTTOM,        LINE_DIAGONAL,    true,  null),
+        new TestCase(LINE_BOTTOM,        LINE_FAR,         false, null),
+        /*
+         * A curve and a surface, the curve passing through it, lying on its boundary, or
+         * staying away from it.
+         */
+        new TestCase(LINE_CROSSING,      SQUARE,           true,  null),
+        new TestCase(LINE_BOTTOM,        SQUARE,           true,  null),
+        new TestCase(LINE_FAR,           SQUARE,           false, null),
+        /*
+         * Two surfaces overlapping, sharing only an edge, or sharing nothing.
+         */
+        new TestCase(SQUARE,             SQUARE_OVERLAP,   true,  null),
+        new TestCase(SQUARE,             SQUARE_TOUCHING,  true,  null),
+        new TestCase(SQUARE,             SQUARE_DISJOINT,  false, null),
+        /*
+         * Sets of geometries. A set meets another geometry as soon as one of its elements does.
+         */
+        new TestCase(MULTI_POINT_SPREAD, SQUARE,           true,  null),
+        new TestCase(MULTI_LINE,         SQUARE,           true,  null),
+        new TestCase(MULTI_POLYGON,      SQUARE_INNER,     true,  null),
+        new TestCase(COLLECTION,         SQUARE,           true,  null)
     };
 
     /**

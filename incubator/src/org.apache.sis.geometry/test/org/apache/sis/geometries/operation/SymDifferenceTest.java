@@ -18,18 +18,12 @@ package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.point.MultiPoint;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_RESULT;
-import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
-import static org.apache.sis.geometries.operation.TestData.POINT_A;
-import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
-import static org.apache.sis.geometries.operation.TestData.POINT_B;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 
@@ -38,7 +32,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class SymDifferenceTest {
+public class SymDifferenceTest extends AbstractD9IMTest {
     /**
      * The inputs and expected result of a single test of {@code symDifference(Geometry, Geometry)}.
      *
@@ -48,9 +42,9 @@ public class SymDifferenceTest {
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
     private record TestCase(Geometry input,
-                         Geometry other,
-                         Geometry expected,
-                         Class<? extends Exception> error)
+                            Geometry other,
+                            Geometry expected,
+                            Class<? extends Exception> error)
     {
     }
 
@@ -59,10 +53,10 @@ public class SymDifferenceTest {
      */
     private static final TestCase[] ENTRIES = {
         // (∅ − A) ∪ (A − ∅) = A: the result is the operand which is not empty.
-        new TestCase(EMPTY_1,   NON_EMPTY, NON_EMPTY, null),
-        new TestCase(NON_EMPTY, EMPTY_1,   NON_EMPTY, null),
-        new TestCase(EMPTY_1,   EMPTY_2,   EMPTY_2,   null),
-        new TestCase(POINT_A, POINT_A_BIS, EMPTY_RESULT, null)
+        new TestCase(EMPTY_1,   NON_EMPTY,   NON_EMPTY,    null),
+        new TestCase(NON_EMPTY, EMPTY_1,     NON_EMPTY,    null),
+        new TestCase(EMPTY_1,   EMPTY_2,     EMPTY_2,      null),
+        new TestCase(POINT_A,   POINT_A_BIS, EMPTY_RESULT, null)
     };
 
     /**
@@ -93,8 +87,23 @@ public class SymDifferenceTest {
         final Geometry result = new GeometryProcessor().symDifference(POINT_A, POINT_B);
         assertInstanceOf(MultiPoint.class, result, "No position is shared by the two points.");
         final MultiPoint<?> points = (MultiPoint<?>) result;
-        assertEquals(TestData.CRS_2D, points.getCoordinateReferenceSystem());
+        assertEquals(CRS_2D, points.getCoordinateReferenceSystem());
         assertEquals(2, points.getNumGeometries());
-        TestData.assertPositionsEqual(points, POINT_A, POINT_B);
+        assertPositionsEqual(points, POINT_A, POINT_B);
     }
+
+    /**
+     * Tests {@code symDifference(Geometry, Geometry)} on two surfaces. The symmetric difference
+     * keeps what belongs to exactly one of the two surfaces, which is their union less what they
+     * have in common.
+     */
+    @Test
+    public void testSymDifferenceOfSurfaces() {
+        final GeometryProcessor processor = new GeometryProcessor();
+        assertEquals(150, areaOf(processor.symDifference(SQUARE, SQUARE_OVERLAP)), TOLERANCE, "Two squares of area 100 sharing an area of 25: 175 of union less 25 in common.");
+        assertEquals(200, areaOf(processor.symDifference(SQUARE, SQUARE_DISJOINT)), TOLERANCE, "Two disjoint squares belong to exactly one of the two operands.");
+        assertEquals(96, areaOf(processor.symDifference(SQUARE, SQUARE_INNER)), TOLERANCE, "A square less the square of area 4 it contains.");
+        assertTrue(processor.symDifference(SQUARE, SQUARE_BIS).isEmpty(), "Every position of a square belongs to both operands when they are equal.");
+    }
+
 }

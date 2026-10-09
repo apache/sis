@@ -30,6 +30,7 @@ module org.apache.sis.storage.json {
     // Dependencies used in public API.
     requires transitive org.apache.sis.referencing;
     requires transitive org.apache.sis.storage;
+    requires org.apache.sis.geometry;
 
     // Dependencies internal to the implementation.
     requires com.fasterxml.jackson.core;
@@ -42,4 +43,6 @@ module org.apache.sis.storage.json {
     exports org.apache.sis.storage.json;
     exports org.apache.sis.storage.coveragejson;
     exports org.apache.sis.storage.coveragejson.binding;
+    exports org.apache.sis.storage.geopose;
+    exports org.apache.sis.storage.geopose.binding;
 }

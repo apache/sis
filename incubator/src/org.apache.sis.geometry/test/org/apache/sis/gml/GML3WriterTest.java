@@ -74,14 +74,14 @@ public final class GML3WriterTest extends TestCase {
      * Creates a point sequence in the {@link #wgs84} CRS from a flat list of ordinates.
      */
     private DataPoints sequence(final double... ordinates) {
-        return GeometryFactory.createSequence(NDArrays.of(SampleSystem.of(wgs84), ordinates));
+        return GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(SampleSystem.of(wgs84), ordinates));
     }
 
     /**
      * Creates a closed rectangular ring in the {@link #wgs84} CRS.
      */
     private LinearRing ring(final double minX, final double minY, final double maxX, final double maxY) {
-        return GeometryFactory.createLinearRing(sequence(
+        return GeometryFactory.DEFAULT.createLinearRing(sequence(
                 minX, minY,
                 maxX, minY,
                 maxX, maxY,
@@ -94,7 +94,7 @@ public final class GML3WriterTest extends TestCase {
      */
     @Test
     public void testPoint() throws Exception {
-        final Point g = GeometryFactory.createPoint(sequence(10.0, 20.0));
+        final Point g = GeometryFactory.DEFAULT.createPoint(sequence(10.0, 20.0));
         assertXmlEquals(TestData.V3.openStream(TestData.POINT), write(g), "xmlns:*");
     }
 
@@ -103,7 +103,7 @@ public final class GML3WriterTest extends TestCase {
      */
     @Test
     public void testLineString() throws Exception {
-        final Geometry g = GeometryFactory.createLineString(sequence(0.0, 0.0, 10.0, 10.0, 20.0, 0.0));
+        final Geometry g = GeometryFactory.DEFAULT.createLineString(sequence(0.0, 0.0, 10.0, 10.0, 20.0, 0.0));
         assertXmlEquals(TestData.V3.openStream(TestData.LINE_STRING_POSLIST), write(g), "xmlns:*");
     }
 
@@ -120,7 +120,7 @@ public final class GML3WriterTest extends TestCase {
      */
     @Test
     public void testPolygon() throws Exception {
-        final Geometry g = GeometryFactory.createPolygon(ring(0, 0, 10, 10), List.of(ring(2, 2, 4, 4)));
+        final Geometry g = GeometryFactory.DEFAULT.createPolygon(ring(0, 0, 10, 10), List.of(ring(2, 2, 4, 4)));
         assertXmlEquals(TestData.V3.openStream(TestData.POLYGON_EXTERIOR), write(g), "xmlns:*");
     }
 
@@ -129,9 +129,9 @@ public final class GML3WriterTest extends TestCase {
      */
     @Test
     public void testMultiPoint() throws Exception {
-        final Geometry g = GeometryFactory.createMultiPoint(
-                GeometryFactory.createPoint(sequence(0.0, 0.0)),
-                GeometryFactory.createPoint(sequence(10.0, 10.0)));
+        final Geometry g = GeometryFactory.DEFAULT.createMultiPoint(
+                GeometryFactory.DEFAULT.createPoint(sequence(0.0, 0.0)),
+                GeometryFactory.DEFAULT.createPoint(sequence(10.0, 10.0)));
         assertXmlEquals(TestData.V3.openStream(TestData.MULTI_POINT), write(g), "xmlns:*");
     }
 
@@ -141,9 +141,9 @@ public final class GML3WriterTest extends TestCase {
      */
     @Test
     public void testMultiCurve() throws Exception {
-        final Geometry g = GeometryFactory.createMultiLineString(
-                GeometryFactory.createLineString(sequence(0.0, 0.0, 10.0, 10.0)),
-                GeometryFactory.createLineString(sequence(20.0, 20.0, 30.0, 30.0, 40.0, 20.0)));
+        final Geometry g = GeometryFactory.DEFAULT.createMultiLineString(
+                GeometryFactory.DEFAULT.createLineString(sequence(0.0, 0.0, 10.0, 10.0)),
+                GeometryFactory.DEFAULT.createLineString(sequence(20.0, 20.0, 30.0, 30.0, 40.0, 20.0)));
         assertXmlEquals(TestData.V3.openStream(TestData.MULTI_CURVE), write(g), "xmlns:*");
     }
 
@@ -153,9 +153,9 @@ public final class GML3WriterTest extends TestCase {
      */
     @Test
     public void testMultiSurface() throws Exception {
-        final Geometry g = GeometryFactory.createMultiPolygon(
-                GeometryFactory.createPolygon(ring(0, 0, 10, 10), null),
-                GeometryFactory.createPolygon(ring(20, 20, 30, 30), null));
+        final Geometry g = GeometryFactory.DEFAULT.createMultiPolygon(
+                GeometryFactory.DEFAULT.createPolygon(ring(0, 0, 10, 10), null),
+                GeometryFactory.DEFAULT.createPolygon(ring(20, 20, 30, 30), null));
         assertXmlEquals(TestData.V3.openStream(TestData.MULTI_SURFACE), write(g), "xmlns:*");
     }
 
@@ -164,9 +164,9 @@ public final class GML3WriterTest extends TestCase {
      */
     @Test
     public void testMultiGeometry() throws Exception {
-        final Geometry g = GeometryFactory.createGeometryCollection(
-                GeometryFactory.createPoint(sequence(0.0, 0.0)),
-                GeometryFactory.createLineString(sequence(10.0, 10.0, 20.0, 20.0)));
+        final Geometry g = GeometryFactory.DEFAULT.createGeometryCollection(
+                GeometryFactory.DEFAULT.createPoint(sequence(0.0, 0.0)),
+                GeometryFactory.DEFAULT.createLineString(sequence(10.0, 10.0, 20.0, 20.0)));
         assertXmlEquals(TestData.V3.openStream(TestData.MULTI_GEOMETRY), write(g), "xmlns:*");
     }
 
@@ -187,8 +187,8 @@ public final class GML3WriterTest extends TestCase {
     @Test
     public void testExplicitCRS() throws Exception {
         // Built with the placeholder CRS, so that writing it without an explicit CRS emits no srsName.
-        final Point g = GeometryFactory.createPoint(
-                GeometryFactory.createSequence(NDArrays.of(
+        final Point g = GeometryFactory.DEFAULT.createPoint(
+                GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(
                         SampleSystem.of(Geometries.getUndefinedCRS(2)), 10.0, 20.0)));
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         try (GML3Writer writer = new GML3Writer(out)) {
@@ -203,8 +203,8 @@ public final class GML3WriterTest extends TestCase {
      */
     @Test
     public void testUndefinedCRSOmitsSrsName() throws Exception {
-        final Point g = GeometryFactory.createPoint(
-                GeometryFactory.createSequence(NDArrays.of(
+        final Point g = GeometryFactory.DEFAULT.createPoint(
+                GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(
                         SampleSystem.of(Geometries.getUndefinedCRS(2)), 10.0, 20.0)));
         assertFalse(write(g).contains(GML2Tags.SRS_NAME), "srsName should be omitted for an undefined CRS.");
     }
@@ -216,7 +216,7 @@ public final class GML3WriterTest extends TestCase {
     @Test
     public void testThreeDimensionalPosList() throws Exception {
         final CoordinateReferenceSystem crs3D = CRS.forCode("EPSG:4979");
-        final Geometry g = GeometryFactory.createLineString(GeometryFactory.createSequence(
+        final Geometry g = GeometryFactory.DEFAULT.createLineString(GeometryFactory.DEFAULT.createDataPoints(
                 NDArrays.of(SampleSystem.of(crs3D), 0.0, 0.0, 1.0, 10.0, 10.0, 2.0)));
         final String xml = write(g);
         assertTrue(xml.contains("srsDimension=\"3\""), () -> "Expected srsDimension=\"3\" in: " + xml);
@@ -284,8 +284,8 @@ public final class GML3WriterTest extends TestCase {
      */
     @Test
     public void testArcByCenterPointWithoutRadiusUnit() throws Exception {
-        final Geometry g = GeometryFactory.createArcByCenterPoint(
-                GeometryFactory.createPoint(sequence(10.0, 20.0)), 5.0, null,0.0, 90.0);
+        final Geometry g = GeometryFactory.DEFAULT.createArcByCenterPoint(
+                GeometryFactory.DEFAULT.createPoint(sequence(10.0, 20.0)), 5.0, null,0.0, 90.0);
         final String xml = write(g);
         assertTrue(xml.contains("ArcByCenterPoint"), () -> "Expected a gml:ArcByCenterPoint in: " + xml);
         assertTrue(xml.contains("<gml:radius>5.0</gml:radius>")
@@ -302,7 +302,7 @@ public final class GML3WriterTest extends TestCase {
     public void testArcByBulge() throws Exception {
         final Vector<?> normal = Vectors.createDouble(2);
         normal.set(new double[] {0, 1});
-        final Geometry g = GeometryFactory.createArcByBulge(sequence(0.0, 0.0, 10.0, 0.0), 2.0, normal);
+        final Geometry g = GeometryFactory.DEFAULT.createArcByBulge(sequence(0.0, 0.0, 10.0, 0.0), 2.0, normal);
         final String xml = write(g);
         assertTrue(xml.contains("ArcByBulge"), () -> "Expected a gml:ArcByBulge in: " + xml);
         assertTrue(xml.contains("0.0 0.0 10.0 0.0"), () -> "Expected the two end points in: " + xml);
@@ -402,8 +402,8 @@ public final class GML3WriterTest extends TestCase {
      */
     @Test
     public void testCurvePolygon() throws Exception {
-        final Geometry arc = GeometryFactory.createCircularString(sequence(0, 0, 5, 5, 10, 0, 5, -5, 0, 0));
-        final Geometry g = GeometryFactory.createCurvePolygon((Curve) arc, null);
+        final Geometry arc = GeometryFactory.DEFAULT.createCircularString(sequence(0, 0, 5, 5, 10, 0, 5, -5, 0, 0));
+        final Geometry g = GeometryFactory.DEFAULT.createCurvePolygon((Curve) arc, null);
         final String xml = write(g);
         assertTrue(xml.contains("Ring"), () -> "Expected a gml:Ring boundary in: " + xml);
         assertTrue(xml.contains("ArcString"), () -> "Expected the arc to be preserved in: " + xml);
@@ -416,9 +416,9 @@ public final class GML3WriterTest extends TestCase {
      */
     @Test
     public void testPolyhedralSurface() throws Exception {
-        final Geometry g = GeometryFactory.createPolyhedralSurface(
-                GeometryFactory.createPolygon(ring(0, 0, 10, 10), null),
-                GeometryFactory.createPolygon(ring(10, 0, 20, 10), null));
+        final Geometry g = GeometryFactory.DEFAULT.createPolyhedralSurface(
+                GeometryFactory.DEFAULT.createPolygon(ring(0, 0, 10, 10), null),
+                GeometryFactory.DEFAULT.createPolygon(ring(10, 0, 20, 10), null));
         final String xml = write(g);
         assertTrue(xml.contains("patches"), () -> "Expected gml:patches in: " + xml);
         assertEquals(2, countOccurrences(xml, "<PolygonPatch"), () -> "Expected two patches in: " + xml);

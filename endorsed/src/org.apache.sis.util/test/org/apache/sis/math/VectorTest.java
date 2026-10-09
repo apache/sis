@@ -30,6 +30,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("exports")
 public final class VectorTest extends TestCase {
     /**
      * The tested vector.
@@ -182,6 +183,7 @@ public final class VectorTest extends TestCase {
         assertSame(vector, Vector.create(vector, false));
         assertEquals(array.length, vector.size());
         assertEquals(Float.class, vector.getElementType());
+        assertArrayEquals(array, vector.floatValues());
         /*
          * Tests element values.
          */
@@ -205,6 +207,8 @@ public final class VectorTest extends TestCase {
         assertSame(vector, Vector.create(vector, false));
         assertEquals(array.length, vector.size());
         assertEquals(Double.class, vector.getElementType());
+        assertArrayEquals(array, vector.doubleValues());
+        assertArrayEquals(array, vector.doubleStream().toArray());
         /*
          * Test element values.
          */

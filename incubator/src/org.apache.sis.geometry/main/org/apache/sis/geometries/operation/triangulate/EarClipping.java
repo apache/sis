@@ -28,10 +28,10 @@ import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector2D;
 import static org.apache.sis.maths.Vectors.*;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -61,7 +61,7 @@ public class EarClipping {
         private boolean outterIsClockwise;
     }
 
-    private final List<Tuple[]> triangles = new ArrayList<>();
+    private final List<Vector[]> triangles = new ArrayList<>();
 
     /**
      * A path can be composed of multiple parts.
@@ -72,7 +72,7 @@ public class EarClipping {
     /** number of coordinates, may be inferior to coords length. */
     private int nbCoords;
     /** current coordinates to triangulate. */
-    private Tuple[] coords;
+    private Vector[] coords;
     /**
      * store the type of angle made by the coordinate
      * avoid recalculate it each time.
@@ -86,9 +86,9 @@ public class EarClipping {
     private int indexPrevious;
     private int index;
     private int indexNext;
-    private Tuple t1; //previous point
-    private Tuple t2; //point at index
-    private Tuple t3; //next point
+    private Vector t1; //previous point
+    private Vector t2; //point at index
+    private Vector t3; //next point
 
     private void reset(){
         //reset values
@@ -104,7 +104,7 @@ public class EarClipping {
      * @param geometry geometry to triangulate
      * @return List of Coordinate[] for each triangle.
      */
-    public List<Tuple[]> triangulate(Polygon geometry) {
+    public List<Vector[]> triangulate(Polygon geometry) {
 
         reset();
 
@@ -128,11 +128,11 @@ public class EarClipping {
      * TODO not efficient, improve performances.
      */
     public MeshPrimitive.Triangles toMesh(Polygon polygon) {
-        final List<Tuple[]> list = triangulate(polygon);
+        final List<Vector[]> list = triangulate(polygon);
 
         final Array positions = NDArrays.of(polygon.getCoordinateReferenceSystem(), new double[list.size()*3*2]);
         for (int i = 0, k = 0, n = list.size(); i < n; i++, k+=3) {
-            final Tuple[] t = list.get(i);
+            final Vector[] t = list.get(i);
             positions.set(k+0, t[0]);
             positions.set(k+1, t[1]);
             positions.set(k+2, t[2]);
@@ -147,7 +147,7 @@ public class EarClipping {
     private void run(SimplePolygon part){
 
         //build a single geometry linking inner holes.
-        final List<Tuple<?>> borderCoords = new ArrayList<>();
+        final List<Vector<?>> borderCoords = new ArrayList<>();
         part.outter.getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION).stream(false).forEach(borderCoords::add);
         //sort inner holes by minimum x value
         orderHoles(part);
@@ -155,11 +155,11 @@ public class EarClipping {
         //attach holes to the main geometry
         for(int i=0,n=part.inners.size();i<n;i++){
             //we must find the minimum x coordinate in the inner loop
-            final List<Tuple<?>> loop = part.inners.get(i).getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION).stream(false).toList();
+            final List<Vector<?>> loop = part.inners.get(i).getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION).stream(false).toList();
             int index = 0;
-            Tuple min = loop.get(index);
+            Vector min = loop.get(index);
             for(int k=1,p=loop.size();k<p;k++){
-                Tuple candidate = (Tuple) loop.get(1);
+                Vector candidate = (Vector) loop.get(1);
                 if (candidate.get(0) < min.get(0)) {
                     min = candidate;
                     index = k;
@@ -192,9 +192,9 @@ public class EarClipping {
         }
 
         //remove any neighor points overlaping
-        Tuple t = borderCoords.get(0);
+        Vector t = borderCoords.get(0);
         for(int i=1,n=borderCoords.size();i<n;i++){
-            Tuple candidate = borderCoords.get(i);
+            Vector candidate = borderCoords.get(i);
             if(candidate.equals(t)){
                 borderCoords.remove(i);
                 i--;
@@ -210,7 +210,7 @@ public class EarClipping {
 
         nbCoords = borderCoords.size();
         coordType = new int[nbCoords];
-        coords = borderCoords.toArray(Tuple[]::new);
+        coords = borderCoords.toArray(Vector[]::new);
 
         //flip coordinates if not clockwise
         if(!clockwise){
@@ -234,7 +234,7 @@ public class EarClipping {
                     coordType[indexPrevious]=0;
                     coordType[indexNext]=0;
 
-                    triangles.add(new Tuple[]{t1,t2,t3});
+                    triangles.add(new Vector[]{t1,t2,t3});
                     removeWithin(coords, index);
                     removeWithin(coordType, index);
                     nbCoords--;
@@ -279,9 +279,9 @@ public class EarClipping {
     private boolean isConvex(int idx){
         if(coordType[idx]==0){
             //calculate angle type
-            final Tuple s1 = coords[(idx==0) ? (nbCoords-2) : (idx-1)];
-            final Tuple s2 = coords[idx];
-            final Tuple s3 = coords[idx+1];
+            final Vector s1 = coords[(idx==0) ? (nbCoords-2) : (idx-1)];
+            final Vector s2 = coords[idx];
+            final Vector s3 = coords[idx+1];
             final double side = Maths.lineSide(s1, s3, s2);
             coordType[idx] = side>0 ? 1 : 2;
         }
@@ -425,8 +425,8 @@ public class EarClipping {
      * @param offset : will store the segment offset of the nearest points
      * @param epsilon tolerance factor
      */
-    public static void nearest(List<Tuple<?>> line1Coords, double[] buffer1,
-                                List<Tuple<?>> line2Coords, double[] buffer2,
+    public static void nearest(List<Vector<?>> line1Coords, double[] buffer1,
+                                List<Vector<?>> line2Coords, double[] buffer2,
                                 double[] ratio, int[] offset, double epsilon){
 
         double distance = Double.MAX_VALUE;
@@ -439,11 +439,11 @@ public class EarClipping {
         final int nb2 = line2Coords.size()-1;
 
         for(int i=0;i<nb1;i++){
-            final Tuple<?> s1 = line1Coords.get(i);
-            final Tuple<?> e1 = line1Coords.get(i+1);
+            final Vector<?> s1 = line1Coords.get(i);
+            final Vector<?> e1 = line1Coords.get(i+1);
             for(int k=0;k<nb2;k++){
-                final Tuple<?> s2 = line2Coords.get(k);
-                final Tuple<?> e2 = line2Coords.get(k+1);
+                final Vector<?> s2 = line2Coords.get(k);
+                final Vector<?> e2 = line2Coords.get(k+1);
 
                 final double dist = Math.sqrt(distanceSquare(
                                 new double[]{s1.get(0),s1.get(1)}, new double[]{e1.get(0),e1.get(1)}, tempC1,

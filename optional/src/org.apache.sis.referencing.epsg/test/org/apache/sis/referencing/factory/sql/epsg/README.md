@@ -67,9 +67,9 @@ export NON_FREE_DIR=$PWD
 cd _<path to SIS project directory>_
 gradle clean test jar
 export CLASSPATH=~/.m2/repository/org/hsqldb/hsqldb/2.7.4/hsqldb-2.7.4.jar
-export CLASSPATH=~/.m2/repository/org/postgresql/postgresql/42.7.7/postgresql-42.7.7.jar:$CLASSPATH
+export CLASSPATH=~/.m2/repository/org/postgresql/postgresql/42.7.9/postgresql-42.7.9.jar:$CLASSPATH
 export CLASSPATH=~/.m2/repository/javax/measure/unit-api/2.1.3/unit-api-2.1.3.jar:$CLASSPATH
-export CLASSPATH=~/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.4/jakarta.xml.bind-api-4.0.4.jar:$CLASSPATH
+export CLASSPATH=~/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.5/jakarta.xml.bind-api-4.0.5.jar:$CLASSPATH
 export CLASSPATH=$PWD/geoapi/snapshot/geoapi/target/geoapi-3.1-SNAPSHOT.jar:$CLASSPATH
 export CLASSPATH=$PWD/endorsed/build/libs/org.apache.sis.referencing.jar:$CLASSPATH
 export CLASSPATH=$PWD/endorsed/build/libs/org.apache.sis.metadata.jar:$CLASSPATH

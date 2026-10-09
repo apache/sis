@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -64,7 +64,7 @@ public final class KdTree<T> {
      * @param position only X/Y ordinates will be used by the tree, not null
      * @param value to insert in the tree, not null
      */
-    public void insert(Tuple position, T value) {
+    public void insert(Vector position, T value) {
         insertInternal(new TuplePoint2D<>(position), value);
     }
 
@@ -86,11 +86,11 @@ public final class KdTree<T> {
      * @param position only X/Y ordinates will be used by the tree, not null
      * @param value to insert in the tree, not null
      */
-    public void insertNoCopy(Tuple position, T value) {
+    public void insertNoCopy(Vector position, T value) {
         insertInternal(position, value);
     }
 
-    private void insertInternal(Tuple p, T payload) {
+    private void insertInternal(Vector p, T payload) {
         if (isEmpty()) {
             root = insertInternal(p, payload, root, 0);
         } else {
@@ -102,7 +102,7 @@ public final class KdTree<T> {
      * At odd level we will compare x coordinate, and at even level we will
      * compare y coordinate
      */
-    private Node<T> insertInternal(Tuple pointToInsert, T payload, Node<T> node, int level) {
+    private Node<T> insertInternal(Vector pointToInsert, T payload, Node<T> node, int level) {
         if (node == null) {
             final Node<T> newNode;
             if (payload == null) {
@@ -143,7 +143,7 @@ public final class KdTree<T> {
      * @param p not null
      * @return true if point in in the tree
      */
-    public boolean contains(Tuple p) {
+    public boolean contains(Vector p) {
         return containsInternal(new Point2D.Double(p.get(0), p.get(1)), root, 1);
     }
 
@@ -186,7 +186,7 @@ public final class KdTree<T> {
      * @param p searched position, not null
      * @return nearest entry in the tree
      */
-    public Entry<Tuple,T> nearest(Tuple p) {
+    public Entry<Vector,T> nearest(Vector p) {
         if (root == null) {
             return null;
         }
@@ -199,11 +199,11 @@ public final class KdTree<T> {
      * @param p searched position, not null
      * @return nearest entry in the tree
      */
-    public Entry<Tuple,T> nearest(Point2D.Double p) {
+    public Entry<Vector,T> nearest(Point2D.Double p) {
         if (root == null) {
             return null;
         }
-        return nearest((Tuple)new TuplePoint2D(p.x, p.y));
+        return nearest((Vector)new TuplePoint2D(p.x, p.y));
     }
 
     /**
@@ -212,7 +212,7 @@ public final class KdTree<T> {
      * @param p searched position, not null
      * @return nearest entry in the tree
      */
-    public Entry<Tuple,T> nearestDistinct(Tuple p) {
+    public Entry<Vector,T> nearestDistinct(Vector p) {
         if (root == null) {
             return null;
         }
@@ -227,17 +227,17 @@ public final class KdTree<T> {
      * @param p searched position, not null
      * @return nearest entry in the tree
      */
-    public Entry<Tuple,T> nearestDistinct(Point2D.Double p) {
+    public Entry<Vector,T> nearestDistinct(Point2D.Double p) {
         if (root == null) {
             return null;
         }
-        return nearestDistinct((Tuple)new TuplePoint2D(p.x, p.y));
+        return nearestDistinct((Vector)new TuplePoint2D(p.x, p.y));
     }
 
     /**
      * @return true if perfect match (distance == 0)
      */
-    private boolean nearestInternal(final Tuple targetPoint, final BestMatch champion,
+    private boolean nearestInternal(final Vector targetPoint, final BestMatch champion,
             Node node, int level, boolean distinct) {
 
 
@@ -303,7 +303,7 @@ public final class KdTree<T> {
      * @param level
      * @return
      */
-    private Point2D.Double createOrientationPoint(double linePointX, double linePointY, Tuple targetPoint, int level) {
+    private Point2D.Double createOrientationPoint(double linePointX, double linePointY, Vector targetPoint, int level) {
         if (level % 2 == 0) {
             return new Point2D.Double(targetPoint.get(0), linePointY);
         } else {
@@ -318,7 +318,7 @@ public final class KdTree<T> {
         return sb.toString();
     }
 
-    private static double distanceSq(Tuple p0, Tuple p1) {
+    private static double distanceSq(Vector p0, Vector p1) {
         double px = p1.get(0) - p0.get(0);
         double py = p1.get(1) - p0.get(1);
         return (px * px + py * py);
@@ -335,9 +335,9 @@ public final class KdTree<T> {
         }
     }
 
-    private static class TuplePoint2D<T> extends Point2D.Double implements Tuple{
+    private static class TuplePoint2D<T> extends Point2D.Double implements Vector{
 
-        public TuplePoint2D(Tuple position) {
+        public TuplePoint2D(Vector position) {
             this.x = position.get(0);
             this.y = position.get(1);
         }
@@ -383,15 +383,15 @@ public final class KdTree<T> {
         }
     }
 
-    private static class Node<T> implements Entry<Tuple, T>{
+    private static class Node<T> implements Entry<Vector, T>{
         // the point
-        private final Tuple point;
+        private final Vector point;
         // the left/bottom subtree
         private Node<T> lb;
         // the right/top subtree
         private Node<T> rt;
 
-        public Node(Tuple point, Node<T> lb, Node<T> rt) {
+        public Node(Vector point, Node<T> lb, Node<T> rt) {
             this.point = point;
             this.lb = lb;
             this.rt = rt;
@@ -406,7 +406,7 @@ public final class KdTree<T> {
         }
 
         @Override
-        public Tuple getKey() {
+        public Vector getKey() {
             return point;
         }
 
@@ -451,7 +451,7 @@ public final class KdTree<T> {
     private static class NodeWithPayload<T> extends Node<T>{
         private final T payload;
 
-        public NodeWithPayload(Tuple point, T payload, Node<T> lb, Node<T> rt) {
+        public NodeWithPayload(Vector point, T payload, Node<T> lb, Node<T> rt) {
             super(point,lb,rt);
             this.payload = payload;
         }

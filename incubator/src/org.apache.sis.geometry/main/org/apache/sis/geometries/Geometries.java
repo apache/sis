@@ -55,8 +55,6 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Matrix3D;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Tuple;
-import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vector3D;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.measure.Quantities;
@@ -71,6 +69,7 @@ import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.SimpleInternationalString;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -610,7 +609,7 @@ public final class Geometries {
 
         int inc = -1;
         final Map<Integer, Integer> mapping = new HashMap<>();
-        final Map<String,List<Tuple<?>>> rebuild = new IdentityHashMap<>();
+        final Map<String,List<Vector<?>>> rebuild = new IdentityHashMap<>();
         final int[] index = indexArray.toArrayInt();
 
         for (String name : primitive.getDataPointsType().getAttributeNames()) {
@@ -626,7 +625,7 @@ public final class Geometries {
 
                 for (String name : rebuild.keySet()) {
                     final Array oldTa = primitive.getAttribute(name);
-                    final List<Tuple<?>> newTa = rebuild.get(name);
+                    final List<Vector<?>> newTa = rebuild.get(name);
                     newTa.add(newIndex, oldTa.get(oldIndex));
                 }
             }
@@ -636,7 +635,7 @@ public final class Geometries {
         //rebuild attributes arrays
         for (String name : rebuild.keySet()) {
             final Array oldTa = primitive.getAttribute(name);
-            final List<Tuple<?>> newTa = rebuild.get(name);
+            final List<Vector<?>> newTa = rebuild.get(name);
             final Array ta = NDArrays.of(newTa, oldTa.getSampleSystem(), oldTa.getDataType());
             primitive.setAttribute(name, ta);
         }
@@ -695,6 +694,74 @@ public final class Geometries {
         primitive.setPositions(positions);
         primitive.setIndex(idx);
         return primitive;
+    }
+
+    /**
+     * Returns the unit of measurement in which the coordinates of the given geometry are expressed,
+     * taken from the first axis of its coordinate system. This is the unit in which lengths computed
+     * on that geometry, such as a {@linkplain Curve#getLength() curve length} or a
+     * {@linkplain Surface#getPerimeter() perimeter}, are expressed.
+     *
+     * @param  geom  the geometry from which to get the coordinate unit.
+     * @return unit of the first coordinate system axis, or {@link Units#UNITY} if the geometry
+     *         has no coordinate reference system.
+     */
+    @SuppressWarnings("rawtypes")
+    public static Unit getLinearUnit(final Geometry geom) {
+        return productOfAxisUnits(geom, 1);
+    }
+
+    /**
+     * Returns the unit in which an {@linkplain Surface#getArea() area} computed on the given
+     * geometry is expressed, as the product of the units of the two first coordinate system axes.
+     *
+     * @param  geom  the geometry from which to get the area unit.
+     * @return product of the units of the two first axes, or {@link Units#UNITY} if the geometry
+     *         has no coordinate reference system or if that system is not at least 2-dimensional.
+     */
+    @SuppressWarnings("rawtypes")
+    public static Unit getAreaUnit(final Geometry geom) {
+        return productOfAxisUnits(geom, 2);
+    }
+
+    /**
+     * Returns the unit in which a {@linkplain Solid#getVolume() volume} computed on the given
+     * geometry is expressed, as the product of the units of the three first coordinate system axes.
+     *
+     * @param  geom  the geometry from which to get the volume unit.
+     * @return product of the units of the three first axes, or {@link Units#UNITY} if the geometry
+     *         has no coordinate reference system or if that system is not at least 3-dimensional.
+     */
+    @SuppressWarnings("rawtypes")
+    public static Unit getVolumeUnit(final Geometry geom) {
+        return productOfAxisUnits(geom, 3);
+    }
+
+    /**
+     * Returns the product of the units of the {@code n} first axes of the coordinate system of
+     * the given geometry. Each axis is read separately because nothing requires the axes of a
+     * coordinate system to share a unit.
+     *
+     * @param  geom  the geometry from which to get the units.
+     * @param  n     number of leading axes to multiply.
+     * @return product of the units of the {@code n} first axes, or {@link Units#UNITY} if the
+     *         geometry has no coordinate reference system or has less than {@code n} dimensions.
+     */
+    @SuppressWarnings("rawtypes")
+    private static Unit productOfAxisUnits(final Geometry geom, final int n) {
+        final CoordinateReferenceSystem crs = geom.getCoordinateReferenceSystem();
+        if (crs == null) {
+            return Units.UNITY;
+        }
+        final CoordinateSystem cs = crs.getCoordinateSystem();
+        if (cs.getDimension() < n) {
+            return Units.UNITY;
+        }
+        Unit unit = cs.getAxis(0).getUnit();
+        for (int i = 1; i < n; i++) {
+            unit = unit.multiply(cs.getAxis(i).getUnit());
+        }
+        return unit;
     }
 
     /**

@@ -83,17 +83,17 @@ final class ArrayUnmodifiable extends AbstractArray {
     }
 
     @Override
-    public Tuple<?> get(long index) {
+    public Vector<?> get(long index) {
         return parent.get(index);
     }
 
     @Override
-    public void get(long index, Tuple<?> buffer) {
+    public void get(long index, Vector<?> buffer) {
         parent.get(index, buffer);
     }
 
     @Override
-    public void set(long index, ReadOnly.Tuple<?> buffer) {
+    public void set(long index, ReadOnly.Vector<?> buffer) {
         throw new UnsupportedOperationException("This implementation is unmodifiable");
     }
 

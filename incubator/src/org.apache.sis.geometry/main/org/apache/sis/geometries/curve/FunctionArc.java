@@ -18,8 +18,8 @@ package org.apache.sis.geometries.curve;
 
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
-import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Range;
+import org.apache.sis.maths.Vector;
 
 
 /**

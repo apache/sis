@@ -17,12 +17,6 @@
 package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Geometry;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
-import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
-import static org.apache.sis.geometries.operation.TestData.POINT_A;
-import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
-import static org.apache.sis.geometries.operation.TestData.POINT_B;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,7 +29,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class WithinTest {
+public class WithinTest extends AbstractD9IMTest {
     /**
      * The inputs and expected result of a single test of {@code within(Geometry, Geometry)}.
      *
@@ -45,9 +39,9 @@ public class WithinTest {
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
     private record TestCase(Geometry input,
-                         Geometry other,
-                         Boolean expected,
-                         Class<? extends Exception> error)
+                            Geometry other,
+                            Boolean expected,
+                            Class<? extends Exception> error)
     {
     }
 
@@ -56,16 +50,43 @@ public class WithinTest {
      */
     private static final TestCase[] ENTRIES = {
         // The empty set is a subset of every geometry. Converse of `contains(Geometry, Geometry)`.
-        new TestCase(EMPTY_1,   NON_EMPTY, true,  null),
-        new TestCase(EMPTY_1,   EMPTY_1,   true,  null),
-        new TestCase(EMPTY_1,   EMPTY_2,   true,  null),
-        new TestCase(NON_EMPTY, EMPTY_1,   false, null),
+        new TestCase(EMPTY_1,            NON_EMPTY,     true,  null),
+        new TestCase(EMPTY_1,            EMPTY_1,       true,  null),
+        new TestCase(EMPTY_1,            EMPTY_2,       true,  null),
+        new TestCase(NON_EMPTY,          EMPTY_1,       false, null),
         /*
          * A point is a subset of another point only when the two are at the same position.
          */
-        new TestCase(POINT_A, POINT_A_BIS, true,  null),
-        new TestCase(POINT_A, POINT_B,     false, null),
-        new TestCase(POINT_B, POINT_A,     false, null)
+        new TestCase(POINT_A,            POINT_A_BIS,   true,  null),
+        new TestCase(POINT_A,            POINT_B,       false, null),
+        new TestCase(POINT_B,            POINT_A,       false, null),
+        /*
+         * A position and a surface. A position on the boundary of a surface is not within it:
+         * being within requires a position interior to both geometries, and the interior of a
+         * position is the position itself.
+         */
+        new TestCase(POINT_CENTER,       SQUARE,        true,  null),
+        new TestCase(POINT_ON_EDGE,      SQUARE,        false, null),
+        new TestCase(POINT_OUTSIDE,      SQUARE,        false, null),
+        /*
+         * A position and a curve, the position being interior to the curve or one of its ends.
+         */
+        new TestCase(POINT_ON_EDGE,      LINE_BOTTOM,   true,  null),
+        new TestCase(POINT_CORNER,       LINE_BOTTOM,   false, null),
+        /*
+         * A curve and a surface. A curve lying on the boundary of a surface is not within it.
+         */
+        new TestCase(LINE_INSIDE,        SQUARE,        true,  null),
+        new TestCase(LINE_BOTTOM,        SQUARE,        false, null),
+        /*
+         * Two surfaces, and sets of geometries.
+         */
+        new TestCase(SQUARE_INNER,       SQUARE,        true,  null),
+        new TestCase(SQUARE_OVERLAP,     SQUARE,        false, null),
+        new TestCase(SQUARE,             SQUARE_BIS,    true,  null),
+        new TestCase(MULTI_POINT_INSIDE, SQUARE,        true,  null),
+        new TestCase(MULTI_POINT_SPREAD, SQUARE,        false, null),
+        new TestCase(SQUARE,             MULTI_POLYGON, true,  null)
     };
 
     /**

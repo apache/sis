@@ -21,7 +21,7 @@ package org.apache.sis.maths;
  *
  * @author Johann Sorel (Geomatys)
  */
-public abstract class Vector3D<T extends Vector3D<T>> extends AbstractTuple<T> implements Vector<T> {
+public abstract class Vector3D<T extends Vector3D<T>> extends AbstractVector<T> {
 
     public Vector3D() {
         super(3);
@@ -161,7 +161,7 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractTuple<T> i
             this.z = array[2];
         }
 
-        public Byte(ReadOnly.Tuple<?> tuple) {
+        public Byte(ReadOnly.Vector<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 3);
             set(tuple);
@@ -337,7 +337,7 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractTuple<T> i
             this.z = array[2];
         }
 
-        public UByte(ReadOnly.Tuple<?> tuple) {
+        public UByte(ReadOnly.Vector<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 3);
             set(tuple);
@@ -513,7 +513,7 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractTuple<T> i
             this.z = array[2];
         }
 
-        public Short(ReadOnly.Tuple<?> tuple) {
+        public Short(ReadOnly.Vector<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 3);
             set(tuple);
@@ -689,7 +689,7 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractTuple<T> i
             this.z = array[2];
         }
 
-        public UShort(ReadOnly.Tuple<?> tuple) {
+        public UShort(ReadOnly.Vector<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 3);
             set(tuple);
@@ -877,7 +877,7 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractTuple<T> i
             this.z = array[2];
         }
 
-        public Int(ReadOnly.Tuple<?> tuple) {
+        public Int(ReadOnly.Vector<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 3);
             set(tuple);
@@ -1053,7 +1053,7 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractTuple<T> i
             this.z = array[2];
         }
 
-        public UInt(ReadOnly.Tuple<?> tuple) {
+        public UInt(ReadOnly.Vector<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 3);
             set(tuple);
@@ -1237,7 +1237,7 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractTuple<T> i
             this.z = array[2];
         }
 
-        public Long(ReadOnly.Tuple<?> tuple) {
+        public Long(ReadOnly.Vector<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 3);
             set(tuple);
@@ -1413,7 +1413,7 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractTuple<T> i
             this.z = array[2];
         }
 
-        public Float(ReadOnly.Tuple<?> tuple) {
+        public Float(ReadOnly.Vector<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 3);
             set(tuple);
@@ -1502,7 +1502,7 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public Float set(ReadOnly.Tuple<?> v) {
+        public Float set(ReadOnly.Vector<?> v) {
             if (getDimension() != v.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+v.getDimension());
             }
@@ -1532,7 +1532,7 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public Float add(ReadOnly.Tuple<?> other) {
+        public Float add(ReadOnly.Vector<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
@@ -1543,7 +1543,7 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public Float subtract(ReadOnly.Tuple<?> other) {
+        public Float subtract(ReadOnly.Vector<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
@@ -1655,7 +1655,7 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractTuple<T> i
             this.z = array[2];
         }
 
-        public Double(ReadOnly.Tuple<?> tuple) {
+        public Double(ReadOnly.Vector<?> tuple) {
             super(tuple.getSampleSystem());
             ensureDimension(type, 3);
             set(tuple);
@@ -1763,7 +1763,7 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public Double add(ReadOnly.Tuple<?> other) {
+        public Double add(ReadOnly.Vector<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
@@ -1774,7 +1774,7 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public Double subtract(ReadOnly.Tuple<?> other) {
+        public Double subtract(ReadOnly.Vector<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }
@@ -1793,7 +1793,7 @@ public abstract class Vector3D<T extends Vector3D<T>> extends AbstractTuple<T> i
         }
 
         @Override
-        public Double cross(ReadOnly.Tuple<?> other) {
+        public Double cross(ReadOnly.Vector<?> other) {
             if (getDimension() != other.getDimension()) {
                 throw new IllegalArgumentException("Vectors size are different : "+getDimension()+" and "+other.getDimension());
             }

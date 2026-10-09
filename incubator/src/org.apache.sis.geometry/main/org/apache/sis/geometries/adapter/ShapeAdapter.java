@@ -107,7 +107,7 @@ public final class ShapeAdapter extends AbstractShape {
      */
     @Override
     public boolean contains(final double x, final double y) {
-        return geometry.contains(GeometryFactory.createPoint(SampleSystem.ofSize(2), x, y));
+        return geometry.contains(GeometryFactory.DEFAULT.createPoint(SampleSystem.ofSize(2), x, y));
     }
 
     /**
@@ -155,8 +155,8 @@ public final class ShapeAdapter extends AbstractShape {
             xmin, ymin
         });
         final DataPoints ps = new ArrayDataPoints(positions);
-        final LinearRing ring = GeometryFactory.createLinearRing(ps);
-        return GeometryFactory.createPolygon(ring, null);
+        final LinearRing ring = GeometryFactory.DEFAULT.createLinearRing(ps);
+        return GeometryFactory.DEFAULT.createPolygon(ring, null);
     }
 
     /**

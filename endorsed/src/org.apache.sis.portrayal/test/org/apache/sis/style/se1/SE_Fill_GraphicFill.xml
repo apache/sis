@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- A Fill tiled with a Mark through GraphicFill, instead of a solid color. -->
+<se:PolygonSymbolizer xmlns:se="http://www.opengis.net/se" xmlns:ogc="http://www.opengis.net/ogc">
+    <se:Fill>
+        <se:GraphicFill>
+            <se:Graphic>
+                <se:Mark>
+                    <se:WellKnownName>square</se:WellKnownName>
+                    <se:Fill>
+                        <se:SvgParameter name="fill"><ogc:Literal>#808080</ogc:Literal></se:SvgParameter>
+                    </se:Fill>
+                </se:Mark>
+                <se:Size><ogc:Literal>8</ogc:Literal></se:Size>
+            </se:Graphic>
+        </se:GraphicFill>
+    </se:Fill>
+</se:PolygonSymbolizer>

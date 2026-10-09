@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+   <ogc:PropertyIsLessThan>
+      <ogc:PropertyName>feature_property_name</ogc:PropertyName>
+      <ogc:Literal>456</ogc:Literal>
+   </ogc:PropertyIsLessThan>
+</ogc:Filter>
+
+

@@ -16,31 +16,69 @@
  */
 package org.apache.sis.geometries.solid;
 
+import java.util.Objects;
 import static org.opengis.annotation.Specification.ISO_12113;
 import org.opengis.annotation.UML;
-import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.BBox;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
-import org.apache.sis.geometries.internal.shared.AbstractOrientedGeometry;
+import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.Vectors;
+import org.apache.sis.maths.Vector;
 
 
 /**
- * A capsule (cylinder with hemispherical ends) centered at the origin and defined by two "capping" spheres
- * with potentially different radii, aligned along the Y axis in local space.
+ * A capsule (cylinder with hemispherical ends) defined by two "capping" spheres centered on two
+ * positions, with potentially different radii.
  *
  *
  * @author Johann Sorel (Geomatys)
  * @spec ISO_12113 KHR_implicit_shapes extension Capsule
  */
 @UML(identifier="Capsule", specification=ISO_12113)
-public final class Capsule extends AbstractOrientedGeometry {
+public final class Capsule extends AbstractGeometry{
 
-    private double height = 1.0;
+    /**
+     * Must contain two points : the center of the bottom sphere, then the center of the top one.
+     */
+    private final DataPoints points;
+
     private double radiusTop = 1.0;
     private double radiusBottom = 1.0;
 
-    public Capsule() {
+    /**
+     * Creates a capsule whose capping spheres are centered on the two given positions.
+     * The reference system of the capsule is the one of those positions.
+     *
+     * @param  bottom  the center of the bottom sphere, not null.
+     * @param  top     the center of the top sphere, not null.
+     */
+    public Capsule(Vector<?> bottom, Vector<?> top) {
+        points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(bottom.getSampleSystem(), bottom.getDataType(), 2));
+        points.setPosition(0, bottom);
+        points.setPosition(1, top);
+    }
+
+    /**
+     * Creates a capsule whose capping spheres are centered on the two positions of the given
+     * sequence. The sequence is taken as-is, so the caller may give the capsule the attributes
+     * carried by that sequence.
+     *
+     * @param  points  the centers of the bottom and top spheres, in that order.
+     * @throws IllegalArgumentException if the given sequence does not hold exactly two positions.
+     */
+    public Capsule(DataPoints points) {
+        if (points.size() != 2) {
+            throw new IllegalArgumentException("Capsule sequence must contain two points");
+        }
+        this.points = points;
     }
 
     @Override
@@ -48,56 +86,88 @@ public final class Capsule extends AbstractOrientedGeometry {
         return GeometryType.CAPSULE;
     }
 
+    public DataPoints getDataPoints() {
+        return points;
+    }
+
     /**
-     * Height is along the Y axis, right handed as defined in GLTF.
-     * @return the cylinder height
+     * @return the center of the bottom sphere
+     */
+    public ReadOnly.Vector<?> getBottom() {
+        return points.getPosition(0);
+    }
+
+    /**
+     * @param position new center of the bottom sphere
+     */
+    public void setBottom(ReadOnly.Vector<?> position) {
+        points.setPosition(0, position);
+    }
+
+    /**
+     * @return the center of the top sphere
+     */
+    public ReadOnly.Vector<?> getTop() {
+        return points.getPosition(1);
+    }
+
+    /**
+     * @param position new center of the top sphere
+     */
+    public void setTop(ReadOnly.Vector<?> position) {
+        points.setPosition(1, position);
+    }
+
+    /**
+     * Returns the vector going from the center of the bottom sphere to the center of the top one.
+     * It is built on doubles whatever the type of the positions, the direction and the length of
+     * an axis being real values even when the positions they are derived from are integers.
+     */
+    private Vector<?> getAxis() {
+        final ReadOnly.Vector<?> bottom = getBottom();
+        final Vector<?> axis = Vectors.create(bottom.getSampleSystem(), DataType.DOUBLE);
+        axis.set(getTop());
+        axis.subtract(bottom);
+        return axis;
+    }
+
+    /**
+     * The height is the length of the axis going from the center of the bottom sphere to the
+     * center of the top one, so it is not set but derived from the two positions this capsule
+     * is built on. It does not include the two hemispherical ends.
+     *
+     * @return the capsule height
      */
     public double getHeight() {
-        return height;
+        return getAxis().length();
     }
 
     /**
-     * @param height new cylinder height
-     */
-    public void setHeight(double height) {
-        this.height = height;
-    }
-
-    /**
-     * @return cylinder top circle radius
+     * @return capsule top sphere radius
      */
     public double getRadiusTop() {
         return radiusTop;
     }
 
     /**
-     * @param radius new cylinder top radius
+     * @param radius new capsule top radius
      */
     public void setRadiusTop(double radius) {
         this.radiusTop = radius;
     }
 
     /**
-     * @return cylinder bottom circle radius
+     * @return capsule bottom sphere radius
      */
     public double getRadiusBottom() {
         return radiusBottom;
     }
 
     /**
-     * @param radius new cylinder bottom radius
+     * @param radius new capsule bottom radius
      */
     public void setRadiusBottom(double radius) {
         this.radiusBottom = radius;
-    }
-
-    /**
-     * A cylinder becomes a cone when the top or bottom radius is set to 0.0.
-     *
-     * @return true if cylinder is a cone, top or bottom radius is 0.0.
-     */
-    public boolean isCone() {
-        return radiusBottom == 0.0 || radiusTop == 0.0;
     }
 
     @Override
@@ -105,24 +175,71 @@ public final class Capsule extends AbstractOrientedGeometry {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>A capsule is the convex hull of its two capping spheres, so it reaches the whole radius
+     * of each of them on every axis. Contrarily to a {@linkplain Cylinder cylinder}, whose flat
+     * ends spread less than their radius on the axis they face, a capsule is therefore bounded
+     * by the union of the two boxes bounding its spheres.</p>
+     */
+    @Override
+    public BBox getEnvelope() {
+        final ReadOnly.Vector<?> bottom = getBottom();
+        final ReadOnly.Vector<?> top = getTop();
+        final int dim = points.getDimension();
+        final BBox bbox = new BBox(dim);
+        for (int i=0;i<dim;i++){
+            final double b = bottom.get(i);
+            final double t = top.get(i);
+            bbox.setRange(i, Math.min(b - radiusBottom, t - radiusTop),
+                             Math.max(b + radiusBottom, t + radiusTop));
+        }
+        return bbox;
+    }
+
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
+        return points.getCoordinateReferenceSystem();
+    }
+
+    @Override
+    public Geometry getBoundary() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        points.setCoordinateReferenceSystem(crs);
     }
 
     @Override
     public DataPointsType getDataPointsType() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return points.getType();
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Capsule other = (Capsule) obj;
+        if (!Objects.equals(this.points, other.points)) {
+            return false;
+        }
+        return Double.doubleToLongBits(this.radiusTop) == Double.doubleToLongBits(other.radiusTop)
+            && Double.doubleToLongBits(this.radiusBottom) == Double.doubleToLongBits(other.radiusBottom);
+    }
 
     @Override
-    public Envelope getUnorientedEnvelope() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public int hashCode() {
+        int hash = 3;
+        hash = 89 * hash + Objects.hashCode(this.points);
+        hash = 89 * hash + Double.hashCode(this.radiusTop);
+        hash = 89 * hash + Double.hashCode(this.radiusBottom);
+        return hash;
     }
 }

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- The Categorize function: alternating Value and Threshold, closing on a Value. -->
+<se:PolygonSymbolizer xmlns:se="http://www.opengis.net/se"
+    xmlns:sld="http://www.opengis.net/sld"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:ogc="http://www.opengis.net/ogc"
+    xmlns:gml="http://www.opengis.net/gml"
+    uom="http://www.opengeospatial.org/se/units/pixel">
+    <se:Geometry><ogc:PropertyName>geom</ogc:PropertyName></se:Geometry>
+    <se:Fill>
+        <se:SvgParameter name="fill">
+            <se:Categorize fallbackValue="#000000" threshholdsBelongTo="preceding">
+                <se:LookupValue><ogc:PropertyName>population</ogc:PropertyName></se:LookupValue>
+                <se:Value>#00FF00</se:Value>
+                <se:Threshold>1000</se:Threshold>
+                <se:Value>#FFFF00</se:Value>
+                <se:Threshold>10000</se:Threshold>
+                <se:Value>#FF8000</se:Value>
+                <se:Threshold>100000</se:Threshold>
+                <se:Value>#FF0000</se:Value>
+            </se:Categorize>
+        </se:SvgParameter>
+        <se:SvgParameter name="fill-opacity"><ogc:Literal>0.6</ogc:Literal></se:SvgParameter>
+    </se:Fill>
+</se:PolygonSymbolizer>

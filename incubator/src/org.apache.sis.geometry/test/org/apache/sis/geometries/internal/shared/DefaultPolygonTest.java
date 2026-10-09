@@ -16,6 +16,15 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.curve.LinearRing;
+import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.SampleSystem;
+
 // Test dependencies
 import org.apache.sis.geometries.surface.PolygonTest;
 
@@ -26,4 +35,22 @@ import org.apache.sis.geometries.surface.PolygonTest;
  * @author Johann Sorel (Geomatys)
  */
 public class DefaultPolygonTest extends PolygonTest {
+
+    @Override
+    protected Polygon createPolygon(final CoordinateReferenceSystem crs,
+                                    final double[] exterior, final double[]... holes)
+    {
+        final List<LinearRing> interiors = new ArrayList<>(holes.length);
+        for (final double[] hole : holes) {
+            interiors.add(new DefaultLinearRing(sequence(crs, hole)));
+        }
+        return new DefaultPolygon(new DefaultLinearRing(sequence(crs, exterior)), interiors);
+    }
+
+    /**
+     * Creates the positions of a geometry from a flat list of ordinate values.
+     */
+    private static DataPoints sequence(final CoordinateReferenceSystem crs, final double... coordinates) {
+        return new ArrayDataPoints(NDArrays.of(SampleSystem.of(crs), coordinates));
+    }
 }

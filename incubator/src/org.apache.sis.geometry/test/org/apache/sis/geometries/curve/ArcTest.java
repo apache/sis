@@ -19,6 +19,7 @@ package org.apache.sis.geometries.curve;
 // Test dependencies
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.GeometryTest;
 
 
 /**
@@ -26,42 +27,27 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class ArcTest {
-    /**
-     * Test of {@code getInterpolation()}.
-     */
+public class ArcTest extends GeometryTest {
     @Test
     @Disabled("Not implemented yet.")
     public void testGetInterpolation() {
     }
 
-    /**
-     * Test of {@code getNumArc()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetNumArc() {
     }
 
-    /**
-     * Test of {@code getControlPoints()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetControlPoints() {
     }
 
-    /**
-     * Test of {@code getDataPoints()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetDataPoints() {
     }
 
-    /**
-     * Test of {@code getRadius()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetRadius() {

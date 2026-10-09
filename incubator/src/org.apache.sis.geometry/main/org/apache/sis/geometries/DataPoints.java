@@ -16,13 +16,17 @@
  */
 package org.apache.sis.geometries;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -98,7 +102,7 @@ public interface DataPoints {
      * @param index searched index
      * @return copy of the position
      */
-    Tuple<?> getPosition(int index);
+    Vector<?> getPosition(int index);
 
     /**
      * Set position attribute value.
@@ -106,7 +110,7 @@ public interface DataPoints {
      * @param index searched index
      * @param value new attribute value
      */
-    void setPosition(int index, Tuple<?> value);
+    void setPosition(int index, ReadOnly.Vector<?> value);
 
     /**
      * Get attribute value.
@@ -115,7 +119,7 @@ public interface DataPoints {
      * @param name attribute name
      * @return copy of the attribute
      */
-    Tuple<?> getAttribute(int index, String name);
+    Vector<?> getAttribute(int index, String name);
 
     /**
      * Set attribute value.
@@ -124,10 +128,10 @@ public interface DataPoints {
      * @param name attribute name
      * @param value new attribute value
      */
-    void setAttribute(int index, String name, Tuple<?> value);
+    void setAttribute(int index, String name, ReadOnly.Vector<?> value);
 
     /**
-     * Get all attribute values as a TupleArray.
+     * Get all attribute values as an Array.
      *
      * @param name attribute name
      * @return copy of all attribute values
@@ -154,7 +158,7 @@ public interface DataPoints {
         if (isEmpty()) {
             return null;
         }
-        final Tuple<?> start = getAttribute(0, name);
+        final Vector<?> start = getAttribute(0, name);
         final BBox env = new BBox(start, start);
         for (int i = 1, n = size(); i < n; i++) {
             env.add(getAttribute(i, name));
@@ -163,4 +167,76 @@ public interface DataPoints {
         return env;
     }
 
+    /**
+     * Returns a hash code value for the given sequence, computed from the attributes it declares
+     * and from the values it holds for them. Implementations of this interface shall base their
+     * {@code hashCode()} on this method, so that two sequences holding the same data have the
+     * same hash code whatever the way they store it.
+     *
+     * @param  points  the sequence to hash, not null.
+     * @return a hash code value for the given sequence.
+     */
+    static int hashCode(final DataPoints points) {
+        final DataPointsType type = points.getType();
+        final int size = points.size();
+        int hash = DataPointsType.hashCode(type) + 31 * size;
+        for (final String name : type.getAttributeNames()) {
+            int attribute = name.hashCode();
+            for (int i = 0; i < size; i++) {
+                attribute = 31 * attribute + Objects.hashCode(points.getAttribute(i, name));
+            }
+            // Summed so that the result does not depend on the order in which the names are returned.
+            hash += attribute;
+        }
+        return hash;
+    }
+
+    /**
+     * Returns whether the given object is a sequence declaring the same attributes as the given one
+     * and holding the same values for them. Implementations of this interface shall base their
+     * {@code equals(Object)} on this method, so that two sequences holding the same data are equal
+     * whatever the way they store it: a sequence backed by arrays is equal to a sequence backed by
+     * a list of points when both describe the same positions.
+     *
+     * <p>The attributes are compared one by one rather than by delegating to
+     * {@link DataPointsType#equals(DataPointsType, Object)}, because a sequence may be its own
+     * description, and that method reports two descriptions as different as soon as one of them
+     * also carries the positions.</p>
+     *
+     * @param  points  the sequence to compare, not null.
+     * @param  obj     the object to compare to the given sequence, or {@code null}.
+     * @return whether the two hold the same attributes with the same values.
+     */
+    static boolean equals(final DataPoints points, final Object obj) {
+        if (points == obj) {
+            return true;
+        }
+        if (!(obj instanceof DataPoints other)) {
+            return false;
+        }
+        final int size = points.size();
+        if (size != other.size()) {
+            return false;
+        }
+        final DataPointsType type = points.getType();
+        final DataPointsType otherType = other.getType();
+        final List<String> names = type.getAttributeNames();
+        final List<String> others = otherType.getAttributeNames();
+        if (names.size() != others.size() || !new HashSet<>(names).containsAll(others)) {
+            return false;
+        }
+        for (final String name : names) {
+            if (!Objects.equals(type.getAttributeSystem(name), otherType.getAttributeSystem(name)) ||
+                !Objects.equals(type.getAttributeType  (name), otherType.getAttributeType  (name)))
+            {
+                return false;
+            }
+            for (int i = 0; i < size; i++) {
+                if (!Objects.equals(points.getAttribute(i, name), other.getAttribute(i, name))) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 }

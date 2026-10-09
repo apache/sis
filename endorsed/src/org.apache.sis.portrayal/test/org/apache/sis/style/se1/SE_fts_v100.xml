@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<FeatureTypeStyle xmlns="http://www.opengis.net/sld"
+    xmlns:sld="http://www.opengis.net/sld"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:ogc="http://www.opengis.net/ogc"
+    xmlns:gml="http://www.opengis.net/gml">
+    <Name>name</Name>
+    <Title>title</Title>
+    <Abstract>abstract</Abstract>
+    <FeatureTypeName>A feature type name</FeatureTypeName>
+    <SemanticTypeIdentifier>generic:any</SemanticTypeIdentifier>
+    <SemanticTypeIdentifier>generic:point</SemanticTypeIdentifier>
+    <SemanticTypeIdentifier>generic:line</SemanticTypeIdentifier>
+    <SemanticTypeIdentifier>generic:polygon</SemanticTypeIdentifier>
+    <SemanticTypeIdentifier>generic:text</SemanticTypeIdentifier>
+    <SemanticTypeIdentifier>generic:raster</SemanticTypeIdentifier>
+    <Rule/>
+    <Rule/>
+    <Rule/>
+</FeatureTypeStyle>

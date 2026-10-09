@@ -19,6 +19,7 @@ package org.apache.sis.geometries.surface;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+import org.apache.sis.geometries.GeometryTest;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.NDArrays;
@@ -36,7 +37,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class PreparedTINTest {
+public class PreparedTINTest extends GeometryTest {
     /**
      * A three-dimensional coordinate reference system used by the tests.
      */
@@ -49,33 +50,21 @@ public class PreparedTINTest {
         }
     }
 
-    /**
-     * Test of {@code getPatches(Envelope)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetPatches() {
     }
 
-    /**
-     * Test of {@code create(Collection)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testCreate_Collection() {
     }
 
-    /**
-     * Test of {@code create(TIN...)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testCreate_TINArray() {
     }
 
-    /**
-     * Test of {@code evaluator()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testEvaluator() {

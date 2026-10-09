@@ -26,6 +26,7 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.SurfaceInterpolation;
+import org.apache.sis.geometries.solid.Ellipsoid;
 import org.apache.sis.geometries.solid.Sphere;
 
 
@@ -64,6 +65,7 @@ import org.apache.sis.geometries.solid.Sphere;
 public sealed interface ParametricCurveSurface extends Surface, ReferenceSystem
         permits BilinearGrid,
                 BSplineSurface,
+                Ellipsoid,
                 Sphere
 {
 

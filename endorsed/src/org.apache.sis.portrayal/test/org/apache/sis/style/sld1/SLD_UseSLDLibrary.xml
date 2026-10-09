@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- UseSLDLibrary, pointing at an external SLD document to resolve library-style references. -->
+<StyledLayerDescriptor version="1.1.0"
+    xmlns="http://www.opengis.net/sld"
+    xmlns:se="http://www.opengis.net/se"
+    xmlns:xlink="http://www.w3.org/1999/xlink">
+    <se:Name>sld_with_library</se:Name>
+    <UseSLDLibrary>
+        <se:OnlineResource xlink:type="simple" xlink:href="http://example.org/aSharedSLDFile.xml"/>
+    </UseSLDLibrary>
+</StyledLayerDescriptor>

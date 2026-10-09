@@ -39,15 +39,15 @@ import org.apache.sis.util.ArraysExt;
  */
 public final class NDArrays {
 
-    public static Array of(List<? extends ReadOnly.Tuple<?>> vectors, int dimension, DataType dataType) {
+    public static Array of(List<? extends ReadOnly.Vector<?>> vectors, int dimension, DataType dataType) {
         return of(vectors, SampleSystem.ofSize(dimension), dataType);
     }
 
-    public static <T extends ReadOnly.Tuple<?>> Array of(T[] vectors, int dimension, DataType dataType) {
+    public static <T extends ReadOnly.Vector<?>> Array of(T[] vectors, int dimension, DataType dataType) {
         return of(List.of(vectors), SampleSystem.ofSize(dimension), dataType);
     }
 
-    public static Array of(List<? extends ReadOnly.Tuple<?>> vectors, SampleSystem type, DataType dataType) {
+    public static Array of(List<? extends ReadOnly.Vector<?>> vectors, SampleSystem type, DataType dataType) {
         final int dimension = type.getSize();
         final Array array;
         switch (dataType) {
@@ -345,8 +345,8 @@ public final class NDArrays {
             cursor.moveTo(0);
             resultCursor.moveTo(0);
             for (int i = 0; i < length; i++, cursor.next(), resultCursor.next()) {
-                Tuple source = cursor.samples();
-                Tuple target = resultCursor.samples();
+                Vector source = cursor.samples();
+                Vector target = resultCursor.samples();
                 for (int s = 0; s < dim; s++) {
                     target.set(s+offset, source.get(s));
                 }
@@ -371,13 +371,13 @@ public final class NDArrays {
     }
 
     /**
-     * View TupleArray as a list.
+     * View Array as a list.
      */
-    public static List<Tuple> asList(Array array) {
+    public static List<Vector> asList(Array array) {
         final int size = Math.toIntExact(array.getLength());
-        return new AbstractList<Tuple>() {
+        return new AbstractList<Vector>() {
             @Override
-            public Tuple get(int index) {
+            public Vector get(int index) {
                 return array.get(index);
             }
 
@@ -406,7 +406,7 @@ public final class NDArrays {
      * Sort tuple array, in place, using quick sort algorithm.
      * Inspired by : https://www.geeksforgeeks.org/quick-sort-algorithm/
      */
-    public static void quickSort(Array array, Comparator<ReadOnly.Tuple<?>> comparator) {
+    public static void quickSort(Array array, Comparator<ReadOnly.Vector<?>> comparator) {
         quickSort(array, array.cursor(), array.cursor(), comparator, 0, array.getLength() - 1);
     }
 
@@ -419,16 +419,16 @@ public final class NDArrays {
      * @param low inclusive
      * @param high inclusive
      */
-    public static void quickSort(Array array, Comparator<ReadOnly.Tuple<?>> comparator, long low, long high) {
+    public static void quickSort(Array array, Comparator<ReadOnly.Vector<?>> comparator, long low, long high) {
         quickSort(array, array.cursor(), array.cursor(), comparator, low, high);
     }
 
-    private static long partition(Array array, Cursor cursor1, Cursor cursor2, Comparator<ReadOnly.Tuple<?>> comparator, long low, long high) {
+    private static long partition(Array array, Cursor cursor1, Cursor cursor2, Comparator<ReadOnly.Vector<?>> comparator, long low, long high) {
         //pick the middle point as pivot, in case of already sorted arrays
         //it speeds up the operation and prevents the quicksort to make a java.lang.StackOverflowError
         array.swap((low+high)/2, high);
         cursor1.moveTo(high);
-        final Tuple pivot = cursor1.samples();
+        final Vector pivot = cursor1.samples();
         long i = low - 1;
         for (long j = low; j <= high - 1; j++) {
             cursor2.moveTo(j);
@@ -441,7 +441,7 @@ public final class NDArrays {
         return i + 1;
     }
 
-    private static void quickSort(Array array, Cursor cursor1, Cursor cursor2, Comparator<ReadOnly.Tuple<?>> comparator, long low, long high) {
+    private static void quickSort(Array array, Cursor cursor1, Cursor cursor2, Comparator<ReadOnly.Vector<?>> comparator, long low, long high) {
 
         if (low < high) {
             final long pi = partition(array, cursor1, cursor2, comparator, low, high);
@@ -462,7 +462,7 @@ public final class NDArrays {
      *          This action returns quickly, but forked tasks continue to be submitted to the pool
      *        Therefor awaiting pool completion is necessary to ensure the operation is finished.
      */
-    public static RecursiveAction quickSortAction(Array array, Comparator<ReadOnly.Tuple<?>> comparator, long low, long high) {
+    public static RecursiveAction quickSortAction(Array array, Comparator<ReadOnly.Vector<?>> comparator, long low, long high) {
         return new QuickSortAction(array, array.cursor(), array.cursor(), comparator, low, high);
     }
 
@@ -471,11 +471,11 @@ public final class NDArrays {
         private final Array array;
         private final Cursor cursor1;
         private final Cursor cursor2;
-        private final Comparator<ReadOnly.Tuple<?>> comparator;
+        private final Comparator<ReadOnly.Vector<?>> comparator;
         private final long low;
         private final long high;
 
-        public QuickSortAction(Array array, Cursor cursor1, Cursor cursor2, Comparator<ReadOnly.Tuple<?>> comparator, long low, long high) {
+        public QuickSortAction(Array array, Cursor cursor1, Cursor cursor2, Comparator<ReadOnly.Vector<?>> comparator, long low, long high) {
             this.array = array;
             this.cursor1 = cursor1;
             this.cursor2 = cursor2;
@@ -559,12 +559,12 @@ public final class NDArrays {
         }
 
         @Override
-        public void get(long index, Tuple<?> buffer) {
+        public void get(long index, Vector<?> buffer) {
             base.get(this.index[Math.toIntExact(index)], buffer);
         }
 
         @Override
-        public void set(long index, ReadOnly.Tuple<?> buffer) {
+        public void set(long index, ReadOnly.Vector<?> buffer) {
             base.set(this.index[Math.toIntExact(index)], buffer);
         }
 
@@ -574,7 +574,7 @@ public final class NDArrays {
             return new Cursor() {
                 private long coordinate = -1;
                 @Override
-                public Tuple<?> samples() {
+                public Vector<?> samples() {
                     bc.moveTo(index[Math.toIntExact(coordinate)]);
                     return bc.samples();
                 }

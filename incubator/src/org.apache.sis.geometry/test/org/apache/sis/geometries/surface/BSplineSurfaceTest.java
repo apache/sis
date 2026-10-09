@@ -19,6 +19,7 @@ package org.apache.sis.geometries.surface;
 // Test dependencies
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.GeometryTest;
 
 
 /**
@@ -26,98 +27,62 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class BSplineSurfaceTest {
-    /**
-     * Test of {@code getDegree()}.
-     */
+public class BSplineSurfaceTest extends GeometryTest {
     @Test
     @Disabled("Not implemented yet.")
     public void testGetDegree() {
     }
 
-    /**
-     * Test of {@code getKnots()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetKnots() {
     }
 
-    /**
-     * Test of {@code getKnotSpec()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetKnotSpec() {
     }
 
-    /**
-     * Test of {@code getSurfaceForm()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetSurfaceForm() {
     }
 
-    /**
-     * Test of {@code isPolynomial()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testIsPolynomial() {
     }
 
-    /**
-     * Test of {@code getCoordinateReferenceSystem()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetCoordinateReferenceSystem() {
     }
 
-    /**
-     * Test of {@code setCoordinateReferenceSystem(CoordinateReferenceSystem)}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testSetCoordinateReferenceSystem() {
     }
 
-    /**
-     * Test of {@code getAttributesType()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetAttributesType() {
     }
 
-    /**
-     * Test of {@code isEmpty()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testIsEmpty() {
     }
 
-    /**
-     * Test of {@code getHorizontalCurveType()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetHorizontalCurveType() {
     }
 
-    /**
-     * Test of {@code getVerticalCurveType()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetVerticalCurveType() {
     }
 
-    /**
-     * Test of {@code getInterpolation()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetInterpolation() {

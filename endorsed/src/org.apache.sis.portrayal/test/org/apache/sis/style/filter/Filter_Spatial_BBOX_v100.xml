@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Filter Encoding 1.0 spells the bounding box operand <gml:Box> with <gml:coordinates>,
+     whereas Filter_Spatial_BBOX.xml uses the 1.1 <gml:Envelope> form. -->
+<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml">
+    <ogc:BBOX>
+        <ogc:PropertyName>feature_property_name</ogc:PropertyName>
+        <gml:Box srsName="http://www.opengis.net/gml/srs/epsg.xml#63266405">
+            <gml:coordinates>13.0983,31.5899 35.5472,42.8143</gml:coordinates>
+        </gml:Box>
+    </ogc:BBOX>
+</ogc:Filter>

@@ -22,6 +22,7 @@ import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.cs.Projection;
@@ -133,4 +134,16 @@ public sealed interface ProductCurve extends Curve, GeometryCollection<Curve>
      */
     @UML(identifier="projection", specification=ISO_19107)
     List<Projection> getProjection();
+    /**
+     * Returns the positions of the curves this product is built on, in the order it holds them.
+     *
+     * <p>This method resolves the two declarations this interface inherits: {@link Curve} leaves
+     * it abstract while {@link GeometryCollection} answers it from the elements, and a product
+     * curve is a collection of curves.</p>
+     */
+    @Override
+    default DataPoints getDataPoints() {
+        return GeometryCollection.super.getDataPoints();
+    }
+
 }

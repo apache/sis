@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RasterSymbolizer xmlns="http://www.opengis.net/sld"
+    xmlns:sld="http://www.opengis.net/sld"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:ogc="http://www.opengis.net/ogc"
+    xmlns:gml="http://www.opengis.net/gml">
+    <Geometry>
+        <ogc:PropertyName>geom</ogc:PropertyName>
+    </Geometry>
+    <Opacity>
+        <ogc:Literal>0.32</ogc:Literal>
+    </Opacity>
+    <ChannelSelection>
+        <RedChannel><SourceChannelName>band_1</SourceChannelName></RedChannel>
+        <GreenChannel><SourceChannelName>band_2</SourceChannelName></GreenChannel>
+        <BlueChannel><SourceChannelName>band_3</SourceChannelName></BlueChannel>
+    </ChannelSelection>
+    <OverlapBehavior><EARLIEST_ON_TOP/></OverlapBehavior>
+    <ColorMap>
+        <ColorMapEntry label="under100" opacity="1" quantity="100" color="#454545"/>
+        <ColorMapEntry label="under200" opacity="1" quantity="200" color="#555555"/>
+    </ColorMap>
+    <ContrastEnhancement>
+        <Normalize/>
+        <GammaValue>3</GammaValue>
+    </ContrastEnhancement>
+    <ShadedRelief>
+        <BrightnessOnly>true</BrightnessOnly>
+        <ReliefFactor>5</ReliefFactor>
+    </ShadedRelief>
+    <ImageOutline>
+        <LineSymbolizer>
+            <Geometry>
+                <ogc:PropertyName></ogc:PropertyName>
+            </Geometry>
+            <Stroke>
+                <CssParameter name="stroke">
+                    <ogc:Literal>#404040</ogc:Literal>
+                </CssParameter>
+                <CssParameter name="stroke-dashoffset">
+                    <ogc:Literal>2.3</ogc:Literal>
+                </CssParameter>
+                <CssParameter name="stroke-linecap">
+                    <ogc:Literal>butt</ogc:Literal>
+                </CssParameter>
+                <CssParameter name="stroke-linejoin">
+                    <ogc:Literal>bevel</ogc:Literal>
+                </CssParameter>
+                <CssParameter name="stroke-opacity">
+                    <ogc:Literal>0.4</ogc:Literal>
+                </CssParameter>
+                <CssParameter name="stroke-width">
+                    <ogc:Literal>13</ogc:Literal>
+                </CssParameter>
+            </Stroke>
+        </LineSymbolizer>
+    </ImageOutline>
+</RasterSymbolizer>

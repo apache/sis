@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<se:RasterSymbolizer xmlns:se="http://www.opengis.net/se"
+    xmlns:ogc="http://www.opengis.net/ogc">
+    <se:ChannelSelection>
+        <se:RedChannel>
+            <se:SourceChannelName>band_1</se:SourceChannelName>
+            <se:ContrastEnhancement>
+                <se:Histogram/>
+            </se:ContrastEnhancement>
+        </se:RedChannel>
+        <se:BlueChannel>
+            <se:SourceChannelName>band_3</se:SourceChannelName>
+            <se:ContrastEnhancement>
+                <se:Normalize/>
+                <se:GammaValue>2.5</se:GammaValue>
+            </se:ContrastEnhancement>
+        </se:BlueChannel>
+    </se:ChannelSelection>
+</se:RasterSymbolizer>

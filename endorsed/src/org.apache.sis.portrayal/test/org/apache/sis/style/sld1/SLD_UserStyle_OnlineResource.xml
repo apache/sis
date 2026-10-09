@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- A UserStyle resolved from an external resource instead of carrying its rules inline. -->
+<sld:UserStyle xmlns:sld="http://www.opengis.net/sld" xmlns:se="http://www.opengis.net/se" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <se:Name>remote_user_style</se:Name>
+    <se:OnlineResource xlink:type="simple" xlink:href="http://example.org/aStyleFile.xml"/>
+</sld:UserStyle>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RasterSymbolizer xmlns="http://www.opengis.net/se"
+    xmlns:sld="http://www.opengis.net/sld"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:ogc="http://www.opengis.net/ogc"
+    xmlns:gml="http://www.opengis.net/gml"
+    uom="http://www.opengeospatial.org/se/units/metre">
+    <Geometry><ogc:PropertyName>geom</ogc:PropertyName></Geometry>
+    <Opacity><ogc:Literal>0.32</ogc:Literal></Opacity>
+    <ChannelSelection>
+        <RedChannel><SourceChannelName>band_1</SourceChannelName></RedChannel>
+        <GreenChannel><SourceChannelName>band_2</SourceChannelName></GreenChannel>
+        <BlueChannel><SourceChannelName>band_3</SourceChannelName></BlueChannel>
+    </ChannelSelection>
+    <OverlapBehavior>EARLIEST_ON_TOP</OverlapBehavior>
+    <ContrastEnhancement>
+        <Normalize/>
+        <GammaValue>3</GammaValue>
+    </ContrastEnhancement>
+    <ShadedRelief>
+        <BrightnessOnly>true</BrightnessOnly>
+        <ReliefFactor>5</ReliefFactor>
+    </ShadedRelief>
+    <ImageOutline>
+        <LineSymbolizer uom="http://www.opengeospatial.org/se/units/metre">
+            <Name>the line symbolizer name</Name>
+            <Description>
+                <Title>Line symbolizer title</Title>
+                <Abstract>Line symbolizer description</Abstract>
+            </Description>
+            <Geometry><ogc:PropertyName>geom</ogc:PropertyName></Geometry>
+            <Stroke>
+                <SvgParameter name="stroke"><ogc:Literal>#FF0000</ogc:Literal></SvgParameter>
+                <SvgParameter name="stroke-dasharray">3.0 6.0</SvgParameter>
+                <SvgParameter name="stroke-dashoffset"><ogc:Literal>0.0</ogc:Literal></SvgParameter>
+                <SvgParameter name="stroke-linecap"><ogc:Literal>butt</ogc:Literal></SvgParameter>
+                <SvgParameter name="stroke-linejoin"><ogc:Literal>bevel</ogc:Literal></SvgParameter>
+                <SvgParameter name="stroke-opacity"><ogc:Literal>1.0</ogc:Literal></SvgParameter>
+                <SvgParameter name="stroke-width"><ogc:Literal>3.0</ogc:Literal></SvgParameter>
+            </Stroke>
+            <PerpendicularOffset><ogc:Literal>5</ogc:Literal></PerpendicularOffset>
+        </LineSymbolizer>
+    </ImageOutline>
+</RasterSymbolizer>

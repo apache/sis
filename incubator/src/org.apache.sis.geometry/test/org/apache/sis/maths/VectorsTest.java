@@ -92,8 +92,8 @@ public class VectorsTest {
         final Vector3D.Double coord1 = new Vector3D.Double(0,100,-300);
         final Vector3D.Double coord2 = new Vector3D.Double(100,300,-100);
 
-        final Tuple dp1 = Vectors.toQuantizedEncoding(coord1, quantizeBox, 32767, null);
-        final Tuple dp2 = Vectors.toQuantizedEncoding(coord2, quantizeBox, 32767, null);
+        final Vector dp1 = Vectors.toQuantizedEncoding(coord1, quantizeBox, 32767, null);
+        final Vector dp2 = Vectors.toQuantizedEncoding(coord2, quantizeBox, 32767, null);
 
         assertEquals(new Vector3D.Double(0, 0, 0), dp1);
         assertEquals(new Vector3D.Double(32767, 32767, 32767), dp2);

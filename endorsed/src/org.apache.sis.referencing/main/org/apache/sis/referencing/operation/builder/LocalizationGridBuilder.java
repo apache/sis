@@ -87,7 +87,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * See the <cite>Linearizers</cite> section in {@link LinearTransformBuilder} for more discussion.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.7
  *
  * @see InterpolatedTransform
  * @see LinearTransform
@@ -96,11 +96,6 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * @since 0.8
  */
 public class LocalizationGridBuilder extends TransformBuilder {
-    /**
-     * Tolerance threshold for comparing pixel coordinates relative to integer values.
-     */
-    private static final double EPS = Numerics.COMPARISON_THRESHOLD;
-
     /**
      * The transform for the linear part.
      * Always created with a grid size specified to the constructor.
@@ -116,6 +111,8 @@ public class LocalizationGridBuilder extends TransformBuilder {
     /**
      * Conversions from source real-world coordinates to grid indices before interpolation.
      * If there is no such conversion to apply, then this is the identity transform.
+     *
+     * @see #getSourceToGrid()
      */
     private LinearTransform sourceToGrid;
 
@@ -180,9 +177,9 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @throws ArithmeticException if this constructor cannot infer a reasonable grid size from the given vectors.
      */
     public LocalizationGridBuilder(final Vector sourceX, final Vector sourceY) {
-        final Matrix fromGrid = new Matrix3();
-        final int width  = infer(sourceX, fromGrid, 0);
-        final int height = infer(sourceY, fromGrid, 1);
+        final var fromGrid = new Matrix3();
+        final int width    = infer(sourceX, fromGrid, 0);
+        final int height   = infer(sourceY, fromGrid, 1);
         linearBuilder = new LinearTransformBuilder(width, height);
         try {
             sourceToGrid = MathTransforms.linear(fromGrid).inverse();
@@ -227,7 +224,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
                 final Vector[] sources = localizations.sources();
                 n = sources.length;
                 if (n == SOURCE_DIMENSION) {
-                    final Matrix fromGrid = new Matrix3();
+                    final var fromGrid = new Matrix3();
                     final int width  = infer(sources[0], fromGrid, 0);
                     final int height = infer(sources[1], fromGrid, 1);
                     linearBuilder = new LinearTransformBuilder(width, height);
@@ -247,35 +244,83 @@ public class LocalizationGridBuilder extends TransformBuilder {
     }
 
     /**
-     * Infers a grid size by searching for the greatest common divisor (GCD) for values in the given vector.
+     * Infers a grid size by searching for a constant increment between all values in the given vector.
      * The vector values should be integers, but this method is tolerant to constant offsets (typically 0.5).
-     * The GCD is taken as a "grid to source" scale factor and the minimal value as the translation term.
+     * The increment is taken as a "grid to source" scale factor and the minimal value as the translation term.
      * Those two values are stored in the {@code dim} row of the given matrix.
      *
-     * @param  source    the vector of values for which to get the GCD and minimum value.
-     * @param  fromGrid  matrix where to store the minimum value and the GCD.
+     * @param  source    the vector of values for which to get the increment and minimum value.
+     * @param  fromGrid  matrix where to store the minimum value and the increment.
      * @param  dim       index of the matrix row to update.
      * @return grid size.
+     * @throws ArithmeticException if the grid size cannot be computed.
      */
     private static int infer(final Vector source, final Matrix fromGrid, final int dim) {
         final NumberRange<?> range = source.range();
-        final double min  = range.getMinDouble(true);
-        final double span = range.getSpan();
-        final Number increment = source.increment(EPS * span);
-        double inc;
-        if (increment != null) {
-            inc = increment.doubleValue();
+        final double min   = range.getMinDouble(true);
+        final double span  = range.getSpan();
+        final int    size  = source.size();
+        final Number scale = source.increment(span / (size - 1) * DEFAULT_PRECISION);
+        double increment;
+        if (scale != null) {
+            increment = Math.abs(scale.doubleValue());
         } else {
-            inc = span;
-            final int size = source.size();
+            /*
+             * Initialize the increment to the difference between the two values closest to zero.
+             * They are likely to be the two most accurate values, thus reducing rounding errors.
+             * The block is for keeping variables in local scope.
+             */
+            {
+                // Find the value closest to zero.
+                double zero = Double.POSITIVE_INFINITY;
+                double abs0 = Double.POSITIVE_INFINITY;
+                for (int i=0; i<size; i++) {
+                    final double value = source.doubleValue(i);
+                    final double abs   = Math.abs(value);
+                    if (abs < abs0) {
+                        abs0 = abs;
+                        zero = value;
+                        if (zero == 0) break;       // Optimization for a common case.
+                    }
+                }
+                // Find the second value closest to zero.
+                double tolerance = abs0 + span / (Math.sqrt(size) - 1) * DEFAULT_PRECISION;   // Assuming a square grid.
+                double closeZero = Double.POSITIVE_INFINITY;
+                abs0 = Double.POSITIVE_INFINITY;
+                for (int i=0; i<size; i++) {
+                    final double value = source.doubleValue(i);
+                    final double abs   = Math.abs(value);
+                    if (abs < abs0 && abs > tolerance) {
+                        abs0 = abs;
+                        closeZero = value;
+                    }
+                }
+                increment = Math.abs(closeZero - zero);
+                /*
+                 * Use the increment for computing the expected number of distinct values.
+                 * Then, re-compute the increment as the average delta over all the span.
+                 * It will be the same increment if the delta between values is constant,
+                 * but may differ if the delta is not constant.
+                 */
+                final double average = span / Math.rint(span / increment);
+                if (Math.abs(average - increment) > span * DEFAULT_PRECISION || Numerics.isInteger(average)) {
+                    increment = average;
+                }
+            }
+            /*
+             * If the vector contains only integer values, it may be because all coordinates have been rounded
+             * toward nearest integer. In such case, tolerate a difference corresponding to the rounding errors.
+             * Then verifies that all values in the vector are multiples of the increment (ignoring `min` offset).
+             */
+            double tolerance = increment * DEFAULT_PRECISION;
+            if (tolerance < 0.5 && source.isInteger()) {
+                tolerance = 0.5;
+            }
             for (int i=0; i<size; i++) {
-                double v = source.doubleValue(i) - min;
-                if (Math.abs(v % inc) > EPS) {
-                    do {
-                        final double r = (inc % v);     // Both `inc` and `v` are positive, so `r` will be positive too.
-                        inc = v;
-                        v = r;
-                    } while (Math.abs(v) > EPS);
+                final double remainder = (source.doubleValue(i) - min) % increment;
+                if (remainder > tolerance && (increment - remainder) > tolerance) {
+                    increment = 0;  // Will cause an exception to be thrown below.
+                    break;
                 }
             }
         }
@@ -285,13 +330,20 @@ public class LocalizationGridBuilder extends TransformBuilder {
          * would fail anyway, because it would contain holes where no value is defined. A limit is important
          * for preventing useless allocation of large arrays - https://issues.apache.org/jira/browse/SIS-407
          */
-        fromGrid.setElement(dim, dim, inc);
+        fromGrid.setElement(dim, dim, increment);
         fromGrid.setElement(dim, SOURCE_DIMENSION, min);
-        final double n = span / inc;
+        final double n = span / increment;
         if (n >= 0.5 && n < source.size() - 0.5) {          // Compare as `double` in case the value is large.
             return ((int) Math.round(n)) + 1;
         }
         throw new ArithmeticException(Resources.format(Resources.Keys.CanNotInferGridSizeFromValues_1, range));
+    }
+
+    /**
+     * Returns the grid size for the given dimension.
+     */
+    final int gridSize(final int srcDim) {
+        return linearBuilder.gridSize(srcDim);
     }
 
     /**
@@ -658,11 +710,11 @@ public class LocalizationGridBuilder extends TransformBuilder {
             if (isExact) {
                 step = MathTransforms.concatenate(sourceToGrid, gridToCoord);
             } else {
-                final int      width    = linearBuilder.gridSize(0);
-                final int      height   = linearBuilder.gridSize(1);
-                final float[]  residual = new float [SOURCE_DIMENSION * linearBuilder.gridLength];
-                final double[] grid     = new double[SOURCE_DIMENSION * width];
-                double gridPrecision    = precision;
+                final int width    = gridSize(0);
+                final int height   = gridSize(1);
+                final var residual = new float [SOURCE_DIMENSION * linearBuilder.gridLength];
+                final var grid     = new double[SOURCE_DIMENSION * width];
+                double gridPrecision = precision;
                 try {
                     /*
                      * If the user specified a precision, we need to convert it from source units to grid units.
@@ -762,7 +814,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      *
      * @since 1.1
      */
-    public Optional<Map.Entry<String,MathTransform>> linearizer(final boolean ifNotCompensated) {
+    public Optional<Map.Entry<String, MathTransform>> linearizer(final boolean ifNotCompensated) {
         ProjectedTransformTry linearizer = linearBuilder.appliedLinearizer();
         if (ifNotCompensated && linearizer != null && linearizer.reverseAfterLinearization) {
             linearizer = null;
@@ -804,10 +856,10 @@ public class LocalizationGridBuilder extends TransformBuilder {
         if (mt == null) {
             throw new IllegalStateException(Errors.format(Errors.Keys.Uninitialized_1, getClass().getSimpleName()));
         }
-        final int           tgtDim = mt.getTargetDimensions();
-        final double[]      point  = new double[Math.max(tgtDim, SOURCE_DIMENSION)];
-        final Statistics[]  stats  = new Statistics[tgtDim + SOURCE_DIMENSION];
-        final StringBuilder buffer = new StringBuilder();
+        final int tgtDim = mt.getTargetDimensions();
+        final var point  = new double[Math.max(tgtDim, SOURCE_DIMENSION)];
+        final var stats  = new Statistics[tgtDim + SOURCE_DIMENSION];
+        final var buffer = new StringBuilder();
         for (int i=0; i<stats.length; i++) {
             buffer.setLength(0);
             buffer.append('Δ');
@@ -836,8 +888,8 @@ public class LocalizationGridBuilder extends TransformBuilder {
         } catch (NoninvertibleTransformException e) {
             throw new IllegalStateException(e);
         }
-        final int width  = linearBuilder.gridSize(0);
-        final int height = linearBuilder.gridSize(1);
+        final int width  = gridSize(0);
+        final int height = gridSize(1);
         for (int y=0; y<height; y++) {
             for (int x=0; x<width; x++) {
                 point[0] = gridCoordinates[0] = x;
@@ -894,7 +946,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @since 1.1
      */
     public String toString(final boolean linear, final Locale locale) {
-        final StringBuilder buffer = new StringBuilder(400);
+        final var buffer = new StringBuilder(400);
         String lineSeparator = null;
         try {
             lineSeparator = linearBuilder.appendTo(buffer, getClass(), locale, Vocabulary.Keys.LinearTransformation);

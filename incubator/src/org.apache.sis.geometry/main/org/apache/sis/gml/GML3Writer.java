@@ -47,9 +47,9 @@ import org.apache.sis.geometries.surface.MultiSurface;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.geometries.surface.TIN;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -255,7 +255,7 @@ public final class GML3Writer extends AbstractGMLWriter {
      * Writes a single coordinate tuple as a {@code <gml:pos>} element. The tuple is
      * self-describing by token count, so no {@code srsDimension} attribute is needed.
      */
-    private void writePos(final String tagName, final Tuple<?> position) throws XMLStreamException {
+    private void writePos(final String tagName, final Vector<?> position) throws XMLStreamException {
         final StringBuilder sb = new StringBuilder();
         appendTuple(sb, position);
         writer.writeStartElement(tagName);

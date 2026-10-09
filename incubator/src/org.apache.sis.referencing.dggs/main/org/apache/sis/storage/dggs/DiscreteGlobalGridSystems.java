@@ -259,8 +259,8 @@ public final class DiscreteGlobalGridSystems {
         final double[] coords = S2.toArray(s2.loop(0));
         final Array positions = NDArrays.of(CommonCRS.WGS84.normalizedGeographic(), coords);
         final DataPoints sequence = new ArrayDataPoints(positions);
-        final LinearRing exterior = org.apache.sis.geometries.GeometryFactory.createLinearRing(sequence);
-        return org.apache.sis.geometries.GeometryFactory.createPolygon(exterior, null);
+        final LinearRing exterior = org.apache.sis.geometries.GeometryFactory.DEFAULT.createLinearRing(sequence);
+        return org.apache.sis.geometries.GeometryFactory.DEFAULT.createPolygon(exterior, null);
     }
 
     public static S2Polygon toS2Polygon(GeographicExtent extent) {

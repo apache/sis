@@ -108,9 +108,7 @@ public sealed interface ArcByCenterPoint extends Curve
     }
 
     @Override
-    default DataPoints getDataPoints() {
-        throw new UnsupportedOperationException("Not supported yet");
-    }
+    DataPoints getDataPoints();
 
     /**
      * @return null, a ArcByCenterPoint has no control points

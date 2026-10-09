@@ -26,7 +26,6 @@ import org.apache.sis.io.stream.InternalOptionKey;
 import org.apache.sis.system.Reflect;
 import org.apache.sis.system.Modules;
 import org.apache.sis.system.SystemListener;
-import org.apache.sis.storage.OptionKey;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;

@@ -21,9 +21,12 @@ import java.util.List;
 import javax.measure.Quantity;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.internal.shared.ConcatenatedDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultCompoundCurve;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
@@ -133,4 +136,19 @@ public sealed interface CompoundCurve extends Curve
         }
         return getStartPoint().getPosition().equals(getEndPoint().getPosition(), 0);
     }
+
+    /**
+     * Returns the positions of the curves this one is made of, in the order they are traversed.
+     * Two consecutive curves share an end position, which therefore appears twice.
+     */
+    @Override
+    default DataPoints getDataPoints() {
+        final int n = getNumCurves();
+        final Geometry[] curves = new Geometry[n];
+        for (int i = 0; i < n; i++) {
+            curves[i] = getCurveN(i);
+        }
+        return ConcatenatedDataPoints.of(curves);
+    }
+
 }

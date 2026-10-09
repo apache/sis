@@ -101,8 +101,8 @@ public interface NDArray {
      * @param index tuple index.
      * @return tuple values, tuple is a copy.
      */
-    default Tuple<?> get(long[] index) {
-        Tuple tuple = Vectors.create(getSampleSystem(), getDataType());
+    default Vector<?> get(long[] index) {
+        Vector tuple = Vectors.create(getSampleSystem(), getDataType());
         get(index, tuple);
         return tuple;
     }
@@ -113,14 +113,14 @@ public interface NDArray {
      * @param index tuple index.
      * @param buffer tuple to write into.
      */
-    void get(long[] index, Tuple<?> buffer);
+    void get(long[] index, Vector<?> buffer);
 
     /**
      * Fill array with given tuple value.
      *
      * @param buffer fill value
      */
-    void set(ReadOnly.Tuple<?> buffer);
+    void set(ReadOnly.Vector<?> buffer);
 
     /**
      * Set tuple.
@@ -128,7 +128,7 @@ public interface NDArray {
      * @param index tuple index
      * @param buffer new tuple values.
      */
-    void set(long[] index, ReadOnly.Tuple<?> buffer);
+    void set(long[] index, ReadOnly.Vector<?> buffer);
 
     /**
      * Apply given transformation to all tuples.
@@ -147,7 +147,7 @@ public interface NDArray {
         ArgumentChecks.ensureNonNull("crs", crs);
         final CoordinateReferenceSystem baseCrs = getCoordinateReferenceSystem();
         if (baseCrs == null) {
-            throw new TransformException("This TupleArray do not have a SampleSystem with a CRS");
+            throw new TransformException("This Array do not have a SampleSystem with a CRS");
         }
         final MathTransform trs = CRS.findOperation(baseCrs, crs, null).getMathTransform();
         setSampleSystem(SampleSystem.of(crs));
@@ -155,7 +155,7 @@ public interface NDArray {
     }
 
     /**
-     * Create a new TupleArray with a different datatype.
+     * Create a new Array with a different datatype.
      * @param type new data type, not null
      * @return retyped array, if the type is the same a copy is returned
      */
@@ -184,6 +184,6 @@ public interface NDArray {
     /**
      * @return tuple stream over this array.
      */
-    Stream<Tuple<?>> stream(boolean parallel);
+    Stream<Vector<?>> stream(boolean parallel);
 
 }

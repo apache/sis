@@ -42,10 +42,10 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Tuple;
-import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -76,47 +76,47 @@ public final class JTSAdapter {
         if (jts == null) {
             return null;
         } else if (jts.isEmpty()) {
-            return GeometryFactory.createEmpty(crs);
+            return GeometryFactory.DEFAULT.createEmpty(crs);
 
         } else if (jts instanceof org.locationtech.jts.geom.Point cdt) {
-            return GeometryFactory.createPoint(toDataPoints(cdt.getCoordinateSequence(), crs, copy));
+            return GeometryFactory.DEFAULT.createPoint(toDataPoints(cdt.getCoordinateSequence(), crs, copy));
 
         } else if (jts instanceof org.locationtech.jts.geom.MultiPoint cdt) {
-            return GeometryFactory.createMultiPoint(toDataPoints(jts.getFactory().getCoordinateSequenceFactory().create(cdt.getCoordinates()), crs, copy));
+            return GeometryFactory.DEFAULT.createMultiPoint(toDataPoints(jts.getFactory().getCoordinateSequenceFactory().create(cdt.getCoordinates()), crs, copy));
 
         } else if (jts instanceof org.locationtech.jts.geom.LinearRing cdt) {
-            return GeometryFactory.createLinearRing(toDataPoints(cdt.getCoordinateSequence(), crs, copy));
+            return GeometryFactory.DEFAULT.createLinearRing(toDataPoints(cdt.getCoordinateSequence(), crs, copy));
 
         } else if (jts instanceof org.locationtech.jts.geom.LineString cdt) {
-            return GeometryFactory.createLineString(toDataPoints(cdt.getCoordinateSequence(), crs, copy));
+            return GeometryFactory.DEFAULT.createLineString(toDataPoints(cdt.getCoordinateSequence(), crs, copy));
 
         } else if (jts instanceof org.locationtech.jts.geom.MultiLineString cdt) {
             final LineString[] strings = new LineString[cdt.getNumGeometries()];
             for (int i = 0; i < strings.length; i++) {
                 strings[i] = (LineString) fromJTS(cdt.getGeometryN(i), crs, copy);
             }
-            return GeometryFactory.createMultiLineString(strings);
+            return GeometryFactory.DEFAULT.createMultiLineString(strings);
         } else if (jts instanceof org.locationtech.jts.geom.Polygon cdt) {
             final LinearRing exterior = (LinearRing) fromJTS(cdt.getExteriorRing(), crs, copy);
             final List<LinearRing> interiors = new ArrayList<>(cdt.getNumInteriorRing());
             for (int i = 0, n = cdt.getNumInteriorRing(); i < n; i++) {
                 interiors.add((LinearRing) fromJTS(cdt.getInteriorRingN(i), crs, copy));
             }
-            return GeometryFactory.createPolygon(exterior, interiors);
+            return GeometryFactory.DEFAULT.createPolygon(exterior, interiors);
 
         } else if (jts instanceof org.locationtech.jts.geom.MultiPolygon cdt) {
             final Polygon[] geoms = new Polygon[cdt.getNumGeometries()];
             for (int i = 0; i < geoms.length; i++) {
                 geoms[i] = (Polygon) fromJTS(cdt.getGeometryN(i), crs, copy);
             }
-            return GeometryFactory.createMultiPolygon(geoms);
+            return GeometryFactory.DEFAULT.createMultiPolygon(geoms);
 
         } else if (jts instanceof org.locationtech.jts.geom.GeometryCollection cdt) {
             final Geometry[] geoms = new Geometry[cdt.getNumGeometries()];
             for (int i = 0; i < geoms.length; i++) {
                 geoms[i] = fromJTS(cdt.getGeometryN(i), crs, copy);
             }
-            return GeometryFactory.createGeometryCollection(geoms);
+            return GeometryFactory.DEFAULT.createGeometryCollection(geoms);
 
         } else {
             throw new IllegalArgumentException("Unknown JTS geometry type");
@@ -136,10 +136,10 @@ public final class JTSAdapter {
         if (geom == null) {
             return null;
         } else if (geom instanceof Point cdt) {
-            final CoordinateSequence cs = toCoordinateSequence(cdt.asDataPoint(), copy, gf);
+            final CoordinateSequence cs = toCoordinateSequence(cdt.getDataPoints(), copy, gf);
             jts = new org.locationtech.jts.geom.Point(cs, gf);
         } else if (geom instanceof MultiPoint cdt) {
-            final CoordinateSequence cs = toCoordinateSequence(cdt.asDataPoints(), copy, gf);
+            final CoordinateSequence cs = toCoordinateSequence(cdt.getDataPoints(), copy, gf);
             jts = gf.createMultiPoint(cs);
         } else if (geom instanceof LinearRing cdt) {
             final CoordinateSequence cs = toCoordinateSequence(cdt.getDataPoints(), copy, gf);
@@ -194,7 +194,7 @@ public final class JTSAdapter {
             final Cursor cursor = positions.cursor();
             int i = 0;
             while (cursor.next()) {
-                final Tuple samples = cursor.samples();
+                final Vector samples = cursor.samples();
                 samples.set(0, cs.getOrdinate(i, 0));
                 samples.set(1, cs.getOrdinate(i, 1));
                 if (dimension > 2) {
@@ -217,7 +217,7 @@ public final class JTSAdapter {
             final CoordinateSequence cs = gf.getCoordinateSequenceFactory().create(size, dimension);
 
             for (int i = 0; i < size; i++) {
-                Tuple position = ps.getPosition(i);
+                Vector position = ps.getPosition(i);
                 for (int d = 0; d < dimension; d++) {
                     cs.setOrdinate(i, d, position.get(d));
                 }
@@ -271,7 +271,7 @@ public final class JTSAdapter {
         }
 
         @Override
-        public Tuple getPosition(int index) {
+        public Vector getPosition(int index) {
             final Vector v = Vectors.create(crs, DataType.DOUBLE);
             for (int i = 0; i < dim; i++) {
                 v.set(i, jts.getOrdinate(index, i));
@@ -280,14 +280,14 @@ public final class JTSAdapter {
         }
 
         @Override
-        public void setPosition(int index, Tuple value) {
+        public void setPosition(int index, ReadOnly.Vector value) {
             for (int i = 0; i < dim; i++) {
                 jts.setOrdinate(index, i, value.get(i));
             }
         }
 
         @Override
-        public Tuple getAttribute(int index, String name) {
+        public Vector getAttribute(int index, String name) {
             if (DataPointsType.ATT_POSITION.equals(name)) {
                 return getPosition(index);
             }
@@ -295,7 +295,7 @@ public final class JTSAdapter {
         }
 
         @Override
-        public void setAttribute(int index, String name, Tuple value) {
+        public void setAttribute(int index, String name, ReadOnly.Vector value) {
             if (DataPointsType.ATT_POSITION.equals(name)) {
                 setPosition(index, value);
             } else {
@@ -325,7 +325,7 @@ public final class JTSAdapter {
 
         @Override
         public Coordinate getCoordinateCopy(int i) {
-            final Tuple<?> position = points.getPosition(i);
+            final Vector<?> position = points.getPosition(i);
             if (getDimension() == 2) {
                 return new CoordinateXY(position.get(0), position.get(1));
             } else {
@@ -335,7 +335,7 @@ public final class JTSAdapter {
 
         @Override
         public void getCoordinate(int index, Coordinate coord) {
-            final Tuple<?> position = points.getPosition(index);
+            final Vector<?> position = points.getPosition(index);
             coord.setX(position.get(0));
             coord.setY(position.get(1));
         }
@@ -362,7 +362,7 @@ public final class JTSAdapter {
 
         @Override
         public void setOrdinate(int index, int ordinateIndex, double value) {
-            final Tuple<?> position = points.getPosition(index);
+            final Vector<?> position = points.getPosition(index);
             position.set(ordinateIndex, value);
             points.setPosition(index, position);
         }

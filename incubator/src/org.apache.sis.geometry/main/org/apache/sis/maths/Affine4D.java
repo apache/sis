@@ -331,7 +331,7 @@ public final class Affine4D extends AbstractAffine<Affine4D> {
     }
 
     @Override
-    public Tuple<?> transform(ReadOnly.Tuple<?> source, Tuple<?> dest) {
+    public Vector<?> transform(ReadOnly.Vector<?> source, Vector<?> dest) {
         if (dest == null) dest = new Vector4D.Double();
 
         if (source instanceof Vector4D.Double s && dest instanceof Vector4D.Double d) {

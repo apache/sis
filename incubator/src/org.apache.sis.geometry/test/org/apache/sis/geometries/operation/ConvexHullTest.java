@@ -17,8 +17,6 @@
 package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Geometry;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
-import static org.apache.sis.geometries.operation.TestData.POINT_A;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,7 +29,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class ConvexHullTest {
+public class ConvexHullTest extends AbstractD9IMTest {
     /**
      * The inputs and expected result of a single test of {@code convexHull(Geometry)}.
      *
@@ -40,8 +38,8 @@ public class ConvexHullTest {
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
     private record TestCase(Geometry input,
-                         Geometry expected,
-                         Class<? extends Exception> error)
+                            Geometry expected,
+                            Class<? extends Exception> error)
     {
     }
 
@@ -72,4 +70,27 @@ public class ConvexHullTest {
             }
         }
     }
+
+    /**
+     * Tests {@code convexHull(Geometry)} on the geometries which are not already convex.
+     * The hull of a convex surface is that surface, and the hull of a curve crossing itself
+     * is the smallest convex surface enclosing all of its positions.
+     */
+    @Test
+    public void testConvexHullOfShapes() {
+        final GeometryProcessor processor = new GeometryProcessor();
+        assertEquals(100, areaOf(processor.convexHull(SQUARE)), TOLERANCE, "A square is already convex.");
+        assertEquals(100, areaOf(processor.convexHull(SQUARE_WITH_HOLE)), TOLERANCE, "The hull of a square with a hole fills that hole.");
+        /*
+         * The four positions of that curve are the four corners of a square of 10 × 10,
+         * whatever the order in which the curve visits them.
+         */
+        assertEquals(100, areaOf(processor.convexHull(LINE_SELF_CROSSING)), TOLERANCE, "The hull of a curve visiting the four corners of a square is that square.");
+        /*
+         * The hull of the two squares [0…10]² and [20…30]² is the hexagon
+         * (0 0), (10 0), (30 20), (30 30), (20 30), (0 10), of area 500.
+         */
+        assertEquals(500, areaOf(processor.convexHull(MULTI_POLYGON)), TOLERANCE, "The hull of two squares placed along a diagonal is a hexagon.");
+    }
+
 }

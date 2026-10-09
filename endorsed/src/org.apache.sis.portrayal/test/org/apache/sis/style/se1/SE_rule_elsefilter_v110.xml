@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- A FeatureTypeStyle holding a filtered rule followed by its ElseFilter rule.
+     ElseFilter is mutually exclusive with ogc:Filter within the same Rule. -->
+<se:FeatureTypeStyle version="1.1.0"
+    xmlns:se="http://www.opengis.net/se"
+    xmlns:sld="http://www.opengis.net/sld"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:ogc="http://www.opengis.net/ogc"
+    xmlns:gml="http://www.opengis.net/gml">
+    <se:Name>style_with_else</se:Name>
+    <se:FeatureTypeName>the_feature_type_name</se:FeatureTypeName>
+    <se:SemanticTypeIdentifier>generic:polygon</se:SemanticTypeIdentifier>
+    <se:Rule>
+        <se:Name>matched_rule</se:Name>
+        <ogc:Filter>
+            <ogc:PropertyIsGreaterThan>
+                <ogc:PropertyName>population</ogc:PropertyName>
+                <ogc:Literal>10000</ogc:Literal>
+            </ogc:PropertyIsGreaterThan>
+        </ogc:Filter>
+        <se:PolygonSymbolizer>
+            <se:Fill>
+                <se:SvgParameter name="fill"><ogc:Literal>#FF0000</ogc:Literal></se:SvgParameter>
+            </se:Fill>
+        </se:PolygonSymbolizer>
+    </se:Rule>
+    <se:Rule>
+        <se:Name>else_rule</se:Name>
+        <se:ElseFilter/>
+        <se:PolygonSymbolizer>
+            <se:Fill>
+                <se:SvgParameter name="fill"><ogc:Literal>#CCCCCC</ogc:Literal></se:SvgParameter>
+            </se:Fill>
+        </se:PolygonSymbolizer>
+    </se:Rule>
+</se:FeatureTypeStyle>

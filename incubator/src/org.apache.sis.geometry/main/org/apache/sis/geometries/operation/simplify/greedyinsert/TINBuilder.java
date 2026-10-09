@@ -37,9 +37,9 @@ import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -60,9 +60,9 @@ public final class TINBuilder {
     private final ArrayDeque<WTriangle> workStackTriangles = new ArrayDeque<>();
     private final ArrayDeque<Edge> workStackEdges = new ArrayDeque<>();
     private final List<WTriangle> finished = new ArrayList<>();
-    private final List<Tuple> vertices = new ArrayList<>();
+    private final List<Vector> vertices = new ArrayList<>();
     private final double delta;
-    private final BiFunction<Tuple,Triangle,Double> errorCalculator;
+    private final BiFunction<Vector,Triangle,Double> errorCalculator;
     private boolean decimateInsert = true;
 
     /**
@@ -78,7 +78,7 @@ public final class TINBuilder {
      * @param delta minimum distance to dem to include point
      * @throws OperationException if an invalid geometry state occurs
      */
-    public TINBuilder(Tuple p0, Tuple p1, Tuple p2, Tuple p3, double delta, BiFunction<Tuple,Triangle,Double> errorCalculator) throws OperationException {
+    public TINBuilder(Vector p0, Vector p1, Vector p2, Vector p3, double delta, BiFunction<Vector,Triangle,Double> errorCalculator) throws OperationException {
         this.crs = p0.getCoordinateReferenceSystem();
         ArgumentChecks.ensureNonNull("crs", crs);
         if (  !crs.equals(p1.getCoordinateReferenceSystem())
@@ -124,9 +124,9 @@ public final class TINBuilder {
         for (int i = 0, n = finished.size(); i < n; i++) {
             final WTriangle t = finished.get(i);
             final Array positions = NDArrays.of(Arrays.asList(t.p0, t.p1, t.p2, t.p0), t.p0.getSampleSystem(), t.p0.getDataType());
-            final DataPoints points = GeometryFactory.createSequence(positions);
-            final LinearRing exterior = GeometryFactory.createLinearRing(points);
-            triangles.add(GeometryFactory.createTriangle(exterior));
+            final DataPoints points = GeometryFactory.DEFAULT.createDataPoints(positions);
+            final LinearRing exterior = GeometryFactory.DEFAULT.createLinearRing(points);
+            triangles.add(GeometryFactory.DEFAULT.createTriangle(exterior));
         }
         return triangles;
     }
@@ -151,13 +151,13 @@ public final class TINBuilder {
      * @param decimate true to apply decimation based on error calculator, false to force insertion.
      * @throws ProcessException
      */
-    public void add(List<Tuple> pts, boolean decimate) throws OperationException {
+    public void add(List<Vector> pts, boolean decimate) throws OperationException {
         decimateInsert = decimate;
 
         //remove any duplicated points
         final Set<Point2D.Double> set = new HashSet<>(pts.size());
-        final List<Tuple> uniques = new ArrayList<>();
-        for (Tuple t : pts) {
+        final List<Vector> uniques = new ArrayList<>();
+        for (Vector t : pts) {
             if (!CRS.equivalent(crs, t.getCoordinateReferenceSystem())) {
                 throw new OperationException("Points must have the same crs avec corner points");
             }
@@ -202,10 +202,10 @@ public final class TINBuilder {
 
     }
 
-    private void assign(List<Tuple> pts, Collection<WTriangle> triangles) throws OperationException {
+    private void assign(List<Vector> pts, Collection<WTriangle> triangles) throws OperationException {
         ptLoop:
         for (int i = pts.size() - 1; i >= 0; i--) {
-            final Tuple pt = pts.get(i);
+            final Vector pt = pts.get(i);
             if (pt == null) continue;
 
             double ptx = pt.get(0);
@@ -235,7 +235,7 @@ public final class TINBuilder {
 
     private void solve(WTriangle triangle) throws OperationException {
 
-        final Tuple maxPt = triangle.findMaxDistancePoint();
+        final Vector maxPt = triangle.findMaxDistancePoint();
         if (maxPt == null) {
             finished.add(triangle);
             return;
@@ -264,7 +264,7 @@ public final class TINBuilder {
         }
     }
 
-    private void splitCenter(WTriangle t, Tuple c) throws OperationException {
+    private void splitCenter(WTriangle t, Vector c) throws OperationException {
 
         /*
             p0
@@ -280,9 +280,9 @@ public final class TINBuilder {
             p2
         */
 
-        final Tuple p0 = t.p0;
-        final Tuple p1 = t.p1;
-        final Tuple p2 = t.p2;
+        final Vector p0 = t.p0;
+        final Vector p1 = t.p1;
+        final Vector p2 = t.p2;
         final Edge a0 = t.getEdge(p0, p1);
         final Edge a1 = t.getEdge(p1, p2);
         final Edge a2 = t.getEdge(p2, p0);
@@ -317,7 +317,7 @@ public final class TINBuilder {
         workStackEdges.addFirst(a2);
     }
 
-    private void splitOnEdge(Edge edge, Tuple pt) throws OperationException {
+    private void splitOnEdge(Edge edge, Vector pt) throws OperationException {
         WTriangle t0 = edge.t0;
         WTriangle t1 = edge.t1;
         if (t0 == null) {
@@ -455,10 +455,10 @@ public final class TINBuilder {
                     +
                     p3
         */
-        final Tuple p0 = t0.oppositePoint(e0);
-        final Tuple p1 = e0.p0;
-        final Tuple p2 = t1.oppositePoint(e0);
-        final Tuple p3 = e0.p1;
+        final Vector p0 = t0.oppositePoint(e0);
+        final Vector p1 = e0.p0;
+        final Vector p2 = t1.oppositePoint(e0);
+        final Vector p3 = e0.p1;
 
         if (Maths.inCircle(t0.p0, t0.p1, t0.p2, p2)) {
             /* swap edge

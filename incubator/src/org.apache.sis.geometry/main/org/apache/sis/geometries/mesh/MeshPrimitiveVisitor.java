@@ -193,11 +193,11 @@ public abstract class MeshPrimitiveVisitor {
     }
 
     private Triangle readTriangle(int idx0, int idx1, int idx2) {
-        return GeometryFactory.createTriangle(GeometryFactory.createLinearRing(new MeshPrimitive.Sequence(primitive, new int[]{idx0, idx1, idx2, idx0})));
+        return GeometryFactory.DEFAULT.createTriangle(GeometryFactory.DEFAULT.createLinearRing(new MeshPrimitive.Sequence(primitive, new int[]{idx0, idx1, idx2, idx0})));
     }
 
     private LineString readLine(int idx0, int idx1) {
-        return GeometryFactory.createLineString(new MeshPrimitive.Sequence(primitive, new int[]{idx0, idx1}));
+        return GeometryFactory.DEFAULT.createLineString(new MeshPrimitive.Sequence(primitive, new int[]{idx0, idx1}));
     }
 
     /**

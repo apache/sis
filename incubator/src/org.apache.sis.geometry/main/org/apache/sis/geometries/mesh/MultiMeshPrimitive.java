@@ -26,9 +26,13 @@ import java.util.Map;
 import java.util.Objects;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.internal.shared.ConcatenatedDataPoints;
+import org.apache.sis.geometries.internal.shared.EmptyDataPoints;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -69,6 +73,11 @@ public final class MultiMeshPrimitive<T extends MeshPrimitive> extends AbstractG
             return p.getCoordinateReferenceSystem();
         }
         return crs;
+    }
+
+    @Override
+    public Geometry getBoundary() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
@@ -193,6 +202,19 @@ public final class MultiMeshPrimitive<T extends MeshPrimitive> extends AbstractG
             return false;
         }
         return Objects.equals(this.getCoordinateReferenceSystem(), other.getCoordinateReferenceSystem());
+    }
+
+
+    /**
+     * Returns the positions of the primitives of this set, in the order this set holds them.
+     */
+    @Override
+    public DataPoints getDataPoints() {
+        final List<T> components = getComponents();
+        if (components.isEmpty()) {
+            return new EmptyDataPoints(getCoordinateReferenceSystem());
+        }
+        return ConcatenatedDataPoints.of(components.toArray(Geometry[]::new));
     }
 
 }

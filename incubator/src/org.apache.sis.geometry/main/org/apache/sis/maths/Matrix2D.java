@@ -205,7 +205,7 @@ public class Matrix2D extends AbstractMatrix<Matrix2D> {
     }
 
     @Override
-    public Tuple<?> transform(ReadOnly.Tuple<?> vector, Tuple<?> buffer) {
+    public Vector<?> transform(ReadOnly.Vector<?> vector, Vector<?> buffer) {
         if (buffer == null) buffer = new Vector2D.Double();
 
         if (vector instanceof Vector2D.Double && buffer instanceof Vector2D.Double) {

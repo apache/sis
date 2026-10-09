@@ -25,7 +25,6 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.measure.Quantity;
-import javax.measure.Unit;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -49,10 +48,10 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -82,7 +81,9 @@ public final class GeometryProcessor {
             // There is no position to grow a buffer around, whatever the radius.
             return geom;
         }
-        throw new UnsupportedOperationException();
+
+        //TODO : fallback on JTS until implemented, this loss the attributes !
+        return fromJTS(jts(geom).buffer(radius.getValue().doubleValue()), geom);
     }
 
     /**
@@ -122,11 +123,11 @@ public final class GeometryProcessor {
      * Because the geometries are closed, it is possible to find a point on each geometric object involved, such that
      * the distance between these 2 points is the returned distance between their geometric objects.
      *
-     * <p>TODO / Limitation: the returned quantity is labelled in metres, but its magnitude is the plain
-     * Pythagorean distance computed in the units of the coordinate system axes. On a geographic
-     * coordinate reference system that magnitude is therefore an amount of degrees reported as
-     * metres. Computing a true geodesic distance on the reference surface, as required by
-     * ISO 19107 REQ. 11, remains to be done.</p>
+     * <p>TODO / Limitation: the magnitude is the plain Pythagorean distance computed in the units
+     * of the coordinate system axes, and the returned quantity is labelled with the unit of the
+     * first axis. On a geographic coordinate reference system the result is therefore an amount
+     * of degrees, reported as such. Computing a true geodesic distance on the reference surface,
+     * as required by ISO 19107 REQ. 11, remains to be done.</p>
      *
      * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
      * handle temporal geometries and crs-less geometries.</p>
@@ -143,11 +144,12 @@ public final class GeometryProcessor {
         }
         if (geom1 instanceof Point pt1) {
             if (geom2 instanceof Point pt2) {
-                return Quantities.create(Distance.distance(pt1, pt2), getUnit(pt1));
+                return Quantities.create(Distance.distance(pt1, pt2), Geometries.getLinearUnit(pt1));
             }
         }
 
-        throw new UnsupportedOperationException();
+        //TODO : fallback on JTS until implemented
+        return Quantities.create(jts(geom1).distance(jts(geom2)), Geometries.getLinearUnit(geom1));
     }
 
     /**
@@ -356,7 +358,7 @@ public final class GeometryProcessor {
                  */
                 final Geometry other = geom1.isEmpty() ? geom2 : geom1;
                 final int interior = other.getTopologicDimension();
-                final int boundary = other.boundary().getTopologicDimension();
+                final int boundary = other.getBoundary().getTopologicDimension();
                 if (geom1.isEmpty()) {
                     dimensions[6] = interior;       // Exterior of geom1 ∩ interior of geom2.
                     dimensions[7] = boundary;       // Exterior of geom1 ∩ boundary of geom2.
@@ -434,7 +436,7 @@ public final class GeometryProcessor {
      * @param crs3d the result crs in 3d, if null an ellipsoid height is assumed
      * @param zeditor called to configure the Z value on each position, if null, value 0.0 will be used
      */
-    public Geometry to3D(Geometry geom, CoordinateReferenceSystem crs3d, Consumer<Tuple> zeditor) {
+    public Geometry to3D(Geometry geom, CoordinateReferenceSystem crs3d, Consumer<Vector> zeditor) {
         if (geom instanceof Point base) {
             return To3D.to3D(base, crs3d, zeditor);
         } else if (geom instanceof LineString base) {
@@ -455,7 +457,7 @@ public final class GeometryProcessor {
      * @param valueGenerator function to generate attribute value
      * @return new or modified geometry
      */
-    public Geometry compute(Geometry geom, String attributeName, SampleSystem attributeSystem, DataType attributeType, Function<Point,Tuple> valueGenerator) {
+    public Geometry compute(Geometry geom, String attributeName, SampleSystem attributeSystem, DataType attributeType, Function<Point,Vector> valueGenerator) {
         if (geom instanceof MeshPrimitive mp) {
             return ComputeAttribute.compute(mp, attributeName, attributeSystem, attributeType, valueGenerator);
         } else if (geom instanceof MultiMeshPrimitive<?> mp) {
@@ -531,7 +533,7 @@ public final class GeometryProcessor {
     public Geometry separateFaces(MeshPrimitive p) {
 
         final DataPointsType attributesType = p.getDataPointsType();
-        final Map<String,List<Tuple<?>>> atts = new HashMap<>();
+        final Map<String,List<Vector<?>>> atts = new HashMap<>();
 
         for (String name : attributesType.getAttributeNames()) {
             atts.put(name, new ArrayList<>());
@@ -540,7 +542,7 @@ public final class GeometryProcessor {
         MeshPrimitiveVisitor pv = new MeshPrimitiveVisitor(p) {
             @Override
             protected void visit(Point candidate) {
-                for (Entry<String,List<Tuple<?>>> entry : atts.entrySet()) {
+                for (Entry<String,List<Vector<?>>> entry : atts.entrySet()) {
                     entry.getValue().add(candidate.getAttribute(entry.getKey()));
                 }
             }
@@ -549,7 +551,7 @@ public final class GeometryProcessor {
             protected void visit(LineString candidate) {
                 final Point p0 = candidate.getPointN(0);
                 final Point p1 = candidate.getPointN(1);
-                for (Entry<String,List<Tuple<?>>> entry : atts.entrySet()) {
+                for (Entry<String,List<Vector<?>>> entry : atts.entrySet()) {
                     entry.getValue().add(p0.getAttribute(entry.getKey()));
                     entry.getValue().add(p1.getAttribute(entry.getKey()));
                 }
@@ -561,7 +563,7 @@ public final class GeometryProcessor {
                 final Point p0 = ring.getPointN(0);
                 final Point p1 = ring.getPointN(1);
                 final Point p2 = ring.getPointN(2);
-                for (Entry<String,List<Tuple<?>>> entry : atts.entrySet()) {
+                for (Entry<String,List<Vector<?>>> entry : atts.entrySet()) {
                     entry.getValue().add(p0.getAttribute(entry.getKey()));
                     entry.getValue().add(p1.getAttribute(entry.getKey()));
                     entry.getValue().add(p2.getAttribute(entry.getKey()));
@@ -586,7 +588,7 @@ public final class GeometryProcessor {
             default : type = MeshPrimitive.Type.TRIANGLES; break;
         }
         final MeshPrimitive sep = MeshPrimitive.create(type);
-        for (Entry<String,List<Tuple<?>>> entry : atts.entrySet()) {
+        for (Entry<String,List<Vector<?>>> entry : atts.entrySet()) {
             final String name = entry.getKey();
             final Array array = NDArrays.of(entry.getValue(), attributesType.getAttributeSystem(name), attributesType.getAttributeType(name));
             sep.setAttribute(name, array);
@@ -615,11 +617,4 @@ public final class GeometryProcessor {
         return Geometries.fromJTS(result, true);
     }
 
-    private static Unit getUnit(Geometry geometry) {
-        return getUnit(geometry.getCoordinateReferenceSystem());
-    }
-
-    private static Unit getUnit(CoordinateReferenceSystem crs) {
-        return crs.getCoordinateSystem().getAxis(0).getUnit();
-    }
 }

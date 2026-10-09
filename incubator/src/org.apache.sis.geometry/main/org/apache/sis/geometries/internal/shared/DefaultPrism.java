@@ -95,4 +95,9 @@ public non-sealed class DefaultPrism extends AbstractGeometry implements Prism {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public Geometry getBoundary() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }

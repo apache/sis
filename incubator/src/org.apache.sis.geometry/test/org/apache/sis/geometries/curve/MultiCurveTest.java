@@ -19,6 +19,7 @@ package org.apache.sis.geometries.curve;
 // Test dependencies
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.GeometryTest;
 
 
 /**
@@ -26,34 +27,22 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class MultiCurveTest {
-    /**
-     * Test of {@code getGeometryType()}.
-     */
+public class MultiCurveTest extends GeometryTest {
     @Test
     @Disabled("Not implemented yet.")
     public void testGetGeometryType() {
     }
 
-    /**
-     * Test of {@code getElementType()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetElementType() {
     }
 
-    /**
-     * Test of {@code isClosed()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testIsClosed() {
     }
 
-    /**
-     * Test of {@code getLength()}.
-     */
     @Test
     @Disabled("Not implemented yet.")
     public void testGetLength() {

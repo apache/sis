@@ -88,7 +88,7 @@ public final class Transform {
                 cp.setAttribute(name, ps.getAttributeArray(name).copy());
             }
         }
-        return GeometryFactory.createLinearRing(cp);
+        return GeometryFactory.DEFAULT.createLinearRing(cp);
     }
 
     public static Polygon transform(Polygon p, CoordinateReferenceSystem crs, MathTransform transform) throws OperationException {
@@ -100,7 +100,7 @@ public final class Transform {
             interiors.set(i, transform(interiors.get(i), crs, transform));
         }
 
-        return GeometryFactory.createPolygon(exterior, interiors);
+        return GeometryFactory.DEFAULT.createPolygon(exterior, interiors);
     }
 
     public static MultiMeshPrimitive<?> transform(MultiMeshPrimitive<?> mp, CoordinateReferenceSystem crs, MathTransform transform) throws OperationException {
@@ -196,7 +196,7 @@ public final class Transform {
                 cp.setAttribute(name, ps.getAttributeArray(name).copy());
             }
         }
-        return GeometryFactory.createTriangle(GeometryFactory.createLinearRing(cp));
+        return GeometryFactory.DEFAULT.createTriangle(GeometryFactory.DEFAULT.createLinearRing(cp));
     }
 
 }

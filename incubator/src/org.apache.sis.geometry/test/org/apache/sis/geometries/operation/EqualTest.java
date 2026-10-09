@@ -17,12 +17,6 @@
 package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Geometry;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
-import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
-import static org.apache.sis.geometries.operation.TestData.POINT_A;
-import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
-import static org.apache.sis.geometries.operation.TestData.POINT_B;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,7 +29,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class EqualTest {
+public class EqualTest extends AbstractD9IMTest {
     /**
      * The inputs and expected result of a single test of {@code equal(Geometry, Geometry)}.
      *
@@ -45,9 +39,9 @@ public class EqualTest {
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
     private record TestCase(Geometry input,
-                         Geometry other,
-                         Boolean expected,
-                         Class<? extends Exception> error)
+                            Geometry other,
+                            Boolean expected,
+                            Class<? extends Exception> error)
     {
     }
 
@@ -56,14 +50,26 @@ public class EqualTest {
      */
     private static final TestCase[] ENTRIES = {
         // The empty set being unique, any two empty geometries are equal and nothing else is.
-        new TestCase(EMPTY_1,   EMPTY_1,   true,  null),
-        new TestCase(EMPTY_1,   EMPTY_2,   true,  null),
-        new TestCase(EMPTY_1,   NON_EMPTY, false, null),
-        new TestCase(NON_EMPTY, EMPTY_1,   false, null),
+        new TestCase(EMPTY_1,      EMPTY_1,        true,  null),
+        new TestCase(EMPTY_1,      EMPTY_2,        true,  null),
+        new TestCase(EMPTY_1,      NON_EMPTY,      false, null),
+        new TestCase(NON_EMPTY,    EMPTY_1,        false, null),
         // points
-        new TestCase(POINT_A, POINT_A,     true,  null),
-        new TestCase(POINT_A, POINT_A_BIS, true,  null),
-        new TestCase(POINT_A, POINT_B,     false, null)
+        new TestCase(POINT_A,      POINT_A,        true,  null),
+        new TestCase(POINT_A,      POINT_A_BIS,    true,  null),
+        new TestCase(POINT_A,      POINT_B,        false, null),
+        /*
+         * Equality compares the positions, not the identity nor the way the geometry was built.
+         */
+        new TestCase(SQUARE,       SQUARE_BIS,     true,  null),
+        new TestCase(SQUARE,       SQUARE_OVERLAP, false, null),
+        new TestCase(SQUARE,       SQUARE_INNER,   false, null),
+        new TestCase(LINE_BOTTOM,  LINE_COLLINEAR, false, null),
+        new TestCase(POINT_CENTER, POINT_ON_EDGE,  false, null),
+        /*
+         * A surface and its own boundary are not equal: one is a surface, the other a curve.
+         */
+        new TestCase(SQUARE,       LINE_BOTTOM,    false, null)
     };
 
     /**

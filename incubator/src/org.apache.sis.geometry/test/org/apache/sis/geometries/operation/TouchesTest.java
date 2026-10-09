@@ -17,12 +17,6 @@
 package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Geometry;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
-import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
-import static org.apache.sis.geometries.operation.TestData.POINT_A;
-import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
-import static org.apache.sis.geometries.operation.TestData.POINT_B;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,7 +29,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class TouchesTest {
+public class TouchesTest extends AbstractD9IMTest {
     /**
      * The inputs and expected result of a single test of {@code touches(Geometry, Geometry)}.
      *
@@ -45,9 +39,9 @@ public class TouchesTest {
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
     private record TestCase(Geometry input,
-                         Geometry other,
-                         Boolean expected,
-                         Class<? extends Exception> error)
+                            Geometry other,
+                            Boolean expected,
+                            Class<? extends Exception> error)
     {
     }
 
@@ -59,16 +53,48 @@ public class TouchesTest {
          * Touching requires a shared position which is in the boundary of at least one of the
          * two geometries. The empty set has no boundary, therefore it touches nothing.
          */
-        new TestCase(EMPTY_1,   NON_EMPTY, false, null),
-        new TestCase(NON_EMPTY, EMPTY_1,   false, null),
-        new TestCase(EMPTY_1,   EMPTY_1,   false, null),
-        new TestCase(EMPTY_1,   EMPTY_2,   false, null),
+        new TestCase(EMPTY_1,       NON_EMPTY,       false, null),
+        new TestCase(NON_EMPTY,     EMPTY_1,         false, null),
+        new TestCase(EMPTY_1,       EMPTY_1,         false, null),
+        new TestCase(EMPTY_1,       EMPTY_2,         false, null),
         /*
          * Two points cannot touch: the boundary of a point is empty, therefore the only
          * position they may share is interior to both of them.
          */
-        new TestCase(POINT_A, POINT_A_BIS, false, null),
-        new TestCase(POINT_A, POINT_B,     false, null)
+        new TestCase(POINT_A,       POINT_A_BIS,     false, null),
+        new TestCase(POINT_A,       POINT_B,         false, null),
+        /*
+         * A position and a surface. Touching requires a shared position which is interior to
+         * neither geometry, which for a position means that it lies on the boundary.
+         */
+        new TestCase(POINT_ON_EDGE, SQUARE,          true,  null),
+        new TestCase(POINT_CENTER,  SQUARE,          false, null),
+        new TestCase(POINT_OUTSIDE, SQUARE,          false, null),
+        /*
+         * A position and a curve, the position being an end of the curve or interior to it.
+         */
+        new TestCase(POINT_CORNER,  LINE_BOTTOM,     true,  null),
+        new TestCase(POINT_ON_EDGE, LINE_BOTTOM,     false, null),
+        /*
+         * Two curves. They touch when they share only an end position, and do not when their
+         * interiors meet, whether they meet at one position or along a whole segment.
+         */
+        new TestCase(LINE_BOTTOM,   LINE_DIAGONAL,   true,  null),
+        new TestCase(LINE_BOTTOM,   LINE_CROSSING,   false, null),
+        new TestCase(LINE_BOTTOM,   LINE_COLLINEAR,  false, null),
+        /*
+         * A curve and a surface. A curve lying on the boundary of a surface touches it,
+         * no position of it being interior to the surface.
+         */
+        new TestCase(LINE_BOTTOM,   SQUARE,          true,  null),
+        new TestCase(LINE_INSIDE,   SQUARE,          false, null),
+        /*
+         * Two surfaces sharing a whole edge but no interior position.
+         */
+        new TestCase(SQUARE,        SQUARE_TOUCHING, true,  null),
+        new TestCase(SQUARE,        SQUARE_OVERLAP,  false, null),
+        new TestCase(SQUARE,        SQUARE_INNER,    false, null),
+        new TestCase(SQUARE,        SQUARE_DISJOINT, false, null)
     };
 
     /**

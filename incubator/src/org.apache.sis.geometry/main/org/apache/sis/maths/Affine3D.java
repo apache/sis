@@ -227,7 +227,7 @@ public final class Affine3D extends AbstractAffine<Affine3D> {
     }
 
     @Override
-    public Tuple<?> transform(ReadOnly.Tuple<?> source, Tuple<?> dest) {
+    public Vector<?> transform(ReadOnly.Vector<?> source, Vector<?> dest) {
         if (dest==null) dest = new Vector3D.Double();
 
         if (source instanceof Vector3D.Double s && dest instanceof Vector3D.Double d) {
@@ -340,7 +340,7 @@ public final class Affine3D extends AbstractAffine<Affine3D> {
      * @param rotationAxis Tuple 3
      * @return this affine
      */
-    public Affine3D setToRotation(final double angle, final ReadOnly.Tuple<?> rotationAxis) {
+    public Affine3D setToRotation(final double angle, final ReadOnly.Vector<?> rotationAxis) {
 
         final double[][] rot = Matrices.createRotation4(angle, rotationAxis, null);
         m00 = rot[0][0];

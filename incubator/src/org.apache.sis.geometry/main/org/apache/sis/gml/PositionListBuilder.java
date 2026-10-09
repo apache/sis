@@ -177,9 +177,9 @@ final class PositionListBuilder {
          */
         if (count == 0) {
             final SampleSystem ss = SampleSystem.of(GMLCRS.forDimension(inScope, (dimension != 0) ? dimension : 2));
-            return GeometryFactory.createSequence(NDArrays.of(ss, DataType.DOUBLE, 0));
+            return GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(ss, DataType.DOUBLE, 0));
         }
         final SampleSystem ss = SampleSystem.of(GMLCRS.forDimension(inScope, dimension));
-        return GeometryFactory.createSequence(NDArrays.of(ss, toFlatArray()));
+        return GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(ss, toFlatArray()));
     }
 }

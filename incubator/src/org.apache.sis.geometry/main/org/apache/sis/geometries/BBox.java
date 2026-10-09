@@ -21,9 +21,13 @@ import java.util.Map;
 import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.internal.shared.IndexedPoint;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vectors;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -56,7 +60,7 @@ public final class BBox extends GeneralEnvelope implements Geometry {
      * @param lower lower corner
      * @param upper upper corner
      */
-    public BBox(Tuple lower, Tuple upper) {
+    public BBox(Vector lower, Vector upper) {
         super(Vectors.asDirectPostion(lower), Vectors.asDirectPostion(upper));
     }
 
@@ -88,21 +92,21 @@ public final class BBox extends GeneralEnvelope implements Geometry {
         return GeometryType.BBOX;
     }
 
-    public void add(Tuple<?> position) throws MismatchedDimensionException {
+    public void add(Vector<?> position) throws MismatchedDimensionException {
         add(Vectors.asDirectPostion(position));
     }
 
     /**
      * {@inheritDoc }
      */
-    public Tuple<?> getLower() {
+    public Vector<?> getLower() {
         return Vectors.castOrWrap(super.getLowerCorner());
     }
 
     /**
      * {@inheritDoc }
      */
-    public Tuple<?> getUpper() {
+    public Vector<?> getUpper() {
         return Vectors.castOrWrap(super.getUpperCorner());
     }
 
@@ -115,6 +119,11 @@ public final class BBox extends GeneralEnvelope implements Geometry {
     }
 
     @Override
+    public Geometry getBoundary() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
     public synchronized Map<String, Object> userProperties() {
         if (properties == null) {
             properties = new HashMap<>();
@@ -124,7 +133,109 @@ public final class BBox extends GeneralEnvelope implements Geometry {
 
     @Override
     public DataPointsType getDataPointsType() {
-        return DataPointsType.EMPTY;
+        return getDataPoints().getType();
+    }
+
+    /**
+     * Returns the two corners of this box, the lower one first, as a sequence of two positions.
+     * Those corners are what this box is made of, so writing a position through the returned
+     * sequence moves the corresponding corner.
+     */
+    @Override
+    public DataPoints getDataPoints() {
+        return new Corners();
+    }
+
+    /**
+     * The two corners of the enclosing box, seen as a sequence of two positions.
+     * This class holds no coordinate of its own: it reads and writes the box.
+     */
+    private final class Corners implements DataPoints {
+
+        @Override
+        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
+            return BBox.this.getCoordinateReferenceSystem();
+        }
+
+        @Override
+        public void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
+            BBox.this.setCoordinateReferenceSystem(cs);
+        }
+
+        @Override
+        public DataPointsType getType() {
+            final DataPointsType.Template type = new DataPointsType.Template();
+            type.addOrReplaceAttribute(DataPointsType.ATT_POSITION,
+                    SampleSystem.of(BBox.this.getCoordinateReferenceSystem()), DataType.DOUBLE);
+            return type;
+        }
+
+        @Override
+        public int size() {
+            return 2;
+        }
+
+        @Override
+        public Point getPoint(int index) {
+            ensureValid(index);
+            return new IndexedPoint(this, index);
+        }
+
+        @Override
+        public Vector<?> getPosition(int index) {
+            ensureValid(index);
+            final int dim = getDimension();
+            final Vector<?> position = Vectors.create(BBox.this.getCoordinateReferenceSystem(), DataType.DOUBLE);
+            for (int i = 0; i < dim; i++) {
+                position.set(i, (index == 0) ? getMinimum(i) : getMaximum(i));
+            }
+            return position;
+        }
+
+        @Override
+        public void setPosition(int index, ReadOnly.Vector<?> value) {
+            ensureValid(index);
+            final int dim = getDimension();
+            for (int i = 0; i < dim; i++) {
+                if (index == 0) {
+                    setRange(i, value.get(i), getMaximum(i));
+                } else {
+                    setRange(i, getMinimum(i), value.get(i));
+                }
+            }
+        }
+
+        @Override
+        public Vector<?> getAttribute(int index, String name) {
+            return DataPointsType.ATT_POSITION.equals(name) ? getPosition(index) : null;
+        }
+
+        @Override
+        public void setAttribute(int index, String name, ReadOnly.Vector<?> value) {
+            if (!DataPointsType.ATT_POSITION.equals(name)) {
+                throw new IllegalArgumentException("A box holds no \"" + name + "\" attribute.");
+            }
+            setPosition(index, value);
+        }
+
+        /**
+         * Verifies that the given index is one of the two corners.
+         */
+        private void ensureValid(final int index) {
+            if (index != 0 && index != 1) {
+                throw new IndexOutOfBoundsException("A box has two corners, at index 0 and 1.");
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return DataPoints.hashCode(this);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return DataPoints.equals(this, obj);
+        }
     }
 
 }

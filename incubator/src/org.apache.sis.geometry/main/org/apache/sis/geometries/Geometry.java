@@ -84,7 +84,6 @@ import org.apache.sis.measure.Units;
 public sealed interface Geometry
         permits Primitive,
                 GeometryCollection,
-                OrientedGeometry,
                 Empty,
                 Prism,
                 MeshPrimitive,
@@ -155,6 +154,26 @@ public sealed interface Geometry
      * @return attributes type, never null
      */
     DataPointsType getDataPointsType();
+
+    /**
+     * Positions this geometry is made of.
+     *
+     * <p>The returned sequence is the one this geometry holds, or a view onto it: writing a
+     * position through it moves this geometry. A geometry built on other geometries, such as a
+     * surface on its rings or a collection on its elements, returns a view concatenating their
+     * sequences in the order it holds them, so a position shared by two elements appears as many
+     * times as it is held. A geometry which has no position of its own returns an empty sequence.</p>
+     *
+     * <p>Difference with ISO 19107: the type has been changed from a list of direct positions
+     * to {@link DataPoints}, in order to accommodate additional attributes like in GLTF or
+     * GPU models.</p>
+     *
+     * @return positions of this geometry, never null.
+     *
+     * @see ISO 19107:2019 - 6.4.18.3, 6.4.25.8, 6.4.28.5
+     */
+    @UML(identifier="dataPoint", specification=ISO_19107)
+    DataPoints getDataPoints();
 
     /**
      * Number of axes in the coordinate reference system of this geometry.
@@ -249,7 +268,7 @@ public sealed interface Geometry
     }
 
     /**
-     * Rule used to compute the {@linkplain #boundary() boundary} of this geometry
+     * Rule used to compute the {@linkplain #getBoundary() boundary} of this geometry
      * in the ambiguous cases raised by aggregates.
      *
      * <p>Constraints:</p>
@@ -357,7 +376,7 @@ public sealed interface Geometry
     }
 
     /**
-     * Union of this geometry and of its {@linkplain #boundary() boundary}.
+     * Union of this geometry and of its {@linkplain #getBoundary() boundary}.
      *
      * @return closure of this geometry, in the coordinate reference system of this geometry.
      *
@@ -489,7 +508,7 @@ public sealed interface Geometry
 
     /**
      * Returns whether this geometry closes on itself, i.e. whether its
-     * {@linkplain #boundary() boundary} is empty.
+     * {@linkplain #getBoundary() boundary} is empty.
      *
      * <p>Constraints:</p>
      * <ul>
@@ -538,9 +557,17 @@ public sealed interface Geometry
      *       {@linkplain #isCycle() cycle}, in which case the boundary is empty.</li>
      *   <li>The boundary of a point, and of any finite set of points, is empty.</li>
      *   <li>The boundary of a curve is its start point and its end point.</li>
-     *   <li>The boundary of a surface is a set of simple curves, each of them a cycle having the
-     *       surface on its left but not on its right.</li>
-     *   <li>The boundary of a solid is a set of surfaces, each of them a cycle.</li>
+     *   <li>The boundary of a surface is a set of rings, each of them a simple closed curve having
+     *       the surface on its left but not on its right. There is at least one ring. Except on a
+     *       plane, no ring is the exterior one, since the notion of unbounded exterior does not
+     *       apply. In a 2-dimensional coordinate system the rings determine the surface completely,
+     *       and may therefore be used to build it.</li>
+     *   <li>The boundary of a solid is a set of shells, each of them a closed surface without
+     *       boundary. There is at least one shell, every shell is a cycle, and the shells are
+     *       oriented outward: the upward normal of each of them faces away from the interior of
+     *       the solid. The shell with the largest envelope is the exterior one, which is well
+     *       defined only because the enclosing coordinate space is a 3-dimensional Euclidean
+     *       space.</li>
      *   <li>How the boundary of an aggregate is computed depends on
      *       {@linkplain #getBoundaryType() the boundary type}.</li>
      * </ul>
@@ -548,13 +575,10 @@ public sealed interface Geometry
      * @return boundary of the geometry
      *
      * @see OGC Simple Feature Access 1.2.1 - 6.1.2.2
-     * @see ISO 19107:2019 - 6.4.4.7, 10.8.3
+     * @see ISO 19107:2019 - 6.4.4.7, 6.4.25.2, 6.4.28.2, 10.8.3
      */
     @UML(identifier="boundary", specification=ISO_19107)
-    default Geometry boundary() {
-        //TODO remove this method default when all classes implement it.
-        throw new UnsupportedOperationException();
-    }
+    Geometry getBoundary();
 
     /**
      * Map of properties for user needs.

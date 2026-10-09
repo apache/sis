@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
@@ -30,7 +31,8 @@ import org.apache.sis.geometries.internal.shared.IndexedPoint;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Maths;
-import org.apache.sis.maths.Tuple;
+import org.apache.sis.maths.ReadOnly;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -40,7 +42,7 @@ import org.apache.sis.maths.Tuple;
  */
 public final class WTriangle extends AbstractGeometry implements Triangle {
 
-    private final LinearRing ring = GeometryFactory.createLinearRing(new DataPoints() {
+    private final LinearRing ring = GeometryFactory.DEFAULT.createLinearRing(new DataPoints() {
         @Override
         public CoordinateReferenceSystem getCoordinateReferenceSystem() {
             return p0.getCoordinateReferenceSystem();
@@ -74,7 +76,7 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
         }
 
         @Override
-        public Tuple getPosition(int index) {
+        public Vector getPosition(int index) {
             switch (index) {
                 case 0 : return p0.copy();
                 case 1 : return p1.copy();
@@ -85,12 +87,12 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
         }
 
         @Override
-        public void setPosition(int index, Tuple value) {
+        public void setPosition(int index, ReadOnly.Vector value) {
             throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
-        public Tuple getAttribute(int index, String name) {
+        public Vector getAttribute(int index, String name) {
             if (DataPointsType.ATT_POSITION.equals(name)) {
                 return getPosition(index);
             }
@@ -98,7 +100,7 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
         }
 
         @Override
-        public void setAttribute(int index, String name, Tuple value) {
+        public void setAttribute(int index, String name, ReadOnly.Vector value) {
             if (DataPointsType.ATT_POSITION.equals(name)) {
                 setPosition(index, value);
                 return;
@@ -117,12 +119,17 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
         return ring;
     }
 
+    @Override
+    public Geometry getBoundary() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     private static class Candidate implements Comparable<Candidate>{
 
-        private final Tuple tuple;
+        private final Vector tuple;
         private final double error;
 
-        public Candidate(Tuple tuple, double error) {
+        public Candidate(Vector tuple, double error) {
             this.tuple = tuple;
             this.error = error;
         }
@@ -140,15 +147,15 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
     /**
      * triangle points in counter clockwise order
      */
-    public final Tuple<?> p0;
-    public final Tuple<?> p1;
-    public final Tuple<?> p2;
+    public final Vector<?> p0;
+    public final Vector<?> p1;
+    public final Vector<?> p2;
 
     private final List<Candidate> candidates;
     private Candidate max;
-    private final BiFunction<Tuple,Triangle,Double> errorCalculator;
+    private final BiFunction<Vector,Triangle,Double> errorCalculator;
 
-    public WTriangle(Edge e0, Edge e1, Edge e2, BiFunction<Tuple,Triangle,Double> errorCalculator) {
+    public WTriangle(Edge e0, Edge e1, Edge e2, BiFunction<Vector,Triangle,Double> errorCalculator) {
         this.errorCalculator = errorCalculator;
 
         candidates = new ArrayList<>();
@@ -158,8 +165,8 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
         this.e2 = e2;
         this.p0 = e0.p0;
 
-        Tuple p1 = e0.p1;
-        Tuple p2;
+        Vector p1 = e0.p1;
+        Vector p2;
 
         if (e1.p0.equals(e0.p0) || e1.p0.equals(e0.p1)) {
             p2 = e1.p1;
@@ -167,7 +174,7 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
             p2 = e1.p0;
         }
         if (!Maths.isCounterClockwise(p0, p1, p2)) {
-            Tuple temp = p1;
+            Vector temp = p1;
             p1 = p2;
             p2 = temp;
         }
@@ -175,7 +182,7 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
         this.p2 = p2;
     }
 
-    public void addCandidate(Tuple t) {
+    public void addCandidate(Vector t) {
         final double error = errorCalculator.apply(t, this);
         final Candidate cdt = new Candidate(t, error);
 
@@ -185,7 +192,7 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
         candidates.add(cdt);
     }
 
-    public void removeCandidate(Tuple t) {
+    public void removeCandidate(Vector t) {
         if (max.tuple == t) {
             max = null;
         }
@@ -225,15 +232,15 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
         }
     }
 
-    public Tuple getFirstCoord() {
+    public Vector getFirstCoord() {
         return p0;
     }
 
-    public Tuple getSecondCoord() {
+    public Vector getSecondCoord() {
         return p1;
     }
 
-    public Tuple getThirdCoord() {
+    public Vector getThirdCoord() {
         return p2;
     }
 
@@ -245,7 +252,7 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
         this.obsolete = true;
     }
 
-    public boolean contains(Tuple pt) {
+    public boolean contains(Vector pt) {
         assert (!obsolete);
         return Maths.isPointInTriangle_BaryAlgo(p0, p1, p2, pt)
             || e0.isOnEdge(pt)
@@ -253,7 +260,7 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
             || e2.isOnEdge(pt);
     }
 
-    public Tuple oppositePoint(Edge edge) throws OperationException {
+    public Vector oppositePoint(Edge edge) throws OperationException {
         assert (!obsolete);
         if (!edge.hasPoint(p0)) {
             return p0;
@@ -268,7 +275,7 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
         }
     }
 
-    public Edge getEdge(Tuple p0, Tuple p1) throws OperationException {
+    public Edge getEdge(Vector p0, Vector p1) throws OperationException {
         assert (!obsolete);
         if ((e0.p0 == p0 && e0.p1 == p1) || (e0.p1 == p0 && e0.p0 == p1)) {
             return e0;
@@ -283,7 +290,7 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
         }
     }
 
-    public Tuple findMaxDistancePoint(){
+    public Vector findMaxDistancePoint(){
         if (max == null && !candidates.isEmpty()) {
             max = candidates.get(0);
             for (int i=1,n=candidates.size();i<n;i++) {

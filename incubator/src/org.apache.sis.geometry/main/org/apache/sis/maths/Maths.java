@@ -99,7 +99,7 @@ public final class Maths {
         return res;
     }
 
-    public static Vector<?> calculateNormal(Tuple<?> a, Tuple<?> b, Tuple<?> c){
+    public static Vector<?> calculateNormal(Vector<?> a, Vector<?> b, Vector<?> c){
         Vector<?> ab = Vectors.createDouble(a.getDimension());
         ab.add(b);
         ab.subtract(a);
@@ -168,7 +168,7 @@ public final class Maths {
      * @param p Point to test
      * @return true/false
      */
-    public static boolean isOnLine(ReadOnly.Tuple<?> a, ReadOnly.Tuple<?> b, ReadOnly.Tuple<?> p) {
+    public static boolean isOnLine(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> p) {
 //        final double d = Math.abs(distanceSquare(a, b, p));
 //        return d < TOLERANCE && d > -TOLERANCE;
 
@@ -209,7 +209,7 @@ public final class Maths {
     /**
      * @see #lineSideFast(double, double, double, double, double, double)
      */
-    public static double lineSideFast(ReadOnly.Tuple<?> a, ReadOnly.Tuple<?> b, ReadOnly.Tuple<?> c) {
+    public static double lineSideFast(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c) {
         return lineSideFast(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1));
     }
 
@@ -243,7 +243,7 @@ public final class Maths {
     /**
      * @see #lineSide(double, double, double, double, double, double)
      */
-    public static double lineSide(ReadOnly.Tuple<?> a, ReadOnly.Tuple<?> b, ReadOnly.Tuple<?> c) {
+    public static double lineSide(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c) {
         return lineSide(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1));
     }
 
@@ -289,7 +289,7 @@ public final class Maths {
      * @param p test point
      * @return true if point is inside triangle
      */
-    public static boolean isPointInTriangle_BaryAlgo(ReadOnly.Tuple<?> a, ReadOnly.Tuple<?> b, ReadOnly.Tuple<?> c, ReadOnly.Tuple<?> p){
+    public static boolean isPointInTriangle_BaryAlgo(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c, ReadOnly.Vector<?> p){
         return isPointInTriangle_BaryAlgo(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1), p.get(0), p.get(1));
     }
 
@@ -332,7 +332,7 @@ public final class Maths {
      * @param p test point
      * @return true if point is inside triangle
      */
-    public static boolean isPointInTriangle_SideAlgo(ReadOnly.Tuple<?> a, ReadOnly.Tuple<?> b, ReadOnly.Tuple<?> c, ReadOnly.Tuple<?> p) {
+    public static boolean isPointInTriangle_SideAlgo(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c, ReadOnly.Vector<?> p) {
         final double x = p.get(0);
         final double y = p.get(1);
         final double x1 = a.get(0);
@@ -423,7 +423,7 @@ public final class Maths {
      * @param b second triangle point
      * @param c third triangle point
      */
-    public static boolean isCounterClockwise(ReadOnly.Tuple<?> a, ReadOnly.Tuple<?> b, ReadOnly.Tuple<?> c) {
+    public static boolean isCounterClockwise(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c) {
         return lineSide(a, b, c) > 0;
     }
 
@@ -446,7 +446,7 @@ public final class Maths {
      * @param b second triangle point
      * @param c third triangle point
      */
-    public static double[] getBarycentricValue2D(ReadOnly.Tuple<?> a, ReadOnly.Tuple<?> b, ReadOnly.Tuple<?> c, ReadOnly.Tuple<?> p){
+    public static double[] getBarycentricValue2D(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c, ReadOnly.Vector<?> p){
         return Maths.getBarycentricValue2D(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1), p.get(0), p.get(1));
     }
 
@@ -501,7 +501,7 @@ public final class Maths {
     /**
      * @see #inCircleFast(double, double, double, double, double, double, double, double)
      */
-    public static boolean inCircleFast(ReadOnly.Tuple<?> a, ReadOnly.Tuple<?> b, ReadOnly.Tuple<?> c, ReadOnly.Tuple<?> d) {
+    public static boolean inCircleFast(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c, ReadOnly.Vector<?> d) {
         return inCircleFast(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1), d.get(0), d.get(1));
     }
 
@@ -539,7 +539,7 @@ public final class Maths {
     /**
      * @see #inCircle(double, double, double, double, double, double, double, double)
      */
-    public static boolean inCircle(ReadOnly.Tuple<?> a, ReadOnly.Tuple<?> b, ReadOnly.Tuple<?> c, ReadOnly.Tuple<?> d) {
+    public static boolean inCircle(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c, ReadOnly.Vector<?> d) {
         return inCircle(a.get(0), a.get(1), b.get(0), b.get(1), c.get(0), c.get(1), d.get(0), d.get(1));
     }
 
@@ -628,7 +628,7 @@ public final class Maths {
         return x1 * x2 + y1 * y2;
     }
 
-    public static double distance(ReadOnly.Tuple<?> a, ReadOnly.Vector<?> planNormal, double planD){
+    public static double distance(ReadOnly.Vector<?> a, ReadOnly.Vector<?> planNormal, double planD){
         return planNormal.dot(a) - planD;
     }
 
@@ -812,7 +812,7 @@ public final class Maths {
      * @param coordinates line coordinates
      * @return true if clockwise
      */
-    public static boolean isClockWise(List<? extends ReadOnly.Tuple<?>> coordinates){
+    public static boolean isClockWise(List<? extends ReadOnly.Vector<?>> coordinates){
         final double area = calculateArea(coordinates);
         return area > 0;
     }
@@ -824,12 +824,12 @@ public final class Maths {
      * @param coordinates polygon outer line
      * @return area
      */
-    public static double calculateArea(List<? extends ReadOnly.Tuple<?>> coordinates){
+    public static double calculateArea(List<? extends ReadOnly.Vector<?>> coordinates){
         double area = 0;
         final int numPoints = coordinates.size();
         for(int i=0;i<numPoints-1;i++){
-            final ReadOnly.Tuple<?> start = coordinates.get(i);
-            final ReadOnly.Tuple<?> end = coordinates.get(i+1);
+            final ReadOnly.Vector<?> start = coordinates.get(i);
+            final ReadOnly.Vector<?> end = coordinates.get(i+1);
             area += (start.get(0)+end.get(0)) * (start.get(1)-end.get(1));
         }
         return area/2.0;

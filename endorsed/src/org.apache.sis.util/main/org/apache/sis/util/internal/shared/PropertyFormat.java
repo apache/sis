@@ -24,6 +24,7 @@ import java.util.TimeZone;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
+import java.text.Format;
 import org.opengis.util.Type;
 import org.opengis.util.Record;
 import org.opengis.util.GenericName;
@@ -57,7 +58,23 @@ public abstract class PropertyFormat extends LineAppender implements Localized {
     /**
      * {@code true} if this method is invoking itself for writing collection values.
      */
-    private transient boolean recursive;
+    private boolean recursive;
+
+    /**
+     * Number of collection elements that have already been written.
+     */
+    private byte formattedItemCount;
+
+    /**
+     * Index of the column to format if formating a table.
+     */
+    private int columnIndex;
+
+    /**
+     * Supplier of the formats to use for the next values, or {@code null} if none.
+     * Used for formatting items in a collection.
+     */
+    private TableRowList<?,?> sourceTable;
 
     /**
      * Creates a new instance which will write to the given appendable.
@@ -135,7 +152,7 @@ public abstract class PropertyFormat extends LineAppender implements Localized {
             appendCollection(Arrays.asList((Object[]) value));
             return;
         } else if (value instanceof Map.Entry<?,?>) {
-            final Map.Entry<?,?> entry = (Map.Entry<?,?>) value;
+            final var entry = (Map.Entry<?,?>) value;
             final Object k = entry.getKey();
             final Object v = entry.getValue();
             if (k == null) {
@@ -149,7 +166,12 @@ public abstract class PropertyFormat extends LineAppender implements Localized {
             }
             return;
         } else {
-            text = toString(value);
+            final Format v;
+            if (sourceTable != null && (v = sourceTable.createFormat(getLocale(), columnIndex)) != null) {
+                text = v.format(value);
+            } else {
+                text = toString(value);
+            }
         }
         append(text);
     }
@@ -192,24 +214,40 @@ public abstract class PropertyFormat extends LineAppender implements Localized {
      */
     private void appendCollection(final Iterable<?> values) throws IOException {
         if (values != null) {
-            if (recursive) {
-                append('…');                                // Do not format collections inside collections.
-            } else {
-                int count = 0;
+            final var parent = sourceTable;
+            if (values instanceof TableRowList<?,?>) {
+                sourceTable = (TableRowList<?,?>) values;
+            }
+            final boolean isEnclosed = recursive;
+            if (isEnclosed) {
+                append('{');
+            }
+            final int parentIndex = columnIndex;
+            try {
+                columnIndex = 0;
+                recursive = true;
                 for (final Object value : values) {
                     if (value != null) {
-                        if (count != 0) append(", ");
-                        try {
-                            recursive = true;
-                            appendValue(value);
-                        } finally {
-                            recursive = false;
+                        if (columnIndex != 0) {
+                            append(", ");
                         }
-                        if (++count == 10) {                // Arbitrary limit.
+                        appendValue(value);
+                        if (++formattedItemCount >= 10) {       // Arbitrary limit.
                             append(", …");
                             break;
                         }
+                        columnIndex++;
                     }
+                }
+                if (isEnclosed) {
+                    append('}');
+                }
+            } finally {
+                sourceTable = parent;
+                columnIndex = parentIndex;
+                recursive   = isEnclosed;
+                if (!isEnclosed) {
+                    formattedItemCount = 0;
                 }
             }
         }

@@ -29,7 +29,7 @@ public class VectorXfTest extends AbstractVectorTest{
     }
 
     @Override
-    protected Tuple create(int dim) {
+    protected Vector create(int dim) {
         switch (dim) {
             case 1 : return new Vector1D.Float();
             case 2 : return new Vector2D.Float();

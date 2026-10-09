@@ -46,7 +46,6 @@ public class PrimitiveVisitorTest {
     private static final CoordinateReferenceSystem CRS3D = Geometries.getUndefinedCRS(3);
     private static final SampleSystem SS3D = SampleSystem.of(CRS3D);
 
-
     /**
      * Test visiting Points.
      */

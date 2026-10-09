@@ -19,6 +19,7 @@ package org.apache.sis.geometries.internal.shared;
 import java.util.HashMap;
 import java.util.Map;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometry.GeneralEnvelope;
 
@@ -43,6 +44,39 @@ public abstract non-sealed class AbstractGeometry implements Geometry {
     @Override
     public String toString() {
         return asText();
+    }
+
+    /**
+     * Returns a view of this geometry as a JTS geometry, for delegating to JTS an operation
+     * which is not yet implemented in this package. The view shares the coordinates of this
+     * geometry, no copy is performed.
+     *
+     * <p>Geometry types which have no JTS equivalent, such as the parametric curves and the
+     * solids, cannot be delegated this way. For them this method reports the operation as
+     * unsupported, which is the contract of the operations relying on this fallback.</p>
+     *
+     * @return this geometry seen as a JTS geometry.
+     * @throws UnsupportedOperationException if this geometry has no JTS equivalent.
+     */
+    protected final org.locationtech.jts.geom.Geometry asJTS() {
+        try {
+            return Geometries.asJTS(this, false, null);
+        } catch (IllegalArgumentException e) {
+            throw new UnsupportedOperationException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Converts back to a geometry of this package the result of an operation delegated to JTS.
+     * The JTS geometries produced by such an operation carry no reference system, therefore the
+     * system of this geometry is assigned to the result.
+     *
+     * @param  result  the geometry computed by JTS.
+     * @return the result as a geometry of this package.
+     */
+    protected final Geometry fromJTS(final org.locationtech.jts.geom.Geometry result) {
+        result.setUserData(getCoordinateReferenceSystem());
+        return Geometries.fromJTS(result, true);
     }
 
     /**

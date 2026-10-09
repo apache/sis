@@ -19,6 +19,8 @@ package org.apache.sis.geometries.internal.shared;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.Point;
 
 
 /**
@@ -70,6 +72,48 @@ public non-sealed class DefaultGeometryCollection<T extends Geometry> extends Ab
     @Override
     public T getGeometryN(int n) {
         return geometries[n];
+    }
+
+    @Override
+    public Point getCentroid() {
+        if (isEmpty()) {
+            // The centroid of the empty set is undefined.
+            return null;
+        }
+        //TODO : fallback on JTS until implemented
+        return (Point) fromJTS(asJTS().getCentroid());
+    }
+
+    @Override
+    public Point getRepresentativePoint() {
+        if (isEmpty()) {
+            // The empty set has no interior position.
+            return null;
+        }
+        //TODO : fallback on JTS until implemented
+        return (Point) fromJTS(asJTS().getInteriorPoint());
+    }
+
+    @Override
+    public Geometry getBoundary() {
+        if (isEmpty()) {
+            // The boundary of the empty set is empty.
+            return GeometryFactory.DEFAULT.createEmpty(getCoordinateReferenceSystem());
+        }
+        //TODO : fallback on JTS until implemented
+        return fromJTS(asJTS().getBoundary());
+    }
+
+    @Override
+    public boolean isSimple() {
+        //TODO : fallback on JTS until implemented
+        return asJTS().isSimple();
+    }
+
+    @Override
+    public boolean isValid() {
+        //TODO : fallback on JTS until implemented
+        return asJTS().isValid();
     }
 
 }

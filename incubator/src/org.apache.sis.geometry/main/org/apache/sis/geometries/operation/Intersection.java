@@ -43,9 +43,7 @@ import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.Matrices;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.ReadOnly;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector;
-import org.apache.sis.maths.Vectors;
 import static org.apache.sis.maths.Maths.clamp;
 
 
@@ -58,12 +56,12 @@ public final class Intersection {
     private Intersection(){}
 
 
-    static Vector<?> subtract(final ReadOnly.Vector<?> a, final ReadOnly.Tuple<?> b) {
+    static Vector<?> subtract(final ReadOnly.Vector<?> a, final ReadOnly.Vector<?> b) {
         return a.copy().subtract(b);
     }
 
-    static Vector<?> scale(final Tuple<?> a, final double s) {
-        return Vectors.castOrWrap(a).copy().scale(s);
+    static Vector<?> scale(final Vector<?> a, final double s) {
+        return a.copy().scale(s);
     }
 
     /**
@@ -156,7 +154,7 @@ public final class Intersection {
         final Cursor cursor = positions.cursor();
         final List<Integer> values = new ArrayList<>();
         while (cursor.next()) {
-            final Tuple<?> position = cursor.samples();
+            final Vector<?> position = cursor.samples();
             if (evaluator.evaluate(position).isPresent()) {
                 values.add(Math.toIntExact(cursor.coordinate()));
             }
@@ -187,8 +185,8 @@ public final class Intersection {
         for (int i = 0, n = lines.getNumGeometries(); i < n; i++) {
             final LineString line = lines.getGeometryN(i);
             final Array segment = line.getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION);
-            final Tuple<?> s1 = segment.get(0);
-            final Tuple<?> s2 = segment.get(1);
+            final Vector<?> s1 = segment.get(0);
+            final Vector<?> s2 = segment.get(1);
 
             try (Stream<Triangle> stream = tin.getPatches(line.getEnvelope())) {
                 final Iterator<Triangle> iterator = stream.iterator();
@@ -196,10 +194,10 @@ public final class Intersection {
                 while (iterator.hasNext()) {
                     final Triangle triangle = iterator.next();
                     final Array corners = triangle.getExteriorRing().getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION);
-                    final Tuple<?> c0 = corners.get(0);
-                    final Tuple<?> c1 = corners.get(1);
-                    final Tuple<?> c2 = corners.get(2);
-                    final List<Tuple> clip = SutherlandHodgman.clip(Arrays.asList(s1,s2,s1), Arrays.asList(c0,c1,c2,c0));
+                    final Vector<?> c0 = corners.get(0);
+                    final Vector<?> c1 = corners.get(1);
+                    final Vector<?> c2 = corners.get(2);
+                    final List<Vector> clip = SutherlandHodgman.clip(Arrays.asList(s1,s2,s1), Arrays.asList(c0,c1,c2,c0));
                     if (clip.size() >= 2) {
                         //inherit attributes
                         final double x1 = c0.get(0);
@@ -208,13 +206,13 @@ public final class Intersection {
                         final double y2 = c1.get(1);
                         final double x3 = c2.get(0);
                         final double y3 = c2.get(1);
-                        final Tuple<?> p1 = clip.get(0);
-                        final Tuple<?> p2 = clip.get(1);
+                        final Vector<?> p1 = clip.get(0);
+                        final Vector<?> p2 = clip.get(1);
                         final double[] bary1 = Triangle.getBarycentricValue2D(x1, y1, x2, y2, x3, y3, p1.get(0), p1.get(1), 0.0, false);
                         final double[] bary2 = Triangle.getBarycentricValue2D(x1, y1, x2, y2, x3, y3, p2.get(0), p2.get(1), 0.0, false);
                         final Point point1 = triangle.interpolate(bary1);
                         final Point point2 = triangle.interpolate(bary2);
-                        segments.add(GeometryFactory.createLineString(new DefaultDataPoints(point1, point2)));
+                        segments.add(GeometryFactory.DEFAULT.createLineString(new DefaultDataPoints(point1, point2)));
                     }
                 }
             } catch (TransformException ex) {
@@ -222,7 +220,7 @@ public final class Intersection {
             }
         }
 
-        final MultiLineString mline = GeometryFactory.createMultiLineString(segments.toArray(LineString[]::new));
+        final MultiLineString mline = GeometryFactory.DEFAULT.createMultiLineString(segments.toArray(LineString[]::new));
         final MeshPrimitive intersection = (MeshPrimitive) new GeometryProcessor().toPrimitive(mline);
         return intersection;
     }

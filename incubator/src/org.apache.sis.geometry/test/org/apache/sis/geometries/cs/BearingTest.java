@@ -126,7 +126,7 @@ public class BearingTest {
     };
 
     /**
-     * Test of {@code ofAzimuth(Quantity)} default values.
+     * The default values applied by {@code ofAzimuth(Quantity)}.
      */
     @Test
     public void testDefaults() {
@@ -325,9 +325,6 @@ public class BearingTest {
         assertSame(outer, nested.getReference());
     }
 
-    /**
-     * Test of {@code equals(Object)} and {@code hashCode()}.
-     */
     @Test
     public void testEqualsAndHashCode() {
         final Bearing bearing = Bearing.ofAzimuth(deg(45), deg(10));
@@ -384,9 +381,6 @@ public class BearingTest {
         assertEquals( 0, azimuth(Bearing.ofDirection(vector(northEast, 1, 0))), TOLERANCE, "Toward north.");
     }
 
-    /**
-     * Test of {@code toString()}.
-     */
     @Test
     public void testToString() {
         final String text = Bearing.ofAzimuth(deg(45), deg(10)).toString();

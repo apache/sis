@@ -20,6 +20,8 @@ import java.util.Objects;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.point.MultiPoint;
@@ -68,8 +70,50 @@ public non-sealed class DefaultMultiPoint extends AbstractGeometry implements Mu
     }
 
     @Override
-    public DataPoints asDataPoints() {
+    public DataPoints getDataPoints() {
         return points;
+    }
+
+    @Override
+    public Point getCentroid() {
+        if (isEmpty()) {
+            // The centroid of the empty set is undefined.
+            return null;
+        }
+        //TODO : fallback on JTS until implemented
+        return (Point) fromJTS(asJTS().getCentroid());
+    }
+
+    @Override
+    public Point getRepresentativePoint() {
+        if (isEmpty()) {
+            // The empty set has no interior position.
+            return null;
+        }
+        //TODO : fallback on JTS until implemented
+        return (Point) fromJTS(asJTS().getInteriorPoint());
+    }
+
+    @Override
+    public Geometry getBoundary() {
+        if (isEmpty()) {
+            // The boundary of the empty set is empty.
+            return GeometryFactory.DEFAULT.createEmpty(getCoordinateReferenceSystem());
+        }
+        //TODO : fallback on JTS until implemented
+        return fromJTS(asJTS().getBoundary());
+    }
+
+    @Override
+    public boolean isSimple() {
+        //TODO : fallback on JTS until implemented
+        return asJTS().isSimple();
+    }
+
+    @Override
+    public boolean isValid() {
+        //TODO : fallback on JTS until implemented
+        return asJTS().isValid();
     }
 
     @Override

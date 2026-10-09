@@ -21,7 +21,14 @@ import java.util.Locale;
 
 /**
  * Interface of classes for which each instance is configured for a particular locale.
- * Those classes are often parsers or formatters.
+ * Implementations of {@code Localized} are often parsers or formatters configured for
+ * a locale specified at construction time.
+ *
+ * <h2>Localized exception messages</h2>
+ * When a class implementing this {@code Localized} interface throws an exception,
+ * the error message returned by {@link Exception#getLocalizedMessage()} will often
+ * be in the locale returned by {@link #getLocale()} instead of the default locale.
+ * This policy is applied on a best effort basis only.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3

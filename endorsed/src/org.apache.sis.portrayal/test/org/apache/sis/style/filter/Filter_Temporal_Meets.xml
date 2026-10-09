@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml">
+    <ogc:TM_Meets>
+        <ogc:PropertyName>feature_property_name</ogc:PropertyName>
+        <gml:TimePeriod gml:id="tp1">
+            <gml:beginPosition>2005-05-17T00:00:00Z</gml:beginPosition>
+            <gml:endPosition>2005-05-23T00:00:00Z</gml:endPosition>
+        </gml:TimePeriod>
+    </ogc:TM_Meets>
+</ogc:Filter>

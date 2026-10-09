@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml">
+    <ogc:Beyond>
+        <ogc:PropertyName>feature_property_name</ogc:PropertyName>
+        <gml:Point srsName="urn:x-ogc:def:crs:EPSG:6.11.2:4326">
+            <gml:pos>46.652 10.466</gml:pos>
+        </gml:Point>
+        <ogc:Distance units="m">1000</ogc:Distance>
+    </ogc:Beyond>
+</ogc:Filter>

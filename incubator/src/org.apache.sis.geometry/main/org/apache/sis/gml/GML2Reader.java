@@ -130,7 +130,7 @@ public final class GML2Reader extends AbstractGMLReader {
         if (coordinates.size() != 1) {
             throw new DataStoreContentException("A GML 2.0 Point must contain exactly one coordinate tuple.");
         }
-        return GeometryFactory.createPoint(coordinates.build(crs));
+        return GeometryFactory.DEFAULT.createPoint(coordinates.build(crs));
     }
 
     /**
@@ -144,7 +144,7 @@ public final class GML2Reader extends AbstractGMLReader {
         if (coordinates.size() < 2) {
             throw new DataStoreContentException("A GML 2.0 LineString must contain at least two coordinate tuples.");
         }
-        return GeometryFactory.createLineString(coordinates.build(crs));
+        return GeometryFactory.DEFAULT.createLineString(coordinates.build(crs));
     }
 
     /**
@@ -158,7 +158,7 @@ public final class GML2Reader extends AbstractGMLReader {
         if (coordinates.size() < 4) {
             throw new DataStoreContentException("A GML 2.0 LinearRing must contain at least four coordinate tuples.");
         }
-        return GeometryFactory.createLinearRing(coordinates.build(crs));
+        return GeometryFactory.DEFAULT.createLinearRing(coordinates.build(crs));
     }
 
     /**
@@ -192,7 +192,7 @@ public final class GML2Reader extends AbstractGMLReader {
                         if (shell == null) {
                             throw new DataStoreContentException("A GML 2.0 Polygon must contain an outerBoundaryIs element.");
                         }
-                        return GeometryFactory.createPolygon(shell, holes);
+                        return GeometryFactory.DEFAULT.createPolygon(shell, holes);
                     }
                     break;
                 }
@@ -283,7 +283,7 @@ public final class GML2Reader extends AbstractGMLReader {
                 }
                 case END_ELEMENT: {
                     if (GML2Tags.MULTI_POINT.equals(reader.getLocalName())) {
-                        return GeometryFactory.createMultiPoint(aggregateCRS(crs, members),
+                        return GeometryFactory.DEFAULT.createMultiPoint(aggregateCRS(crs, members),
                                 members.toArray(Point[]::new));
                     }
                     break;
@@ -313,7 +313,7 @@ public final class GML2Reader extends AbstractGMLReader {
                 }
                 case END_ELEMENT: {
                     if (GML2Tags.MULTI_LINE_STRING.equals(reader.getLocalName())) {
-                        return GeometryFactory.createMultiLineString(aggregateCRS(crs, members),
+                        return GeometryFactory.DEFAULT.createMultiLineString(aggregateCRS(crs, members),
                                 members.toArray(LineString[]::new));
                     }
                     break;
@@ -343,7 +343,7 @@ public final class GML2Reader extends AbstractGMLReader {
                 }
                 case END_ELEMENT: {
                     if (GML2Tags.MULTI_POLYGON.equals(reader.getLocalName())) {
-                        return GeometryFactory.createMultiPolygon(aggregateCRS(crs, members),
+                        return GeometryFactory.DEFAULT.createMultiPolygon(aggregateCRS(crs, members),
                                 members.toArray(Polygon[]::new));
                     }
                     break;
@@ -373,7 +373,7 @@ public final class GML2Reader extends AbstractGMLReader {
                 }
                 case END_ELEMENT: {
                     if (GML2Tags.MULTI_GEOMETRY.equals(reader.getLocalName())) {
-                        return GeometryFactory.createGeometryCollection(aggregateCRS(crs, members),
+                        return GeometryFactory.DEFAULT.createGeometryCollection(aggregateCRS(crs, members),
                                 members.toArray(Geometry[]::new));
                     }
                     break;

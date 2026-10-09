@@ -18,7 +18,6 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.List;
 import org.apache.sis.geometries.Curve;
-import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.cs.Projection;
 import org.apache.sis.geometries.curve.ProductCurve;
 import org.apache.sis.maths.Array;
@@ -69,11 +68,6 @@ public non-sealed class DefaultProductCurve extends DefaultGeometryCollection<Cu
     @Override
     public List<Projection> getProjection() {
         return projections;
-    }
-
-    @Override
-    public DataPoints getDataPoints() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

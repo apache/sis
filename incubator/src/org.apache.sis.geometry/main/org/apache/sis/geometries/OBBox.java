@@ -18,10 +18,11 @@ package org.apache.sis.geometries;
 
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
-import org.apache.sis.maths.Tuple;
-import org.apache.sis.maths.Vector;
+import org.apache.sis.geometries.internal.shared.SinglePositionDataPoints;
 import org.apache.sis.maths.Vectors;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -84,34 +85,34 @@ public final class OBBox extends AbstractGeometry {
 
     @Override
     public DataPointsType getDataPointsType() {
-        return DataPointsType.EMPTY;
+        return getDataPoints().getType();
     }
 
     /**
      * @return center of the bounding box.
      */
-    public Tuple getCenter() {
+    public Vector<?> getCenter() {
         return center;
     }
 
     /**
      * @return half length vector on X axis.
      */
-    public Tuple getXAxis() {
+    public Vector getXAxis() {
         return xAxis;
     }
 
     /**
      * @return half length vector on Y axis.
      */
-    public Tuple getYAxis() {
+    public Vector getYAxis() {
         return yAxis;
     }
 
     /**
      * @return half length vector on Z axis.
      */
-    public Tuple getZAxis() {
+    public Vector getZAxis() {
         return zAxis;
     }
 
@@ -120,9 +121,9 @@ public final class OBBox extends AbstractGeometry {
      */
     @Override
     public Envelope getEnvelope() {
-        final Tuple<?> nxAxis = xAxis.copy().scale(-1);
-        final Tuple<?> nyAxis = yAxis.copy().scale(-1);
-        final Tuple<?> nzAxis = zAxis.copy().scale(-1);
+        final Vector<?> nxAxis = xAxis.copy().scale(-1);
+        final Vector<?> nyAxis = yAxis.copy().scale(-1);
+        final Vector<?> nzAxis = zAxis.copy().scale(-1);
         final BBox env = new BBox(center,center);
         final Vector<?> corner = center.copy();
         env.add(corner.set(center).add( xAxis).add( yAxis).add( zAxis));
@@ -134,6 +135,11 @@ public final class OBBox extends AbstractGeometry {
         env.add(corner.set(center).add(nxAxis).add(nyAxis).add( zAxis));
         env.add(corner.set(center).add(nxAxis).add(nyAxis).add(nzAxis));
         return env;
+    }
+
+    @Override
+    public Geometry getBoundary() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     /**
@@ -152,4 +158,14 @@ public final class OBBox extends AbstractGeometry {
         yAxis.set(1, env.getSpan(1) / 2.0);
         zAxis.set(2, env.getSpan(2) / 2.0);
     }
+
+    /**
+     * Returns the center of this box, as a sequence of one position. The corners of the box are
+     * derived from that position and from its axes, so the center is the only position it holds.
+     */
+    @Override
+    public DataPoints getDataPoints() {
+        return new SinglePositionDataPoints(this::getCenter);
+    }
+
 }

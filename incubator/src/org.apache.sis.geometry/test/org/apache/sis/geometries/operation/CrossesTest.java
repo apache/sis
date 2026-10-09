@@ -17,12 +17,6 @@
 package org.apache.sis.geometries.operation;
 
 import org.apache.sis.geometries.Geometry;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_1;
-import static org.apache.sis.geometries.operation.TestData.EMPTY_2;
-import static org.apache.sis.geometries.operation.TestData.NON_EMPTY;
-import static org.apache.sis.geometries.operation.TestData.POINT_A;
-import static org.apache.sis.geometries.operation.TestData.POINT_A_BIS;
-import static org.apache.sis.geometries.operation.TestData.POINT_B;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,7 +29,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class CrossesTest {
+public class CrossesTest extends AbstractD9IMTest {
     /**
      * The inputs and expected result of a single test of {@code crosses(Geometry, Geometry)}.
      *
@@ -45,9 +39,9 @@ public class CrossesTest {
      * @param error    the type of the expected exception, or {@code null} if the operation should succeed.
      */
     private record TestCase(Geometry input,
-                         Geometry other,
-                         Boolean expected,
-                         Class<? extends Exception> error)
+                            Geometry other,
+                            Boolean expected,
+                            Class<? extends Exception> error)
     {
     }
 
@@ -59,13 +53,44 @@ public class CrossesTest {
          * Crossing requires the two interiors to share a position while neither geometry
          * contains the other. The empty set has no interior, therefore it crosses nothing.
          */
-        new TestCase(EMPTY_1,   NON_EMPTY, false, null),
-        new TestCase(NON_EMPTY, EMPTY_1,   false, null),
-        new TestCase(EMPTY_1,   EMPTY_1,   false, null),
-        new TestCase(EMPTY_1,   EMPTY_2,   false, null),
+        new TestCase(EMPTY_1,            NON_EMPTY,      false, null),
+        new TestCase(NON_EMPTY,          EMPTY_1,        false, null),
+        new TestCase(EMPTY_1,            EMPTY_1,        false, null),
+        new TestCase(EMPTY_1,            EMPTY_2,        false, null),
        // points
-        new TestCase(POINT_A, POINT_A_BIS, false, null),
-        new TestCase(POINT_A, POINT_B,     false, null)
+        new TestCase(POINT_A,            POINT_A_BIS,    false, null),
+        new TestCase(POINT_A,            POINT_B,        false, null),
+        /*
+         * A single position never crosses anything: crossing requires a position shared with
+         * the interior of the other geometry and another one in its exterior, and a position
+         * has only one position to offer.
+         */
+        new TestCase(POINT_CENTER,       SQUARE,         false, null),
+        new TestCase(POINT_ON_EDGE,      LINE_BOTTOM,    false, null),
+        /*
+         * Two curves cross when their interiors meet at isolated positions. Sharing only an end
+         * position is not crossing, and sharing a whole segment is not either: what they have in
+         * common is then a curve, not a position.
+         */
+        new TestCase(LINE_BOTTOM,        LINE_CROSSING,  true,  null),
+        new TestCase(LINE_BOTTOM,        LINE_DIAGONAL,  false, null),
+        new TestCase(LINE_BOTTOM,        LINE_COLLINEAR, false, null),
+        /*
+         * A curve and a surface. The curve crosses when it passes through the surface, and does
+         * not when it stays inside it or on its boundary.
+         */
+        new TestCase(LINE_CROSSING,      SQUARE,         true,  null),
+        new TestCase(LINE_INSIDE,        SQUARE,         false, null),
+        new TestCase(LINE_BOTTOM,        SQUARE,         false, null),
+        /*
+         * Two surfaces never cross: what they share is a surface, never of a lower dimension.
+         */
+        new TestCase(SQUARE,             SQUARE_OVERLAP, false, null),
+        /*
+         * A set of positions straddling a surface crosses it, which a single position cannot do.
+         */
+        new TestCase(MULTI_POINT_SPREAD, SQUARE,         true,  null),
+        new TestCase(MULTI_POINT_INSIDE, SQUARE,         false, null)
     };
 
     /**

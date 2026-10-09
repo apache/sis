@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- A LayerFeatureConstraints restricting a layer to one feature type, a filter and named extents. -->
+<NamedLayer xmlns="http://www.opengis.net/sld" xmlns:se="http://www.opengis.net/se" xmlns:ogc="http://www.opengis.net/ogc">
+    <se:Name>named_layer</se:Name>
+    <LayerFeatureConstraints>
+        <FeatureTypeConstraint>
+            <se:FeatureTypeName>the_feature_type_name</se:FeatureTypeName>
+            <ogc:Filter>
+                <ogc:PropertyIsGreaterThanOrEqualTo>
+                    <ogc:PropertyName>num_lanes</ogc:PropertyName>
+                    <ogc:Literal>4</ogc:Literal>
+                </ogc:PropertyIsGreaterThanOrEqualTo>
+            </ogc:Filter>
+            <Extent><se:Name>extent_name</se:Name><Value>extent_value</Value></Extent>
+        </FeatureTypeConstraint>
+    </LayerFeatureConstraints>
+</NamedLayer>

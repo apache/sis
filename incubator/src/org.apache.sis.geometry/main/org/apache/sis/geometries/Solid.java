@@ -100,9 +100,8 @@ public sealed interface Solid extends Primitive
      * @see ISO 19107:2019 - 6.4.28.2
      */
     @UML(identifier="boundary", specification=ISO_19107)
-    default Geometry getBoundary() {
-        throw new UnsupportedOperationException();
-    }
+    @Override
+    Geometry getBoundary();
 
     /**
      * Sum of the areas of all the boundary surfaces of this solid.
@@ -147,9 +146,8 @@ public sealed interface Solid extends Primitive
      * @see ISO 19107:2019 - 6.4.28.5
      */
     @UML(identifier="dataPoint", specification=ISO_19107)
-    default DataPoints getDataPoints() {
-        throw new UnsupportedOperationException();
-    }
+    @Override
+    DataPoints getDataPoints();
 
     /**
      * Positions used to build the geometry of this solid, the way they are used depending on the interpolation.

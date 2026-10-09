@@ -31,16 +31,17 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vector2D;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -152,6 +153,11 @@ public sealed interface PreparedTIN extends TIN
         }
 
         @Override
+        public Geometry getBoundary() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
         public boolean isEmpty() {
             return base.isEmpty();
         }
@@ -256,6 +262,11 @@ public sealed interface PreparedTIN extends TIN
         }
 
         @Override
+        public Geometry getBoundary() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
         public boolean isEmpty() {
             return empty;
         }
@@ -297,7 +308,7 @@ public sealed interface PreparedTIN extends TIN
             this.epsilon = epsilon;
         }
 
-        public Optional<Point> evaluate(Tuple<?> dp) throws CannotEvaluateException {
+        public Optional<Point> evaluate(Vector<?> dp) throws CannotEvaluateException {
             final CoordinateReferenceSystem dpCrs = dp.getCoordinateReferenceSystem();
             final MathTransform transform;
             if (dpCrs == null) {
@@ -347,9 +358,9 @@ public sealed interface PreparedTIN extends TIN
                 while (iterator.hasNext()) {
                     final Triangle triangle = iterator.next();
                     final DataPoints points = triangle.getExteriorRing().getDataPoints();
-                    final Tuple a = points.getPosition(0);
-                    final Tuple b = points.getPosition(1);
-                    final Tuple c = points.getPosition(2);
+                    final Vector a = points.getPosition(0);
+                    final Vector b = points.getPosition(1);
+                    final Vector c = points.getPosition(2);
                     final double[] bary = Triangle.getBarycentricValue2D(
                             a.get(0), a.get(1),
                             b.get(0), b.get(1),

@@ -32,9 +32,9 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Tuple;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -45,7 +45,7 @@ public final class To3D {
 
     private To3D(){}
 
-    private static void zedit(Array array, Consumer<Tuple> Zeditor) {
+    private static void zedit(Array array, Consumer<Vector> Zeditor) {
         final Cursor cursor = array.cursor();
         while (cursor.next()) {
             Zeditor.accept(cursor.samples());
@@ -60,12 +60,12 @@ public final class To3D {
         return new ArrayDataPoints(attributes);
     }
 
-    private static ArrayDataPoints to3d(DataPoints base, CoordinateReferenceSystem crs3d, Consumer<Tuple> Zeditor) {
+    private static ArrayDataPoints to3d(DataPoints base, CoordinateReferenceSystem crs3d, Consumer<Vector> Zeditor) {
 
         final ArrayDataPoints ps = copy(base);
 
         if (Zeditor == null) {
-            Zeditor = (Tuple t) -> t.set(2, 0.0);
+            Zeditor = (Vector t) -> t.set(2, 0.0);
         }
 
         Array positions = ps.getAttributeArray(DataPointsType.ATT_POSITION);
@@ -74,10 +74,10 @@ public final class To3D {
         return ps;
     }
 
-    private static Array to3d(Array positions, CoordinateReferenceSystem crs3d, Consumer<Tuple> Zeditor) {
+    private static Array to3d(Array positions, CoordinateReferenceSystem crs3d, Consumer<Vector> Zeditor) {
 
         if (Zeditor == null) {
-            Zeditor = (Tuple t) -> t.set(2, 0.0);
+            Zeditor = (Vector t) -> t.set(2, 0.0);
         }
 
         final CoordinateReferenceSystem geomCrs = positions.getCoordinateReferenceSystem();
@@ -104,8 +104,8 @@ public final class To3D {
             final Cursor target = array.cursor();
             final Cursor source = positions.cursor();
             while (source.next() && target.next()) {
-                Tuple t = target.samples();
-                Tuple s = source.samples();
+                Vector t = target.samples();
+                Vector s = source.samples();
                 t.set(0, s.get(0));
                 t.set(1, s.get(1));
                 Zeditor.accept(t);
@@ -118,24 +118,24 @@ public final class To3D {
     /**
      * Add Z axis to Point.
      */
-    public static Point to3D(Point base, CoordinateReferenceSystem crs3d, Consumer<Tuple> zeditor) {
-        final DataPoints copy3d = to3d(base.asDataPoint(), crs3d, zeditor);
-        return GeometryFactory.createPoint(copy3d);
+    public static Point to3D(Point base, CoordinateReferenceSystem crs3d, Consumer<Vector> zeditor) {
+        final DataPoints copy3d = to3d(base.getDataPoints(), crs3d, zeditor);
+        return GeometryFactory.DEFAULT.createPoint(copy3d);
     }
 
     /**
      * Add Z axis to LineString.
      */
-    public static LineString to3D(LineString base, CoordinateReferenceSystem crs3d, Consumer<Tuple> zeditor) {
+    public static LineString to3D(LineString base, CoordinateReferenceSystem crs3d, Consumer<Vector> zeditor) {
         final DataPoints copy3d = to3d(base.getDataPoints(), crs3d, zeditor);
-        return GeometryFactory.createLineString(copy3d);
+        return GeometryFactory.DEFAULT.createLineString(copy3d);
     }
 
     /**
      * Add Z axis to Primitive.
      * Also works for ModelPrimitive.
      */
-    public static MeshPrimitive to3D(MeshPrimitive base, CoordinateReferenceSystem crs3d, Consumer<Tuple> zeditor) {
+    public static MeshPrimitive to3D(MeshPrimitive base, CoordinateReferenceSystem crs3d, Consumer<Vector> zeditor) {
         final MeshPrimitive copy3d = base.deepCopy();
 
         Array positions = copy3d.getPositions();

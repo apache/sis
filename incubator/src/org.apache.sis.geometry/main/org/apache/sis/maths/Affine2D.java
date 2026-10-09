@@ -143,7 +143,7 @@ public final class Affine2D extends AbstractAffine<Affine2D> {
     }
 
     @Override
-    public Tuple<?> transform(ReadOnly.Tuple<?> source, Tuple<?> dest) {
+    public Vector<?> transform(ReadOnly.Vector<?> source, Vector<?> dest) {
         if (dest == null) dest = new Vector2D.Double();
         dest.set(0, m00*source.get(0) + m01*source.get(1) + m02);
         dest.set(1, m10*source.get(0) + m11*source.get(1) + m12);

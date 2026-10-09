@@ -23,6 +23,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.curve.KnotType;
 import org.apache.sis.geometries.surface.BSplineSurface;
 import org.apache.sis.geometries.surface.BSplineSurfaceForm;
@@ -186,6 +187,11 @@ public non-sealed class DefaultBSplineSurface extends AbstractGeometry implement
 
     @Override
     public Envelope getEnvelope() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Geometry getBoundary() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
