@@ -60,7 +60,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
     /**
      * The version of this Apache SIS distribution.
      */
-    public static final Version SIS = new Version(MAJOR_VERSION + "." + MINOR_VERSION + "-SNAPSHOT");
+    public static final Version SIS = new Version(MAJOR_VERSION + "." + MINOR_VERSION);
 
     /**
      * A few commonly used version numbers. This list is based on SIS needs, e.g. in {@code DataStore} implementations.
