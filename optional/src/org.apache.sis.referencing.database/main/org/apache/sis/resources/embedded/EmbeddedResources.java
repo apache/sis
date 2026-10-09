@@ -33,11 +33,11 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import javax.sql.DataSource;
 import org.hsqldb.jdbc.JDBCDataSource;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.internal.shared.MetadataServices;
 import org.apache.sis.metadata.sql.internal.shared.Initializer;
 import org.apache.sis.setup.InstallationResources;
 import org.apache.sis.system.DataDirectory;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
