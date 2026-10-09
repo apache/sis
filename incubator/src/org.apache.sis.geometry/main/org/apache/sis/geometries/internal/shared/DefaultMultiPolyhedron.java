@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.apache.sis.geometries.GeometryType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.solid.MultiPolyhedron;
 import org.apache.sis.geometries.solid.Polyhedron;
@@ -34,7 +35,7 @@ public non-sealed class DefaultMultiPolyhedron extends DefaultGeometryCollection
     }
 
     public DefaultMultiPolyhedron(CoordinateReferenceSystem fallbackCRS, Polyhedron... solids) {
-        super(fallbackCRS, solids);
+        super(GeometryType.POLYHEDRON, fallbackCRS, solids);
     }
 
 }

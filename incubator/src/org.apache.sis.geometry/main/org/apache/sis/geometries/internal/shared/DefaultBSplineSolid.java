@@ -26,6 +26,8 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.solid.BSplineSolid;
 
 
@@ -176,7 +178,7 @@ public non-sealed class DefaultBSplineSolid extends AbstractGeometry implements 
     }
 
     @Override
-    public Geometry getBoundary() {
+    public GeometryCollection<? extends Surface> getBoundary() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

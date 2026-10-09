@@ -95,14 +95,15 @@ import org.apache.sis.geometries.internal.shared.DefaultRawMultiPoint;
 import org.apache.sis.geometries.internal.shared.DefaultReversedCurve;
 import org.apache.sis.geometries.internal.shared.DefaultReversedSurface;
 import org.apache.sis.geometries.internal.shared.DefaultRhumb;
+import org.apache.sis.geometries.internal.shared.DefaultSolid;
 import org.apache.sis.geometries.internal.shared.DefaultSpiral;
 import org.apache.sis.geometries.internal.shared.DefaultTriangle;
 import org.apache.sis.geometries.internal.shared.DefaultTriangulatedSurface;
 import org.apache.sis.geometries.point.MultiPoint;
-import org.apache.sis.geometries.solid.Ellipsoid;
+import org.apache.sis.geometries.surface.Ellipsoid;
 import org.apache.sis.geometries.solid.MultiPolyhedron;
 import org.apache.sis.geometries.solid.Polyhedron;
-import org.apache.sis.geometries.solid.Sphere;
+import org.apache.sis.geometries.surface.Sphere;
 import org.apache.sis.geometries.solid.BSplineSolid;
 import org.apache.sis.geometries.surface.BSplineSurface;
 import org.apache.sis.geometries.surface.BSplineSurfaceForm;
@@ -684,6 +685,10 @@ public final class GeometryFactory {
     // Solids /////////////////////////////////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////////
 
+    public Solid createSolid(List<Surface> surfaces) {
+        return new DefaultSolid(surfaces);
+    }
+
     public Polyhedron createPolyhedron(MultiPolygon exteriorShell, List<MultiPolygon> interiorShells) {
         return new DefaultPolyhedron(exteriorShell, interiorShells);
     }
@@ -728,11 +733,15 @@ public final class GeometryFactory {
     // ////////////////////////////////////////////////////////////////////////
 
     public <T extends Geometry> GeometryCollection<T> createGeometryCollection(T ... geometries) {
-        return new DefaultGeometryCollection<>(geometries);
+        return new DefaultGeometryCollection<>(GeometryType.GEOMETRY, geometries);
     }
 
     public <T extends Geometry> GeometryCollection<T> createGeometryCollection(CoordinateReferenceSystem crs, T ... geometries) {
-        return new DefaultGeometryCollection<>(crs, geometries);
+        return new DefaultGeometryCollection<>(GeometryType.GEOMETRY, crs, geometries);
+    }
+
+    public <T extends Geometry> GeometryCollection<T> createGeometryCollection(GeometryType elementType, CoordinateReferenceSystem crs, T ... geometries) {
+        return new DefaultGeometryCollection<>(elementType, crs, geometries);
     }
 
     // ////////////////////////////////////////////////////////////////////////

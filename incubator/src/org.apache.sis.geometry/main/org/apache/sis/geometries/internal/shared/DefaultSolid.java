@@ -17,15 +17,19 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.List;
-import java.util.Objects;
 import javax.measure.Quantity;
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Geometry;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.Solid;
 import org.apache.sis.geometries.Surface;
-import org.apache.sis.geometries.solid.Polyhedron;
-import org.apache.sis.geometries.surface.MultiPolygon;
+import org.apache.sis.geometry.GeneralEnvelope;
 
 
 /**
@@ -33,45 +37,33 @@ import org.apache.sis.geometries.surface.MultiPolygon;
  *
  * @author Johann Sorel (Geomatys)
  */
-public non-sealed class DefaultPolyhedron extends AbstractGeometry implements Polyhedron {
+public non-sealed class DefaultSolid extends AbstractGeometry implements Solid {
 
-    private final MultiPolygon exterior;
-    private final List<MultiPolygon> interiors;
+    private final List<Surface> boundaries;
 
-    public DefaultPolyhedron(MultiPolygon exterior) {
-        this(exterior, null);
-    }
-
-    public DefaultPolyhedron(MultiPolygon exterior, List<MultiPolygon> interiors) {
-        this.exterior  = Objects.requireNonNull(exterior);
-        this.interiors = (interiors == null) ? List.of() : List.copyOf(interiors);
+    public DefaultSolid(List<Surface> boundaries) {
+        this.boundaries = (boundaries == null) ? List.of() : List.copyOf(boundaries);
     }
 
     @Override
-    public MultiPolygon getExteriorShell() {
-        return exterior;
-    }
-
-    @Override
-    public List<MultiPolygon> getInteriorShells() {
-        return interiors;
+    public GeometryType getGeometryType() {
+        return GeometryType.SOLID;
     }
 
     @Override
     public boolean isEmpty() {
-        return exterior.isEmpty();
+        return boundaries.isEmpty();
     }
 
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return exterior.getCoordinateReferenceSystem();
+        return boundaries.get(0).getCoordinateReferenceSystem();
     }
 
     @Override
     public void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
-        exterior.setCoordinateReferenceSystem(cs);
-        for (final MultiPolygon interior : interiors) {
-            interior.setCoordinateReferenceSystem(cs);
+        for (final Surface boundary : boundaries) {
+            boundary.setCoordinateReferenceSystem(cs);
         }
     }
 
@@ -81,12 +73,41 @@ public non-sealed class DefaultPolyhedron extends AbstractGeometry implements Po
      */
     @Override
     public Envelope getEnvelope() {
-        return exterior.getEnvelope();
+        GeneralEnvelope e = null;
+        for (int i = 0, n = boundaries.size(); i < n; i++) {
+            Surface sn = boundaries.get(i);
+            Envelope envelope = sn.getEnvelope();
+            if (envelope != null) {
+                if (e == null) {
+                    e = new GeneralEnvelope(envelope);
+                } else {
+                    e.add(envelope);
+                }
+            }
+        }
+        if (e == null) {
+            e = new GeneralEnvelope(getCoordinateReferenceSystem());
+            e.setToNaN();
+        }
+        return e;
+    }
+
+    @Override
+    public DataPoints getDataPoints() {
+        if (boundaries.isEmpty()) {
+            return new EmptyDataPoints(getCoordinateReferenceSystem());
+        }
+        return ConcatenatedDataPoints.of(boundaries.toArray(Geometry[]::new));
+    }
+
+    @Override
+    public DataPointsType getDataPointsType() {
+        return boundaries.get(0).getDataPointsType();
     }
 
     @Override
     public GeometryCollection<? extends Surface> getBoundary() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return GeometryFactory.DEFAULT.createGeometryCollection(GeometryType.SURFACE, getCoordinateReferenceSystem(), boundaries.toArray(Surface[]::new));
     }
 
     @Override

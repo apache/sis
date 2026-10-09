@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.apache.sis.geometries.GeometryType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Surface;
@@ -33,7 +34,7 @@ public non-sealed class DefaultMultiSurface<T extends Surface> extends DefaultGe
     }
 
     public DefaultMultiSurface(CoordinateReferenceSystem fallbackCRS, T[] geometries) {
-        super(fallbackCRS, geometries);
+        super(GeometryType.SURFACE, fallbackCRS, geometries);
     }
 
     /**

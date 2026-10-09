@@ -24,12 +24,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.ConcatenatedDataPoints;
 import org.apache.sis.geometries.internal.shared.EmptyDataPoints;
@@ -65,6 +67,11 @@ public final class MultiMeshPrimitive<T extends MeshPrimitive> extends AbstractG
     public MultiMeshPrimitive(MeshPrimitive ... primitives) {
         this(primitives[0].getCoordinateReferenceSystem());
         append(Arrays.asList(primitives));
+    }
+
+    @Override
+    public Set<GeometryType> getElementType() {
+        return Set.of(GeometryType.GEOMETRY);
     }
 
     @Override

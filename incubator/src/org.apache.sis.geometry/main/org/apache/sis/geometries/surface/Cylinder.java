@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries.solid;
+package org.apache.sis.geometries.surface;
 
 import java.util.Objects;
 import static org.opengis.annotation.Specification.ISO_12113;
@@ -30,8 +30,8 @@ import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.ReadOnly;
-import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
+import org.apache.sis.maths.Vector;
 
 
 /**

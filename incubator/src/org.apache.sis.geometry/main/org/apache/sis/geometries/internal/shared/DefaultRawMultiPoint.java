@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.apache.sis.geometries.GeometryType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.point.MultiPoint;
@@ -32,7 +33,7 @@ public non-sealed class DefaultRawMultiPoint extends DefaultGeometryCollection<P
     }
 
     public DefaultRawMultiPoint(CoordinateReferenceSystem fallbackCRS, Point[] geometries) {
-        super(fallbackCRS, geometries);
+        super(GeometryType.POINT, fallbackCRS, geometries);
     }
 
 }
