@@ -16,11 +16,14 @@
  */
 package org.apache.sis.referencing.operation.builder;
 
+import java.util.Arrays;
 import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.Envelope2D;
+import org.apache.sis.math.Vector;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -40,6 +43,12 @@ import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 @ExtendWith(FailureDetailsReporter.class)
 public final class LocalizationGridBuilderTest extends TransformTestCase {
     /**
+     * Whether to generate assertion codes.
+     * If enabled, the code is sent to the standard output stream.
+     */
+    private static final boolean GENERATE_TEST_CODE = false;
+
+    /**
      * Creates a new test case.
      */
     public LocalizationGridBuilderTest() {
@@ -56,7 +65,7 @@ public final class LocalizationGridBuilderTest extends TransformTestCase {
      */
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     private static LocalizationGridBuilder builder(final AffineTransform reference, final int width, final int height) {
-        final LocalizationGridBuilder builder = new LocalizationGridBuilder(width, height);
+        final var builder = new LocalizationGridBuilder(width, height);
         Point2D pt = new Point2D.Double();
         for (int gridY=0; gridY < height; gridY++) {
             for (int gridX=0; gridX < width; gridX++) {
@@ -67,7 +76,7 @@ public final class LocalizationGridBuilderTest extends TransformTestCase {
                 final double x = pt.getX() + 0.4*gx2 + 0.7*gy2;
                 final double y = pt.getY() + 0.3*gx2 - 0.5*gy2;
                 builder.setControlPoint(gridX, gridY, x, y);
-                if (false) {
+                if (GENERATE_TEST_CODE) {
                     // For generating verification code.
                     System.out.printf("verifyTransform(new double[] {%d, %d}, new double[] {%f, %f});%n", gridX, gridY, x, y);
                 }
@@ -84,7 +93,7 @@ public final class LocalizationGridBuilderTest extends TransformTestCase {
      */
     @Test
     public void testQuadratic() throws FactoryException, TransformException {
-        final AffineTransform reference = new AffineTransform(20, -30, 5, -4, -20, 8);
+        final var reference = new AffineTransform(20, -30, 5, -4, -20, 8);
         final LocalizationGridBuilder builder = builder(reference, 5, 4);
         builder.setDesiredPrecision(1E-6);
         transform = builder.create(null);
@@ -122,14 +131,14 @@ public final class LocalizationGridBuilderTest extends TransformTestCase {
      */
     @Test
     public void testCreateFromLocalizations() throws TransformException {
-        final LinearTransformBuilder localizations = new LinearTransformBuilder();
+        final var localizations = new LinearTransformBuilder();
         localizations.setControlPoint(new int[] {0, 0}, new double[] {-20.0,    8.0});
         localizations.setControlPoint(new int[] {1, 0}, new double[] {  0.4,  -21.7});
         localizations.setControlPoint(new int[] {0, 1}, new double[] {-14.3,    3.5});
         localizations.setControlPoint(new int[] {1, 1}, new double[] {  6.1,  -26.2});
         localizations.setControlPoint(new int[] {0, 2}, new double[] {  1.3,   -8.5});
         localizations.setControlPoint(new int[] {1, 2}, new double[] { 87.7, -123.7});
-        LocalizationGridBuilder builder = new LocalizationGridBuilder(localizations);
+        final var builder = new LocalizationGridBuilder(localizations);
         /*
          * Verifies the grid size by checking the source envelope.
          * Minimum and maximum values are inclusive.
@@ -147,5 +156,28 @@ public final class LocalizationGridBuilderTest extends TransformTestCase {
          */
         assertArrayEquals(new double[] {-8.5, -123.7}, builder.getRow(1, 2).doubleValues());
         assertArrayEquals(new double[] {-21.7, -26.2, -123.7}, builder.getColumn(1, 1).doubleValues());
+    }
+
+    /**
+     * Tests inferring the grid size from the vectors of <var>x</var> and <var>y</var> values.
+     * This test uses a non-integer delta between grid coordinates in order to test robustness
+     * against rounding errors.
+     */
+    @Test
+    public void testInferGridSize() {
+        final var x = new double[39];
+        final var y = new double[40];
+        final double sx = 19249d/38d;
+        final double sy =  19509/39d;
+        Arrays.setAll(x, (i) -> -1d/3d + (i % 10) * sx + 1E-12 * StrictMath.random());
+        Arrays.setAll(y, (i) -> -1d/6d + (i / 10) * sy + 1E-12 * StrictMath.random());
+        final var builder = new LocalizationGridBuilder(Vector.create(x), Vector.create(y));
+        assertEquals(10, builder.gridSize(0), "width");
+        assertEquals( 4, builder.gridSize(1), "height");
+        final Matrix m = builder.getSourceToGrid().getMatrix();
+        assertEquals(3, m.getNumCol());
+        assertEquals(3, m.getNumRow());
+        assertEquals(1/sx, m.getElement(0, 0), 1E-16);
+        assertEquals(1/sy, m.getElement(1, 1), 1E-16);
     }
 }

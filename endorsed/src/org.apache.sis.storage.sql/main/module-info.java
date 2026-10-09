@@ -39,11 +39,15 @@
  * </ul>
  *
  * <h2>Recommended database configuration</h2>
- * <p><b>PostgreSQL</b> databases should have the PostGIS extension installed (optional but recommended).</p>
+ * This module has been tested with PostgreSQL, Oracle, SQLite, DuckDB, HSQL, H2 and Derby.
+ * Other database engines should work if they are <abbr>ANSI</abbr> compliant but have not been tested.
  *
- * <p><b>MySQL/MariaDB</b> databases should set the <abbr>SQL</abbr> mode to at least {@code NO_BACKSLASH_ESCAPES}.
- * See <a href="https://mariadb.com/docs/server/server-management/variables-and-modes/sql_mode#no_backslash_escapes">
+ * <p><b>MySQL/MariaDB</b> databases should set their <abbr>SQL</abbr> mode to an <abbr>ANSI</abbr>-compliant mode.
+ * The options should contain at least {@code NO_BACKSLASH_ESCAPES}. For instructions about how to set options, see
+ * <a href="https://mariadb.com/docs/server/server-management/variables-and-modes/sql_mode#no_backslash_escapes">
  * MariaDB documentation</a>.</p>
+ *
+ * <p><b>PostgreSQL</b> databases should have the PostGIS extension installed (optional but recommended).</p>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

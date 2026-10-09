@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- LinePlacement with all of its optional properties, which no other sample exercises. -->
+<se:TextSymbolizer xmlns:se="http://www.opengis.net/se"
+    xmlns:sld="http://www.opengis.net/sld"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:ogc="http://www.opengis.net/ogc"
+    xmlns:gml="http://www.opengis.net/gml"
+    uom="http://www.opengeospatial.org/se/units/pixel">
+    <se:Geometry><ogc:PropertyName>geom</ogc:PropertyName></se:Geometry>
+    <se:Label><ogc:PropertyName>road_name</ogc:PropertyName></se:Label>
+    <se:LabelPlacement>
+        <se:LinePlacement>
+            <se:PerpendicularOffset><ogc:Literal>4.0</ogc:Literal></se:PerpendicularOffset>
+            <se:IsRepeated><ogc:Literal>true</ogc:Literal></se:IsRepeated>
+            <se:InitialGap><ogc:Literal>15.0</ogc:Literal></se:InitialGap>
+            <se:Gap><ogc:Literal>50.0</ogc:Literal></se:Gap>
+            <se:IsAligned><ogc:Literal>false</ogc:Literal></se:IsAligned>
+            <se:GeneralizeLine><ogc:Literal>true</ogc:Literal></se:GeneralizeLine>
+        </se:LinePlacement>
+    </se:LabelPlacement>
+    <se:Fill>
+        <se:SvgParameter name="fill"><ogc:Literal>#000000</ogc:Literal></se:SvgParameter>
+    </se:Fill>
+</se:TextSymbolizer>

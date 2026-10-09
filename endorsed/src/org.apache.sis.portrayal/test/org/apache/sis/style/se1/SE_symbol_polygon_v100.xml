@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<PolygonSymbolizer xmlns="http://www.opengis.net/sld"
+    xmlns:sld="http://www.opengis.net/sld"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:ogc="http://www.opengis.net/ogc"
+    xmlns:gml="http://www.opengis.net/gml">
+    <Geometry>
+        <ogc:PropertyName>geom</ogc:PropertyName>
+    </Geometry>
+    <Fill>
+        <CssParameter name="fill">
+            <ogc:Literal>#808080</ogc:Literal>
+        </CssParameter>
+        <CssParameter name="fill-opacity">
+            <ogc:Literal>1.0</ogc:Literal>
+        </CssParameter>
+    </Fill>
+    <Stroke>
+        <CssParameter name="stroke">
+            <ogc:Literal>#404040</ogc:Literal>
+        </CssParameter>
+        <CssParameter name="stroke-dashoffset">
+            <ogc:Literal>2.3</ogc:Literal>
+        </CssParameter>
+        <CssParameter name="stroke-linecap">
+            <ogc:Literal>butt</ogc:Literal>
+        </CssParameter>
+        <CssParameter name="stroke-linejoin">
+            <ogc:Literal>bevel</ogc:Literal>
+        </CssParameter>
+        <CssParameter name="stroke-opacity">
+            <ogc:Literal>0.4</ogc:Literal>
+        </CssParameter>
+        <CssParameter name="stroke-width">
+            <ogc:Literal>13</ogc:Literal>
+        </CssParameter>
+    </Stroke>
+</PolygonSymbolizer>

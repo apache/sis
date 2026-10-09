@@ -191,7 +191,7 @@ public class ImagePropertyExplorer extends Widget {
          * Creates all rows.
          */
         static LayoutRow[] values(final Vocabulary vocabulary, final Resources resources) {
-            final LayoutRow[] rows = new LayoutRow[7];
+            final var rows = new LayoutRow[7];
             rows[IMAGE_SIZE]     = new LayoutRow(true,  vocabulary.getString(Vocabulary.Keys.ImageSize));
             rows[DISPLAYED_SIZE] = new LayoutRow(false, resources .getString(Resources .Keys.DisplayedSize));
             rows[TILE_SIZE]      = new LayoutRow(true,  vocabulary.getString(Vocabulary.Keys.TileSize));
@@ -402,9 +402,9 @@ public class ImagePropertyExplorer extends Widget {
             integerFormat  = NumberFormat.getIntegerInstance();
             layout.setSelectionModel(null);
 
-            final TableColumn<LayoutRow, String> label = new TableColumn<>(resources.getString(Resources.Keys.SizeOrPosition));
-            final TableColumn<LayoutRow, Number> xCol  = new TableColumn<>(resources.getString(Resources.Keys.Along_1, "X"));
-            final TableColumn<LayoutRow, Number> yCol  = new TableColumn<>(resources.getString(Resources.Keys.Along_1, "Y"));
+            final var label = new TableColumn<LayoutRow, String>(resources.getString(Resources.Keys.SizeOrPosition));
+            final var xCol  = new TableColumn<LayoutRow, Number>(resources.getString(Resources.Keys.Along_1, "X"));
+            final var yCol  = new TableColumn<LayoutRow, Number>(resources.getString(Resources.Keys.Along_1, "Y"));
             final Callback<TableColumn<LayoutRow, Number>,
                              TableCell<LayoutRow, Number>> cellFactory = (column) -> new LayoutCell(integerFormat);
 
@@ -430,8 +430,8 @@ public class ImagePropertyExplorer extends Widget {
             properties       = new TableView<>();
             propertyRows     = properties.getItems();
             selectedProperty = properties.getSelectionModel().selectedItemProperty();
-            final TableColumn<PropertyRow, String> label = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.Property));
-            final TableColumn<PropertyRow, Object> value = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.Value));
+            final var label = new TableColumn<PropertyRow, String>(vocabulary.getString(Vocabulary.Keys.Property));
+            final var value = new TableColumn<PropertyRow, Object>(vocabulary.getString(Vocabulary.Keys.Value));
             label.setCellValueFactory((cell) -> cell.getValue());
             value.setCellValueFactory((cell) -> cell.getValue().value);
             value.setCellFactory((column) -> new PropertyCell(locale));
@@ -665,7 +665,7 @@ public class ImagePropertyExplorer extends Widget {
     /**
      * Creates the renderer of cells in the table of image layout information.
      */
-    private static final class LayoutCell extends TableCell<LayoutRow,Number> {
+    private static final class LayoutCell extends TableCell<LayoutRow, Number> {
         /**
          * The formatter to use for numerical values in the table.
          */
@@ -691,7 +691,7 @@ public class ImagePropertyExplorer extends Widget {
     /**
      * Creates the renderer of cells in the table of image properties.
      */
-    private static final class PropertyCell extends TableCell<PropertyRow,Object> {
+    private static final class PropertyCell extends TableCell<PropertyRow, Object> {
         /**
          * The formatter to use for producing a short string representation of a property value.
          */

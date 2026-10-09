@@ -302,8 +302,8 @@ public class NetcdfStoreProvider extends DataStoreProvider {
             throws IOException, DataStoreException
     {
         final GeometryLibrary geomlib = connector.getOption(OptionKey.GEOMETRY_LIBRARY);
-        Decoder decoder;
-        Object keepOpen;
+        Decoder decoder = null;
+        Object keepOpen = null;
         final ChannelDataInput input = connector.getStorageAs(ChannelDataInput.class);
         if (input != null) try {
             decoder = new ChannelDecoder(input, connector.getOption(OptionKey.ENCODING), geomlib, listeners);
@@ -316,7 +316,9 @@ public class NetcdfStoreProvider extends DataStoreProvider {
             } catch (IOException | DataStoreException s) {
                 e.addSuppressed(s);
             }
-            throw e;
+            if (decoder == null) {
+                throw e;
+            }
         } else {
             keepOpen = connector.getStorage();
             decoder = createByReflection(keepOpen, true, geomlib, listeners);

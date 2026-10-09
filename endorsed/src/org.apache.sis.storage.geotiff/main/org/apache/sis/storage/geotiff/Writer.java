@@ -76,7 +76,7 @@ import org.apache.sis.coverage.CannotEvaluateException;
  * because they are not useful for geospatial applications. This restriction does not reduce the set
  * of Java2D images that this writer can encode.</p>
  *
- * <p>The TIFF format specification version 6.0 (June 3, 1992) is available
+ * <p>The <abbr>TIFF</abbr> format specification version 6.0 (June 3, 1992) is available
  * <a href="https://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf">here</a>.</p>
  *
  * @author  Erwan Roussel (Geomatys)
@@ -98,7 +98,7 @@ final class Writer extends IOBase implements OverviewIterator, Flushable {
     static final short TIFF_ULONG = 16;
 
     /**
-     * Sizes of a few TIFF tags used in this writer.
+     * Sizes of a few <abbr>TIFF</abbr> tags used in this writer, in number of bytes.
      *
      * @see #writeTag(short, short, int[])
      * @see #writeTag(short, short, double[])
@@ -190,7 +190,7 @@ final class Writer extends IOBase implements OverviewIterator, Flushable {
     private final Queue<TagValue> largeTagData = new ArrayDeque<>();
 
     /**
-     * Number of TIFF tag entries in the image being written.
+     * Number of <abbr>TIFF</abbr> tag entries in the image being written.
      * This is a temporary information used during the writing of an Image File Directory (IFD).
      */
     private int numberOfTags;
@@ -367,7 +367,7 @@ final class Writer extends IOBase implements OverviewIterator, Flushable {
                 largeTagData.clear();       // For making sure that there is no memory retention.
             }
             tiles.writeRasters(output);
-            wordAlign(output);
+            wordAlign();
             tiles.writeOffsetsAndLengths(output);
             flush();
             currentIFD = tiles.nextIFD;     // Set only after the operation succeeded.
@@ -388,11 +388,11 @@ final class Writer extends IOBase implements OverviewIterator, Flushable {
     }
 
     /**
-     * Writes the Image File Directory (IFD) of the given image at the current {@link #output} position.
+     * Writes the Image File Directory (<abbr>IFD</abbr>) of the given image at the current {@link #output} position.
      * This method does not write the pixel values. Those values must be written by the caller.
      * This separation makes possible to write directories in any order compared to pixel data.
      *
-     * @param  image       the image for which to write the IFD.
+     * @param  image       the image for which to write the <abbr>IFD</abbr>.
      * @param  grid        mapping from pixel coordinates to "real world" coordinates, or {@code null} if none.
      * @param  metadata    title, author and other information, or {@code null} if none.
      * @param  oveverview  whether the image is an overview of another image.
@@ -530,7 +530,10 @@ final class Writer extends IOBase implements OverviewIterator, Flushable {
         tiling.nextIFD = writeOffset(0);
         for (final TagValue tag : largeTagData) {
             UpdatableWrite<?> offset = tag.writeHere(output);
-            if (offset != null) deferredWrites.add(offset);
+            wordAlign();
+            if (offset != null) {
+                deferredWrites.add(offset);
+            }
         }
         return tiling;
     }
@@ -558,7 +561,7 @@ final class Writer extends IOBase implements OverviewIterator, Flushable {
     }
 
     /**
-     * Writes a 32-bits or 64-bits offset, depending on whether the format is classic TIFF or BigTIFF.
+     * Writes a 32-bits or 64-bits offset, depending on whether the format is classic <abbr>TIFF</abbr> or BigTIFF.
      *
      * @param  offset  an initial guess of the offset value.
      * @return a handler for updating later the offset with its actual value.
@@ -572,12 +575,12 @@ final class Writer extends IOBase implements OverviewIterator, Flushable {
 
     /**
      * Forces 16-bits word alignment.
-     * The TIFF specification requires that tag values are aligned.
+     * The <abbr>TIFF</abbr> specification requires that tag values are aligned.
      *
      * @param  channel  the channel on which to apply 16-bits word alignment.
      * @throws IOException if an error occurred while writing to the output stream.
      */
-    private static void wordAlign(final ChannelDataOutput output) throws IOException {
+    private void wordAlign() throws IOException {
         if ((output.getStreamPosition() & 1) != 0) {
             output.writeByte(0);
         }
@@ -646,7 +649,7 @@ final class Writer extends IOBase implements OverviewIterator, Flushable {
     }
 
     /**
-     * Writes a tag value which is potentially too large for fitting in the IFD entry.
+     * Writes a tag value which is potentially too large for fitting in the <abbr>IFD</abbr> entry.
      *
      * @param  tag    the code of the tag to write, usually a constant defined by the TIFF specification.
      * @param  type   one of the {@link TIFFTag} constants such as {@code TIFF_SHORT} or {@code TIFF_LONG}.
@@ -670,7 +673,7 @@ final class Writer extends IOBase implements OverviewIterator, Flushable {
      * Writes the color map tag.
      *
      * @param  cm     color model from which to read color values.
-     * @param  count  number of colors to write, <strong>not</strong> multiplied by 3 for the RGB bands.
+     * @param  count  number of colors to write, <strong>not</strong> multiplied by 3 for the <abbr>RGB</abbr> bands.
      * @throws IOException if an error occurred while writing to the output.
      */
     private void writeColorPalette(final IndexColorModel cm, final long count) throws IOException {
@@ -696,8 +699,8 @@ final class Writer extends IOBase implements OverviewIterator, Flushable {
     }
 
     /**
-     * Writes a tag with string values stored as ASCII characters.
-     * The list of valid tag code is defined by TIFF specification.
+     * Writes a tag with string values stored as <abbr>ASCII</abbr> characters.
+     * The list of valid tag codes is defined by <abbr>TIFF</abbr> specification.
      *
      * @param  tag     the code of the tag to write, usually a constant defined by the TIFF specification.
      * @param  values  the values to write, or {@code null} if none.
@@ -732,9 +735,9 @@ final class Writer extends IOBase implements OverviewIterator, Flushable {
                         if (c != null) {
                             output.write(c);
                             output.writeByte(0);
-                            wordAlign(output);
                         }
                     }
+                    // Do not invoke `wordAlign()` because the number of bytes written must be exactly `count`.
                 }
             });
         }

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TextSymbolizer xmlns="http://www.opengis.net/sld"
+    xmlns:sld="http://www.opengis.net/sld"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:ogc="http://www.opengis.net/ogc"
+    xmlns:gml="http://www.opengis.net/gml">
+    <Geometry><ogc:PropertyName>geom</ogc:PropertyName></Geometry>
+    <Label><ogc:PropertyName>aField</ogc:PropertyName></Label>
+    <Font>
+        <CssParameter name="font-family"><ogc:Literal>arial</ogc:Literal></CssParameter>
+        <CssParameter name="font-family"><ogc:Literal>serif</ogc:Literal></CssParameter>
+        <CssParameter name="font-size"><ogc:Literal>17</ogc:Literal></CssParameter>
+        <CssParameter name="font-style"><ogc:Literal>italic</ogc:Literal></CssParameter>
+        <CssParameter name="font-weight"><ogc:Literal>bold</ogc:Literal></CssParameter>
+    </Font>
+    <Fill>
+        <CssParameter name="fill">
+            <ogc:Literal>#808080</ogc:Literal>
+        </CssParameter>
+        <CssParameter name="fill-opacity">
+            <ogc:Literal>1.0</ogc:Literal>
+        </CssParameter>
+    </Fill>
+    <Halo>
+        <Fill>
+            <CssParameter name="fill">
+                <ogc:Literal>#808080</ogc:Literal>
+            </CssParameter>
+            <CssParameter name="fill-opacity">
+                <ogc:Literal>0.52</ogc:Literal>
+            </CssParameter>
+        </Fill>
+        <Radius><ogc:Literal>5</ogc:Literal></Radius>
+    </Halo>
+</TextSymbolizer>

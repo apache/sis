@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+   <ogc:Or>
+      <ogc:PropertyIsGreaterThan>
+          <ogc:PropertyName>feature_property_name</ogc:PropertyName>
+          <ogc:Literal>455</ogc:Literal>
+      </ogc:PropertyIsGreaterThan>
+      <ogc:PropertyIsLessThan>
+          <ogc:PropertyName>feature_property_name</ogc:PropertyName>
+          <ogc:Literal>457</ogc:Literal>
+      </ogc:PropertyIsLessThan>
+   </ogc:Or>
+</ogc:Filter>
+

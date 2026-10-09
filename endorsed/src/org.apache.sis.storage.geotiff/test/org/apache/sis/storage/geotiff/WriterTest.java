@@ -43,6 +43,9 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridOrientation;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.internal.shared.ColorModelBuilder;
+import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.geometry.Envelope2D;
 
 // Test dependencies
@@ -176,9 +179,18 @@ public final class WriterTest extends TestCase {
      * @throws DataStoreException if the image is incompatible with writer capability.
      */
     private void writeImage() throws IOException, DataStoreException {
-        store.append(image, gridGeometry, null);
+        final var metadata = new DefaultMetadata();
+        final var id = new DefaultDataIdentification();
+        id.setCitation(new DefaultCitation("abcd"));    // Short enough for being stored directly in BigTIFF slot.
+        assertTrue(metadata.getIdentificationInfo().add(id));
+        store.append(image, gridGeometry, metadata);
         data.clear().limit(Math.toIntExact(output.size()));
     }
+
+    /**
+     * Common number of tags which will be written, including the metadata added by {@link #writeImage()}.
+     */
+    private static final int COMMON_NUMBER_OF_TAGS = Writer.COMMON_NUMBER_OF_TAGS + 1;
 
     /**
      * Tests the writing a gray scale image made of a single tile with pixels on 8 bits.
@@ -193,7 +205,7 @@ public final class WriterTest extends TestCase {
                    FormatModifier.ANY_TILE_SIZE);
         writeImage();
         verifyHeader(false, IOBase.BIG_ENDIAN);
-        verifyImageFileDirectory(Writer.COMMON_NUMBER_OF_TAGS - 1,              // One less tag because stripped layout.
+        verifyImageFileDirectory(COMMON_NUMBER_OF_TAGS - 1,     // One less tag because stripped layout.
                                  PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO,
                                  new short[] {Byte.SIZE}, false);
         verifySampleValues(1);
@@ -212,7 +224,7 @@ public final class WriterTest extends TestCase {
                    FormatModifier.ANY_TILE_SIZE, FormatModifier.BIG_TIFF);
         writeImage();
         verifyHeader(true, IOBase.LITTLE_ENDIAN);
-        verifyImageFileDirectory(Writer.COMMON_NUMBER_OF_TAGS - 1,          // One less tag because stripped layout.
+        verifyImageFileDirectory(COMMON_NUMBER_OF_TAGS - 1,     // One less tag because stripped layout.
                                  PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO,
                                  new short[] {Byte.SIZE}, false);
         verifySampleValues(1);
@@ -231,7 +243,7 @@ public final class WriterTest extends TestCase {
         initialize(DataType.BYTE, ByteOrder.LITTLE_ENDIAN, false, 1, 3, 4, FormatModifier.ANY_TILE_SIZE);
         writeImage();
         verifyHeader(false, IOBase.LITTLE_ENDIAN);
-        verifyImageFileDirectory(Writer.COMMON_NUMBER_OF_TAGS,
+        verifyImageFileDirectory(COMMON_NUMBER_OF_TAGS,
                                  PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO,
                                  new short[] {Byte.SIZE}, true);
         verifySampleValues(1);
@@ -250,7 +262,7 @@ public final class WriterTest extends TestCase {
         image.setColorModel(new ColorModelBuilder().createRGB(image.getSampleModel()));
         writeImage();
         verifyHeader(false, IOBase.LITTLE_ENDIAN);
-        verifyImageFileDirectory(Writer.COMMON_NUMBER_OF_TAGS - 1,          // One less tag because stripped layout.
+        verifyImageFileDirectory(COMMON_NUMBER_OF_TAGS - 1,     // One less tag because stripped layout.
                                  PHOTOMETRIC_INTERPRETATION_RGB,
                                  new short[] {Byte.SIZE, Byte.SIZE, Byte.SIZE}, false);
         verifySampleValues(3);
@@ -287,7 +299,7 @@ public final class WriterTest extends TestCase {
          * So the test cannot expects an exact number of tags.
          */
         int tagCount = data.getShort(data.position());
-        assertTrue(tagCount >= Writer.COMMON_NUMBER_OF_TAGS + 3 - 1);           // 3 more for RGB, 1 less for strips.
+        assertTrue(tagCount >= COMMON_NUMBER_OF_TAGS + 3 - 1);      // 3 more for RGB, 1 less for strips.
         verifyImageFileDirectory(tagCount, PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO, new short[] {Byte.SIZE}, false);
         verifySampleValues(1);
         store.close();

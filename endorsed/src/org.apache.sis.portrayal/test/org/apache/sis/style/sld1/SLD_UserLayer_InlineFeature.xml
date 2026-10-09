@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- A UserLayer whose data is carried inline as a gml:FeatureCollection, instead of a RemoteOWS. -->
+<UserLayer xmlns="http://www.opengis.net/sld" xmlns:se="http://www.opengis.net/se" xmlns:gml="http://www.opengis.net/gml">
+    <se:Name>inline_layer</se:Name>
+    <InlineFeature>
+        <gml:FeatureCollection>
+            <gml:featureMember>
+                <gml:Point srsName="urn:x-ogc:def:crs:EPSG:6.11.2:4326">
+                    <gml:pos>46.652 10.466</gml:pos>
+                </gml:Point>
+            </gml:featureMember>
+        </gml:FeatureCollection>
+    </InlineFeature>
+</UserLayer>

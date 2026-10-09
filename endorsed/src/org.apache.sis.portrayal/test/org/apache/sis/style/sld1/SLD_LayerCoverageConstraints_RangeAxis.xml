@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- A LayerCoverageConstraints restricting a coverage layer to a CoverageExtent of named RangeAxis values. -->
+<sld:UserLayer xmlns:sld="http://www.opengis.net/sld" xmlns:se="http://www.opengis.net/se">
+    <se:Name>the_coverage_layer</se:Name>
+    <sld:LayerCoverageConstraints>
+        <sld:CoverageConstraint>
+            <sld:CoverageName>the_coverage_name</sld:CoverageName>
+            <sld:CoverageExtent>
+                <sld:RangeAxis>
+                    <sld:Name>Band</sld:Name>
+                    <sld:Value>band_1</sld:Value>
+                </sld:RangeAxis>
+                <sld:RangeAxis>
+                    <sld:Name>Time</sld:Name>
+                    <sld:Value>2005-05-19T09:28:40Z</sld:Value>
+                </sld:RangeAxis>
+            </sld:CoverageExtent>
+        </sld:CoverageConstraint>
+    </sld:LayerCoverageConstraints>
+</sld:UserLayer>

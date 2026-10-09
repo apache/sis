@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ogc:Filter xmlns:ogc="http://www.opengis.net/ogc">
+   <ogc:PropertyIsBetween>
+      <ogc:PropertyName>feature_property_name</ogc:PropertyName>
+      <ogc:LowerBoundary><ogc:Literal>455</ogc:Literal></ogc:LowerBoundary>
+      <ogc:UpperBoundary><ogc:Literal>457</ogc:Literal></ogc:UpperBoundary>
+   </ogc:PropertyIsBetween>
+</ogc:Filter>

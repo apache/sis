@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<se:LineSymbolizer xmlns:se="http://www.opengis.net/se"
+    xmlns:sld="http://www.opengis.net/sld"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:ogc="http://www.opengis.net/ogc"
+    xmlns:gml="http://www.opengis.net/gml"
+    uom="http://www.opengeospatial.org/se/units/metre">
+    <se:Geometry><ogc:PropertyName>geom</ogc:PropertyName></se:Geometry>
+    <se:Stroke>
+        <se:SvgParameter name="stroke"><ogc:Literal>#FF0000</ogc:Literal></se:SvgParameter>
+        <se:SvgParameter name="stroke-dasharray">3.0 6.0</se:SvgParameter>
+        <se:SvgParameter name="stroke-dashoffset"><ogc:Literal>2.3</ogc:Literal></se:SvgParameter>
+        <se:SvgParameter name="stroke-linecap"><ogc:Literal>butt</ogc:Literal></se:SvgParameter>
+        <se:SvgParameter name="stroke-linejoin"><ogc:Literal>bevel</ogc:Literal></se:SvgParameter>
+        <se:SvgParameter name="stroke-opacity"><ogc:Literal>0.4</ogc:Literal></se:SvgParameter>
+        <se:SvgParameter name="stroke-width"><ogc:Literal>13</ogc:Literal></se:SvgParameter>
+    </se:Stroke>
+</se:LineSymbolizer>

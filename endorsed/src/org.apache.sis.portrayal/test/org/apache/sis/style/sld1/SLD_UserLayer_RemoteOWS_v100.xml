@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- A UserLayer fetching its data from a remote WFS instead of carrying it inline. -->
+<UserLayer xmlns="http://www.opengis.net/sld" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <Name>user_layer</Name>
+    <RemoteOWS>
+        <Service>WFS</Service>
+        <OnlineResource xlink:type="simple" xlink:href="http://some.site.com/WFS?"/>
+    </RemoteOWS>
+</UserLayer>

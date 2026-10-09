@@ -154,6 +154,15 @@ abstract class ValuesAtPointIterator implements Spliterator<double[]> {
     }
 
     /**
+     * Tries to split this iterator. If successful, the returned iterator is a prefix
+     * of the sequence of points to evaluate, and this iterator become the remaining.
+     *
+     * @return a {@code Spliterator} covering a prefix of the elements, or {@code null} if cannot split.
+     */
+    @Override
+    public abstract ValuesAtPointIterator trySplit();
+
+    /**
      * Returns a string representation of this iterator for debugging purposes.
      */
     @Override
@@ -283,18 +292,18 @@ abstract class ValuesAtPointIterator implements Spliterator<double[]> {
          * of the sequence of points to evaluate, and this iterator become the remaining.
          *
          * A thread calling {@code trySplit()} may hand over the returned {@code Spliterator} to another thread,
-         * which in turn may further split that {@code Spliterator}. Therefore, this method must ensures that no
+         * which in turn may further split that {@code Spliterator}. Therefore, this method must ensure that no
          * instance share the same {@link #current} instance when this method returns.
          *
          * @return an iterator covering a prefix of the points, or {@code null} if this iterator cannot be split.
          */
         @Override
-        public final Spliterator<double[]> trySplit() {
+        public final ValuesAtPointIterator trySplit() {
             if (current == null) {
                 return null;
             }
             // Find the middle of the remaining number of points to evaluate.
-            int i = nextChildIndex + (upperChildIndex - nextChildIndex) / 2;
+            int i = indexOfXY + (limitOfXY - indexOfXY) / 2;
             i = Arrays.binarySearch(firstGridCoordOfChildren, nextChildIndex, upperChildIndex, i);
             if (i < 0) i = ~i;   // Tild operator, not minus. It gives the insertion point.
             if (i > nextChildIndex && i < upperChildIndex) {
@@ -304,7 +313,9 @@ abstract class ValuesAtPointIterator implements Spliterator<double[]> {
                 current = nextChild();
                 return prefix;
             } else {
-                return current.trySplit();    // After this call, `current` become a suffix.
+                final ValuesAtPointIterator prefix = current.trySplit(); // After this call, `current` become a suffix.
+                indexOfXY = current.indexOfXY;
+                return prefix;
             }
         }
 
@@ -727,7 +738,7 @@ nextTile:   for (tileCount = 0; indexOfXY < limitOfXY; tileCount++) {
          * and this iterator become the suffix.
          */
         @Override
-        public Spliterator<double[]> trySplit() {
+        public ValuesAtPointIterator trySplit() {
             final int start = indexOfXY;
             final int half = ((limitOfXY - start) / 2) & ~1;        // Must be even.
             if (half >= 10) {    // Arbitrary threshold.
@@ -789,7 +800,7 @@ nextTile:   for (tileCount = 0; indexOfXY < limitOfXY; tileCount++) {
          * It does not seem worth to let this class be parallelized.
          */
         @Override
-        public Spliterator<double[]> trySplit() {
+        public ValuesAtPointIterator trySplit() {
             return null;
         }
 

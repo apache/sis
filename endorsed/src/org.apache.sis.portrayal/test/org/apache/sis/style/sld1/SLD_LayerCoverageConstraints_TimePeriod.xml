@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- A LayerCoverageConstraints restricting a coverage layer to a CoverageExtent TimePeriod. -->
+<sld:UserLayer xmlns:sld="http://www.opengis.net/sld" xmlns:se="http://www.opengis.net/se">
+    <se:Name>the_coverage_layer</se:Name>
+    <sld:LayerCoverageConstraints>
+        <sld:CoverageConstraint>
+            <sld:CoverageName>the_coverage_name</sld:CoverageName>
+            <sld:CoverageExtent>
+                <sld:TimePeriod>2005-05-17T00:00:00Z/2005-05-23T00:00:00Z</sld:TimePeriod>
+            </sld:CoverageExtent>
+        </sld:CoverageConstraint>
+    </sld:LayerCoverageConstraints>
+</sld:UserLayer>

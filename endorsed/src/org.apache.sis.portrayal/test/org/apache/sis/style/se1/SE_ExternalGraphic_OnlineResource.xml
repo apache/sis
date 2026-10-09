@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- ExternalGraphic referencing a remote resource, with a Recode ColorReplacement. -->
+<se:PointSymbolizer xmlns:se="http://www.opengis.net/se"
+    xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ogc="http://www.opengis.net/ogc">
+    <se:Graphic>
+        <se:ExternalGraphic>
+            <se:OnlineResource xlink:type="simple" xlink:href="http://www.opengis.net/images/symbol.png"/>
+            <se:Format>image/png</se:Format>
+            <se:ColorReplacement>
+                <se:Recode fallbackValue="#000000">
+                    <se:LookupValue>Rasterdata</se:LookupValue>
+                    <se:MapItem>
+                        <se:Data>1</se:Data>
+                        <se:Value>#FF0000</se:Value>
+                    </se:MapItem>
+                </se:Recode>
+            </se:ColorReplacement>
+        </se:ExternalGraphic>
+    </se:Graphic>
+</se:PointSymbolizer>

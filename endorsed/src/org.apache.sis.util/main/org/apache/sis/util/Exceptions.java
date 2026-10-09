@@ -33,8 +33,25 @@ import org.apache.sis.util.collection.BackingStoreException;
 /**
  * Static methods working with {@link Exception} instances.
  *
+ * <h2>Policy on exception message locale</h2>
+ * Exceptions thrown by Apache <abbr>SIS</abbr> generally applies the following policy.
+ * This is applied on a best effort basis only:
+ *
+ * <ul>
+ *   <li>{@link Exception#getMessage()} returns the message in the {@linkplain Locale#getDefault() default locale}.
+ *       In a client-server architecture, this is often the locale on the server side.</li>
+ *   <li>{@link Exception#getLocalizedMessage()} returns the message in a locale specified by
+ *       {@link Localized#getLocale()}.
+ *       In a client-server architecture, this is often the locale on the client side.</li>
+ * </ul>
+ *
+ * <p><b>Example:</b>
+ * If an error occurred while a Japanese client connected to an European server, the localized message may be sent
+ * to the client in Japanese language while the same error may be logged on the server side in the French language.
+ * This allows system administrator to analyze the issue without the need to understand client's language.</p>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.7
  * @since   0.3
  */
 public final class Exceptions {
@@ -68,7 +85,10 @@ public final class Exceptions {
      *         argument was {@code null} or if the exception does not contain a message.
      *
      * @see LocalizedException#getLocalizedMessage()
+     *
+     * @deprecated Depends on {@link LocalizedException}, which has been deprecated.
      */
+    @Deprecated(since = "1.7", forRemoval = true)
     public static String getLocalizedMessage(final Throwable exception, final Locale locale) {
         if (exception == null) {
             return null;
