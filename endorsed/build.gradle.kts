@@ -488,6 +488,7 @@ signing {
         sign(publishing.publications["storage.xml"])
         sign(publishing.publications["storage.netcdf"])
         sign(publishing.publications["storage.geotiff"])
+        sign(publishing.publications["storage.geoheif"])
         sign(publishing.publications["storage.earthobservation"])
         sign(publishing.publications["cloud.aws"])
         sign(publishing.publications["profile.france"])
