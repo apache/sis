@@ -305,20 +305,12 @@ public class ModuleInfoSelector extends BaseExtendSelector {
         <dirset dir="${basedir}/${optional.test.dir}" id="have.tests.optional.test.dir.set" includes="*/*">
             <filename regex="${have.tests.optional.test.dir.regexp}"/>
         </dirset>
-        <j2semodularproject1:modsource_regexp xmlns:j2semodularproject1="http://www.netbeans.org/ns/j2se-modular-project/1" modsource="${incubator.test.dir.path}" property="have.tests.incubator.test.dir.regexp"/>
-        <dirset dir="${basedir}/${incubator.test.dir}" id="have.tests.incubator.test.dir.set" includes="*/*">
-            <filename regex="${have.tests.incubator.test.dir.regexp}"/>
-        </dirset>
         <union id="have.tests.set">
             <dirset refid="have.tests.test.src.dir.set"/>
             <dirset refid="have.tests.optional.test.dir.set"/>
-            <dirset refid="have.tests.incubator.test.dir.set"/>
         </union>
         <condition property="have.tests">
             <or>
-                <resourcecount count="0" when="greater">
-                    <union refid="have.tests.set"/>
-                </resourcecount>
                 <resourcecount count="0" when="greater">
                     <union refid="have.tests.set"/>
                 </resourcecount>
@@ -335,14 +327,9 @@ public class ModuleInfoSelector extends BaseExtendSelector {
         <dirset dir="${basedir}/${optional.test.dir}" id="have.tests.optional.test.dir.patchset" includes="*/*">
             <filename regex="${have.tests.optional.test.dir.regexp}"/>
         </dirset>
-        <j2semodularproject1:modsource_regexp xmlns:j2semodularproject1="http://www.netbeans.org/ns/j2se-modular-project/1" modsource="${incubator.test.dir.path}" property="have.tests.incubator.test.dir.regexp"/>
-        <dirset dir="${basedir}/${incubator.test.dir}" id="have.tests.incubator.test.dir.patchset" includes="*/*">
-            <filename regex="${have.tests.incubator.test.dir.regexp}"/>
-        </dirset>
         <union id="have.tests.patchset">
             <dirset refid="have.tests.test.src.dir.patchset"/>
             <dirset refid="have.tests.optional.test.dir.patchset"/>
-            <dirset refid="have.tests.incubator.test.dir.patchset"/>
         </union>
         <j2semodularproject1:modsource_regexp xmlns:j2semodularproject1="http://www.netbeans.org/ns/j2se-modular-project/1" modsource="${src.dir.path}" property="have.sources.src.dir.regexp"/>
         <dirset dir="${basedir}/${src.dir}" id="have.sources.src.dir.set" includes="*/*">
@@ -352,20 +339,12 @@ public class ModuleInfoSelector extends BaseExtendSelector {
         <dirset dir="${basedir}/${optional.main.dir}" id="have.sources.optional.main.dir.set" includes="*/*">
             <filename regex="${have.sources.optional.main.dir.regexp}"/>
         </dirset>
-        <j2semodularproject1:modsource_regexp xmlns:j2semodularproject1="http://www.netbeans.org/ns/j2se-modular-project/1" modsource="${incubator.main.dir.path}" property="have.sources.incubator.main.dir.regexp"/>
-        <dirset dir="${basedir}/${incubator.main.dir}" id="have.sources.incubator.main.dir.set" includes="*/*">
-            <filename regex="${have.sources.incubator.main.dir.regexp}"/>
-        </dirset>
         <union id="have.sources.set">
             <dirset refid="have.sources.src.dir.set"/>
             <dirset refid="have.sources.optional.main.dir.set"/>
-            <dirset refid="have.sources.incubator.main.dir.set"/>
         </union>
         <condition property="have.sources">
             <or>
-                <resourcecount count="0" when="greater">
-                    <union refid="have.sources.set"/>
-                </resourcecount>
                 <resourcecount count="0" when="greater">
                     <union refid="have.sources.set"/>
                 </resourcecount>
@@ -530,10 +509,8 @@ public class ModuleInfoSelector extends BaseExtendSelector {
     <target depends="-pre-init,-init-private,-init-user,-init-project,-do-init" name="-init-check">
         <fail unless="src.dir">Must set src.dir</fail>
         <fail unless="optional.main.dir">Must set optional.main.dir</fail>
-        <fail unless="incubator.main.dir">Must set incubator.main.dir</fail>
         <fail unless="test.src.dir">Must set test.src.dir</fail>
         <fail unless="optional.test.dir">Must set optional.test.dir</fail>
-        <fail unless="incubator.test.dir">Must set incubator.test.dir</fail>
         <fail unless="build.dir">Must set build.dir</fail>
         <fail unless="dist.dir">Must set dist.dir</fail>
         <fail unless="build.modules.dir">Must set build.modules.dir</fail>
@@ -563,7 +540,7 @@ public class ModuleInfoSelector extends BaseExtendSelector {
             <attribute default="${build.modules.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <attribute default="${javac.modulepath}" name="modulepath"/>
-            <attribute default="${src.dir}/*/${src.dir.path}:${optional.main.dir}/*/${optional.main.dir.path}:${incubator.main.dir}/*/${incubator.main.dir.path}" name="modulesourcepath"/>
+            <attribute default="${src.dir}/*/${src.dir.path}:${optional.main.dir}/*/${optional.main.dir.path}" name="modulesourcepath"/>
             <attribute default="${javac.upgrademodulepath}" name="upgrademodulepath"/>
             <attribute default="${javac.processorpath}" name="processorpath"/>
             <attribute default="${javac.processormodulepath}" name="processormodulepath"/>
@@ -584,7 +561,7 @@ public class ModuleInfoSelector extends BaseExtendSelector {
                         </path>
                     </resourcecount>
                 </condition>
-                <javac debug="@{debug}" deprecation="${javac.deprecation}" destdir="@{destdir}" encoding="${source.encoding}" excludes="@{excludes}" fork="${javac.fork}" includeantruntime="false" includes="@{includes}" release="${javac.source}" tempdir="${java.io.tmpdir}">
+                <javac debug="@{debug}" deprecation="${javac.deprecation}" destdir="@{destdir}" encoding="${source.encoding}" excludes="@{excludes}" fork="${javac.fork}" includeantruntime="false" includes="@{includes}" source="${javac.source}" target="${javac.target}" tempdir="${java.io.tmpdir}">
                     <classpath>
                         <path path="@{classpath}"/>
                     </classpath>
@@ -616,7 +593,7 @@ public class ModuleInfoSelector extends BaseExtendSelector {
     </target>
     <target depends="-init-macrodef-javac" name="-init-macrodef-javac-depend">
         <macrodef name="depend" uri="http://www.netbeans.org/ns/j2se-modular-project/1">
-            <attribute default="${src.dir}:${optional.main.dir}:${incubator.main.dir}" name="srcdir"/>
+            <attribute default="${src.dir}:${optional.main.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <sequential>
@@ -735,14 +712,9 @@ public class ModuleInfoSelector extends BaseExtendSelector {
                                         <filename name="**/@{testincludes}"/>
                                         <filename regex="${have.tests.optional.test.dir.regexp}"/>
                                     </fileset>
-                                    <fileset dir="${incubator.test.dir}" excludes="@{excludes},${excludes}" includes="**/@{includes}">
-                                        <filename name="**/@{testincludes}"/>
-                                        <filename regex="${have.tests.incubator.test.dir.regexp}"/>
-                                    </fileset>
                                 </union>
                                 <regexpmapper from="${have.tests.test.src.dir.regexp}\Q${file.separator}\E(.*)$" to="\3"/>
                                 <regexpmapper from="${have.tests.optional.test.dir.regexp}\Q${file.separator}\E(.*)$" to="\3"/>
-                                <regexpmapper from="${have.tests.incubator.test.dir.regexp}\Q${file.separator}\E(.*)$" to="\3"/>
                             </mappedresources>
                             <fileset dir="${build.test.modules.dir}" excludes="@{excludes},${excludes},${test.binaryexcludes}" includes="${test.binaryincludes}">
                                 <filename name="${test.binarytestincludes}"/>
@@ -771,9 +743,6 @@ public class ModuleInfoSelector extends BaseExtendSelector {
                         <filename name="@{testincludes}"/>
                     </fileset>
                     <fileset dir="${optional.test.dir}" excludes="@{excludes},**/*.xml,${excludes}" includes="@{includes}">
-                        <filename name="@{testincludes}"/>
-                    </fileset>
-                    <fileset dir="${incubator.test.dir}" excludes="@{excludes},**/*.xml,${excludes}" includes="@{includes}">
                         <filename name="@{testincludes}"/>
                     </fileset>
                 </union>
@@ -1151,7 +1120,7 @@ public class ModuleInfoSelector extends BaseExtendSelector {
                 <include name="*"/>
             </dirset>
         </pathconvert>
-        <j2semodularproject1:depend xmlns:j2semodularproject1="http://www.netbeans.org/ns/j2se-modular-project/1" srcdir="${src.dir}:${optional.main.dir}:${incubator.main.dir}:${build.generated.subdirs}"/>
+        <j2semodularproject1:depend xmlns:j2semodularproject1="http://www.netbeans.org/ns/j2se-modular-project/1" srcdir="${src.dir}:${optional.main.dir}:${build.generated.subdirs}"/>
     </target>
     <target depends="init,deps-jar,-pre-pre-compile,-pre-compile,-compile-depend" if="have.sources" name="-do-compile">
         <j2semodularproject1:javac xmlns:j2semodularproject1="http://www.netbeans.org/ns/j2se-modular-project/1" gensrcdir="${build.generated.sources.dir}"/>
@@ -1166,12 +1135,6 @@ public class ModuleInfoSelector extends BaseExtendSelector {
         <copy todir="${build.modules.dir}">
             <fileset dir="${optional.main.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <regexpmapper from="${optional.main.dir.path.regexp}" to="\1/\3"/>
-        </copy>
-        <j2semodularproject1:modsource_regexp xmlns:j2semodularproject1="http://www.netbeans.org/ns/j2se-modular-project/1" filePattern="(.*$)" modsource="${incubator.main.dir.path}" property="incubator.main.dir.path.regexp"/>
-        <echo message="Copying resources from ${incubator.main.dir}"/>
-        <copy todir="${build.modules.dir}">
-            <fileset dir="${incubator.main.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <regexpmapper from="${incubator.main.dir.path.regexp}" to="\1/\3"/>
         </copy>
     </target>
     <target if="has.persistence.xml" name="-copy-persistence-xml">
@@ -1620,9 +1583,6 @@ public class ModuleInfoSelector extends BaseExtendSelector {
             <fileset dir="${optional.main.dir}" excludes="${bug5101868workaround},${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${incubator.main.dir}" excludes="${bug5101868workaround},${excludes}" includes="${includes}">
-                <filename name="**/*.java"/>
-            </fileset>
             <fileset dir="${build.generated.sources.dir}" erroronmissingdir="false">
                 <include name="**/*.java"/>
                 <exclude name="*.java"/>
@@ -1635,9 +1595,6 @@ public class ModuleInfoSelector extends BaseExtendSelector {
                 <filename name="**/doc-files/**"/>
             </fileset>
             <fileset dir="${optional.main.dir}" excludes="${excludes}" includes="${includes}">
-                <filename name="**/doc-files/**"/>
-            </fileset>
-            <fileset dir="${incubator.main.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/doc-files/**"/>
             </fileset>
             <fileset dir="${build.generated.sources.dir}" erroronmissingdir="false">
@@ -1738,7 +1695,7 @@ public class ModuleInfoSelector extends BaseExtendSelector {
     </target>
     <target depends="-init-test-javac-module-properties" name="-init-test-module-properties">
         <property location="${build.modules.dir}" name="test.module.build.location"/>
-        <property name="test.source.modulepath" value="${test.src.dir}/*/${test.src.dir.path}:${optional.test.dir}/*/${optional.test.dir.path}:${incubator.test.dir}/*/${incubator.test.dir.path}"/>
+        <property name="test.source.modulepath" value="${test.src.dir}/*/${test.src.dir.path}:${optional.test.dir}/*/${optional.test.dir.path}"/>
         <property name="test.compile.modulepath" value="${javac.test.modulepath}:${build.modules.dir}"/>
         <macrodef name="test-javac" uri="http://www.netbeans.org/ns/j2se-modular-project/1">
             <attribute default="${includes}" name="includes"/>
@@ -1755,7 +1712,7 @@ public class ModuleInfoSelector extends BaseExtendSelector {
         </macrodef>
     </target>
     <target if="do.depend.true" name="-compile-test-depend">
-        <j2semodularproject1:depend xmlns:j2semodularproject1="http://www.netbeans.org/ns/j2se-modular-project/1" classpath="${javac.test.classpath}" destdir="${build.test.classes.dir}" srcdir="${test.src.dir}:${optional.test.dir}:${incubator.test.dir}"/>
+        <j2semodularproject1:depend xmlns:j2semodularproject1="http://www.netbeans.org/ns/j2se-modular-project/1" classpath="${javac.test.classpath}" destdir="${build.test.classes.dir}" srcdir="${test.src.dir}:${optional.test.dir}"/>
     </target>
     <target depends="init,deps-jar,compile,-init-test-module-properties,-pre-pre-compile-test,-pre-compile-test,-compile-test-depend" if="have.tests" name="-do-compile-test">
         <j2semodularproject1:test-javac xmlns:j2semodularproject1="http://www.netbeans.org/ns/j2se-modular-project/1"/>
@@ -1770,12 +1727,6 @@ public class ModuleInfoSelector extends BaseExtendSelector {
         <copy todir="${build.test.modules.dir}">
             <fileset dir="${optional.test.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <regexpmapper from="${optional.test.dir.path.regexp}" to="\1/\3"/>
-        </copy>
-        <j2semodularproject1:modsource_regexp xmlns:j2semodularproject1="http://www.netbeans.org/ns/j2se-modular-project/1" filePattern="(.*$)" modsource="${incubator.test.dir.path}" property="incubator.test.dir.path.regexp"/>
-        <echo message="Copying resources from ${incubator.test.dir}"/>
-        <copy todir="${build.test.modules.dir}">
-            <fileset dir="${incubator.test.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <regexpmapper from="${incubator.test.dir.path.regexp}" to="\1/\3"/>
         </copy>
     </target>
     <target name="-post-compile-test">
@@ -1802,12 +1753,6 @@ public class ModuleInfoSelector extends BaseExtendSelector {
         <copy todir="${build.test.modules.dir}">
             <fileset dir="${optional.test.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <regexpmapper from="${optional.test.dir.path.regexp}" to="\1/\3"/>
-        </copy>
-        <j2semodularproject1:modsource_regexp xmlns:j2semodularproject1="http://www.netbeans.org/ns/j2se-modular-project/1" filePattern="(.*$)" modsource="${incubator.test.dir.path}" property="incubator.test.dir.path.regexp"/>
-        <echo message="Copying resources from ${incubator.test.dir}"/>
-        <copy todir="${build.test.modules.dir}">
-            <fileset dir="${incubator.test.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <regexpmapper from="${incubator.test.dir.path.regexp}" to="\1/\3"/>
         </copy>
     </target>
     <target name="-post-compile-test-single">
