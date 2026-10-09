@@ -18,13 +18,6 @@ package org.apache.sis.storage.geopose;
 
 import java.util.Map;
 import javax.measure.Unit;
-import org.apache.sis.measure.Units;
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.crs.DefaultDerivedCRS;
-import org.apache.sis.referencing.cs.DefaultCartesianCS;
-import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
-import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
-import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.GeographicCRS;
@@ -34,6 +27,13 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.util.FactoryException;
+import org.apache.sis.measure.Units;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.crs.DefaultDerivedCRS;
+import org.apache.sis.referencing.cs.DefaultCartesianCS;
+import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 
 
 /**

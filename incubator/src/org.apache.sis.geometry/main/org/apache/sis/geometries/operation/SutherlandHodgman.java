@@ -21,7 +21,6 @@ import java.util.List;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
-import org.apache.sis.maths.Vector;
 
 
 /**

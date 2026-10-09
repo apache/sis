@@ -41,7 +41,6 @@ import org.apache.sis.maths.Vector2D;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.maths.Vector;
 
 
 /**

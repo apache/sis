@@ -57,6 +57,7 @@ import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector3D;
 import org.apache.sis.maths.Vectors;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CRS;
@@ -69,7 +70,6 @@ import org.apache.sis.referencing.internal.shared.AxisDirections;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.maths.Vector;
 
 
 /**

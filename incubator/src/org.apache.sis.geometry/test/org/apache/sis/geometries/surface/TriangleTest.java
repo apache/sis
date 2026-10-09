@@ -18,7 +18,6 @@ package org.apache.sis.geometries.surface;
 
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryFactory;
-import org.apache.sis.geometries.GeometryTest;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
@@ -28,6 +27,7 @@ import org.apache.sis.referencing.CommonCRS;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.GeometryTest;
 
 
 /**

@@ -31,8 +31,8 @@ import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.ReadOnly;
-import org.apache.sis.referencing.internal.shared.ShapeUtilities;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.referencing.internal.shared.ShapeUtilities;
 
 
 /**

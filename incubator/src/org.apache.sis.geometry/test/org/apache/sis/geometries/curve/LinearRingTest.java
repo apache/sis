@@ -18,13 +18,13 @@ package org.apache.sis.geometries.curve;
 
 import javax.measure.Quantity;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.GeometryTest;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.GeometryTest;
 
 
 /**
