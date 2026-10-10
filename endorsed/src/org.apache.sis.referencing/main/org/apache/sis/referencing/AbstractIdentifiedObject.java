@@ -532,18 +532,6 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
-     *
-     * @return the GeoAPI interface implemented by this class.
-     * @deprecated Renamed {@link #getStandardType()} for integration with {@link LenientComparable}.
-     */
-    @Deprecated(since="1.7", forRemoval=true)
-    // TODO: make package private.
-    public final Class<? extends IdentifiedObject> getInterface() {
-        return Classes.getRawClass(getStandardType()).asSubclass(IdentifiedObject.class);
-    }
-
-    /**
      * Returns the primary name by which this object is identified.
      *
      * @return the primary name.

@@ -23,14 +23,10 @@ import java.util.Optional;
 import java.awt.image.RenderedImage;
 import javafx.application.Platform;
 import javafx.beans.DefaultProperty;
-import javafx.scene.control.Control;
 import javafx.scene.control.SplitPane;
-import javafx.scene.control.Separator;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.Region;
-import javafx.event.ActionEvent;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import org.opengis.metadata.Identifier;
@@ -45,13 +41,10 @@ import org.apache.sis.gui.Widget;
 import org.apache.sis.gui.map.StatusBar;
 import org.apache.sis.gui.internal.FontGIS;
 import org.apache.sis.gui.internal.Resources;
-import org.apache.sis.gui.internal.ToolbarButton;
 import org.apache.sis.gui.internal.NonNullObjectProperty;
-import org.apache.sis.gui.internal.PrivateAccess;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
-import org.apache.sis.gui.dataset.WindowHandler;
 
 
 /**
@@ -225,15 +218,6 @@ public class CoverageExplorer extends Widget {
     private SplitPane content;
 
     /**
-     * Handler of the window showing this coverage view. This is used for creating new windows.
-     * Created when first needed for giving to subclasses a chance to complete initialization.
-     *
-     * @see #getWindowHandler()
-     */
-    @Deprecated(since = "1.7", forRemoval = true)
-    private WindowHandler window;
-
-    /**
      * Creates an initially empty explorer with the specified view type.
      *
      * @param  type  the way to show coverages in this explorer.
@@ -254,50 +238,6 @@ public class CoverageExplorer extends Widget {
         viewTypeProperty.addListener((p,o,n) -> onViewTypeSet(n));
         resourceProperty.addListener((p,o,n) -> onPropertySet(n, null, coverageProperty));
         coverageProperty.addListener((p,o,n) -> onPropertySet(null, n, resourceProperty));
-    }
-
-    /**
-     * Creates an explorer initialized with the same coverage or resource than the given explorer.
-     *
-     * @param  source  the source explorer from which to take the initial coverage or resource.
-     *
-     * @since 1.2
-     */
-    @SuppressWarnings("this-escape")
-    public CoverageExplorer(final CoverageExplorer source) {
-        this(source.getViewType());
-        window = PrivateAccess.newWindowHandler.apply(source.window, this);
-        source.getImageRequest().ifPresent(this::setCoverage);
-        PrivateAccess.finishWindowHandler.accept(window);
-        if (getViewType() == View.IMAGE) {
-            getCoverageControls().copyStyling(source.getCoverageControls());
-        }
-    }
-
-    /**
-     * Returns the handler of the window showing this coverage view.
-     * Those windows are created when the user clicks on the "New window" button.
-     * Each window provides the area where data are shown and where the user interacts.
-     * The window can be a JavaFX top-level window ({@link javafx.stage.Stage}), but not necessarily.
-     * It may also be a tile in a mosaic of windows.
-     *
-     * @return the handler of the window showing this coverage view.
-     *
-     * @since 1.3
-     *
-     * @deprecated Replaced by {@link org.apache.sis.gui.map.MapWindows}.
-     */
-    @Deprecated(since = "1.7", forRemoval = true)
-    public final WindowHandler getWindowHandler() {
-        assert Platform.isFxApplicationThread();
-        /*
-         * Created when first needed for giving to subclass constructors a chance to complete
-         * their initialization before `this` reference is passed to `WindowHandler` constructor.
-         */
-        if (window == null) {
-            window = WindowHandler.create(this);
-        }
-        return window;
     }
 
     /**
@@ -367,23 +307,6 @@ public class CoverageExplorer extends Widget {
          */
         if (content == null) {
             /*
-             * Prepare buttons to add on the toolbar. Those buttons are not managed by this class;
-             * they are managed by org.apache.sis.gui.dataset.WindowHandler. We only declare here
-             * the text and action for each button.
-             */
-            final ToggleGroup group   = new ToggleGroup();
-            final Control[]   buttons = new Control[View.COUNT + 1];
-            final Resources localized = Resources.forLocale(getLocale());
-            buttons[0] = new Separator();
-            for (final View type : View.values()) {
-                buttons[1 + type.ordinal()] = new Selector(type).createButton(group, type.icon, type.fallback, localized, type.tooltip);
-            }
-            final View type = getViewType();
-            final ViewAndControls c = getViewAndControls(type, false);
-            group.selectToggle(group.getToggles().get(type.ordinal()));
-            content = new SplitPane(c.controls(), c.viewAndNavigation);
-            ToolbarButton.insert(content, buttons);
-            /*
              * The divider position is supposed to be a fraction between 0 and 1. A value of 1 would mean
              * to give all the space to controls and no space to data, which is not what we want. However
              * experience with JavaFX 14 shows that this setting gives just a reasonable space to controls
@@ -420,31 +343,6 @@ public class CoverageExplorer extends Widget {
     public final TitledPane[] getControls(final View type) {
         assert Platform.isFxApplicationThread();
         return getViewAndControls(Objects.requireNonNull(type), false).controlPanes.clone();
-    }
-
-    /**
-     * The action to execute when the user selects a view.
-     * This is used by the toolbar buttons in the widget created by {@link #getView()}.
-     */
-    private final class Selector extends ToolbarButton {
-        /** The view to select when the button is pressed. */
-        private final View type;
-
-        /** Creates a new action which will show the view at the given index. */
-        Selector(final View type) {
-            this.type = type;
-        }
-
-        /** Invoked when the user selects another view to show (tabular data or the image). */
-        @Override public void handle(final ActionEvent event) {
-            final Toggle button = (Toggle) event.getSource();
-            if (button.isSelected()) {
-                setViewType(type);
-                views.get(type).selector = button;          // Should never be null.
-            } else {
-                button.setSelected(true);       // Prevent situation where all buttons are unselected.
-            }
-        }
     }
 
     /**

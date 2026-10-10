@@ -22,7 +22,7 @@
  * {@link org.apache.sis.gui.map.MapCanvasAWT} is a specialization for painting the map using Java2D.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.7
+ * @version 1.8
  * @since   1.1
  */
 package org.apache.sis.gui.map;

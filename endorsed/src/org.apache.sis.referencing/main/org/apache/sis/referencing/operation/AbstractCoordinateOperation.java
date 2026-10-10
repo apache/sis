@@ -493,11 +493,8 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * When this method returns {@code true}, the source and target CRS are not marshalled in XML documents.
      *
      * @return {@code true} if this coordinate operation is for the definition of a derived or projected CRS.
-     *
-     * @deprecated Replaced by the {@link DefiningConversion} class.
      */
-    @Deprecated(since = "1.7", forRemoval = true)
-    public boolean isDefiningConversion() {
+    private boolean isDefiningConversion() {
         /*
          * Trick: we do not need to verify if (this instanceof Conversion) because:
          *   - Only DefaultConversion constructor accepts null source and target CRS.

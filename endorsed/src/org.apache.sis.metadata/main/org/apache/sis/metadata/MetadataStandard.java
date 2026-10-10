@@ -1215,28 +1215,6 @@ public class MetadataStandard implements Serializable {
     }
 
     /**
-     * Compares the two specified metadata objects for equality.
-     * The two metadata arguments shall be implementations of a metadata interface defined by
-     * this {@code MetadataStandard}, otherwise an exception will be thrown. However, the two
-     * arguments do not need to be instances of the same implementation class
-     * except for {@link ComparisonMode#STRICT}.
-     *
-     * @param  metadata1  the first metadata object to compare, or {@code null}.
-     * @param  metadata2  the second metadata object to compare, or {@code null}.
-     * @param  mode       the strictness level of the comparison.
-     * @return {@code true} if the given metadata objects are equal or if the two arguments are {@code null}.
-     *
-     * @deprecated Replaced by {@link #equals(Object, Object, Class, ComparisonMode)} because this method
-     * is ambiguous when one of the given metadata instances implements more than one metadata interface.
-     */
-    @Deprecated(since="1.7", forRemoval=true)
-    public boolean equals(final Object metadata1, final Object metadata2, final ComparisonMode mode) {
-        final Boolean equals = equals(metadata1, metadata2, null, mode);
-        if (equals == null) throw new ClassCastException();
-        return equals;
-    }
-
-    /**
      * Compares the two specified metadata instances for equality.
      * The two metadata arguments should be implementations of a
      * {@linkplain #getInterface(Class, Class) metadata interface} defined by this {@code MetadataStandard}.

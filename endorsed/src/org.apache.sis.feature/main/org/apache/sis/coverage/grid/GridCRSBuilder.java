@@ -214,14 +214,6 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
     private static final Locale LOCALE = null;
 
     /**
-     * Whether to force {@link DerivedCRS} instances.
-     *
-     * @deprecated to be removed after {@link GridGeometry#createImageCRS} has been removed.
-     */
-    @Deprecated(forRemoval = true)
-    boolean derived;
-
-    /**
      * Creates a new helper class for building a grid coordinate reference system.
      */
     GridCRSBuilder() {
@@ -260,7 +252,7 @@ final class GridCRSBuilder extends ReferencingFactoryContainer {
             properties.put(ObjectDomain.DOMAIN_OF_VALIDITY_KEY, new DefaultExtent(null, domain, null, null));
         });
         fullGrid = grid;
-        if (derived || grid.isDefined(GridGeometry.CRS | GridGeometry.GRID_TO_CRS)) try {
+        if (grid.isDefined(GridGeometry.CRS | GridGeometry.GRID_TO_CRS)) try {
             separator = new TransformSeparator(grid.getGridToCRS(anchor).inverse());
             return forComponent(name, grid.getCoordinateReferenceSystem(), 0, 0);
         } catch (NoninvertibleTransformException e) {

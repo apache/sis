@@ -23,7 +23,7 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.6
+ * @version 1.8
  * @since   0.3
  */
 module org.apache.sis.metadata {

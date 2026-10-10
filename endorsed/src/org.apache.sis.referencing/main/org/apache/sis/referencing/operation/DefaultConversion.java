@@ -68,7 +68,7 @@ import org.opengis.referencing.crs.DerivedCRS;
  * by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.7
+ * @version 1.8
  *
  * @see DefaultTransformation
  *
@@ -149,33 +149,6 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
         super(properties, sourceCRS, targetCRS, interpolationCRS, method, transform);
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
-    }
-
-    /**
-     * Creates a defining conversion from the given transform and/or parameters.
-     *
-     * @param properties  the properties to be given to the identified object.
-     * @param method      the operation method.
-     * @param transform   transform from positions in the source CRS to positions in the target CRS, or {@code null}.
-     * @param parameters  the {@code transform} parameter values, or {@code null}.
-     *
-     * @deprecated Moved to the {@link DefiningConversion} subclass.
-     */
-    @Deprecated(since = "1.7", forRemoval = true)
-    @SuppressWarnings("this-escape")    // False positive.
-    public DefaultConversion(final Map<String,?>       properties,
-                             final OperationMethod     method,
-                             final MathTransform       transform,
-                             final ParameterValueGroup parameters)
-    {
-        super(properties, method);
-        this.transform = transform;
-        if (transform == null && parameters == null) {
-            throw new IllegalArgumentException(Resources.forProperties(properties)
-                    .getString(Resources.Keys.UnspecifiedParameterValues));
-        }
-        setParameterValues(parameters, null);
-        checkDimensions(properties);
     }
 
     /**
