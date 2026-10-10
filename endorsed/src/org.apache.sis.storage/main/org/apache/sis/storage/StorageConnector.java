@@ -112,7 +112,7 @@ import org.apache.sis.system.Configuration;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.7
+ * @version 1.8
  * @since   0.3
  */
 public class StorageConnector implements Serializable {
@@ -294,7 +294,7 @@ public class StorageConnector implements Serializable {
      * @see #setOption(OptionKey, Object)
      */
     @SuppressWarnings("serial")         // Not statically typed as Serializable.
-    private Map<org.apache.sis.setup.OptionKey<?>, Object> options;
+    private Map<OptionKey<?>, Object> options;
 
     /**
      * If a probing operation is ongoing, the provider doing the operation. Otherwise {@code null}.
@@ -671,7 +671,7 @@ public class StorageConnector implements Serializable {
      * @param key    the option for which to set the value.
      * @param value  the new value for the given option, or {@code null} for removing the value.
      */
-    public <T> void setOption(final org.apache.sis.setup.OptionKey<T> key, final T value) {
+    public <T> void setOption(final OptionKey<T> key, final T value) {
         options = key.setValueInto(options, value);
     }
 
@@ -683,7 +683,7 @@ public class StorageConnector implements Serializable {
      * @param  key  the option for which to get the value.
      * @return the current value for the given option, or {@code null} if none.
      */
-    public <T> T getOption(final org.apache.sis.setup.OptionKey<T> key) {
+    public <T> T getOption(final OptionKey<T> key) {
         return key.getValueFrom(options);
     }
 
