@@ -17,25 +17,23 @@
 package org.apache.sis.geometries.solid.polyhedron;
 
 import java.util.List;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
-import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.solid.Polyhedron;
-import org.apache.sis.geometries.surface.Sphere;
 import org.apache.sis.geometries.spherical.SphericalConvexPolygon;
-import org.apache.sis.geometries.surface.MultiPolygon;
 import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.geometries.surface.Sphere;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector3D;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
@@ -111,12 +109,12 @@ public abstract sealed class AbstractPolyhedron extends AbstractGeometry impleme
     }
 
     @Override
-    public MultiPolygon getExteriorShell() {
+    public GeometryCollection<Polygon> getExteriorShell() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
     @Override
-    public List<MultiPolygon> getInteriorShells() {
+    public List<GeometryCollection<Polygon>> getInteriorShells() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 

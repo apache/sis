@@ -40,9 +40,8 @@ import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.curve.MultiLineString;
-import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.surface.TIN;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -1145,14 +1144,19 @@ public sealed interface MeshPrimitive extends Geometry
         }
     }
 
-    public static final class Points extends Abs implements MultiPoint<Point>{
+    public static final class Points extends Abs implements GeometryCollection<Point>{
         public Points() {
             super(Type.POINTS);
         }
 
         @Override
         public GeometryType getGeometryType() {
-            return GeometryType.MULTIPOINT;
+            return GeometryType.COLLECTION;
+        }
+
+        @Override
+        public GeometryType getElementType() {
+            return GeometryType.POINT;
         }
 
         @Override
@@ -1166,11 +1170,17 @@ public sealed interface MeshPrimitive extends Geometry
             final int[] indices = (index == null) ? new int[]{n} : index.toArrayInt(n, 1);
             return new Sequence(this, indices).getPoint(0);
         }
+
     }
 
-    public static final class Lines extends Abs implements MultiLineString {
+    public static final class Lines extends Abs implements GeometryCollection<LineString> {
         public Lines() {
             super(Type.LINES);
+        }
+
+        @Override
+        public GeometryType getElementType() {
+            return GeometryType.LINESTRING;
         }
 
         @Override
@@ -1184,6 +1194,7 @@ public sealed interface MeshPrimitive extends Geometry
             final int[] indices = (index == null) ? new int[]{n*2, n*2+1} : index.toArrayInt(n*2, 2);
             return GeometryFactory.DEFAULT.createLineString(new Sequence(this, indices));
         }
+
     }
 
     public static final class LineLoop extends Abs implements LineString {

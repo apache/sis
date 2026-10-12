@@ -18,25 +18,19 @@ package org.apache.sis.geometries.adapter;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.CoordinateSequence;
-import org.locationtech.jts.geom.CoordinateXY;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.curve.MultiLineString;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.internal.shared.IndexedPoint;
-import org.apache.sis.geometries.point.MultiPoint;
-import org.apache.sis.geometries.surface.MultiPolygon;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Cursor;
@@ -44,8 +38,12 @@ import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vectors;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.CoordinateXY;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
@@ -138,21 +136,12 @@ public final class JTSAdapter {
         } else if (geom instanceof Point cdt) {
             final CoordinateSequence cs = toCoordinateSequence(cdt.getDataPoints(), copy, gf);
             jts = new org.locationtech.jts.geom.Point(cs, gf);
-        } else if (geom instanceof MultiPoint cdt) {
-            final CoordinateSequence cs = toCoordinateSequence(cdt.getDataPoints(), copy, gf);
-            jts = gf.createMultiPoint(cs);
         } else if (geom instanceof LinearRing cdt) {
             final CoordinateSequence cs = toCoordinateSequence(cdt.getDataPoints(), copy, gf);
             jts = new org.locationtech.jts.geom.LinearRing(cs, gf);
         } else if (geom instanceof LineString cdt) {
             final CoordinateSequence cs = toCoordinateSequence(cdt.getDataPoints(), copy, gf);
             jts = new org.locationtech.jts.geom.LineString(cs, gf);
-        } else if (geom instanceof MultiLineString cdt) {
-            final org.locationtech.jts.geom.LineString[] children = new org.locationtech.jts.geom.LineString[cdt.getNumGeometries()];
-            for (int i = 0; i < children.length; i++) {
-                children[i] = (org.locationtech.jts.geom.LineString) asJTS(cdt.getGeometryN(i), copy, gf);
-            }
-            jts = gf.createMultiLineString(children);
         } else if (geom instanceof Polygon cdt) {
 
             final org.locationtech.jts.geom.LinearRing exterior = (org.locationtech.jts.geom.LinearRing) asJTS(cdt.getExteriorRing(), copy, gf);
@@ -161,18 +150,21 @@ public final class JTSAdapter {
                 children[i] = (org.locationtech.jts.geom.LinearRing) asJTS(cdt.getInteriorRingN(i), copy, gf);
             }
             jts = gf.createPolygon(exterior, children);
-        } else if (geom instanceof MultiPolygon cdt) {
-            final org.locationtech.jts.geom.Polygon[] children = new org.locationtech.jts.geom.Polygon[cdt.getNumGeometries()];
-            for (int i = 0; i < children.length; i++) {
-                children[i] = (org.locationtech.jts.geom.Polygon) asJTS(cdt.getGeometryN(i), copy, gf);
-            }
-            jts = gf.createMultiPolygon(children);
         } else if (geom instanceof GeometryCollection cdt) {
-            final org.locationtech.jts.geom.Geometry[] children = new org.locationtech.jts.geom.Geometry[cdt.getNumGeometries()];
-            for (int i = 0; i < children.length; i++) {
-                children[i] = asJTS(cdt.getGeometryN(i), copy, gf);
+
+            final int nbChild = cdt.getNumGeometries();
+            final List<org.locationtech.jts.geom.Geometry> children = new ArrayList<>(nbChild);
+            for (int i = 0; i < nbChild; i++) {
+                children.add(asJTS(cdt.getGeometryN(i), copy, gf));
             }
-            jts = gf.createGeometryCollection(children);
+
+            final GeometryType elementType = cdt.getElementType();
+            switch (elementType) {
+                case POINT : jts = gf.createMultiPoint(children.toArray(org.locationtech.jts.geom.Point[]::new)); break;
+                case LINESTRING : jts = gf.createMultiLineString(children.toArray(org.locationtech.jts.geom.LineString[]::new)); break;
+                case POLYGON : jts = gf.createMultiPolygon(children.toArray(org.locationtech.jts.geom.Polygon[]::new)); break;
+                default : jts = gf.createGeometryCollection(children.toArray(org.locationtech.jts.geom.Geometry[]::new)); break;
+            }
         } else {
             throw new IllegalArgumentException("Unsupported geometry " + geom.getClass().getName());
         }

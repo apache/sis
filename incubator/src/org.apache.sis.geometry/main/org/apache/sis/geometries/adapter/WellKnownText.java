@@ -19,6 +19,7 @@ package org.apache.sis.geometries.adapter;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.util.Locale;
+import java.util.Set;
 import java.util.function.IntFunction;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
@@ -29,15 +30,11 @@ import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.Orientable;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.curve.CircularString;
 import org.apache.sis.geometries.curve.CompoundCurve;
 import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.curve.MultiCurve;
-import org.apache.sis.geometries.curve.MultiLineString;
-import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.surface.CurvePolygon;
-import org.apache.sis.geometries.surface.MultiPolygon;
-import org.apache.sis.geometries.surface.MultiSurface;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.geometries.surface.TIN;
@@ -315,18 +312,16 @@ public final class WellKnownText {
             formatPatches(sb, TIN.TYPE, g.getNumPatches(), g::getPatchN, g);
         } else if (geometry instanceof PolyhedralSurface<?> g) {
             formatPatches(sb, PolyhedralSurface.TYPE, g.getNumPatches(), g::getPatchN, g);
-        } else if (geometry instanceof MultiPoint<?> g) {       // Before GeometryCollection.
-            formatMultiPoint(sb, g);
-        } else if (geometry instanceof MultiLineString g) {     // Before MultiCurve.
-            formatMultiLineString(sb, g);
-        } else if (geometry instanceof MultiPolygon g) {        // Before MultiSurface.
-            formatMultiPolygon(sb, g);
-        } else if (geometry instanceof MultiCurve<?> g) {       // Before GeometryCollection.
-            formatMembers(sb, MultiCurve.TYPE, g);
-        } else if (geometry instanceof MultiSurface<?> g) {     // Before GeometryCollection.
-            formatMembers(sb, MultiSurface.TYPE, g);
         } else if (geometry instanceof GeometryCollection<?> g) {
-            formatMembers(sb, GeometryCollection.TYPE, g);
+            final GeometryType elementType = g.getElementType();
+            switch (elementType) {
+                case POINT      -> formatMultiPoint(sb, (GeometryCollection<Point>) g);
+                case LINESTRING -> formatMultiLineString(sb, (GeometryCollection<LineString>) g);
+                case POLYGON    -> formatMultiPolygon(sb, (GeometryCollection<Polygon>) g);
+                case CURVE      -> formatMembers(sb, GeometryCollection.TYPE_MULTICURVE, g);
+                case SURFACE    -> formatMembers(sb, GeometryCollection.TYPE_MULTISURFACE, g);
+                default         -> formatMembers(sb, GeometryCollection.TYPE, g);
+            }
         } else {
             throw unsupported(geometry);
         }
@@ -417,8 +412,8 @@ public final class WellKnownText {
      * Appends {@code "MULTIPOINT ((1 2), (3 4))"}. The grammar also allows the parentheses around
      * each point to be omitted; they are written here because that form is unambiguous.
      */
-    private void formatMultiPoint(final StringBuilder sb, final MultiPoint<?> geometry) {
-        if (appendHeader(sb, MultiPoint.TYPE, geometry)) return;
+    private void formatMultiPoint(final StringBuilder sb, final GeometryCollection<Point> geometry) {
+        if (appendHeader(sb, GeometryCollection.TYPE_MULTIPOINT, geometry)) return;
         final boolean hasM = hasMeasure(geometry);
         sb.append('(');
         for (int i = 0, n = geometry.getNumGeometries(); i < n; i++) {
@@ -438,8 +433,8 @@ public final class WellKnownText {
     /**
      * Appends {@code "MULTILINESTRING ((1 2, 3 4), (5 6, 7 8))"}: components keep no keyword.
      */
-    private void formatMultiLineString(final StringBuilder sb, final MultiLineString geometry) {
-        if (appendHeader(sb, MultiLineString.TYPE, geometry)) return;
+    private void formatMultiLineString(final StringBuilder sb, final GeometryCollection<LineString> geometry) {
+        if (appendHeader(sb, GeometryCollection.TYPE_MULTILINESTRING, geometry)) return;
         final boolean hasM = hasMeasure(geometry);
         sb.append('(');
         for (int i = 0, n = geometry.getNumGeometries(); i < n; i++) {
@@ -452,8 +447,8 @@ public final class WellKnownText {
     /**
      * Appends {@code "MULTIPOLYGON (((…), (…)), ((…)))"}: components keep no keyword.
      */
-    private void formatMultiPolygon(final StringBuilder sb, final MultiPolygon geometry) {
-        if (appendHeader(sb, MultiPolygon.TYPE, geometry)) return;
+    private void formatMultiPolygon(final StringBuilder sb, final GeometryCollection<Polygon> geometry) {
+        if (appendHeader(sb, GeometryCollection.TYPE_MULTIPOLYGON, geometry)) return;
         final boolean hasM = hasMeasure(geometry);
         sb.append('(');
         for (int i = 0, n = geometry.getNumGeometries(); i < n; i++) {

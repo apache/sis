@@ -19,6 +19,7 @@ package org.apache.sis.geometries.surface;
 import javax.measure.Quantity;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
@@ -52,7 +53,7 @@ public abstract class MultiPolygonTest extends GeometryTest {
      * @param  rings  the exterior ring of each surface, in the axis order of the given system.
      * @return a new set holding the given surfaces, never null.
      */
-    protected abstract MultiPolygon createMultiPolygon(CoordinateReferenceSystem crs, double[]... rings);
+    protected abstract GeometryCollection<Polygon> createMultiPolygon(CoordinateReferenceSystem crs, double[]... rings);
 
     @Test
     @Disabled("Not implemented yet.")
@@ -118,7 +119,7 @@ public abstract class MultiPolygonTest extends GeometryTest {
      */
     @Test
     public void testIsSimpleAndValid() {
-        final MultiPolygon surfaces = createMultiPolygon(CRS_2D, SQUARE_1, SQUARE_2);
+        final GeometryCollection<Polygon> surfaces = createMultiPolygon(CRS_2D, SQUARE_1, SQUARE_2);
         assertTrue(surfaces.isSimple(), "Two disjoint squares are simple.");
         assertTrue(surfaces.isValid(),  "Two disjoint squares are a valid set of surfaces.");
     }

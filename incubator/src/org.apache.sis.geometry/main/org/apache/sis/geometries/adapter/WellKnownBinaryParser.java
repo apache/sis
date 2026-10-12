@@ -21,9 +21,9 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Empty;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
@@ -31,16 +31,10 @@ import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Surface;
-import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.CompoundCurve;
-import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.curve.MultiCurve;
-import org.apache.sis.geometries.curve.MultiLineString;
-import org.apache.sis.geometries.point.MultiPoint;
+import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.surface.CurvePolygon;
-import org.apache.sis.geometries.surface.MultiPolygon;
-import org.apache.sis.geometries.surface.MultiSurface;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.geometries.surface.TIN;
@@ -49,6 +43,7 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
@@ -334,7 +329,7 @@ final class WellKnownBinaryParser {
     /**
      * Parses a count of members followed by that many complete points.
      */
-    private MultiPoint<?> parseMultiPoint() {
+    private GeometryCollection<Point> parseMultiPoint() {
         final int n = readCount();
         if (n == 0) {
             return GeometryFactory.DEFAULT.createMultiPoint(crs());
@@ -342,7 +337,7 @@ final class WellKnownBinaryParser {
         final Point[] members = new Point[n];
         for (int i = 0; i < n; i++) {
             // See parsePoint(): an empty point decodes to Empty, which is not a Point.
-            members[i] = readMember(Point.class, MultiPoint.TYPE);
+            members[i] = readMember(Point.class, GeometryCollection.TYPE_MULTIPOINT);
         }
         return GeometryFactory.DEFAULT.createMultiPoint(members);
     }
@@ -350,14 +345,14 @@ final class WellKnownBinaryParser {
     /**
      * Parses a count of members followed by that many complete line strings.
      */
-    private MultiLineString parseMultiLineString() {
+    private GeometryCollection<LineString> parseMultiLineString() {
         final int n = readCount();
         if (n == 0) {
             return GeometryFactory.DEFAULT.createMultiLineString(crs());
         }
         final LineString[] members = new LineString[n];
         for (int i = 0; i < n; i++) {
-            members[i] = readMember(LineString.class, MultiLineString.TYPE);
+            members[i] = readMember(LineString.class, GeometryCollection.TYPE_MULTILINESTRING);
         }
         return GeometryFactory.DEFAULT.createMultiLineString(members);
     }
@@ -365,14 +360,14 @@ final class WellKnownBinaryParser {
     /**
      * Parses a count of members followed by that many complete polygons.
      */
-    private MultiPolygon parseMultiPolygon() {
+    private GeometryCollection<Polygon> parseMultiPolygon() {
         final int n = readCount();
         if (n == 0) {
             return GeometryFactory.DEFAULT.createMultiPolygon(crs());
         }
         final Polygon[] members = new Polygon[n];
         for (int i = 0; i < n; i++) {
-            members[i] = readMember(Polygon.class, MultiPolygon.TYPE);
+            members[i] = readMember(Polygon.class, GeometryCollection.TYPE_MULTIPOLYGON);
         }
         return GeometryFactory.DEFAULT.createMultiPolygon(members);
     }
@@ -381,14 +376,14 @@ final class WellKnownBinaryParser {
      * Parses a count of members followed by that many complete curves, which unlike those of a
      * {@code MULTILINESTRING} may be of any curve type.
      */
-    private MultiCurve<Curve> parseMultiCurve() {
+    private GeometryCollection<Curve> parseMultiCurve() {
         final int n = readCount();
         if (n == 0) {
             return GeometryFactory.DEFAULT.createMultiCurve(crs());
         }
         final Curve[] members = new Curve[n];
         for (int i = 0; i < n; i++) {
-            members[i] = readMember(Curve.class, MultiCurve.TYPE);
+            members[i] = readMember(Curve.class, GeometryCollection.TYPE_MULTICURVE);
         }
         return GeometryFactory.DEFAULT.createMultiCurve(members);
     }
@@ -397,14 +392,14 @@ final class WellKnownBinaryParser {
      * Parses a count of members followed by that many complete surfaces, which unlike those of a
      * {@code MULTIPOLYGON} may be of any surface type.
      */
-    private MultiSurface<Surface> parseMultiSurface() {
+    private GeometryCollection<Surface> parseMultiSurface() {
         final int n = readCount();
         if (n == 0) {
             return GeometryFactory.DEFAULT.createMultiSurface(crs());
         }
         final Surface[] members = new Surface[n];
         for (int i = 0; i < n; i++) {
-            members[i] = readMember(Surface.class, MultiSurface.TYPE);
+            members[i] = readMember(Surface.class, GeometryCollection.TYPE_MULTISURFACE);
         }
         return GeometryFactory.DEFAULT.createMultiSurface(members);
     }

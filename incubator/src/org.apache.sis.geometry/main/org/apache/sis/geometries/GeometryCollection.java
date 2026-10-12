@@ -16,20 +16,17 @@
  */
 package org.apache.sis.geometries;
 
-import java.util.Set;
 import javax.measure.Quantity;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.Envelope;
-import org.apache.sis.geometries.curve.MultiCurve;
 import org.apache.sis.geometries.curve.ProductCurve;
 import org.apache.sis.geometries.internal.shared.ConcatenatedDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultGeometryCollection;
+import org.apache.sis.geometries.internal.shared.DefaultMultiPoint;
 import org.apache.sis.geometries.internal.shared.EmptyDataPoints;
+import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
-import org.apache.sis.geometries.point.MultiPoint;
-import org.apache.sis.geometries.solid.MultiPolyhedron;
-import org.apache.sis.geometries.surface.MultiSurface;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
@@ -64,6 +61,13 @@ import org.apache.sis.measure.Units;
  *   is not applicable.
  *   </li>
  * </ul>
+ * Deviation from ISO-19107 :<br>
+ * <ul>
+ *   <li>The returned type of getElementType() is expected to be a Set in ISO 19107, to make it more natural in Java and the Generics
+ *   this Set has been reduced to a single element, which must be the first common parent.
+ *   No use cases has arised to require this limitation to be redefined as a Set.
+ *   </li>
+ * </ul>
  *
  * @param  <T>  type of the elements of this collection.
  *
@@ -74,19 +78,24 @@ import org.apache.sis.measure.Units;
  */
 @UML(identifier="Collection", specification=ISO_19107)
 public sealed interface GeometryCollection<T extends Geometry> extends Geometry
-        permits MultiPoint,
-                MultiCurve,
-                MultiSurface,
-                MultiPolyhedron,
-                ProductCurve,
+        permits ProductCurve,
+                DefaultMultiPoint,
                 DefaultGeometryCollection,
-                MultiMeshPrimitive
+                MultiMeshPrimitive,
+                MeshPrimitive.Abs.Points,
+                MeshPrimitive.Abs.Lines
 {
 
     /**
      * Well-known text keyword of this geometry type.
      */
     static final String TYPE = "GEOMETRYCOLLECTION";
+    static final String TYPE_MULTICURVE = "MULTICURVE";
+    static final String TYPE_MULTILINESTRING = "MULTILINESTRING";
+    static final String TYPE_MULTISURFACE = "MULTISURFACE";
+    static final String TYPE_MULTIPOLYGON = "MULTIPOLYGON";
+    static final String TYPE_MULTIPOINT = "MULTIPOINT";
+    static final String TYPE_MULTIPOLYHEDRON = "MULTIPOLYHEDRON";
 
     /**
      * Returns {@link GeometryType#COLLECTION}.
@@ -110,12 +119,19 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
      *       restricts the allowed types.</li>
      * </ul>
      *
-     * @return geometry types allowed in this collection.
+     * Deviation from ISO-19107 :<br>
+     * <ul>
+     *   <li>The returned type is expected to be a Set in ISO 19107, to make it more natural in Java and the Generics
+     *   this Set has been reduced to a single element, which must be the first common parent.
+     *   </li>
+     * </ul>
+     *
+     * @return geometry type allowed in this collection.
      *
      * @see ISO 19107:2019 - 6.4.31.2
      */
     @UML(identifier="elementType", specification=ISO_19107)
-    Set<GeometryType> getElementType();
+    GeometryType getElementType();
 
     /**
      * Returns whether this collection has no element.
@@ -227,7 +243,9 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
      * @return true if multicurve is closed.
      */
     default boolean isClosed() {
-        assertElementType(GeometryType.CURVE);
+        if (!GeometryType.CURVE.isAssignableFrom(getElementType())) {
+            throw new IllegalArgumentException("Collection must be composed of " + GeometryType.CURVE + " to call this method.");
+        }
         for (int i = 0, n = getNumGeometries(); i < n; i++) {
             if (!((Curve) getGeometryN(i)).isClosed()) {
                 return false;
@@ -247,7 +265,9 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
      * @return length of the multicurve.
      */
     default Quantity<?> getLength() {
-        assertElementType(GeometryType.CURVE);
+        if (!GeometryType.CURVE.isAssignableFrom(getElementType())) {
+            throw new IllegalArgumentException("Collection must be composed of " + GeometryType.CURVE + " to call this method.");
+        }
         final int n = getNumGeometries();
         if (n == 0) {
             return Quantities.create(0, Units.UNITY);
@@ -270,7 +290,9 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
      * @return area of the surface.
      */
     default Quantity<?> getArea() {
-        assertElementType(GeometryType.SURFACE);
+        if (!GeometryType.SURFACE.isAssignableFrom(getElementType())) {
+            throw new IllegalArgumentException("Collection must be composed of " + GeometryType.SURFACE + " to call this method.");
+        }
         final int n = getNumGeometries();
         if (n == 0) {
             return Quantities.create(0, Units.UNITY);
@@ -289,14 +311,7 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
      * @return point guaranteed to be on this MultiSurface.
      */
     default Point getPointOnSurface() {
-        throw new UnsupportedOperationException();
+        return getRepresentativePoint();
     }
 
-    private void assertElementType(GeometryType type) {
-        for (GeometryType gt : getElementType()) {
-            if (!type.isAssignableFrom(gt)) {
-                throw new IllegalArgumentException("Collection must be composed of " + type + " to call this method.");
-            }
-        }
-    }
 }

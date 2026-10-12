@@ -25,12 +25,10 @@ import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.curve.MultiLineString;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.operation.triangulate.EarClipping;
-import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
@@ -89,7 +87,7 @@ public final class ToPrimitive {
     /**
      * Transform MultiPoint to Primitive.
      */
-    public static MeshPrimitive.Points toPrimitive(MultiPoint geometry) throws OperationException {
+    public static MeshPrimitive.Points toPrimitivePoint(GeometryCollection<Point> geometry) throws OperationException {
         final ArrayDataPoints array = toArraySequence(geometry.getDataPoints());
         final MeshPrimitive.Points primitive = new MeshPrimitive.Points();
         for (String name : array.getAttributeNames()) {
@@ -102,7 +100,7 @@ public final class ToPrimitive {
      * Transform MultiLineString to Primitive.
      * If all LineString are Lines, the return a single Primitive.lines otherwise return a MultiPrimitive.
      */
-    public static Geometry toPrimitive(MultiLineString geometry) throws OperationException {
+    public static Geometry toPrimitiveLine(GeometryCollection<LineString> geometry) throws OperationException {
         boolean allLines = true;
         final int numGeometries = geometry.getNumGeometries();
         for (int i = 0; i < numGeometries && allLines; i++) {

@@ -19,29 +19,25 @@ package org.apache.sis.geometries.adapter;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.function.IntFunction;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Empty;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Orientable;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.CircularString;
 import org.apache.sis.geometries.curve.CompoundCurve;
 import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.curve.MultiCurve;
-import org.apache.sis.geometries.curve.MultiLineString;
-import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.surface.CurvePolygon;
-import org.apache.sis.geometries.surface.MultiPolygon;
-import org.apache.sis.geometries.surface.MultiSurface;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.geometries.surface.TIN;
 import org.apache.sis.geometries.surface.Triangle;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.util.ArgumentChecks;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
@@ -368,18 +364,16 @@ public final class WellKnownBinary {
             formatPatches(out, Codes.TIN, g.getNumPatches(), g::getPatchN, g);
         } else if (geometry instanceof PolyhedralSurface<?> g) {
             formatPatches(out, Codes.POLYHEDRALSURFACE, g.getNumPatches(), g::getPatchN, g);
-        } else if (geometry instanceof MultiPoint<?> g) {       // Before GeometryCollection.
-            formatMembers(out, Codes.MULTIPOINT, g);
-        } else if (geometry instanceof MultiLineString g) {     // Before MultiCurve.
-            formatMembers(out, Codes.MULTILINESTRING, g);
-        } else if (geometry instanceof MultiPolygon g) {        // Before MultiSurface.
-            formatMembers(out, Codes.MULTIPOLYGON, g);
-        } else if (geometry instanceof MultiCurve<?> g) {       // Before GeometryCollection.
-            formatMembers(out, Codes.MULTICURVE, g);
-        } else if (geometry instanceof MultiSurface<?> g) {     // Before GeometryCollection.
-            formatMembers(out, Codes.MULTISURFACE, g);
         } else if (geometry instanceof GeometryCollection<?> g) {
-            formatMembers(out, Codes.GEOMETRYCOLLECTION, g);
+            final GeometryType elementType = g.getElementType();
+            switch (elementType) {
+                case POINT      -> formatMembers(out, Codes.MULTIPOINT, g);
+                case LINESTRING -> formatMembers(out, Codes.MULTILINESTRING, g);
+                case POLYGON    -> formatMembers(out, Codes.MULTIPOLYGON, g);
+                case CURVE      -> formatMembers(out, Codes.MULTICURVE, g);
+                case SURFACE    -> formatMembers(out, Codes.MULTISURFACE, g);
+                default         -> formatMembers(out, Codes.GEOMETRYCOLLECTION, g);
+            }
         } else {
             throw unsupported(geometry);
         }

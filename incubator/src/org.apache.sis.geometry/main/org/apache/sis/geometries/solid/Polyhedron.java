@@ -18,14 +18,15 @@ package org.apache.sis.geometries.solid;
 
 import java.util.List;
 import org.apache.sis.geometries.DataPoints;
-import org.apache.sis.geometries.GeometryType;
-import org.apache.sis.geometries.SolidInterpolation;
-import org.apache.sis.geometries.Solid;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryType;
+import org.apache.sis.geometries.Solid;
+import org.apache.sis.geometries.SolidInterpolation;
 import org.apache.sis.geometries.internal.shared.ConcatenatedDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultPolyhedron;
 import org.apache.sis.geometries.solid.polyhedron.AbstractPolyhedron;
-import org.apache.sis.geometries.surface.MultiPolygon;
+import org.apache.sis.geometries.surface.Polygon;
 
 
 /**
@@ -84,13 +85,13 @@ public sealed interface Polyhedron extends Solid
      *
      * @return exterior shell of this polyhedron.
      */
-    MultiPolygon getExteriorShell();
+    GeometryCollection<Polygon> getExteriorShell();
 
     /**
      * Returns a list of void shell inside the polyhedron.
      *
      * @return all void shell inside the polyhedron
      */
-    List<MultiPolygon> getInteriorShells();
+    List<GeometryCollection<Polygon>> getInteriorShells();
 
 }

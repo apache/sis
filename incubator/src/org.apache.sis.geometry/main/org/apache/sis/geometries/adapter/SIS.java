@@ -37,14 +37,9 @@ import org.apache.sis.geometries.curve.Clothoid;
 import org.apache.sis.geometries.curve.CompoundCurve;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.curve.MultiCurve;
-import org.apache.sis.geometries.curve.MultiLineString;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultPoint;
-import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.surface.CurvePolygon;
-import org.apache.sis.geometries.surface.MultiPolygon;
-import org.apache.sis.geometries.surface.MultiSurface;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.geometries.surface.TIN;
@@ -84,21 +79,21 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
      */
     private static final Class<?>[] CLASSES = {
         Point.class,
-        MultiPoint.class,
+        GeometryCollection.class,
         Circle.class,
         CircularString.class,
         Clothoid.class,
         CompoundCurve.class,
         LineString.class,
-        MultiLineString.class,
-        MultiCurve.class,
+        GeometryCollection.class,
+        GeometryCollection.class,
         Triangle.class,
         Polygon.class,
         CurvePolygon.class,
         TIN.class,
         PolyhedralSurface.class,
-        MultiPolygon.class,
-        MultiSurface.class,
+        GeometryCollection.class,
+        GeometryCollection.class,
         GeometryCollection.class,
         Curve.class,
         Surface.class,
@@ -145,19 +140,20 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
             case CURVE : return Curve.class;
             case CURVEPOLYGON : return CurvePolygon.class;
             case GEOMETRY : return Geometry.class;
-            case GEOMETRYCOLLECTION : return GeometryCollection.class;
             case LINESTRING : return LineString.class;
-            case MULTICURVE : return MultiCurve.class;
-            case MULTILINESTRING : return MultiLineString.class;
-            case MULTIPOINT : return MultiPoint.class;
-            case MULTIPOLYGON : return MultiPolygon.class;
-            case MULTISURFACE : return MultiSurface.class;
             case POINT : return Point.class;
             case POLYGON : return Polygon.class;
             case POLYHEDRALSURFACE : return PolyhedralSurface.class;
             case SURFACE : return Surface.class;
             case TIN : return TIN.class;
             case TRIANGLE : return Triangle.class;
+            //collection types
+            case GEOMETRYCOLLECTION : return GeometryCollection.class;
+            case MULTICURVE : return GeometryCollection.class;
+            case MULTILINESTRING : return GeometryCollection.class;
+            case MULTIPOINT : return GeometryCollection.class;
+            case MULTIPOLYGON : return GeometryCollection.class;
+            case MULTISURFACE : return GeometryCollection.class;
             //todo
             case BREPSOLID :
             case COMPOUNDSURFACE :
@@ -286,7 +282,7 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
      * @return the collection of points for the given coordinate values.
      */
     @Override
-    public MultiPoint<?> createMultiPoint(final boolean isFloat, final Dimensions dimensions, final DoubleBuffer coordinates) {
+    public GeometryCollection<Point> createMultiPoint(final boolean isFloat, final Dimensions dimensions, final DoubleBuffer coordinates) {
         final int count = coordinates.remaining() / dimensions.count;
         return GeometryFactory.DEFAULT.createMultiPoint(readDataPoints(isFloat, dimensions, count, coordinates));
     }

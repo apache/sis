@@ -19,6 +19,7 @@ package org.apache.sis.geometries.curve;
 import javax.measure.Quantity;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
@@ -51,7 +52,7 @@ public abstract class MultiLineStringTest extends GeometryTest {
      * @param  lines  the coordinates of each curve, in the axis order of the given system.
      * @return a new set holding the given curves, never null.
      */
-    protected abstract MultiLineString createMultiLineString(CoordinateReferenceSystem crs, double[]... lines);
+    protected abstract GeometryCollection<LineString> createMultiLineString(CoordinateReferenceSystem crs, double[]... lines);
 
     @Test
     @Disabled("Not implemented yet.")
@@ -102,7 +103,7 @@ public abstract class MultiLineStringTest extends GeometryTest {
      */
     @Test
     public void testIsSimpleAndValid() {
-        final MultiLineString lines = createMultiLineString(CRS_2D, SEGMENT_1, SEGMENT_2);
+        final GeometryCollection<LineString> lines = createMultiLineString(CRS_2D, SEGMENT_1, SEGMENT_2);
         assertTrue(lines.isSimple(), "Two disjoint segments are simple.");
         assertTrue(lines.isValid(),  "Two disjoint segments are valid.");
     }

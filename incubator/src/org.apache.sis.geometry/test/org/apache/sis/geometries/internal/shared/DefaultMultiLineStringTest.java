@@ -18,10 +18,11 @@ package org.apache.sis.geometries.internal.shared;
 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.curve.MultiLineString;
 
 // Test dependencies
 import org.apache.sis.geometries.curve.MultiLineStringTest;
@@ -35,12 +36,12 @@ import org.apache.sis.geometries.curve.MultiLineStringTest;
 public class DefaultMultiLineStringTest extends MultiLineStringTest {
 
     @Override
-    protected MultiLineString createMultiLineString(final CoordinateReferenceSystem crs, final double[]... lines) {
+    protected GeometryCollection<LineString> createMultiLineString(final CoordinateReferenceSystem crs, final double[]... lines) {
         final LineString[] elements = new LineString[lines.length];
         for (int i = 0; i < elements.length; i++) {
             elements[i] = new DefaultLineString(sequence(crs, lines[i]));
         }
-        return new DefaultMultiLineString(crs, elements);
+        return new DefaultGeometryCollection(GeometryType.LINESTRING, crs, elements);
     }
 
     /**

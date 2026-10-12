@@ -25,23 +25,18 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.measure.Quantity;
-import static org.opengis.annotation.Specification.ISO_19107;
-import org.opengis.annotation.UML;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.geometries.DE9IM;
+import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.curve.MultiLineString;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
-import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Array;
@@ -52,6 +47,10 @@ import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArgumentChecks;
+import static org.opengis.annotation.Specification.ISO_19107;
+import org.opengis.annotation.UML;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 
 
 /**
@@ -483,12 +482,13 @@ public final class GeometryProcessor {
             return ToPrimitive.toPrimitive(cdt);
         } else if (geom instanceof Polygon cdt) {
             return ToPrimitive.toPrimitive(cdt);
-        } else if (geom instanceof MultiLineString cdt) {
-            return ToPrimitive.toPrimitive(cdt);
-        } else if (geom instanceof MultiPoint<?> cdt) {
-            return ToPrimitive.toPrimitive(cdt);
         } else if (geom instanceof GeometryCollection<?> cdt) {
-            return ToPrimitive.toPrimitive(cdt);
+            final GeometryType elementType = cdt.getElementType();
+            switch (elementType) {
+                case LINESTRING : return ToPrimitive.toPrimitiveLine((GeometryCollection<LineString>) cdt);
+                case POINT : return ToPrimitive.toPrimitivePoint((GeometryCollection<Point>) cdt);
+                default : return ToPrimitive.toPrimitive(cdt);
+            }
         }
 
         throw new UnsupportedOperationException();

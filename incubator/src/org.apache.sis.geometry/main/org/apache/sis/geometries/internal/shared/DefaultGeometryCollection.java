@@ -16,7 +16,6 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import java.util.Set;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
@@ -56,8 +55,8 @@ public non-sealed class DefaultGeometryCollection<T extends Geometry> extends Ab
     }
 
     @Override
-    public Set<GeometryType> getElementType() {
-        return Set.of(elementType);
+    public GeometryType getElementType() {
+        return elementType;
     }
 
     @Override

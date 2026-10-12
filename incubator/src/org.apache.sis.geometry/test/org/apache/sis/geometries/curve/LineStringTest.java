@@ -19,7 +19,7 @@ package org.apache.sis.geometries.curve;
 import javax.measure.Quantity;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometries.point.MultiPoint;
+import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
@@ -172,7 +172,7 @@ public abstract class LineStringTest extends GeometryTest {
     @Test
     public void testGetBoundary() {
         final Geometry boundary = createLineString(CRS_2D, SEGMENT).getBoundary();
-        final MultiPoint<?> ends = assertInstanceOf(MultiPoint.class, boundary,
+        final GeometryCollection<?> ends = assertInstanceOf(GeometryCollection.class, boundary,
                 "The boundary of an open curve is its two end positions.");
         assertEquals(2, ends.getNumGeometries());
     }

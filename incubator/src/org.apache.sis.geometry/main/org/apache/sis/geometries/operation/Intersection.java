@@ -28,8 +28,8 @@ import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometries.curve.MultiLineString;
 import org.apache.sis.geometries.internal.shared.DefaultDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultNurbCurve;
 import org.apache.sis.geometries.internal.shared.DefaultNurbSurface;
@@ -220,7 +220,7 @@ public final class Intersection {
             }
         }
 
-        final MultiLineString mline = GeometryFactory.DEFAULT.createMultiLineString(segments.toArray(LineString[]::new));
+        final GeometryCollection<LineString> mline = GeometryFactory.DEFAULT.createMultiLineString(segments.toArray(LineString[]::new));
         final MeshPrimitive intersection = (MeshPrimitive) new GeometryProcessor().toPrimitive(mline);
         return intersection;
     }

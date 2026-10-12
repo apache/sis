@@ -18,16 +18,17 @@ package org.apache.sis.gml;
 
 import java.io.OutputStream;
 import java.util.function.IntFunction;
+import javax.measure.Unit;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import javax.measure.Unit;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Empty;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Orientable;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Surface;
@@ -37,19 +38,14 @@ import org.apache.sis.geometries.curve.CircularString;
 import org.apache.sis.geometries.curve.CompoundCurve;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.curve.MultiCurve;
-import org.apache.sis.geometries.point.MultiPoint;
-import org.apache.sis.geometries.solid.MultiPolyhedron;
 import org.apache.sis.geometries.solid.Polyhedron;
 import org.apache.sis.geometries.surface.CurvePolygon;
-import org.apache.sis.geometries.surface.MultiPolygon;
-import org.apache.sis.geometries.surface.MultiSurface;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.geometries.surface.TIN;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
-import org.apache.sis.maths.Vector;
 
 
 /**
@@ -182,7 +178,7 @@ public final class GML3Writer extends AbstractGMLWriter {
      * Writes a {@code <gml:MultiPoint>} element, with its {@code pointMember} children.
      */
     @Override
-    protected void writeMultiPoint(final MultiPoint<?> g, final String srsName, final boolean declareNamespace)
+    protected void writeMultiPoint(final GeometryCollection<?> g, final String srsName, final boolean declareNamespace)
             throws XMLStreamException, DataStoreContentException, DataStoreReferencingException
     {
         writeMembers(GML2Tags.MULTI_POINT, GML2Tags.POINT_MEMBER, g, srsName, declareNamespace);
@@ -194,7 +190,7 @@ public final class GML3Writer extends AbstractGMLWriter {
      * emitted, even for a {@link org.apache.sis.geometries.curve.MultiLineString}.
      */
     @Override
-    protected void writeMultiCurve(final MultiCurve<?> g, final String srsName, final boolean declareNamespace)
+    protected void writeMultiCurve(final GeometryCollection<?> g, final String srsName, final boolean declareNamespace)
             throws XMLStreamException, DataStoreContentException, DataStoreReferencingException
     {
         writeMembers(GML3Tags.MULTI_CURVE, GML3Tags.CURVE_MEMBER, g, srsName, declareNamespace);
@@ -206,7 +202,7 @@ public final class GML3Writer extends AbstractGMLWriter {
      * emitted, even for a {@link org.apache.sis.geometries.surface.MultiPolygon}.
      */
     @Override
-    protected void writeMultiSurface(final MultiSurface<?> g, final String srsName, final boolean declareNamespace)
+    protected void writeMultiSurface(final GeometryCollection<?> g, final String srsName, final boolean declareNamespace)
             throws XMLStreamException, DataStoreContentException, DataStoreReferencingException
     {
         writeMembers(GML3Tags.MULTI_SURFACE, GML3Tags.SURFACE_MEMBER, g, srsName, declareNamespace);
@@ -303,7 +299,7 @@ public final class GML3Writer extends AbstractGMLWriter {
             writePatches(g.getNumPatches(), g::getPatchN, GML3Tags.POLYGON_PATCH, srsName, declareNamespace);
         } else if (geometry instanceof Polyhedron g) {
             writeSolid(g, srsName, declareNamespace);
-        } else if (geometry instanceof MultiPolyhedron g) {          // Before GeometryCollection.
+        } else if (geometry instanceof GeometryCollection g && GeometryType.POLYHEDRON.equals(g.getElementType())) {          // Before GeometryCollection.
             writeMembers(GML3Tags.COMPOSITE_SOLID, GML3Tags.SOLID_MEMBER, g, srsName, declareNamespace);
         } else {
             return false;
@@ -522,7 +518,7 @@ public final class GML3Writer extends AbstractGMLWriter {
         writer.writeStartElement(GML3Tags.EXTERIOR);
         writeShell(g.getExteriorShell());
         writer.writeEndElement();
-        for (final MultiPolygon interior : g.getInteriorShells()) {
+        for (final GeometryCollection<Polygon> interior : g.getInteriorShells()) {
             writer.writeStartElement(GML3Tags.INTERIOR);
             writeShell(interior);
             writer.writeEndElement();
@@ -533,7 +529,7 @@ public final class GML3Writer extends AbstractGMLWriter {
     /**
      * Writes one {@code <gml:Shell>} element, with one {@code surfaceMember} per face.
      */
-    private void writeShell(final MultiPolygon shell)
+    private void writeShell(final GeometryCollection<Polygon> shell)
             throws XMLStreamException, DataStoreContentException, DataStoreReferencingException
     {
         writer.writeStartElement(GML3Tags.SHELL);

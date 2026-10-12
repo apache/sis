@@ -25,13 +25,11 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Empty;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.curve.MultiCurve;
-import org.apache.sis.geometries.point.MultiPoint;
-import org.apache.sis.geometries.surface.MultiSurface;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
@@ -92,13 +90,13 @@ abstract class AbstractGMLWriter implements GMLGeometryWriter {
     protected abstract void writeBBox(BBox g, String srsName, boolean declareNamespace)
             throws XMLStreamException, DataStoreContentException, DataStoreReferencingException;
 
-    protected abstract void writeMultiPoint(MultiPoint<?> g, String srsName, boolean declareNamespace)
+    protected abstract void writeMultiPoint(GeometryCollection<?> g, String srsName, boolean declareNamespace)
             throws XMLStreamException, DataStoreContentException, DataStoreReferencingException;
 
-    protected abstract void writeMultiCurve(MultiCurve<?> g, String srsName, boolean declareNamespace)
+    protected abstract void writeMultiCurve(GeometryCollection<?> g, String srsName, boolean declareNamespace)
             throws XMLStreamException, DataStoreContentException, DataStoreReferencingException;
 
-    protected abstract void writeMultiSurface(MultiSurface<?> g, String srsName, boolean declareNamespace)
+    protected abstract void writeMultiSurface(GeometryCollection<?> g, String srsName, boolean declareNamespace)
             throws XMLStreamException, DataStoreContentException, DataStoreReferencingException;
 
     protected abstract void writeMultiGeometry(GeometryCollection<?> g, String srsName, boolean declareNamespace)
@@ -192,12 +190,6 @@ abstract class AbstractGMLWriter implements GMLGeometryWriter {
             writeLineString(g, srsName, declareNamespace);
         } else if (geometry instanceof Polygon g) {
             writePolygon(g, srsName, declareNamespace);
-        } else if (geometry instanceof MultiPoint<?> g) {
-            writeMultiPoint(g, srsName, declareNamespace);
-        } else if (geometry instanceof MultiCurve<?> g) {
-            writeMultiCurve(g, srsName, declareNamespace);
-        } else if (geometry instanceof MultiSurface<?> g) {
-            writeMultiSurface(g, srsName, declareNamespace);
         } else if (!writeExtendedGeometry(geometry, srsName, declareNamespace)) {
             /*
              * Every remaining curve and surface kind -- CompoundCurve, CircularString, CurvePolygon,
@@ -206,7 +198,16 @@ abstract class AbstractGMLWriter implements GMLGeometryWriter {
              * MultiCurve and MultiSurface all extend it.
              */
             if (geometry instanceof GeometryCollection<?> g) {
-                writeMultiGeometry(g, srsName, declareNamespace);
+                GeometryType elementType = g.getElementType();
+                if (GeometryType.POINT.equals(elementType)) {
+                    writeMultiPoint(g, srsName, declareNamespace);
+                } else if (GeometryType.CURVE.isAssignableFrom(elementType)) {
+                    writeMultiCurve(g, srsName, declareNamespace);
+                } else if (GeometryType.SURFACE.isAssignableFrom(elementType)) {
+                    writeMultiSurface(g, srsName, declareNamespace);
+                } else {
+                    writeMultiGeometry(g, srsName, declareNamespace);
+                }
             } else {
                 throw new DataStoreContentException(unsupportedType(geometry));
             }

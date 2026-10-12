@@ -43,8 +43,6 @@ import org.apache.sis.geometries.curve.Geodesic;
 import org.apache.sis.geometries.curve.KnotType;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.curve.MultiCurve;
-import org.apache.sis.geometries.curve.MultiLineString;
 import org.apache.sis.geometries.curve.NurbCurve;
 import org.apache.sis.geometries.curve.OffsetCurve;
 import org.apache.sis.geometries.curve.PolynomialSpline;
@@ -75,12 +73,7 @@ import org.apache.sis.geometries.internal.shared.DefaultGeodesic;
 import org.apache.sis.geometries.internal.shared.DefaultGeometryCollection;
 import org.apache.sis.geometries.internal.shared.DefaultLineString;
 import org.apache.sis.geometries.internal.shared.DefaultLinearRing;
-import org.apache.sis.geometries.internal.shared.DefaultMultiCurve;
-import org.apache.sis.geometries.internal.shared.DefaultMultiLineString;
 import org.apache.sis.geometries.internal.shared.DefaultMultiPoint;
-import org.apache.sis.geometries.internal.shared.DefaultMultiPolygon;
-import org.apache.sis.geometries.internal.shared.DefaultMultiPolyhedron;
-import org.apache.sis.geometries.internal.shared.DefaultMultiSurface;
 import org.apache.sis.geometries.internal.shared.DefaultNurbCurve;
 import org.apache.sis.geometries.internal.shared.DefaultNurbSurface;
 import org.apache.sis.geometries.internal.shared.DefaultOffsetCurve;
@@ -91,7 +84,6 @@ import org.apache.sis.geometries.internal.shared.DefaultPolyhedron;
 import org.apache.sis.geometries.internal.shared.DefaultPolynomialSpline;
 import org.apache.sis.geometries.internal.shared.DefaultPrism;
 import org.apache.sis.geometries.internal.shared.DefaultProductCurve;
-import org.apache.sis.geometries.internal.shared.DefaultRawMultiPoint;
 import org.apache.sis.geometries.internal.shared.DefaultReversedCurve;
 import org.apache.sis.geometries.internal.shared.DefaultReversedSurface;
 import org.apache.sis.geometries.internal.shared.DefaultRhumb;
@@ -99,9 +91,7 @@ import org.apache.sis.geometries.internal.shared.DefaultSolid;
 import org.apache.sis.geometries.internal.shared.DefaultSpiral;
 import org.apache.sis.geometries.internal.shared.DefaultTriangle;
 import org.apache.sis.geometries.internal.shared.DefaultTriangulatedSurface;
-import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.surface.Ellipsoid;
-import org.apache.sis.geometries.solid.MultiPolyhedron;
 import org.apache.sis.geometries.solid.Polyhedron;
 import org.apache.sis.geometries.surface.Sphere;
 import org.apache.sis.geometries.solid.BSplineSolid;
@@ -109,8 +99,6 @@ import org.apache.sis.geometries.surface.BSplineSurface;
 import org.apache.sis.geometries.surface.BSplineSurfaceForm;
 import org.apache.sis.geometries.surface.BilinearGrid;
 import org.apache.sis.geometries.surface.CurvePolygon;
-import org.apache.sis.geometries.surface.MultiPolygon;
-import org.apache.sis.geometries.surface.MultiSurface;
 import org.apache.sis.geometries.surface.NurbSurface;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
@@ -230,18 +218,6 @@ public final class GeometryFactory {
 
     public Point createPoint(DataPoints sequence) {
         return new DefaultPoint(sequence);
-    }
-
-    public MultiPoint createMultiPoint(DataPoints sequence) {
-        return new DefaultMultiPoint(sequence);
-    }
-
-    public MultiPoint createMultiPoint(Point ... geometries) {
-        return new DefaultRawMultiPoint(geometries);
-    }
-
-    public MultiPoint createMultiPoint(CoordinateReferenceSystem crs, Point ... geometries) {
-        return new DefaultRawMultiPoint(crs, geometries);
     }
 
     // ////////////////////////////////////////////////////////////////////////
@@ -518,22 +494,6 @@ public final class GeometryFactory {
         return new DefaultReversedCurve(base);
     }
 
-    public MultiLineString createMultiLineString(LineString ... geometries) {
-        return new DefaultMultiLineString(geometries);
-    }
-
-    public MultiLineString createMultiLineString(CoordinateReferenceSystem crs, LineString ... geometries) {
-        return new DefaultMultiLineString(crs, geometries);
-    }
-
-    public <T extends Curve> MultiCurve<T> createMultiCurve(T ... geometries) {
-        return new DefaultMultiCurve<>(geometries);
-    }
-
-    public <T extends Curve> MultiCurve<T> createMultiCurve(CoordinateReferenceSystem crs, T ... geometries) {
-        return new DefaultMultiCurve<>(crs, geometries);
-    }
-
     // ////////////////////////////////////////////////////////////////////////
     // Surfaces ///////////////////////////////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////////
@@ -665,22 +625,6 @@ public final class GeometryFactory {
         return new DefaultReversedSurface(base);
     }
 
-    public MultiPolygon createMultiPolygon(Polygon ... geometries) {
-        return new DefaultMultiPolygon(geometries);
-    }
-
-    public MultiPolygon createMultiPolygon(CoordinateReferenceSystem crs, Polygon ... geometries) {
-        return new DefaultMultiPolygon(crs, geometries);
-    }
-
-    public <T extends Surface> MultiSurface<T> createMultiSurface(T ... geometries) {
-        return new DefaultMultiSurface<>(geometries);
-    }
-
-    public <T extends Surface> MultiSurface<T> createMultiSurface(CoordinateReferenceSystem crs, T ... geometries) {
-        return new DefaultMultiSurface<>(crs, geometries);
-    }
-
     // ////////////////////////////////////////////////////////////////////////
     // Solids /////////////////////////////////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////////
@@ -689,7 +633,7 @@ public final class GeometryFactory {
         return new DefaultSolid(surfaces);
     }
 
-    public Polyhedron createPolyhedron(MultiPolygon exteriorShell, List<MultiPolygon> interiorShells) {
+    public Polyhedron createPolyhedron(GeometryCollection<Polygon> exteriorShell, List<GeometryCollection<Polygon>> interiorShells) {
         return new DefaultPolyhedron(exteriorShell, interiorShells);
     }
 
@@ -720,17 +664,61 @@ public final class GeometryFactory {
         return new DefaultPrism(base, extrusionRange, extrusionCrs);
     }
 
-    public MultiPolyhedron createMultiPolyhedron(Polyhedron ... solids) {
-        return new DefaultMultiPolyhedron(solids);
-    }
-
-    public MultiPolyhedron createMultiPolyhedron(CoordinateReferenceSystem crs, Polyhedron ... solids) {
-        return new DefaultMultiPolyhedron(crs, solids);
-    }
-
     // ////////////////////////////////////////////////////////////////////////
     // Heterogeneous collections //////////////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////////
+
+    public GeometryCollection<Point> createMultiPoint(DataPoints sequence) {
+        return new DefaultMultiPoint(sequence);
+    }
+
+    public GeometryCollection<Point> createMultiPoint(Point ... geometries) {
+        return new DefaultGeometryCollection<>(GeometryType.POINT, geometries);
+    }
+
+    public GeometryCollection<Point> createMultiPoint(CoordinateReferenceSystem crs, Point ... geometries) {
+        return new DefaultGeometryCollection(GeometryType.POINT, crs, geometries);
+    }
+
+    public GeometryCollection<LineString> createMultiLineString(LineString ... geometries) {
+        return new DefaultGeometryCollection(GeometryType.LINESTRING, geometries);
+    }
+
+    public GeometryCollection<LineString> createMultiLineString(CoordinateReferenceSystem crs, LineString ... geometries) {
+        return new DefaultGeometryCollection(GeometryType.LINESTRING, crs, geometries);
+    }
+
+    public <T extends Curve> GeometryCollection<T> createMultiCurve(T ... geometries) {
+        return new DefaultGeometryCollection<>(GeometryType.CURVE, geometries);
+    }
+
+    public <T extends Curve> GeometryCollection<T> createMultiCurve(CoordinateReferenceSystem crs, T ... geometries) {
+        return new DefaultGeometryCollection<>(GeometryType.CURVE, crs, geometries);
+    }
+
+    public GeometryCollection<Polygon> createMultiPolygon(Polygon ... geometries) {
+        return new DefaultGeometryCollection<>(GeometryType.POLYGON, geometries);
+    }
+
+    public GeometryCollection<Polygon> createMultiPolygon(CoordinateReferenceSystem crs, Polygon ... geometries) {
+        return new DefaultGeometryCollection<Polygon>(GeometryType.POLYGON, crs, geometries);
+    }
+
+    public <T extends Surface> GeometryCollection<T> createMultiSurface(T ... geometries) {
+        return new DefaultGeometryCollection<>(GeometryType.SURFACE, geometries);
+    }
+
+    public <T extends Surface> GeometryCollection<T> createMultiSurface(CoordinateReferenceSystem crs, T ... geometries) {
+        return new DefaultGeometryCollection<>(GeometryType.SURFACE, crs, geometries);
+    }
+
+    public GeometryCollection<Polyhedron> createMultiPolyhedron(Polyhedron ... solids) {
+        return new DefaultGeometryCollection(GeometryType.POLYHEDRON, solids);
+    }
+
+    public GeometryCollection<Polyhedron> createMultiPolyhedron(CoordinateReferenceSystem crs, Polyhedron ... solids) {
+        return new DefaultGeometryCollection(GeometryType.POLYHEDRON, crs, solids);
+    }
 
     public <T extends Geometry> GeometryCollection<T> createGeometryCollection(T ... geometries) {
         return new DefaultGeometryCollection<>(GeometryType.GEOMETRY, geometries);

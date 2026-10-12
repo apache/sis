@@ -17,7 +17,6 @@
 package org.apache.sis.geometries.curve;
 
 import java.util.List;
-import java.util.Set;
 import javax.measure.Quantity;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
@@ -102,8 +101,8 @@ public sealed interface ProductCurve extends Curve, GeometryCollection<Curve>
      */
     @UML(identifier="elementType", specification=ISO_19107)
     @Override
-    default Set<GeometryType> getElementType() {
-        return Set.of(GeometryType.CURVE);
+    default GeometryType getElementType() {
+        return GeometryType.CURVE;
     }
 
     /**

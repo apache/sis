@@ -27,11 +27,9 @@ import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.curve.MultiLineString;
-import org.apache.sis.geometries.point.MultiPoint;
-import org.apache.sis.geometries.surface.MultiPolygon;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
@@ -193,7 +191,8 @@ public final class GML2ReaderTest {
     @Test
     public void testMultiPoint() throws Exception {
         final Geometry g = read(TestData.MULTI_POINT);
-        assertInstanceOf(MultiPoint.class, g);
+        assertInstanceOf(GeometryCollection.class, g);
+        assertEquals(GeometryType.POINT, ((GeometryCollection)g).getElementType());
         assertGeometryEquals(GeometryFactory.DEFAULT.createMultiPoint(
                 GeometryFactory.DEFAULT.createPoint(sequence(0.0, 0.0)),
                 GeometryFactory.DEFAULT.createPoint(sequence(10.0, 10.0))), g);
@@ -206,7 +205,8 @@ public final class GML2ReaderTest {
     @Test
     public void testMultiLineString() throws Exception {
         final Geometry g = read(TestData.MULTI_LINE_STRING);
-        assertInstanceOf(MultiLineString.class, g);
+        assertInstanceOf(GeometryCollection.class, g);
+        assertEquals(GeometryType.LINESTRING, ((GeometryCollection)g).getElementType());
         assertGeometryEquals(GeometryFactory.DEFAULT.createMultiLineString(
                 GeometryFactory.DEFAULT.createLineString(sequence(0.0, 0.0, 10.0, 10.0)),
                 GeometryFactory.DEFAULT.createLineString(sequence(20.0, 20.0, 30.0, 30.0, 40.0, 20.0))), g);
@@ -219,7 +219,8 @@ public final class GML2ReaderTest {
     @Test
     public void testMultiPolygon() throws Exception {
         final Geometry g = read(TestData.MULTI_POLYGON);
-        assertInstanceOf(MultiPolygon.class, g);
+        assertInstanceOf(GeometryCollection.class, g);
+        assertEquals(GeometryType.POLYGON, ((GeometryCollection)g).getElementType());
         assertGeometryEquals(GeometryFactory.DEFAULT.createMultiPolygon(
                 GeometryFactory.DEFAULT.createPolygon(ring(0, 0, 10, 10), null),
                 GeometryFactory.DEFAULT.createPolygon(ring(20, 20, 30, 30), null)), g);

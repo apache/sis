@@ -27,9 +27,6 @@ import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.curve.MultiCurve;
-import org.apache.sis.geometries.point.MultiPoint;
-import org.apache.sis.geometries.surface.MultiSurface;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
@@ -164,7 +161,7 @@ public final class GML2Writer extends AbstractGMLWriter {
      * Writes a {@code <gml:MultiPoint>} element, with its {@code pointMember} children.
      */
     @Override
-    protected void writeMultiPoint(final MultiPoint<?> g, final String srsName, final boolean declareNamespace)
+    protected void writeMultiPoint(final GeometryCollection<?> g, final String srsName, final boolean declareNamespace)
             throws XMLStreamException, DataStoreContentException, DataStoreReferencingException
     {
         writeMembers(GML2Tags.MULTI_POINT, GML2Tags.POINT_MEMBER, g, srsName, declareNamespace);
@@ -176,7 +173,7 @@ public final class GML2Writer extends AbstractGMLWriter {
      * {@code MultiCurve}.
      */
     @Override
-    protected void writeMultiCurve(final MultiCurve<?> g, final String srsName, final boolean declareNamespace)
+    protected void writeMultiCurve(final GeometryCollection<?> g, final String srsName, final boolean declareNamespace)
             throws XMLStreamException, DataStoreContentException, DataStoreReferencingException
     {
         for (int i=0, n=g.getNumGeometries(); i<n; i++) {
@@ -195,7 +192,7 @@ public final class GML2Writer extends AbstractGMLWriter {
      * {@code MultiSurface}.
      */
     @Override
-    protected void writeMultiSurface(final MultiSurface<?> g, final String srsName, final boolean declareNamespace)
+    protected void writeMultiSurface(final GeometryCollection<?> g, final String srsName, final boolean declareNamespace)
             throws XMLStreamException, DataStoreContentException, DataStoreReferencingException
     {
         for (int i=0, n=g.getNumGeometries(); i<n; i++) {

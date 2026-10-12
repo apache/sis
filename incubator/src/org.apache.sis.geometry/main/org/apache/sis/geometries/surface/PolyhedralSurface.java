@@ -23,6 +23,7 @@ import org.opengis.annotation.UML;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.SurfaceInterpolation;
@@ -154,7 +155,7 @@ public sealed interface PolyhedralSurface<T extends Polygon> extends /*GeometryC
      * @param p searched polygons.
      * @return collection of polygons in this surface that bounds the given polygon
      */
-    default MultiPolygon getBoundingPolygons(Polygon p) {
+    default GeometryCollection<Polygon> getBoundingPolygons(Polygon p) {
         throw new UnsupportedOperationException();
     }
 

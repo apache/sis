@@ -28,6 +28,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Surface;
@@ -36,11 +37,8 @@ import org.apache.sis.geometries.curve.ArcByCenterPoint;
 import org.apache.sis.geometries.curve.CompoundCurve;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.point.MultiPoint;
-import org.apache.sis.geometries.solid.MultiPolyhedron;
 import org.apache.sis.geometries.solid.Polyhedron;
 import org.apache.sis.geometries.surface.CurvePolygon;
-import org.apache.sis.geometries.surface.MultiPolygon;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.geometries.surface.TIN;
@@ -494,7 +492,7 @@ public final class GML3Reader extends AbstractGMLReader {
      * {@code pointMember} form and the compact {@code pointMembers} list form.
      * The cursor must be on the element's {@link #START_ELEMENT} event.
      */
-    private MultiPoint parseMultiPoint(final CoordinateReferenceSystem crs)
+    private GeometryCollection<Point> parseMultiPoint(final CoordinateReferenceSystem crs)
             throws XMLStreamException, DataStoreContentException, DataStoreReferencingException
     {
         final List<Point> members = new ArrayList<>();
@@ -1199,8 +1197,8 @@ public final class GML3Reader extends AbstractGMLReader {
     private Polyhedron parseSolid(final CoordinateReferenceSystem crs)
             throws XMLStreamException, DataStoreContentException, DataStoreReferencingException
     {
-        MultiPolygon exterior = null;
-        List<MultiPolygon> interiors = null;
+        GeometryCollection<Polygon> exterior = null;
+        List<GeometryCollection<Polygon>> interiors = null;
         while (true) {
             switch (reader.next()) {
                 case START_ELEMENT: {
@@ -1237,10 +1235,10 @@ public final class GML3Reader extends AbstractGMLReader {
      * exactly one {@code <gml:Shell>}. The cursor must be on the wrapper's
      * {@link #START_ELEMENT} event, and is left on its matching {@link #END_ELEMENT}.
      */
-    private MultiPolygon parseShellProperty(final String wrapperTagName, final CoordinateReferenceSystem crs)
+    private GeometryCollection<Polygon> parseShellProperty(final String wrapperTagName, final CoordinateReferenceSystem crs)
             throws XMLStreamException, DataStoreContentException, DataStoreReferencingException
     {
-        MultiPolygon shell = null;
+        GeometryCollection<Polygon> shell = null;
         while (true) {
             switch (reader.next()) {
                 case START_ELEMENT: {
@@ -1270,7 +1268,7 @@ public final class GML3Reader extends AbstractGMLReader {
      * Parses a {@code <gml:Shell>} element: a closed set of polygons, held here as a
      * {@link MultiPolygon}. An empty shell is accepted, since the schema allows it.
      */
-    private MultiPolygon parseShell(final CoordinateReferenceSystem crs)
+    private GeometryCollection<Polygon> parseShell(final CoordinateReferenceSystem crs)
             throws XMLStreamException, DataStoreContentException, DataStoreReferencingException
     {
         final List<Polygon> faces = new ArrayList<>();
@@ -1302,7 +1300,7 @@ public final class GML3Reader extends AbstractGMLReader {
      * contiguous and a multi-solid's need not be, but the Apache SIS model carries no such
      * distinction, so it survives only in the element hint recorded for the writer.
      */
-    private MultiPolyhedron parseMultiSolid(final CoordinateReferenceSystem crs, final String enclosingTagName)
+    private GeometryCollection<Polyhedron> parseMultiSolid(final CoordinateReferenceSystem crs, final String enclosingTagName)
             throws XMLStreamException, DataStoreContentException, DataStoreReferencingException
     {
         final List<Polyhedron> members = new ArrayList<>();

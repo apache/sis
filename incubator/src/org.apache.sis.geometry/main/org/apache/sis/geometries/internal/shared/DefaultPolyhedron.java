@@ -25,7 +25,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.solid.Polyhedron;
-import org.apache.sis.geometries.surface.MultiPolygon;
+import org.apache.sis.geometries.surface.Polygon;
 
 
 /**
@@ -35,25 +35,25 @@ import org.apache.sis.geometries.surface.MultiPolygon;
  */
 public non-sealed class DefaultPolyhedron extends AbstractGeometry implements Polyhedron {
 
-    private final MultiPolygon exterior;
-    private final List<MultiPolygon> interiors;
+    private final GeometryCollection<Polygon> exterior;
+    private final List<GeometryCollection<Polygon>> interiors;
 
-    public DefaultPolyhedron(MultiPolygon exterior) {
+    public DefaultPolyhedron(GeometryCollection<Polygon> exterior) {
         this(exterior, null);
     }
 
-    public DefaultPolyhedron(MultiPolygon exterior, List<MultiPolygon> interiors) {
+    public DefaultPolyhedron(GeometryCollection<Polygon> exterior, List<GeometryCollection<Polygon>> interiors) {
         this.exterior  = Objects.requireNonNull(exterior);
         this.interiors = (interiors == null) ? List.of() : List.copyOf(interiors);
     }
 
     @Override
-    public MultiPolygon getExteriorShell() {
+    public GeometryCollection<Polygon> getExteriorShell() {
         return exterior;
     }
 
     @Override
-    public List<MultiPolygon> getInteriorShells() {
+    public List<GeometryCollection<Polygon>> getInteriorShells() {
         return interiors;
     }
 
@@ -70,7 +70,7 @@ public non-sealed class DefaultPolyhedron extends AbstractGeometry implements Po
     @Override
     public void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
         exterior.setCoordinateReferenceSystem(cs);
-        for (final MultiPolygon interior : interiors) {
+        for (final GeometryCollection<Polygon> interior : interiors) {
             interior.setCoordinateReferenceSystem(cs);
         }
     }

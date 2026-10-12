@@ -22,10 +22,9 @@ import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.curve.MultiLineString;
-import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
@@ -89,7 +88,7 @@ public class ToPrimitiveTest {
             final DataPoints points2 = GeometryFactory.DEFAULT.createDataPoints(positions2);
             final LineString line2 = GeometryFactory.DEFAULT.createLineString(points2);
 
-            final MultiLineString mlines = GeometryFactory.DEFAULT.createMultiLineString(line1, line2);
+            final GeometryCollection<LineString> mlines = GeometryFactory.DEFAULT.createMultiLineString(line1, line2);
 
             final Geometry result = new GeometryProcessor().toPrimitive(mlines);
             assertTrue(result instanceof MultiMeshPrimitive);
@@ -113,7 +112,7 @@ public class ToPrimitiveTest {
             final DataPoints points2 = GeometryFactory.DEFAULT.createDataPoints(positions2);
             final LineString line2 = GeometryFactory.DEFAULT.createLineString(points2);
 
-            final MultiLineString mlines = GeometryFactory.DEFAULT.createMultiLineString(line1, line2);
+            final GeometryCollection<LineString> mlines = GeometryFactory.DEFAULT.createMultiLineString(line1, line2);
 
             final Geometry result = new GeometryProcessor().toPrimitive(mlines);
             assertTrue(result instanceof MeshPrimitive.Lines);
@@ -130,7 +129,7 @@ public class ToPrimitiveTest {
     public void testMultiPoint() {
         final Array positions1 = NDArrays.of(CRS2D, new double[]{0,1,2,3});
         final DataPoints points = GeometryFactory.DEFAULT.createDataPoints(positions1);
-        final MultiPoint mpoints = GeometryFactory.DEFAULT.createMultiPoint(points);
+        final GeometryCollection<Point> mpoints = GeometryFactory.DEFAULT.createMultiPoint(points);
 
         final Geometry result = new GeometryProcessor().toPrimitive(mpoints);
         assertTrue(result instanceof MeshPrimitive);

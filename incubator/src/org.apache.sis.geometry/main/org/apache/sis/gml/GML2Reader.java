@@ -22,19 +22,17 @@ import java.util.List;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
-import org.apache.sis.geometries.curve.MultiLineString;
-import org.apache.sis.geometries.point.MultiPoint;
-import org.apache.sis.geometries.surface.MultiPolygon;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
@@ -267,7 +265,7 @@ public final class GML2Reader extends AbstractGMLReader {
      * Parses a {@code <gml:MultiPoint>} element.
      * The cursor must be on the element's {@link #START_ELEMENT} event.
      */
-    private MultiPoint parseMultiPoint(final CoordinateReferenceSystem crs)
+    private GeometryCollection<Point> parseMultiPoint(final CoordinateReferenceSystem crs)
             throws XMLStreamException, DataStoreContentException, DataStoreReferencingException
     {
         final List<Point> members = new ArrayList<>();
@@ -297,7 +295,7 @@ public final class GML2Reader extends AbstractGMLReader {
      * Parses a {@code <gml:MultiLineString>} element.
      * The cursor must be on the element's {@link #START_ELEMENT} event.
      */
-    private MultiLineString parseMultiLineString(final CoordinateReferenceSystem crs)
+    private GeometryCollection<LineString> parseMultiLineString(final CoordinateReferenceSystem crs)
             throws XMLStreamException, DataStoreContentException, DataStoreReferencingException
     {
         final List<LineString> members = new ArrayList<>();
@@ -327,7 +325,7 @@ public final class GML2Reader extends AbstractGMLReader {
      * Parses a {@code <gml:MultiPolygon>} element.
      * The cursor must be on the element's {@link #START_ELEMENT} event.
      */
-    private MultiPolygon parseMultiPolygon(final CoordinateReferenceSystem crs)
+    private GeometryCollection<Polygon> parseMultiPolygon(final CoordinateReferenceSystem crs)
             throws XMLStreamException, DataStoreContentException, DataStoreReferencingException
     {
         final List<Polygon> members = new ArrayList<>();
