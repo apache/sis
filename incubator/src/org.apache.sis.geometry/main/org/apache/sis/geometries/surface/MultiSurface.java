@@ -17,15 +17,11 @@
 package org.apache.sis.geometries.surface;
 
 import java.util.Set;
-import javax.measure.Quantity;
-import org.apache.sis.geometries.Geometries;
+import javax.print.attribute.standard.MediaSize.ISO;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryType;
-import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.internal.shared.DefaultMultiSurface;
-import org.apache.sis.measure.Quantities;
-import org.apache.sis.measure.Units;
 
 
 /**
@@ -67,45 +63,4 @@ public sealed interface MultiSurface<T extends Surface> extends GeometryCollecti
         return Set.of(GeometryType.SURFACE);
     }
 
-    /**
-     * The area of this MultiSurface, as measured in the spatial reference system of this MultiSurface.
-     * The unit of measurement is the one of the first element,
-     * or dimensionless if this MultiSurface has no element.
-     *
-     * @see OGC Simple Feature Access 1.2.1 - 6.1.13.2
-     * @return area of the surface.
-     */
-    default Quantity<?> getArea() {
-        final int n = getNumGeometries();
-        if (n == 0) {
-            return Quantities.create(0, Units.UNITY);
-        }
-        Quantity<?> area = getGeometryN(0).getArea();
-        for (int i = 1; i < n; i++) {
-            area = Geometries.add(area, getGeometryN(i).getArea());
-        }
-        return area;
-    }
-
-    /**
-     * The mathematical centroid for this MultiSurface.
-     * The result is not guaranteed to be on this MultiSurface.
-     *
-     * @see OGC Simple Feature Access 1.2.1 - 6.1.13.2
-     * @return centroid for this MultiSurface
-     */
-    @Override
-    default Point getCentroid() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * A Point guaranteed to be on this MultiSurface.
-     *
-     * @see OGC Simple Feature Access 1.2.1 - 6.1.13.2
-     * @return point guaranteed to be on this MultiSurface.
-     */
-    default Point getPointOnSurface() {
-        throw new UnsupportedOperationException();
-    }
 }

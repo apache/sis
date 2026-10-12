@@ -17,6 +17,7 @@
 package org.apache.sis.geometries;
 
 import java.util.Set;
+import javax.measure.Quantity;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.Envelope;
@@ -30,6 +31,8 @@ import org.apache.sis.geometries.point.MultiPoint;
 import org.apache.sis.geometries.solid.MultiPolyhedron;
 import org.apache.sis.geometries.surface.MultiSurface;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -50,6 +53,17 @@ import org.apache.sis.geometry.GeneralEnvelope;
  * <p>Note: because a collection behaves as the union of its elements and not as a set of sets, an
  * implementation which needs a genuine set of sets should use a plain array of geometries instead
  * of this interface.</p>
+ *
+ * Deviation from OGC-SFA :<br>
+ * <ul>
+ *   <li>OGC-SFA defines several sub types of GeometryCollection, like MultiCurve, MultiSurface, MultiLineString, MultiPolygon, MultiPoint.
+ *   The subtypes defined : getLength, isClosed(), getArea().
+ *   Since ISO-19107:2019 covers a much larger scope of geometry, creating a subtype for each would duplicate the number of interfaces.
+ *   ISO-19107:2019 decided instead to have a single GeometryCollection and add a getElementType restricting the possible content
+ *   of the collection. The methods from OGC SFA are then moved on GeometryCollection but will raise an error if the collection element type
+ *   is not applicable.
+ *   </li>
+ * </ul>
  *
  * @param  <T>  type of the elements of this collection.
  *
@@ -204,4 +218,85 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
         return ConcatenatedDataPoints.of(elements);
     }
 
+    /**
+     * Returns TRUE if this MultiCurve is closed [StartPoint () = EndPoint () for each Curve in this MultiCurve].
+     *
+     * Can be called only if collection element type is made of Curve.
+     *
+     * @see OGC Simple Feature Access 1.2.1 - 6.1.8.2
+     * @return true if multicurve is closed.
+     */
+    default boolean isClosed() {
+        assertElementType(GeometryType.CURVE);
+        for (int i = 0, n = getNumGeometries(); i < n; i++) {
+            if (!((Curve) getGeometryN(i)).isClosed()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * The Length of this MultiCurve which is equal to the sum of the lengths of the element Curves.
+     * The unit of measurement is the one of the first element,
+     * or dimensionless if this MultiCurve has no element.
+     *
+     * Can be called only if collection element type is made of Curve.
+     *
+     * @see OGC Simple Feature Access 1.2.1 - 6.1.8.2
+     * @return length of the multicurve.
+     */
+    default Quantity<?> getLength() {
+        assertElementType(GeometryType.CURVE);
+        final int n = getNumGeometries();
+        if (n == 0) {
+            return Quantities.create(0, Units.UNITY);
+        }
+        Quantity<?> length = ((Curve) getGeometryN(0)).getLength();
+        for (int i = 1; i < n; i++) {
+            length = Geometries.add(length, ((Curve)getGeometryN(i)).getLength());
+        }
+        return length;
+    }
+
+    /**
+     * The area of this MultiSurface, as measured in the spatial reference system of this MultiSurface.
+     * The unit of measurement is the one of the first element,
+     * or dimensionless if this MultiSurface has no element.
+     *
+     * Can be called only if collection element type is made of Surface.
+     *
+     * @see OGC Simple Feature Access 1.2.1 - 6.1.13.2
+     * @return area of the surface.
+     */
+    default Quantity<?> getArea() {
+        assertElementType(GeometryType.SURFACE);
+        final int n = getNumGeometries();
+        if (n == 0) {
+            return Quantities.create(0, Units.UNITY);
+        }
+        Quantity<?> area = ((Surface)getGeometryN(0)).getArea();
+        for (int i = 1; i < n; i++) {
+            area = Geometries.add(area,  ((Surface)getGeometryN(i)).getArea());
+        }
+        return area;
+    }
+
+    /**
+     * A Point guaranteed to be on this MultiSurface.
+     *
+     * @see OGC Simple Feature Access 1.2.1 - 6.1.13.2
+     * @return point guaranteed to be on this MultiSurface.
+     */
+    default Point getPointOnSurface() {
+        throw new UnsupportedOperationException();
+    }
+
+    private void assertElementType(GeometryType type) {
+        for (GeometryType gt : getElementType()) {
+            if (!type.isAssignableFrom(gt)) {
+                throw new IllegalArgumentException("Collection must be composed of " + type + " to call this method.");
+            }
+        }
+    }
 }

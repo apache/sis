@@ -18,6 +18,7 @@ package org.apache.sis.geometries.curve;
 
 import java.util.List;
 import java.util.Set;
+import javax.measure.Quantity;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.apache.sis.geometries.Curve;
@@ -145,5 +146,16 @@ public sealed interface ProductCurve extends Curve, GeometryCollection<Curve>
     default DataPoints getDataPoints() {
         return GeometryCollection.super.getDataPoints();
     }
+
+    @Override
+    default Quantity<?> getLength() {
+        return Curve.super.getLength();
+    }
+
+    @Override
+    default boolean isClosed() {
+        return Curve.super.isClosed();
+    }
+
 
 }

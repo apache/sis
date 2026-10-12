@@ -17,14 +17,11 @@
 package org.apache.sis.geometries.curve;
 
 import java.util.Set;
-import javax.measure.Quantity;
+import javax.print.attribute.standard.MediaSize.ISO;
 import org.apache.sis.geometries.Curve;
-import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.internal.shared.DefaultMultiCurve;
-import org.apache.sis.measure.Quantities;
-import org.apache.sis.measure.Units;
 
 
 /**
@@ -68,41 +65,6 @@ public sealed interface MultiCurve<T extends Curve> extends GeometryCollection<T
     @Override
     default Set<GeometryType> getElementType() {
         return Set.of(GeometryType.CURVE);
-    }
-
-    /**
-     * Returns TRUE if this MultiCurve is closed [StartPoint () = EndPoint () for each Curve in this MultiCurve].
-     *
-     * @see OGC Simple Feature Access 1.2.1 - 6.1.8.2
-     * @return true if multicurve is closed.
-     */
-    default boolean isClosed() {
-        for (int i = 0, n = getNumGeometries(); i < n; i++) {
-            if (!getGeometryN(i).isClosed()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * The Length of this MultiCurve which is equal to the sum of the lengths of the element Curves.
-     * The unit of measurement is the one of the first element,
-     * or dimensionless if this MultiCurve has no element.
-     *
-     * @see OGC Simple Feature Access 1.2.1 - 6.1.8.2
-     * @return length of the multicurve.
-     */
-    default Quantity<?> getLength() {
-        final int n = getNumGeometries();
-        if (n == 0) {
-            return Quantities.create(0, Units.UNITY);
-        }
-        Quantity<?> length = getGeometryN(0).getLength();
-        for (int i = 1; i < n; i++) {
-            length = Geometries.add(length, getGeometryN(i).getLength());
-        }
-        return length;
     }
 
 }

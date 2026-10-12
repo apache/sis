@@ -17,6 +17,7 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.List;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.cs.Projection;
@@ -76,4 +77,13 @@ public non-sealed class DefaultProductCurve extends DefaultGeometryCollection<Cu
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public Quantity<?> getLength() {
+        return ProductCurve.super.getLength();
+    }
+
+    @Override
+    public boolean isClosed() {
+        return ProductCurve.super.isClosed();
+    }
 }
