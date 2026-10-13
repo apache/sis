@@ -19,14 +19,16 @@ package org.apache.sis.geometries;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.maths.Array;
+import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import org.junit.jupiter.api.Disabled;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 
@@ -36,74 +38,199 @@ import org.junit.jupiter.api.Test;
  * @author Johann Sorel (Geomatys)
  */
 public class DataPointsTest {
+    /**
+     * Creates the {@code DataPoints} used by most tests: the positions (0 0), (10 5) and (4 20) in
+     * {@link GeometryTest#CRS_2D}, with a one-dimensional "temperature" attribute of values 10, 30 and 20.
+     * The returned instance implements only the abstract methods, in order to test the default methods.
+     */
+    private static DataPoints createSample() {
+        final Map<String,Array> attributes = new LinkedHashMap<>();
+        attributes.put(DataPointsType.ATT_POSITION, NDArrays.of(GeometryTest.CRS_2D, new double[] {0,0, 10,5, 4,20}));
+        attributes.put("temperature", NDArrays.of(1, new double[] {10, 30, 20}));
+        return GeometryTest.withInterpolations(GeometryFactory.DEFAULT.createDataPoints(attributes), Map.of());
+    }
+
+    /**
+     * Creates a {@code DataPoints} holding no point, implementing only the abstract methods.
+     */
+    private static DataPoints createEmpty() {
+        return GeometryTest.withInterpolations(GeometryFactory.DEFAULT.createDataPoints(
+                NDArrays.of(GeometryTest.CRS_2D, new double[0])), Map.of());
+    }
+
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetCoordinateReferenceSystem() {
+        assertEquals(GeometryTest.CRS_2D, createSample().getCoordinateReferenceSystem());
     }
 
+    /**
+     * Changing the reference system does not transform the coordinates,
+     * and a system of another number of dimensions is rejected.
+     */
     @Test
-    @Disabled("Not implemented yet.")
     public void testSetCoordinateReferenceSystem() {
+        final DataPoints points = createSample();
+        final CoordinateReferenceSystem crs = CommonCRS.NAD83.normalizedGeographic();
+        points.setCoordinateReferenceSystem(crs);
+        assertEquals(crs, points.getCoordinateReferenceSystem());
+        assertEquals(crs, points.getType().getAttributeSystem(DataPointsType.ATT_POSITION).getCoordinateReferenceSystem());
+        assertPositionEquals(10, 5, points.getPosition(1));
+        assertThrows(IllegalArgumentException.class, () -> points.setCoordinateReferenceSystem(GeometryTest.CRS_3D));
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetDimension() {
+        assertEquals(2, createSample().getDimension());
     }
 
+    /**
+     * The type describes the position and the other attributes.
+     */
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetAttributesType() {
+        final DataPointsType type = createSample().getType();
+        assertEquals(Set.of(DataPointsType.ATT_POSITION, "temperature"), Set.copyOf(type.getAttributeNames()));
+        assertEquals(GeometryTest.CRS_2D, type.getAttributeSystem(DataPointsType.ATT_POSITION).getCoordinateReferenceSystem());
+        assertEquals(2, type.getAttributeSystem(DataPointsType.ATT_POSITION).getSize());
+        assertEquals(1, type.getAttributeSystem("temperature").getSize());
+        assertEquals(DataType.DOUBLE, type.getAttributeType(DataPointsType.ATT_POSITION));
+        assertEquals(DataType.DOUBLE, type.getAttributeType("temperature"));
     }
 
+    /**
+     * The envelope is the range of the positions, in the reference system of the points.
+     */
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetEnvelope() {
+        final Envelope envelope = createSample().getEnvelope();
+        assertEquals(GeometryTest.CRS_2D, envelope.getCoordinateReferenceSystem());
+        assertEquals( 0, envelope.getMinimum(0));
+        assertEquals( 0, envelope.getMinimum(1));
+        assertEquals(10, envelope.getMaximum(0));
+        assertEquals(20, envelope.getMaximum(1));
+        assertNull(createEmpty().getEnvelope(), "An empty sequence has no envelope.");
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testIsEmpty() {
+        assertFalse(createSample().isEmpty());
+        assertTrue (createEmpty().isEmpty());
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testSize() {
+        assertEquals(3, createSample().size());
+        assertEquals(0, createEmpty().size());
     }
 
+    /**
+     * A point gives the position and the attributes of the point at the same index.
+     */
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetPoint() {
+        final Point point = createSample().getPoint(1);
+        assertEquals(GeometryTest.CRS_2D, point.getCoordinateReferenceSystem());
+        GeometryTest.assertPositionEquals(10, 5, point);
+        assertEquals(30, point.getAttribute("temperature").get(0));
     }
 
+    /**
+     * The returned position is a copy: modifying it does not move the point.
+     */
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetPosition() {
+        final DataPoints points = createSample();
+        final Vector<?> position = points.getPosition(2);
+        assertPositionEquals(4, 20, position);
+        position.set(new double[] {-1, -1});
+        assertPositionEquals(4, 20, points.getPosition(2));
     }
 
+    /**
+     * Setting a position moves only the point at the given index.
+     */
     @Test
-    @Disabled("Not implemented yet.")
     public void testSetPosition() {
+        final DataPoints points = createSample();
+        final Vector<?> position = points.getPosition(1);
+        position.set(new double[] {7, 8});
+        points.setPosition(1, position);
+        assertPositionEquals(0, 0, points.getPosition(0));
+        assertPositionEquals(7, 8, points.getPosition(1));
+        assertPositionEquals(4, 20, points.getPosition(2));
     }
 
+    /**
+     * The position is an attribute like the others, and returned attributes are copies.
+     */
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetAttribute() {
+        final DataPoints points = createSample();
+        assertEquals(20, points.getAttribute(2, "temperature").get(0));
+        assertPositionEquals(10, 5, points.getAttribute(1, DataPointsType.ATT_POSITION));
+
+        final Vector<?> value = points.getAttribute(0, "temperature");
+        value.set(new double[] {-1});
+        assertEquals(10, points.getAttribute(0, "temperature").get(0));
     }
 
+    /**
+     * Setting an attribute changes only the value at the given index.
+     */
     @Test
-    @Disabled("Not implemented yet.")
     public void testSetAttribute() {
+        final DataPoints points = createSample();
+        final Vector<?> value = points.getAttribute(0, "temperature");
+        value.set(new double[] {15});
+        points.setAttribute(0, "temperature", value);
+        assertEquals(15, points.getAttribute(0, "temperature").get(0));
+        assertEquals(30, points.getAttribute(1, "temperature").get(0));
     }
 
+    /**
+     * The array holds the values of all points, and is a copy.
+     */
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetAttributeArray() {
+        final DataPoints points = createSample();
+        final Array array = points.getAttributeArray("temperature");
+        assertEquals(3, array.getLength());
+        assertArrayEquals(new double[] {10, 30, 20}, array.toArrayDouble());
+        assertArrayEquals(new double[] {0,0, 10,5, 4,20}, points.getAttributeArray(DataPointsType.ATT_POSITION).toArrayDouble());
+
+        final Vector<?> value = array.get(0);
+        value.set(new double[] {-1});
+        array.set(0, value);
+        assertEquals(10, points.getAttribute(0, "temperature").get(0), "The array shall be a copy.");
     }
 
+    /**
+     * The range of an attribute is in the system of that attribute: the reference system of the points
+     * for the position, a one-dimensional range for the temperature.
+     */
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetAttributeRange() {
+        final DataPoints points = createSample();
+        final BBox positions = points.getAttributeRange(DataPointsType.ATT_POSITION);
+        assertEquals(GeometryTest.CRS_2D, positions.getCoordinateReferenceSystem());
+        assertEquals( 0, positions.getMinimum(0));
+        assertEquals( 0, positions.getMinimum(1));
+        assertEquals(10, positions.getMaximum(0));
+        assertEquals(20, positions.getMaximum(1));
+
+        final BBox temperature = points.getAttributeRange("temperature");
+        assertEquals(1, temperature.getDimension());
+        assertEquals(10, temperature.getMinimum(0));
+        assertEquals(30, temperature.getMaximum(0));
+
+        assertNull(createEmpty().getAttributeRange("temperature"), "An empty sequence has no range.");
+    }
+
+    /**
+     * Asserts that the given vector is the expected 2-dimensional position.
+     */
+    private static void assertPositionEquals(final double x, final double y, final Vector<?> actual) {
+        assertArrayEquals(new double[] {x, y}, actual.toArrayDouble());
     }
 
     /**

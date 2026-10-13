@@ -281,7 +281,7 @@ public interface DataPoints {
      * Get attribute values range
      *
      * @param name
-     * @return BBox in attribute sample system
+     * @return BBox in attribute sample system, or {@code null} if this {@code DataPoints} is empty.
      */
     default BBox getAttributeRange(String name) {
         if (isEmpty()) {
@@ -292,7 +292,7 @@ public interface DataPoints {
         for (int i = 1, n = size(); i < n; i++) {
             env.add(getAttribute(i, name));
         }
-        env.setCoordinateReferenceSystem(getCoordinateReferenceSystem());
+        env.setCoordinateReferenceSystem(getType().getAttributeSystem(name).getCoordinateReferenceSystem());
         return env;
     }
 
