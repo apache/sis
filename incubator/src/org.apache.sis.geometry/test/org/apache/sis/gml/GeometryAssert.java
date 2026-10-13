@@ -105,7 +105,7 @@ final class GeometryAssert {
     }
 
     /**
-     * Asserts that the two given point sequences have the same coordinates, within the given
+     * Asserts that the two given {@code DataPoints} have the same coordinates, within the given
      * tolerance. Delegates to {@code Array.equals(Array, double)}, which also compares the tuple
      * width and the sample system, and therefore the coordinate reference system.
      */

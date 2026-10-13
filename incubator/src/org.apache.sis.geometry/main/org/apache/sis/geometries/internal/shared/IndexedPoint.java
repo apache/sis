@@ -42,7 +42,7 @@ public non-sealed class IndexedPoint implements Point {
     }
 
     /**
-     * @return index in the parent point sequence.
+     * @return index in the parent {@code DataPoints}.
      */
     public int getIndex() {
         return index;

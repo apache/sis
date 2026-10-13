@@ -29,12 +29,12 @@ import org.apache.sis.maths.Vector;
 
 
 /**
- * Several sequences of positions seen as a single one, in the order they are given.
- * This is the sequence of an aggregate geometry: the rings of a surface, the elements of a
+ * Several {@code DataPoints} seen as a single one, in the order they are given.
+ * This is the {@code DataPoints} of an aggregate geometry: the rings of a surface, the elements of a
  * collection, the segments of a compound curve. The positions a geometry holds several times,
  * such as the end position two consecutive segments have in common, appear as many times.
  *
- * <p>The sequences must all declare the same attributes, which {@link #ConcatenatedDataPoints}
+ * <p>The {@code DataPoints} must all declare the same attributes, which {@link #ConcatenatedDataPoints}
  * verifies.</p>
  *
  * @author Johann Sorel (Geomatys)
@@ -42,7 +42,7 @@ import org.apache.sis.maths.Vector;
 public final class ConcatenatedDataPoints implements DataPoints {
 
     /**
-     * The sequences this view concatenates, never empty.
+     * The {@code DataPoints} this view concatenates, never empty.
      */
     private final DataPoints[] sources;
 
@@ -54,11 +54,11 @@ public final class ConcatenatedDataPoints implements DataPoints {
     private final int[] offsets;
 
     /**
-     * Creates a view over the given sequences.
+     * Creates a view over the given {@code DataPoints}.
      *
-     * @param  sources  the sequences to concatenate, at least one.
-     * @throws IllegalArgumentException if no sequence is given,
-     *         or if the sequences do not declare the same attributes.
+     * @param  sources  the {@code DataPoints} to concatenate, at least one.
+     * @throws IllegalArgumentException if no {@code DataPoints} is given,
+     *         or if the {@code DataPoints} do not declare the same attributes.
      */
     public ConcatenatedDataPoints(final DataPoints... sources) {
         if (sources.length == 0) {
@@ -76,10 +76,10 @@ public final class ConcatenatedDataPoints implements DataPoints {
     }
 
     /**
-     * Creates a view over the sequences of the given geometries.
+     * Creates a view over the {@code DataPoints} of the given geometries.
      *
-     * @param  geometries  the geometries whose sequences to concatenate, at least one.
-     * @return the positions of the given geometries, as a single sequence.
+     * @param  geometries  the geometries whose {@code DataPoints} to concatenate, at least one.
+     * @return the positions of the given geometries, as a single {@code DataPoints}.
      * @throws IllegalArgumentException if no geometry is given,
      *         or if they do not declare the same attributes.
      */
@@ -92,11 +92,11 @@ public final class ConcatenatedDataPoints implements DataPoints {
     }
 
     /**
-     * Creates a view over the sequences of the given geometries.
+     * Creates a view over the {@code DataPoints} of the given geometries.
      *
-     * @param  first  the geometry whose sequence comes first, not null.
-     * @param  others the geometries whose sequences follow, possibly empty.
-     * @return the positions of the given geometries, as a single sequence.
+     * @param  first  the geometry whose {@code DataPoints} comes first, not null.
+     * @param  others the geometries whose {@code DataPoints} follow, possibly empty.
+     * @return the positions of the given geometries, as a single {@code DataPoints}.
      */
     public static DataPoints of(final Geometry first, final List<? extends Geometry> others) {
         final DataPoints[] sources = new DataPoints[others.size() + 1];

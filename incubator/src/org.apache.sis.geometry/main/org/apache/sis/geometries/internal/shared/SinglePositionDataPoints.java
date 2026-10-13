@@ -28,8 +28,8 @@ import org.apache.sis.maths.Vector;
 
 
 /**
- * The single position a geometry is placed by, seen as a sequence of one position. This is the
- * sequence of a shape which is defined by one position and by parameters rather than by a list
+ * The single position a geometry is placed by, seen as a {@code DataPoints} of one position. This is the
+ * {@code DataPoints} of a shape which is defined by one position and by parameters rather than by a list
  * of coordinates: the center of a sphere, the center of an oriented box.
  *
  * <p>This class holds no position of its own. The position is read from the geometry each time
@@ -69,7 +69,7 @@ public final class SinglePositionDataPoints implements DataPoints {
      * {@inheritDoc}
      *
      * <p>The type is derived from the position, which carries its own sample system and data
-     * type, so that this sequence describes the single attribute it holds.</p>
+     * type, so that this {@code DataPoints} describes the single attribute it holds.</p>
      */
     @Override
     public DataPointsType getType() {
@@ -120,7 +120,7 @@ public final class SinglePositionDataPoints implements DataPoints {
     }
 
     /**
-     * Verifies that the given index is the only one this sequence has.
+     * Verifies that the given index is the only one this {@code DataPoints} has.
      */
     private static void ensureValid(final int index) {
         if (index != 0) {

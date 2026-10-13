@@ -116,11 +116,12 @@ public final class Ellipsoid extends AbstractGeometry implements ParametricCurve
     }
 
     /**
-     * Creates an ellipsoid centered on the single position of the given sequence. The sequence is
-     * taken as-is, so the caller may give the ellipsoid the attributes carried by that sequence.
+     * Creates an ellipsoid centered on the single position of the given {@code DataPoints}.
+     * The {@code DataPoints} is taken as-is, so the caller may give the ellipsoid the attributes
+     * carried by that {@code DataPoints}.
      *
      * @param  points  the center of the ellipsoid.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly one position.
      */
     public Ellipsoid(DataPoints points) {
         this.points = checkedPoints(points);
@@ -129,12 +130,12 @@ public final class Ellipsoid extends AbstractGeometry implements ParametricCurve
 
     /**
      * Creates an ellipsoid of the given semi-axes centered on the single position of the given
-     * sequence.
+     * {@code DataPoints}.
      *
      * @param  points    the center of the ellipsoid.
      * @param  semiAxes  length of the semi-axis along each axis, one value per dimension.
      *                   Each of them must be positive.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly one position,
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly one position,
      *         or if the number of semi-axes is not the number of dimensions.
      */
     public Ellipsoid(DataPoints points, double... semiAxes) {
@@ -143,7 +144,7 @@ public final class Ellipsoid extends AbstractGeometry implements ParametricCurve
     }
 
     /**
-     * Returns the given sequence if it holds the single position an ellipsoid is centered on.
+     * Returns the given {@code DataPoints} if it holds the single position an ellipsoid is centered on.
      */
     private static DataPoints checkedPoints(final DataPoints points) {
         if (points.size() != 1) {
@@ -360,7 +361,7 @@ public final class Ellipsoid extends AbstractGeometry implements ParametricCurve
     }
 
     /**
-     * Returns the center of this ellipsoid, as a sequence of one position. An ellipsoid is defined
+     * Returns the center of this ellipsoid, as a {@code DataPoints} of one position. An ellipsoid is defined
      * by that position and by its semi-axes, so the center is the only position it holds.
      */
     @Override

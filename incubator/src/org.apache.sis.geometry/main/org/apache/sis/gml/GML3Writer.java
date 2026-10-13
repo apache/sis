@@ -261,7 +261,7 @@ public final class GML3Writer extends AbstractGMLWriter {
 
     /**
      * Writes a {@code <gml:posList>} element containing the given coordinate tuples, with an
-     * explicit {@code srsDimension} attribute taken from the width of the sequence itself.
+     * explicit {@code srsDimension} attribute taken from the width of the {@code DataPoints} itself.
      */
     private void writePosList(final DataPoints points) throws XMLStreamException {
         writer.writeStartElement(GML3Tags.POS_LIST);

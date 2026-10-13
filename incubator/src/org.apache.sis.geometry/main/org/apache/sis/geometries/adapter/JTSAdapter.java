@@ -124,7 +124,7 @@ public final class JTSAdapter {
     /**
      * View a geometry as a JTS geometry.
      *
-     * @param copy if true create a copy of the point sequence, otherwise create a view
+     * @param copy if true create a copy of the {@code DataPoints}, otherwise create a view
      * @return JTS equivalent
      */
     public static org.locationtech.jts.geom.Geometry asJTS(Geometry geom, boolean copy, org.locationtech.jts.geom.GeometryFactory gf) {

@@ -146,7 +146,7 @@ public sealed interface ParametricCurveSolid extends Solid
      *
      * <p>Constraints:</p>
      * <ul>
-     *   <li>The sequence holds {@link #getRows()} × {@link #getColumns()} × {@link #getFiles()}
+     *   <li>The {@code DataPoints} holds {@link #getRows()} × {@link #getColumns()} × {@link #getFiles()}
      *       positions, stored in row-major order.</li>
      * </ul>
      *

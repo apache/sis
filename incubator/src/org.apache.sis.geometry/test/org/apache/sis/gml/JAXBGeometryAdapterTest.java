@@ -122,7 +122,7 @@ public final class JAXBGeometryAdapterTest {
     }
 
     /**
-     * Creates a point sequence in the {@link #wgs84} CRS from a flat list of ordinates.
+     * Creates a {@code DataPoints} in the {@link #wgs84} CRS from a flat list of ordinates.
      */
     private DataPoints sequence(final double... ordinates) {
         return GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(SampleSystem.of(wgs84), ordinates));

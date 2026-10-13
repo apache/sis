@@ -166,7 +166,7 @@ public sealed interface Empty extends Geometry
     }
 
     /**
-     * Returns an empty sequence: the empty set holds no position.
+     * Returns an empty {@code DataPoints}: the empty set holds no position.
      */
     @Override
     default DataPoints getDataPoints() {

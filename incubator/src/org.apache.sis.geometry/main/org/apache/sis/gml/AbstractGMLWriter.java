@@ -254,7 +254,7 @@ abstract class AbstractGMLWriter implements GMLGeometryWriter {
     }
 
     /**
-     * Appends every tuple of the given sequence to the given buffer, all separated by spaces.
+     * Appends every tuple of the given {@code DataPoints} to the given buffer, all separated by spaces.
      */
     protected static void appendSequence(final StringBuilder sb, final DataPoints points) {
         for (int i = 0, n = points.size(); i < n; i++) {

@@ -73,12 +73,12 @@ public final class Cylinder extends AbstractGeometry{
     }
 
     /**
-     * Creates a cylinder along the axis joining the two positions of the given sequence.
-     * The sequence is taken as-is, so the caller may give the cylinder the attributes
-     * carried by that sequence.
+     * Creates a cylinder along the axis joining the two positions of the given {@code DataPoints}.
+     * The {@code DataPoints} is taken as-is, so the caller may give the cylinder the attributes
+     * carried by that {@code DataPoints}.
      *
      * @param  points  the centers of the bottom and top circles, in that order.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly two positions.
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly two positions.
      */
     public Cylinder(DataPoints points) {
         if (points.size() != 2) {

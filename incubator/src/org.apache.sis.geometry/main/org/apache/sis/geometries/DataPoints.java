@@ -131,27 +131,27 @@ public interface DataPoints {
     void setAttribute(int index, String name, ReadOnly.Vector<?> value);
 
     /**
-     * Returns a new point between the two given points of this sequence, for example on a segment.
+     * Returns a new point between the two given points of this {@code DataPoints}, for example on a segment.
      * This is a shortcut for {@link #interpolatePoint(int[], double[])} with the weights
      * 1 − {@code ratio} and {@code ratio}.
      *
      * @param  i0     index of the point at ratio 0, the start of the segment.
      * @param  i1     index of the point at ratio 1, the end of the segment.
      * @param  ratio  position between the two points, from 0 to 1.
-     * @return a new point holding the computed attributes, independent of this sequence.
+     * @return a new point holding the computed attributes, independent of this {@code DataPoints}.
      */
     default Point interpolatePoint(final int i0, final int i1, final double ratio) {
         return interpolatePoint(new int[] {i0, i1}, new double[] {1 - ratio, ratio});
     }
 
     /**
-     * Returns a new point interpolated between any number of points of this sequence, for example on
+     * Returns a new point interpolated between any number of points of this {@code DataPoints}, for example on
      * a segment or inside a triangle. Each attribute of the new point, the position included, is
      * computed by {@link #interpolateAttribute(String, int[], double[])}.
      *
      * @param  indices  indices of the points to interpolate between, at least one.
      * @param  weights  weight of each point, in the same order.
-     * @return a new point holding the computed attributes, independent of this sequence.
+     * @return a new point holding the computed attributes, independent of this {@code DataPoints}.
      * @throws IllegalArgumentException if there is no point, or not one weight per point.
      */
     default Point interpolatePoint(final int[] indices, final double[] weights) {
@@ -164,7 +164,7 @@ public interface DataPoints {
     }
 
     /**
-     * Returns the value of an attribute between the two given points of this sequence, for example on
+     * Returns the value of an attribute between the two given points of this {@code DataPoints}, for example on
      * a segment. This is a shortcut for {@link #interpolateAttribute(String, int[], double[])} with the
      * weights 1 − {@code ratio} and {@code ratio}.
      *
@@ -172,14 +172,14 @@ public interface DataPoints {
      * @param  i0     index of the point at ratio 0, the start of the segment.
      * @param  i1     index of the point at ratio 1, the end of the segment.
      * @param  ratio  position between the two points, from 0 to 1.
-     * @return the attribute value, independent of this sequence.
+     * @return the attribute value, independent of this {@code DataPoints}.
      */
     default Vector<?> interpolateAttribute(final String name, final int i0, final int i1, final double ratio) {
         return interpolateAttribute(name, new int[] {i0, i1}, new double[] {1 - ratio, ratio});
     }
 
     /**
-     * Returns the value of an attribute interpolated between any number of points of this sequence,
+     * Returns the value of an attribute interpolated between any number of points of this {@code DataPoints},
      * for example on a segment, inside a triangle or inside a quadrilateral. The weights are the
      * generalized barycentric coordinates of the position where the value is computed: they are
      * positive and sum to 1. The value is computed as declared by the
@@ -198,7 +198,7 @@ public interface DataPoints {
      * @param  name     name of the attribute.
      * @param  indices  indices of the points to interpolate between, at least one.
      * @param  weights  weight of each point, in the same order.
-     * @return the attribute value, independent of this sequence.
+     * @return the attribute value, independent of this {@code DataPoints}.
      * @throws IllegalArgumentException if there is no point, or not one weight per point.
      */
     default Vector<?> interpolateAttribute(final String name, final int[] indices, final double[] weights) {
@@ -266,13 +266,13 @@ public interface DataPoints {
     }
 
     /**
-     * Returns a hash code value for the given sequence, computed from the attributes it declares
+     * Returns a hash code value for the given {@code DataPoints}, computed from the attributes it declares
      * and from the values it holds for them. Implementations of this interface shall base their
-     * {@code hashCode()} on this method, so that two sequences holding the same data have the
+     * {@code hashCode()} on this method, so that two {@code DataPoints} holding the same data have the
      * same hash code whatever the way they store it.
      *
-     * @param  points  the sequence to hash, not null.
-     * @return a hash code value for the given sequence.
+     * @param  points  the {@code DataPoints} to hash, not null.
+     * @return a hash code value for the given {@code DataPoints}.
      */
     static int hashCode(final DataPoints points) {
         final DataPointsType type = points.getType();
@@ -290,19 +290,19 @@ public interface DataPoints {
     }
 
     /**
-     * Returns whether the given object is a sequence declaring the same attributes as the given one
+     * Returns whether the given object is a {@code DataPoints} declaring the same attributes as the given one
      * and holding the same values for them. Implementations of this interface shall base their
-     * {@code equals(Object)} on this method, so that two sequences holding the same data are equal
-     * whatever the way they store it: a sequence backed by arrays is equal to a sequence backed by
+     * {@code equals(Object)} on this method, so that two {@code DataPoints} holding the same data are equal
+     * whatever the way they store it: a {@code DataPoints} backed by arrays is equal to one backed by
      * a list of points when both describe the same positions.
      *
      * <p>The attributes are compared one by one rather than by delegating to
-     * {@link DataPointsType#equals(DataPointsType, Object)}, because a sequence may be its own
+     * {@link DataPointsType#equals(DataPointsType, Object)}, because a {@code DataPoints} may be its own
      * description, and that method reports two descriptions as different as soon as one of them
      * also carries the positions.</p>
      *
-     * @param  points  the sequence to compare, not null.
-     * @param  obj     the object to compare to the given sequence, or {@code null}.
+     * @param  points  the {@code DataPoints} to compare, not null.
+     * @param  obj     the object to compare to the given {@code DataPoints}, or {@code null}.
      * @return whether the two hold the same attributes with the same values.
      */
     static boolean equals(final DataPoints points, final Object obj) {

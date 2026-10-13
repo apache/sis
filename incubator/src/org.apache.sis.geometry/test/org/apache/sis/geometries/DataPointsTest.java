@@ -107,7 +107,7 @@ public class DataPointsTest {
     }
 
     /**
-     * Creates a sequence of the given positions, holding the given values in three attributes
+     * Creates a {@code DataPoints} of the given positions, holding the given values in three attributes
      * interpolated in the three possible ways.
      */
     private static DataPoints createPoints(final double[] positions, final double[] values) {

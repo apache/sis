@@ -43,7 +43,7 @@ import org.apache.sis.measure.Units;
 
 /**
  * A 1-dimensional geometric primitive, continuous image of an open real interval,
- * usually stored as a sequence of points with the subtype specifying the interpolation between them.
+ * usually stored as {@code DataPoints} with the subtype specifying the interpolation between them.
  *
  * <p>A curve is connected and has a measurable length. Its orientation is given by its
  * parameterization, consistently with the tangent which always points in the forward direction.

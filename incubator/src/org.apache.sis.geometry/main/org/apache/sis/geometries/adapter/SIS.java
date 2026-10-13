@@ -395,7 +395,7 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
      *       desired target type.</li>
      *   <li>Otherwise, if {@code type} is {@link GeometryType#POLYGON}, then the components shall be
      *       a {@link LineString}[] with the first ring taken as the shell and all other rings as holes.</li>
-     *   <li>Otherwise, the components shall be a {@link DataPoints} sequence, an {@link Array} of
+     *   <li>Otherwise, the components shall be a {@link DataPoints}, an {@link Array} of
      *       positions, or an array or collection of {@link Point} or {@link Vector} instances.</li>
      * </ul>
      *
@@ -502,7 +502,7 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
     }
 
     /**
-     * Reads the given number of coordinate tuples from the given buffer as a sequence of positions.
+     * Reads the given number of coordinate tuples from the given buffer as a {@code DataPoints}.
      * The buffer position is advanced by {@code dimensions.count} × {@code count}.
      *
      * @param  isFloat      whether to store the coordinates as single-precision numbers.
@@ -529,7 +529,7 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
     }
 
     /**
-     * Returns the given coordinate tuples as a sequence of positions.
+     * Returns the given coordinate tuples as a {@code DataPoints}.
      *
      * @param  tuples      the coordinate tuples, each of {@code dimensions.count} values.
      * @param  isFloat     whether to store the coordinates as single-precision numbers.
@@ -554,14 +554,14 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
     }
 
     /**
-     * Returns the given coordinates as a sequence of positions carrying the measures, if any,
+     * Returns the given coordinates as a {@code DataPoints} carrying the measures, if any,
      * as their {@value DataPointsType#ATT_M} attribute.
      *
      * @param  isFloat    whether to store the values as single-precision numbers.
      * @param  spatial    the number of spatial dimensions of the positions.
      * @param  positions  the spatial coordinates, as {@code spatial} values per position.
      * @param  measures   one measure per position, or {@code null} if the positions have no measure.
-     * @return the sequence of the given positions.
+     * @return the {@code DataPoints} of the given positions.
      */
     private static ArrayDataPoints toDataPoints(final boolean isFloat, final int spatial,
                                                 final double[] positions, final double[] measures)
@@ -589,8 +589,8 @@ public final class SIS extends org.apache.sis.geometry.wrapper.Geometries<Geomet
     }
 
     /**
-     * Returns the given components as a sequence of positions. The components can be a
-     * {@link DataPoints} sequence, an {@link Array} of positions, or an array or collection
+     * Returns the given components as a {@code DataPoints}. The components can be a
+     * {@link DataPoints}, an {@link Array} of positions, or an array or collection
      * of {@link Point} or {@link Vector} instances.
      *
      * @param  components  the components to read.

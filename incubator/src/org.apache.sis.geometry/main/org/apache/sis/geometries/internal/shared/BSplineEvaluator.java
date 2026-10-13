@@ -186,12 +186,12 @@ final class BSplineEvaluator {
     }
 
     /**
-     * Returns the given control points as a sequence in the given reference system.
+     * Returns the given control points as a {@code DataPoints} in the given reference system.
      * The control points of some curves are only positions, sometimes without reference system.
      *
      * @param  points  the control points.
      * @param  crs     the reference system of the curve.
-     * @return the control points as a sequence of positions.
+     * @return the control points as a {@code DataPoints} of positions.
      */
     static DataPoints asDataPoints(final Array points, final CoordinateReferenceSystem crs) {
         if (points.getCoordinateReferenceSystem() != null) {

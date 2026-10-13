@@ -207,7 +207,7 @@ public abstract sealed class AbstractPolyhedron extends AbstractGeometry impleme
     /**
      * Unsupported: the vertices of these shapes are a constant shared by every instance, not
      * state of one of them. Returning them would either let one instance move the vertices of
-     * all the others, or hand out a sequence which refuses every write, so neither answers the
+     * all the others, or hand out a {@code DataPoints} which refuses every write, so neither answers the
      * contract of {@link org.apache.sis.geometries.Geometry#getDataPoints()}.
      *
      * @return never returns.

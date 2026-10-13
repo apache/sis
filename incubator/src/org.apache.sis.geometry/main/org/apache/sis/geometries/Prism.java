@@ -54,7 +54,7 @@ public sealed interface Prism extends Geometry
 
     /**
      * Returns the positions of the geometry this prism is the extrusion of. The positions the
-     * extrusion adds are not materialized, so they are not part of the returned sequence.
+     * extrusion adds are not materialized, so they are not part of the returned {@code DataPoints}.
      */
     @Override
     default DataPoints getDataPoints() {

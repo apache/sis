@@ -126,7 +126,7 @@ public sealed interface ParametricCurveSurface extends Surface, ReferenceSystem
      *
      * <p>Constraints:</p>
      * <ul>
-     *   <li>The sequence holds {@link #getRows()} × {@link #getColumns()} positions,
+     *   <li>The {@code DataPoints} holds {@link #getRows()} × {@link #getColumns()} positions,
      *       stored in row-major order.</li>
      * </ul>
      *

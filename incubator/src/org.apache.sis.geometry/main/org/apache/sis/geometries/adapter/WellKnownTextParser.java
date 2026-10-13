@@ -226,7 +226,7 @@ final class WellKnownTextParser {
      * Parses {@code (1 2)} or {@code EMPTY}.
      *
      * <p>{@code POINT EMPTY} does not map to a {@link Point}: the Apache SIS model has no empty
-     * point, since a point sequence of length 0 is not a valid position of a point and
+     * point, since a {@code DataPoints} of length 0 is not a valid position of a point and
      * {@link GeometryFactory#createPoint(CoordinateReferenceSystem)} builds a point at the origin
      * rather than an absent one. It maps to {@link Empty} instead, the geometry which stands for
      * the empty point set whatever its type, and which is written back as
@@ -664,7 +664,7 @@ final class WellKnownTextParser {
         }
 
         /**
-         * Builds the point sequence of the accumulated tuples, possibly empty.
+         * Builds the {@code DataPoints} of the accumulated tuples, possibly empty.
          */
         DataPoints build() {
             final int posWidth = positionDimension();
@@ -694,7 +694,7 @@ final class WellKnownTextParser {
         }
 
         /**
-         * Returns a sequence holding both the positions and the measures.
+         * Returns a {@code DataPoints} holding both the positions and the measures.
          */
         private DataPoints createSequence(final Array positions, final Array measures) {
             final Map<String,Array> attributes = new LinkedHashMap<>(4);

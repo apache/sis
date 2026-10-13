@@ -98,9 +98,9 @@ public sealed interface Point extends Primitive
     void setAttribute(String name, ReadOnly.Vector<?> tuple);
 
     /**
-     * View this point as a single point sequence
+     * View this point as a {@code DataPoints} of a single point
      *
-     * @return this point as a sequence of one data point.
+     * @return this point as a {@code DataPoints} of one point.
      */
     @Override
     default DataPoints getDataPoints() {

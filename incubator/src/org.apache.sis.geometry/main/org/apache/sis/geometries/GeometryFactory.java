@@ -176,12 +176,12 @@ public final class GeometryFactory {
     }
 
     /**
-     * Creates a sequence of the given size holding the attributes declared by the given type.
+     * Creates a {@code DataPoints} of the given size holding the attributes declared by the given type.
      * All the values are initialized to zero.
      *
-     * @param  type  the attributes of the sequence, which shall include the position.
-     * @param  size  number of points in the sequence.
-     * @return a new sequence of the given size.
+     * @param  type  the attributes of the {@code DataPoints}, which shall include the position.
+     * @param  size  number of points in the {@code DataPoints}.
+     * @return a new {@code DataPoints} of the given size.
      */
     public DataPoints createDataPoints(DataPointsType type, int size) {
         final Map<String,Array> attributes = new LinkedHashMap<>();
@@ -615,13 +615,13 @@ public final class GeometryFactory {
     }
 
     /**
-     * Creates a sphere of the given radius centered on the single position of the given sequence.
-     * The sequence is taken as-is, so the caller may give the sphere the attributes carried by it.
+     * Creates a sphere of the given radius centered on the single position of the given {@code DataPoints}.
+     * The {@code DataPoints} is taken as-is, so the caller may give the sphere the attributes carried by it.
      *
-     * @param  points  the center of the sphere, as a sequence of exactly one position.
+     * @param  points  the center of the sphere, as a {@code DataPoints} of exactly one position.
      * @param  radius  radius of the sphere, must be positive.
      * @return the sphere of the given center and radius.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly one position.
      */
     public Sphere createSphere(DataPoints points, double radius) {
         return new Sphere(points, radius);
@@ -629,15 +629,15 @@ public final class GeometryFactory {
 
     /**
      * Creates an ellipsoid of the given semi-axes centered on the single position of the given
-     * sequence. The sequence is taken as-is, so the caller may give the ellipsoid the attributes
-     * carried by it. An ellipsoid whose semi-axes are all equal is a {@linkplain #createSphere
-     * sphere} of that radius.
+     * {@code DataPoints}. The {@code DataPoints} is taken as-is, so the caller may give the
+     * ellipsoid the attributes carried by it. An ellipsoid whose semi-axes are all equal is a
+     * {@linkplain #createSphere sphere} of that radius.
      *
-     * @param  points    the center of the ellipsoid, as a sequence of exactly one position.
+     * @param  points    the center of the ellipsoid, as a {@code DataPoints} of exactly one position.
      * @param  semiAxes  length of the semi-axis along each axis of the coordinate system,
      *                   one value per dimension. Each of them must be positive.
      * @return the ellipsoid of the given center and semi-axes.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly one position,
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly one position,
      *         or if the number of semi-axes is not the number of dimensions.
      */
     public Ellipsoid createEllipsoid(DataPoints points, double... semiAxes) {
@@ -777,13 +777,13 @@ public final class GeometryFactory {
     }
 
     /**
-     * Creates a ray starting from the single position of the given sequence.
-     * The sequence is taken as-is, so the caller may give the ray the attributes carried by it.
+     * Creates a ray starting from the single position of the given {@code DataPoints}.
+     * The {@code DataPoints} is taken as-is, so the caller may give the ray the attributes carried by it.
      *
-     * @param  points     the position the ray starts from, as a sequence of exactly one position.
+     * @param  points     the position the ray starts from, as a {@code DataPoints} of exactly one position.
      * @param  direction  the direction the ray extends toward, not null.
-     * @return the ray starting from the position of the given sequence.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     * @return the ray starting from the position of the given {@code DataPoints}.
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly one position.
      */
     public Ray createRay(DataPoints points, Vector<?> direction) {
         return new Ray(points, direction);
@@ -806,13 +806,13 @@ public final class GeometryFactory {
     }
 
     /**
-     * Creates a plane centered on the single position of the given sequence.
-     * The sequence is taken as-is, so the caller may give the plane the attributes carried by it.
+     * Creates a plane centered on the single position of the given {@code DataPoints}.
+     * The {@code DataPoints} is taken as-is, so the caller may give the plane the attributes carried by it.
      *
-     * @param  points  the position the plane is centered on, as a sequence of exactly one position.
+     * @param  points  the position the plane is centered on, as a {@code DataPoints} of exactly one position.
      * @param  normal  the direction the plane is perpendicular to, not null.
-     * @return the plane centered on the position of the given sequence.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     * @return the plane centered on the position of the given {@code DataPoints}.
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly one position.
      */
     public Plane createPlane(DataPoints points, Vector<?> normal) {
         return new Plane(points, normal);
@@ -833,13 +833,13 @@ public final class GeometryFactory {
     }
 
     /**
-     * Creates a hyperplane passing by the single position of the given sequence.
-     * The sequence is taken as-is, so the caller may give the hyperplane the attributes carried by it.
+     * Creates a hyperplane passing by the single position of the given {@code DataPoints}.
+     * The {@code DataPoints} is taken as-is, so the caller may give the hyperplane the attributes carried by it.
      *
-     * @param  points  a position the hyperplane passes by, as a sequence of exactly one position.
+     * @param  points  a position the hyperplane passes by, as a {@code DataPoints} of exactly one position.
      * @param  normal  the direction the hyperplane is perpendicular to, not null.
-     * @return the hyperplane passing by the position of the given sequence.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     * @return the hyperplane passing by the position of the given {@code DataPoints}.
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly one position.
      */
     public HyperPlane createHyperPlane(DataPoints points, Vector<?> normal) {
         return new HyperPlane(points, normal);

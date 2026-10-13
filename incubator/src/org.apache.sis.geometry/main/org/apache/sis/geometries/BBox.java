@@ -146,9 +146,9 @@ public final class BBox extends GeneralEnvelope implements Geometry {
     }
 
     /**
-     * Returns the two corners of this box, the lower one first, as a sequence of two positions.
+     * Returns the two corners of this box, the lower one first, as a {@code DataPoints} of two positions.
      * Those corners are what this box is made of, so writing a position through the returned
-     * sequence moves the corresponding corner.
+     * {@code DataPoints} moves the corresponding corner.
      */
     @Override
     public DataPoints getDataPoints() {
@@ -156,7 +156,7 @@ public final class BBox extends GeneralEnvelope implements Geometry {
     }
 
     /**
-     * The two corners of the enclosing box, seen as a sequence of two positions.
+     * The two corners of the enclosing box, seen as a {@code DataPoints} of two positions.
      * This class holds no coordinate of its own: it reads and writes the box.
      */
     private final class Corners implements DataPoints {

@@ -99,7 +99,7 @@ public non-sealed class DefaultArcByCenterPoint extends AbstractGeometry impleme
     }
 
     /**
-     * Returns the center of this arc, as a sequence of one position. An arc by center point is
+     * Returns the center of this arc, as a {@code DataPoints} of one position. An arc by center point is
      * defined by that position and by angles, so the center is the only position it holds.
      */
     @Override

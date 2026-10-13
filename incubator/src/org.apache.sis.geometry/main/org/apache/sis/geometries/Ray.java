@@ -53,13 +53,13 @@ public final class Ray extends AbstractGeometry{
     }
 
     /**
-     * Creates a ray starting from the single position of the given sequence.
-     * The sequence is taken as-is, so the caller may give the ray the attributes
-     * carried by that sequence.
+     * Creates a ray starting from the single position of the given {@code DataPoints}.
+     * The {@code DataPoints} is taken as-is, so the caller may give the ray the attributes
+     * carried by that {@code DataPoints}.
      *
-     * @param  points     the position the ray starts from, as a sequence of exactly one position.
+     * @param  points     the position the ray starts from, as a {@code DataPoints} of exactly one position.
      * @param  direction  the direction the ray extends toward, not null.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly one position.
      */
     public Ray(DataPoints points, Vector<?> direction) {
         if (points.size() != 1) {

@@ -153,7 +153,7 @@ public abstract class ShapeConverter {
             length += DIMENSION;
         }
 
-        /** Returns a copy of current coordinate values as a SIS coordinate sequence. */
+        /** Returns a copy of current coordinate values as a {@code DataPoints}. */
         @Override DataPoints toSequence(final boolean close) {
             if (close && !Arrays.equals(buffer, 0, 2, buffer, length - 2, length)) {
                 addPoint(buffer);
@@ -201,7 +201,7 @@ public abstract class ShapeConverter {
             length += DIMENSION;
         }
 
-        /** Returns a copy of current coordinate values as a SIS coordinate sequence. */
+        /** Returns a copy of current coordinate values as a {@code DataPoints}. */
         @Override DataPoints toSequence(final boolean close) {
             if (close && !Arrays.equals(buffer, 0, 2, buffer, length - 2, length)) {
                 addPoint(buffer);
@@ -225,11 +225,11 @@ public abstract class ShapeConverter {
     abstract void addPoint();
 
     /**
-     * Returns a copy of current coordinate values as a SIS coordinate sequence.
+     * Returns a copy of current coordinate values as a {@code DataPoints}.
      * The number of values to copy in a new array is {@link #length}.
      *
      * @param  close  whether to ensure that the first point is repeated as the last point.
-     * @return a SIS coordinate sequence containing a copy of current coordinate values.
+     * @return a {@code DataPoints} containing a copy of current coordinate values.
      */
     abstract DataPoints toSequence(boolean close);
 

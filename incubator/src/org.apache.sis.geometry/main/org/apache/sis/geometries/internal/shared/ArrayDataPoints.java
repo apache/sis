@@ -174,7 +174,7 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
     }
 
     /**
-     * An indexed point in the point sequence
+     * An indexed point in the {@code DataPoints}
      */
     public static non-sealed class Indexed implements Point {
 

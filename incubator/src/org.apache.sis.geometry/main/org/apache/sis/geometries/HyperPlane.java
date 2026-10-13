@@ -56,13 +56,13 @@ public final class HyperPlane extends AbstractGeometry{
     }
 
     /**
-     * Creates a hyperplane passing by the single position of the given sequence.
-     * The sequence is taken as-is, so the caller may give the hyperplane the attributes
-     * carried by that sequence.
+     * Creates a hyperplane passing by the single position of the given {@code DataPoints}.
+     * The {@code DataPoints} is taken as-is, so the caller may give the hyperplane the attributes
+     * carried by that {@code DataPoints}.
      *
-     * @param  points  a position the hyperplane passes by, as a sequence of exactly one position.
+     * @param  points  a position the hyperplane passes by, as a {@code DataPoints} of exactly one position.
      * @param  normal  the direction the hyperplane is perpendicular to, not null.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly one position.
      */
     public HyperPlane(DataPoints points, Vector<?> normal) {
         if (points.size() != 1) {

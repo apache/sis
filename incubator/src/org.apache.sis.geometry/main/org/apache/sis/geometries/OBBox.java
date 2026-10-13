@@ -164,7 +164,7 @@ public final class OBBox extends AbstractGeometry {
     }
 
     /**
-     * Returns the center of this box, as a sequence of one position. The corners of the box are
+     * Returns the center of this box, as a {@code DataPoints} of one position. The corners of the box are
      * derived from that position and from its axes, so the center is the only position it holds.
      */
     @Override

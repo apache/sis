@@ -112,11 +112,12 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
     }
 
     /**
-     * Creates a sphere centered on the single position of the given sequence. The sequence is
-     * taken as-is, so the caller may give the sphere the attributes carried by that sequence.
+     * Creates a sphere centered on the single position of the given {@code DataPoints}.
+     * The {@code DataPoints} is taken as-is, so the caller may give the sphere the attributes
+     * carried by that {@code DataPoints}.
      *
      * @param  points  the center of the sphere.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly one position.
      */
     public Sphere(DataPoints points) {
         if (points.size() != 1) {
@@ -126,11 +127,11 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
     }
 
     /**
-     * Creates a sphere of the given radius centered on the single position of the given sequence.
+     * Creates a sphere of the given radius centered on the single position of the given {@code DataPoints}.
      *
      * @param  points  the center of the sphere.
      * @param  radius  new sphere radius, must be positive.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly one position.
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly one position.
      */
     public Sphere(DataPoints points, double radius) {
         this(points);
@@ -288,7 +289,7 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
     }
 
     /**
-     * Returns the center of this sphere, as a sequence of one position. A sphere is defined by
+     * Returns the center of this sphere, as a {@code DataPoints} of one position. A sphere is defined by
      * that position and by its radius, so the center is the only position it holds.
      */
     @Override

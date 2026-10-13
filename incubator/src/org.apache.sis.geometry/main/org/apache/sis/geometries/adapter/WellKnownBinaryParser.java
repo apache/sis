@@ -247,8 +247,8 @@ final class WellKnownBinaryParser {
      * Parses the single coordinate tuple of a point.
      *
      * <p>A tuple of {@link Double#NaN} ordinates is the usual way of writing an empty point, and
-     * does not map to a {@link Point}: the Apache SIS model has no empty point, since a point
-     * sequence of length 0 is not a valid position of a point. It maps to {@link Empty} instead,
+     * does not map to a {@link Point}: the Apache SIS model has no empty point, since a
+     * {@code DataPoints} of length 0 is not a valid position of a point. It maps to {@link Empty} instead,
      * the geometry which stands for the empty point set whatever its type, and which is written
      * back as an empty {@code GEOMETRYCOLLECTION}.</p>
      */
@@ -605,7 +605,7 @@ final class WellKnownBinaryParser {
         }
 
         /**
-         * Builds the point sequence of the accumulated tuples, possibly empty.
+         * Builds the {@code DataPoints} of the accumulated tuples, possibly empty.
          */
         DataPoints build() {
             final int posWidth = positionDimension();
@@ -635,7 +635,7 @@ final class WellKnownBinaryParser {
         }
 
         /**
-         * Returns a sequence holding both the positions and the measures.
+         * Returns a {@code DataPoints} holding both the positions and the measures.
          */
         private DataPoints createSequence(final Array positions, final Array measures) {
             final Map<String,Array> attributes = new LinkedHashMap<>(4);

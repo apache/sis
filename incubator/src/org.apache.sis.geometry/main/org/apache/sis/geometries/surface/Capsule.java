@@ -68,11 +68,11 @@ public final class Capsule extends AbstractGeometry{
 
     /**
      * Creates a capsule whose capping spheres are centered on the two positions of the given
-     * sequence. The sequence is taken as-is, so the caller may give the capsule the attributes
-     * carried by that sequence.
+     * {@code DataPoints}. The {@code DataPoints} is taken as-is, so the caller may give the
+     * capsule the attributes carried by that {@code DataPoints}.
      *
      * @param  points  the centers of the bottom and top spheres, in that order.
-     * @throws IllegalArgumentException if the given sequence does not hold exactly two positions.
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly two positions.
      */
     public Capsule(DataPoints points) {
         if (points.size() != 2) {
