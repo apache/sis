@@ -27,7 +27,6 @@ import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultPoint;
 import org.apache.sis.geometries.internal.shared.IndexedPoint;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
-import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 
@@ -63,7 +62,7 @@ public sealed interface Point extends Primitive
                 IndexedPoint,
                 ArrayDataPoints.Indexed,
                 MeshPrimitive.Vertex,
-                Triangle.InterpolatedPoint
+                DataPoints.InterpolatedPoint
 {
 
     /**

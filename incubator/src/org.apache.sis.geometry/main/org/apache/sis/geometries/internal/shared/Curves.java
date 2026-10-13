@@ -112,10 +112,10 @@ public final class Curves {
             final double length = segments[i];
             if (s <= length || i == segments.length - 1) {
                 final double ratio = (length > 0) ? Math.min(s / length, 1) : 0;
-                return points.interpolatePoint(i, i+1, ratio);
+                return points.getInterpolatedPoint(i, i+1, ratio);
             }
             s -= length;
         }
-        return points.interpolatePoint(0, 0, 0);    // A single position, at distance zero.
+        return points.getInterpolatedPoint(0, 0, 0);    // A single position, at distance zero.
     }
 }

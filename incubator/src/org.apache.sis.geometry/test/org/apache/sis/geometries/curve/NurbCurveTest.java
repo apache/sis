@@ -138,7 +138,8 @@ public class NurbCurveTest extends GeometryTest {
         attributes.put("nearest", NDArrays.of(1, new double[] {0, 0, 30}));
         attributes.put("linear",  NDArrays.of(1, new double[] {0, 0, 30}));
         final NurbCurve arc = createQuarterCircle(withInterpolations(GeometryFactory.DEFAULT.createDataPoints(attributes),
-                Map.of("linear", AttributeInterpolation.LINEAR)));
+                Map.of("nearest", AttributeInterpolation.NEAREST,
+                       "linear",  AttributeInterpolation.LINEAR)));
         final Point point = arc.subCurve(Quantities.create(50, Units.PERCENT));
         assertEquals(0, point.getAttribute("nearest").get(0), TOLERANCE, "Value of the control point of largest weight.");
         assertEquals(30 * (1 - Math.sqrt(0.5)), point.getAttribute("linear").get(0), TOLERANCE, "Blended by the basis functions.");

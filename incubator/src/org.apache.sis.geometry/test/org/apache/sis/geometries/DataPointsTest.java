@@ -117,7 +117,8 @@ public class DataPointsTest {
         attributes.put("linear",  NDArrays.of(1, values.clone()));
         attributes.put("leading", NDArrays.of(1, values.clone()));
         return GeometryTest.withInterpolations(GeometryFactory.DEFAULT.createDataPoints(attributes),
-                Map.of("linear",  AttributeInterpolation.LINEAR,
+                Map.of("nearest", AttributeInterpolation.NEAREST,
+                       "linear",  AttributeInterpolation.LINEAR,
                        "leading", AttributeInterpolation.LEADING));
     }
 
@@ -142,11 +143,11 @@ public class DataPointsTest {
     @Test
     public void testInterpolateSegment() {
         final DataPoints points = createPoints(new double[] {0,0, 10,0}, new double[] {10, 30});
-        assertPoint(points.interpolatePoint(0, 1, 0),     0, 0, 10, 10, 10);
-        assertPoint(points.interpolatePoint(0, 1, 0.25), 2.5, 0, 10, 15, 10);
-        assertPoint(points.interpolatePoint(0, 1, 0.5),    5, 0, 10, 20, 10);
-        assertPoint(points.interpolatePoint(0, 1, 0.75), 7.5, 0, 30, 25, 10);
-        assertPoint(points.interpolatePoint(0, 1, 1),     10, 0, 30, 30, 30);
+        assertPoint(points.getInterpolatedPoint(0, 1, 0),     0, 0, 10, 10, 10);
+        assertPoint(points.getInterpolatedPoint(0, 1, 0.25), 2.5, 0, 10, 15, 10);
+        assertPoint(points.getInterpolatedPoint(0, 1, 0.5),    5, 0, 10, 20, 10);
+        assertPoint(points.getInterpolatedPoint(0, 1, 0.75), 7.5, 0, 30, 25, 10);
+        assertPoint(points.getInterpolatedPoint(0, 1, 1),     10, 0, 30, 30, 30);
     }
 
     /**
@@ -156,9 +157,9 @@ public class DataPointsTest {
     @Test
     public void testInterpolateTriangle() {
         final DataPoints points = createPoints(new double[] {0,0, 10,0, 0,10}, new double[] {10, 20, 30});
-        assertPoint(points.interpolatePoint(new int[] {0, 1, 2}, new double[] {0.2, 0.3, 0.5}), 3, 5, 30, 23, 10);
-        assertPoint(points.interpolatePoint(new int[] {0, 1, 2}, new double[] {0, 1, 0}),      10, 0, 20, 20, 10);
-        assertPoint(points.interpolatePoint(new int[] {2, 0, 1}, new double[] {0.5, 0.2, 0.3}), 3, 5, 30, 23, 30);
+        assertPoint(points.getInterpolatedPoint(new int[] {0, 1, 2}, new double[] {0.2, 0.3, 0.5}), 3, 5, 30, 23, 10);
+        assertPoint(points.getInterpolatedPoint(new int[] {0, 1, 2}, new double[] {0, 1, 0}),      10, 0, 20, 20, 10);
+        assertPoint(points.getInterpolatedPoint(new int[] {2, 0, 1}, new double[] {0.5, 0.2, 0.3}), 3, 5, 30, 23, 30);
     }
 
     /**
@@ -191,7 +192,7 @@ public class DataPointsTest {
         final DataPoints points = createPoints(new double[] {0,0, 10,0, 10,10, 0,10}, new double[] {10, 20, 30, 40});
         final double s = 0.25, t = 0.75;
         final double[] weights = {(1-s)*(1-t), s*(1-t), s*t, (1-s)*t};
-        assertPoint(points.interpolatePoint(new int[] {0, 1, 2, 3}, weights), 2.5, 7.5, 40, 31.25, 10);
+        assertPoint(points.getInterpolatedPoint(new int[] {0, 1, 2, 3}, weights), 2.5, 7.5, 40, 31.25, 10);
     }
 
     /**
@@ -200,7 +201,7 @@ public class DataPointsTest {
     @Test
     public void testInterpolateSinglePoint() {
         final DataPoints points = createPoints(new double[] {0,0, 10,0}, new double[] {10, 20});
-        assertPoint(points.interpolatePoint(new int[] {1}, new double[] {1}), 10, 0, 20, 20, 20);
+        assertPoint(points.getInterpolatedPoint(new int[] {1}, new double[] {1}), 10, 0, 20, 20, 20);
     }
 
     /**
@@ -209,9 +210,93 @@ public class DataPointsTest {
     @Test
     public void testInterpolateInvalid() {
         final DataPoints points = createPoints(new double[] {0,0, 10,0, 0,10, 10,10}, new double[] {10, 20, 30, 40});
-        assertThrows(IllegalArgumentException.class, () -> points.interpolatePoint(new int[0], new double[0]));
-        assertThrows(IllegalArgumentException.class, () -> points.interpolatePoint(new int[] {0, 1, 2}, new double[] {0.5, 0.5}));
+        assertThrows(IllegalArgumentException.class, () -> points.getInterpolatedPoint(new int[0], new double[0]));
+        assertThrows(IllegalArgumentException.class, () -> points.getInterpolatedPoint(new int[] {0, 1, 2}, new double[] {0.5, 0.5}));
         assertThrows(IllegalArgumentException.class, () -> points.interpolateAttribute("linear", new int[0], new double[0]));
         assertThrows(IllegalArgumentException.class, () -> points.interpolateAttribute("linear", new int[] {0, 1}, new double[] {1}));
+        assertThrows(IllegalArgumentException.class, () -> points.viewInterpolatedPoint(new int[0], new double[0]));
+        assertThrows(IllegalArgumentException.class, () -> points.viewInterpolatedPoint(new int[] {0, 1}, new double[] {1}));
+    }
+
+    /**
+     * The normalized linear interpolation of two orthogonal unit vectors gives the unit vector of the
+     * bisector, while their linear interpolation gives a vector of length √½ only.
+     */
+    @Test
+    public void testInterpolateLinearNormalized() {
+        final Map<String,Array> attributes = new LinkedHashMap<>();
+        attributes.put(DataPointsType.ATT_POSITION, NDArrays.of(GeometryTest.CRS_2D, new double[] {0,0, 10,0}));
+        attributes.put("linear",     NDArrays.of(2, new double[] {1,0, 0,1}));
+        attributes.put("normalized", NDArrays.of(2, new double[] {1,0, 0,1}));
+        final DataPoints points = GeometryTest.withInterpolations(GeometryFactory.DEFAULT.createDataPoints(attributes),
+                Map.of("linear",     AttributeInterpolation.LINEAR,
+                       "normalized", AttributeInterpolation.LINEAR_NORMALIZED));
+
+        final Vector<?> linear = points.interpolateAttribute("linear", 0, 1, 0.5);
+        assertEquals(0.5, linear.get(0), GeometryTest.TOLERANCE);
+        assertEquals(0.5, linear.get(1), GeometryTest.TOLERANCE);
+
+        final double h = Math.sqrt(0.5);
+        final Vector<?> normalized = points.interpolateAttribute("normalized", 0, 1, 0.5);
+        assertEquals(h, normalized.get(0), GeometryTest.TOLERANCE);
+        assertEquals(h, normalized.get(1), GeometryTest.TOLERANCE);
+
+        final Vector<?> fromPoint = points.getInterpolatedPoint(0, 1, 0.25).getAttribute("normalized");
+        assertEquals(1, fromPoint.length(), GeometryTest.TOLERANCE, "The interpolated vector shall have a unit length.");
+        assertEquals(3 / Math.sqrt(10), fromPoint.get(0), GeometryTest.TOLERANCE);
+        assertEquals(1 / Math.sqrt(10), fromPoint.get(1), GeometryTest.TOLERANCE);
+    }
+
+    /**
+     * Normals and tangents are interpolated as unit vectors without declaring it, while other
+     * attributes are interpolated linearly by default.
+     */
+    @Test
+    public void testDefaultInterpolation() {
+        final Map<String,Array> attributes = new LinkedHashMap<>();
+        attributes.put(DataPointsType.ATT_POSITION, NDArrays.of(GeometryTest.CRS_2D, new double[] {0,0, 10,0}));
+        attributes.put(DataPointsType.ATT_NORMAL,   NDArrays.of(2, new double[] {1,0, 0,1}));
+        attributes.put("other",                     NDArrays.of(2, new double[] {1,0, 0,1}));
+        final DataPoints points = GeometryFactory.DEFAULT.createDataPoints(attributes);
+        final DataPointsType type = points.getType();
+        assertEquals(AttributeInterpolation.LINEAR,            type.getAttributeInterpolation(DataPointsType.ATT_POSITION));
+        assertEquals(AttributeInterpolation.LINEAR_NORMALIZED, type.getAttributeInterpolation(DataPointsType.ATT_NORMAL));
+        assertEquals(AttributeInterpolation.LINEAR_NORMALIZED, type.getAttributeInterpolation(DataPointsType.ATT_TANGENT));
+        assertEquals(AttributeInterpolation.LINEAR,            type.getAttributeInterpolation("other"));
+
+        final double h = Math.sqrt(0.5);
+        final Vector<?> normal = points.interpolateAttribute(DataPointsType.ATT_NORMAL, 0, 1, 0.5);
+        assertEquals(h, normal.get(0), GeometryTest.TOLERANCE);
+        assertEquals(h, normal.get(1), GeometryTest.TOLERANCE);
+
+        final Vector<?> other = points.interpolateAttribute("other", 0, 1, 0.5);
+        assertEquals(0.5, other.get(0), GeometryTest.TOLERANCE);
+        assertEquals(0.5, other.get(1), GeometryTest.TOLERANCE);
+    }
+
+    /**
+     * A view gives the same values as an interpolated point, but follows the changes of the viewed
+     * points and cannot be modified.
+     */
+    @Test
+    public void testViewInterpolatedPoint() {
+        final DataPoints points = createPoints(new double[] {0,0, 10,0, 0,10}, new double[] {10, 20, 30});
+        final int[]    indices = {0, 1, 2};
+        final double[] weights = {0.2, 0.3, 0.5};
+        final Point copy = points.getInterpolatedPoint(indices, weights);
+        final Point view = points.viewInterpolatedPoint(indices, weights);
+        assertPoint(copy, 3, 5, 30, 23, 10);
+        assertPoint(view, 3, 5, 30, 23, 10);
+        assertEquals(null, view.getAttribute("unknown"), "An attribute absent from the viewed points has no value.");
+
+        final Vector<?> moved = points.getPosition(2);
+        moved.set(new double[] {0, 20});
+        points.setPosition(2, moved);
+        weights[0] = 1;                                 // Shall not change the view, which copied the weights.
+        GeometryTest.assertPositionEquals(3, 10, view);
+        GeometryTest.assertPositionEquals(3,  5, copy);
+
+        assertThrows(UnsupportedOperationException.class, () -> view.setAttribute("linear", copy.getAttribute("linear")));
+        assertThrows(UnsupportedOperationException.class, () -> view.setCoordinateReferenceSystem(GeometryTest.CRS_2D));
     }
 }

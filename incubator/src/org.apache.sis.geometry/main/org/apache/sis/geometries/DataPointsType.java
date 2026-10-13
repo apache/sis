@@ -84,9 +84,14 @@ public interface DataPointsType {
 
     /**
      * Get how values should be interpolation in geometric operations.
-     * The default implementation returns {@link AttributeInterpolation#LINEAR} for the
-     * {@linkplain #ATT_POSITION position}, since it is what locates an interpolated point,
-     * and {@link AttributeInterpolation#NEAREST} for all other attributes.
+     * The default implementation returns:
+     *
+     * <ul>
+     *   <li>{@link AttributeInterpolation#LINEAR_NORMALIZED} for the {@linkplain #ATT_NORMAL normal}
+     *       and the {@linkplain #ATT_TANGENT tangent}, which are directions of unit length;</li>
+     *   <li>{@link AttributeInterpolation#LINEAR} for all other attributes, including the
+     *       {@linkplain #ATT_POSITION position}, which is what locates an interpolated point.</li>
+     * </ul>
      *
      * TODO : experimentale but needed
      *
@@ -94,7 +99,11 @@ public interface DataPointsType {
      * @return interpolation of the attribute, never null.
      */
     default AttributeInterpolation getAttributeInterpolation(String name) {
-        return ATT_POSITION.equals(name) ? AttributeInterpolation.LINEAR : AttributeInterpolation.NEAREST;
+        switch (name) {
+            case ATT_NORMAL:
+            case ATT_TANGENT: return AttributeInterpolation.LINEAR_NORMALIZED;
+            default:          return AttributeInterpolation.LINEAR;
+        }
     }
 
     /**

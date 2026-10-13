@@ -33,11 +33,9 @@ import org.apache.sis.geometries.internal.shared.DefaultTriangle;
 import org.apache.sis.geometries.operation.simplify.greedyinsert.WTriangle;
 import org.apache.sis.geometries.operation.triangulate.delaunay.OrientedTriangle;
 import org.apache.sis.maths.Maths;
-import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vector2D;
 import org.apache.sis.maths.Vector3D;
-import org.apache.sis.maths.Vectors;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 
@@ -156,13 +154,18 @@ public sealed interface Triangle extends Polygon
     }
 
     /**
-     * Interpolate a point in the triangle.
+     * Returns a read-only view of the point of this triangle at the given barycentric weights.
+     * Each attribute is interpolated between the three corners as declared by its
+     * {@linkplain DataPointsType#getAttributeInterpolation(String) attribute interpolation},
+     * every time it is requested.
      *
-     * @param weights each corner barycentric weights
-     * @return interpolated record
+     * @param  weights  barycentric weight of each corner.
+     * @return a view of the interpolated point.
+     *
+     * @see DataPoints#viewInterpolatedPoint(int[], double[])
      */
     default Point interpolate(double[] weights) {
-        return new InterpolatedPoint(this, weights);
+        return getExteriorRing().getDataPoints().viewInterpolatedPoint(new int[] {0, 1, 2}, weights);
     }
 
     /**
@@ -255,119 +258,6 @@ public sealed interface Triangle extends Polygon
                  + w * c.z;
          }
         return null;
-    }
-
-    public static final class InterpolatedPoint implements Point {
-
-        private static final double[][] CORNERS = new double[][]{
-            {1,0,0},
-            {0,1,0},
-            {0,0,1}};
-
-        private final Triangle triangle;
-        private final double[] weights;
-        private final int cornerIdx;
-
-        InterpolatedPoint(Triangle triangle, int cornerIdx) {
-            this.triangle = triangle;
-            this.cornerIdx = cornerIdx;
-            this.weights = CORNERS[cornerIdx];
-        }
-
-        public InterpolatedPoint(Triangle triangle, double[] weights) {
-            this.triangle = triangle;
-            this.weights = weights;
-            this.cornerIdx = -1;
-        }
-
-        public Triangle getTriangle() {
-            return triangle;
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return false;
-        }
-
-        @Override
-        public Vector getPosition() {
-            final DataPoints points = triangle.getExteriorRing().getDataPoints();
-            switch (cornerIdx) {
-                case -1 :
-                    return interpolate(
-                        points.getPosition(0),
-                        points.getPosition(1),
-                        points.getPosition(2),
-                        false);
-                default :
-                    return points.getPosition(cornerIdx);
-            }
-        }
-
-        /**
-         * NORMAL and TANGENT attributes interpolation will be normalized.
-         *
-         * @param name attribute name, must be one of the sample dimension names
-         * @return triangle corner attribute.
-         */
-        @Override
-        public Vector getAttribute(String name) {
-            final DataPoints points = triangle.getExteriorRing().getDataPoints();
-            switch (cornerIdx) {
-                case -1 :
-                    return interpolate(points.getAttribute(0,name),
-                        points.getAttribute(1,name),
-                        points.getAttribute(2,name),
-                        DataPointsType.ATT_NORMAL.equals(name) || DataPointsType.ATT_TANGENT.equals(name));
-                default :
-                    return points.getAttribute(cornerIdx, name);
-            }
-        }
-
-        @Override
-        public void setAttribute(String name, ReadOnly.Vector tuple) {
-            throw new UnsupportedOperationException("Not supported on interpolated points.");
-        }
-
-        private Vector interpolate(Vector a, Vector b, Vector c, boolean normalize) {
-            if (a == null) {
-                //may happen if TIN has 0 sample dimensions.
-                return null;
-            }
-            Vector buffer = a.copy();
-            final int dimension = a.getDimension();
-            switch (dimension) {
-                default :
-                    for (int i = 3; i < dimension; i++) {
-                        buffer.set(i, a.get(i) * weights[0] + b.get(i) * weights[1] + c.get(i) * weights[2]);
-                    }
-                case 3 :
-                    buffer.set(2, a.get(2) * weights[0] + b.get(2) * weights[1] + c.get(2) * weights[2]);
-                case 2 :
-                    buffer.set(1, a.get(1) * weights[0] + b.get(1) * weights[1] + c.get(1) * weights[2]);
-                case 1 :
-                    buffer.set(0, a.get(0) * weights[0] + b.get(0) * weights[1] + c.get(0) * weights[2]);
-                case 0 : //do nothing
-            }
-
-            if (normalize) buffer.normalize();
-            return buffer;
-        }
-
-        @Override
-        public DataPointsType getDataPointsType() {
-            return triangle.getDataPointsType();
-        }
-
-        @Override
-        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return triangle.getCoordinateReferenceSystem();
-        }
-
-        @Override
-        public void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
-            throw new UnsupportedOperationException("Not supported.");
-        }
     }
 
 }

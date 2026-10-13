@@ -22,6 +22,7 @@ import java.util.List;
 import javax.measure.Quantity;
 import javax.measure.Unit;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.AttributeInterpolation;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.GeometryFactory;
@@ -360,12 +361,17 @@ final class BSplineEvaluator {
         final Point point = GeometryFactory.DEFAULT.createPoint(type);
         for (final String name : type.getAttributeNames()) {
             final Vector<?> value;
-            switch (type.getAttributeInterpolation(name)) {
+            final AttributeInterpolation method = type.getAttributeInterpolation(name);
+            switch (method) {
                 case LINEAR:
+                case LINEAR_NORMALIZED:
                 case TRANSLATE: {
                     value = controls.getAttribute(first, name).scale(R[0]);
                     for (int r = 1; r <= degree; r++) {
                         value.add(controls.getAttribute(first + r, name).scale(R[r]));
+                    }
+                    if (method == AttributeInterpolation.LINEAR_NORMALIZED) {
+                        value.normalize();
                     }
                     break;
                 }

@@ -132,7 +132,7 @@ public interface DataPoints {
 
     /**
      * Returns a new point between the two given points of this {@code DataPoints}, for example on a segment.
-     * This is a shortcut for {@link #interpolatePoint(int[], double[])} with the weights
+     * This is a shortcut for {@link #getInterpolatedPoint(int[], double[])} with the weights
      * 1 − {@code ratio} and {@code ratio}.
      *
      * @param  i0     index of the point at ratio 0, the start of the segment.
@@ -140,27 +140,48 @@ public interface DataPoints {
      * @param  ratio  position between the two points, from 0 to 1.
      * @return a new point holding the computed attributes, independent of this {@code DataPoints}.
      */
-    default Point interpolatePoint(final int i0, final int i1, final double ratio) {
-        return interpolatePoint(new int[] {i0, i1}, new double[] {1 - ratio, ratio});
+    default Point getInterpolatedPoint(final int i0, final int i1, final double ratio) {
+        return getInterpolatedPoint(new int[] {i0, i1}, new double[] {1 - ratio, ratio});
     }
 
     /**
      * Returns a new point interpolated between any number of points of this {@code DataPoints}, for example on
      * a segment or inside a triangle. Each attribute of the new point, the position included, is
-     * computed by {@link #interpolateAttribute(String, int[], double[])}.
+     * computed once by {@link #interpolateAttribute(String, int[], double[])}. The returned point is
+     * independent of this {@code DataPoints}: changing either of them does not change the other one.
      *
      * @param  indices  indices of the points to interpolate between, at least one.
      * @param  weights  weight of each point, in the same order.
      * @return a new point holding the computed attributes, independent of this {@code DataPoints}.
      * @throws IllegalArgumentException if there is no point, or not one weight per point.
+     *
+     * @see #viewInterpolatedPoint(int[], double[])
      */
-    default Point interpolatePoint(final int[] indices, final double[] weights) {
+    default Point getInterpolatedPoint(final int[] indices, final double[] weights) {
         final DataPointsType type = getType();
         final Point point = GeometryFactory.DEFAULT.createPoint(type);
         for (final String name : type.getAttributeNames()) {
             point.setAttribute(name, interpolateAttribute(name, indices, weights));
         }
         return point;
+    }
+
+    /**
+     * Returns a read-only view of the point interpolated between any number of points of this
+     * {@code DataPoints}. The attributes of the returned point are not stored: each of them is
+     * computed by {@link #interpolateAttribute(String, int[], double[])} every time it is requested,
+     * so the view follows the changes of the points of this {@code DataPoints}.
+     * Attempts to modify the returned point throw {@link UnsupportedOperationException}.
+     *
+     * @param  indices  indices of the points to interpolate between, at least one.
+     * @param  weights  weight of each point, in the same order.
+     * @return a read-only view of the interpolated point.
+     * @throws IllegalArgumentException if there is no point, or not one weight per point.
+     *
+     * @see #getInterpolatedPoint(int[], double[])
+     */
+    default Point viewInterpolatedPoint(final int[] indices, final double[] weights) {
+        return new InterpolatedPoint(this, indices, weights);
     }
 
     /**
@@ -188,6 +209,8 @@ public interface DataPoints {
      * <ul>
      *   <li>{@link AttributeInterpolation#LINEAR LINEAR} and {@link AttributeInterpolation#TRANSLATE TRANSLATE}:
      *       the weighted sum of the values.</li>
+     *   <li>{@link AttributeInterpolation#LINEAR_NORMALIZED LINEAR_NORMALIZED}: the weighted sum of the values,
+     *       normalized to a unit vector.</li>
      *   <li>{@link AttributeInterpolation#NEAREST NEAREST}: the value of the point of largest weight,
      *       the first one on ties.</li>
      *   <li>{@link AttributeInterpolation#LEADING LEADING}: the value of the first point, which starts
@@ -206,12 +229,20 @@ public interface DataPoints {
             throw new IllegalArgumentException("Expected at least one point with one weight each, but got "
                     + indices.length + " points and " + weights.length + " weights.");
         }
-        switch (getType().getAttributeInterpolation(name)) {
+        final AttributeInterpolation method = getType().getAttributeInterpolation(name);
+        switch (method) {
             case LINEAR:
+            case LINEAR_NORMALIZED:
             case TRANSLATE: {
                 final Vector<?> value = getAttribute(indices[0], name).scale(weights[0]);
                 for (int i = 1; i < indices.length; i++) {
                     value.add(getAttribute(indices[i], name).scale(weights[i]));
+                }
+                if (method == AttributeInterpolation.LINEAR_NORMALIZED) {
+                    // TODO: a glTF tangent has 4 components: the direction (x,y,z) and the handedness
+                    // (w = ±1) of the bitangent. Only the direction should be normalized, while the
+                    // handedness should be kept, for example taken from the nearest point.
+                    value.normalize();
                 }
                 return value;
             }
@@ -336,5 +367,91 @@ public interface DataPoints {
             }
         }
         return true;
+    }
+
+    /**
+     * A read-only view of a point interpolated between points of a {@code DataPoints}.
+     * The attributes are not stored but computed every time they are requested.
+     *
+     * @see DataPoints#viewInterpolatedPoint(int[], double[])
+     */
+    final class InterpolatedPoint implements Point {
+        /**
+         * The points between which this point is interpolated.
+         */
+        private final DataPoints points;
+
+        /**
+         * Indices of the points to interpolate between.
+         */
+        private final int[] indices;
+
+        /**
+         * Weight of each point, in the same order as the indices.
+         */
+        private final double[] weights;
+
+        /**
+         * Creates a view of the point interpolated between the given points.
+         *
+         * @throws IllegalArgumentException if there is no point, or not one weight per point.
+         */
+        private InterpolatedPoint(final DataPoints points, final int[] indices, final double[] weights) {
+            if (indices.length == 0 || weights.length != indices.length) {
+                throw new IllegalArgumentException("Expected at least one point with one weight each, but got "
+                        + indices.length + " points and " + weights.length + " weights.");
+            }
+            this.points  = points;
+            this.indices = indices.clone();
+            this.weights = weights.clone();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return false;
+        }
+
+        @Override
+        public Vector<?> getPosition() {
+            return points.interpolateAttribute(DataPointsType.ATT_POSITION, indices, weights);
+        }
+
+        /**
+         * Returns the attribute of the given name, interpolated between the points of the viewed
+         * {@code DataPoints}, or {@code null} if that {@code DataPoints} has no such attribute.
+         */
+        @Override
+        public Vector<?> getAttribute(final String name) {
+            if (!points.getType().getAttributeNames().contains(name)) {
+                return null;
+            }
+            return points.interpolateAttribute(name, indices, weights);
+        }
+
+        /**
+         * Throws {@link UnsupportedOperationException}: this point is a read-only view.
+         */
+        @Override
+        public void setAttribute(final String name, final ReadOnly.Vector<?> tuple) {
+            throw new UnsupportedOperationException("An interpolated point view is read-only.");
+        }
+
+        @Override
+        public DataPointsType getDataPointsType() {
+            return points.getType();
+        }
+
+        @Override
+        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
+            return points.getCoordinateReferenceSystem();
+        }
+
+        /**
+         * Throws {@link UnsupportedOperationException}: this point is a read-only view.
+         */
+        @Override
+        public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs) {
+            throw new UnsupportedOperationException("An interpolated point view is read-only.");
+        }
     }
 }

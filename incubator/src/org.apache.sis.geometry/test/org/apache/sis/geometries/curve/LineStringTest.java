@@ -305,7 +305,8 @@ public abstract class LineStringTest extends GeometryTest {
         attributes.put("leading", NDArrays.of(1, new double[] {0, 10, 30}));
         final LineString curve = GeometryFactory.DEFAULT.createLineString(withInterpolations(
                 GeometryFactory.DEFAULT.createDataPoints(attributes),
-                Map.of("linear",  AttributeInterpolation.LINEAR,
+                Map.of("nearest", AttributeInterpolation.NEAREST,
+                       "linear",  AttributeInterpolation.LINEAR,
                        "leading", AttributeInterpolation.LEADING)));
 
         Point point = curve.subCurve(Quantities.create(80, Units.PERCENT));

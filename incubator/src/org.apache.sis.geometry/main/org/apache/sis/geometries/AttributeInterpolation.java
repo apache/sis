@@ -42,6 +42,12 @@ public enum AttributeInterpolation {
      */
     LINEAR,
     /**
+     * Computed value should be linearly interpolated between geometric points, as for {@link #LINEAR},
+     * then normalized to a unit vector. This is the interpolation of directions such as normals and
+     * tangents, since a weighted sum of unit vectors is shorter than one.
+     */
+    LINEAR_NORMALIZED,
+    /**
      * An attribute value applies to the whole segment until the next point.
      * For a curve of two points [A..B] this means the value should be used on the [A..B[ interval, excluding B.
      * For a surface or volume, the first attribute value applies to the whole surface or volume.
