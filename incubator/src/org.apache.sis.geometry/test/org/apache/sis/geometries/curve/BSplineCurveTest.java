@@ -16,7 +16,10 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.apache.sis.geometries.GeometryFactory;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.GeometryTest;
@@ -69,8 +72,11 @@ public class BSplineCurveTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        final BSplineCurve curve = GeometryFactory.DEFAULT.createBSplineCurve(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0), null, null, 3,
+                null, null, false);
+        assertEquals(1, curve.getTopologicDimension());
     }
 
     @Test

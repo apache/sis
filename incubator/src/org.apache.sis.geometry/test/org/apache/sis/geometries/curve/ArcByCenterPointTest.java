@@ -16,7 +16,11 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.Point;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.GeometryTest;
@@ -94,8 +98,10 @@ public class ArcByCenterPointTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        final Point center = GeometryFactory.DEFAULT.createPoint(CRS_2D, 10, 20);
+        final ArcByCenterPoint arc = GeometryFactory.DEFAULT.createArcByCenterPoint(center, 5.0, null, 0.0, 90.0);
+        assertEquals(1, arc.getTopologicDimension());
     }
 
     @Test

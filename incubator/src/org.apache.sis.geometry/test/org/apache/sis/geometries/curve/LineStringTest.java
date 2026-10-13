@@ -119,8 +119,8 @@ public abstract class LineStringTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        assertEquals(1, createLineString(CRS_2D, SEGMENT).getTopologicDimension());
     }
 
     @Test

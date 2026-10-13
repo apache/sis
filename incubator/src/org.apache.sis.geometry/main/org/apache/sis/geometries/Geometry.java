@@ -261,11 +261,7 @@ public sealed interface Geometry
      * @see ISO 19107:2019 - 6.4.4.22
      */
     @UML(identifier="topologicalDimension", specification=ISO_19107)
-    default int getTopologicDimension() {
-        //TODO remove this method default when all classes implement it.
-        //Empty, Point, Curve, Surface, Solid and GeometryCollection already do.
-        throw new UnsupportedOperationException();
-    }
+    int getTopologicDimension();
 
     /**
      * Rule used to compute the {@linkplain #getBoundary() boundary} of this geometry

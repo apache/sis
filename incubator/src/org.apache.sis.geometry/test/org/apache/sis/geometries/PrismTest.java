@@ -16,7 +16,11 @@
  */
 package org.apache.sis.geometries;
 
+import org.apache.sis.geometries.curve.LineString;
+import org.apache.sis.measure.NumberRange;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -88,8 +92,15 @@ public class PrismTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        final Point point = GeometryFactory.DEFAULT.createPoint(CRS_2D, 1, 2);
+        final Prism pointPrism = GeometryFactory.DEFAULT.createPrism(point, NumberRange.create(0., true, 10., true), null);
+        assertEquals(1, pointPrism.getTopologicDimension(), "Extruding a point gives a curve.");
+
+        final LineString segment = GeometryFactory.DEFAULT.createLineString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0));
+        final Prism surfacePrism = GeometryFactory.DEFAULT.createPrism(segment, NumberRange.create(0., true, 10., true), null);
+        assertEquals(2, surfacePrism.getTopologicDimension(), "Extruding a curve gives a surface.");
     }
 
     @Test

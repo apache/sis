@@ -106,8 +106,8 @@ public abstract class PolygonTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        assertEquals(2, createPolygon(CRS_2D, SQUARE).getTopologicDimension());
     }
 
     /**

@@ -92,6 +92,15 @@ public final class BBox extends GeneralEnvelope implements Geometry {
         return GeometryType.BBOX;
     }
 
+    /**
+     * Returns the topological dimension of this box: the number of axes of its coordinate
+     * reference system, or −1 if the box is empty.
+     */
+    @Override
+    public int getTopologicDimension() {
+        return isEmpty() ? -1 : getDimension();
+    }
+
     public void add(Vector<?> position) throws MismatchedDimensionException {
         add(Vectors.asDirectPostion(position));
     }

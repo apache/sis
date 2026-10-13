@@ -16,7 +16,10 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.apache.sis.geometries.GeometryFactory;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.GeometryTest;
@@ -33,9 +36,17 @@ public class ProductCurveTest extends GeometryTest {
     public void testGetInterpolation() {
     }
 
+    /**
+     * A product curve both extends {@link Curve}, whose default dimension is 1, and
+     * {@link org.apache.sis.geometries.GeometryCollection}, whose dimension is the maximum of its
+     * elements. The two must agree, which is why this type overrides the default explicitly.
+     */
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        final LineString segment = GeometryFactory.DEFAULT.createLineString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0));
+        final ProductCurve curve = GeometryFactory.DEFAULT.createProductCurve(null, null, segment);
+        assertEquals(1, curve.getTopologicDimension());
     }
 
     @Test

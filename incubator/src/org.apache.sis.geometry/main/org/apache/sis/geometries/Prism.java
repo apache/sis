@@ -43,6 +43,16 @@ public sealed interface Prism extends Geometry
     }
 
     /**
+     * Returns the topological dimension of this prism, which is one more than the dimension of
+     * the base shape it extrudes: extruding a point gives a curve, extruding a curve gives a
+     * surface, and extruding a surface gives a solid.
+     */
+    @Override
+    default int getTopologicDimension() {
+        return getBase().getTopologicDimension() + 1;
+    }
+
+    /**
      * Returns the positions of the geometry this prism is the extrusion of. The positions the
      * extrusion adds are not materialized, so they are not part of the returned sequence.
      */

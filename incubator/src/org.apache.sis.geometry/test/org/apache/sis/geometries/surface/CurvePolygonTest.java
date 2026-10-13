@@ -16,7 +16,11 @@
  */
 package org.apache.sis.geometries.surface;
 
+import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.GeometryFactory;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.GeometryTest;
@@ -64,8 +68,11 @@ public class CurvePolygonTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        final Curve exterior = GeometryFactory.DEFAULT.createLineString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0, 10,10, 0,10, 0,0));
+        final CurvePolygon polygon = GeometryFactory.DEFAULT.createCurvePolygon(exterior, null);
+        assertEquals(2, polygon.getTopologicDimension());
     }
 
     @Test

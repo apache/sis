@@ -16,9 +16,15 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.apache.sis.geometries.Curve;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.curve.LineString;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.apache.sis.geometries.GeometryTest;
 
 
 /**
@@ -26,10 +32,13 @@ import org.junit.jupiter.api.Test;
  *
  * @author Johann Sorel (Geomatys)
  */
-public class DefaultReversedCurveTest {
+public class DefaultReversedCurveTest extends GeometryTest {
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        final LineString base = GeometryFactory.DEFAULT.createLineString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0));
+        final Curve reversed = GeometryFactory.DEFAULT.createReversed(base);
+        assertEquals(1, reversed.getTopologicDimension());
     }
 
     @Test

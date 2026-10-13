@@ -91,6 +91,15 @@ public final class Capsule extends AbstractGeometry{
     }
 
     /**
+     * A capsule is a surface.
+     * @return 2
+     */
+    @Override
+    public int getTopologicDimension() {
+        return 2;
+    }
+
+    /**
      * @return the center of the bottom sphere
      */
     public ReadOnly.Vector<?> getBottom() {

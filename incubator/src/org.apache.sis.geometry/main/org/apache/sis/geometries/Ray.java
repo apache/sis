@@ -74,6 +74,11 @@ public final class Ray extends AbstractGeometry{
         return GeometryType.RAY;
     }
 
+    @Override
+    public int getTopologicDimension() {
+        return 1;
+    }
+
     public DataPoints getDataPoints() {
         return points;
     }

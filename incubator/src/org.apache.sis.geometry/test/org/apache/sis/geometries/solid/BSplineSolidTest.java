@@ -16,7 +16,10 @@
  */
 package org.apache.sis.geometries.solid;
 
+import org.apache.sis.geometries.GeometryFactory;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.GeometryTest;
@@ -94,8 +97,10 @@ public class BSplineSolidTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        final BSplineSolid solid = GeometryFactory.DEFAULT.createBSolidSpline(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_3D, 0,0,0), null, 1, 1, 1);
+        assertEquals(3, solid.getTopologicDimension());
     }
 
     @Test

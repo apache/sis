@@ -89,4 +89,9 @@ public final class Frustrum extends AbstractGeometry {
         return ConcatenatedDataPoints.of(planes);
     }
 
+    @Override
+    public int getTopologicDimension() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }

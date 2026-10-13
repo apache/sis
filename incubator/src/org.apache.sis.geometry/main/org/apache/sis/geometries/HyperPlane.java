@@ -77,6 +77,11 @@ public final class HyperPlane extends AbstractGeometry{
         return GeometryType.HYPERPLANE;
     }
 
+    @Override
+    public int getTopologicDimension() {
+        return getDimension();
+    }
+
     public DataPoints getDataPoints() {
         return points;
     }

@@ -16,7 +16,11 @@
  */
 package org.apache.sis.geometries.surface;
 
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.curve.LinearRing;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.GeometryTest;
@@ -64,8 +68,12 @@ public class PolyhedralSurfaceTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        final LinearRing ring = GeometryFactory.DEFAULT.createLinearRing(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0, 10,10, 0,10, 0,0));
+        final Polygon patch = GeometryFactory.DEFAULT.createPolygon(ring, null);
+        final PolyhedralSurface<Polygon> surface = GeometryFactory.DEFAULT.createPolyhedralSurface(patch);
+        assertEquals(2, surface.getTopologicDimension());
     }
 
     @Test

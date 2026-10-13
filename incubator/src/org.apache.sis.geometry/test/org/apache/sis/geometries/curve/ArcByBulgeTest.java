@@ -16,7 +16,12 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vectors;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.GeometryTest;
@@ -84,8 +89,12 @@ public class ArcByBulgeTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        final Vector<?> normal = Vectors.createDouble(2);
+        normal.set(new double[] {0, 1});
+        final ArcByBulge arc = GeometryFactory.DEFAULT.createArcByBulge(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0), 2.0, normal);
+        assertEquals(1, arc.getTopologicDimension());
     }
 
     @Test

@@ -18,7 +18,6 @@ package org.apache.sis.geometries;
 
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.SinglePositionDataPoints;
 import org.apache.sis.maths.Vectors;
@@ -61,6 +60,11 @@ public final class OBBox extends AbstractGeometry {
     @Override
     public GeometryType getGeometryType() {
         return GeometryType.BBOX;
+    }
+
+    @Override
+    public int getTopologicDimension() {
+        return isEmpty() ? -1 : getDimension();
     }
 
     @Override

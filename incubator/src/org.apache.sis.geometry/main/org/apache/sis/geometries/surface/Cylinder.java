@@ -92,6 +92,15 @@ public final class Cylinder extends AbstractGeometry{
         return GeometryType.CYLINDER;
     }
 
+    /**
+     * A cylinder is a surface.
+     * @return 2
+     */
+    @Override
+    public int getTopologicDimension() {
+        return 2;
+    }
+
     public DataPoints getDataPoints() {
         return points;
     }

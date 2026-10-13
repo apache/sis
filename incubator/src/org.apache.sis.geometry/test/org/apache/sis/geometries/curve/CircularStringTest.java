@@ -16,7 +16,10 @@
  */
 package org.apache.sis.geometries.curve;
 
+import org.apache.sis.geometries.GeometryFactory;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.GeometryTest;
@@ -74,8 +77,10 @@ public class CircularStringTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetTopologicDimension() {
+        final CircularString arc = GeometryFactory.DEFAULT.createCircularString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 5,5, 10,0, 5,-5, 0,0));
+        assertEquals(1, arc.getTopologicDimension());
     }
 
     @Test

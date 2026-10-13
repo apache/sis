@@ -89,6 +89,11 @@ public final class Plane extends AbstractGeometry{
         return GeometryType.PLANE;
     }
 
+    @Override
+    public int getTopologicDimension() {
+        return getDimension();
+    }
+
     public DataPoints getDataPoints() {
         return points;
     }
