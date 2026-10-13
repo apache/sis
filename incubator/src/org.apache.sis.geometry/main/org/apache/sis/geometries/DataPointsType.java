@@ -84,11 +84,17 @@ public interface DataPointsType {
 
     /**
      * Get how values should be interpolation in geometric operations.
+     * The default implementation returns {@link AttributeInterpolation#LINEAR} for the
+     * {@linkplain #ATT_POSITION position}, since it is what locates an interpolated point,
+     * and {@link AttributeInterpolation#NEAREST} for all other attributes.
      *
      * TODO : experimentale but needed
+     *
+     * @param  name  name of the attribute.
+     * @return interpolation of the attribute, never null.
      */
     default AttributeInterpolation getAttributeInterpolation(String name) {
-        return AttributeInterpolation.NEAREST;
+        return ATT_POSITION.equals(name) ? AttributeInterpolation.LINEAR : AttributeInterpolation.NEAREST;
     }
 
     /**

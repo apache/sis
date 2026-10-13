@@ -176,6 +176,22 @@ public final class GeometryFactory {
     }
 
     /**
+     * Creates a sequence of the given size holding the attributes declared by the given type.
+     * All the values are initialized to zero.
+     *
+     * @param  type  the attributes of the sequence, which shall include the position.
+     * @param  size  number of points in the sequence.
+     * @return a new sequence of the given size.
+     */
+    public DataPoints createDataPoints(DataPointsType type, int size) {
+        final Map<String,Array> attributes = new LinkedHashMap<>();
+        for (final String name : type.getAttributeNames()) {
+            attributes.put(name, NDArrays.of(type.getAttributeSystem(name), type.getAttributeType(name), size));
+        }
+        return createDataPoints(attributes);
+    }
+
+    /**
      * Returns a copy of the given DataPoints.
      */
     public DataPoints createDataPoints(final DataPoints source) {
@@ -218,6 +234,17 @@ public final class GeometryFactory {
 
     public Point createPoint(DataPoints sequence) {
         return new DefaultPoint(sequence);
+    }
+
+    /**
+     * Creates a point holding the attributes declared by the given type.
+     * All the values are initialized to zero.
+     *
+     * @param  type  the attributes of the point, which shall include the position.
+     * @return a new point.
+     */
+    public Point createPoint(DataPointsType type) {
+        return createPoint(createDataPoints(type, 1));
     }
 
     // ////////////////////////////////////////////////////////////////////////

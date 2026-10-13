@@ -131,6 +131,104 @@ public interface DataPoints {
     void setAttribute(int index, String name, ReadOnly.Vector<?> value);
 
     /**
+     * Returns a new point between the two given points of this sequence, for example on a segment.
+     * This is a shortcut for {@link #interpolatePoint(int[], double[])} with the weights
+     * 1 − {@code ratio} and {@code ratio}.
+     *
+     * @param  i0     index of the point at ratio 0, the start of the segment.
+     * @param  i1     index of the point at ratio 1, the end of the segment.
+     * @param  ratio  position between the two points, from 0 to 1.
+     * @return a new point holding the computed attributes, independent of this sequence.
+     */
+    default Point interpolatePoint(final int i0, final int i1, final double ratio) {
+        return interpolatePoint(new int[] {i0, i1}, new double[] {1 - ratio, ratio});
+    }
+
+    /**
+     * Returns a new point interpolated between any number of points of this sequence, for example on
+     * a segment or inside a triangle. Each attribute of the new point, the position included, is
+     * computed by {@link #interpolateAttribute(String, int[], double[])}.
+     *
+     * @param  indices  indices of the points to interpolate between, at least one.
+     * @param  weights  weight of each point, in the same order.
+     * @return a new point holding the computed attributes, independent of this sequence.
+     * @throws IllegalArgumentException if there is no point, or not one weight per point.
+     */
+    default Point interpolatePoint(final int[] indices, final double[] weights) {
+        final DataPointsType type = getType();
+        final Point point = GeometryFactory.DEFAULT.createPoint(type);
+        for (final String name : type.getAttributeNames()) {
+            point.setAttribute(name, interpolateAttribute(name, indices, weights));
+        }
+        return point;
+    }
+
+    /**
+     * Returns the value of an attribute between the two given points of this sequence, for example on
+     * a segment. This is a shortcut for {@link #interpolateAttribute(String, int[], double[])} with the
+     * weights 1 − {@code ratio} and {@code ratio}.
+     *
+     * @param  name   name of the attribute.
+     * @param  i0     index of the point at ratio 0, the start of the segment.
+     * @param  i1     index of the point at ratio 1, the end of the segment.
+     * @param  ratio  position between the two points, from 0 to 1.
+     * @return the attribute value, independent of this sequence.
+     */
+    default Vector<?> interpolateAttribute(final String name, final int i0, final int i1, final double ratio) {
+        return interpolateAttribute(name, new int[] {i0, i1}, new double[] {1 - ratio, ratio});
+    }
+
+    /**
+     * Returns the value of an attribute interpolated between any number of points of this sequence,
+     * for example on a segment, inside a triangle or inside a quadrilateral. The weights are the
+     * generalized barycentric coordinates of the position where the value is computed: they are
+     * positive and sum to 1. The value is computed as declared by the
+     * {@linkplain DataPointsType#getAttributeInterpolation(String) attribute interpolation}:
+     *
+     * <ul>
+     *   <li>{@link AttributeInterpolation#LINEAR LINEAR} and {@link AttributeInterpolation#TRANSLATE TRANSLATE}:
+     *       the weighted sum of the values.</li>
+     *   <li>{@link AttributeInterpolation#NEAREST NEAREST}: the value of the point of largest weight,
+     *       the first one on ties.</li>
+     *   <li>{@link AttributeInterpolation#LEADING LEADING}: the value of the first point, which starts
+     *       the segment or the surface. Between two points, which is a segment, the end point keeps
+     *       its own value.</li>
+     * </ul>
+     *
+     * @param  name     name of the attribute.
+     * @param  indices  indices of the points to interpolate between, at least one.
+     * @param  weights  weight of each point, in the same order.
+     * @return the attribute value, independent of this sequence.
+     * @throws IllegalArgumentException if there is no point, or not one weight per point.
+     */
+    default Vector<?> interpolateAttribute(final String name, final int[] indices, final double[] weights) {
+        if (indices.length == 0 || weights.length != indices.length) {
+            throw new IllegalArgumentException("Expected at least one point with one weight each, but got "
+                    + indices.length + " points and " + weights.length + " weights.");
+        }
+        switch (getType().getAttributeInterpolation(name)) {
+            case LINEAR:
+            case TRANSLATE: {
+                final Vector<?> value = getAttribute(indices[0], name).scale(weights[0]);
+                for (int i = 1; i < indices.length; i++) {
+                    value.add(getAttribute(indices[i], name).scale(weights[i]));
+                }
+                return value;
+            }
+            case LEADING: {
+                return getAttribute(indices[(indices.length == 2 && weights[1] >= 1) ? 1 : 0], name);
+            }
+            default: {
+                int nearest = 0;
+                for (int i = 1; i < weights.length; i++) {
+                    if (weights[i] > weights[nearest]) nearest = i;
+                }
+                return getAttribute(indices[nearest], name);
+            }
+        }
+    }
+
+    /**
      * Get all attribute values as an Array.
      *
      * @param name attribute name
