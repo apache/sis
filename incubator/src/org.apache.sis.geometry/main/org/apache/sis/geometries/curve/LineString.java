@@ -27,6 +27,8 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.internal.shared.Curves;
 import org.apache.sis.geometries.internal.shared.DefaultLineString;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.operation.triangulate.delaunay.OrientedEdge;
@@ -97,6 +99,18 @@ public sealed interface LineString extends Curve
     @Override
     default LineString asLine(Quantity<?> spacing, Quantity<?> offset) {
         return this;
+    }
+
+    /**
+     * Returns the point at the given distance along the segments of this line string.
+     * The distance is in the unit of the coordinate system axes, or in percent of the length.
+     *
+     * @return the point at the given distance, or {@code null} if this line string is empty.
+     * @throws IllegalArgumentException if the distance is outside this line string.
+     */
+    @Override
+    default Point subCurve(Quantity<?> dist) {
+        return Curves.alongPolyline(getDataPoints(), dist, Geometries.getLinearUnit(this));
     }
 
     /**

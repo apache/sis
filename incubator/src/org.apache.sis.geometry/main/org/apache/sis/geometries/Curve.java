@@ -160,6 +160,22 @@ public sealed interface Curve extends Orientable
     }
 
     /**
+     * Returns the point at the middle of this curve, i.e. at 50% of its {@linkplain #getLength() length}.
+     *
+     * @return the point at middle distance along this curve, or {@code null} if this curve is empty.
+     *
+     * @see #subCurve(Quantity)
+     * @see ISO 19107:2019 - 6.4.4.19
+     */
+    @Override
+    default Point getRepresentativePoint() {
+        if (isEmpty()) {
+            return null;
+        }
+        return subCurve(Quantities.create(50, Units.PERCENT));
+    }
+
+    /**
      * Returns whether this curve is closed, i.e. whether its start point equals its end point.
      * For a simple curve, this is equivalent to {@link Geometry#isCycle()}.
      *
@@ -663,6 +679,27 @@ public sealed interface Curve extends Orientable
      */
     @UML(identifier="Curve", specification=ISO_19107)
     default Curve subCurve(double cparam1, double cparam2) {
+        //TODO
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Extracts the portion of this curve at given length.
+     *
+     * <p>Difference with ISO 19107: declared as a copy constructor in the standard,
+     * with a start and end parameter, this version gets only one point.</p>
+     *
+     * <p>Difference with ISO-19107, the Length type has been changed to Quantity to
+     * handle temporal geometries and crs-less geometries.</p>
+     *
+     * <p>To get the start or end point use the Percent unit, 0 or 100</p>
+     *
+     * @param  dist length parameter where is the returned point.
+     * @return the ppoint at given length.
+     *
+     * @see derived from ISO 19107:2019 - 6.4.18.22
+     */
+    default Point subCurve(Quantity<?> dist) {
         //TODO
         throw new UnsupportedOperationException();
     }

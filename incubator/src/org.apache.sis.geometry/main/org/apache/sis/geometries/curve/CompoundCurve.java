@@ -19,6 +19,7 @@ package org.apache.sis.geometries.curve;
 import java.util.ArrayList;
 import java.util.List;
 import javax.measure.Quantity;
+import javax.measure.Unit;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPoints;
@@ -27,6 +28,7 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.internal.shared.ConcatenatedDataPoints;
+import org.apache.sis.geometries.internal.shared.Curves;
 import org.apache.sis.geometries.internal.shared.DefaultCompoundCurve;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
@@ -122,6 +124,37 @@ public sealed interface CompoundCurve extends Curve
             length = Geometries.add(length, getCurveN(i).getLength());
         }
         return length;
+    }
+
+    /**
+     * Returns the point at the given distance along this compound curve, found on the component
+     * which covers that distance. The distance is in the unit of the {@linkplain #getLength() length},
+     * or in percent of that length.
+     *
+     * @return the point at the given distance, or {@code null} if this compound curve has no component.
+     * @throws IllegalArgumentException if the distance is outside this compound curve.
+     */
+    @Override
+    default Point subCurve(Quantity<?> dist) {
+        final int n = getNumCurves();
+        if (n == 0) {
+            return null;
+        }
+        final Unit<?> unit = getCurveN(0).getLength().getUnit();
+        final double[] lengths = new double[n];
+        double total = 0;
+        for (int i = 0; i < n; i++) {
+            lengths[i] = Curves.convert(getCurveN(i).getLength(), unit);
+            total += lengths[i];
+        }
+        double s = Curves.toArcLength(dist, total, unit);
+        for (int i = 0; i < n; i++) {
+            if (s <= lengths[i] || i == n - 1) {
+                return getCurveN(i).subCurve(Quantities.create(Math.min(s, lengths[i]), unit));
+            }
+            s -= lengths[i];
+        }
+        throw new AssertionError();         // Unreachable: the last component always returns.
     }
 
     /**
