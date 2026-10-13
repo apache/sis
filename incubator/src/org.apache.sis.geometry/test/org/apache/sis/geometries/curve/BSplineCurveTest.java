@@ -17,9 +17,12 @@
 package org.apache.sis.geometries.curve;
 
 import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.GeometryTest;
@@ -84,9 +87,12 @@ public class BSplineCurveTest extends GeometryTest {
     public void testGetDataPoints() {
     }
 
+    /**
+     * A b-spline of degree 1 is the polyline of its control points.
+     */
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetLength() {
+        assertEquals(20, createPolyline().getLength().getValue().doubleValue(), 1E-9);
     }
 
     @Test
@@ -214,6 +220,50 @@ public class BSplineCurveTest extends GeometryTest {
     public void testSubCurve_Length_Length() {
     }
 
+    /**
+     * Creates a cubic b-spline clamped at both ends without interior knot, which is the Bézier curve
+     * of its 4 control points. The control polygon is symmetric around x = 5, so is the curve.
+     */
+    private static BSplineCurve createArch() {
+        return GeometryFactory.DEFAULT.createBSplineCurve(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 0,10, 10,10, 10,0), null, null, 3,
+                null, null, false);
+    }
+
+    /**
+     * Creates a b-spline of degree 1 given by its distinct knot values,
+     * which is the polyline (0 0) (10 0) (10 10) of its control points.
+     */
+    private static BSplineCurve createPolyline() {
+        return GeometryFactory.DEFAULT.createBSplineCurve(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0, 10,10), null, new double[] {0, 1, 2}, 1,
+                null, null, false);
+    }
+
+    @Test
+    public void testSubCurve_Length() {
+        final BSplineCurve arch = createArch();
+        assertPositionEquals( 0, 0,   arch.subCurve(Quantities.create(  0, Units.PERCENT)));
+        assertPositionEquals( 5, 7.5, arch.subCurve(Quantities.create( 50, Units.PERCENT)));
+        assertPositionEquals(10, 0,   arch.subCurve(Quantities.create(100, Units.PERCENT)));
+
+        final BSplineCurve polyline = createPolyline();
+        assertPositionEquals( 5, 0, polyline.subCurve(Quantities.create(25, Units.PERCENT)));
+        assertPositionEquals(10, 5, polyline.subCurve(Quantities.create(75, Units.PERCENT)));
+        assertPositionEquals(10, 8, polyline.subCurve(Quantities.create(18, Units.DEGREE)));
+    }
+
+    /**
+     * Rational b-splines are not supported: NURBS curves shall be used instead.
+     */
+    @Test
+    public void testSubCurve_LengthRational() {
+        final BSplineCurve curve = GeometryFactory.DEFAULT.createBSplineCurve(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 0,10, 10,10, 10,0), null, null, 3,
+                null, null, true);
+        assertThrows(UnsupportedOperationException.class, () -> curve.subCurve(Quantities.create(50, Units.PERCENT)));
+    }
+
     @Test
     @Disabled("Not implemented yet.")
     public void testGetOrientationSign() {
@@ -300,8 +350,8 @@ public class BSplineCurveTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetRepresentativePoint() {
+        assertPositionEquals(5, 7.5, createArch().getRepresentativePoint());
     }
 
     @Test

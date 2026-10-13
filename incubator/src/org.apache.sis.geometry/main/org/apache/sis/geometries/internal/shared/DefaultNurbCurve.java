@@ -18,15 +18,19 @@ package org.apache.sis.geometries.internal.shared;
 
 import java.util.Arrays;
 import java.util.List;
+import javax.measure.Quantity;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.NurbCurve;
 import org.apache.sis.geometries.operation.DeBoorAlgorithm;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
+import org.apache.sis.measure.Quantities;
 
 
 /**
@@ -85,7 +89,7 @@ public non-sealed class DefaultNurbCurve extends AbstractGeometry implements Nur
      * Point C(u) of the curve at the given parameter.
      */
     public Vector<?> evaluate(final double u) {
-        final int spatialDim = controlPoints.length;
+        final int spatialDim = controlPoints[0].getDimension();
         final Vector<?>[] hom = new Vector<?>[nbCtrlPts];
         for (int i = 0; i < nbCtrlPts; i++) {
             hom[i] = toHomogeneous(getControlPoint(i), weights[i]);
@@ -135,6 +139,28 @@ public non-sealed class DefaultNurbCurve extends AbstractGeometry implements Nur
             result[c] = (Cwp.get(c) - wp * Cu[c]) / w;
         }
         return Vectors.createDouble(result.length).set(result);
+    }
+
+    /**
+     * Returns the arc length of this curve, integrated in the coordinate space of its control points.
+     */
+    @Override
+    public Quantity<?> getLength() {
+        final double length = isEmpty() ? 0 : new BSplineEvaluator(points, weights, knots, degree).length();
+        return Quantities.create(length, Geometries.getLinearUnit(this));
+    }
+
+    /**
+     * Returns the point at the given distance along this curve, in the unit of the coordinates or in
+     * percent of the length. Attributes are blended with the basis functions when interpolated linearly,
+     * or taken from the control point of largest weight.
+     */
+    @Override
+    public Point subCurve(final Quantity<?> dist) {
+        if (isEmpty()) {
+            return null;
+        }
+        return new BSplineEvaluator(points, weights, knots, degree).subCurve(dist, Geometries.getLinearUnit(this));
     }
 
     public double domainStart() {

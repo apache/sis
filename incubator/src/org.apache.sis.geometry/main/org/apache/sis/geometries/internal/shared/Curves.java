@@ -16,19 +16,11 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import javax.measure.IncommensurableException;
 import javax.measure.Quantity;
 import javax.measure.Unit;
-import org.apache.sis.geometries.AttributeInterpolation;
 import org.apache.sis.geometries.DataPoints;
-import org.apache.sis.geometries.DataPointsType;
-import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.maths.Array;
-import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Units;
 
 
@@ -120,41 +112,10 @@ public final class Curves {
             final double length = segments[i];
             if (s <= length || i == segments.length - 1) {
                 final double ratio = (length > 0) ? Math.min(s / length, 1) : 0;
-                return interpolate(points, i, i+1, ratio);
+                return points.interpolatePoint(i, i+1, ratio);
             }
             s -= length;
         }
-        return interpolate(points, 0, 0, 0);    // A single position, at distance zero.
-    }
-
-    /**
-     * Returns a new point on the segment joining two points of the given sequence.
-     * The position is linearly interpolated, and each other attribute is computed as declared by
-     * its {@linkplain DataPointsType#getAttributeInterpolation(String) attribute interpolation}.
-     *
-     * @param  points  the sequence holding the two points.
-     * @param  i0      index of the point at ratio 0, the start of the segment.
-     * @param  i1      index of the point at ratio 1, the end of the segment.
-     * @param  ratio   position between the two points, from 0 to 1.
-     * @return a new point holding the computed attributes, independent of the given sequence.
-     */
-    public static Point interpolate(final DataPoints points, final int i0, final int i1, final double ratio) {
-        final DataPointsType type = points.getType();
-        final Map<String,Array> attributes = new LinkedHashMap<>();
-        for (final String name : type.getAttributeNames()) {
-            final AttributeInterpolation method = DataPointsType.ATT_POSITION.equals(name)
-                    ? AttributeInterpolation.LINEAR : type.getAttributeInterpolation(name);
-            final Vector<?> value;
-            switch ((method != null) ? method : AttributeInterpolation.NEAREST) {
-                case LINEAR:
-                case TRANSLATE: value = points.getAttribute(i0, name).lerp(points.getAttribute(i1, name), ratio); break;
-                case LEADING:   value = points.getAttribute(ratio < 1 ? i0 : i1, name); break;
-                default:        value = points.getAttribute(ratio <= 0.5 ? i0 : i1, name); break;
-            }
-            final Array array = NDArrays.of(type.getAttributeSystem(name), type.getAttributeType(name), 1);
-            array.set(0, value);
-            attributes.put(name, array);
-        }
-        return GeometryFactory.DEFAULT.createPoint(GeometryFactory.DEFAULT.createDataPoints(attributes));
+        return points.interpolatePoint(0, 0, 0);    // A single position, at distance zero.
     }
 }

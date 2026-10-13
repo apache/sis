@@ -17,24 +17,18 @@
 package org.apache.sis.geometries.curve;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.measure.Quantity;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributeInterpolation;
-import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.maths.Array;
-import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.ReadOnly;
-import org.apache.sis.maths.SampleSystem;
-import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 
@@ -324,33 +318,6 @@ public abstract class LineStringTest extends GeometryTest {
 
         point = curve.subCurve(Quantities.create(100, Units.PERCENT));
         assertEquals(30, point.getAttribute("leading").get(0), TOLERANCE, "The end point has its own value.");
-    }
-
-    /**
-     * Returns a view of the given sequence declaring the given attribute interpolations.
-     * Attributes absent from the map keep the interpolation declared by the sequence.
-     */
-    private static DataPoints withInterpolations(final DataPoints points, final Map<String,AttributeInterpolation> methods) {
-        final DataPointsType base = points.getType();
-        final DataPointsType type = new DataPointsType() {
-            @Override public List<String> getAttributeNames()            {return base.getAttributeNames();}
-            @Override public SampleSystem getAttributeSystem(String name) {return base.getAttributeSystem(name);}
-            @Override public DataType     getAttributeType(String name)   {return base.getAttributeType(name);}
-            @Override public AttributeInterpolation getAttributeInterpolation(String name) {
-                return methods.getOrDefault(name, base.getAttributeInterpolation(name));
-            }
-        };
-        return new DataPoints() {
-            @Override public CoordinateReferenceSystem getCoordinateReferenceSystem() {return points.getCoordinateReferenceSystem();}
-            @Override public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) {points.setCoordinateReferenceSystem(crs);}
-            @Override public DataPointsType getType() {return type;}
-            @Override public int size() {return points.size();}
-            @Override public Point getPoint(int index) {return points.getPoint(index);}
-            @Override public Vector<?> getPosition(int index) {return points.getPosition(index);}
-            @Override public void setPosition(int index, ReadOnly.Vector<?> value) {points.setPosition(index, value);}
-            @Override public Vector<?> getAttribute(int index, String name) {return points.getAttribute(index, name);}
-            @Override public void setAttribute(int index, String name, ReadOnly.Vector<?> value) {points.setAttribute(index, name, value);}
-        };
     }
 
     /**
