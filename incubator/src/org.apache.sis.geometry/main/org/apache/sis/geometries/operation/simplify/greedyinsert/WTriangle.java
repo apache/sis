@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.function.BiFunction;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
-import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
@@ -30,6 +29,7 @@ import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.IndexedPoint;
 import org.apache.sis.geometries.operation.OperationException;
 import org.apache.sis.geometries.surface.Triangle;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
@@ -45,7 +45,7 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
     private final LinearRing ring = GeometryFactory.DEFAULT.createLinearRing(new DataPoints() {
         @Override
         public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return p0.getCoordinateReferenceSystem();
+            return Geometries.orUndefinedCRS(p0.getCoordinateReferenceSystem(), p0.getDimension());
         }
 
         @Override
@@ -117,11 +117,6 @@ public final class WTriangle extends AbstractGeometry implements Triangle {
     @Override
     public LinearRing getExteriorRing() {
         return ring;
-    }
-
-    @Override
-    public Geometry getBoundary() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     private static class Candidate implements Comparable<Candidate>{

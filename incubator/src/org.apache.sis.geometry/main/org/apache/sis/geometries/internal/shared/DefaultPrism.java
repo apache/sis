@@ -108,7 +108,7 @@ public non-sealed class DefaultPrism extends AbstractGeometry implements Prism {
         final double min = extrusionRange.getMinDouble();
         final double max = extrusionRange.getMaxDouble();
         final CoordinateReferenceSystem baseCRS = base.getCoordinateReferenceSystem();
-        if (baseCRS != null && extrusionCrs != null) {
+        if (extrusionCrs != null) {
             int offset = 0;
             for (final SingleCRS component : CRS.getSingleComponents(baseCRS)) {
                 final int dimension = component.getCoordinateSystem().getDimension();
@@ -125,7 +125,7 @@ public non-sealed class DefaultPrism extends AbstractGeometry implements Prism {
         }
         final int n = baseEnvelope.getDimension();
         final GeneralEnvelope envelope;
-        if (baseCRS != null && extrusionCrs != null) {
+        if (extrusionCrs != null) {
             try {
                 envelope = new GeneralEnvelope(CRS.compound(baseCRS, extrusionCrs));
             } catch (FactoryException e) {

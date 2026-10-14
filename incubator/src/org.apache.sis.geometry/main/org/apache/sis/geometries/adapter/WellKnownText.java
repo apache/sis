@@ -551,13 +551,7 @@ public final class WellKnownText {
      */
     private static boolean appendHeader(final StringBuilder sb, final String keyword, final Geometry geometry) {
         sb.append(keyword);
-        final CoordinateReferenceSystem crs = geometry.getCoordinateReferenceSystem();
-        if (crs == null) {
-            throw new IllegalArgumentException("Cannot write a " + keyword + " in Well-Known Text:"
-                    + " it has no coordinate reference system, therefore no known number of dimensions."
-                    + " An empty collection takes one from the factory method which creates it.");
-        }
-        final int dimension = crs.getCoordinateSystem().getDimension();
+        final int dimension = geometry.getCoordinateReferenceSystem().getCoordinateSystem().getDimension();
         final boolean hasM = hasMeasure(geometry);
         switch (dimension) {
             case 2:  sb.append(hasM ?  " M " : " ");   break;

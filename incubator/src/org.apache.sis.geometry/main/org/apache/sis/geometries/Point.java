@@ -19,9 +19,14 @@ package org.apache.sis.geometries;
 import java.util.List;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.cs.SphericalCS;
 import org.apache.sis.geometries.cs.Bearing;
 import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultPoint;
@@ -29,6 +34,9 @@ import org.apache.sis.geometries.internal.shared.IndexedPoint;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vectors;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.util.Utilities;
 
 
 /**
@@ -260,15 +268,43 @@ public sealed interface Point extends Primitive
      * Returns the vector, in the tangent space at this point, whose direction determines the
      * geodesic curve reaching the given position and whose length is the distance to it.
      *
+     * <p>In a reference system without ellipsoidal or spherical axes, the geodesic curve is the straight
+     * line, so the returned vector is the difference between the coordinates of the given position and
+     * the coordinates of this point.</p>
+     *
      * @param  toPoint  position to reach from this point.
      * @return vector from this point to the given position.
+     * @throws MismatchedDimensionException if the given position does not have the dimension of this point.
+     * @throws IllegalArgumentException if the given position is in another reference system.
+     * @throws UnsupportedOperationException if the reference system of this point has ellipsoidal or
+     *         spherical axes, for which the geodesic curves are not yet supported.
      *
      * @see ISO 19107:2019 - 6.4.13.4
      */
     @UML(identifier="vectorToPoint", specification=ISO_19107)
     default Vector<?> vectorToPoint(DirectPosition toPoint) {
-        //TODO
-        throw new UnsupportedOperationException();
+        final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
+        for (final SingleCRS component : CRS.getSingleComponents(crs)) {
+            final CoordinateSystem cs = component.getCoordinateSystem();
+            if (cs instanceof EllipsoidalCS || cs instanceof SphericalCS) {
+                throw new UnsupportedOperationException("Geodesic curves in " + component.getName() + " are not supported yet.");
+            }
+        }
+        final CoordinateReferenceSystem other = toPoint.getCoordinateReferenceSystem();
+        if (other != null && !Utilities.equalsIgnoreMetadata(crs, other)) {
+            throw new IllegalArgumentException("The position is not in the reference system of this point.");
+        }
+        final Vector<?> position = getPosition();
+        final int dimension = position.getDimension();
+        if (toPoint.getDimension() != dimension) {
+            throw new MismatchedDimensionException("Expected a position of dimension " + dimension
+                    + " but got " + toPoint.getDimension() + '.');
+        }
+        final Vector<?> vector = Vectors.createDouble(dimension);
+        for (int i = 0; i < dimension; i++) {
+            vector.set(i, toPoint.getCoordinate(i) - position.get(i));
+        }
+        return vector;
     }
 
     /**

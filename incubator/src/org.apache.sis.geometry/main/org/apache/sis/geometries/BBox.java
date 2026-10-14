@@ -47,7 +47,7 @@ public final class BBox extends GeneralEnvelope implements Geometry {
      * @param dimension number of dimensions of the bbox, must be positive.
      */
     public BBox(int dimension) {
-        super(dimension);
+        super(Geometries.getUndefinedCRS(dimension));
     }
 
     /**
@@ -55,7 +55,7 @@ public final class BBox extends GeneralEnvelope implements Geometry {
      * @param corners lower corner and higher corner, in crs axis order
      */
     public BBox(int dimension, double ... corners) {
-        super(dimension);
+        super(Geometries.getUndefinedCRS(dimension));
         setEnvelope(corners);
     }
 
@@ -65,6 +65,7 @@ public final class BBox extends GeneralEnvelope implements Geometry {
      */
     public BBox(Vector lower, Vector upper) {
         super(Vectors.asDirectPostion(lower), Vectors.asDirectPostion(upper));
+        ensureCRS();
     }
 
     /**
@@ -88,6 +89,26 @@ public final class BBox extends GeneralEnvelope implements Geometry {
      */
     public BBox(Envelope env) {
         super(env);
+        ensureCRS();
+    }
+
+    /**
+     * Assigns an undefined reference system if this box has none,
+     * since the reference system of a geometry is never null.
+     */
+    private void ensureCRS() {
+        if (super.getCoordinateReferenceSystem() == null) {
+            super.setCoordinateReferenceSystem(Geometries.getUndefinedCRS(getDimension()));
+        }
+    }
+
+    /**
+     * Sets the reference system of this box, or an undefined one if the given one is null.
+     * The coordinates are not transformed.
+     */
+    @Override
+    public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs) {
+        super.setCoordinateReferenceSystem(Geometries.orUndefinedCRS(crs, getDimension()));
     }
 
     @Override
@@ -140,10 +161,7 @@ public final class BBox extends GeneralEnvelope implements Geometry {
     @Override
     public Geometry getBoundary() {
         final int dim = getDimension();
-        CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
-        if (crs == null) {
-            crs = Geometries.getUndefinedCRS(dim);
-        }
+        final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
         final GeometryFactory factory = GeometryFactory.DEFAULT;
         if (isEmpty()) {
             return factory.createEmpty(crs);

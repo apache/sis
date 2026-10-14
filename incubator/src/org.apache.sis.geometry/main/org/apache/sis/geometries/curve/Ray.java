@@ -165,7 +165,7 @@ public sealed interface Ray extends Curve
         final ReadOnly.Vector<?> position = getPosition();
         final ReadOnly.Vector<?> direction = getDirection();
         final int dim = direction.getDimension();
-        final BBox bbox = new BBox(dim);
+        final BBox bbox = new BBox(getCoordinateReferenceSystem());
         for (int i=0;i<dim;i++){
             double d = direction.get(i);
             if (d<0){

@@ -101,9 +101,5 @@ public non-sealed class DefaultPolyhedron extends AbstractGeometry implements Po
         return area;
     }
 
-    @Override
-    public Quantity<?> getVolume() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 
 }

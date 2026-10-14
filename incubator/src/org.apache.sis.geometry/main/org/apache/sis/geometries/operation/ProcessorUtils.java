@@ -86,8 +86,6 @@ public final class ProcessorUtils {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-162">SIS-162</a>
      */
     private static CoordinateReferenceSystem getOrCreateSubCRS(CoordinateReferenceSystem crs, int lower, int upper) {
-        if (crs == null) return crs;
-
         int dimension = crs.getCoordinateSystem().getDimension();
         if (lower < 0 || lower > upper || upper > dimension) {
             throw new IndexOutOfBoundsException("["+lower+".."+upper+"] range is not possible with crs dimension "+ dimension);

@@ -28,6 +28,7 @@ import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Solid;
 import org.apache.sis.geometries.Surface;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometry.GeneralEnvelope;
 
 
@@ -56,7 +57,7 @@ public non-sealed class DefaultSolid extends AbstractGeometry implements Solid {
 
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return boundaries.get(0).getCoordinateReferenceSystem();
+        return boundaries.isEmpty() ? Geometries.getUndefinedCRS(3) : boundaries.get(0).getCoordinateReferenceSystem();
     }
 
     @Override

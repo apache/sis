@@ -523,14 +523,7 @@ public final class WellKnownBinary {
      *         ordinate following the position ones.
      */
     private boolean writeHeader(final Output out, final int code, final Geometry geometry) {
-        final CoordinateReferenceSystem crs = geometry.getCoordinateReferenceSystem();
-        if (crs == null) {
-            throw new IllegalArgumentException("Cannot write a " + geometry.getGeometryType()
-                    + " in Well-Known Binary:"
-                    + " it has no coordinate reference system, therefore no known number of dimensions."
-                    + " An empty collection takes one from the factory method which creates it.");
-        }
-        final int dimension = crs.getCoordinateSystem().getDimension();
+        final int dimension = geometry.getCoordinateReferenceSystem().getCoordinateSystem().getDimension();
         final boolean hasM = hasMeasure(geometry);
         final boolean hasZ;
         switch (dimension) {

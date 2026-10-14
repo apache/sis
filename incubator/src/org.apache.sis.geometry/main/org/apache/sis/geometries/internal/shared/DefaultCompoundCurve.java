@@ -21,7 +21,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.CompoundCurve;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.maths.Array;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -49,7 +51,7 @@ public non-sealed class DefaultCompoundCurve extends AbstractGeometry implements
      */
     public DefaultCompoundCurve(CoordinateReferenceSystem fallbackCRS, Curve... curves) {
         this.curves      = curves;
-        this.fallbackCRS = fallbackCRS;
+        this.fallbackCRS = (fallbackCRS != null) ? fallbackCRS : Geometries.getUndefinedCRS(2);
     }
 
     @Override
@@ -79,6 +81,7 @@ public non-sealed class DefaultCompoundCurve extends AbstractGeometry implements
 
     @Override
     public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("crs", crs);
         this.fallbackCRS = crs;
         for (final Curve c : curves) {
             c.setCoordinateReferenceSystem(crs);

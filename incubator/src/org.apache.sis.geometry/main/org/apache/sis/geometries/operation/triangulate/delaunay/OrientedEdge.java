@@ -25,6 +25,7 @@ import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitive.Vertex;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
@@ -203,7 +204,7 @@ public final class OrientedEdge extends AbstractGeometry implements LineString, 
 
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return structure.start.getCoordinateReferenceSystem();
+        return Geometries.orUndefinedCRS(structure.start.getCoordinateReferenceSystem(), structure.start.getDimension());
     }
 
     @Override

@@ -26,6 +26,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
@@ -112,6 +113,15 @@ public sealed interface Triangle extends Polygon
     @Override
     default void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
         getExteriorRing().setCoordinateReferenceSystem(cs);
+    }
+
+    /**
+     * Returns the {@linkplain #getExteriorRing() exterior ring}: a triangle has no hole,
+     * so the ring through its three corners is its whole boundary.
+     */
+    @Override
+    default Geometry getBoundary() {
+        return getExteriorRing();
     }
 
     @Override

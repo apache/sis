@@ -175,7 +175,7 @@ public final class Plane extends AbstractGeometry{
     public BBox getEnvelope() {
         final ReadOnly.Vector<?> position = getPosition();
         final int dim = normal.getDimension();
-        final BBox bbox = new BBox(dim);
+        final BBox bbox = new BBox(getCoordinateReferenceSystem());
         /*
          * Search the axis the normal is aligned with. There is one only if every other
          * dimension of the normal is null, in which case the plane is flat on it.

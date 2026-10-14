@@ -22,6 +22,8 @@ import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.Geometries;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -51,7 +53,7 @@ public non-sealed class DefaultGeometryCollection<T extends Geometry> extends Ab
     public DefaultGeometryCollection(GeometryType elementType, CoordinateReferenceSystem fallbackCRS, T[] geometries) {
         this.elementType = elementType;
         this.geometries  = geometries;
-        this.fallbackCRS = fallbackCRS;
+        this.fallbackCRS = (fallbackCRS != null) ? fallbackCRS : Geometries.getUndefinedCRS(2);
     }
 
     @Override
@@ -66,6 +68,7 @@ public non-sealed class DefaultGeometryCollection<T extends Geometry> extends Ab
 
     @Override
     public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("crs", crs);
         fallbackCRS = crs;
         for (T c : geometries) {
             c.setCoordinateReferenceSystem(crs);

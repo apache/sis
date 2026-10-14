@@ -298,6 +298,7 @@ public non-sealed class DefaultNurbCurve extends AbstractGeometry implements Nur
         for (final Vector<?> p : controlPoints) {
             bbox.add(p);
         }
+        bbox.setCoordinateReferenceSystem(getCoordinateReferenceSystem());
         return bbox;
     }
 

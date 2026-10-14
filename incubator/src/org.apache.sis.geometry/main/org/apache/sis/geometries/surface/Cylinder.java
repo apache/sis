@@ -204,7 +204,7 @@ public sealed interface Cylinder extends Surface
         final Vector<?> axis = getAxis();
         final double height = axis.length();
         final int dim = getDataPoints().getDimension();
-        final BBox bbox = new BBox(dim);
+        final BBox bbox = new BBox(getCoordinateReferenceSystem());
         for (int i=0;i<dim;i++){
             final double b = bottom.get(i);
             final double t = top.get(i);

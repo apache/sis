@@ -22,6 +22,8 @@ import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
+import org.apache.sis.geometries.Geometries;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -38,7 +40,7 @@ public non-sealed class DefaultPolyhedralSurface<T extends Polygon> extends Abst
      * The coordinate reference system to report when this surface has no patch.
      * Ignored otherwise, in which case the first patch is authoritative. May be {@code null}.
      */
-    private final CoordinateReferenceSystem fallbackCRS;
+    private CoordinateReferenceSystem fallbackCRS;
 
     @SafeVarargs
     public DefaultPolyhedralSurface(T... patches) {
@@ -51,7 +53,7 @@ public non-sealed class DefaultPolyhedralSurface<T extends Polygon> extends Abst
      */
     public DefaultPolyhedralSurface(CoordinateReferenceSystem fallbackCRS, T[] patches) {
         this.patches     = patches;
-        this.fallbackCRS = fallbackCRS;
+        this.fallbackCRS = (fallbackCRS != null) ? fallbackCRS : Geometries.getUndefinedCRS(2);
     }
 
     @Override
@@ -81,6 +83,8 @@ public non-sealed class DefaultPolyhedralSurface<T extends Polygon> extends Abst
 
     @Override
     public void setCoordinateReferenceSystem(CoordinateReferenceSystem cs) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("crs", cs);
+        fallbackCRS = cs;
         for (final T patch : patches) {
             patch.setCoordinateReferenceSystem(cs);
         }

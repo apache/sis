@@ -132,11 +132,11 @@ public non-sealed class DefaultOffsetCurve extends AbstractGeometry implements O
             return null;
         }
         final var envelope = new GeneralEnvelope(baseEnvelope);
-        final CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
+        final CoordinateReferenceSystem crs = baseCurve.getCoordinateReferenceSystem();
         final double value = Math.abs(distance.getValue().doubleValue());
         for (int i = 0, n = envelope.getDimension(); i < n; i++) {
             double d = value;
-            final Unit<?> axisUnit = (crs != null) ? crs.getCoordinateSystem().getAxis(i).getUnit() : null;
+            final Unit<?> axisUnit = crs.getCoordinateSystem().getAxis(i).getUnit();
             if (axisUnit != null && !Units.UNITY.equals(distance.getUnit())) {
                 try {
                     d = distance.getUnit().getConverterToAny(axisUnit).convert(value);

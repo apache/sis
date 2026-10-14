@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import javax.measure.Quantity;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
@@ -29,6 +30,7 @@ import org.apache.sis.geometries.curve.KnotType;
 import org.apache.sis.geometries.operation.DeBoorAlgorithm;
 import org.apache.sis.geometries.surface.BSplineSurfaceForm;
 import org.apache.sis.geometries.surface.NurbSurface;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Vector;
@@ -300,6 +302,15 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
 
 
     /**
+     * Returns the reference system of the control points, or an undefined one if they have none.
+     */
+    @Override
+    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
+        final Vector<?> first = controlPoints[0][0];
+        return Geometries.orUndefinedCRS(first.getCoordinateReferenceSystem(), first.getDimension());
+    }
+
+    /**
      * Bounding box of the control points, which contains the surface (convex hull property).
      *
      * @return the bounding box of this surface
@@ -311,6 +322,7 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
                 bbox.add(p);
             }
         }
+        bbox.setCoordinateReferenceSystem(getCoordinateReferenceSystem());
         return bbox;
     }
 

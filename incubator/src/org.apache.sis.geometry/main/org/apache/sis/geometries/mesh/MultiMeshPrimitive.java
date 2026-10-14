@@ -88,6 +88,7 @@ public final class MultiMeshPrimitive<T extends MeshPrimitive> extends AbstractG
 
     @Override
     public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) {
+        ArgumentChecks.ensureNonNull("crs", crs);
         for (MeshPrimitive p : primitives) {
             p.setCoordinateReferenceSystem(crs);
         }
