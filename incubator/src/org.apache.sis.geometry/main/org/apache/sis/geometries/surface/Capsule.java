@@ -22,6 +22,8 @@ import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.SurfaceInterpolation;
@@ -153,6 +155,14 @@ public sealed interface Capsule extends Surface
                              Math.max(b + radiusBottom, t + radiusTop));
         }
         return bbox;
+    }
+
+    /**
+     * Returns the empty geometry: a capsule is a closed surface, so it has no edge.
+     */
+    @Override
+    default Geometry getBoundary() {
+        return GeometryFactory.DEFAULT.createEmpty(getCoordinateReferenceSystem());
     }
 
     @Override

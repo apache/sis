@@ -19,7 +19,6 @@ package org.apache.sis.geometries.internal.shared;
 import java.util.Objects;
 import javax.measure.Quantity;
 import org.apache.sis.geometries.DataPoints;
-import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.surface.Capsule;
 import org.apache.sis.maths.NDArrays;
@@ -118,11 +117,6 @@ public non-sealed class DefaultCapsule extends AbstractGeometry implements Capsu
 
     @Override
     public Quantity<?> getArea() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Geometry getBoundary() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

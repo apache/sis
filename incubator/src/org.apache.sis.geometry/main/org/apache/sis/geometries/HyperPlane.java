@@ -149,9 +149,12 @@ public final class HyperPlane extends AbstractGeometry{
         return points.getCoordinateReferenceSystem();
     }
 
+    /**
+     * Returns the empty geometry: a hyperplane extends to infinity in all its directions, so it has no edge.
+     */
     @Override
     public Geometry getBoundary() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return GeometryFactory.DEFAULT.createEmpty(getCoordinateReferenceSystem());
     }
 
     @Override

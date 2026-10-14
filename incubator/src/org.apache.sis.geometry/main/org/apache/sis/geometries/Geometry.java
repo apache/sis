@@ -276,14 +276,16 @@ public sealed interface Geometry
      *       boundary, and in the interior those lying on more than one.</li>
      * </ul>
      *
+     * <p>The default implementation returns {@link BoundaryType#MOD_2}, the rule of OGC Simple Feature
+     * Access. The three rules agree on geometries which are not aggregates.</p>
+     *
      * @return rule used to compute the boundary of this geometry.
      *
      * @see ISO 19107:2019 - 6.4.3, 10.8.3
      */
     @UML(identifier="boundaryType", specification=ISO_19107)
     default BoundaryType getBoundaryType() {
-        //TODO remove this method default when all classes implement it.
-        throw new UnsupportedOperationException();
+        return BoundaryType.MOD_2;
     }
 
     /**

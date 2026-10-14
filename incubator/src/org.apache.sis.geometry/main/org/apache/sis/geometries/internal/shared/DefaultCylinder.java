@@ -19,7 +19,6 @@ package org.apache.sis.geometries.internal.shared;
 import java.util.Objects;
 import javax.measure.Quantity;
 import org.apache.sis.geometries.DataPoints;
-import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.surface.Cylinder;
 import org.apache.sis.maths.NDArrays;
@@ -42,6 +41,11 @@ public non-sealed class DefaultCylinder extends AbstractGeometry implements Cyli
 
     private double radiusTop = 1.0;
     private double radiusBottom = 1.0;
+
+    /**
+     * Whether the ends are closed by disks.
+     */
+    private boolean closed = true;
 
     /**
      * Creates a cylinder along the axis joining the two given positions.
@@ -122,8 +126,13 @@ public non-sealed class DefaultCylinder extends AbstractGeometry implements Cyli
     }
 
     @Override
-    public Geometry getBoundary() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public boolean isClosed() {
+        return closed;
+    }
+
+    @Override
+    public void setClosed(boolean closed) {
+        this.closed = closed;
     }
 
     @Override
@@ -139,7 +148,8 @@ public non-sealed class DefaultCylinder extends AbstractGeometry implements Cyli
             return false;
         }
         return Double.doubleToLongBits(this.radiusTop) == Double.doubleToLongBits(other.radiusTop)
-            && Double.doubleToLongBits(this.radiusBottom) == Double.doubleToLongBits(other.radiusBottom);
+            && Double.doubleToLongBits(this.radiusBottom) == Double.doubleToLongBits(other.radiusBottom)
+            && this.closed == other.closed;
     }
 
     @Override
@@ -148,6 +158,7 @@ public non-sealed class DefaultCylinder extends AbstractGeometry implements Cyli
         hash = 89 * hash + Objects.hashCode(this.points);
         hash = 89 * hash + Double.hashCode(this.radiusTop);
         hash = 89 * hash + Double.hashCode(this.radiusBottom);
+        hash = 89 * hash + Boolean.hashCode(this.closed);
         return hash;
     }
 }

@@ -23,7 +23,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
-import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.surface.Sphere;
 import org.apache.sis.maths.DataType;
@@ -129,11 +128,6 @@ public non-sealed class DefaultSphere extends AbstractGeometry implements Sphere
     @Override
     public void setCenter(ReadOnly.Vector<?> position) {
         points.setPosition(0, position);
-    }
-
-    @Override
-    public Geometry getBoundary() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     // methods from ParametricCurveSurface

@@ -95,12 +95,14 @@ public sealed interface Primitive extends Geometry
      *   <li>For a surface or a solid, the order may be ignored.</li>
      * </ul>
      *
+     * <p>The default implementation returns an empty list, for a primitive which is not
+     * decomposed in smaller ones.</p>
+     *
      * @return segments of this primitive, possibly empty.
      *
      * @see ISO 19107:2019 - 6.4.11.2
      */
     default List<Primitive> getSegments() {
-        //TODO
-        throw new UnsupportedOperationException();
+        return List.of();
     }
 }

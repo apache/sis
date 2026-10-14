@@ -23,6 +23,8 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultEllipsoid;
@@ -138,6 +140,14 @@ public sealed interface Ellipsoid extends ParametricCurveSurface
      * @param position new center of the ellipsoid
      */
     void setCenter(ReadOnly.Vector<?> position);
+
+    /**
+     * Returns the empty geometry: an ellipsoid is a closed surface, so it has no edge.
+     */
+    @Override
+    default Geometry getBoundary() {
+        return GeometryFactory.DEFAULT.createEmpty(getCoordinateReferenceSystem());
+    }
 
     @Override
     default CoordinateReferenceSystem getCoordinateReferenceSystem() {
