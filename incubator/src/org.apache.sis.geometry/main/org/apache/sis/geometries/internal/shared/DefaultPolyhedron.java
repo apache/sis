@@ -21,6 +21,7 @@ import java.util.Objects;
 import javax.measure.Quantity;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.solid.Polyhedron;
@@ -88,9 +89,16 @@ public non-sealed class DefaultPolyhedron extends AbstractGeometry implements Po
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Returns the sum of the areas of the polygons of the exterior and interior shells.
+     */
     @Override
     public Quantity<?> getArea() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Quantity<?> area = exterior.getArea();
+        for (final GeometryCollection<Polygon> interior : interiors) {
+            area = Geometries.add(area, interior.getArea());
+        }
+        return area;
     }
 
     @Override

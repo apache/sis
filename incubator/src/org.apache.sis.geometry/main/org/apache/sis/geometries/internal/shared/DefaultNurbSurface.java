@@ -399,9 +399,12 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Returns the position of this surface at the given parameters, computed by {@link #evaluate(double, double)}.
+     */
     @Override
     public DirectPosition getSurface(double u, double v) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return Vectors.asDirectPostion(evaluate(u, v));
     }
 
 }

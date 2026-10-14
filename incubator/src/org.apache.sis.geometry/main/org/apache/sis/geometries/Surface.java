@@ -29,6 +29,7 @@ import org.apache.sis.geometries.surface.ParametricCurveSurface;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.measure.Quantities;
 
 
 /**
@@ -234,8 +235,17 @@ public sealed interface Surface extends Orientable
      */
     @UML(identifier="perimeter", specification=ISO_19107)
     default Quantity<?> getPerimeter() {
-        //TODO
-        throw new UnsupportedOperationException();
+        final Geometry boundary = getBoundary();
+        if (boundary instanceof Curve c) {
+            return c.getLength();
+        }
+        if (boundary instanceof GeometryCollection<?> c && c.getNumGeometries() != 0) {
+            return c.getLength();
+        }
+        if (boundary.isEmpty()) {
+            return Quantities.create(0, Geometries.getLinearUnit(this));
+        }
+        throw new UnsupportedOperationException("Unsupported boundary type: " + boundary.getGeometryType());
     }
 
     /**

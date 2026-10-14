@@ -109,9 +109,12 @@ public non-sealed class DefaultSolid extends AbstractGeometry implements Solid {
         return GeometryFactory.DEFAULT.createGeometryCollection(GeometryType.SURFACE, getCoordinateReferenceSystem(), boundaries.toArray(Surface[]::new));
     }
 
+    /**
+     * Returns the sum of the areas of the boundary surfaces.
+     */
     @Override
     public Quantity<?> getArea() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getBoundary().getArea();
     }
 
     @Override

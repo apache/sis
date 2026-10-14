@@ -17,7 +17,6 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.List;
-import javax.measure.Quantity;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
@@ -102,11 +101,6 @@ public non-sealed class DefaultSphere extends AbstractGeometry implements Sphere
     public DefaultSphere(DataPoints points, double radius) {
         this(points);
         this.radius = radius;
-    }
-
-    @Override
-    public Quantity<?> getArea() {
-        throw new UnsupportedOperationException("Not supported.");
     }
 
     @Override

@@ -18,6 +18,7 @@ package org.apache.sis.geometries.solid.polyhedron;
 
 import java.util.List;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Surface;
@@ -33,6 +34,7 @@ import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector3D;
+import org.apache.sis.util.ArgumentChecks;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -84,19 +86,39 @@ public abstract sealed class AbstractPolyhedron extends AbstractGeometry impleme
      */
     protected static final double ATAN_INV_PHI2 = Math.PI/2 - ATAN_PHI2;
 
+    /**
+     * Reference system of the faces of this polyhedron. The vertices are constants shared by every
+     * instance, expressed in an undefined 3-dimensional Cartesian system; this system gives them a
+     * meaning for this instance only.
+     */
+    private CoordinateReferenceSystem crs = Geometries.getUndefinedCRS(3);
+
     @Override
     public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return crs;
     }
 
+    /**
+     * Sets the reference system in which the vertices of this polyhedron are expressed.
+     * The coordinates are not transformed.
+     *
+     * @throws IllegalArgumentException if the given reference system is not 3-dimensional.
+     */
     @Override
     public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        ArgumentChecks.ensureNonNull("crs", crs);
+        if (crs.getCoordinateSystem().getDimension() != 3) {
+            throw new IllegalArgumentException("New CRS must be 3-dimensional");
+        }
+        this.crs = crs;
     }
 
+    /**
+     * Returns the union of the envelopes of the faces.
+     */
     @Override
     public Envelope getEnvelope() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return getExteriorShell().getEnvelope();
     }
 
     /**
@@ -209,14 +231,20 @@ public abstract sealed class AbstractPolyhedron extends AbstractGeometry impleme
     }
 
     /**
-     * Build the polygon of one face.
+     * Build the polygon of one face, in the {@linkplain #getCoordinateReferenceSystem() reference system}
+     * of this polyhedron.
      *
      * @param vertices polyhedron vertices
      * @param face face vertex indices into {@code vertices}, in CCW order viewed from outside
      * @return face polygon
      */
-    protected static Polygon toPolygon(Array vertices, int[] face) {
-        final Array positions = NDArrays.subset(vertices, face);
+    protected Polygon toPolygon(Array vertices, int[] face) {
+        Array positions = NDArrays.subset(vertices, face);
+        if (!crs.equals(positions.getCoordinateReferenceSystem())) {
+            // The subset is a view, and the vertices are shared by every instance: change a copy.
+            positions = positions.copy();
+            positions.setSampleSystem(SampleSystem.of(crs));
+        }
         final LinearRing ring = GeometryFactory.DEFAULT.createLinearRing(GeometryFactory.DEFAULT.createDataPoints(positions));
         return GeometryFactory.DEFAULT.createPolygon(ring, null);
     }

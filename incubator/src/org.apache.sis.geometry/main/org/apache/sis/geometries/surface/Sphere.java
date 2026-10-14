@@ -17,12 +17,14 @@
 package org.apache.sis.geometries.surface;
 
 import java.util.List;
+import javax.measure.Quantity;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
@@ -30,6 +32,7 @@ import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultSphere;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.measure.Quantities;
 
 
 /**
@@ -107,6 +110,29 @@ public sealed interface Sphere extends ParametricCurveSurface
     @Override
     default GeometryType getVerticalCurveType() {
         return GeometryType.CIRCLE;
+    }
+
+    /**
+     * Returns the area of this sphere, which is 4πr² in a 3-dimensional space.
+     *
+     * <p>In an <var>n</var>-dimensional space, this is the measure of the (<var>n</var>−1)-sphere,
+     * 2π<sup><var>n</var>/2</sup>∕Γ(<var>n</var>/2)⋅r<sup><var>n</var>−1</sup>, expressed in the
+     * linear unit raised to the power <var>n</var>−1. In a 2-dimensional space, it is therefore
+     * the perimeter 2πr of the circle.</p>
+     */
+    @Override
+    default Quantity<?> getArea() {
+        final int n = getDimension();
+        /*
+         * Measure of the unit (n−1)-sphere, from S(1) = 2 and S(2) = 2π with the recurrence
+         * S(n+2) = 2π⋅S(n)/n, which avoids computing the Gamma function.
+         */
+        int k = (n % 2 == 0) ? 2 : 1;
+        double measure = (k == 2) ? 2*Math.PI : 2;
+        for (; k + 2 <= n; k += 2) {
+            measure *= 2*Math.PI / k;
+        }
+        return Quantities.create(measure * Math.pow(getRadius(), n - 1), Geometries.getLinearUnit(this).pow(n - 1));
     }
 
     /**
