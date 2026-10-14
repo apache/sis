@@ -16,7 +16,6 @@
  */
 package org.apache.sis.geometries.solid;
 
-import java.util.List;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
@@ -25,6 +24,7 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Solid;
 import org.apache.sis.geometries.SolidInterpolation;
+import org.apache.sis.maths.Array;
 
 
 /**
@@ -163,18 +163,18 @@ public sealed interface ParametricCurveSolid extends Solid
      *
      * <p>Constraints:</p>
      * <ul>
-     *   <li>The list holds {@link #getRows()} × {@link #getColumns()} × {@link #getFiles()}
+     *   <li>The array holds {@link #getRows()} × {@link #getColumns()} × {@link #getFiles()}
      *       positions, stored in row-major order.</li>
      *   <li>Control points do not necessarily lie inside this solid.</li>
      * </ul>
      *
-     * @return solid control points, possibly empty.
+     * @return solid control points, or {@code null} if none.
      *
      * @see ISO 19107:2019 - 9.3.1.3
      */
     @UML(identifier="controlPoints", specification=ISO_19107)
     @Override
-    List<DirectPosition> getControlPoints();
+    Array getControlPoints();
 
     /**
      * Returns the curve traversing this solid horizontally at the given vertical and depth parameters.

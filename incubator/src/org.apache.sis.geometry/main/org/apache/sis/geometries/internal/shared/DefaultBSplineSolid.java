@@ -16,7 +16,6 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import java.util.List;
 import java.util.Objects;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
@@ -29,6 +28,7 @@ import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.solid.BSplineSolid;
+import org.apache.sis.maths.Array;
 
 
 /**
@@ -44,9 +44,9 @@ public non-sealed class DefaultBSplineSolid extends AbstractGeometry implements 
     protected final DataPoints points;
 
     /**
-     * Control points of the section curves, in row-major order, or an empty list if none.
+     * Control points in row-major order, or {@code null} if none.
      */
-    protected final List<DirectPosition> controlPoints;
+    protected final Array controlPoints;
 
     /**
      * Number of horizontal rows in the parameter grid.
@@ -73,11 +73,11 @@ public non-sealed class DefaultBSplineSolid extends AbstractGeometry implements 
      * @param  columns        number of vertical columns in the parameter grid.
      * @param  files          number of depth files in the parameter grid.
      */
-    public DefaultBSplineSolid(final DataPoints points, final List<DirectPosition> controlPoints,
+    public DefaultBSplineSolid(final DataPoints points, final Array controlPoints,
             final int rows, final int columns, final int files)
     {
         this.points        = Objects.requireNonNull(points);
-        this.controlPoints = (controlPoints == null) ? List.of() : List.copyOf(controlPoints);
+        this.controlPoints = controlPoints;
         this.rows          = rows;
         this.columns       = columns;
         this.files         = files;
@@ -104,7 +104,7 @@ public non-sealed class DefaultBSplineSolid extends AbstractGeometry implements 
     }
 
     @Override
-    public List<DirectPosition> getControlPoints() {
+    public Array getControlPoints() {
         return controlPoints;
     }
 
@@ -172,9 +172,13 @@ public non-sealed class DefaultBSplineSolid extends AbstractGeometry implements 
         return points.isEmpty();
     }
 
+    /**
+     * Returns the envelope of the data points and of the control points, which contains this solid
+     * since a b-spline stays inside the convex hull of its control points.
+     */
     @Override
     public Envelope getEnvelope() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return controlHullEnvelope(points, coordinates(controlPoints), false);
     }
 
     @Override

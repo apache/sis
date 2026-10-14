@@ -18,11 +18,13 @@ package org.apache.sis.geometries.surface;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.measure.Quantity;
 import static org.opengis.annotation.Specification.ISO_12113;
 import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
@@ -35,6 +37,7 @@ import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.measure.Quantities;
 
 
 /**
@@ -216,6 +219,28 @@ public sealed interface Cylinder extends Surface
                              Math.max(b + radiusBottom*spread, t + radiusTop*spread));
         }
         return bbox;
+    }
+
+    /**
+     * Returns the area of the lateral surface, π(r₁ + r₂)⋅√(h² + (r₁ − r₂)²) where <var>h</var> is the
+     * {@linkplain #getHeight() height}, plus the areas π<var>r</var>² of the two end disks if this
+     * cylinder is {@linkplain #isClosed() closed}.
+     *
+     * @throws UnsupportedOperationException if this cylinder is not 3-dimensional.
+     */
+    @Override
+    default Quantity<?> getArea() {
+        if (getDataPoints().getDimension() != 3) {
+            throw new UnsupportedOperationException("The area of a cylinder is computed in 3 dimensions only.");
+        }
+        final double r1 = getRadiusBottom();
+        final double r2 = getRadiusTop();
+        final double h  = getHeight();
+        double area = Math.PI * (r1 + r2) * Math.hypot(h, r1 - r2);
+        if (isClosed()) {
+            area += Math.PI * (r1*r1 + r2*r2);
+        }
+        return Quantities.create(area, Geometries.getAreaUnit(this));
     }
 
     /**

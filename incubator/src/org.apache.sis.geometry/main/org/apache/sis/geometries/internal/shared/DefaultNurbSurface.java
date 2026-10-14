@@ -29,6 +29,7 @@ import org.apache.sis.geometries.curve.KnotType;
 import org.apache.sis.geometries.operation.DeBoorAlgorithm;
 import org.apache.sis.geometries.surface.BSplineSurfaceForm;
 import org.apache.sis.geometries.surface.NurbSurface;
+import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
@@ -371,17 +372,16 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
     }
 
     /**
-     * Returns views of the control points in row-major order, without their weights.
+     * Returns a copy of the control points in row-major order, without their weights.
      */
     @Override
-    public List<DirectPosition> getControlPoints() {
-        final var positions = new ArrayList<DirectPosition>(getRows() * getColumns());
+    public Array getControlPoints() {
+        final var positions = new ArrayList<Vector<?>>(getRows() * getColumns());
         for (final Vector<?>[] row : controlPoints) {
-            for (final Vector<?> p : row) {
-                positions.add(Vectors.asDirectPostion(p));
-            }
+            positions.addAll(Arrays.asList(row));
         }
-        return positions;
+        final Vector<?> first = controlPoints[0][0];
+        return NDArrays.of(positions, first.getSampleSystem(), first.getDataType());
     }
 
     @Override

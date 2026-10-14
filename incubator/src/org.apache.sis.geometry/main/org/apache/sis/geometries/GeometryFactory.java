@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import javax.measure.Quantity;
 import javax.measure.Unit;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.SingleCRS;
 import org.apache.sis.geometries.cs.Bearing;
@@ -573,7 +572,7 @@ public final class GeometryFactory {
      * @param  columns        number of columns in the parameter grid.
      * @param  knots          knot values, one sequence per surface parameter, or {@code null} if none.
      */
-    public BilinearGrid createBilinearGrid(DataPoints points, List<DirectPosition> controlPoints,
+    public BilinearGrid createBilinearGrid(DataPoints points, Array controlPoints,
             int rows, int columns, List<double[]> knots)
     {
         return new DefaultBilinearGrid(points, controlPoints, rows, columns, knots);
@@ -597,7 +596,7 @@ public final class GeometryFactory {
      * @param  polynomial     {@code true} if the surface is polynomial, {@code false} if the control
      *                        points are expressed in homogeneous coordinates, making it rational.
      */
-    public BSplineSurface createBSplineSurface(DataPoints points, List<DirectPosition> controlPoints,
+    public BSplineSurface createBSplineSurface(DataPoints points, Array controlPoints,
             int rows, int columns, List<double[]> knots, int degree, KnotType knotSpec,
             BSplineSurfaceForm surfaceForm, boolean polynomial)
     {
@@ -732,7 +731,7 @@ public final class GeometryFactory {
      * @param  columns        number of vertical columns in the parameter grid.
      * @param  files          number of depth files in the parameter grid.
      */
-    public BSplineSolid createBSolidSpline(DataPoints points, List<DirectPosition> controlPoints,
+    public BSplineSolid createBSolidSpline(DataPoints points, Array controlPoints,
             int rows, int columns, int files)
     {
         return new DefaultBSplineSolid(points, controlPoints, rows, columns, files);

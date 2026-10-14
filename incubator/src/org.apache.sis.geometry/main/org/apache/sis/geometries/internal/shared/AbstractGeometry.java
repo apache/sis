@@ -16,12 +16,18 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.maths.Array;
 
 
 /**
@@ -89,6 +95,56 @@ public abstract non-sealed class AbstractGeometry implements Geometry {
             union = add(union, geometry);
         }
         return union;
+    }
+
+    /**
+     * Returns the envelope of the given data points and control points, or {@code null} if both are empty.
+     * A spline whose basis functions are a partition of unity, such as a b-spline, stays inside the convex
+     * hull of its control points, so the returned envelope contains it.
+     *
+     * @param  points         data points of the spline, or {@code null} if none.
+     * @param  controlPoints  coordinates of the control points, possibly empty.
+     * @param  homogeneous    whether the control points have one more coordinate than the reference system,
+     *                        the weight by which the other coordinates are divided. Weights are assumed positive.
+     * @return envelope of the data points and of the control points, or {@code null} if there is none.
+     */
+    protected static Envelope controlHullEnvelope(final DataPoints points, final List<double[]> controlPoints,
+                                                  final boolean homogeneous)
+    {
+        GeneralEnvelope envelope = (points == null || points.isEmpty()) ? null : new GeneralEnvelope(points.getEnvelope());
+        for (double[] coordinates : controlPoints) {
+            if (homogeneous) {
+                final double weight = coordinates[coordinates.length - 1];
+                coordinates = Arrays.copyOf(coordinates, coordinates.length - 1);
+                for (int i = 0; i < coordinates.length; i++) {
+                    coordinates[i] /= weight;
+                }
+            }
+            final var position = new GeneralDirectPosition(coordinates);
+            if (envelope == null) {
+                envelope = new GeneralEnvelope(position, position);
+                if (points != null) {
+                    envelope.setCoordinateReferenceSystem(points.getCoordinateReferenceSystem());
+                }
+            } else {
+                envelope.add(position);
+            }
+        }
+        return envelope;
+    }
+
+    /**
+     * Returns the coordinates of the given control points, or an empty list if {@code null}.
+     */
+    protected static List<double[]> coordinates(final Array controlPoints) {
+        if (controlPoints == null) {
+            return List.of();
+        }
+        final var coordinates = new ArrayList<double[]>();
+        for (long i = 0, n = controlPoints.getLength(); i < n; i++) {
+            coordinates.add(controlPoints.get(i).toArrayDouble());
+        }
+        return coordinates;
     }
 
     /**

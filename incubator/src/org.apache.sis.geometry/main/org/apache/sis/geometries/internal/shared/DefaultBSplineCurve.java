@@ -173,9 +173,13 @@ public non-sealed class DefaultBSplineCurve extends AbstractGeometry implements 
         return points.isEmpty();
     }
 
+    /**
+     * Returns the envelope of the data points and of the control points, which contains this curve
+     * since a b-spline stays inside the convex hull of its control points.
+     */
     @Override
     public Envelope getEnvelope() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return controlHullEnvelope(points, coordinates(controlPoints), rational);
     }
 
     /**

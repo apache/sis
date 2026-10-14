@@ -20,9 +20,13 @@ import java.util.Objects;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.util.FactoryException;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.Prism;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.util.Utilities;
 
 
 /**
@@ -90,9 +94,51 @@ public non-sealed class DefaultPrism extends AbstractGeometry implements Prism {
         return base.isEmpty();
     }
 
+    /**
+     * Returns the envelope of the base extended by the extrusion range. If the reference system of the base
+     * contains the extrusion reference system, the range extends the corresponding axis. Otherwise the
+     * extrusion adds a dimension, and the envelope is in the compound of the two reference systems.
+     */
     @Override
     public Envelope getEnvelope() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        final Envelope baseEnvelope = base.getEnvelope();
+        if (baseEnvelope == null) {
+            return null;
+        }
+        final double min = extrusionRange.getMinDouble();
+        final double max = extrusionRange.getMaxDouble();
+        final CoordinateReferenceSystem baseCRS = base.getCoordinateReferenceSystem();
+        if (baseCRS != null && extrusionCrs != null) {
+            int offset = 0;
+            for (final SingleCRS component : CRS.getSingleComponents(baseCRS)) {
+                final int dimension = component.getCoordinateSystem().getDimension();
+                if (Utilities.equalsIgnoreMetadata(component, extrusionCrs)) {
+                    final var envelope = new GeneralEnvelope(baseEnvelope);
+                    for (int i = offset; i < offset + dimension; i++) {
+                        envelope.setRange(i, Math.min(envelope.getMinimum(i), min),
+                                             Math.max(envelope.getMaximum(i), max));
+                    }
+                    return envelope;
+                }
+                offset += dimension;
+            }
+        }
+        final int n = baseEnvelope.getDimension();
+        final GeneralEnvelope envelope;
+        if (baseCRS != null && extrusionCrs != null) {
+            try {
+                envelope = new GeneralEnvelope(CRS.compound(baseCRS, extrusionCrs));
+            } catch (FactoryException e) {
+                throw new IllegalStateException("Cannot combine the base and extrusion reference systems.", e);
+            }
+        } else {
+            envelope = new GeneralEnvelope(n + 1);
+        }
+        for (int i = 0; i < n; i++) {
+            envelope.setRange(i, baseEnvelope.getMinimum(i), baseEnvelope.getMaximum(i));
+        }
+        envelope.setRange(n, min, max);
+        return envelope;
     }
 
     @Override

@@ -27,6 +27,7 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.SurfaceInterpolation;
+import org.apache.sis.maths.Array;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.Identifier;
@@ -110,18 +111,18 @@ public sealed interface ParametricCurveSurface extends Surface, ReferenceSystem
      *
      * <p>Constraints:</p>
      * <ul>
-     *   <li>The list holds {@link #getRows()} × {@link #getColumns()} positions,
+     *   <li>The array holds {@link #getRows()} × {@link #getColumns()} positions,
      *       stored in row-major order.</li>
      *   <li>Control points do not necessarily lie on this surface.</li>
      * </ul>
      *
-     * @return surface control points, possibly empty.
+     * @return surface control points, or {@code null} if none.
      *
      * @see ISO 19107:2019 - 8.3.2.6
      */
     @UML(identifier="controlPoints", specification=ISO_19107)
     @Override
-    List<DirectPosition> getControlPoints();
+    Array getControlPoints();
 
     /**
      * Positions of this surface at the knots of the parameter grid, so that the data point at

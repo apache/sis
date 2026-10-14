@@ -26,6 +26,7 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.surface.Ellipsoid;
+import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.ReadOnly;
@@ -205,7 +206,7 @@ public non-sealed class DefaultEllipsoid extends AbstractGeometry implements Ell
     }
 
     @Override
-    public List<DirectPosition> getControlPoints() {
+    public Array getControlPoints() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

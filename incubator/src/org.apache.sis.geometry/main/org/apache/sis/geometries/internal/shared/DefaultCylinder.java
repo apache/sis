@@ -17,7 +17,6 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
-import javax.measure.Quantity;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.surface.Cylinder;
@@ -118,11 +117,6 @@ public non-sealed class DefaultCylinder extends AbstractGeometry implements Cyli
     @Override
     public void setRadiusBottom(double radius) {
         this.radiusBottom = radius;
-    }
-
-    @Override
-    public Quantity<?> getArea() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

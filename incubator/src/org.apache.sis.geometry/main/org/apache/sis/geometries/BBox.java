@@ -16,14 +16,17 @@
  */
 package org.apache.sis.geometries;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.internal.shared.IndexedPoint;
+import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vectors;
@@ -127,9 +130,85 @@ public final class BBox extends GeneralEnvelope implements Geometry {
         return this.clone();
     }
 
+    /**
+     * Returns the boundary of this box: its two end points in 1 dimension, a counterclockwise ring
+     * in 2 dimensions, or its six faces oriented outward in 3 dimensions. An empty box has an empty
+     * boundary.
+     *
+     * @throws UnsupportedOperationException if this box has more than 3 dimensions.
+     */
     @Override
     public Geometry getBoundary() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        final int dim = getDimension();
+        CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
+        if (crs == null) {
+            crs = Geometries.getUndefinedCRS(dim);
+        }
+        final GeometryFactory factory = GeometryFactory.DEFAULT;
+        if (isEmpty()) {
+            return factory.createEmpty(crs);
+        }
+        switch (dim) {
+            case 1: {
+                return factory.createMultiPoint(crs, factory.createPoint(crs, getMinimum(0)),
+                                                     factory.createPoint(crs, getMaximum(0)));
+            }
+            case 2: {
+                final double xmin = getMinimum(0), xmax = getMaximum(0);
+                final double ymin = getMinimum(1), ymax = getMaximum(1);
+                return factory.createLinearRing(factory.createDataPoints(NDArrays.of(SampleSystem.of(crs),
+                        xmin, ymin,  xmax, ymin,  xmax, ymax,  xmin, ymax,  xmin, ymin)));
+            }
+            case 3: {
+                final var corners = new Vector<?>[8];
+                for (int i = 0; i < corners.length; i++) {
+                    final Vector<?> corner = Vectors.create(crs, DataType.DOUBLE);
+                    for (int k = 0; k < 3; k++) {
+                        corner.set(k, ((i & (1 << k)) != 0) ? getMaximum(k) : getMinimum(k));
+                    }
+                    corners[i] = corner;
+                }
+                return boxFaces(crs, corners, false);
+            }
+            default: {
+                throw new UnsupportedOperationException("The boundary of a box is computed in 3 dimensions at most.");
+            }
+        }
+    }
+
+    /**
+     * Returns the six faces of a 3-dimensional box, each one a quadrilateral whose vertices are in
+     * counterclockwise order when seen from outside the box, so that its up-normal points outward.
+     *
+     * @param  crs      reference system of the corners.
+     * @param  corners  the 8 corners of the box. The corner at index <var>i</var> is on the upper side
+     *                  of the box axis <var>k</var> if the bit <var>k</var> of <var>i</var> is set.
+     * @param  reverse  whether the box axes are a left-handed system, which reverses the orientation.
+     * @return the six faces of the box.
+     */
+    static GeometryCollection<Polygon> boxFaces(final CoordinateReferenceSystem crs,
+            final ReadOnly.Vector<?>[] corners, final boolean reverse)
+    {
+        final int[][] faces = {
+            {0, 4, 6, 2},   // Lower side of axis 0.
+            {1, 3, 7, 5},   // Upper side of axis 0.
+            {0, 1, 5, 4},   // Lower side of axis 1.
+            {2, 6, 7, 3},   // Upper side of axis 1.
+            {0, 2, 3, 1},   // Lower side of axis 2.
+            {4, 5, 7, 6}    // Upper side of axis 2.
+        };
+        final GeometryFactory factory = GeometryFactory.DEFAULT;
+        final var polygons = new Polygon[faces.length];
+        for (int f = 0; f < faces.length; f++) {
+            final var ring = new ArrayList<ReadOnly.Vector<?>>(5);
+            for (int k = 0; k < 4; k++) {
+                ring.add(corners[faces[f][reverse ? 3 - k : k]]);
+            }
+            ring.add(ring.get(0));
+            polygons[f] = factory.createPolygon(factory.createLinearRing(factory.createDataPoints(
+                    NDArrays.of(ring, SampleSystem.of(crs), DataType.DOUBLE))), null);
+        }
+        return factory.createMultiPolygon(crs, polygons);
     }
 
     @Override

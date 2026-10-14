@@ -28,6 +28,7 @@ import org.apache.sis.geometries.surface.Cylinder;
 import org.apache.sis.geometries.surface.ParametricCurveSurface;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
+import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Quantities;
 
@@ -266,13 +267,13 @@ public sealed interface Surface extends Orientable
      * Positions used to build the geometry of this surface, the way they are used depending on the interpolation.
      * Control points do not necessarily lie on the surface.
      *
-     * @return surface control points, possibly empty.
+     * @return surface control points, or {@code null} if none.
      *
      * @see ISO 19107:2019 - 6.4.25.9
      */
     @UML(identifier="controlPoint", specification=ISO_19107)
-    default List<DirectPosition> getControlPoints() {
-        return List.of();
+    default Array getControlPoints() {
+        return null;
     }
 
     /**

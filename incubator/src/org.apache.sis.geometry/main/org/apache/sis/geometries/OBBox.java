@@ -141,9 +141,21 @@ public final class OBBox extends AbstractGeometry {
         return env;
     }
 
+    /**
+     * Returns the six faces of this box, oriented outward.
+     */
     @Override
     public Geometry getBoundary() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        final var corners = new Vector<?>[8];
+        for (int i = 0; i < corners.length; i++) {
+            final Vector<?> corner = center.copy();
+            corner.add(((i & 1) != 0) ? xAxis : xAxis.copy().scale(-1));
+            corner.add(((i & 2) != 0) ? yAxis : yAxis.copy().scale(-1));
+            corner.add(((i & 4) != 0) ? zAxis : zAxis.copy().scale(-1));
+            corners[i] = corner;
+        }
+        final boolean leftHanded = xAxis.dot(yAxis.cross(zAxis)) < 0;
+        return BBox.boxFaces(getCoordinateReferenceSystem(), corners, leftHanded);
     }
 
     /**

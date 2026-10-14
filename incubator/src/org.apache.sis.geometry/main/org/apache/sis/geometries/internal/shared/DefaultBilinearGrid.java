@@ -28,6 +28,7 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.surface.BilinearGrid;
+import org.apache.sis.maths.Array;
 
 
 /**
@@ -44,9 +45,9 @@ public non-sealed class DefaultBilinearGrid extends AbstractGeometry implements 
     protected final DataPoints points;
 
     /**
-     * Control points of the section curves, in row-major order, or an empty list if none.
+     * Control points of the section curves, in row-major order, or {@code null} if none.
      */
-    protected final List<DirectPosition> controlPoints;
+    protected final Array controlPoints;
 
     /**
      * Number of rows in the parameter grid.
@@ -75,11 +76,11 @@ public non-sealed class DefaultBilinearGrid extends AbstractGeometry implements 
      * @param  columns        number of columns in the parameter grid.
      * @param  knots          knot values, one sequence per surface parameter, or {@code null} if none.
      */
-    public DefaultBilinearGrid(final DataPoints points, final List<DirectPosition> controlPoints,
+    public DefaultBilinearGrid(final DataPoints points, final Array controlPoints,
             final int rows, final int columns, final List<double[]> knots)
     {
         this.points        = Objects.requireNonNull(points);
-        this.controlPoints = (controlPoints == null) ? List.of() : List.copyOf(controlPoints);
+        this.controlPoints = controlPoints;
         this.rows          = rows;
         this.columns       = columns;
         this.knots         = (knots == null) ? List.of() : List.copyOf(knots);
@@ -101,7 +102,7 @@ public non-sealed class DefaultBilinearGrid extends AbstractGeometry implements 
     }
 
     @Override
-    public List<DirectPosition> getControlPoints() {
+    public Array getControlPoints() {
         return controlPoints;
     }
 
@@ -166,9 +167,13 @@ public non-sealed class DefaultBilinearGrid extends AbstractGeometry implements 
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Returns the envelope of the grid points. Each cell is a bilinear interpolation of its four
+     * corners with positive weights, so it stays inside the box of those corners.
+     */
     @Override
     public Envelope getEnvelope() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return points.isEmpty() ? null : points.getEnvelope();
     }
 
     @Override
