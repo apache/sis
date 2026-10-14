@@ -67,14 +67,79 @@ public class ToPrimitiveTest {
 
     @Test
     public void testPolygon() {
-        final Array positions = NDArrays.of(CRS2D, new double[]{0,1,2,3});
-        final DataPoints points = GeometryFactory.DEFAULT.createDataPoints(positions);
-        final LinearRing exterior = GeometryFactory.DEFAULT.createLinearRing(points);
-        final Polygon point = GeometryFactory.DEFAULT.createPolygon(exterior, null);
-        final Geometry result = new GeometryProcessor().toPrimitive(point);
+        final LinearRing exterior = ring(0,0, 2,0, 2,2, 0,2, 0,0);
+        final Polygon polygon = GeometryFactory.DEFAULT.createPolygon(exterior, null);
+        final Geometry result = new GeometryProcessor().toPrimitive(polygon);
         assertTrue(result instanceof MeshPrimitive);
         final MeshPrimitive primitive = (MeshPrimitive) result;
         assertEquals(MeshPrimitive.Type.TRIANGLES, primitive.getType());
+        assertEquals(6, primitive.getPositions().getLength(), "Expected 2 triangles.");
+        assertEquals(4, trianglesArea(primitive), 1E-12);
+    }
+
+    /**
+     * Tests the triangulation of a polygon with a hole, which requires to cut the exterior
+     * ring toward the hole. The triangles shall cover the polygon area without the hole.
+     */
+    @Test
+    public void testPolygonWithHole() {
+        final LinearRing exterior = ring(0,0, 10,0, 10,10, 0,10, 0,0);
+        final LinearRing hole     = ring(2,2, 2,4, 4,4, 4,2, 2,2);
+        final Polygon polygon = GeometryFactory.DEFAULT.createPolygon(exterior, java.util.List.of(hole));
+        final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(polygon);
+        assertEquals(MeshPrimitive.Type.TRIANGLES, primitive.getType());
+        assertEquals(96, trianglesArea(primitive), 1E-9);
+    }
+
+    /**
+     * Same test as {@link #testPolygonWithHole()}, with the hole ring starting at a point which is
+     * not its leftmost one. The cut toward the hole shall still start from the leftmost point.
+     */
+    @Test
+    public void testPolygonWithHoleStartingAnywhere() {
+        final LinearRing exterior = ring(0,0, 10,0, 10,10, 0,10, 0,0);
+        final LinearRing hole     = ring(4,4, 4,2, 2,2, 2,4, 4,4);
+        final Polygon polygon = GeometryFactory.DEFAULT.createPolygon(exterior, java.util.List.of(hole));
+        final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(polygon);
+        assertEquals(96, trianglesArea(primitive), 1E-9);
+    }
+
+    /**
+     * Tests the triangulation of a three-dimensional polygon, which shall keep the z coordinates.
+     */
+    @Test
+    public void testPolygon3D() {
+        final LinearRing exterior = GeometryFactory.DEFAULT.createLinearRing(GeometryFactory.DEFAULT.createDataPoints(
+                NDArrays.of(CommonCRS.WGS84.geographic3D(), 0,0,5, 2,0,5, 2,2,7, 0,2,7, 0,0,5)));
+        final Polygon polygon = GeometryFactory.DEFAULT.createPolygon(exterior, null);
+        final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(polygon);
+        assertEquals(MeshPrimitive.Type.TRIANGLES, primitive.getType());
+        assertEquals(3, primitive.getPositions().getDimension());
+        assertEquals(6, primitive.getPositions().getLength(), "Expected 2 triangles.");
+        final double[] c = primitive.getPositions().toArrayDouble();
+        for (int i = 0; i < c.length; i += 3) {
+            assertEquals(c[i+1] == 0 ? 5 : 7, c[i+2], "z shall follow the polygon plane.");
+        }
+    }
+
+    /**
+     * Creates a ring in the two-dimensional test CRS.
+     */
+    private static LinearRing ring(final double... coordinates) {
+        return GeometryFactory.DEFAULT.createLinearRing(
+                GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(CRS2D, coordinates)));
+    }
+
+    /**
+     * Returns the sum of the areas of the triangles of the given non-indexed mesh.
+     */
+    private static double trianglesArea(final MeshPrimitive primitive) {
+        final double[] c = primitive.getPositions().toArrayDouble();
+        double area = 0;
+        for (int i = 0; i + 5 < c.length; i += 6) {
+            area += Math.abs((c[i+2] - c[i]) * (c[i+5] - c[i+1]) - (c[i+4] - c[i]) * (c[i+3] - c[i+1])) / 2;
+        }
+        return area;
     }
 
     @Test

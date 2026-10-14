@@ -17,9 +17,12 @@
 package org.apache.sis.geometries.operation.triangulate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.LineString;
@@ -130,7 +133,9 @@ public class EarClipping {
     public MeshPrimitive.Triangles toMesh(Polygon polygon) {
         final List<Vector[]> list = triangulate(polygon);
 
-        final Array positions = NDArrays.of(polygon.getCoordinateReferenceSystem(), new double[list.size()*3*2]);
+        final CoordinateReferenceSystem crs = polygon.getCoordinateReferenceSystem();
+        final int dimension = crs.getCoordinateSystem().getDimension();
+        final Array positions = NDArrays.of(crs, new double[list.size()*3*dimension]);
         for (int i = 0, k = 0, n = list.size(); i < n; i++, k+=3) {
             final Vector[] t = list.get(i);
             positions.set(k+0, t[0]);
@@ -147,19 +152,23 @@ public class EarClipping {
     private void run(SimplePolygon part){
 
         //build a single geometry linking inner holes.
+        //the array stream reuses a single vector for all positions, so each one is copied.
         final List<Vector<?>> borderCoords = new ArrayList<>();
-        part.outter.getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION).stream(false).forEach(borderCoords::add);
+        part.outter.getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION).stream(false)
+                .map(Vector::copy).forEach(borderCoords::add);
         //sort inner holes by minimum x value
         orderHoles(part);
 
         //attach holes to the main geometry
         for(int i=0,n=part.inners.size();i<n;i++){
             //we must find the minimum x coordinate in the inner loop
-            final List<Vector<?>> loop = part.inners.get(i).getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION).stream(false).toList();
+            //copied for the same reason as the outer loop, in a mutable list since its last point is removed below.
+            final List<Vector<?>> loop = part.inners.get(i).getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION).stream(false)
+                    .map(Vector::copy).collect(Collectors.toCollection(ArrayList::new));
             int index = 0;
             Vector min = loop.get(index);
             for(int k=1,p=loop.size();k<p;k++){
-                Vector candidate = (Vector) loop.get(1);
+                Vector candidate = (Vector) loop.get(k);
                 if (candidate.get(0) < min.get(0)) {
                     min = candidate;
                     index = k;
@@ -304,8 +313,13 @@ public class EarClipping {
             if (!isConvex(i)){
                 //check it's not one of the current segment
                 if(i!=index && i!=indexNext && i!=indexPrevious){
+                    final double[] p = new double[]{coords[i].get(0),coords[i].get(1)};
+                    //a hole bridge duplicates its end points, a copy located on a triangle vertex does not block the ear
+                    if (Arrays.equals(p, a) || Arrays.equals(p, b) || Arrays.equals(p, c)) {
+                        continue;
+                    }
                     //check if it's in the segment triangle
-                    if(Maths.inTriangle(a, b, c, new double[]{coords[i].get(0),coords[i].get(1)})){
+                    if(Maths.inTriangle(a, b, c, p)){
                         return false;
                     }
                 }
