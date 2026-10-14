@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.geometries;
+package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.internal.shared.AbstractGeometry;
+import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.GeometryFactory;
+import org.apache.sis.geometries.curve.Ray;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 
 
 /**
- * A ray is a one direction infinite line.
- * It is build from a position and a direction.
+ * Default implementation of a ray, storing its start position in a {@code DataPoints}.
  *
- * @author Johann Sorel
+ * @author Johann Sorel (Geomatys)
  */
-public final class Ray extends AbstractGeometry{
+public non-sealed class DefaultRay extends AbstractGeometry implements Ray {
 
     /**
      * Must contain a single point.
@@ -46,7 +46,7 @@ public final class Ray extends AbstractGeometry{
      * @param  position   the position the ray starts from, not null.
      * @param  direction  the direction the ray extends toward, not null.
      */
-    public Ray(Vector<?> position, Vector<?> direction) {
+    public DefaultRay(Vector<?> position, Vector<?> direction) {
         points = GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(position.getSampleSystem(), position.getDataType(), 1));
         points.setPosition(0, position);
         this.direction = direction;
@@ -61,7 +61,7 @@ public final class Ray extends AbstractGeometry{
      * @param  direction  the direction the ray extends toward, not null.
      * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly one position.
      */
-    public Ray(DataPoints points, Vector<?> direction) {
+    public DefaultRay(DataPoints points, Vector<?> direction) {
         if (points.size() != 1) {
             throw new IllegalArgumentException("Ray sequence must contain one point");
         }
@@ -70,76 +70,28 @@ public final class Ray extends AbstractGeometry{
     }
 
     @Override
-    public GeometryType getGeometryType() {
-        return GeometryType.RAY;
-    }
-
-    @Override
-    public int getTopologicDimension() {
-        return 1;
-    }
-
     public DataPoints getDataPoints() {
         return points;
     }
 
+    @Override
     public ReadOnly.Vector<?> getPosition() {
         return points.getPosition(0);
     }
 
+    @Override
     public void setPosition(ReadOnly.Vector<?> position) {
         points.setPosition(0, position);
     }
 
+    @Override
     public ReadOnly.Vector<?> getDirection() {
         return direction;
     }
 
+    @Override
     public void setDirection(ReadOnly.Vector<?> direction) {
         this.direction = direction.copy();
-    }
-
-    @Override
-    public BBox getEnvelope() {
-        final ReadOnly.Vector<?> position = getPosition();
-        final int dim = direction.getDimension();
-        final BBox bbox = new BBox(dim);
-        for (int i=0;i<dim;i++){
-            double d = direction.get(i);
-            if (d<0){
-                bbox.setRange(i, Double.NEGATIVE_INFINITY, position.get(i));
-            } else if (d>0){
-                bbox.setRange(i, position.get(i), Double.POSITIVE_INFINITY);
-            } else {
-                bbox.setRange(i, position.get(i), position.get(i));
-            }
-        }
-        return bbox;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return false;
-    }
-
-    @Override
-    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return points.getCoordinateReferenceSystem();
-    }
-
-    @Override
-    public Geometry getBoundary() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void setCoordinateReferenceSystem(CoordinateReferenceSystem crs) throws IllegalArgumentException {
-        points.setCoordinateReferenceSystem(crs);
-    }
-
-    @Override
-    public DataPointsType getDataPointsType() {
-        return points.getType();
     }
 
     @Override
@@ -150,7 +102,7 @@ public final class Ray extends AbstractGeometry{
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final Ray other = (Ray) obj;
+        final DefaultRay other = (DefaultRay) obj;
         if (!Objects.equals(this.points, other.points)) {
             return false;
         }

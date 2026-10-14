@@ -42,9 +42,6 @@ import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.util.ArgumentChecks;
 
-// Specific to the geoapi-4.0 branch:
-import org.opengis.metadata.Identifier;
-
 
 /**
  * An ellipsoid geometry defined by a center and one semi-axis length per axis of the coordinate
@@ -352,11 +349,6 @@ public final class Ellipsoid extends AbstractGeometry implements ParametricCurve
 
     @Override
     public DirectPosition getSurface(double u, double v) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Identifier getName() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

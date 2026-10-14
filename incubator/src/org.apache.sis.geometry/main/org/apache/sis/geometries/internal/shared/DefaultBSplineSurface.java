@@ -28,9 +28,6 @@ import org.apache.sis.geometries.curve.KnotType;
 import org.apache.sis.geometries.surface.BSplineSurface;
 import org.apache.sis.geometries.surface.BSplineSurfaceForm;
 
-// Specific to the geoapi-4.0 branch:
-import org.opengis.metadata.Identifier;
-
 
 /**
  * A rational or polynomial parametric surface represented by control points, b-spline basis
@@ -192,11 +189,6 @@ public non-sealed class DefaultBSplineSurface extends AbstractGeometry implement
 
     @Override
     public Geometry getBoundary() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Identifier getName() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

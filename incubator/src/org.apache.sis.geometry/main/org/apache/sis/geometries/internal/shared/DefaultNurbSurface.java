@@ -32,9 +32,6 @@ import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
 
-// Specific to the geoapi-4.0 branch:
-import org.opengis.metadata.Identifier;
-
 
 /**
  * NURBS surface: tensor product of two directions (u, v), each one with its own degree and its own knot vector.
@@ -382,11 +379,6 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
 
     @Override
     public DirectPosition getSurface(double u, double v) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Identifier getName() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

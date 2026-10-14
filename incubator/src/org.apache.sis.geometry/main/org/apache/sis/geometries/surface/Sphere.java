@@ -41,9 +41,6 @@ import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.util.ArgumentChecks;
 
-// Specific to the geoapi-4.0 branch:
-import org.opengis.metadata.Identifier;
-
 
 /**
  * A sphere geometry defined by a center and a radius.
@@ -280,11 +277,6 @@ public final class Sphere extends AbstractGeometry implements ParametricCurveSur
 
     @Override
     public DirectPosition getSurface(double u, double v) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Identifier getName() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

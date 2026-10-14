@@ -37,6 +37,7 @@ import org.apache.sis.geometries.curve.NurbCurve;
 import org.apache.sis.geometries.curve.OffsetCurve;
 import org.apache.sis.geometries.curve.PolynomialSpline;
 import org.apache.sis.geometries.curve.ProductCurve;
+import org.apache.sis.geometries.curve.Ray;
 import org.apache.sis.geometries.curve.Rhumb;
 import org.apache.sis.geometries.curve.Spiral;
 import org.apache.sis.geometries.curve.SplineCurve;

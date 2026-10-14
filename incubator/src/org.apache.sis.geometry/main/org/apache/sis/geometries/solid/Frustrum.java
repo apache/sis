@@ -89,9 +89,12 @@ public final class Frustrum extends AbstractGeometry {
         return ConcatenatedDataPoints.of(planes);
     }
 
+    /**
+     * Returns 3: a frustum is the volume enclosed by its planes.
+     */
     @Override
     public int getTopologicDimension() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return 3;
     }
 
 }

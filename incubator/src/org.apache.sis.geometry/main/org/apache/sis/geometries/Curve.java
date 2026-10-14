@@ -32,6 +32,7 @@ import org.apache.sis.geometries.curve.Line;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.OffsetCurve;
 import org.apache.sis.geometries.curve.ProductCurve;
+import org.apache.sis.geometries.curve.Ray;
 import org.apache.sis.geometries.curve.Rhumb;
 import org.apache.sis.geometries.curve.Spiral;
 import org.apache.sis.geometries.internal.shared.DefaultReversedCurve;
@@ -79,6 +80,7 @@ public sealed interface Curve extends Orientable
                 LineString,
                 OffsetCurve,
                 ProductCurve,
+                Ray,
                 Rhumb,
                 Spiral,
                 DefaultReversedCurve

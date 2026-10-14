@@ -103,19 +103,32 @@ public abstract sealed class AbstractPolyhedron extends AbstractGeometry impleme
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Returns {@code false}: a regular polyhedron always has faces.
+     */
     @Override
     public boolean isEmpty() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return false;
     }
 
+    /**
+     * Returns the faces of this polyhedron, in the order of their indices.
+     */
     @Override
     public GeometryCollection<Polygon> getExteriorShell() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        final Polygon[] faces = new Polygon[getFaceCount()];
+        for (int i = 0; i < faces.length; i++) {
+            faces[i] = getFace(i);
+        }
+        return GeometryFactory.DEFAULT.createMultiPolygon(faces);
     }
 
+    /**
+     * Returns an empty list: a regular polyhedron has no void.
+     */
     @Override
     public List<GeometryCollection<Polygon>> getInteriorShells() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return List.of();
     }
 
     /**

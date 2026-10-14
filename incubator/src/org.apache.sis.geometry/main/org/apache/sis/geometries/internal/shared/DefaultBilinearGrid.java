@@ -29,9 +29,6 @@ import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.surface.BilinearGrid;
 
-// Specific to the geoapi-4.0 branch:
-import org.opengis.metadata.Identifier;
-
 
 /**
  * A parametric curve surface using polylines as both horizontal and vertical curves, each cell of
@@ -176,11 +173,6 @@ public non-sealed class DefaultBilinearGrid extends AbstractGeometry implements 
 
     @Override
     public Geometry getBoundary() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Identifier getName() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

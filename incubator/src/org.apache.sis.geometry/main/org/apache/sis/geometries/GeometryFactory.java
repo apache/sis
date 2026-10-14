@@ -48,6 +48,7 @@ import org.apache.sis.geometries.curve.OffsetCurve;
 import org.apache.sis.geometries.curve.PolynomialSpline;
 import org.apache.sis.geometries.curve.ProductCurve;
 import org.apache.sis.geometries.curve.RealFunction;
+import org.apache.sis.geometries.curve.Ray;
 import org.apache.sis.geometries.curve.Rhumb;
 import org.apache.sis.geometries.curve.Spiral;
 import org.apache.sis.geometries.curve.SplineCurveForm;
@@ -84,6 +85,7 @@ import org.apache.sis.geometries.internal.shared.DefaultPolyhedron;
 import org.apache.sis.geometries.internal.shared.DefaultPolynomialSpline;
 import org.apache.sis.geometries.internal.shared.DefaultPrism;
 import org.apache.sis.geometries.internal.shared.DefaultProductCurve;
+import org.apache.sis.geometries.internal.shared.DefaultRay;
 import org.apache.sis.geometries.internal.shared.DefaultReversedCurve;
 import org.apache.sis.geometries.internal.shared.DefaultReversedSurface;
 import org.apache.sis.geometries.internal.shared.DefaultRhumb;
@@ -773,7 +775,7 @@ public final class GeometryFactory {
      * @return the ray starting from the given position.
      */
     public Ray createRay(Vector<?> position, Vector<?> direction) {
-        return new Ray(position, direction);
+        return new DefaultRay(position, direction);
     }
 
     /**
@@ -786,7 +788,7 @@ public final class GeometryFactory {
      * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly one position.
      */
     public Ray createRay(DataPoints points, Vector<?> direction) {
-        return new Ray(points, direction);
+        return new DefaultRay(points, direction);
     }
 
     /**

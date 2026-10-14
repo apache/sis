@@ -21,11 +21,15 @@ import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.ReferenceSystem;
+import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.SurfaceInterpolation;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.metadata.Identifier;
 
 
 /**
@@ -229,5 +233,15 @@ public sealed interface ParametricCurveSurface extends Surface, ReferenceSystem
     @UML(identifier="surface", specification=ISO_19107)
     DirectPosition getSurface(double u, double v);
 
+    /**
+     * Returns the name of this surface used as a reference system for its parameter space.
+     * The default implementation returns the name of the {@linkplain #getGeometryType() geometry type}.
+     *
+     * @return name of the parameter space of this surface.
+     */
+    @Override
+    default Identifier getName() {
+        return new NamedIdentifier(null, getGeometryType().name());
+    }
 
 }
