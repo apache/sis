@@ -21,17 +21,84 @@ import javax.measure.Quantity;
 import javax.measure.Unit;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Units;
 
 
 /**
- * Helper methods for locating positions at a distance along a curve.
+ * Helper methods for computations on curves, such as locating positions at a distance along a curve
+ * or measuring the area enclosed by a ring.
  *
  * @author Johann Sorel (Geomatys)
  */
 public final class Curves {
 
     private Curves() {
+    }
+
+    /**
+     * Returns the area enclosed by the given ring of positions.
+     *
+     * <ul>
+     *   <li>In 2 dimensions, the area is computed with the shoelace formula.</li>
+     *   <li>In 3 dimensions or more, the area is computed on the first three coordinates with Newell's
+     *       method: half the norm of the sum of the cross products of consecutive positions. This is
+     *       exact for a ring lying in a plane, in any orientation of that plane, and gives the area
+     *       projected on the best-fitting plane otherwise.</li>
+     * </ul>
+     *
+     * <p>The ring may repeat its first position at the end or not. The positions are taken relative
+     * to the first one, which avoids losing precision with large coordinate values.</p>
+     *
+     * @param  ring  positions of the ring, in order.
+     * @return the area enclosed by the ring, in the square of the unit of the coordinates.
+     */
+    public static double ringArea(final DataPoints ring) {
+        final int n = ring.size();
+        final int dim = ring.getDimension();
+        if (n < 3 || dim < 2) {
+            return 0;
+        }
+        final Vector<?> origin = ring.getPosition(0);
+        if (dim == 2) {
+            final double ox = origin.get(0);
+            final double oy = origin.get(1);
+            Vector<?> p = ring.getPosition(n - 1);
+            double ax = p.get(0) - ox;
+            double ay = p.get(1) - oy;
+            double sum = 0;
+            for (int i = 0; i < n; i++) {
+                p = ring.getPosition(i);
+                final double bx = p.get(0) - ox;
+                final double by = p.get(1) - oy;
+                sum += ax*by - ay*bx;
+                ax = bx;
+                ay = by;
+            }
+            return Math.abs(sum) / 2;
+        } else {
+            final double ox = origin.get(0);
+            final double oy = origin.get(1);
+            final double oz = origin.get(2);
+            Vector<?> p = ring.getPosition(n - 1);
+            double ax = p.get(0) - ox;
+            double ay = p.get(1) - oy;
+            double az = p.get(2) - oz;
+            double nx = 0, ny = 0, nz = 0;
+            for (int i = 0; i < n; i++) {
+                p = ring.getPosition(i);
+                final double bx = p.get(0) - ox;
+                final double by = p.get(1) - oy;
+                final double bz = p.get(2) - oz;
+                nx += ay*bz - az*by;
+                ny += az*bx - ax*bz;
+                nz += ax*by - ay*bx;
+                ax = bx;
+                ay = by;
+                az = bz;
+            }
+            return Math.sqrt(nx*nx + ny*ny + nz*nz) / 2;
+        }
     }
 
     /**

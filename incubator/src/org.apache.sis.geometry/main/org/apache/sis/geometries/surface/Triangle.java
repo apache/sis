@@ -25,10 +25,12 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.LinearRing;
+import org.apache.sis.geometries.internal.shared.Curves;
 import org.apache.sis.geometries.internal.shared.DefaultTriangle;
 import org.apache.sis.geometries.operation.simplify.greedyinsert.WTriangle;
 import org.apache.sis.geometries.operation.triangulate.delaunay.OrientedTriangle;
@@ -37,7 +39,6 @@ import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vector2D;
 import org.apache.sis.maths.Vector3D;
 import org.apache.sis.measure.Quantities;
-import org.apache.sis.measure.Units;
 
 
 /**
@@ -124,18 +125,13 @@ public sealed interface Triangle extends Polygon
         return env;
     }
 
+    /**
+     * Returns the area of this triangle, measured in its plane, which may have any orientation
+     * in a 3-dimensional space.
+     */
     @Override
     default Quantity<?> getArea() {
-        final DataPoints points = getExteriorRing().getDataPoints();
-        final Vector<?> a = points.getPosition(0);
-        final Vector<?> b = points.getPosition(1);
-        final Vector<?> c = points.getPosition(2);
-        final double area = (
-                      a.get(0) * (b.get(1) - c.get(1))
-                    + b.get(0) * (c.get(1) - a.get(1))
-                    + c.get(0) * (a.get(1) - b.get(1))
-                    ) / 2.0;
-        return Quantities.create(Math.abs(area), Units.SQUARE_METRE);
+        return Quantities.create(Curves.ringArea(getExteriorRing().getDataPoints()), Geometries.getAreaUnit(this));
     }
 
     /**
