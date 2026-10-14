@@ -18,12 +18,10 @@ package org.apache.sis.geometries.operation.triangulate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
@@ -31,7 +29,6 @@ import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.Vector2D;
 import org.apache.sis.maths.Vector;
 import static org.apache.sis.maths.Vectors.*;
 import org.apache.sis.util.ArraysExt;
@@ -47,14 +44,6 @@ import org.apache.sis.util.ArraysExt;
  */
 public class EarClipping {
 
-    private static final Comparator<Geometry> X_SORTER = new Comparator<Geometry>() {
-        public int compare(Geometry first, Geometry second) {
-            final double m1 = first.getEnvelope().getMinimum(0);
-            final double m2 = second.getEnvelope().getMinimum(0);
-            double d = m2-m1;
-            return (d<0) ? -1 : (d>0) ? +1 : 0;
-        }
-    };
     private static final class SimplePolygon{
         private LineString outter;
         private final List<LineString> inners = new ArrayList();
@@ -84,6 +73,14 @@ public class EarClipping {
      * 2 : concave
      */
     private int[] coordType;
+
+    /**
+     * Order of the coordinates used by the triangulation, as indices of the coordinates of the
+     * polygon: the triangulation works on the two first ones. The polygon is projected on the
+     * coordinate plane where it has its largest area, so that a vertical polygon is not degenerate.
+     * {@code null} if the polygon is triangulated in its (x,y) plane, without reordering.
+     */
+    private int[] axes;
 
     //current segment analyzed
     private int indexPrevious;
@@ -122,9 +119,79 @@ public class EarClipping {
             part.inners.add(inner);
         }
 
+        axes = workingAxes(geometry.getExteriorRing().getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION));
         run(part);
 
+        if (axes != null) {
+            //triangles share their vertices, so each one is restored in a new vector.
+            for (final Vector[] triangle : triangles) {
+                for (int i = 0; i < triangle.length; i++) {
+                    triangle[i] = fromWorking(triangle[i]);
+                }
+            }
+        }
         return triangles;
+    }
+
+    /**
+     * Returns the order of the coordinates to use for triangulating a polygon with the given positions,
+     * or {@code null} if the polygon can be triangulated in its (x,y) plane. The axis along which the
+     * normal of the polygon is the largest, computed with Newell's method, is moved after the two
+     * axes of the projection plane.
+     */
+    private static int[] workingAxes(final Array positions) {
+        final int dim = positions.getDimension();
+        if (dim < 3) {
+            return null;
+        }
+        final double[] c = positions.toArrayDouble();
+        final int n = c.length / dim;
+        double nx = 0, ny = 0, nz = 0;
+        for (int i = 0; i < n; i++) {
+            final int a = i * dim, b = ((i + 1) % n) * dim;
+            nx += (c[a+1] - c[b+1]) * (c[a+2] + c[b+2]);
+            ny += (c[a+2] - c[b+2]) * (c[a]   + c[b]);
+            nz += (c[a]   - c[b])   * (c[a+1] + c[b+1]);
+        }
+        nx = Math.abs(nx); ny = Math.abs(ny); nz = Math.abs(nz);
+        if (nz >= nx && nz >= ny) {
+            return null;
+        }
+        final int drop = (nx >= ny) ? 0 : 1;
+        final int[] axes = new int[dim];
+        int k = 0;
+        for (int i = 0; i < 3; i++) {
+            if (i != drop) axes[k++] = i;
+        }
+        axes[k++] = drop;
+        for (int i = 3; i < dim; i++) {
+            axes[k++] = i;
+        }
+        return axes;
+    }
+
+    /**
+     * Returns a copy of the given position with its coordinates in the order used by the triangulation.
+     */
+    private Vector<?> toWorking(final Vector<?> position) {
+        final Vector<?> copy = position.copy();
+        if (axes != null) {
+            for (int i = 0; i < axes.length; i++) {
+                copy.set(i, position.get(axes[i]));
+            }
+        }
+        return copy;
+    }
+
+    /**
+     * Returns a copy of the given position with its coordinates restored in the order of the polygon.
+     */
+    private Vector<?> fromWorking(final Vector<?> position) {
+        final Vector<?> copy = position.copy();
+        for (int i = 0; i < axes.length; i++) {
+            copy.set(axes[i], position.get(i));
+        }
+        return copy;
     }
 
     /**
@@ -155,16 +222,21 @@ public class EarClipping {
         //the array stream reuses a single vector for all positions, so each one is copied.
         final List<Vector<?>> borderCoords = new ArrayList<>();
         part.outter.getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION).stream(false)
-                .map(Vector::copy).forEach(borderCoords::add);
-        //sort inner holes by minimum x value
-        orderHoles(part);
+                .map(this::toWorking).forEach(borderCoords::add);
+
+        //copy the holes in the same way, in mutable lists since their last point is removed below,
+        //and sort them by decreasing minimum x value.
+        final List<List<Vector<?>>> holes = new ArrayList<>();
+        for (final LineString inner : part.inners) {
+            holes.add(inner.getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION).stream(false)
+                    .map(this::toWorking).collect(Collectors.toCollection(ArrayList::new)));
+        }
+        holes.sort(Comparator.comparingDouble((List<Vector<?>> h) ->
+                h.stream().mapToDouble((v) -> v.get(0)).min().orElse(Double.NaN)).reversed());
 
         //attach holes to the main geometry
-        for(int i=0,n=part.inners.size();i<n;i++){
+        for (final List<Vector<?>> loop : holes) {
             //we must find the minimum x coordinate in the inner loop
-            //copied for the same reason as the outer loop, in a mutable list since its last point is removed below.
-            final List<Vector<?>> loop = part.inners.get(i).getDataPoints().getAttributeArray(DataPointsType.ATT_POSITION).stream(false)
-                    .map(Vector::copy).collect(Collectors.toCollection(ArrayList::new));
             int index = 0;
             Vector min = loop.get(index);
             for(int k=1,p=loop.size();k<p;k++){
@@ -184,9 +256,20 @@ public class EarClipping {
             final int[] offset = new int[2];
             nearest(borderCoords, buffer1, line2, buffer2, ratio, offset, 0.000000001);
 
+            //the cut starts on the outter loop segment nearest to the hole. The point found above has only
+            //the two working coordinates, all coordinates are interpolated along that segment.
+            final Vector<?> start = borderCoords.get(offset[0]);
+            final Vector<?> end   = borderCoords.get(offset[0] + 1);
+            final double length = Math.hypot(end.get(0) - start.get(0), end.get(1) - start.get(1));
+            final double ratioAlong = (length > 0) ? Math.hypot(buffer1[0] - start.get(0), buffer1[1] - start.get(1)) / length : 0;
+            final Vector<?> bridge = start.copy();
+            for (int d = 0; d < bridge.getDimension(); d++) {
+                bridge.set(d, start.get(d) + ratioAlong * (end.get(d) - start.get(d)));
+            }
+
             //make a cut from outter loop to inner loop
             int insertIndex = offset[0]+1;
-            borderCoords.add(insertIndex, new Vector2D.Double(buffer1[0],buffer1[1]));
+            borderCoords.add(insertIndex, bridge);
             insertIndex++;
             //remove the duplicateion inner loop end point
             loop.remove(loop.size()-1);
@@ -196,7 +279,7 @@ public class EarClipping {
             for(int k=0;k<=index;k++,insertIndex++){
                 borderCoords.add(insertIndex,loop.get(k));
             }
-            borderCoords.add(insertIndex, new Vector2D.Double(buffer1[0],buffer1[1]));
+            borderCoords.add(insertIndex, bridge.copy());
 
         }
 
@@ -261,14 +344,6 @@ public class EarClipping {
             }
         }
     }
-
-    /**
-     * Sort inner holes by minimum x value.
-     */
-    private void orderHoles(SimplePolygon part){
-        Collections.sort(part.inners, X_SORTER);
-    }
-
 
     /**
      * @return true if  currentsegment is convex

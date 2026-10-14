@@ -123,6 +123,79 @@ public class ToPrimitiveTest {
     }
 
     /**
+     * Tests the triangulation of a vertical polygon with a hole: a wall with a window.
+     * The polygon is degenerate in the (x,y) plane, so it shall be triangulated in its own plane.
+     */
+    @Test
+    public void testVerticalPolygonWithHole() {
+        final CoordinateReferenceSystem crs = CommonCRS.WGS84.geographic3D();
+        final LinearRing exterior = ring3D(crs, 0,0,0, 6,0,0, 6,0,4, 0,0,4, 0,0,0);
+        final LinearRing window   = ring3D(crs, 2,0,1, 2,0,3, 4,0,3, 4,0,1, 2,0,1);
+        final Polygon polygon = GeometryFactory.DEFAULT.createPolygon(exterior, java.util.List.of(window));
+        final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(polygon);
+        assertEquals(20, trianglesArea3D(primitive), 1E-9);
+        final double[] c = primitive.getPositions().toArrayDouble();
+        for (int i = 1; i < c.length; i += 3) {
+            assertEquals(0, c[i], "y shall stay in the wall plane.");
+        }
+    }
+
+    /**
+     * Tests the triangulation of a vertical polygon in the (y,z) plane, which uses another order of
+     * coordinates than {@link #testVerticalPolygonWithHole()}. The x coordinate shall be restored.
+     */
+    @Test
+    public void testVerticalPolygonInYZPlane() {
+        final CoordinateReferenceSystem crs = CommonCRS.WGS84.geographic3D();
+        final LinearRing exterior = ring3D(crs, 3,0,0, 3,5,0, 3,5,2, 3,0,2, 3,0,0);
+        final Polygon polygon = GeometryFactory.DEFAULT.createPolygon(exterior, null);
+        final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(polygon);
+        assertEquals(10, trianglesArea3D(primitive), 1E-9);
+        final double[] c = primitive.getPositions().toArrayDouble();
+        for (int i = 0; i < c.length; i += 3) {
+            assertEquals(3, c[i], "x shall stay in the wall plane.");
+        }
+    }
+
+    /**
+     * Tests the triangulation of a horizontal three-dimensional polygon with a hole.
+     * The points added to cut the exterior ring toward the hole shall keep their z coordinate.
+     */
+    @Test
+    public void testPolygon3DWithHole() {
+        final CoordinateReferenceSystem crs = CommonCRS.WGS84.geographic3D();
+        final LinearRing exterior = ring3D(crs, 0,0,5, 10,0,5, 10,10,5, 0,10,5, 0,0,5);
+        final LinearRing hole     = ring3D(crs, 2,2,5, 2,4,5, 4,4,5, 4,2,5, 2,2,5);
+        final Polygon polygon = GeometryFactory.DEFAULT.createPolygon(exterior, java.util.List.of(hole));
+        final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(polygon);
+        assertEquals(96, trianglesArea3D(primitive), 1E-9);
+        final double[] c = primitive.getPositions().toArrayDouble();
+        for (int i = 2; i < c.length; i += 3) {
+            assertEquals(5, c[i], "z shall be preserved.");
+        }
+    }
+
+    private static LinearRing ring3D(final CoordinateReferenceSystem crs, final double... coordinates) {
+        return GeometryFactory.DEFAULT.createLinearRing(
+                GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(crs, coordinates)));
+    }
+
+    /**
+     * Returns the sum of the areas of the triangles of the given non-indexed three-dimensional mesh.
+     */
+    private static double trianglesArea3D(final MeshPrimitive primitive) {
+        final double[] c = primitive.getPositions().toArrayDouble();
+        double area = 0;
+        for (int i = 0; i + 8 < c.length; i += 9) {
+            final double ux = c[i+3] - c[i], uy = c[i+4] - c[i+1], uz = c[i+5] - c[i+2];
+            final double vx = c[i+6] - c[i], vy = c[i+7] - c[i+1], vz = c[i+8] - c[i+2];
+            final double nx = uy*vz - uz*vy, ny = uz*vx - ux*vz, nz = ux*vy - uy*vx;
+            area += Math.sqrt(nx*nx + ny*ny + nz*nz) / 2;
+        }
+        return area;
+    }
+
+    /**
      * Creates a ring in the two-dimensional test CRS.
      */
     private static LinearRing ring(final double... coordinates) {
