@@ -19,6 +19,7 @@ package org.apache.sis.geometries;
 import javax.measure.Quantity;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.curve.ProductCurve;
 import org.apache.sis.geometries.internal.shared.ConcatenatedDataPoints;
@@ -141,6 +142,45 @@ public sealed interface GeometryCollection<T extends Geometry> extends Geometry
     @Override
     default boolean isEmpty() {
         return getNumGeometries() == 0;
+    }
+
+    /**
+     * Returns the largest topological dimension among the elements of this collection which contain
+     * the given position, or −1 if none of them contains it. If the given position is null, returns
+     * the {@linkplain #getTopologicDimension() largest dimension} among all elements.
+     *
+     * <p>Containment is tested with {@link Geometry#intersects(Geometry)}, which may be unsupported
+     * for some element types.</p>
+     *
+     * @param  point  position where to evaluate the dimension, or null for the whole collection.
+     * @return topological dimension at the given position.
+     *
+     * @see ISO 19107:2019 - 6.4.4.25
+     */
+    @Override
+    default int getDimension(DirectPosition point) {
+        if (point == null) {
+            return getTopologicDimension();
+        }
+        Point position = null;
+        int dimension = -1;
+        for (int i = 0, n = getNumGeometries(); i < n; i++) {
+            final Geometry element = getGeometryN(i);
+            if (element.getTopologicDimension() <= dimension) {
+                continue;       // Cannot increase the result, no need to test containment.
+            }
+            if (element instanceof GeometryCollection<?> aggregate) {
+                dimension = Math.max(dimension, aggregate.getDimension(point));
+            } else {
+                if (position == null) {
+                    position = GeometryFactory.DEFAULT.createPoint(getCoordinateReferenceSystem(), point.getCoordinates());
+                }
+                if (element.intersects(position)) {
+                    dimension = element.getTopologicDimension();
+                }
+            }
+        }
+        return dimension;
     }
 
     /**

@@ -20,6 +20,7 @@ import java.util.List;
 import javax.measure.Quantity;
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
+import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPoints;
@@ -154,6 +155,15 @@ public sealed interface ProductCurve extends Curve, GeometryCollection<Curve>
     @Override
     default boolean isClosed() {
         return Curve.super.isClosed();
+    }
+
+    /**
+     * Returns 1 whatever the position: a product curve is a curve, which has the same
+     * dimension at every interior position, even if it is also a collection of curves.
+     */
+    @Override
+    default int getDimension(DirectPosition point) {
+        return Curve.super.getDimension(point);
     }
 
 

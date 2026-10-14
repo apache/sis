@@ -38,7 +38,7 @@ public non-sealed class DefaultPolyhedralSurface<T extends Polygon> extends Abst
 
     /**
      * The coordinate reference system to report when this surface has no patch.
-     * Ignored otherwise, in which case the first patch is authoritative. May be {@code null}.
+     * Ignored otherwise, in which case the first patch is authoritative. Never null.
      */
     private CoordinateReferenceSystem fallbackCRS;
 

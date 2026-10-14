@@ -215,7 +215,12 @@ public sealed interface Geometry
              */
             return getTopologicDimension();
         }
-        throw new UnsupportedOperationException();
+        /*
+         * A geometry which is not an aggregate is homogeneous: it has the same dimension at every
+         * interior position. Aggregates, which may mix components of different dimensions,
+         * override this method.
+         */
+        return getTopologicDimension();
     }
 
     /**
@@ -525,8 +530,7 @@ public sealed interface Geometry
      */
     @UML(identifier="isCycle", specification=ISO_19107)
     default boolean isCycle() {
-        //TODO remove this method default when all classes implement it.
-        throw new UnsupportedOperationException();
+        return getBoundary().isEmpty();
     }
 
     /**

@@ -38,7 +38,7 @@ public non-sealed class DefaultGeometryCollection<T extends Geometry> extends Ab
     /**
      * The coordinate reference system to report when this collection is empty.
      * Ignored when at least one geometry is present, in which case the first
-     * geometry is authoritative. May be {@code null}.
+     * geometry is authoritative. Never null.
      */
     private CoordinateReferenceSystem fallbackCRS;
 
