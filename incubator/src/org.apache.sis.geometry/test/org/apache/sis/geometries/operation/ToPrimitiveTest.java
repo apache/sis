@@ -175,6 +175,45 @@ public class ToPrimitiveTest {
         }
     }
 
+    /**
+     * Tests the conversion of a TIN, which shall give a single mesh of all its triangles.
+     */
+    @Test
+    public void testTIN() {
+        final CoordinateReferenceSystem crs = CommonCRS.WGS84.geographic3D();
+        final GeometryFactory f = GeometryFactory.DEFAULT;
+        final org.apache.sis.geometries.surface.TIN tin = f.createTIN(crs, new org.apache.sis.geometries.surface.Triangle[] {
+            f.createTriangle(ring3D(crs, 0,0,0, 2,0,0, 0,2,1, 0,0,0)),
+            f.createTriangle(ring3D(crs, 2,0,0, 2,2,1, 0,2,1, 2,0,0))});
+        final Geometry result = new GeometryProcessor().toPrimitive(tin);
+        assertTrue(result instanceof MeshPrimitive.Triangles);
+        final MeshPrimitive primitive = (MeshPrimitive) result;
+        assertEquals(3, primitive.getPositions().getDimension());
+        assertEquals(6, primitive.getPositions().getLength(), "Expected 2 triangles.");
+        assertEquals(2 * Math.sqrt(5), trianglesArea3D(primitive), 1E-9);
+    }
+
+    /**
+     * Tests the conversion of a polyhedral surface made of the five faces of an open box,
+     * including vertical ones. All faces shall be triangulated in a single mesh.
+     */
+    @Test
+    public void testPolyhedralSurface() {
+        final CoordinateReferenceSystem crs = CommonCRS.WGS84.geographic3D();
+        final GeometryFactory f = GeometryFactory.DEFAULT;
+        final Polygon[] faces = {
+            f.createPolygon(ring3D(crs, 0,0,0, 0,0,2, 0,2,2, 0,2,0, 0,0,0), null),
+            f.createPolygon(ring3D(crs, 2,0,0, 2,2,0, 2,2,2, 2,0,2, 2,0,0), null),
+            f.createPolygon(ring3D(crs, 0,0,0, 2,0,0, 2,0,2, 0,0,2, 0,0,0), null),
+            f.createPolygon(ring3D(crs, 0,2,0, 0,2,2, 2,2,2, 2,2,0, 0,2,0), null),
+            f.createPolygon(ring3D(crs, 0,0,0, 0,2,0, 2,2,0, 2,0,0, 0,0,0), null)};
+        final Geometry result = new GeometryProcessor().toPrimitive(f.createPolyhedralSurface(crs, faces));
+        assertTrue(result instanceof MeshPrimitive.Triangles);
+        final MeshPrimitive primitive = (MeshPrimitive) result;
+        assertEquals(30, primitive.getPositions().getLength(), "Expected 2 triangles per face.");
+        assertEquals(20, trianglesArea3D(primitive), 1E-9);
+    }
+
     private static LinearRing ring3D(final CoordinateReferenceSystem crs, final double... coordinates) {
         return GeometryFactory.DEFAULT.createLinearRing(
                 GeometryFactory.DEFAULT.createDataPoints(NDArrays.of(crs, coordinates)));

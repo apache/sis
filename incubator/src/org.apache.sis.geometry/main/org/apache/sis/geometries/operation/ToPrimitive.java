@@ -16,9 +16,12 @@
  */
 package org.apache.sis.geometries.operation;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
@@ -30,8 +33,10 @@ import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.operation.triangulate.EarClipping;
 import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -82,6 +87,36 @@ public final class ToPrimitive {
     public static MeshPrimitive.Triangles toPrimitive(Polygon geometry) throws OperationException {
         //we must triangulate it
         return new EarClipping().toMesh(geometry);
+    }
+
+    /**
+     * Transform PolyhedralSurface, including TIN, to Primitive.
+     * Each patch is triangulated and all triangles are merged in a single non-indexed mesh.
+     */
+    public static MeshPrimitive.Triangles toPrimitive(PolyhedralSurface<?> geometry) throws OperationException {
+        final CoordinateReferenceSystem crs = geometry.getCoordinateReferenceSystem();
+        final int dimension = crs.getCoordinateSystem().getDimension();
+        final EarClipping triangulator = new EarClipping();
+        final List<double[]> triangles = new ArrayList<>();
+        for (int i = 0, n = geometry.getNumPatches(); i < n; i++) {
+            //the returned list is reused by the next call, so the coordinates are copied now.
+            for (final Vector<?>[] triangle : triangulator.triangulate(geometry.getPatchN(i))) {
+                final double[] coordinates = new double[3 * dimension];
+                for (int v = 0; v < 3; v++) {
+                    for (int d = 0; d < dimension; d++) {
+                        coordinates[v * dimension + d] = triangle[v].get(d);
+                    }
+                }
+                triangles.add(coordinates);
+            }
+        }
+        final double[] positions = new double[triangles.size() * 3 * dimension];
+        for (int i = 0; i < triangles.size(); i++) {
+            System.arraycopy(triangles.get(i), 0, positions, i * 3 * dimension, 3 * dimension);
+        }
+        final MeshPrimitive.Triangles primitive = new MeshPrimitive.Triangles();
+        primitive.setPositions(NDArrays.of(crs, positions));
+        return primitive;
     }
 
     /**

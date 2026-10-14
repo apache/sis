@@ -38,6 +38,7 @@ import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.geometries.surface.Triangle;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
@@ -481,6 +482,9 @@ public final class GeometryProcessor {
         } else if (geom instanceof LineString cdt) {
             return ToPrimitive.toPrimitive(cdt);
         } else if (geom instanceof Polygon cdt) {
+            return ToPrimitive.toPrimitive(cdt);
+        } else if (geom instanceof PolyhedralSurface<?> cdt) {
+            //also handles TIN, which is a polyhedral surface of triangles.
             return ToPrimitive.toPrimitive(cdt);
         } else if (geom instanceof GeometryCollection<?> cdt) {
             final GeometryType elementType = cdt.getElementType();
