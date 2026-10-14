@@ -61,6 +61,7 @@ import org.apache.sis.geometries.internal.shared.DefaultBSplineCurve;
 import org.apache.sis.geometries.internal.shared.DefaultBSplineSurface;
 import org.apache.sis.geometries.internal.shared.DefaultBezier;
 import org.apache.sis.geometries.internal.shared.DefaultBilinearGrid;
+import org.apache.sis.geometries.internal.shared.DefaultCapsule;
 import org.apache.sis.geometries.internal.shared.DefaultCircle;
 import org.apache.sis.geometries.internal.shared.DefaultCircularString;
 import org.apache.sis.geometries.internal.shared.DefaultClothoid;
@@ -68,6 +69,8 @@ import org.apache.sis.geometries.internal.shared.DefaultCompoundCurve;
 import org.apache.sis.geometries.internal.shared.DefaultConic;
 import org.apache.sis.geometries.internal.shared.DefaultCubicSpline;
 import org.apache.sis.geometries.internal.shared.DefaultCurvePolygon;
+import org.apache.sis.geometries.internal.shared.DefaultCylinder;
+import org.apache.sis.geometries.internal.shared.DefaultEllipsoid;
 import org.apache.sis.geometries.internal.shared.DefaultEllipticArc;
 import org.apache.sis.geometries.internal.shared.DefaultEmpty;
 import org.apache.sis.geometries.internal.shared.DefaultGeodesic;
@@ -90,9 +93,12 @@ import org.apache.sis.geometries.internal.shared.DefaultReversedCurve;
 import org.apache.sis.geometries.internal.shared.DefaultReversedSurface;
 import org.apache.sis.geometries.internal.shared.DefaultRhumb;
 import org.apache.sis.geometries.internal.shared.DefaultSolid;
+import org.apache.sis.geometries.internal.shared.DefaultSphere;
 import org.apache.sis.geometries.internal.shared.DefaultSpiral;
 import org.apache.sis.geometries.internal.shared.DefaultTriangle;
 import org.apache.sis.geometries.internal.shared.DefaultTriangulatedSurface;
+import org.apache.sis.geometries.surface.Capsule;
+import org.apache.sis.geometries.surface.Cylinder;
 import org.apache.sis.geometries.surface.Ellipsoid;
 import org.apache.sis.geometries.solid.Polyhedron;
 import org.apache.sis.geometries.surface.Sphere;
@@ -626,7 +632,7 @@ public final class GeometryFactory {
      * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly one position.
      */
     public Sphere createSphere(DataPoints points, double radius) {
-        return new Sphere(points, radius);
+        return new DefaultSphere(points, radius);
     }
 
     /**
@@ -643,7 +649,57 @@ public final class GeometryFactory {
      *         or if the number of semi-axes is not the number of dimensions.
      */
     public Ellipsoid createEllipsoid(DataPoints points, double... semiAxes) {
-        return new Ellipsoid(points, semiAxes);
+        return new DefaultEllipsoid(points, semiAxes);
+    }
+
+    /**
+     * Creates a capsule whose capping spheres are centered on the two given positions.
+     * The reference system of the capsule is the one of those positions.
+     *
+     * @param  bottom  the center of the bottom sphere, not null.
+     * @param  top     the center of the top sphere, not null.
+     * @return the capsule between the two given positions.
+     */
+    public Capsule createCapsule(Vector<?> bottom, Vector<?> top) {
+        return new DefaultCapsule(bottom, top);
+    }
+
+    /**
+     * Creates a capsule whose capping spheres are centered on the two positions of the given
+     * {@code DataPoints}. The {@code DataPoints} is taken as-is, so the caller may give the
+     * capsule the attributes carried by it.
+     *
+     * @param  points  the centers of the bottom and top spheres, in that order.
+     * @return the capsule between the two positions of the given {@code DataPoints}.
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly two positions.
+     */
+    public Capsule createCapsule(DataPoints points) {
+        return new DefaultCapsule(points);
+    }
+
+    /**
+     * Creates a cylinder along the axis joining the two given positions.
+     * The reference system of the cylinder is the one of those positions.
+     *
+     * @param  bottom  the center of the bottom circle, not null.
+     * @param  top     the center of the top circle, not null.
+     * @return the cylinder between the two given positions.
+     */
+    public Cylinder createCylinder(Vector<?> bottom, Vector<?> top) {
+        return new DefaultCylinder(bottom, top);
+    }
+
+    /**
+     * Creates a cylinder along the axis joining the two positions of the given {@code DataPoints}.
+     * The {@code DataPoints} is taken as-is, so the caller may give the cylinder the attributes
+     * carried by it.
+     *
+     * @param  points  the centers of the bottom and top circles, in that order.
+     * @return the cylinder between the two positions of the given {@code DataPoints}.
+     * @throws IllegalArgumentException if the given {@code DataPoints} does not hold exactly two positions.
+     */
+    public Cylinder createCylinder(DataPoints points) {
+        return new DefaultCylinder(points);
     }
 
     /**

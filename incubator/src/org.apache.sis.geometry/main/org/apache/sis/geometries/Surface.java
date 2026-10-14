@@ -22,7 +22,9 @@ import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometries.internal.shared.DefaultReversedSurface;
+import org.apache.sis.geometries.surface.Capsule;
 import org.apache.sis.geometries.surface.CurvePolygon;
+import org.apache.sis.geometries.surface.Cylinder;
 import org.apache.sis.geometries.surface.ParametricCurveSurface;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
@@ -66,7 +68,9 @@ import org.apache.sis.maths.Vector;
  */
 @UML(identifier="Surface", specification=ISO_19107)
 public sealed interface Surface extends Orientable
-        permits CurvePolygon,
+        permits Capsule,
+                CurvePolygon,
+                Cylinder,
                 ParametricCurveSurface,
                 Polygon,
                 PolyhedralSurface,

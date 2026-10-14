@@ -16,7 +16,7 @@
  */
 package org.apache.sis.geometries.spherical;
 
-import org.apache.sis.geometries.surface.Sphere;
+import org.apache.sis.geometries.internal.shared.DefaultSphere;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector3D;
 
@@ -44,18 +44,18 @@ public class GreatCircleArcTest {
      */
     @Test
     public void getLengthTest() {
-        final GreatCircleArc arc = new GreatCircleArc(new Sphere(3), a, b);
+        final GreatCircleArc arc = new GreatCircleArc(new DefaultSphere(3), a, b);
         assertEquals(Math.PI / 2, arc.getLength(), TOLERANCE);
 
-        final GreatCircleArc biggerArc = new GreatCircleArc(new Sphere(3, 2.0), a, b);
+        final GreatCircleArc biggerArc = new GreatCircleArc(new DefaultSphere(3, 2.0), a, b);
         assertEquals(Math.PI, biggerArc.getLength(), TOLERANCE);
 
         // arc between antipodal points spans half a great circle
-        final GreatCircleArc halfArc = new GreatCircleArc(new Sphere(3), a, new Vector3D.Double(-1, 0, 0));
+        final GreatCircleArc halfArc = new GreatCircleArc(new DefaultSphere(3), a, new Vector3D.Double(-1, 0, 0));
         assertEquals(Math.PI, halfArc.getLength(), TOLERANCE);
 
         // arc between a point and itself has no length
-        final GreatCircleArc emptyArc = new GreatCircleArc(new Sphere(3), a, a);
+        final GreatCircleArc emptyArc = new GreatCircleArc(new DefaultSphere(3), a, a);
         assertEquals(0, emptyArc.getLength(), TOLERANCE);
     }
 
@@ -65,7 +65,7 @@ public class GreatCircleArcTest {
      */
     @Test
     public void pointAtTest() {
-        final GreatCircleArc arc = new GreatCircleArc(new Sphere(3), a, b);
+        final GreatCircleArc arc = new GreatCircleArc(new DefaultSphere(3), a, b);
 
         assertArrayEquals(a.toArrayDouble(), arc.pointAt(0).toArrayDouble(), TOLERANCE);
         assertArrayEquals(b.toArrayDouble(), arc.pointAt(1).toArrayDouble(), TOLERANCE);
@@ -98,12 +98,12 @@ public class GreatCircleArcTest {
      */
     @Test
     public void pointAtDegenerateTest() {
-        final GreatCircleArc coincident = new GreatCircleArc(new Sphere(3), a, a);
+        final GreatCircleArc coincident = new GreatCircleArc(new DefaultSphere(3), a, a);
         assertArrayEquals(a.toArrayDouble(), coincident.pointAt(0.0).toArrayDouble(), TOLERANCE);
         assertArrayEquals(a.toArrayDouble(), coincident.pointAt(0.5).toArrayDouble(), TOLERANCE);
         assertArrayEquals(a.toArrayDouble(), coincident.pointAt(1.0).toArrayDouble(), TOLERANCE);
 
-        final GreatCircleArc antipodal = new GreatCircleArc(new Sphere(3), a, new Vector3D.Double(-1, 0, 0));
+        final GreatCircleArc antipodal = new GreatCircleArc(new DefaultSphere(3), a, new Vector3D.Double(-1, 0, 0));
         //the ends themselves are still well defined
         assertArrayEquals(a.toArrayDouble(), antipodal.pointAt(0.0).toArrayDouble(), TOLERANCE);
         assertThrows(IllegalArgumentException.class, () -> antipodal.pointAt(0.5));

@@ -26,6 +26,7 @@ import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.solid.Polyhedron;
 import org.apache.sis.geometries.spherical.SphericalConvexPolygon;
 import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.geometries.internal.shared.DefaultSphere;
 import org.apache.sis.geometries.surface.Sphere;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
@@ -192,7 +193,7 @@ public abstract sealed class AbstractPolyhedron extends AbstractGeometry impleme
      * @return matching face index, or -1 if none matched
      */
     protected static int nearestFace(Array vertices, int[][] faces, ReadOnly.Vector<?> unitVector) {
-        final Sphere sphere = new Sphere(3);
+        final Sphere sphere = new DefaultSphere(3);
         for (int f = 0; f < faces.length; f++) {
             final Array polyArray = NDArrays.subset(vertices, faces[f]);
             final SphericalConvexPolygon face = new SphericalConvexPolygon(sphere, polyArray);

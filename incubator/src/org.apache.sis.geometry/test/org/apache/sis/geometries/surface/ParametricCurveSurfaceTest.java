@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.GeometryTest;
+import org.apache.sis.geometries.internal.shared.DefaultSphere;
 
 
 /**
@@ -86,7 +87,7 @@ public class ParametricCurveSurfaceTest extends GeometryTest {
 
     @Test
     public void testGetTopologicDimension() {
-        final ParametricCurveSurface sphere = new Sphere(3);
+        final ParametricCurveSurface sphere = new DefaultSphere(3);
         assertEquals(2, sphere.getTopologicDimension());
     }
 
