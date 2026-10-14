@@ -21,7 +21,6 @@ import javax.measure.Quantity;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometry;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.GeometryCollection;
@@ -120,13 +119,4 @@ public non-sealed class DefaultSolid extends AbstractGeometry implements Solid {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
-    public List<DirectPosition> getControlPoints() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public List<double[]> getKnots() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 }

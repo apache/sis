@@ -19,7 +19,6 @@ package org.apache.sis.geometries.internal.shared;
 import java.util.List;
 import java.util.Objects;
 import javax.measure.Quantity;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.GeometryCollection;
@@ -99,13 +98,4 @@ public non-sealed class DefaultPolyhedron extends AbstractGeometry implements Po
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
-    public List<DirectPosition> getControlPoints() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public List<double[]> getKnots() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 }

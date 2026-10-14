@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.surface;
 
+import java.util.List;
 import static org.opengis.annotation.Specification.ISO_12113;
 import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -23,6 +24,7 @@ import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
+import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultCapsule;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.ReadOnly;
@@ -62,6 +64,15 @@ public sealed interface Capsule extends Surface
     @Override
     default boolean isEmpty() {
         return false;
+    }
+
+    /**
+     * Returns {@link SurfaceInterpolation#SPHERICAL} for the two hemispherical ends
+     * and {@link SurfaceInterpolation#CONIC} for the band joining them.
+     */
+    @Override
+    default List<SurfaceInterpolation> getInterpolation() {
+        return List.of(SurfaceInterpolation.SPHERICAL, SurfaceInterpolation.CONIC);
     }
 
     /**

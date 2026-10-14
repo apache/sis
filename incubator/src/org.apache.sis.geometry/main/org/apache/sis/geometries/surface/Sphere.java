@@ -88,6 +88,26 @@ public sealed interface Sphere extends ParametricCurveSurface
     }
 
     /**
+     * Returns {@link GeometryType#CIRCLE}: the horizontal curves are the circles of constant latitude.
+     *
+     * @see ISO 19107:2019 - 8.5.2
+     */
+    @Override
+    default GeometryType getHorizontalCurveType() {
+        return GeometryType.CIRCLE;
+    }
+
+    /**
+     * Returns {@link GeometryType#CIRCLE}: the vertical curves are the great circles of constant longitude.
+     *
+     * @see ISO 19107:2019 - 8.5.2
+     */
+    @Override
+    default GeometryType getVerticalCurveType() {
+        return GeometryType.CIRCLE;
+    }
+
+    /**
      * @return radius of the sphere.
      */
     double getRadius();

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.measure.Quantity;
@@ -322,24 +323,30 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
         return degree;
     }
 
+    /**
+     * Returns a copy of the knot vectors, the one of the <var>u</var> parameter first.
+     */
     @Override
     public List<double[]> getKnots() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return List.of(knotsU.clone(), knotsV.clone());
     }
 
+    /**
+     * Returns {@link KnotType#NON_UNIFORM}, the general case which makes no assumption
+     * on the spacing and multiplicity of the knots.
+     */
     @Override
     public KnotType getKnotSpec() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return KnotType.NON_UNIFORM;
     }
 
+    /**
+     * Returns {@link BSplineSurfaceForm#UNSPECIFIED}: this surface is not known to approximate
+     * any particular surface.
+     */
     @Override
     public BSplineSurfaceForm getSurfaceForm() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean isPolynomial() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return BSplineSurfaceForm.UNSPECIFIED;
     }
 
     @Override
@@ -347,19 +354,34 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Returns the number of control points along the <var>u</var> direction.
+     */
     @Override
     public int getRows() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return controlPoints.length;
     }
 
+    /**
+     * Returns the number of control points along the <var>v</var> direction.
+     */
     @Override
     public int getColumns() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return controlPoints[0].length;
     }
 
+    /**
+     * Returns views of the control points in row-major order, without their weights.
+     */
     @Override
     public List<DirectPosition> getControlPoints() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        final var positions = new ArrayList<DirectPosition>(getRows() * getColumns());
+        for (final Vector<?>[] row : controlPoints) {
+            for (final Vector<?> p : row) {
+                positions.add(Vectors.asDirectPostion(p));
+            }
+        }
+        return positions;
     }
 
     @Override

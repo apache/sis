@@ -24,6 +24,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
+import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.surface.CurvePolygon;
 
 
@@ -83,9 +84,17 @@ public non-sealed class DefaultCurvePolygon extends AbstractGeometry implements 
         return exterior.getEnvelope();
     }
 
+    /**
+     * Returns the exterior ring followed by the interior rings.
+     */
     @Override
     public Geometry getBoundary() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        final var rings = new Curve[interiors.size() + 1];
+        rings[0] = exterior;
+        for (int i = 1; i < rings.length; i++) {
+            rings[i] = interiors.get(i - 1);
+        }
+        return GeometryFactory.DEFAULT.createMultiCurve(getCoordinateReferenceSystem(), rings);
     }
 
     @Override

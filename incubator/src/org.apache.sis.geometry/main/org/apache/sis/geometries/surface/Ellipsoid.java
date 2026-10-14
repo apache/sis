@@ -84,6 +84,22 @@ public sealed interface Ellipsoid extends ParametricCurveSurface
     }
 
     /**
+     * Returns {@link GeometryType#ELLIPTICARC}: the horizontal curves are the ellipses of constant latitude.
+     */
+    @Override
+    default GeometryType getHorizontalCurveType() {
+        return GeometryType.ELLIPTICARC;
+    }
+
+    /**
+     * Returns {@link GeometryType#ELLIPTICARC}: the vertical curves are the ellipses of constant longitude.
+     */
+    @Override
+    default GeometryType getVerticalCurveType() {
+        return GeometryType.ELLIPTICARC;
+    }
+
+    /**
      * Returns a copy of the semi-axis lengths, one per axis of the coordinate system.
      * Writing in the returned array does not reshape this ellipsoid;
      * use {@link #setSemiAxes(double...)} for that.

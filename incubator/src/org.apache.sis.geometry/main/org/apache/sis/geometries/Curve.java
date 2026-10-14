@@ -297,8 +297,7 @@ public sealed interface Curve extends Orientable
      */
     @UML(identifier="interpolation", specification=ISO_19107)
     default CurveInterpolation getInterpolation() {
-        //TODO
-        throw new UnsupportedOperationException();
+        return CurveInterpolation.LINEAR;
     }
 
     /**

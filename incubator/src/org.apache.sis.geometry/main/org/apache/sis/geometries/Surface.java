@@ -88,6 +88,21 @@ public sealed interface Surface extends Orientable
     }
 
     /**
+     * Returns this surface with the opposite orientation, i.e. with its up-normal flipped.
+     *
+     * @see ISO 19107:2019 - 6.4.15.3
+     */
+    @Override
+    default Surface getReverse() {
+        /*
+         * A view of this surface carrying the opposite orientation sign, for the same reason as
+         * `Curve.getReverse()`: reversing changes no coordinate. `DefaultReversedSurface` returns
+         * this surface back from its own `getReverse()`, so wrapping never nests.
+         */
+        return GeometryFactory.DEFAULT.createReversed(this);
+    }
+
+    /**
      * The area of this Surface, as measured in the spatial reference system of this Surface.
      *
      * <p>TODO / Limitation: the area is computed as a planar area in the units of the coordinate
@@ -176,8 +191,7 @@ public sealed interface Surface extends Orientable
      */
     @UML(identifier="interpolation", specification=ISO_19107)
     default List<SurfaceInterpolation> getInterpolation() {
-        //TODO
-        throw new UnsupportedOperationException();
+        return List.of(SurfaceInterpolation.PLANAR);
     }
 
     /**
@@ -192,8 +206,7 @@ public sealed interface Surface extends Orientable
      */
     @UML(identifier="numDerivativesBoundary", specification=ISO_19107)
     default Integer getNumDerivativesBoundary() {
-        //TODO
-        throw new UnsupportedOperationException();
+        return 0;
     }
 
     /**
@@ -206,8 +219,7 @@ public sealed interface Surface extends Orientable
      */
     @UML(identifier="numDerivativeInterior", specification=ISO_19107)
     default Integer getNumDerivativeInterior() {
-        //TODO
-        throw new UnsupportedOperationException();
+        return 0;
     }
 
     /**
@@ -250,8 +262,7 @@ public sealed interface Surface extends Orientable
      */
     @UML(identifier="controlPoint", specification=ISO_19107)
     default List<DirectPosition> getControlPoints() {
-        //TODO
-        throw new UnsupportedOperationException();
+        return List.of();
     }
 
     /**
@@ -272,8 +283,7 @@ public sealed interface Surface extends Orientable
      */
     @UML(identifier="knot", specification=ISO_19107)
     default List<double[]> getKnots() {
-        //TODO
-        throw new UnsupportedOperationException();
+        return List.of();
     }
 
     /**

@@ -84,8 +84,7 @@ public sealed interface Orientable extends Primitive
      */
     @UML(identifier="proxy", specification=ISO_19107)
     default Orientable getProxy(){
-        //TODO
-        throw new UnsupportedOperationException();
+        return getReverse();
     }
 
     /**
@@ -97,8 +96,7 @@ public sealed interface Orientable extends Primitive
      */
     @UML(identifier="primitive", specification=ISO_19107)
     default Primitive getPrimitive(){
-        //TODO
-        throw new UnsupportedOperationException();
+        return this;
     }
 
     /**
@@ -112,9 +110,6 @@ public sealed interface Orientable extends Primitive
      */
     // called opposite on figure 16
     @UML(identifier="reverse", specification=ISO_19107)
-    default Orientable getReverse(){
-        //TODO
-        throw new UnsupportedOperationException();
-    }
+    Orientable getReverse();
 
 }

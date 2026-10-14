@@ -167,7 +167,7 @@ public sealed interface Solid extends Primitive
      */
     @UML(identifier="controlPoint", specification=ISO_19107)
     default List<DirectPosition> getControlPoints() {
-        throw new UnsupportedOperationException();
+        return List.of();
     }
 
     /**
@@ -180,7 +180,7 @@ public sealed interface Solid extends Primitive
      */
     @UML(identifier="interpolation", specification=ISO_19107)
     default SolidInterpolation getInterpolation() {
-        throw new UnsupportedOperationException();
+        return SolidInterpolation.NONE;
     }
 
     /**
@@ -200,7 +200,7 @@ public sealed interface Solid extends Primitive
      */
     @UML(identifier="knot", specification=ISO_19107)
     default List<double[]> getKnots() {
-        throw new UnsupportedOperationException();
+        return List.of();
     }
 
 }

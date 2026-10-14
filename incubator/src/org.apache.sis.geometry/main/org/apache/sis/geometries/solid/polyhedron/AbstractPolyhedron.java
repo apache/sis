@@ -99,9 +99,13 @@ public abstract sealed class AbstractPolyhedron extends AbstractGeometry impleme
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
+    /**
+     * Returns the {@linkplain #getExteriorShell() exterior shell}: a regular polyhedron has no void,
+     * so its faces are its whole boundary.
+     */
     @Override
     public GeometryCollection<? extends Surface> getBoundary() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getExteriorShell();
     }
 
     /**
