@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometries.operation;
 
+import java.util.List;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
@@ -26,6 +27,10 @@ import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.geometries.solid.Polyhedron;
+import org.apache.sis.geometries.solid.polyhedron.Hexahedron;
+import org.apache.sis.geometries.solid.polyhedron.Icosahedron;
+import org.apache.sis.geometries.solid.polyhedron.Tetrahedron;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.maths.NDArrays;
@@ -268,6 +273,65 @@ public class ToPrimitiveTest {
         final MeshPrimitive primitive = (MeshPrimitive) result;
         assertEquals(30, primitive.getPositions().getLength(), "Expected 2 triangles per face.");
         assertEquals(20, trianglesArea3D(primitive), 1E-9);
+    }
+
+    /**
+     * Returns the six faces of the cube between the given corners.
+     */
+    private static GeometryCollection<Polygon> cube(final CoordinateReferenceSystem crs,
+            final double x0, final double y0, final double z0, final double x1, final double y1, final double z1)
+    {
+        final GeometryFactory f = GeometryFactory.DEFAULT;
+        return f.createMultiPolygon(crs,
+            f.createPolygon(ring3D(crs, x0,y0,z0, x0,y0,z1, x0,y1,z1, x0,y1,z0, x0,y0,z0), null),
+            f.createPolygon(ring3D(crs, x1,y0,z0, x1,y1,z0, x1,y1,z1, x1,y0,z1, x1,y0,z0), null),
+            f.createPolygon(ring3D(crs, x0,y0,z0, x1,y0,z0, x1,y0,z1, x0,y0,z1, x0,y0,z0), null),
+            f.createPolygon(ring3D(crs, x0,y1,z0, x0,y1,z1, x1,y1,z1, x1,y1,z0, x0,y1,z0), null),
+            f.createPolygon(ring3D(crs, x0,y0,z0, x0,y1,z0, x1,y1,z0, x1,y0,z0, x0,y0,z0), null),
+            f.createPolygon(ring3D(crs, x0,y0,z1, x1,y0,z1, x1,y1,z1, x0,y1,z1, x0,y0,z1), null));
+    }
+
+    /**
+     * A polyhedron becomes the triangles of the faces of its shell.
+     */
+    @Test
+    public void testPolyhedron() {
+        final CoordinateReferenceSystem crs = CommonCRS.WGS84.geographic3D();
+        final Polyhedron cube = GeometryFactory.DEFAULT.createPolyhedron(cube(crs, 0,0,0, 2,2,2), List.of());
+        final Geometry result = new GeometryProcessor().toPrimitive(cube, null, null);
+        assertTrue(result instanceof MeshPrimitive.Triangles);
+        final MeshPrimitive primitive = (MeshPrimitive) result;
+        assertEquals(crs, primitive.getCoordinateReferenceSystem());
+        assertEquals(36, primitive.getPositions().getLength(), "Expected 2 triangles per face.");
+        assertEquals(24, trianglesArea3D(primitive), 1E-9);
+    }
+
+    /**
+     * The faces of the interior shells of a polyhedron are triangulated as well as the exterior ones.
+     */
+    @Test
+    public void testPolyhedronWithInteriorShell() {
+        final CoordinateReferenceSystem crs = CommonCRS.WGS84.geographic3D();
+        final Polyhedron hollow = GeometryFactory.DEFAULT.createPolyhedron(cube(crs, 0,0,0, 4,4,4), List.of(cube(crs, 1,1,1, 3,3,3)));
+        final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(hollow, null, null);
+        assertEquals(72, primitive.getPositions().getLength(), "Expected 2 triangles per face of both shells.");
+        assertEquals(96 + 24, trianglesArea3D(primitive), 1E-9);
+    }
+
+    /**
+     * The regular polyhedra compute their faces from shared vertices.
+     */
+    @Test
+    public void testRegularPolyhedron() {
+        for (final Polyhedron polyhedron : new Polyhedron[] {new Tetrahedron(), new Hexahedron(), new Icosahedron()}) {
+            final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(polyhedron, null, null);
+            double expected = 0;
+            final GeometryCollection<Polygon> shell = polyhedron.getExteriorShell();
+            for (int i = 0; i < shell.getNumGeometries(); i++) {
+                expected += shell.getGeometryN(i).getArea().getValue().doubleValue();
+            }
+            assertEquals(expected, trianglesArea3D(primitive), 1E-9, polyhedron.getClass().getSimpleName());
+        }
     }
 
     private static LinearRing ring3D(final CoordinateReferenceSystem crs, final double... coordinates) {

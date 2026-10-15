@@ -33,6 +33,7 @@ import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometries.operation.triangulate.EarClipping;
+import org.apache.sis.geometries.solid.Polyhedron;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.maths.Array;
@@ -95,13 +96,41 @@ public final class ToPrimitive {
      * Each patch is triangulated and all triangles are merged in a single non-indexed mesh.
      */
     public static MeshPrimitive.Triangles toPrimitive(PolyhedralSurface<?> geometry) throws OperationException {
-        final CoordinateReferenceSystem crs = geometry.getCoordinateReferenceSystem();
+        final List<Polygon> faces = new ArrayList<>();
+        for (int i = 0, n = geometry.getNumPatches(); i < n; i++) {
+            faces.add(geometry.getPatchN(i));
+        }
+        return triangles(geometry.getCoordinateReferenceSystem(), faces);
+    }
+
+    /**
+     * Transform a Polyhedron to a Triangles primitive.
+     * The faces of the exterior shell and of all the interior shells are triangulated together
+     * in a single mesh, each face keeping its orientation.
+     */
+    public static MeshPrimitive.Triangles toPrimitive(Polyhedron geometry) throws OperationException {
+        final List<Polygon> faces = new ArrayList<>();
+        final List<GeometryCollection<Polygon>> shells = new ArrayList<>();
+        shells.add(geometry.getExteriorShell());
+        shells.addAll(geometry.getInteriorShells());
+        for (final GeometryCollection<Polygon> shell : shells) {
+            for (int i = 0, n = shell.getNumGeometries(); i < n; i++) {
+                faces.add(shell.getGeometryN(i));
+            }
+        }
+        return triangles(geometry.getCoordinateReferenceSystem(), faces);
+    }
+
+    /**
+     * Triangulates the given polygons into a single mesh of triangles, without index.
+     */
+    private static MeshPrimitive.Triangles triangles(final CoordinateReferenceSystem crs, final List<Polygon> faces) {
         final int dimension = crs.getCoordinateSystem().getDimension();
         final EarClipping triangulator = new EarClipping();
         final List<double[]> triangles = new ArrayList<>();
-        for (int i = 0, n = geometry.getNumPatches(); i < n; i++) {
+        for (final Polygon face : faces) {
             //the returned list is reused by the next call, so the coordinates are copied now.
-            for (final Vector<?>[] triangle : triangulator.triangulate(geometry.getPatchN(i))) {
+            for (final Vector<?>[] triangle : triangulator.triangulate(face)) {
                 final double[] coordinates = new double[3 * dimension];
                 for (int v = 0; v < 3; v++) {
                     for (int d = 0; d < dimension; d++) {

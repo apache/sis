@@ -38,6 +38,7 @@ import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MeshPrimitiveVisitor;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
+import org.apache.sis.geometries.solid.Polyhedron;
 import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.geometries.surface.Triangle;
@@ -495,6 +496,8 @@ public final class GeometryProcessor {
             return ToPrimitive.toPrimitive(cdt);
         } else if (geom instanceof PolyhedralSurface<?> cdt) {
             //also handles TIN, which is a polyhedral surface of triangles.
+            return ToPrimitive.toPrimitive(cdt);
+        } else if (geom instanceof Polyhedron cdt) {
             return ToPrimitive.toPrimitive(cdt);
         } else if (geom instanceof GeometryCollection<?> cdt) {
             final GeometryType elementType = cdt.getElementType();
