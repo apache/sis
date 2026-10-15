@@ -16,9 +16,13 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import java.util.ArrayList;
+import javax.measure.Quantity;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.DataPoints;
+import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.curve.CircularString;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.Vector;
@@ -70,6 +74,24 @@ public non-sealed class DefaultCircularString extends AbstractGeometry implement
             start = end;
         }
         return envelope;
+    }
+
+    /**
+     * Returns a polyline whose points are on this circular string, including all its data points.
+     *
+     * @throws IllegalStateException if an arc is a full circle in more than two dimensions.
+     */
+    @Override
+    public LineString asLine(final Quantity<?> spacing, final Quantity<?> offset) {
+        final var pieces = new ArrayList<CurveLinearizer.Piece>();
+        for (int i = 2; i < points.size(); i += 2) {
+            pieces.add(CurveLinearizer.circularArc(points.getPosition(i - 2).copy(DataType.DOUBLE),
+                    points.getPosition(i - 1).copy(DataType.DOUBLE), points.getPosition(i).copy(DataType.DOUBLE), true));
+        }
+        if (pieces.isEmpty()) {
+            return GeometryFactory.DEFAULT.createLineString(points);
+        }
+        return CurveLinearizer.linearize(this, spacing, offset, pieces);
     }
 
 }

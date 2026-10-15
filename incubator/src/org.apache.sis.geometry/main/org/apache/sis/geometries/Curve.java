@@ -506,8 +506,7 @@ public sealed interface Curve extends Orientable
      */
     @UML(identifier="asLine", specification=ISO_19107)
     default LineString asLine(Quantity<?> spacing, Quantity<?> offset) {
-        //TODO
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Linear approximation of " + getGeometryType() + " curves is not supported yet.");
     }
 
     /**

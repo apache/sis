@@ -19,9 +19,11 @@ package org.apache.sis.geometries.internal.shared;
 import javax.measure.Quantity;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.Bezier;
 import org.apache.sis.geometries.curve.KnotType;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.SplineCurveForm;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Vector;
@@ -91,4 +93,14 @@ public non-sealed class DefaultBezier extends DefaultPolynomialSpline implements
         return new BSplineEvaluator(ctrl, null, BSplineEvaluator.bezierKnots(ctrl.size(), degree), degree);
     }
 
+    /**
+     * Returns a polyline whose points are on this curve, including the positions at the knots.
+     */
+    @Override
+    public LineString asLine(final Quantity<?> spacing, final Quantity<?> offset) {
+        if (isEmpty()) {
+            return GeometryFactory.DEFAULT.createLineString(points);
+        }
+        return evaluator().asLine(this, spacing, offset);
+    }
 }

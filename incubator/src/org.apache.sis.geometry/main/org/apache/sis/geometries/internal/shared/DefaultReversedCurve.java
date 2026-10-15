@@ -28,6 +28,7 @@ import org.apache.sis.geometries.Orientable;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.Primitive;
 import org.apache.sis.geometries.DataPointsType;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.maths.Array;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
@@ -153,5 +154,13 @@ public non-sealed class DefaultReversedCurve extends AbstractGeometry implements
     @Override
     public DataPoints getDataPoints() {
         return base.getDataPoints();
+    }
+
+    /**
+     * Returns the polyline of the base curve with its points in reverse order.
+     */
+    @Override
+    public LineString asLine(final Quantity<?> spacing, final Quantity<?> offset) {
+        return CurveLinearizer.reverse(this, base, spacing, offset);
     }
 }

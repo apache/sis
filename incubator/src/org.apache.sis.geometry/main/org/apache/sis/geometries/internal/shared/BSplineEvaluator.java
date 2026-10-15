@@ -23,16 +23,19 @@ import javax.measure.Quantity;
 import javax.measure.Unit;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.AttributeInterpolation;
+import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.operation.GaussLegendreQuadrature;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vectors;
 
 
 /**
@@ -252,6 +255,67 @@ final class BSplineEvaluator {
             }
         }
         return pointAt(u, k);
+    }
+
+    /**
+     * Returns the distinct knot values from the start to the end of the curve domain.
+     * The curve is a polynomial or rational function between two consecutive values.
+     */
+    double[] breakpoints() {
+        final double[] values = new double[last - degree + 2];
+        int n = 0;
+        for (int k = degree; k <= last + 1; k++) {
+            if (n == 0 || knots[k] > values[n - 1]) {
+                values[n++] = knots[k];
+            }
+        }
+        return Arrays.copyOf(values, n);
+    }
+
+    /**
+     * Returns a polyline whose points are on the curve, including the positions at the knots.
+     *
+     * @param  curve    the curve evaluated by this object.
+     * @param  spacing  maximal distance along the curve between two points, or zero or {@code null} for no limit.
+     * @param  offset   maximal distance between the curve and the polyline, or zero or {@code null} for no limit.
+     * @return the polyline approximating the curve.
+     */
+    LineString asLine(final Curve curve, final Quantity<?> spacing, final Quantity<?> offset) {
+        return CurveLinearizer.linearize(curve, spacing, offset,
+                List.of(new CurveLinearizer.Piece(this::position, breakpoints(), null)));
+    }
+
+    /**
+     * Returns the position of the curve at parameter {@code u}, without the other attributes.
+     *
+     * @param  u  the parameter, in the curve domain.
+     * @return the position at the given parameter.
+     */
+    Vector<?> position(final double u) {
+        int k = degree;
+        for (int i = degree; i <= last; i++) {
+            if (knots[i] < knots[i+1] && (u >= knots[i] || i == degree)) {
+                k = i;
+            }
+        }
+        final double[] R = new double[degree + 1];
+        basis(u, k, R, null);
+        final int dim = positions[0].length;
+        final double[] sum = new double[dim];
+        double W = 0;
+        for (int r = 0; r <= degree; r++) {
+            final int i = k - degree + r;
+            final double w = R[r] * weights[i];
+            W += w;
+            for (int c = 0; c < dim; c++) {
+                sum[c] += w * positions[i][c];
+            }
+        }
+        final Vector<?> position = Vectors.create(SampleSystem.of(controls.getCoordinateReferenceSystem()), DataType.DOUBLE);
+        for (int c = 0; c < dim; c++) {
+            position.set(c, sum[c] / W);
+        }
+        return position;
     }
 
     /**

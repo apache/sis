@@ -16,8 +16,11 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import javax.measure.Quantity;
+import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.EllipticArc;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.maths.Array;
 
 
@@ -38,6 +41,23 @@ public non-sealed class DefaultEllipticArc extends DefaultConic implements Ellip
      */
     public DefaultEllipticArc(final DataPoints points, final Array controlPoints, final boolean cycle) {
         super(points, controlPoints, cycle);
+    }
+
+    /**
+     * Not yet supported: the arcs of an ellipse are determined by four data points, not by the five
+     * data points of the arcs of a general conic.
+     */
+    @Override
+    public Envelope getEnvelope() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    /**
+     * Not yet supported, for the same reason as {@link #getEnvelope()}.
+     */
+    @Override
+    public LineString asLine(final Quantity<?> spacing, final Quantity<?> offset) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

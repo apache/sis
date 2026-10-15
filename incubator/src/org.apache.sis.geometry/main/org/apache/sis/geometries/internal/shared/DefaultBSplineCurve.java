@@ -23,10 +23,12 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.BSplineCurve;
 import org.apache.sis.geometries.curve.FunctionArc;
 import org.apache.sis.geometries.curve.KnotType;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.SplineCurveForm;
 import org.apache.sis.maths.Array;
 import org.apache.sis.measure.Quantities;
@@ -221,5 +223,16 @@ public non-sealed class DefaultBSplineCurve extends AbstractGeometry implements 
         final int count = ctrl.size();
         final double[] kn = (knots.length == count + degree + 1) ? knots : BSplineEvaluator.clampedKnots(count, degree, knots);
         return new BSplineEvaluator(ctrl, null, kn, degree);
+    }
+
+    /**
+     * Returns a polyline whose points are on this curve, including the positions at the knots.
+     */
+    @Override
+    public LineString asLine(final Quantity<?> spacing, final Quantity<?> offset) {
+        if (isEmpty()) {
+            return GeometryFactory.DEFAULT.createLineString(points);
+        }
+        return evaluator().asLine(this, spacing, offset);
     }
 }

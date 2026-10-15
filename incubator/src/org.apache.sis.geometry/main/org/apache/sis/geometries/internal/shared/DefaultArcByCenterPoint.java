@@ -16,13 +16,18 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import java.util.List;
+import java.util.function.DoubleFunction;
 import javax.measure.IncommensurableException;
+import javax.measure.Quantity;
 import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 
 
@@ -133,6 +138,29 @@ public non-sealed class DefaultArcByCenterPoint extends AbstractGeometry impleme
             }
         }
         return envelope;
+    }
+
+    /**
+     * Returns a polyline whose points are on this arc, from its start angle to its end angle.
+     *
+     * @throws UnsupportedOperationException if the radius unit cannot be converted to the unit of an axis.
+     */
+    @Override
+    public LineString asLine(final Quantity<?> spacing, final Quantity<?> offset) {
+        final ReadOnly.Vector<?> c = center.getPosition();
+        final double cx = c.get(0);
+        final double cy = c.get(1);
+        final double rx = radius(0);
+        final double ry = radius(1);
+        final DoubleFunction<Vector<?>> function = (angle) -> {
+            final double t = Math.toRadians(angle);
+            final Vector<?> position = c.copy(DataType.DOUBLE);
+            position.set(0, cx + rx * Math.cos(t));
+            position.set(1, cy + ry * Math.sin(t));
+            return position;
+        };
+        return CurveLinearizer.linearize(this, spacing, offset,
+                List.of(new CurveLinearizer.Piece(function, new double[] {startAngle, endAngle}, null)));
     }
 
     /**

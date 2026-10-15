@@ -23,7 +23,9 @@ import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometries;
+import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.NurbCurve;
 import org.apache.sis.geometries.operation.DeBoorAlgorithm;
 import org.apache.sis.maths.Array;
@@ -334,5 +336,16 @@ public non-sealed class DefaultNurbCurve extends AbstractGeometry implements Nur
 
     static Vector<?> fromHomogeneous(final Vector<?> h, final int spatialDim) {
         return h.shrink(spatialDim).scale(1.0 / h.get(spatialDim));
+    }
+
+    /**
+     * Returns a polyline whose points are on this curve, including the positions at the knots.
+     */
+    @Override
+    public LineString asLine(final Quantity<?> spacing, final Quantity<?> offset) {
+        if (isEmpty()) {
+            return GeometryFactory.DEFAULT.createLineString(points);
+        }
+        return new BSplineEvaluator(points, weights, knots, degree).asLine(this, spacing, offset);
     }
 }

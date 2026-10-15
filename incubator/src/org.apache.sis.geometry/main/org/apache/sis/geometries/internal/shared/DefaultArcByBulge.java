@@ -16,9 +16,12 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import java.util.List;
+import javax.measure.Quantity;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.ArcByBulge;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.Vector;
@@ -86,11 +89,33 @@ public non-sealed class DefaultArcByBulge extends AbstractGeometry implements Ar
     @Override
     public Envelope getEnvelope() {
         final var envelope = new GeneralEnvelope(points.getEnvelope());
-        if (bulge == 0) {
-            return envelope;                        // A straight segment.
+        if (bulge != 0) {
+            final Vector<?> start = points.getPosition(0).copy(DataType.DOUBLE);
+            final Vector<?> end   = points.getPosition(1).copy(DataType.DOUBLE);
+            Curves.addArc(envelope, start, apex(start, end), end);
         }
+        return envelope;
+    }
+
+    /**
+     * Returns a polyline whose points are on this arc, from its start point to its end point.
+     *
+     * @throws IllegalStateException if the two end points are identical, or if the normal is parallel to the chord.
+     */
+    @Override
+    public LineString asLine(final Quantity<?> spacing, final Quantity<?> offset) {
         final Vector<?> start = points.getPosition(0).copy(DataType.DOUBLE);
         final Vector<?> end   = points.getPosition(1).copy(DataType.DOUBLE);
+        final Vector<?> apex  = (bulge != 0) ? apex(start, end) : start.copy(DataType.DOUBLE).lerp(end, 0.5);
+        return CurveLinearizer.linearize(this, spacing, offset, List.of(CurveLinearizer.circularArc(start, apex, end, false)));
+    }
+
+    /**
+     * Returns the point of the arc at the bulge distance from the middle of the chord.
+     *
+     * @throws IllegalStateException if the two end points are identical, or if the normal is parallel to the chord.
+     */
+    private Vector<?> apex(final Vector<?> start, final Vector<?> end) {
         final Vector<?> u = end.copy(DataType.DOUBLE).subtract(start);     // Unit vector along the chord.
         final Vector<?> n = normal.copy(DataType.DOUBLE);                  // Unit vector toward the side the arc bulges to.
         final double chord = u.length();
@@ -106,10 +131,7 @@ public non-sealed class DefaultArcByBulge extends AbstractGeometry implements Ar
             throw new IllegalStateException("The normal of an arc by bulge is parallel to its chord,"
                     + " so it does not tell which side the arc bulges towards.");
         }
-        // The point of the arc at the bulge distance from the middle of the chord.
-        final Vector<?> apex = start.copy(DataType.DOUBLE).lerp(end, 0.5).add(n.scale(bulge / perpendicular));
-        Curves.addArc(envelope, start, apex, end);
-        return envelope;
+        return start.copy(DataType.DOUBLE).lerp(end, 0.5).add(n.scale(bulge / perpendicular));
     }
 
 }

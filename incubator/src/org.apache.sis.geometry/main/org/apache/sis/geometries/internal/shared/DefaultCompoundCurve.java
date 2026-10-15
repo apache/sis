@@ -17,11 +17,14 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.ArrayList;
+import java.util.List;
+import javax.measure.Quantity;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.CompoundCurve;
+import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
@@ -133,4 +136,12 @@ public non-sealed class DefaultCompoundCurve extends AbstractGeometry implements
         return NDArrays.concatenate(arrays.toArray(Array[]::new));
     }
 
+    /**
+     * Returns a polyline whose points are on this curve, made of the polylines of the component curves.
+     * A spacing or an offset in percent is relative to the length of this whole curve.
+     */
+    @Override
+    public LineString asLine(final Quantity<?> spacing, final Quantity<?> offset) {
+        return CurveLinearizer.concatenate(this, List.of(curves), spacing, offset);
+    }
 }
