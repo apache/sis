@@ -79,9 +79,9 @@ abstract class SourceAlignedImage extends ComputedImage {
 
     /**
      * Gets the sample model, making sure it has the right size.
-     * This is a workaround while waiting for JEP 447: Statements before super(…).
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
-    @Workaround(library="JDK", version="1.8")
+    @Workaround(library="JDK", version="11", fixed="25")
     private static SampleModel getSampleModel(final RenderedImage source) {
         final SampleModel sm = source.getSampleModel();
         final int width  = source.getTileWidth();
@@ -123,9 +123,9 @@ abstract class SourceAlignedImage extends ComputedImage {
 
     /**
      * Creates the sample model.
-     * This is a workaround while waiting for JEP 447: Statements before super(…).
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
-    @Workaround(library="JDK", version="1.8")
+    @Workaround(library="JDK", version="11", fixed="25")
     private static SampleModel createSampleModel(final ColorModel colorModel, final SampleModel original) {
         final SampleModel sm = colorModel.createCompatibleSampleModel(original.getWidth(), original.getHeight());
         return original.equals(sm) ? original : sm;

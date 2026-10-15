@@ -130,14 +130,12 @@ public class CylindricalEqualArea extends AuthalicConversion {
     }
 
     /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
-    @SuppressWarnings("fallthrough")
-    @Workaround(library="JDK", version="7", fixed="25")
+    @Workaround(library="JDK", version="11", fixed="25")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
         final Variant variant = variant(method, Variant.values(), Variant.ELLIPSOIDAL);
-        final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
+        final var roles = new EnumMap<ParameterRole, ParameterDescriptor<Double>>(ParameterRole.class);
         /*
          * "Longitude of origin" and "scale factor" are intentionally omitted from this map because they will
          * be handled in a special way. See comments in Mercator.initializer(…) method for more details.
@@ -150,10 +148,9 @@ public class CylindricalEqualArea extends AuthalicConversion {
     }
 
     /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
-    @Workaround(library="JDK", version="7", fixed="25")
+    @Workaround(library="JDK", version="11", fixed="25")
     private CylindricalEqualArea(final Initializer initializer) {
         super(initializer, null);
         variant = (Variant) initializer.variant;

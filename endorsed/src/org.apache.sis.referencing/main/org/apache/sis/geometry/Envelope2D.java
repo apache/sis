@@ -154,8 +154,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
                        final DirectPosition upperCorner)
     {
         /*
-         * JDK constraint: The call to ensureDimensionMatch(…) should have been first if Sun/Oracle
-         * fixed RFE #4093999 (Relax constraint on placement of this()/super() call in constructors).
+         * JDK constraint: The call to ensureDimensionMatch(…) should be first after upgrade to JDK25.
          */
         this(lowerCorner.getCoordinate(0), lowerCorner.getCoordinate(1),
              upperCorner.getCoordinate(0), upperCorner.getCoordinate(1));

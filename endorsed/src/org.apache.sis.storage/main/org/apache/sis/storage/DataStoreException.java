@@ -122,9 +122,9 @@ public class DataStoreException extends Exception implements LocalizedException 
     }
 
     /**
-     * Workaround while waiting for JEP 447: Statements before super(…).
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
-    @Workaround(library="JDK", version="1.8")
+    @Workaround(library="JDK", version="11", fixed="25")
     private DataStoreException(final Locale locale, final Object[] params) {
         this(locale, IOUtilities.errorMessageKey(params), params);
     }

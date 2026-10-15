@@ -42,12 +42,11 @@ import org.apache.sis.util.Workaround;
  * A helper class for initializing a {@code GpkgStore}.
  * A temporary instance exists at construction time, then is discarded.
  *
- * This is a work around for RFE #4093999 in Sun's bug database
- * ("Relax constraint on placement of this()/super() call in constructors").
+ * This is a work around while waiting for JEP 513: Flexible Constructor Bodies.
  *
  * @author Martin Desruisseaux (Geomatys).
  */
-@Workaround(library="JDK", version="7", fixed="25")
+@Workaround(library="JDK", version="11", fixed="25")
 final class Initializer {
     /**
      * Suffixes of auxiliary files.

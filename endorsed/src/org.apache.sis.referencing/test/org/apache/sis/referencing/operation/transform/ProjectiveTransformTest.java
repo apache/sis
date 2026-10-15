@@ -28,6 +28,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.internal.shared.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.provider.Affine;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.internal.shared.DoubleDouble;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.math.Fraction;
@@ -58,8 +59,9 @@ import org.opengis.test.referencing.AffineTransformTest;
 public class ProjectiveTransformTest extends AffineTransformTest {
     /**
      * A math transform factory which delegates instantiations to the enclosing test class.
-     * This is a workaround while waiting for JEP 447: Statements before super(…).
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
+    @Workaround(library="JDK", version="11", fixed="25")
     private static final class Proxy extends MathTransformFactoryBase {
         /** The enclosing test class. */
         ProjectiveTransformTest test;
@@ -73,6 +75,7 @@ public class ProjectiveTransformTest extends AffineTransformTest {
     /**
      * Creates a new test suite.
      */
+    @SuppressWarnings("LeakingThisInConstructor")
     public ProjectiveTransformTest() {
         super(new Proxy());
         ((Proxy) mtFactory).test = this;

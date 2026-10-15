@@ -138,10 +138,9 @@ public final class Affine extends AbstractProvider {
     }
 
     /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
-    @Workaround(library="JDK", version="7", fixed="25")
+    @Workaround(library="JDK", version="11", fixed="25")
     private static ParameterDescriptor<?>[] descriptors() {
         final var descriptors = MatrixParameters.EPSG.getAllDescriptors(EPSG_DIMENSION, EPSG_DIMENSION + 1);
         return new ParameterDescriptor<?>[] {

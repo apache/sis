@@ -36,6 +36,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.metadata.internal.shared.ImplementationHelper;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.FormattableObject;
@@ -124,9 +125,9 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
     }
 
     /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
+    @Workaround(library="JDK", version="11", fixed="25")
     private DefaultPassThroughOperation(final Map<String,?>            properties,
                                         final CoordinateReferenceSystem sourceCRS,
                                         final CoordinateReferenceSystem targetCRS,

@@ -56,10 +56,9 @@ public final class Printer extends PrintWriter {
     }
 
     /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
-    @Workaround(library="JDK", version="7", fixed="25")
+    @Workaround(library="JDK", version="11", fixed="25")
     private Printer(final StringWriter buffer) {
         super(buffer);
         this.buffer = buffer;

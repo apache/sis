@@ -49,10 +49,9 @@ public final class SelfConsistencyTest extends CoverageReadConsistency<WorldFile
     }
 
     /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
-    @Workaround(library="JDK", version="7", fixed="25")
+    @Workaround(library="JDK", version="11", fixed="25")
     private static WorldFileStore openFile() throws IOException, DataStoreException {
         final URL url = WorldFileStoreTest.class.getResource("gradient.png");
         assertNotNull(url, "Test file not found.");
@@ -60,11 +59,10 @@ public final class SelfConsistencyTest extends CoverageReadConsistency<WorldFile
     }
 
     /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
     @Override
-    @Workaround(library="JDK", version="7", fixed="25")
+    @Workaround(library="JDK", version="11", fixed="25")
     protected GridCoverageResource resource() throws DataStoreException {
         return store.components().iterator().next();
     }

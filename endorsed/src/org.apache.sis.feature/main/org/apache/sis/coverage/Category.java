@@ -311,8 +311,7 @@ public class Category implements LenientComparable, Serializable {
          * minimum and maximum. For linear and logarithmic functions, minimum and maximum are always at
          * the bounding input values, so we are using a very simple algorithm for now.
          *
-         * Note: we could move this code in ConvertedRange constructor if RFE #4093999
-         * ("Relax constraint on placement of this()/super() call in constructors") was fixed.
+         * Note: we can move this code in ConvertedRange constructor after upgrade to JDK25.
          */
         final NumberRange<?> r = original.range;
         boolean minIncluded = r.isMinIncluded();

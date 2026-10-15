@@ -93,9 +93,9 @@ public final class LocalizedParseException extends ParseException implements Loc
     }
 
     /**
-     * Workaround while waiting for JEP 447: Statements before super(…).
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
-    @Workaround(library="JDK", version="1.8")
+    @Workaround(library="JDK", version="11", fixed="25")
     private LocalizedParseException(final Locale locale, final Class<?> type,
             final CharSequence text, final int offset, final int errorOffset)
     {
@@ -103,15 +103,15 @@ public final class LocalizedParseException extends ParseException implements Loc
     }
 
     /**
-     * Workaround while waiting for JEP 447: Statements before super(…).
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
-    @Workaround(library="JDK", version="1.8")
+    @Workaround(library="JDK", version="11", fixed="25")
     private LocalizedParseException(final Locale locale, final Object[] parameters, final int errorOffset) {
         this(locale, key(parameters), parameters, errorOffset);
     }
 
     /**
-     * Workaround while waiting for JEP 447: Statements before super(…).
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      *
      * @param  type         the type of objects parsed by the {@link java.text.Format}.
      * @param  text         the text that {@code Format} failed to parse.
@@ -119,7 +119,7 @@ public final class LocalizedParseException extends ParseException implements Loc
      * @param  errorOffset  the position where the error is found while parsing.
      * @return the {@code parameters} value to give to the constructor.
      */
-    @Workaround(library="JDK", version="1.8")
+    @Workaround(library="JDK", version="11", fixed="25")
     private static Object[] parameters(final Class<?> type, CharSequence text, final int offset, final int errorOffset) {
         if (errorOffset >= text.length()) {
             return new Object[] {text};
@@ -133,9 +133,9 @@ public final class LocalizedParseException extends ParseException implements Loc
     }
 
     /**
-     * Workaround while waiting for JEP 447: Statements before super(…).
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
-    @Workaround(library="JDK", version="1.8")
+    @Workaround(library="JDK", version="11", fixed="25")
     private static short key(final Object[] parameters) {
         final short key;
         switch (parameters.length) {

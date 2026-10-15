@@ -70,12 +70,11 @@ public class Mollweide extends NormalizedProjection {
     }
 
     /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
      */
-    @Workaround(library="JDK", version="8", fixed="25")
+    @Workaround(library="JDK", version="11", fixed="25")
     private static Initializer initializer(final OperationMethod method, final Parameters parameters) {
-        final EnumMap<ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(ParameterRole.class);
+        final var roles = new EnumMap<ParameterRole, ParameterDescriptor<Double>>(ParameterRole.class);
         roles.put(ParameterRole.CENTRAL_MERIDIAN, CENTRAL_MERIDIAN);
         roles.put(ParameterRole.FALSE_EASTING,    FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING,   FALSE_NORTHING);

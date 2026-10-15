@@ -180,14 +180,12 @@ public abstract class CoverageReadConsistency<S extends DataStore> extends TestC
      * This method shall not use any other field and shall not invoke any other method,
      * because this method is invoked during object construction.
      *
-     * <p>This method is a work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors")
-     * and will be removed (replaced by constructor argument) in a future version.</p>
+     * <p>This method is a work around for JEP 513.</p>
      *
      * @return the resource to test.
      * @throws DataStoreException if an error occurred while reading the resource.
      */
-    @Workaround(library="JDK", version="7", fixed="25")
+    @Workaround(library="JDK", version="11", fixed="25")
     protected abstract GridCoverageResource resource() throws DataStoreException;
 
     /**
