@@ -16,18 +16,16 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
-import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vectors;
 
 
 /**
@@ -103,26 +101,25 @@ public abstract non-sealed class AbstractGeometry implements Geometry {
      * hull of its control points, so the returned envelope contains it.
      *
      * @param  points         data points of the spline, or {@code null} if none.
-     * @param  controlPoints  coordinates of the control points, possibly empty.
+     * @param  controlPoints  the control points, or {@code null} if none.
      * @param  homogeneous    whether the control points have one more coordinate than the reference system,
      *                        the weight by which the other coordinates are divided. Weights are assumed positive.
      * @return envelope of the data points and of the control points, or {@code null} if there is none.
      */
-    protected static Envelope controlHullEnvelope(final DataPoints points, final List<double[]> controlPoints,
+    protected static Envelope controlHullEnvelope(final DataPoints points, final Array controlPoints,
                                                   final boolean homogeneous)
     {
-        GeneralEnvelope envelope = (points == null || points.isEmpty()) ? null : new GeneralEnvelope(points.getEnvelope());
-        for (double[] coordinates : controlPoints) {
+        GeometryEnvelope envelope = (points == null || points.isEmpty()) ? null : new GeometryEnvelope(points.getEnvelope());
+        final long n = (controlPoints != null) ? controlPoints.getLength() : 0;
+        for (long i = 0; i < n; i++) {
+            Vector<?> position = controlPoints.get(i);
             if (homogeneous) {
-                final double weight = coordinates[coordinates.length - 1];
-                coordinates = Arrays.copyOf(coordinates, coordinates.length - 1);
-                for (int i = 0; i < coordinates.length; i++) {
-                    coordinates[i] /= weight;
-                }
+                final int dimension = position.getDimension() - 1;
+                final double weight = position.get(dimension);
+                position = Vectors.createDouble(dimension).set(position).scale(1 / weight);
             }
-            final var position = new GeneralDirectPosition(coordinates);
             if (envelope == null) {
-                envelope = new GeneralEnvelope(position, position);
+                envelope = new GeometryEnvelope(position, position);
                 if (points != null) {
                     envelope.setCoordinateReferenceSystem(points.getCoordinateReferenceSystem());
                 }
@@ -131,20 +128,6 @@ public abstract non-sealed class AbstractGeometry implements Geometry {
             }
         }
         return envelope;
-    }
-
-    /**
-     * Returns the coordinates of the given control points, or an empty list if {@code null}.
-     */
-    protected static List<double[]> coordinates(final Array controlPoints) {
-        if (controlPoints == null) {
-            return List.of();
-        }
-        final var coordinates = new ArrayList<double[]>();
-        for (long i = 0, n = controlPoints.getLength(); i < n; i++) {
-            coordinates.add(controlPoints.get(i).toArrayDouble());
-        }
-        return coordinates;
     }
 
     /**

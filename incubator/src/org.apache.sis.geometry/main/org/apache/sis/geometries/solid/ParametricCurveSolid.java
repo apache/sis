@@ -18,13 +18,13 @@ package org.apache.sis.geometries.solid;
 
 import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
-import org.opengis.geometry.DirectPosition;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Solid;
 import org.apache.sis.geometries.SolidInterpolation;
 import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -219,5 +219,5 @@ public sealed interface ParametricCurveSolid extends Solid
      *
      * @see ISO 19107:2019 - 9.3.1
      */
-    DirectPosition getSurface(double a, double b, double c);
+    Vector<?> getSurface(double a, double b, double c);
 }

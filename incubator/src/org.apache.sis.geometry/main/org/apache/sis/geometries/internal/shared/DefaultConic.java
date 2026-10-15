@@ -23,7 +23,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.curve.Conic;
-import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.Vector;
@@ -116,7 +115,7 @@ public non-sealed class DefaultConic extends AbstractGeometry implements Conic {
      */
     @Override
     public Envelope getEnvelope() {
-        final var envelope = new GeneralEnvelope(points.getEnvelope());
+        final var envelope = new GeometryEnvelope(points.getEnvelope());
         if (points.isEmpty()) {
             return envelope;
         }
@@ -142,7 +141,7 @@ public non-sealed class DefaultConic extends AbstractGeometry implements Conic {
      * Expands the given envelope for containing the extremes along each axis of the conic arc
      * going through the five given points. The envelope shall already contain those points.
      */
-    private static void addArc(final GeneralEnvelope envelope, final Vector<?>[] p) {
+    private static void addArc(final GeometryEnvelope envelope, final Vector<?>[] p) {
         final int dimension = p[0].getDimension();
         /*
          * Builds an orthonormal basis (e1, e2) of the plane of the points, with the centroid as origin.
@@ -283,7 +282,7 @@ public non-sealed class DefaultConic extends AbstractGeometry implements Conic {
                     final Vector<?> position = origin.copy(DataType.DOUBLE)
                             .add(e1.copy(DataType.DOUBLE).scale(scale * xa))
                             .add(e2.copy(DataType.DOUBLE).scale(scale * xb));
-                    envelope.add(Vectors.asDirectPostion(position));
+                    envelope.add(position);
                 }
             }
         }

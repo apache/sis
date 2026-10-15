@@ -19,7 +19,6 @@ package org.apache.sis.geometries.internal.shared;
 import java.util.List;
 import java.util.Objects;
 import javax.measure.Quantity;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
@@ -29,6 +28,7 @@ import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.surface.BilinearGrid;
 import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -138,7 +138,7 @@ public non-sealed class DefaultBilinearGrid extends AbstractGeometry implements 
     }
 
     @Override
-    public DirectPosition getSurface(double u, double v) {
+    public Vector<?> getSurface(double u, double v) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

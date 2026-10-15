@@ -19,12 +19,11 @@ package org.apache.sis.geometries;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.geometries.internal.shared.GeometryEnvelope;
 import org.apache.sis.geometries.internal.shared.IndexedPoint;
 import org.apache.sis.geometries.surface.Polygon;
-import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.ReadOnly;
@@ -39,7 +38,7 @@ import org.apache.sis.maths.Vector;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class BBox extends GeneralEnvelope implements Geometry {
+public final class BBox extends GeometryEnvelope implements Geometry {
 
     private Map<String,Object> properties;
 
@@ -63,8 +62,8 @@ public final class BBox extends GeneralEnvelope implements Geometry {
      * @param lower lower corner
      * @param upper upper corner
      */
-    public BBox(Vector lower, Vector upper) {
-        super(Vectors.asDirectPostion(lower), Vectors.asDirectPostion(upper));
+    public BBox(ReadOnly.Vector<?> lower, ReadOnly.Vector<?> upper) {
+        super(lower, upper);
         ensureCRS();
     }
 
@@ -123,24 +122,6 @@ public final class BBox extends GeneralEnvelope implements Geometry {
     @Override
     public int getTopologicDimension() {
         return isEmpty() ? -1 : getDimension();
-    }
-
-    public void add(Vector<?> position) throws MismatchedDimensionException {
-        add(Vectors.asDirectPostion(position));
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    public Vector<?> getLower() {
-        return Vectors.castOrWrap(super.getLowerCorner());
-    }
-
-    /**
-     * {@inheritDoc }
-     */
-    public Vector<?> getUpper() {
-        return Vectors.castOrWrap(super.getUpperCorner());
     }
 
     /**
@@ -290,12 +271,7 @@ public final class BBox extends GeneralEnvelope implements Geometry {
         @Override
         public Vector<?> getPosition(int index) {
             ensureValid(index);
-            final int dim = getDimension();
-            final Vector<?> position = Vectors.create(BBox.this.getCoordinateReferenceSystem(), DataType.DOUBLE);
-            for (int i = 0; i < dim; i++) {
-                position.set(i, (index == 0) ? getMinimum(i) : getMaximum(i));
-            }
-            return position;
+            return (index == 0) ? getLower() : getUpper();
         }
 
         @Override

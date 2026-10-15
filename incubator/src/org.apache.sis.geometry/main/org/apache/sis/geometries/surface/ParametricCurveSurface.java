@@ -28,6 +28,7 @@ import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Vector;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.Identifier;
@@ -232,7 +233,7 @@ public sealed interface ParametricCurveSurface extends Surface, ReferenceSystem
      * @see ISO 19107:2019 - 8.3.2.11
      */
     @UML(identifier="surface", specification=ISO_19107)
-    DirectPosition getSurface(double u, double v);
+    Vector<?> getSurface(double u, double v);
 
     /**
      * Returns the name of this surface used as a reference system for its parameter space.

@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.measure.Quantity;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Curve;
@@ -415,8 +414,8 @@ public non-sealed class DefaultNurbSurface extends AbstractGeometry implements N
      * Returns the position of this surface at the given parameters, computed by {@link #evaluate(double, double)}.
      */
     @Override
-    public DirectPosition getSurface(double u, double v) {
-        return Vectors.asDirectPostion(evaluate(u, v));
+    public Vector<?> getSurface(double u, double v) {
+        return evaluate(u, v);
     }
 
 }

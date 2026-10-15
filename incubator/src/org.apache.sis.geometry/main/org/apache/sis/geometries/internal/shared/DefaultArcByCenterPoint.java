@@ -22,8 +22,8 @@ import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
-import org.apache.sis.geometry.GeneralDirectPosition;
-import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -106,21 +106,20 @@ public non-sealed class DefaultArcByCenterPoint extends AbstractGeometry impleme
      */
     @Override
     public Envelope getEnvelope() {
-        final var envelope = new GeneralEnvelope(center.getEnvelope());
-        final var position = new GeneralDirectPosition(envelope.getLowerCorner());
-        final double cx = position.getCoordinate(0);
-        final double cy = position.getCoordinate(1);
+        // Axes after the first two keep the coordinates of the centre.
+        final Vector<?> position = center.getPosition().copy(DataType.DOUBLE);
+        final double cx = position.get(0);
+        final double cy = position.get(1);
         final double rx = radius(0);
         final double ry = radius(1);
         // The sweep direction does not change the positions covered by the arc.
         final double lo = Math.min(startAngle, endAngle);
         final double hi = Math.max(startAngle, endAngle);
-        // The centre is not on the arc: the first two axes start from an end point, not from the centre.
+        // The centre is not on the arc: the envelope starts from an end point, not from the centre.
         double t = Math.toRadians(lo);
-        final double x = cx + rx * Math.cos(t);
-        final double y = cy + ry * Math.sin(t);
-        envelope.setRange(0, x, x);
-        envelope.setRange(1, y, y);
+        position.set(0, cx + rx * Math.cos(t));
+        position.set(1, cy + ry * Math.sin(t));
+        final var envelope = new GeometryEnvelope(position, position);
         t = Math.toRadians(hi);
         add(envelope, position, cx + rx * Math.cos(t), cy + ry * Math.sin(t));
         // Any sweep of 360° or more contains the four extremes, so the loop stops after one turn.
@@ -140,11 +139,11 @@ public non-sealed class DefaultArcByCenterPoint extends AbstractGeometry impleme
      * Adds to the envelope the given position, with its first two coordinates replaced by the given ones.
      * The other coordinates are those of the centre.
      */
-    private static void add(final GeneralEnvelope envelope, final GeneralDirectPosition position,
+    private static void add(final GeometryEnvelope envelope, final Vector<?> position,
                             final double x, final double y)
     {
-        position.setCoordinate(0, x);
-        position.setCoordinate(1, y);
+        position.set(0, x);
+        position.set(1, y);
         envelope.add(position);
     }
 

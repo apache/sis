@@ -48,6 +48,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.geometries.adapter.JTSAdapter;
 import org.apache.sis.geometries.adapter.ShapeAdapter;
 import org.apache.sis.geometries.adapter.ShapeConverter;
+import org.apache.sis.geometries.internal.shared.GeometryEnvelope;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometry.wrapper.jts.JTS;
@@ -262,8 +263,9 @@ public final class Geometries {
 
     public static MeshPrimitive createBox(Envelope geom) {
 
-        final Vector lower = Vectors.castOrCopy(geom.getLowerCorner());
-        final Vector upper = Vectors.castOrCopy(geom.getUpperCorner());
+        final var box = new GeometryEnvelope(geom);
+        final Vector lower = box.getLower();
+        final Vector upper = box.getUpper();
 
         final int dim = lower.getDimension();
 

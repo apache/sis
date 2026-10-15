@@ -179,7 +179,7 @@ public non-sealed class DefaultBSplineCurve extends AbstractGeometry implements 
      */
     @Override
     public Envelope getEnvelope() {
-        return controlHullEnvelope(points, coordinates(controlPoints), rational);
+        return controlHullEnvelope(points, controlPoints, rational);
     }
 
     /**

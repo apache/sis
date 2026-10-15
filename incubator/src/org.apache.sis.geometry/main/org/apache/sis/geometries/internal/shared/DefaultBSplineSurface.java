@@ -19,7 +19,6 @@ package org.apache.sis.geometries.internal.shared;
 import java.util.List;
 import java.util.Objects;
 import javax.measure.Quantity;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
@@ -28,6 +27,7 @@ import org.apache.sis.geometries.curve.KnotType;
 import org.apache.sis.geometries.surface.BSplineSurface;
 import org.apache.sis.geometries.surface.BSplineSurfaceForm;
 import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -174,7 +174,7 @@ public non-sealed class DefaultBSplineSurface extends AbstractGeometry implement
     }
 
     @Override
-    public DirectPosition getSurface(double u, double v) {
+    public Vector<?> getSurface(double u, double v) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -189,7 +189,7 @@ public non-sealed class DefaultBSplineSurface extends AbstractGeometry implement
      */
     @Override
     public Envelope getEnvelope() {
-        return controlHullEnvelope(points, coordinates(controlPoints), !polynomial);
+        return controlHullEnvelope(points, controlPoints, !polynomial);
     }
 
     @Override

@@ -19,7 +19,6 @@ package org.apache.sis.geometries.internal.shared;
 import java.util.Arrays;
 import java.util.List;
 import javax.measure.Quantity;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DataPoints;
@@ -31,6 +30,7 @@ import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
+import org.apache.sis.maths.Vector;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -226,7 +226,7 @@ public non-sealed class DefaultEllipsoid extends AbstractGeometry implements Ell
     }
 
     @Override
-    public DirectPosition getSurface(double u, double v) {
+    public Vector<?> getSurface(double u, double v) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

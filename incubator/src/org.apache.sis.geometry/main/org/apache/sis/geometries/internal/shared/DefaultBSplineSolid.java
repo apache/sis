@@ -17,7 +17,6 @@
 package org.apache.sis.geometries.internal.shared;
 
 import java.util.Objects;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Curve;
@@ -29,6 +28,7 @@ import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.solid.BSplineSolid;
 import org.apache.sis.maths.Array;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -148,7 +148,7 @@ public non-sealed class DefaultBSplineSolid extends AbstractGeometry implements 
     }
 
     @Override
-    public DirectPosition getSurface(double a, double b, double c) {
+    public Vector<?> getSurface(double a, double b, double c) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -178,7 +178,7 @@ public non-sealed class DefaultBSplineSolid extends AbstractGeometry implements 
      */
     @Override
     public Envelope getEnvelope() {
-        return controlHullEnvelope(points, coordinates(controlPoints), false);
+        return controlHullEnvelope(points, controlPoints, false);
     }
 
     @Override
