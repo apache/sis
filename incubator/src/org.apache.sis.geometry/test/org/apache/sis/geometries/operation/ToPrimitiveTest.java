@@ -30,6 +30,8 @@ import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Array;
+import org.apache.sis.measure.Quantities;
+import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
@@ -48,7 +50,7 @@ public class ToPrimitiveTest {
     @Test
     public void testPoint() {
         final Point point = GeometryFactory.DEFAULT.createPoint(CRS2D, 1, 2);
-        final Geometry result = new GeometryProcessor().toPrimitive(point);
+        final Geometry result = new GeometryProcessor().toPrimitive(point, null, null);
         assertTrue(result instanceof MeshPrimitive);
         final MeshPrimitive primitive = (MeshPrimitive) result;
         assertEquals(MeshPrimitive.Type.POINTS, primitive.getType());
@@ -59,17 +61,71 @@ public class ToPrimitiveTest {
         final Array positions = NDArrays.of(CRS2D, new double[]{0,1,2,3});
         final DataPoints points = GeometryFactory.DEFAULT.createDataPoints(positions);
         final LineString line = GeometryFactory.DEFAULT.createLineString(points);
-        final Geometry result = new GeometryProcessor().toPrimitive(line);
+        final Geometry result = new GeometryProcessor().toPrimitive(line, null, null);
         assertTrue(result instanceof MeshPrimitive);
         final MeshPrimitive primitive = (MeshPrimitive) result;
         assertEquals(MeshPrimitive.Type.LINE_STRIP, primitive.getType());
+    }
+
+    /**
+     * Tests that a curve is converted to a line strip whose points are on the curve,
+     * with the precision given by the offset.
+     */
+    @Test
+    public void testCurve() {
+        final GeometryFactory f = GeometryFactory.DEFAULT;
+        final var arc = f.createCircularString(f.createDataPoints(CRS2D, 0,0, 5,5, 10,0));
+        final MeshPrimitive coarse = (MeshPrimitive) new GeometryProcessor().toPrimitive(arc, null, Quantities.create(0.1, Units.DEGREE));
+        final MeshPrimitive fine   = (MeshPrimitive) new GeometryProcessor().toPrimitive(arc, null, Quantities.create(0.001, Units.DEGREE));
+        assertEquals(MeshPrimitive.Type.LINE_STRIP, coarse.getType());
+        final Array positions = fine.getPositions();
+        assertTrue(positions.getLength() > coarse.getPositions().getLength(), "A smaller offset shall give more points.");
+        for (long i = 0; i < positions.getLength(); i++) {
+            final double[] p = positions.get(i).toArrayDouble();
+            assertEquals(5, Math.hypot(p[0] - 5, p[1]), 1E-9, "Point not on the arc.");
+        }
+    }
+
+    /**
+     * Tests that the spacing and the offset are given to each curve of a collection.
+     */
+    @Test
+    public void testMultiCurve() {
+        final GeometryFactory f = GeometryFactory.DEFAULT;
+        final var arc1 = f.createCircularString(f.createDataPoints(CRS2D, 0,0, 5,5, 10,0));
+        final var arc2 = f.createCircularString(f.createDataPoints(CRS2D, 20,0, 25,5, 30,0));
+        final Geometry result = new GeometryProcessor().toPrimitive(f.createMultiCurve(CRS2D, arc1, arc2),
+                Quantities.create(1, Units.DEGREE), null);
+        assertTrue(result instanceof MultiMeshPrimitive);
+        for (final Object component : ((MultiMeshPrimitive<?>) result).getComponents()) {
+            final Array positions = ((MeshPrimitive) component).getPositions();
+            // A half circle of radius 5 is 15.7 long, so a spacing of 1 needs at least 16 segments.
+            assertTrue(positions.getLength() >= 17, "Spacing not applied: " + positions.getLength() + " points.");
+        }
+    }
+
+    /**
+     * Tests that a spacing densifies the line strings of a collection.
+     */
+    @Test
+    public void testMultiLineStringWithSpacing() {
+        final GeometryFactory f = GeometryFactory.DEFAULT;
+        final var lines = f.createMultiLineString(CRS2D,
+                f.createLineString(f.createDataPoints(CRS2D, 0,0, 10,0)),
+                f.createLineString(f.createDataPoints(CRS2D, 0,5, 10,5)));
+        assertEquals(MeshPrimitive.Type.LINES, ((MeshPrimitive) new GeometryProcessor().toPrimitive(lines, null, null)).getType());
+        final Geometry result = new GeometryProcessor().toPrimitive(lines, Quantities.create(2.5, Units.DEGREE), null);
+        assertTrue(result instanceof MultiMeshPrimitive);
+        for (final Object component : ((MultiMeshPrimitive<?>) result).getComponents()) {
+            assertEquals(5, ((MeshPrimitive) component).getPositions().getLength());
+        }
     }
 
     @Test
     public void testPolygon() {
         final LinearRing exterior = ring(0,0, 2,0, 2,2, 0,2, 0,0);
         final Polygon polygon = GeometryFactory.DEFAULT.createPolygon(exterior, null);
-        final Geometry result = new GeometryProcessor().toPrimitive(polygon);
+        final Geometry result = new GeometryProcessor().toPrimitive(polygon, null, null);
         assertTrue(result instanceof MeshPrimitive);
         final MeshPrimitive primitive = (MeshPrimitive) result;
         assertEquals(MeshPrimitive.Type.TRIANGLES, primitive.getType());
@@ -86,7 +142,7 @@ public class ToPrimitiveTest {
         final LinearRing exterior = ring(0,0, 10,0, 10,10, 0,10, 0,0);
         final LinearRing hole     = ring(2,2, 2,4, 4,4, 4,2, 2,2);
         final Polygon polygon = GeometryFactory.DEFAULT.createPolygon(exterior, java.util.List.of(hole));
-        final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(polygon);
+        final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(polygon, null, null);
         assertEquals(MeshPrimitive.Type.TRIANGLES, primitive.getType());
         assertEquals(96, trianglesArea(primitive), 1E-9);
     }
@@ -100,7 +156,7 @@ public class ToPrimitiveTest {
         final LinearRing exterior = ring(0,0, 10,0, 10,10, 0,10, 0,0);
         final LinearRing hole     = ring(4,4, 4,2, 2,2, 2,4, 4,4);
         final Polygon polygon = GeometryFactory.DEFAULT.createPolygon(exterior, java.util.List.of(hole));
-        final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(polygon);
+        final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(polygon, null, null);
         assertEquals(96, trianglesArea(primitive), 1E-9);
     }
 
@@ -112,7 +168,7 @@ public class ToPrimitiveTest {
         final LinearRing exterior = GeometryFactory.DEFAULT.createLinearRing(GeometryFactory.DEFAULT.createDataPoints(
                 NDArrays.of(CommonCRS.WGS84.geographic3D(), 0,0,5, 2,0,5, 2,2,7, 0,2,7, 0,0,5)));
         final Polygon polygon = GeometryFactory.DEFAULT.createPolygon(exterior, null);
-        final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(polygon);
+        final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(polygon, null, null);
         assertEquals(MeshPrimitive.Type.TRIANGLES, primitive.getType());
         assertEquals(3, primitive.getPositions().getDimension());
         assertEquals(6, primitive.getPositions().getLength(), "Expected 2 triangles.");
@@ -132,7 +188,7 @@ public class ToPrimitiveTest {
         final LinearRing exterior = ring3D(crs, 0,0,0, 6,0,0, 6,0,4, 0,0,4, 0,0,0);
         final LinearRing window   = ring3D(crs, 2,0,1, 2,0,3, 4,0,3, 4,0,1, 2,0,1);
         final Polygon polygon = GeometryFactory.DEFAULT.createPolygon(exterior, java.util.List.of(window));
-        final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(polygon);
+        final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(polygon, null, null);
         assertEquals(20, trianglesArea3D(primitive), 1E-9);
         final double[] c = primitive.getPositions().toArrayDouble();
         for (int i = 1; i < c.length; i += 3) {
@@ -149,7 +205,7 @@ public class ToPrimitiveTest {
         final CoordinateReferenceSystem crs = CommonCRS.WGS84.geographic3D();
         final LinearRing exterior = ring3D(crs, 3,0,0, 3,5,0, 3,5,2, 3,0,2, 3,0,0);
         final Polygon polygon = GeometryFactory.DEFAULT.createPolygon(exterior, null);
-        final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(polygon);
+        final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(polygon, null, null);
         assertEquals(10, trianglesArea3D(primitive), 1E-9);
         final double[] c = primitive.getPositions().toArrayDouble();
         for (int i = 0; i < c.length; i += 3) {
@@ -167,7 +223,7 @@ public class ToPrimitiveTest {
         final LinearRing exterior = ring3D(crs, 0,0,5, 10,0,5, 10,10,5, 0,10,5, 0,0,5);
         final LinearRing hole     = ring3D(crs, 2,2,5, 2,4,5, 4,4,5, 4,2,5, 2,2,5);
         final Polygon polygon = GeometryFactory.DEFAULT.createPolygon(exterior, java.util.List.of(hole));
-        final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(polygon);
+        final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(polygon, null, null);
         assertEquals(96, trianglesArea3D(primitive), 1E-9);
         final double[] c = primitive.getPositions().toArrayDouble();
         for (int i = 2; i < c.length; i += 3) {
@@ -185,7 +241,7 @@ public class ToPrimitiveTest {
         final org.apache.sis.geometries.surface.TIN tin = f.createTIN(crs, new org.apache.sis.geometries.surface.Triangle[] {
             f.createTriangle(ring3D(crs, 0,0,0, 2,0,0, 0,2,1, 0,0,0)),
             f.createTriangle(ring3D(crs, 2,0,0, 2,2,1, 0,2,1, 2,0,0))});
-        final Geometry result = new GeometryProcessor().toPrimitive(tin);
+        final Geometry result = new GeometryProcessor().toPrimitive(tin, null, null);
         assertTrue(result instanceof MeshPrimitive.Triangles);
         final MeshPrimitive primitive = (MeshPrimitive) result;
         assertEquals(3, primitive.getPositions().getDimension());
@@ -207,7 +263,7 @@ public class ToPrimitiveTest {
             f.createPolygon(ring3D(crs, 0,0,0, 2,0,0, 2,0,2, 0,0,2, 0,0,0), null),
             f.createPolygon(ring3D(crs, 0,2,0, 0,2,2, 2,2,2, 2,2,0, 0,2,0), null),
             f.createPolygon(ring3D(crs, 0,0,0, 0,2,0, 2,2,0, 2,0,0, 0,0,0), null)};
-        final Geometry result = new GeometryProcessor().toPrimitive(f.createPolyhedralSurface(crs, faces));
+        final Geometry result = new GeometryProcessor().toPrimitive(f.createPolyhedralSurface(crs, faces), null, null);
         assertTrue(result instanceof MeshPrimitive.Triangles);
         final MeshPrimitive primitive = (MeshPrimitive) result;
         assertEquals(30, primitive.getPositions().getLength(), "Expected 2 triangles per face.");
@@ -267,7 +323,7 @@ public class ToPrimitiveTest {
 
             final GeometryCollection<LineString> mlines = GeometryFactory.DEFAULT.createMultiLineString(line1, line2);
 
-            final Geometry result = new GeometryProcessor().toPrimitive(mlines);
+            final Geometry result = new GeometryProcessor().toPrimitive(mlines, null, null);
             assertTrue(result instanceof MultiMeshPrimitive);
             final MultiMeshPrimitive mp = (MultiMeshPrimitive) result;
             assertEquals(2, mp.getNumGeometries());
@@ -291,7 +347,7 @@ public class ToPrimitiveTest {
 
             final GeometryCollection<LineString> mlines = GeometryFactory.DEFAULT.createMultiLineString(line1, line2);
 
-            final Geometry result = new GeometryProcessor().toPrimitive(mlines);
+            final Geometry result = new GeometryProcessor().toPrimitive(mlines, null, null);
             assertTrue(result instanceof MeshPrimitive.Lines);
             final MeshPrimitive.Lines mp = (MeshPrimitive.Lines) result;
             assertEquals(2, mp.getNumGeometries());
@@ -308,7 +364,7 @@ public class ToPrimitiveTest {
         final DataPoints points = GeometryFactory.DEFAULT.createDataPoints(positions1);
         final GeometryCollection<Point> mpoints = GeometryFactory.DEFAULT.createMultiPoint(points);
 
-        final Geometry result = new GeometryProcessor().toPrimitive(mpoints);
+        final Geometry result = new GeometryProcessor().toPrimitive(mpoints, null, null);
         assertTrue(result instanceof MeshPrimitive);
         final MeshPrimitive primitive1 = (MeshPrimitive) result;
         assertEquals(MeshPrimitive.Type.POINTS, primitive1.getType());

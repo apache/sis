@@ -25,6 +25,7 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.measure.Quantity;
+import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.DE9IM;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometries;
@@ -470,17 +471,26 @@ public final class GeometryProcessor {
      * Convert this geometry to a Primitive geometry type.
      * This method is provided as a conversion to GPU geometric model.
      *
+     * <p>Curves are converted to line strips with {@link Curve#asLine(Quantity, Quantity)},
+     * which receives the given spacing and offset.</p>
+     *
+     * @param  geom     the geometry to convert.
+     * @param  spacing  maximal distance along a curve between two points of its line strip,
+     *                  or zero or {@code null} for no limit.
+     * @param  offset   maximal distance between a curve and its line strip, or zero or {@code null} for no limit.
+     *                  If both the spacing and the offset are zero, a default precision is used.
      * @return equivalent primitive, all attributes are copied.
      *  can be a Primitive or MultiPrimitive
      */
-    public Geometry toPrimitive(Geometry geom) {
+    public Geometry toPrimitive(Geometry geom, Quantity<?> spacing, Quantity<?> offset) {
         if (geom instanceof MeshPrimitive || geom instanceof MultiMeshPrimitive) {
             //Does nothing, geometry is already a Primitive.
             return geom;
         } else if (geom instanceof Point cdt) {
             return ToPrimitive.toPrimitive(cdt);
-        } else if (geom instanceof LineString cdt) {
-            return ToPrimitive.toPrimitive(cdt);
+        } else if (geom instanceof Curve cdt) {
+            //also handles line strings, which are densified if a spacing is given.
+            return ToPrimitive.toPrimitive(cdt.asLine(spacing, offset));
         } else if (geom instanceof Polygon cdt) {
             return ToPrimitive.toPrimitive(cdt);
         } else if (geom instanceof PolyhedralSurface<?> cdt) {
@@ -489,9 +499,9 @@ public final class GeometryProcessor {
         } else if (geom instanceof GeometryCollection<?> cdt) {
             final GeometryType elementType = cdt.getElementType();
             switch (elementType) {
-                case LINESTRING : return ToPrimitive.toPrimitiveLine((GeometryCollection<LineString>) cdt);
+                case LINESTRING : return ToPrimitive.toPrimitiveLine((GeometryCollection<LineString>) cdt, spacing, offset);
                 case POINT : return ToPrimitive.toPrimitivePoint((GeometryCollection<Point>) cdt);
-                default : return ToPrimitive.toPrimitive(cdt);
+                default : return ToPrimitive.toPrimitive(cdt, spacing, offset);
             }
         }
 

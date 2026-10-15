@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.measure.Quantity;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometry;
@@ -133,10 +134,16 @@ public final class ToPrimitive {
 
     /**
      * Transform MultiLineString to Primitive.
-     * If all LineString are Lines, the return a single Primitive.lines otherwise return a MultiPrimitive.
+     * If all LineString are Lines and no spacing is given, the return a single Primitive.lines
+     * otherwise return a MultiPrimitive.
+     *
+     * @param spacing maximal distance between two points of a line strip, or zero or {@code null} for no limit.
+     * @param offset  ignored for line strings, which are their own linear approximation.
      */
-    public static Geometry toPrimitiveLine(GeometryCollection<LineString> geometry) throws OperationException {
-        boolean allLines = true;
+    public static Geometry toPrimitiveLine(GeometryCollection<LineString> geometry, Quantity<?> spacing, Quantity<?> offset)
+            throws OperationException
+    {
+        boolean allLines = (spacing == null || spacing.getValue().doubleValue() == 0);
         final int numGeometries = geometry.getNumGeometries();
         for (int i = 0; i < numGeometries && allLines; i++) {
             allLines &= geometry.getGeometryN(i).isLine();
@@ -162,7 +169,7 @@ public final class ToPrimitive {
         } else {
             final MultiMeshPrimitive<MeshPrimitive> mp = new MultiMeshPrimitive(geometry.getCoordinateReferenceSystem());
             for (int i = 0; i < numGeometries; i++) {
-                final Geometry p = toPrimitive(geometry.getGeometryN(i));
+                final Geometry p = toPrimitive(geometry.getGeometryN(i).asLine(spacing, offset));
                 if (p instanceof org.apache.sis.geometries.mesh.MultiMeshPrimitive<?> subm) {
                     mp.append(subm.getComponents());
                 } else if (p instanceof org.apache.sis.geometries.mesh.MeshPrimitive cd){
@@ -175,11 +182,16 @@ public final class ToPrimitive {
 
     /**
      * Transform GeometryCollection to Primitive.
+     *
+     * @param spacing maximal distance along a curve between two points of its line strip, or zero or {@code null}.
+     * @param offset  maximal distance between a curve and its line strip, or zero or {@code null}.
      */
-    public static MultiMeshPrimitive toPrimitive(GeometryCollection geometry) throws OperationException {
+    public static MultiMeshPrimitive toPrimitive(GeometryCollection geometry, Quantity<?> spacing, Quantity<?> offset)
+            throws OperationException
+    {
         final MultiMeshPrimitive<MeshPrimitive> mp = new MultiMeshPrimitive(geometry.getCoordinateReferenceSystem());
         for (int i = 0, n = geometry.getNumGeometries(); i < n; i++) {
-            final Geometry p = new GeometryProcessor().toPrimitive(geometry.getGeometryN(i));
+            final Geometry p = new GeometryProcessor().toPrimitive(geometry.getGeometryN(i), spacing, offset);
             if (p instanceof org.apache.sis.geometries.mesh.MultiMeshPrimitive<?> subm) {
                 mp.append(subm.getComponents());
             } else if (p instanceof org.apache.sis.geometries.mesh.MeshPrimitive cd){
