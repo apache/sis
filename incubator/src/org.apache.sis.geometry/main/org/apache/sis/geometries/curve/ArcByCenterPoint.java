@@ -42,6 +42,13 @@ import org.apache.sis.maths.Array;
  * <p>Because the arc is defined by a bearing sweep around a centre, this parameterisation is
  * two-dimensional by nature; GML says as much.</p>
  *
+ * <p>Angles are measured from the direction of the first coordinate system axis, positive toward the
+ * direction of the second axis. With (<var>x</var>, <var>y</var>) axes this is the counter-clockwise
+ * angle from <var>x</var>; with (latitude, longitude) axes this is the clockwise azimuth from north.
+ * The arc goes from the start angle to the end angle, in the direction of increasing angles if the
+ * end angle is greater than the start angle and of decreasing angles otherwise. A difference of 360°
+ * or more between the two angles makes a full circle.</p>
+ *
  * @author Johann Sorel (Geomatys)
  * @see GML ArcByCenterPoint
  */

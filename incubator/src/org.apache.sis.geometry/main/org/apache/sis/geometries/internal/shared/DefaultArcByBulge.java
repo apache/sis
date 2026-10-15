@@ -19,6 +19,8 @@ package org.apache.sis.geometries.internal.shared;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.ArcByBulge;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.Vector;
 
 
@@ -73,9 +75,41 @@ public non-sealed class DefaultArcByBulge extends AbstractGeometry implements Ar
         return normal;
     }
 
+    /**
+     * Returns the smallest envelope containing this arc. That envelope contains the two end points,
+     * plus each point where the circle reaches an extreme along an axis, if that point is on the side
+     * of the chord the arc bulges towards. This works in any number of dimensions, the arc being in
+     * the plane of the chord and the normal.
+     *
+     * @throws IllegalStateException if the two end points are identical, or if the normal is parallel to the chord.
+     */
     @Override
     public Envelope getEnvelope() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        final var envelope = new GeneralEnvelope(points.getEnvelope());
+        if (bulge == 0) {
+            return envelope;                        // A straight segment.
+        }
+        final Vector<?> start = points.getPosition(0).copy(DataType.DOUBLE);
+        final Vector<?> end   = points.getPosition(1).copy(DataType.DOUBLE);
+        final Vector<?> u = end.copy(DataType.DOUBLE).subtract(start);     // Unit vector along the chord.
+        final Vector<?> n = normal.copy(DataType.DOUBLE);                  // Unit vector toward the side the arc bulges to.
+        final double chord = u.length();
+        if (!(chord > 0)) {
+            throw new IllegalStateException("The two end points of an arc by bulge are identical, so they do not determine a circle.");
+        }
+        u.scale(1 / chord);
+        // Only the part of the normal perpendicular to the chord tells the side of the arc.
+        final double length = n.length();
+        n.perpendicular(u);
+        final double perpendicular = n.length();
+        if (!(perpendicular > length * 1E-12)) {
+            throw new IllegalStateException("The normal of an arc by bulge is parallel to its chord,"
+                    + " so it does not tell which side the arc bulges towards.");
+        }
+        // The point of the arc at the bulge distance from the middle of the chord.
+        final Vector<?> apex = start.copy(DataType.DOUBLE).lerp(end, 0.5).add(n.scale(bulge / perpendicular));
+        Curves.addArc(envelope, start, apex, end);
+        return envelope;
     }
 
 }

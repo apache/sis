@@ -21,6 +21,9 @@ import javax.measure.Quantity;
 import javax.measure.Unit;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Units;
 
@@ -99,6 +102,84 @@ public final class Curves {
             }
             return Math.sqrt(nx*nx + ny*ny + nz*nz) / 2;
         }
+    }
+
+    /**
+     * Expands the given envelope for containing the circular arc going from {@code start} to {@code end}
+     * through {@code middle}. The envelope shall already contain the start and end points. This method
+     * adds each point where the circle reaches an extreme along an axis, if that point is on the arc.
+     * It works in any number of dimensions, the arc being in the plane of its three points.
+     *
+     * <p>If the three points are collinear, the arc is a straight segment and the envelope is unchanged.
+     * If the start and end points are identical, the arc is a full circle whose diameter goes from them
+     * to the middle point.</p>
+     *
+     * @param  envelope  the envelope to expand, containing the start and end points.
+     * @param  start     the start point.
+     * @param  middle    a point on the arc, distinct from its start and end points.
+     * @param  end       the end point.
+     * @throws IllegalStateException if the arc is a full circle in more than two dimensions,
+     *         since its plane is then not determined.
+     */
+    public static void addArc(final GeneralEnvelope envelope, final ReadOnly.Vector<?> start,
+                              final ReadOnly.Vector<?> middle, final ReadOnly.Vector<?> end)
+    {
+        final int dimension = start.getDimension();
+        final Vector<?> mid = start .copy(DataType.DOUBLE).lerp(end, 0.5);      // Middle of the chord.
+        final Vector<?> u   = end   .copy(DataType.DOUBLE).subtract(start);     // Unit vector along the chord.
+        final Vector<?> n   = middle.copy(DataType.DOUBLE).subtract(mid);       // Unit vector perpendicular to the chord, toward the arc.
+        final double chord = u.length();
+        if (chord == 0) {
+            if (dimension != 2) {
+                throw new IllegalStateException("A circular arc with identical start and end points"
+                        + " is a full circle, which plane is not determined in " + dimension + " dimensions.");
+            }
+            final double r = n.length() / 2;
+            final Vector<?> centre = start.copy(DataType.DOUBLE).lerp(middle, 0.5);
+            for (int i = 0; i < dimension; i++) {
+                extend(envelope, i, centre.get(i) - r);
+                extend(envelope, i, centre.get(i) + r);
+            }
+            return;
+        }
+        u.scale(1 / chord);
+        final double pu = n.dot(u);
+        n.perpendicular(u);
+        final double pn = n.length();
+        if (!(pn > chord * 1E-12)) {
+            return;                                     // Collinear points: a straight segment.
+        }
+        n.scale(1 / pn);
+        /*
+         * With the half chord c, the centre is at t·n from the middle of the chord, where t makes the
+         * centre equidistant from the start point and the middle point: c² + t² = pu² + (t − pn)².
+         * In the plane (u, n), the circle reaches its extremes along axis i in the directions
+         * ±(uᵢ·u + nᵢ·n), at distances ±r·hypot(uᵢ, nᵢ) from the centre along that axis.
+         * The arc is the part of the circle on the side of n from the chord.
+         */
+        final double c = chord / 2;
+        final double t = (pu*pu + pn*pn - c*c) / (2*pn);
+        final double r = Math.hypot(c, t);
+        for (int i = 0; i < dimension; i++) {
+            final double h = Math.hypot(u.get(i), n.get(i));
+            if (h == 0) {
+                continue;                               // The plane of the arc is perpendicular to this axis.
+            }
+            final double centre = mid.get(i) + t * n.get(i);
+            for (int sign = -1; sign <= 1; sign += 2) {
+                if (t + sign * r * n.get(i) / h >= 0) {
+                    extend(envelope, i, centre + sign * r * h);
+                }
+            }
+        }
+    }
+
+    /**
+     * Expands the range of the given envelope axis for containing the given value.
+     */
+    private static void extend(final GeneralEnvelope envelope, final int axis, final double value) {
+        envelope.setRange(axis, Math.min(envelope.getMinimum(axis), value),
+                                Math.max(envelope.getMaximum(axis), value));
     }
 
     /**

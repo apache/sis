@@ -19,6 +19,9 @@ package org.apache.sis.geometries.internal.shared;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.CircularString;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.Vector;
 
 
 /**
@@ -51,9 +54,22 @@ public non-sealed class DefaultCircularString extends AbstractGeometry implement
         return points;
     }
 
+    /**
+     * Returns the smallest envelope containing this circular string. That envelope contains the
+     * points of each arc, plus each point where an arc reaches an extreme along an axis.
+     *
+     * @throws IllegalStateException if an arc is a full circle in more than two dimensions.
+     */
     @Override
     public Envelope getEnvelope() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        final var envelope = new GeneralEnvelope(points.getEnvelope());
+        Vector<?> start = (points.size() != 0) ? points.getPosition(0).copy(DataType.DOUBLE) : null;
+        for (int i = 2; i < points.size(); i += 2) {
+            final Vector<?> end = points.getPosition(i).copy(DataType.DOUBLE);
+            Curves.addArc(envelope, start, points.getPosition(i - 1).copy(DataType.DOUBLE), end);
+            start = end;
+        }
+        return envelope;
     }
 
 }
