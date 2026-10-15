@@ -23,7 +23,6 @@ import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
@@ -35,10 +34,13 @@ import org.apache.sis.geometries.internal.shared.Curves;
 import org.apache.sis.geometries.internal.shared.DefaultTriangle;
 import org.apache.sis.geometries.operation.simplify.greedyinsert.WTriangle;
 import org.apache.sis.geometries.operation.triangulate.delaunay.OrientedTriangle;
+import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.Maths;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vector2D;
 import org.apache.sis.maths.Vector3D;
+import org.apache.sis.maths.Vectors;
 import org.apache.sis.measure.Quantities;
 
 
@@ -127,11 +129,10 @@ public sealed interface Triangle extends Polygon
     @Override
     default Envelope getEnvelope() {
         final DataPoints exterior = getExteriorRing().getDataPoints();
-        final Vector<?> first = exterior.getPosition(0);
-        final BBox env = new BBox(first, first);
+        final Vector<?> first = Vectors.create(getCoordinateReferenceSystem(), DataType.DOUBLE).set(exterior.getPosition(0));
+        final NDRange env = new NDRange(first, first);
         env.add(exterior.getPosition(1));
         env.add(exterior.getPosition(2));
-        env.setCoordinateReferenceSystem(getCoordinateReferenceSystem());
         return env;
     }
 

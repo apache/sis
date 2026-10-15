@@ -21,13 +21,13 @@ import static org.opengis.annotation.Specification.ISO_19107;
 import org.opengis.annotation.UML;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultEllipsoid;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 
@@ -176,15 +176,12 @@ public sealed interface Ellipsoid extends ParametricCurveSurface
      */
     @Override
     default Envelope getEnvelope() {
-        final Vector<?> center = getCenter().copy();
-        final BBox env = new BBox(center, center);
-        env.setCoordinateReferenceSystem(getCoordinateReferenceSystem());
+        final ReadOnly.Vector<?> center = getCenter();
+        final NDRange env = new NDRange(getCoordinateReferenceSystem());
         for (int i = 0, n = getDimension(); i < n; i++) {
             final double c = center.get(i);
             final double a = getSemiAxis(i);
-            if (a > 0) {
-                env.setRange(i, c-a, c+a);
-            }
+            env.setRange(i, c-a, c+a);
         }
         return env;
     }

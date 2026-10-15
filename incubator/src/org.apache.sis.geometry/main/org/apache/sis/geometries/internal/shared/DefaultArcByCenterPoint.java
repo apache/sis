@@ -27,6 +27,7 @@ import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.ArcByCenterPoint;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 
@@ -124,7 +125,7 @@ public non-sealed class DefaultArcByCenterPoint extends AbstractGeometry impleme
         double t = Math.toRadians(lo);
         position.set(0, cx + rx * Math.cos(t));
         position.set(1, cy + ry * Math.sin(t));
-        final var envelope = new GeometryEnvelope(position, position);
+        final var envelope = new NDRange(position, position);
         t = Math.toRadians(hi);
         add(envelope, position, cx + rx * Math.cos(t), cy + ry * Math.sin(t));
         // Any sweep of 360° or more contains the four extremes, so the loop stops after one turn.
@@ -167,7 +168,7 @@ public non-sealed class DefaultArcByCenterPoint extends AbstractGeometry impleme
      * Adds to the envelope the given position, with its first two coordinates replaced by the given ones.
      * The other coordinates are those of the centre.
      */
-    private static void add(final GeometryEnvelope envelope, final Vector<?> position,
+    private static void add(final NDRange envelope, final Vector<?> position,
                             final double x, final double y)
     {
         position.set(0, x);

@@ -18,6 +18,7 @@ package org.apache.sis.geometries.internal.shared;
 
 import org.apache.sis.geometries.curve.ConicArc;
 import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
 
@@ -243,7 +244,7 @@ public final class DefaultConicArc implements ConicArc {
      * Expands the given envelope for containing the extremes of this arc along each axis.
      * The envelope shall already contain the data points.
      */
-    void addExtremes(final GeometryEnvelope envelope) {
+    void addExtremes(final NDRange envelope) {
         if (linear) {
             return;
         }

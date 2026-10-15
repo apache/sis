@@ -22,8 +22,8 @@ import org.opengis.geometry.Envelope;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.curve.ArcByBulge;
 import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vector;
 
 
@@ -88,7 +88,7 @@ public non-sealed class DefaultArcByBulge extends AbstractGeometry implements Ar
      */
     @Override
     public Envelope getEnvelope() {
-        final var envelope = new GeneralEnvelope(points.getEnvelope());
+        final var envelope = new NDRange(points.getEnvelope());
         if (bulge != 0) {
             final Vector<?> start = points.getPosition(0).copy(DataType.DOUBLE);
             final Vector<?> end   = points.getPosition(1).copy(DataType.DOUBLE);

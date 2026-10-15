@@ -22,8 +22,10 @@ import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
+import org.opengis.geometry.Envelope;
 
 
 /**
@@ -111,10 +113,10 @@ public final class HyperPlane extends AbstractGeometry{
      * its dimensions, the hyperplane spans the whole space on every axis.</p>
      */
     @Override
-    public BBox getEnvelope() {
+    public Envelope getEnvelope() {
         final ReadOnly.Vector<?> position = getPosition();
         final int dim = normal.getDimension();
-        final BBox bbox = new BBox(getCoordinateReferenceSystem());
+        final NDRange bbox = new NDRange(getCoordinateReferenceSystem());
         /*
          * Search the axis the normal is aligned with. There is one only if every other
          * dimension of the normal is null, in which case the hyperplane is flat on it.

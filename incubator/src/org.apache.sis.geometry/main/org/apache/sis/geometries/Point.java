@@ -32,6 +32,8 @@ import org.apache.sis.geometries.internal.shared.ArrayDataPoints;
 import org.apache.sis.geometries.internal.shared.DefaultPoint;
 import org.apache.sis.geometries.internal.shared.IndexedPoint;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
@@ -258,10 +260,8 @@ public sealed interface Point extends Primitive
 
     @Override
     default Envelope getEnvelope() {
-        final Vector<?> first = getPosition();
-        final BBox env = new BBox(first, first);
-        env.setCoordinateReferenceSystem(getCoordinateReferenceSystem());
-        return env;
+        final Vector<?> position = Vectors.create(getCoordinateReferenceSystem(), DataType.DOUBLE).set(getPosition());
+        return new NDRange(position, position);
     }
 
     /**

@@ -19,11 +19,13 @@ package org.apache.sis.geometries;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import org.opengis.coordinate.MismatchedDimensionException;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.internal.shared.GeometryEnvelope;
 import org.apache.sis.geometries.internal.shared.IndexedPoint;
 import org.apache.sis.geometries.surface.Polygon;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.ReadOnly;
@@ -38,7 +40,7 @@ import org.apache.sis.maths.Vector;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class BBox extends GeometryEnvelope implements Geometry {
+public final class BBox extends GeneralEnvelope implements Geometry {
 
     private Map<String,Object> properties;
 
@@ -63,7 +65,7 @@ public final class BBox extends GeometryEnvelope implements Geometry {
      * @param upper upper corner
      */
     public BBox(ReadOnly.Vector<?> lower, ReadOnly.Vector<?> upper) {
-        super(lower, upper);
+        super(asPosition(lower), asPosition(upper));
         ensureCRS();
     }
 
@@ -89,6 +91,51 @@ public final class BBox extends GeometryEnvelope implements Geometry {
     public BBox(Envelope env) {
         super(env);
         ensureCRS();
+    }
+
+    /**
+     * Returns a view of the given vector as a direct position.
+     */
+    private static DirectPosition asPosition(final ReadOnly.Vector<?> vector) {
+        return Vectors.asDirectPostion((vector instanceof Vector<?> v) ? v : vector.copy());
+    }
+
+    /**
+     * Adds a position given as a vector to this box.
+     *
+     * @param  position  the position to add.
+     * @throws MismatchedDimensionException if the vector does not have the dimension of this box.
+     */
+    public void add(final ReadOnly.Vector<?> position) throws MismatchedDimensionException {
+        add(asPosition(position));
+    }
+
+    /**
+     * Returns the lower corner of this box as a vector.
+     * Changes to the returned vector do not change this box.
+     *
+     * @return a copy of the lower corner.
+     */
+    public Vector<?> getLower() {
+        final Vector<?> corner = Vectors.create(getCoordinateReferenceSystem(), DataType.DOUBLE);
+        for (int i = 0, n = getDimension(); i < n; i++) {
+            corner.set(i, getLower(i));
+        }
+        return corner;
+    }
+
+    /**
+     * Returns the upper corner of this box as a vector.
+     * Changes to the returned vector do not change this box.
+     *
+     * @return a copy of the upper corner.
+     */
+    public Vector<?> getUpper() {
+        final Vector<?> corner = Vectors.create(getCoordinateReferenceSystem(), DataType.DOUBLE);
+        for (int i = 0, n = getDimension(); i < n; i++) {
+            corner.set(i, getUpper(i));
+        }
+        return corner;
     }
 
     /**

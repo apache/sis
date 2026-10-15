@@ -20,7 +20,6 @@ import java.util.List;
 import static org.opengis.annotation.Specification.ISO_12113;
 import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
@@ -29,9 +28,11 @@ import org.apache.sis.geometries.Surface;
 import org.apache.sis.geometries.SurfaceInterpolation;
 import org.apache.sis.geometries.internal.shared.DefaultCapsule;
 import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
+import org.opengis.geometry.Envelope;
 
 
 /**
@@ -141,13 +142,13 @@ public sealed interface Capsule extends Surface
      * by the union of the two boxes bounding its spheres.</p>
      */
     @Override
-    default BBox getEnvelope() {
+    default Envelope getEnvelope() {
         final ReadOnly.Vector<?> bottom = getBottom();
         final ReadOnly.Vector<?> top = getTop();
         final double radiusBottom = getRadiusBottom();
         final double radiusTop = getRadiusTop();
         final int dim = getDataPoints().getDimension();
-        final BBox bbox = new BBox(getCoordinateReferenceSystem());
+        final NDRange bbox = new NDRange(getCoordinateReferenceSystem());
         for (int i=0;i<dim;i++){
             final double b = bottom.get(i);
             final double t = top.get(i);

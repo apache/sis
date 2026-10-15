@@ -19,7 +19,6 @@ package org.apache.sis.geometries.internal.shared;
 import java.util.Arrays;
 import java.util.List;
 import javax.measure.Quantity;
-import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometries;
@@ -29,10 +28,13 @@ import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.NurbCurve;
 import org.apache.sis.geometries.operation.DeBoorAlgorithm;
 import org.apache.sis.maths.Array;
+import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.measure.Quantities;
+import org.opengis.geometry.Envelope;
 
 
 /**
@@ -311,12 +313,12 @@ public non-sealed class DefaultNurbCurve extends AbstractGeometry implements Nur
      * @return the bounding box of this curve
      */
     @Override
-    public BBox getEnvelope() {
-        final BBox bbox = new BBox(controlPoints[0], controlPoints[0]);
+    public Envelope getEnvelope() {
+        final Vector<?> start = Vectors.create(getCoordinateReferenceSystem(), DataType.DOUBLE).set(controlPoints[0]);
+        final NDRange bbox = new NDRange(start, start);
         for (final Vector<?> p : controlPoints) {
             bbox.add(p);
         }
-        bbox.setCoordinateReferenceSystem(getCoordinateReferenceSystem());
         return bbox;
     }
 

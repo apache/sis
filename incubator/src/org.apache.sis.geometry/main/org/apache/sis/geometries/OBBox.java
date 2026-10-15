@@ -20,6 +20,8 @@ import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.internal.shared.AbstractGeometry;
 import org.apache.sis.geometries.internal.shared.SinglePositionDataPoints;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
 
@@ -128,7 +130,8 @@ public final class OBBox extends AbstractGeometry {
         final Vector<?> nxAxis = xAxis.copy().scale(-1);
         final Vector<?> nyAxis = yAxis.copy().scale(-1);
         final Vector<?> nzAxis = zAxis.copy().scale(-1);
-        final BBox env = new BBox(center,center);
+        final Vector<?> start = Vectors.create(getCoordinateReferenceSystem(), DataType.DOUBLE).set(center);
+        final NDRange env = new NDRange(start, start);
         final Vector<?> corner = center.copy();
         env.add(corner.set(center).add( xAxis).add( yAxis).add( zAxis));
         env.add(corner.set(center).add( xAxis).add( yAxis).add(nzAxis));

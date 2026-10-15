@@ -23,8 +23,8 @@ import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.GeometryFactory;
 import org.apache.sis.geometries.curve.CircularString;
 import org.apache.sis.geometries.curve.LineString;
-import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vector;
 
 
@@ -66,7 +66,7 @@ public non-sealed class DefaultCircularString extends AbstractGeometry implement
      */
     @Override
     public Envelope getEnvelope() {
-        final var envelope = new GeneralEnvelope(points.getEnvelope());
+        final var envelope = new NDRange(points.getEnvelope());
         Vector<?> start = (points.size() != 0) ? points.getPosition(0).copy(DataType.DOUBLE) : null;
         for (int i = 2; i < points.size(); i += 2) {
             final Vector<?> end = points.getPosition(i).copy(DataType.DOUBLE);

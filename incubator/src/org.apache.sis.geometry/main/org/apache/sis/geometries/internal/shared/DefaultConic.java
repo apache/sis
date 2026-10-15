@@ -29,6 +29,7 @@ import org.apache.sis.geometries.curve.Conic;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vector;
 
 
@@ -119,11 +120,11 @@ public non-sealed class DefaultConic extends AbstractGeometry implements Conic {
     @Override
     public Envelope getEnvelope() {
         if (points.isEmpty()) {
-            final var envelope = new GeometryEnvelope(getCoordinateReferenceSystem());
+            final var envelope = new NDRange(getCoordinateReferenceSystem());
             envelope.setToNaN();
             return envelope;
         }
-        final var envelope = new GeometryEnvelope(points.getEnvelope());
+        final var envelope = new NDRange(points.getEnvelope());
         for (final DefaultConicArc arc : arcs()) {
             arc.addExtremes(envelope);
         }

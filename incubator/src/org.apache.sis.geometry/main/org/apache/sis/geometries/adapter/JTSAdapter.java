@@ -18,7 +18,6 @@ package org.apache.sis.geometries.adapter;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometries;
@@ -36,6 +35,7 @@ import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
@@ -43,6 +43,7 @@ import org.apache.sis.maths.Vectors;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.CoordinateXY;
+import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
@@ -370,7 +371,7 @@ public final class JTSAdapter {
 
         @Override
         public org.locationtech.jts.geom.Envelope expandEnvelope(org.locationtech.jts.geom.Envelope env) {
-            final BBox bbox = points.getAttributeRange(DataPointsType.ATT_POSITION);
+            final Envelope bbox = points.getAttributeRange(DataPointsType.ATT_POSITION);
             env.expandToInclude(bbox.getMinimum(0), bbox.getMinimum(1));
             env.expandToInclude(bbox.getMaximum(0), bbox.getMaximum(1));
             return env;

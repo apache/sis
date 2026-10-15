@@ -24,9 +24,11 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
+import org.apache.sis.maths.Vectors;
 
 
 /**
@@ -281,18 +283,18 @@ public interface DataPoints {
      * Get attribute values range
      *
      * @param name
-     * @return BBox in attribute sample system, or {@code null} if this {@code DataPoints} is empty.
+     * @return envelope in the attribute sample system and data type, or {@code null} if this {@code DataPoints} is empty.
      */
-    default BBox getAttributeRange(String name) {
+    default NDRange getAttributeRange(String name) {
         if (isEmpty()) {
             return null;
         }
-        final Vector<?> start = getAttribute(0, name);
-        final BBox env = new BBox(start, start);
+        final Vector<?> start = Vectors.create(getType().getAttributeSystem(name), getType().getAttributeType(name))
+                                       .set(getAttribute(0, name));
+        final NDRange env = new NDRange(start, start);
         for (int i = 1, n = size(); i < n; i++) {
             env.add(getAttribute(i, name));
         }
-        env.setCoordinateReferenceSystem(getType().getAttributeSystem(name).getCoordinateReferenceSystem());
         return env;
     }
 

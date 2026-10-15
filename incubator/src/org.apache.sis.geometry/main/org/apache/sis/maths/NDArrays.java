@@ -22,10 +22,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.RecursiveAction;
+import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.FactoryException;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.referencing.CRS;
@@ -200,7 +200,7 @@ public final class NDArrays {
      * @param array to compute bbox from
      * @return vectors with the same crs as the array, lower and upper bounds.
      */
-    public static BBox computeRange(Array array) {
+    public static NDRange computeRange(Array array) {
 
         final int dim = array.getDimension();
         final double[] min = new double[dim];
@@ -227,7 +227,7 @@ public final class NDArrays {
         }
 
         final CoordinateReferenceSystem crs = array.getCoordinateReferenceSystem();
-        final BBox bbox = crs == null ? new BBox(array.getDimension()) : new BBox(crs);
+        final NDRange bbox = crs == null ? new NDRange(array.getDimension()) : new NDRange(crs);
         for (i = 0; i < dim; i++) {
             bbox.setRange(i, min[i], max[i]);
         }
@@ -255,7 +255,7 @@ public final class NDArrays {
             if (array.isEmpty()) {
                 dt = DataType.UBYTE;
             } else {
-                BBox range = computeRange(array);
+                NDRange range = computeRange(array);
                 dt = bestIntegerDataType(range);
             }
             if (dataType != dt) {
@@ -500,7 +500,7 @@ public final class NDArrays {
     }
 
 
-    private static DataType bestIntegerDataType(BBox box) {
+    private static DataType bestIntegerDataType(Envelope box) {
         double min = box.getMinimum(0);
         double max = box.getMaximum(0);
         for (int i = 1, n = box.getDimension(); i < n; i++) {

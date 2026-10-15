@@ -48,13 +48,13 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.geometries.adapter.JTSAdapter;
 import org.apache.sis.geometries.adapter.ShapeAdapter;
 import org.apache.sis.geometries.adapter.ShapeConverter;
-import org.apache.sis.geometries.internal.shared.GeometryEnvelope;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.geometry.wrapper.jts.JTS;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.Matrix3D;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector3D;
 import org.apache.sis.maths.Vectors;
@@ -263,7 +263,7 @@ public final class Geometries {
 
     public static MeshPrimitive createBox(Envelope geom) {
 
-        final var box = new GeometryEnvelope(geom);
+        final var box = new NDRange(geom);
         final Vector lower = box.getLower();
         final Vector upper = box.getUpper();
 

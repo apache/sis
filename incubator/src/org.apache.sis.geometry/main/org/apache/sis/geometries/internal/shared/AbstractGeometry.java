@@ -24,6 +24,8 @@ import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.Array;
+import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
 
@@ -109,7 +111,7 @@ public abstract non-sealed class AbstractGeometry implements Geometry {
     protected static Envelope controlHullEnvelope(final DataPoints points, final Array controlPoints,
                                                   final boolean homogeneous)
     {
-        GeometryEnvelope envelope = (points == null || points.isEmpty()) ? null : new GeometryEnvelope(points.getEnvelope());
+        NDRange envelope = (points == null || points.isEmpty()) ? null : new NDRange(points.getEnvelope());
         final long n = (controlPoints != null) ? controlPoints.getLength() : 0;
         for (long i = 0; i < n; i++) {
             Vector<?> position = controlPoints.get(i);
@@ -119,10 +121,10 @@ public abstract non-sealed class AbstractGeometry implements Geometry {
                 position = Vectors.createDouble(dimension).set(position).scale(1 / weight);
             }
             if (envelope == null) {
-                envelope = new GeometryEnvelope(position, position);
-                if (points != null) {
-                    envelope.setCoordinateReferenceSystem(points.getCoordinateReferenceSystem());
-                }
+                final Vector<?> start = (points != null)
+                        ? Vectors.create(points.getCoordinateReferenceSystem(), DataType.DOUBLE).set(position)
+                        : position.copy(DataType.DOUBLE);
+                envelope = new NDRange(start, start);
             } else {
                 envelope.add(position);
             }

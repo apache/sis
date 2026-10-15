@@ -32,7 +32,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
@@ -50,6 +49,7 @@ import org.apache.sis.maths.Cursor;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.Maths;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
@@ -1139,7 +1139,7 @@ public sealed interface MeshPrimitive extends Geometry
         }
 
         @Override
-        public BBox getAttributeRange(String name) {
+        public NDRange getAttributeRange(String name) {
             return NDArrays.computeRange(NDArrays.subset(primitive.getAttribute(name),index));
         }
     }

@@ -33,6 +33,7 @@ import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
@@ -312,7 +313,7 @@ public final class CurveLinearizer {
      * Returns the diagonal of the box containing the given pieces, estimated from a few positions of each interval.
      */
     private static double extent(final List<Piece> pieces) {
-        GeometryEnvelope box = null;
+        NDRange box = null;
         for (final Piece piece : pieces) {
             final double[] t = piece.parameters();
             for (int i = 0; i < t.length; i++) {
@@ -321,7 +322,7 @@ public final class CurveLinearizer {
                     final ReadOnly.Vector<?> p = (k == 0) ? piece.position(i)
                             : piece.function().apply(t[i] + (t[i-1] - t[i]) * k / samples);
                     if (box == null) {
-                        box = new GeometryEnvelope(p, p);
+                        box = new NDRange(p, p);
                     } else {
                         box.add(p);
                     }

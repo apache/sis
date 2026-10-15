@@ -22,7 +22,6 @@ import javax.measure.Quantity;
 import static org.opengis.annotation.Specification.ISO_12113;
 import org.opengis.annotation.UML;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.Geometries;
 import org.apache.sis.geometries.Geometry;
@@ -34,10 +33,12 @@ import org.apache.sis.geometries.curve.Circle;
 import org.apache.sis.geometries.internal.shared.DefaultCylinder;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Quantities;
+import org.opengis.geometry.Envelope;
 
 
 /**
@@ -196,7 +197,7 @@ public sealed interface Cylinder extends Surface
      * has no axis to speak of, and is then bounded by its radii on every axis.</p>
      */
     @Override
-    default BBox getEnvelope() {
+    default Envelope getEnvelope() {
         final ReadOnly.Vector<?> bottom = getBottom();
         final ReadOnly.Vector<?> top = getTop();
         final double radiusBottom = getRadiusBottom();
@@ -204,7 +205,7 @@ public sealed interface Cylinder extends Surface
         final Vector<?> axis = getAxis();
         final double height = axis.length();
         final int dim = getDataPoints().getDimension();
-        final BBox bbox = new BBox(getCoordinateReferenceSystem());
+        final NDRange bbox = new NDRange(getCoordinateReferenceSystem());
         for (int i=0;i<dim;i++){
             final double b = bottom.get(i);
             final double t = top.get(i);

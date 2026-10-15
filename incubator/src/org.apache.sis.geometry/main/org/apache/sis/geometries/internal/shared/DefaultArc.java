@@ -26,6 +26,7 @@ import org.apache.sis.geometries.curve.Arc;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vector;
 
 
@@ -83,11 +84,11 @@ public non-sealed class DefaultArc extends DefaultConic implements Arc {
     @Override
     public Envelope getEnvelope() {
         if (points.isEmpty()) {
-            final var envelope = new GeometryEnvelope(getCoordinateReferenceSystem());
+            final var envelope = new NDRange(getCoordinateReferenceSystem());
             envelope.setToNaN();
             return envelope;
         }
-        final var envelope = new GeometryEnvelope(points.getEnvelope());
+        final var envelope = new NDRange(points.getEnvelope());
         for (final Vector<?>[] arc : circularArcs()) {
             Curves.addArc(envelope, arc[0], arc[1], arc[2]);
         }

@@ -24,6 +24,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.DataType;
 import org.apache.sis.maths.NDArrays;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.referencing.CommonCRS;
 
@@ -211,14 +212,14 @@ public class DataPointsTest {
     @Test
     public void testGetAttributeRange() {
         final DataPoints points = createSample();
-        final BBox positions = points.getAttributeRange(DataPointsType.ATT_POSITION);
+        final NDRange positions = points.getAttributeRange(DataPointsType.ATT_POSITION);
         assertEquals(GeometryTest.CRS_2D, positions.getCoordinateReferenceSystem());
         assertEquals( 0, positions.getMinimum(0));
         assertEquals( 0, positions.getMinimum(1));
         assertEquals(10, positions.getMaximum(0));
         assertEquals(20, positions.getMaximum(1));
 
-        final BBox temperature = points.getAttributeRange("temperature");
+        final NDRange temperature = points.getAttributeRange("temperature");
         assertEquals(1, temperature.getDimension());
         assertEquals(10, temperature.getMinimum(0));
         assertEquals(30, temperature.getMaximum(0));

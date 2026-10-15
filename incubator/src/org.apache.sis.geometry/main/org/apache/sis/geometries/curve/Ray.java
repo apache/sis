@@ -18,7 +18,6 @@ package org.apache.sis.geometries.curve;
 
 import javax.measure.Quantity;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.geometries.BBox;
 import org.apache.sis.geometries.Curve;
 import org.apache.sis.geometries.CurveInterpolation;
 import org.apache.sis.geometries.DataPointsType;
@@ -27,8 +26,10 @@ import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.internal.shared.DefaultRay;
 import org.apache.sis.maths.Array;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.measure.Quantities;
+import org.opengis.geometry.Envelope;
 
 
 /**
@@ -161,11 +162,11 @@ public sealed interface Ray extends Curve
      * Returns the envelope of this ray, infinite on each axis where the direction is not zero.
      */
     @Override
-    default BBox getEnvelope() {
+    default Envelope getEnvelope() {
         final ReadOnly.Vector<?> position = getPosition();
         final ReadOnly.Vector<?> direction = getDirection();
         final int dim = direction.getDimension();
-        final BBox bbox = new BBox(getCoordinateReferenceSystem());
+        final NDRange bbox = new NDRange(getCoordinateReferenceSystem());
         for (int i=0;i<dim;i++){
             double d = direction.get(i);
             if (d<0){

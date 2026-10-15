@@ -21,8 +21,8 @@ import javax.measure.Quantity;
 import javax.measure.Unit;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
-import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.maths.DataType;
+import org.apache.sis.maths.NDRange;
 import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.measure.Units;
@@ -121,7 +121,7 @@ public final class Curves {
      * @throws IllegalStateException if the arc is a full circle in more than two dimensions,
      *         since its plane is then not determined.
      */
-    public static void addArc(final GeneralEnvelope envelope, final ReadOnly.Vector<?> start,
+    public static void addArc(final NDRange envelope, final ReadOnly.Vector<?> start,
                               final ReadOnly.Vector<?> middle, final ReadOnly.Vector<?> end)
     {
         final int dimension = start.getDimension();
@@ -177,7 +177,7 @@ public final class Curves {
     /**
      * Expands the range of the given envelope axis for containing the given value.
      */
-    private static void extend(final GeneralEnvelope envelope, final int axis, final double value) {
+    private static void extend(final NDRange envelope, final int axis, final double value) {
         envelope.setRange(axis, Math.min(envelope.getMinimum(axis), value),
                                 Math.max(envelope.getMaximum(axis), value));
     }
