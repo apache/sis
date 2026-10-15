@@ -21,6 +21,7 @@ import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Disabled;
@@ -45,8 +46,8 @@ public class BSplineCurveTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetKnots() {
+        assertArrayEquals(new double[] {0, 1, 2}, createPolyline().getKnots());
     }
 
     @Test
@@ -130,14 +131,32 @@ public class BSplineCurveTest extends GeometryTest {
     public void testGetControlPoints() {
     }
 
+    /**
+     * The construction parameters span the domain of the curve: the first and last distinct knots,
+     * [0 … 1] if no knot is given, or the knots at index degree and count of a complete knot vector.
+     */
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetStartConstrParam() {
+        assertEquals(0, createArch().getStartConstrParam());
+        assertEquals(0, createPolyline().getStartConstrParam());
+        assertEquals(2, createUnclamped().getStartConstrParam());
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetEndConstrParam() {
+        assertEquals(1, createArch().getEndConstrParam());
+        assertEquals(2, createPolyline().getEndConstrParam());
+        assertEquals(5, createUnclamped().getEndConstrParam());
+    }
+
+    /**
+     * Creates a quadratic b-spline of 5 control points with a complete, uniform and unclamped knot vector.
+     * Its domain is from the knot at index 2 to the knot at index 5.
+     */
+    private static BSplineCurve createUnclamped() {
+        return GeometryFactory.DEFAULT.createBSplineCurve(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 1,2, 2,0, 3,2, 4,0), null,
+                new double[] {0, 1, 2, 3, 4, 5, 6, 7}, 2, null, null, false);
     }
 
     @Test

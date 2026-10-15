@@ -272,14 +272,21 @@ public sealed interface Curve extends Orientable
      *   <li>In a composite curve, the last knot of a segment is the first knot of the next segment.</li>
      * </ul>
      *
+     * <p>By default, the knot space is the sequence of integers starting at 0: the knot of
+     * each data point is its index. Curves with another construction parameterization,
+     * such as splines, override this method.</p>
+     *
      * @return knot values in the construction (knot) space.
      *
      * @see ISO 19107:2019 - 6.4.18.4
      */
     @UML(identifier="knot", specification=ISO_19107)
     default double[] getKnots() {
-        //TODO
-        throw new UnsupportedOperationException();
+        final double[] knots = new double[getDataPoints().size()];
+        for (int i = 0; i < knots.length; i++) {
+            knots[i] = i;
+        }
+        return knots;
     }
 
     /**
@@ -310,14 +317,16 @@ public sealed interface Curve extends Orientable
      *       necessarily smaller than the {@linkplain #getEndConstrParam() end parameter}.</li>
      * </ul>
      *
-     * @return construction parameter of the start point.
+     * <p>By default, this is the first {@linkplain #getKnots() knot}.</p>
+     *
+     * @return construction parameter of the start point, or NaN if this curve has no knot.
      *
      * @see ISO 19107:2019 - 6.4.18.15
      */
     @UML(identifier="startConstrParam", specification=ISO_19107)
     default double getStartConstrParam() {
-        //TODO
-        throw new UnsupportedOperationException();
+        final double[] knots = getKnots();
+        return (knots.length != 0) ? knots[0] : Double.NaN;
     }
 
     /**
@@ -330,14 +339,16 @@ public sealed interface Curve extends Orientable
      *       necessarily greater than the {@linkplain #getStartConstrParam() start parameter}.</li>
      * </ul>
      *
-     * @return construction parameter of the end point.
+     * <p>By default, this is the last {@linkplain #getKnots() knot}.</p>
+     *
+     * @return construction parameter of the end point, or NaN if this curve has no knot.
      *
      * @see ISO 19107:2019 - 6.4.18.15
      */
     @UML(identifier="endConstrParam", specification=ISO_19107)
     default double getEndConstrParam() {
-        //TODO
-        throw new UnsupportedOperationException();
+        final double[] knots = getKnots();
+        return (knots.length != 0) ? knots[knots.length - 1] : Double.NaN;
     }
 
     /**

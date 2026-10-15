@@ -133,6 +133,38 @@ public non-sealed class DefaultBSplineCurve extends AbstractGeometry implements 
     }
 
     /**
+     * Returns the start of the curve domain: the first knot, or the knot at index {@code degree} of a
+     * complete knot vector, or 0 if no knot is given since the knots are then uniform between 0 and 1.
+     */
+    @Override
+    public double getStartConstrParam() {
+        return domain()[0];
+    }
+
+    /**
+     * Returns the end of the curve domain: the last knot, or the knot at the index of the number of
+     * control points in a complete knot vector, or 1 if no knot is given.
+     */
+    @Override
+    public double getEndConstrParam() {
+        return domain()[1];
+    }
+
+    /**
+     * Returns the start and end of the curve domain, as used by the evaluator.
+     */
+    private double[] domain() {
+        if (knots.length == 0) {
+            return new double[] {0, 1};
+        }
+        final int count = (controlPoints != null) ? Math.toIntExact(controlPoints.getLength()) : points.size();
+        if (knots.length == count + degree + 1) {
+            return new double[] {knots[degree], knots[count]};
+        }
+        return new double[] {knots[0], knots[knots.length - 1]};
+    }
+
+    /**
      * Returns the number of intervals in the knot array, which is the number of arcs of this curve.
      */
     @Override

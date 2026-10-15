@@ -73,6 +73,22 @@ public non-sealed class DefaultNurbCurve extends AbstractGeometry implements Nur
         return knots.clone();
     }
 
+    /**
+     * Returns the start of the curve domain, which is the knot at index {@code degree}.
+     */
+    @Override
+    public double getStartConstrParam() {
+        return domainStart();
+    }
+
+    /**
+     * Returns the end of the curve domain, which is the knot at the index of the number of control points.
+     */
+    @Override
+    public double getEndConstrParam() {
+        return domainEnd();
+    }
+
     @Override
     public DataPoints getDataPoints() {
         return points;

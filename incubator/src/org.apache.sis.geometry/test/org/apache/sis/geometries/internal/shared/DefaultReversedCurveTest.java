@@ -24,6 +24,7 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.GeometryTest;
@@ -88,9 +89,14 @@ public class DefaultReversedCurveTest extends GeometryTest {
     public void testGetControlPoints() {
     }
 
+    /**
+     * A reversed curve keeps the construction parameterization of its base curve.
+     */
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetKnots() {
+        final LineString base = GeometryFactory.DEFAULT.createLineString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0, 10,10));
+        assertArrayEquals(base.getKnots(), GeometryFactory.DEFAULT.createReversed(base).getKnots());
     }
 
     @Test
@@ -99,13 +105,17 @@ public class DefaultReversedCurveTest extends GeometryTest {
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetStartConstrParam() {
+        final LineString base = GeometryFactory.DEFAULT.createLineString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0, 10,10));
+        assertEquals(2, GeometryFactory.DEFAULT.createReversed(base).getStartConstrParam());
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetEndConstrParam() {
+        final LineString base = GeometryFactory.DEFAULT.createLineString(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 10,0, 10,10));
+        assertEquals(0, GeometryFactory.DEFAULT.createReversed(base).getEndConstrParam());
     }
 
     @Test

@@ -23,14 +23,18 @@ import org.apache.sis.maths.Vectors;
 
 
 /**
- * A conic arc going through five points, computed in the plane of those points. This is one arc of the chain
+ * A conic arc going through its data points, computed in the plane of those points. This is one arc of the chain
  * of arcs of a {@link DefaultConic}, the coordinates being handled as Cartesian ones.
+ *
+ * <p>A general conic arc goes through five points. An elliptic arc goes through four points, since its equation
+ * has no cross term in the basis of its plane whose first axis is the projection of the first coordinate system
+ * axis which is not perpendicular to that plane.</p>
  *
  * @author Johann Sorel (Geomatys)
  */
 public final class DefaultConicArc implements ConicArc {
     /**
-     * The five data points of the arc.
+     * The data points of the arc: five for a general conic, four for an elliptic arc.
      */
     private final Vector<?>[] p;
 
@@ -61,7 +65,7 @@ public final class DefaultConicArc implements ConicArc {
      * Direction of the tangent at p₀, and directions from p₀ to the data points relative to the tangent.
      */
     private double tangent;
-    private final double[] r = new double[5];
+    private final double[] r;
 
     /**
      * Whether the directions from p₀ to the next data points increase.
@@ -71,12 +75,19 @@ public final class DefaultConicArc implements ConicArc {
     /**
      * Computes the conic through the given points.
      *
-     * @param  p  the five data points of the arc, in their order along the arc.
+     * @param  p         the data points of the arc, in their order along the arc.
+     * @param  elliptic  {@code true} for an elliptic arc of four points, {@code false} for a conic arc of five points.
      * @throws IllegalStateException if the points are not coplanar, do not determine a single non-degenerate
-     *         conic, are not in their order along the conic, or are joined through a point at infinity.
+     *         conic (or an ellipse), are not in their order along the conic, or are joined through a point at infinity.
      */
-    DefaultConicArc(final Vector<?>[] p) {
+    DefaultConicArc(final Vector<?>[] p, final boolean elliptic) {
+        final int[] terms = elliptic ? new int[] {0, 2, 3, 4, 5} : new int[] {0, 1, 2, 3, 4, 5};
+        if (p.length != terms.length - 1) {
+            throw new IllegalArgumentException("Expected " + (terms.length - 1) + " points, but got " + p.length + '.');
+        }
+        final String what = elliptic ? "The four data points of an elliptic arc" : "The five data points of a conic arc";
         this.p = p;
+        this.r = new double[p.length];
         final int dimension = p[0].getDimension();
         origin = Vectors.createDouble(dimension);
         for (final Vector<?> q : p) {
@@ -111,6 +122,23 @@ public final class DefaultConicArc implements ConicArc {
         }
         linear = false;
         e2.scale(1 / width);
+        if (elliptic) {
+            /*
+             * The axes of the ellipse are along the projection on the plane of the first coordinate system axis
+             * which is not perpendicular to the plane, and along the perpendicular direction in the plane.
+             */
+            for (int i = 0; i < dimension; i++) {
+                final double c1 = e1.get(i), c2 = e2.get(i);
+                final double h = Math.hypot(c1, c2);
+                if (h > 1E-10) {
+                    final Vector<?> u1 = e1.copy(DataType.DOUBLE).scale( c1 / h).add(e2.copy(DataType.DOUBLE).scale(c2 / h));
+                    final Vector<?> u2 = e1.copy(DataType.DOUBLE).scale(-c2 / h).add(e2.copy(DataType.DOUBLE).scale(c1 / h));
+                    e1 = u1;
+                    e2 = u2;
+                    break;
+                }
+            }
+        }
         final double[] a = new double[p.length];            // Coordinates of the points in the plane.
         final double[] b = new double[p.length];
         for (int k = 0; k < p.length; k++) {
@@ -118,50 +146,60 @@ public final class DefaultConicArc implements ConicArc {
             a[k] = v.dot(e1) / scale;
             b[k] = v.dot(e2) / scale;
             if (v.perpendicular(e1).perpendicular(e2).length() > scale * 1E-10) {
-                throw new IllegalStateException("The five data points of a conic arc are not coplanar.");
+                throw new IllegalStateException(what + " are not coplanar.");
             }
         }
         /*
-         * Coefficients of the conic through the five points,
-         * as the cofactors of the 5×6 matrix whose rows are (a², ab, b², a, b, 1) for each point.
+         * Coefficients of the conic through the points, as the cofactors of the matrix whose rows are the terms
+         * (a², ab, b², a, b, 1) for each point. The ab term is omitted for an elliptic arc.
          */
-        final Vector<?> coef = Vectors.createDouble(6);
-        for (int j = 0; j < 6; j++) {
-            final double[][] minor = new double[5][];
-            for (int k = 0; k < 5; k++) {
+        final int m = terms.length;
+        final Vector<?> solution = Vectors.createDouble(m);
+        for (int j = 0; j < m; j++) {
+            final double[][] minor = new double[m - 1][];
+            for (int k = 0; k < m - 1; k++) {
                 final double[] row = {a[k]*a[k], a[k]*b[k], b[k]*b[k], a[k], b[k], 1};
-                final double[] m = new double[5];
-                for (int c = 0, d = 0; c < 6; c++) {
-                    if (c != j) m[d++] = row[c];
+                final double[] values = new double[m - 1];
+                for (int c = 0, d = 0; c < m; c++) {
+                    if (c != j) values[d++] = row[terms[c]];
                 }
-                minor[k] = m;
+                minor[k] = values;
             }
-            coef.set(j, ((j & 1) == 0 ? 1 : -1) * determinant(minor));
+            solution.set(j, ((j & 1) == 0 ? 1 : -1) * determinant(minor));
         }
-        if (!(coef.length() > 1E-12)) {
-            throw new IllegalStateException("The five data points of a conic arc do not determine a single conic.");
+        if (!(solution.length() > 1E-12)) {
+            throw new IllegalStateException(what + " do not determine a single conic." + (elliptic
+                    ? " Two pairs of points having the same coordinate along an axis of the ellipse may be the cause." : ""));
         }
-        coef.normalize();
-        A = coef.get(0); B = coef.get(1); C = coef.get(2); D = coef.get(3); E = coef.get(4); F = coef.get(5);
+        solution.normalize();
+        final double[] coef = new double[6];
+        for (int c = 0; c < m; c++) {
+            coef[terms[c]] = solution.get(c);
+        }
+        A = coef[0]; B = coef[1]; C = coef[2]; D = coef[3]; E = coef[4]; F = coef[5];
         if (Math.abs(determinant(new double[][] {{A, B/2, D/2}, {B/2, C, E/2}, {D/2, E/2, F}})) < 1E-12) {
-            throw new IllegalStateException("The five data points of a conic arc are on a degenerated conic,"
+            throw new IllegalStateException(what + " are on a degenerated conic,"
                     + " made of straight lines, because three of them are collinear.");
+        }
+        if (elliptic && !(A * C > 0)) {
+            throw new IllegalStateException(what + " are not on an ellipse whose axes are aligned with its plane basis.");
         }
         /*
          * The lines through the start point p₀ map the conic to the directions modulo π, continuously and
          * one-to-one, p₀ itself being mapped to the direction of the tangent at p₀. The arc is therefore the
-         * interval of directions going from that tangent to the direction of p₄ through the other points.
+         * interval of directions going from that tangent to the direction of the last point through the other points.
          */
+        final int last = p.length - 1;
         a0 = a[0];
         b0 = b[0];
         tangent = direction(-(B*a0 + 2*C*b0 + E), 2*A*a0 + B*b0 + D);
-        for (int k = 1; k < 5; k++) {
+        for (int k = 1; k <= last; k++) {
             r[k] = relative(direction(a[k] - a0, b[k] - b0), tangent);
         }
-        increasing = r[2] < r[4];
-        for (int k = 1; k < 4; k++) {
+        increasing = r[1] < r[last];
+        for (int k = 1; k < last; k++) {
             if (increasing ? !(r[k] < r[k+1]) : !(r[k] > r[k+1])) {
-                throw new IllegalStateException("The five data points of a conic arc are not in their order along the conic.");
+                throw new IllegalStateException(what + " are not in their order along the conic.");
             }
         }
         /*
@@ -188,7 +226,8 @@ public final class DefaultConicArc implements ConicArc {
      * Returns whether the given direction from p₀, relative to the tangent, is the direction of a point of the arc.
      */
     private boolean onArc(final double rx) {
-        return increasing ? rx <= r[4] : rx >= r[4];
+        final double end = r[r.length - 1];
+        return increasing ? rx <= end : rx >= end;
     }
 
     /**
@@ -246,14 +285,17 @@ public final class DefaultConicArc implements ConicArc {
      * in that direction. If the points are collinear, the parameter is the index of the data points.
      */
     CurveLinearizer.Piece piece() {
+        final double[] t = new double[p.length];
         if (linear) {
-            return new CurveLinearizer.Piece((t) -> {
-                final int i = Math.max(0, Math.min(3, (int) Math.floor(t)));
-                return p[i].copy(DataType.DOUBLE).lerp(p[i + 1], t - i);
-            }, new double[] {0, 1, 2, 3, 4}, p);
+            for (int k = 0; k < t.length; k++) {
+                t[k] = k;
+            }
+            return new CurveLinearizer.Piece((index) -> {
+                final int i = Math.max(0, Math.min(p.length - 2, (int) Math.floor(index)));
+                return p[i].copy(DataType.DOUBLE).lerp(p[i + 1], index - i);
+            }, t, p);
         }
-        final double[] t = new double[5];
-        for (int k = 1; k < 5; k++) {
+        for (int k = 1; k < t.length; k++) {
             t[k] = increasing ? r[k] : Math.PI - r[k];
         }
         return new CurveLinearizer.Piece((angle) -> {

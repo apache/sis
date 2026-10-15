@@ -103,13 +103,14 @@ public sealed interface Sphere extends ParametricCurveSurface
     }
 
     /**
-     * Returns {@link GeometryType#CIRCLE}: the vertical curves are the great circles of constant longitude.
+     * Returns {@link GeometryType#ARC}: the vertical curves are the lines of constant longitude,
+     * which are halves of great circles going from the south pole to the north pole.
      *
      * @see ISO 19107:2019 - 8.5.2
      */
     @Override
     default GeometryType getVerticalCurveType() {
-        return GeometryType.CIRCLE;
+        return GeometryType.ARC;
     }
 
     /**

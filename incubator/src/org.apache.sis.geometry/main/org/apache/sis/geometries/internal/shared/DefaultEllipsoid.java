@@ -215,19 +215,32 @@ public non-sealed class DefaultEllipsoid extends AbstractGeometry implements Ell
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Returns the line of constant latitude, {@code v} being the latitude in radians.
+     * At the poles, the returned line string is reduced to the pole.
+     */
     @Override
     public Curve getHorizontalCurve(double v) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return EllipsoidalSurfaces.parallel(getCoordinateReferenceSystem(), getCenter(), semiAxes, v, false);
     }
 
+    /**
+     * Returns the line of constant longitude from the south pole to the north pole,
+     * {@code u} being the longitude in radians.
+     */
     @Override
     public Curve getVerticalCurve(double u) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return EllipsoidalSurfaces.meridian(getCoordinateReferenceSystem(), getCenter(), semiAxes, u, false);
     }
 
+    /**
+     * Returns the position of this ellipsoid at longitude {@code u} and latitude {@code v}, in radians.
+     *
+     * @throws IllegalStateException if the coordinate system has less than three dimensions.
+     */
     @Override
     public Vector<?> getSurface(double u, double v) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return EllipsoidalSurfaces.position(getCenter(), semiAxes, u, v);
     }
 
     /**

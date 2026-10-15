@@ -157,6 +157,30 @@ public non-sealed class DefaultReversedCurve extends AbstractGeometry implements
     }
 
     /**
+     * Returns the knots of the base curve: reversing a curve keeps its construction parameterization.
+     */
+    @Override
+    public double[] getKnots() {
+        return base.getKnots();
+    }
+
+    /**
+     * Returns the end construction parameter of the base curve, which is where this curve starts.
+     */
+    @Override
+    public double getStartConstrParam() {
+        return base.getEndConstrParam();
+    }
+
+    /**
+     * Returns the start construction parameter of the base curve, which is where this curve ends.
+     */
+    @Override
+    public double getEndConstrParam() {
+        return base.getStartConstrParam();
+    }
+
+    /**
      * Returns the polyline of the base curve with its points in reverse order.
      */
     @Override

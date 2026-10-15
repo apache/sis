@@ -149,7 +149,25 @@ public non-sealed class DefaultConic extends AbstractGeometry implements Conic {
     }
 
     /**
-     * Returns the arcs of this conic, made of five data points each, consecutive arcs sharing a point.
+     * Returns the number of data points of each arc: 5 for a general conic.
+     */
+    protected int pointsPerArc() {
+        return 5;
+    }
+
+    /**
+     * Creates the arc going through the given data points.
+     *
+     * @param  p  the {@link #pointsPerArc()} data points of the arc.
+     * @return the arc going through the given points.
+     * @throws IllegalStateException if the points do not define a valid arc.
+     */
+    protected DefaultConicArc arc(final Vector<?>[] p) {
+        return new DefaultConicArc(p, false);
+    }
+
+    /**
+     * Returns the arcs of this conic, made of {@link #pointsPerArc()} data points each, consecutive arcs sharing a point.
      *
      * @throws IllegalStateException if the data points cannot be split in arcs, or do not define valid arcs.
      */
@@ -161,17 +179,18 @@ public non-sealed class DefaultConic extends AbstractGeometry implements Conic {
         for (int i = 0; i < points.size(); i++) {
             positions.add(points.getPosition(i).copy(DataType.DOUBLE));
         }
-        if (cycle && positions.size() % 4 == 0) {
+        final int size = pointsPerArc(), step = size - 1;
+        if (cycle && positions.size() % step == 0) {
             positions.add(positions.get(0));        // The first data point closes the curve.
         }
         final int n = positions.size();
-        if (n < 5 || (n - 1) % 4 != 0) {
-            throw new IllegalStateException("A conic is made of arcs of five data points, consecutive arcs"
-                    + " sharing a point, so it needs 4k+1 data points, but got " + n + '.');
+        if (n < size || (n - 1) % step != 0) {
+            throw new IllegalStateException("This curve is made of arcs of " + size + " data points, consecutive arcs"
+                    + " sharing a point, so it needs " + step + "k+1 data points, but got " + n + '.');
         }
         final var arcs = new ArrayList<DefaultConicArc>();
-        for (int i = 0; i + 4 < n; i += 4) {
-            arcs.add(new DefaultConicArc(positions.subList(i, i + 5).toArray(Vector<?>[]::new)));
+        for (int i = 0; i + step < n; i += step) {
+            arcs.add(arc(positions.subList(i, i + size).toArray(Vector<?>[]::new)));
         }
         return arcs;
     }

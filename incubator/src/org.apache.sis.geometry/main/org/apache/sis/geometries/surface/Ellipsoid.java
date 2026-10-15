@@ -94,7 +94,8 @@ public sealed interface Ellipsoid extends ParametricCurveSurface
     }
 
     /**
-     * Returns {@link GeometryType#ELLIPTICARC}: the vertical curves are the ellipses of constant longitude.
+     * Returns {@link GeometryType#ELLIPTICARC}: the vertical curves are the lines of constant longitude,
+     * which are halves of ellipses going from the south pole to the north pole.
      */
     @Override
     default GeometryType getVerticalCurveType() {

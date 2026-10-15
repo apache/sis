@@ -147,19 +147,32 @@ public non-sealed class DefaultSphere extends AbstractGeometry implements Sphere
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Returns the line of constant latitude, {@code v} being the latitude in radians.
+     * At the poles, the returned line string is reduced to the pole.
+     */
     @Override
     public Curve getHorizontalCurve(double v) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return EllipsoidalSurfaces.parallel(getCoordinateReferenceSystem(), getCenter(), new double[] {radius, radius, radius}, v, true);
     }
 
+    /**
+     * Returns the line of constant longitude from the south pole to the north pole,
+     * {@code u} being the longitude in radians.
+     */
     @Override
     public Curve getVerticalCurve(double u) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return EllipsoidalSurfaces.meridian(getCoordinateReferenceSystem(), getCenter(), new double[] {radius, radius, radius}, u, true);
     }
 
+    /**
+     * Returns the position of this sphere at longitude {@code u} and latitude {@code v}, in radians.
+     *
+     * @throws IllegalStateException if the coordinate system has less than three dimensions.
+     */
     @Override
     public Vector<?> getSurface(double u, double v) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return EllipsoidalSurfaces.position(getCenter(), new double[] {radius, radius, radius}, u, v);
     }
 
     /**

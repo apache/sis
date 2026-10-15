@@ -187,19 +187,22 @@ public abstract class LineStringTest extends GeometryTest {
         assertEquals(2, ends.getNumGeometries());
     }
 
+    /**
+     * The knots of a line string are the indices of its data points.
+     */
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetKnots() {
+        assertArrayEquals(new double[] {0, 1, 2}, createLineString(CRS_2D, 0,0, 10,0, 10,10).getKnots());
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetStartConstrParam() {
+        assertEquals(0, createLineString(CRS_2D, 0,0, 10,0, 10,10).getStartConstrParam());
     }
 
     @Test
-    @Disabled("Not implemented yet.")
     public void testGetEndConstrParam() {
+        assertEquals(2, createLineString(CRS_2D, 0,0, 10,0, 10,10).getEndConstrParam());
     }
 
     @Test

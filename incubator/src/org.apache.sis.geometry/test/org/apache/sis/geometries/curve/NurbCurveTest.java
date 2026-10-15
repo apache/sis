@@ -41,6 +41,19 @@ import org.apache.sis.geometries.GeometryTest;
  * @author Johann Sorel (Geomatys)
  */
 public class NurbCurveTest extends GeometryTest {
+    /**
+     * The construction parameters span the domain of the curve, from the knot at index degree
+     * to the knot at index count, which differ from the first and last knots of an unclamped curve.
+     */
+    @Test
+    public void testConstrParamDomain() {
+        final NurbCurve curve = GeometryFactory.DEFAULT.createNurbCurve(
+                GeometryFactory.DEFAULT.createDataPoints(CRS_2D, 0,0, 1,2, 2,0),
+                new double[] {1, 1, 1}, new double[] {0, 1, 2, 3, 4, 5}, 2);
+        assertEquals(2, curve.getStartConstrParam());
+        assertEquals(3, curve.getEndConstrParam());
+    }
+
     @Test
     @Disabled("Not implemented yet.")
     public void testGetGeometryType() {
