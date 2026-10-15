@@ -67,6 +67,7 @@ public abstract class AbstractVectorTest {
         testCellGetSet(tuple);
         testToArray(tuple);
         testEquality(tuple);
+        testCopyDataType(tuple);
 
         switch (tuple.getDataType()) {
             case BYTE :
@@ -101,6 +102,7 @@ public abstract class AbstractVectorTest {
         testAdd(tuple);
         testSubtract(tuple);
         testScale(tuple);
+        testPerpendicular(tuple);
         testCross(tuple);
         testDot(tuple);
     }
@@ -245,6 +247,24 @@ public abstract class AbstractVectorTest {
 
     }
 
+    /**
+     * Test copy in another data type.
+     */
+    private void testCopyDataType(Vector<?> tuple) {
+        for (int i = 0; i < tuple.getDimension(); i++) {
+            tuple.set(i, i+1);
+        }
+        for (final DataType dataType : new DataType[] {DataType.DOUBLE, DataType.FLOAT, DataType.SHORT}) {
+            final Vector<?> copy = tuple.copy(dataType);
+            assertEquals(dataType, copy.getDataType());
+            assertEquals(tuple.getSampleSystem(), copy.getSampleSystem());
+            assertArrayEquals(tuple.toArrayDouble(), copy.toArrayDouble(), TOLERANCE);
+            //the copy is independent of the original tuple
+            copy.set(0, 100);
+            assertEquals(1, tuple.get(0), TOLERANCE);
+        }
+    }
+
     private void testExtremum(Vector<?> tuple, double value) {
 
         for (int i=0;i<tuple.getDimension();i++) {
@@ -363,6 +383,26 @@ public abstract class AbstractVectorTest {
         final double[] expected = Vectors.scale(vector.toArrayDouble(), scale);
         vector.scale(scale);
         assertArrayEquals(expected, vector.toArrayDouble(), TOLERANCE);
+    }
+
+    /**
+     * Test removal of the component along a unit vector.
+     * The unit vector is along the first axis, so the result is exact for all data types.
+     */
+    private void testPerpendicular(Vector<?> vector) {
+        final int dim = vector.getDimension();
+
+        final Vector<?> unit = Vectors.createDouble(dim);
+        unit.set(0, 1);
+        for (int i = 0; i < dim; i++) {
+            vector.set(i, i+1);
+        }
+
+        final double[] expected = vector.toArrayDouble();
+        expected[0] = 0;
+        vector.perpendicular(unit);
+        assertArrayEquals(expected, vector.toArrayDouble(), TOLERANCE);
+        assertEquals(0, vector.dot(unit), TOLERANCE);
     }
 
     /**

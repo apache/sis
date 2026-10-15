@@ -232,46 +232,6 @@ public final class Vectors {
         return new VectorUnmodifiable(tuple);
     }
 
-    private static class WrapTuple extends AbstractVector<WrapTuple> implements Vector<WrapTuple> {
-
-        private final Vector<?> pos;
-
-        public WrapTuple(Vector<?> pos, int size) {
-            super(size);
-            this.pos = pos;
-        }
-
-        public WrapTuple(Vector<?> pos) {
-            super(pos.getSampleSystem());
-            this.pos = pos;
-        }
-
-        @Override
-        public DataType getDataType() {
-            return pos.getDataType();
-        }
-
-        @Override
-        public double get(int indice) {
-            return pos.get(indice);
-        }
-
-        @Override
-        public void set(int indice, double value) {
-            pos.set(indice, value);
-        }
-
-        @Override
-        public int getDimension() {
-            return pos.getDimension();
-        }
-
-        @Override
-        public WrapTuple copy() {
-            return super.copy();
-        }
-    }
-
     private static class WrapDirectPostion extends AbstractVector<WrapDirectPostion> implements Vector<WrapDirectPostion> {
 
         private final DirectPosition pos;
