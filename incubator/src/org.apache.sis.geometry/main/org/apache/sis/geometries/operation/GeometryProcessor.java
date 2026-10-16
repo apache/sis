@@ -37,6 +37,7 @@ import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryCollection;
 import org.apache.sis.geometries.GeometryType;
 import org.apache.sis.geometries.Point;
+import org.apache.sis.geometries.Prism;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.mesh.MeshPrimitive;
@@ -499,6 +500,9 @@ public final class GeometryProcessor {
             return ToPrimitive.toPrimitive(cdt);
         } else if (geom instanceof Polyhedron cdt) {
             return ToPrimitive.toPrimitive(cdt);
+        } else if (geom instanceof Prism cdt) {
+            //a prism is converted to the line string, surface or solid covered by its extrusion.
+            return toPrimitive(cdt.toExtrusion(), spacing, offset);
         } else if (geom instanceof GeometryCollection<?> cdt) {
             final GeometryType elementType = cdt.getElementType();
             switch (elementType) {

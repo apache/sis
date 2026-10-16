@@ -76,4 +76,31 @@ public sealed interface Prism extends Geometry
      */
     SingleCRS getExtrusionCrs();
 
+    /**
+     * Returns the geometry covered by the extrusion of the base, which depends on the type of the base:
+     *
+     * <ul>
+     *   <li>A point becomes the line string going from the lower limit to the upper limit.</li>
+     *   <li>A line string becomes a polyhedral surface made of one quadrilateral for each segment.</li>
+     *   <li>A polygon becomes a polyhedron whose exterior shell is made of the polygon at the lower limit,
+     *       the polygon at the upper limit, and one quadrilateral for each segment of its rings.
+     *       All the faces are oriented outward.</li>
+     *   <li>A geometry collection becomes the collection of the extrusions of its elements,
+     *       which shall be of the above types or collections of them.</li>
+     * </ul>
+     *
+     * <p>If the reference system of the base contains the extrusion reference system, the extrusion
+     * replaces the coordinate of the corresponding axis. Otherwise the extrusion adds a dimension,
+     * and the result is in the compound of the two reference systems.</p>
+     *
+     * <p>Each position of the result is a copy of a position of the base, with the extrusion
+     * coordinate set to one of the limits. The other attributes of that position are copied unchanged.</p>
+     *
+     * @return the extrusion of the base.
+     * @throws UnsupportedOperationException if the base or one of its elements is of another type,
+     *         if the extrusion reference system has more than one dimension,
+     *         or if the extrusion of a polygon would not be 3-dimensional.
+     */
+    Geometry toExtrusion();
+
 }

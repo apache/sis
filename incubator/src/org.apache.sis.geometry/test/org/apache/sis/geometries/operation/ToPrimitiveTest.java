@@ -24,6 +24,7 @@ import org.apache.sis.geometries.Point;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.DataPointsType;
 import org.apache.sis.geometries.GeometryCollection;
+import org.apache.sis.geometries.Prism;
 import org.apache.sis.geometries.curve.LineString;
 import org.apache.sis.geometries.curve.LinearRing;
 import org.apache.sis.geometries.surface.Polygon;
@@ -35,6 +36,7 @@ import org.apache.sis.geometries.mesh.MeshPrimitive;
 import org.apache.sis.geometries.mesh.MultiMeshPrimitive;
 import org.apache.sis.maths.NDArrays;
 import org.apache.sis.maths.Array;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CommonCRS;
@@ -332,6 +334,43 @@ public class ToPrimitiveTest {
             }
             assertEquals(expected, trianglesArea3D(primitive), 1E-9, polyhedron.getClass().getSimpleName());
         }
+    }
+
+    /**
+     * The prism of a polygon is a solid, which becomes the triangles of the faces of its polyhedron.
+     */
+    @Test
+    public void testPrism() {
+        final GeometryFactory f = GeometryFactory.DEFAULT;
+        final Polygon square = f.createPolygon(f.createLinearRing(f.createDataPoints(
+                NDArrays.of(CommonCRS.WGS84.normalizedGeographic(), new double[] {0,0, 2,0, 2,2, 0,2, 0,0}))), null);
+        final Prism prism = f.createPrism(square, NumberRange.create(0., true, 3., true), null);
+        final Geometry result = new GeometryProcessor().toPrimitive(prism, null, null);
+        assertTrue(result instanceof MeshPrimitive.Triangles);
+        final MeshPrimitive primitive = (MeshPrimitive) result;
+        assertEquals(3, primitive.getCoordinateReferenceSystem().getCoordinateSystem().getDimension());
+        assertEquals(36, primitive.getPositions().getLength(), "Expected 2 triangles per face.");
+        assertEquals(2*4 + 4*6, trianglesArea3D(primitive), 1E-9);
+    }
+
+    /**
+     * The prism of a point becomes a line strip, and the prism of a line string the triangles of its walls.
+     */
+    @Test
+    public void testPrismOfPointAndLineString() {
+        final GeometryFactory f = GeometryFactory.DEFAULT;
+        final CoordinateReferenceSystem crs = CommonCRS.WGS84.normalizedGeographic();
+        final NumberRange<Double> range = NumberRange.create(0., true, 3., true);
+
+        final Geometry strip = new GeometryProcessor().toPrimitive(f.createPrism(f.createPoint(crs, 1, 2), range, null), null, null);
+        assertTrue(strip instanceof MeshPrimitive.LineStrip);
+        assertEquals(2, ((MeshPrimitive) strip).getPositions().getLength());
+
+        final LineString line = f.createLineString(f.createDataPoints(NDArrays.of(crs, new double[] {0,0, 2,0, 2,1})));
+        final Geometry walls = new GeometryProcessor().toPrimitive(f.createPrism(line, range, null), null, null);
+        assertTrue(walls instanceof MeshPrimitive.Triangles);
+        assertEquals(12, ((MeshPrimitive) walls).getPositions().getLength(), "Expected 2 triangles per segment.");
+        assertEquals(2*3 + 1*3, trianglesArea3D((MeshPrimitive) walls), 1E-9);
     }
 
     private static LinearRing ring3D(final CoordinateReferenceSystem crs, final double... coordinates) {
