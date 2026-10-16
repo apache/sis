@@ -447,7 +447,7 @@ public class IdentifiedObjectFinder {
         /** Snapshot of {@link IdentifiedObjectFinder#proxy}. */
         private final AuthorityFactoryProxy<?> proxy;
 
-        /** The authority codes form which to create object candidates. */
+        /** The authority codes from which to create object candidates. */
         private final Iterable<String> codes;
 
         /** The comparison mode for deciding if a candidate is a match. */

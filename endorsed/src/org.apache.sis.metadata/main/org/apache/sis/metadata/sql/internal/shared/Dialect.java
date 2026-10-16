@@ -49,6 +49,7 @@ public enum Dialect {
      * <a href="https://issues.apache.org/jira/browse/DERBY-6445">DERBY-6445</a>
      */
     DERBY("derby", Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
+                 | Supports.COLLATION_IN_LIKE
                  | Supports.READ_ONLY_UPDATE
                  | Supports.CONCURRENCY),
 
@@ -82,6 +83,7 @@ public enum Dialect {
                            | Supports.CONCURRENCY
                            | Supports.JAVA_TIME
                            | Supports.ILIKE
+                           | Supports.COLLATION_IN_LIKE     // Since PostgreSQL 18.
                            | Supports.SRID),
 
     /**
@@ -269,6 +271,15 @@ public enum Dialect {
      */
     public final boolean supportsSRID() {
         return (flags & Supports.SRID) != 0;
+    }
+
+    /**
+     * Whether the database takes collation in account in {@code LIKE} clauses.
+     *
+     * @return whether the database supports collations in {@code LIKE} clauses.
+     */
+    public final boolean supportsCollationInLike() {
+        return (flags & Supports.COLLATION_IN_LIKE) != 0;
     }
 
     /**

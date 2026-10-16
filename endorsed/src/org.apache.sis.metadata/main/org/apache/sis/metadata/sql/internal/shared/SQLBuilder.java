@@ -258,7 +258,7 @@ public class SQLBuilder extends Syntax {
 
     /**
      * Appends a {@code "= <value>"} string in a {@code SELECT} statement.
-     * The value is written between quotes, except if it is a number or a boolean.
+     * The value is written between quotes, except if it is a number or a Boolean.
      *
      * @param  value  the value to append, or {@code null}.
      * @return this builder, for method call chaining.
@@ -278,6 +278,7 @@ public class SQLBuilder extends Syntax {
      * @return this builder, for method call chaining.
      */
     public final SQLBuilder appendValue(final String value) {
+        // TODO: use Connection.enquoteLiteral(String) with JDK26.
         return (value == null) ? append(NULL) : append('\'').append(value.replace("'", "''")).append('\'');
     }
 
