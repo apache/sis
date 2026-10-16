@@ -17,7 +17,6 @@
 package org.apache.sis.feature;
 
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.LocalizedException;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
@@ -27,25 +26,20 @@ import org.opengis.feature.InvalidPropertyValueException;
 /**
  * Thrown when a feature fails at least one conformance test.
  *
- * <h2>API design note</h2>
- * This exception extends {@link InvalidPropertyValueException} because an Apache SIS feature
- * can be invalid only if a property is invalid.
+ * <p><b>API design note:</b> this exception extends {@link InvalidPropertyValueException}
+ * because an Apache <abbr>SIS</abbr> feature can be invalid only if a property is invalid.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.8
+ * @since   1.8
  *
  * @see Features#validate(Feature)
  */
-final class InvalidFeatureException extends InvalidPropertyValueException implements LocalizedException {
+public class InvalidFeatureException extends InvalidPropertyValueException {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 7288810679876346027L;
-
-    /**
-     * A description of the illegal feature.
-     */
-    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
-    private final InternationalString message;
+    private static final long serialVersionUID = -8089121424988848183L;
 
     /**
      * Creates a new exception with the given explanation message.
@@ -54,16 +48,24 @@ final class InvalidFeatureException extends InvalidPropertyValueException implem
      */
     InvalidFeatureException(final InternationalString message) {
         super(message.toString());
-        this.message = message;
     }
 
     /**
-     * Returns the message in various locales.
+     * Creates an exception with the specified details message.
      *
-     * @return the exception message.
+     * @param message  the detail message in the default locale.
      */
-    @Override
-    public InternationalString getInternationalMessage() {
-        return message;
+    public InvalidFeatureException(String message) {
+        super(message);
+    }
+
+    /**
+     * Creates an exception with the specified details message and cause.
+     *
+     * @param message  the detail message in the default locale.
+     * @param cause    the cause for this exception.
+     */
+    public InvalidFeatureException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

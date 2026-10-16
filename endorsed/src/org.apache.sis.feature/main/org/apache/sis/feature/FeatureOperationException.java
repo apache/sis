@@ -16,58 +16,48 @@
  */
 package org.apache.sis.feature;
 
-import org.opengis.util.InternationalString;
-import org.apache.sis.util.LocalizedException;
-
 
 /**
  * Thrown when a property value cannot be computed.
  * This exception may occur during a call to {@link AbstractAttribute#getValue()} on an attribute
  * instance which computes its value dynamically instead of returning a stored value.
- * It may be for example the attributes produced by {@link FeatureOperations}.
+ * It may be, for example, the attributes produced by {@link FeatureOperations}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.8
+ * @since   1.8
  */
-final class FeatureOperationException extends IllegalStateException implements LocalizedException {
+public class FeatureOperationException extends IllegalStateException {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -7281160433831489357L;
+    private static final long serialVersionUID = 6381299496396235246L;
 
     /**
-     * A description of the computation error.
-     */
-    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
-    private final InternationalString message;
-
-    /**
-     * Creates a new exception with the given explanation message.
+     * Creates an exception with the specified details message.
      *
-     * @param message  a description of the computation error.
+     * @param message  the detail message in the default locale.
      */
-    FeatureOperationException(final InternationalString message) {
-        super(message.toString());
-        this.message = message;
+    public FeatureOperationException(String message) {
+        super(message);
     }
 
     /**
-     * Creates a new exception with the given explanation message and cause.
+     * Creates an exception with the specified cause and no details message.
      *
-     * @param message  a description of the computation error.
-     * @param cause    the cause of the error.
+     * @param cause  the cause for this exception.
      */
-    FeatureOperationException(final InternationalString message, final Exception cause) {
-        super(message.toString(), cause);
-        this.message = message;
+    public FeatureOperationException(Throwable cause) {
+        super(cause);
     }
 
     /**
-     * Returns the message in various locales.
+     * Creates an exception with the specified details message and cause.
      *
-     * @return the exception message.
+     * @param message  the detail message in the default locale.
+     * @param cause    the cause for this exception.
      */
-    @Override
-    public InternationalString getInternationalMessage() {
-        return message;
+    public FeatureOperationException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

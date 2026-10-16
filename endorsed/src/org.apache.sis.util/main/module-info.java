@@ -22,7 +22,7 @@
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.7
+ * @version 1.8
  * @since   0.3
  */
 module org.apache.sis.util {
@@ -178,6 +178,7 @@ module org.apache.sis.util {
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.geoheif,
             org.apache.sis.storage.geotiff,
+            org.apache.sis.openoffice,
             org.apache.sis.console,
             org.apache.sis.portrayal,
             org.apache.sis.gui;                         // In the "optional" sub-project.

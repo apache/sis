@@ -19,10 +19,9 @@ package org.apache.sis.util.internal.shared;
 import java.util.Locale;
 import java.text.ParsePosition;
 import java.text.ParseException;
-import org.opengis.util.InternationalString;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.LocalizedException;
+import org.apache.sis.util.Localized;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -41,11 +40,21 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class LocalizedParseException extends ParseException implements LocalizedException {
+public final class LocalizedParseException extends ParseException implements Localized {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -1467571540435486742L;
+
+    /**
+     * The effective locale of the localized message, or {@code null} if unspecified.
+     * This is the locale of the message returned by {@link #getLocalizedMessage()}.
+     * It is specified at construction time, then eventually replaced by the locale
+     * of the resource used for building the message.
+     *
+     * @see #getLocale()
+     */
+    private final Locale locale;
 
     /**
      * The resources key as one of the {@link Errors.Keys} constant, or 0 if none.
@@ -71,7 +80,16 @@ public final class LocalizedParseException extends ParseException implements Loc
      * @param  errorOffset  the position where the error is found while parsing.
      */
     public LocalizedParseException(final Locale locale, final short key, final Object[] parameters, final int errorOffset) {
-        super(Errors.forLocale(locale).getString(key, parameters), errorOffset);
+        this(Errors.forLocale(locale), key, parameters, errorOffset);
+    }
+
+    /**
+     * Workaround while waiting for JEP 513: Flexible Constructor Bodies.
+     */
+    @Workaround(library="JDK", version="11", fixed="25")
+    private LocalizedParseException(final Errors resources, final short key, final Object[] parameters, final int errorOffset) {
+        super(resources.getString(key, parameters), errorOffset);
+        this.locale     = resources.getLocale();
         this.parameters = parameters;
         this.key        = key;
     }
@@ -168,14 +186,16 @@ public final class LocalizedParseException extends ParseException implements Loc
     }
 
     /**
-     * If this exception is capable to return the message in various locales, returns that message.
-     * Otherwise returns {@code null}.
+     * Returns the locale of the localized exception message, or {@code null} if unspecified.
+     * If non-null, this is the effective language of the string returned by {@link #getLocalizedMessage()}.
      *
-     * @return the exception message, or {@code null} if this exception cannot produce international message.
+     * @return the locale of the localized message, or {@code null} if not explicitly defined.
+     *
+     * @since 1.8
      */
     @Override
-    public InternationalString getInternationalMessage() {
-        return (key != 0) ? Errors.formatInternational(key, parameters) : null;
+    public Locale getLocale() {
+        return locale;
     }
 
     /**

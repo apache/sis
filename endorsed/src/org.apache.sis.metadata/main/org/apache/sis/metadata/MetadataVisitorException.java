@@ -16,8 +16,8 @@
  */
 package org.apache.sis.metadata;
 
-import org.opengis.util.InternationalString;
-import org.apache.sis.util.LocalizedException;
+import java.util.Locale;
+import org.apache.sis.util.Localized;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
@@ -25,10 +25,12 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * Thrown when a {@link MetadataVisitor#visit(Class, Object)} method failed.
+ * The details message is created only when requested.
+ * The context-sensitive locale is inherited from the cause.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class MetadataVisitorException extends BackingStoreException implements LocalizedException {
+final class MetadataVisitorException extends BackingStoreException implements Localized {
     /**
      * For cross-version compatibility.
      */
@@ -53,17 +55,31 @@ final class MetadataVisitorException extends BackingStoreException implements Lo
 
     /**
      * Returns an error message giving the location of the failure together with the cause.
+     *
+     * @return the detail message in the default locale.
      */
     @Override
     public String getMessage() {
-        return getInternationalMessage().toString();
+        return getMessage(false);
+    }
+
+    /**
+     * Returns an error message in a context-dependent locale if available.
+     *
+     * @return the detail message in the context-dependent locale.
+     */
+    @Override
+    public String getLocalizedMessage() {
+        return getMessage(true);
     }
 
     /**
      * Returns an error message giving the location of the failure together with the cause.
+     *
+     * @param  localized  whether to use context-dependent locale.
+     * @return the detail message in the given locale.
      */
-    @Override
-    public InternationalString getInternationalMessage() {
+    private String getMessage(final boolean localized) {
         short key = Errors.Keys.CanNotProcessProperty_2;
         int count = 2;
         String location = super.getMessage();
@@ -76,15 +92,9 @@ final class MetadataVisitorException extends BackingStoreException implements Lo
             }
         }
         final Throwable cause = getCause();
-        Object message = null;
-        if (cause instanceof LocalizedException) {
-            message = ((LocalizedException) cause).getInternationalMessage();
-        }
+        Object message = localized ? cause.getLocalizedMessage() : cause.getMessage();
         if (message == null) {
-            message = cause.getLocalizedMessage();
-            if (message == null) {
-                message = cause.getClass();
-            }
+            message = cause.getClass();
         }
         final var arguments = new Object[count];
         arguments[--count] = message;
@@ -92,6 +102,18 @@ final class MetadataVisitorException extends BackingStoreException implements Lo
         if (count != 0) {
             arguments[0] = String.join(".", Containers.viewAsUnmodifiableList(propertyPath, 0, pathLength));
         }
-        return Errors.formatInternational(key, arguments);
+        return Errors.forLocale(getLocale()).getString(key, arguments);
+    }
+
+    /**
+     * Returns the locale of the localized exception message, or {@code null} if unspecified.
+     * If non-null, this is the effective language of the string returned by {@link #getLocalizedMessage()}.
+     *
+     * @return the locale of the localized message, or {@code null} if not explicitly defined.
+     */
+    @Override
+    public Locale getLocale() {
+        final Throwable cause = getCause();
+        return (cause instanceof Localized) ? ((Localized) cause).getLocale() : null;
     }
 }

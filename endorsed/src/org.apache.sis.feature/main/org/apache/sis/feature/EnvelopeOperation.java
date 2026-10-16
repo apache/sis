@@ -417,7 +417,7 @@ final class EnvelopeOperation extends AbstractOperation {
                         final Object geomCRS;
                         if (at != null && (geomCRS = at.getValue()) != null) {
                             if (!(geomCRS instanceof CoordinateReferenceSystem)) {
-                                throw new FeatureOperationException(Resources.formatInternational(
+                                throw new FeatureOperationException(Resources.format(
                                         Resources.Keys.IllegalCharacteristicsType_3,
                                         AttributeConvention.CRS_CHARACTERISTIC,
                                         CoordinateReferenceSystem.class,
@@ -443,7 +443,7 @@ final class EnvelopeOperation extends AbstractOperation {
                         genv = Envelopes.transform(op, genv);
                     }
                 } catch (FactoryException | TransformException e) {
-                    throw new FeatureOperationException(Errors.formatInternational(Errors.Keys.CanNotTransformEnvelope), e);
+                    throw new FeatureOperationException(Errors.format(Errors.Keys.CanNotTransformEnvelope), e);
                 }
                 /*
                  * If there is only one geometry, we will return that geometry as-is even if its CRS is unknown.
@@ -454,7 +454,7 @@ final class EnvelopeOperation extends AbstractOperation {
                 if (envelope == null) {
                     envelope = genv;
                 } else if (hasUnknownCRS) {
-                    throw new FeatureOperationException(Errors.formatInternational(Errors.Keys.UnspecifiedCRS));
+                    throw new FeatureOperationException(Errors.format(Errors.Keys.UnspecifiedCRS));
                 } else if (targetCRS != null) {
                     envelope.add(genv);
                 } else {
@@ -470,7 +470,7 @@ final class EnvelopeOperation extends AbstractOperation {
             } else try {
                 return Envelopes.union(deferred);
             } catch (TransformException e) {
-                throw new FeatureOperationException(Errors.formatInternational(Errors.Keys.CanNotTransformEnvelope), e);
+                throw new FeatureOperationException(Errors.format(Errors.Keys.CanNotTransformEnvelope), e);
             }
         }
     }

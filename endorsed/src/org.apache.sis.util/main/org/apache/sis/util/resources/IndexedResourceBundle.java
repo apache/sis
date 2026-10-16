@@ -294,7 +294,7 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
                     /*
                      * Loads resources from the UTF file.
                      */
-                    try (DataInputStream input = new DataInputStream(new BufferedInputStream(resources))) {
+                    try (var input = new DataInputStream(new BufferedInputStream(resources))) {
                         values = new String[input.readInt()];
                         for (int i=0; i<values.length; i++) {
                             values[i] = input.readUTF();
@@ -307,9 +307,11 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
                         record.setMessage(exception.getMessage());              // For administrator, use system locale.
                         record.setThrown (exception);
                         Logging.completeAndLog(LOGGER, IndexedResourceBundle.class, methodName, record);
-                        throw (MissingResourceException) new MissingResourceException(
+                        var e = new MissingResourceException(
                                 Exceptions.getLocalizedMessage(exception, locale),   // For users, use requested locale.
-                                baseName, key).initCause(exception);
+                                baseName, key);
+                        e.initCause(exception);
+                        throw e;
                     }
                     /*
                      * Now, logs the message. This message is provided only in English.
