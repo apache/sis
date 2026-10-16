@@ -150,6 +150,39 @@ public class MathsTest {
     }
 
     /**
+     * Tests {@link Maths#isConvex(ReadOnly.Vector, ReadOnly.Vector, ReadOnly.Vector, boolean)}.
+     */
+    @Test
+    public void testIsConvex() {
+        //the counterclockwise ring (0,0), (4,0), (4,4) turns left at (4,0).
+        assertTrue (Maths.isConvex(vector(0,0), vector(4,0), vector(4,4), false));
+        assertFalse(Maths.isConvex(vector(0,0), vector(4,0), vector(4,4), true));
+        assertTrue (Maths.isConvex(vector(4,4), vector(4,0), vector(0,0), true), "Same ring traversed clockwise");
+        //aligned vertices are not convex.
+        assertFalse(Maths.isConvex(vector(0,0), vector(2,0), vector(4,0), false));
+        assertFalse(Maths.isConvex(vector(0,0), vector(2,0), vector(4,0), true));
+    }
+
+    /**
+     * Tests {@link Maths#inCone(ReadOnly.Vector, ReadOnly.Vector, ReadOnly.Vector, ReadOnly.Vector, boolean)}
+     * at a convex vertex and at a reflex vertex, in counterclockwise and clockwise rings.
+     */
+    @Test
+    public void testInCone() {
+        //convex vertex (0,0) of the counterclockwise square (0,0), (4,0), (4,4), (0,4).
+        final Vector<?> vertex = vector(0,0), previous = vector(0,4), next = vector(4,0);
+        assertTrue (Maths.inCone(previous, vertex, next, vector( 2,  2), false));
+        assertFalse(Maths.inCone(previous, vertex, next, vector(-1, -1), false));
+        assertFalse(Maths.inCone(previous, vertex, next, vector( 2,  0), false), "Along an edge");
+        assertTrue (Maths.inCone(next, vertex, previous, vector( 2,  2), true), "Same ring traversed clockwise");
+        //reflex vertex (2,1) of the counterclockwise ring (0,0), (4,0), (4,4), (2,1), (0,4), with a notch above it.
+        final Vector<?> reflex = vector(2,1), before = vector(4,4), after = vector(0,4);
+        assertTrue (Maths.inCone(before, reflex, after, vector(2, 0), false));
+        assertFalse(Maths.inCone(before, reflex, after, vector(2, 3), false), "In the notch");
+        assertTrue (Maths.inCone(after, reflex, before, vector(2, 0), true), "Same ring traversed clockwise");
+    }
+
+    /**
      * Tests {@link Maths#calculatePolygonNormal(Array)}, whose length is twice the area of the polygon.
      */
     @Test

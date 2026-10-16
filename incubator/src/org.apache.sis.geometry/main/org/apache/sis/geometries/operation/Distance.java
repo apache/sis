@@ -19,6 +19,7 @@ package org.apache.sis.geometries.operation;
 import java.util.List;
 import org.apache.sis.geometries.Point;
 import org.apache.sis.maths.Maths;
+import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.Vectors;
 import org.apache.sis.maths.Vector;
 
@@ -186,6 +187,47 @@ public final class Distance {
                 }
             }
         }
+    }
+
+    /**
+     * A point on a polyline, given by the segment where it is and its position along that segment.
+     *
+     * @param segment  index of the segment, which goes from the point at that index to the next one.
+     * @param ratio    position along the segment, from 0 at its start to 1 at its end.
+     */
+    public record SegmentPoint(int segment, double ratio) {
+    }
+
+    /**
+     * Finds the point of a polyline nearest to the given point.
+     * Only the two first coordinates of the positions are used.
+     *
+     * @param polyline positions of the polyline, at least two
+     * @param point the point to search the nearest point of the polyline for
+     * @return the nearest point of the polyline, on the first nearest segment if many are at the same distance
+     * @throws IllegalArgumentException if the polyline has less than two positions
+     */
+    public static SegmentPoint nearestSegment(List<? extends ReadOnly.Vector<?>> polyline, ReadOnly.Vector<?> point) {
+        if (polyline.size() < 2) {
+            throw new IllegalArgumentException("A polyline shall have at least two positions.");
+        }
+        final double x = point.get(0), y = point.get(1);
+        SegmentPoint nearest = null;
+        double nearestDistance = Double.POSITIVE_INFINITY;
+        for (int i = 1; i < polyline.size(); i++) {
+            final ReadOnly.Vector<?> a = polyline.get(i-1), b = polyline.get(i);
+            final double ax = a.get(0), ay = a.get(1), bx = b.get(0), by = b.get(1);
+            final double projection = Maths.projectionRatio(ax, ay, bx, by, x, y);
+            final double ratio = Double.isNaN(projection) ? 0 : Maths.clamp(projection, 0, 1);  // NaN if the segment has no length.
+            final double dx = ax + ratio * (bx - ax) - x;
+            final double dy = ay + ratio * (by - ay) - y;
+            final double distance = dx*dx + dy*dy;
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearest = new SegmentPoint(i - 1, ratio);
+            }
+        }
+        return nearest;
     }
 
     /**

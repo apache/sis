@@ -307,6 +307,57 @@ public final class Maths {
     }
 
     /**
+     * Test if a ring is convex at a vertex, which is whether the ring turns toward its inside at that vertex:
+     * to the right for a clockwise ring, to the left for a counterclockwise ring. Only X,Y ordinates are used.
+     * A vertex aligned with its two neighbors is not convex. A vertex where the ring turns toward its outside,
+     * called reflex, is convex for the ring traversed in the opposite direction.
+     *
+     * @param previous vertex before the tested vertex in the ring
+     * @param vertex tested vertex
+     * @param next vertex after the tested vertex in the ring
+     * @param clockwise whether the ring is clockwise
+     * @return true if the ring is convex at the vertex
+     */
+    public static boolean isConvex(ReadOnly.Vector<?> previous,
+                                   ReadOnly.Vector<?> vertex,
+                                   ReadOnly.Vector<?> next,
+                                   boolean clockwise) {
+        final double side = lineSide(previous, vertex, next);
+        return clockwise ? side < 0 : side > 0;
+    }
+
+    /**
+     * Test if the segment from a vertex of a ring toward a point starts inside the ring, which is between
+     * the two edges of the ring at that vertex. A segment along one of the edges is not inside.
+     * Only X,Y ordinates are used. This is the {@code InCone} test of Joseph O'Rourke in
+     * <cite>Computational Geometry in C</cite>, which tells whether a segment between two vertices
+     * of a polygon is a diagonal near its ends.
+     *
+     * @param previous vertex before the tested vertex in the ring
+     * @param vertex start of the segment, a vertex of the ring
+     * @param next vertex after the tested vertex in the ring
+     * @param point end of the segment
+     * @param clockwise whether the ring is clockwise
+     * @return true if the segment starts inside the ring
+     */
+    public static boolean inCone(ReadOnly.Vector<?> previous,
+                                 ReadOnly.Vector<?> vertex,
+                                 ReadOnly.Vector<?> next,
+                                 ReadOnly.Vector<?> point,
+                                 boolean clockwise)
+    {
+        final double sign = clockwise ? -1 : 1;
+        if (sign * lineSide(vertex, next, previous) >= 0) {
+            //convex vertex: the segment shall be strictly between the two edges.
+            return sign * lineSide(vertex, point, previous) > 0
+                && sign * lineSide(point, vertex, next) > 0;
+        }
+        //reflex vertex: the segment shall not be in the outside wedge, its edges included.
+        return !(sign * lineSide(vertex, point, next) >= 0
+              && sign * lineSide(point, vertex, previous) >= 0);
+    }
+
+    /**
      * Test if point is inside triangle using barycentric weights.
      * Only X,Y ordinates are used.
      *
