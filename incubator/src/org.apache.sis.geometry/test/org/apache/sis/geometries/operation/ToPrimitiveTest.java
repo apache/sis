@@ -16,7 +16,9 @@
  */
 package org.apache.sis.geometries.operation;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.Geometry;
 import org.apache.sis.geometries.GeometryFactory;
@@ -136,8 +138,60 @@ public class ToPrimitiveTest {
         assertTrue(result instanceof MeshPrimitive);
         final MeshPrimitive primitive = (MeshPrimitive) result;
         assertEquals(MeshPrimitive.Type.TRIANGLES, primitive.getType());
-        assertEquals(6, primitive.getPositions().getLength(), "Expected 2 triangles.");
+        assertEquals(6, primitive.getIndex().getLength(), "Expected 2 triangles.");
         assertEquals(4, trianglesArea(primitive), 1E-12);
+    }
+
+    /**
+     * The triangles of a polygon reference its vertices, which keep all their attributes.
+     * The vertices added to join a hole have their attributes interpolated, so a linear
+     * function of the position keeps its value at every vertex.
+     */
+    @Test
+    public void testPolygonAttributes() {
+        final GeometryFactory f = GeometryFactory.DEFAULT;
+        final Polygon square = f.createPolygon(attributedRing(0,0, 2,0, 2,2, 0,2, 0,0), null);
+        final MeshPrimitive mesh = (MeshPrimitive) new GeometryProcessor().toPrimitive(square, null, null);
+        assertEquals(4, mesh.getPositions().getLength(), "The closing position shall not be a separate vertex.");
+        assertEquals(6, mesh.getIndex().getLength(), "Expected 2 triangles.");
+        assertAttribute(mesh);
+
+        final Polygon holed = f.createPolygon(attributedRing(0,0, 10,0, 10,10, 0,10, 0,0),
+                List.of(attributedRing(2,3, 2,5, 4,5, 4,3, 2,3)));
+        final MeshPrimitive holedMesh = (MeshPrimitive) new GeometryProcessor().toPrimitive(holed, null, null);
+        assertEquals(96, trianglesArea(holedMesh), 1E-9);
+        assertAttribute(holedMesh);
+    }
+
+    /**
+     * Name of the attribute holding {@code x + 10*y} at each position, for checking that it is kept.
+     */
+    private static final String ATT_TEST = "TEST";
+
+    /**
+     * Creates a ring in the two-dimensional test CRS, with a {@value #ATT_TEST} attribute.
+     */
+    private static LinearRing attributedRing(final double... coordinates) {
+        final double[] values = new double[coordinates.length / 2];
+        for (int i = 0; i < values.length; i++) {
+            values[i] = coordinates[2*i] + 10 * coordinates[2*i + 1];
+        }
+        final Map<String,Array> attributes = new LinkedHashMap<>();
+        attributes.put(DataPointsType.ATT_POSITION, NDArrays.of(CRS2D, coordinates));
+        attributes.put(ATT_TEST, NDArrays.of(1, values));
+        return GeometryFactory.DEFAULT.createLinearRing(GeometryFactory.DEFAULT.createDataPoints(attributes));
+    }
+
+    /**
+     * Verifies that the {@value #ATT_TEST} attribute of each vertex of the given mesh is {@code x + 10*y}.
+     */
+    private static void assertAttribute(final MeshPrimitive mesh) {
+        final double[] c = mesh.getPositions().toArrayDouble();
+        final double[] values = mesh.getAttribute(ATT_TEST).toArrayDouble();
+        assertEquals(c.length / 2, values.length);
+        for (int i = 0; i < values.length; i++) {
+            assertEquals(c[2*i] + 10 * c[2*i + 1], values[i], 1E-9);
+        }
     }
 
     /**
@@ -178,7 +232,7 @@ public class ToPrimitiveTest {
         final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(polygon, null, null);
         assertEquals(MeshPrimitive.Type.TRIANGLES, primitive.getType());
         assertEquals(3, primitive.getPositions().getDimension());
-        assertEquals(6, primitive.getPositions().getLength(), "Expected 2 triangles.");
+        assertEquals(6, primitive.getIndex().getLength(), "Expected 2 triangles.");
         final double[] c = primitive.getPositions().toArrayDouble();
         for (int i = 0; i < c.length; i += 3) {
             assertEquals(c[i+1] == 0 ? 5 : 7, c[i+2], "z shall follow the polygon plane.");
@@ -252,7 +306,7 @@ public class ToPrimitiveTest {
         assertTrue(result instanceof MeshPrimitive.Triangles);
         final MeshPrimitive primitive = (MeshPrimitive) result;
         assertEquals(3, primitive.getPositions().getDimension());
-        assertEquals(6, primitive.getPositions().getLength(), "Expected 2 triangles.");
+        assertEquals(6, primitive.getIndex().getLength(), "Expected 2 triangles.");
         assertEquals(2 * Math.sqrt(5), trianglesArea3D(primitive), 1E-9);
     }
 
@@ -273,7 +327,7 @@ public class ToPrimitiveTest {
         final Geometry result = new GeometryProcessor().toPrimitive(f.createPolyhedralSurface(crs, faces), null, null);
         assertTrue(result instanceof MeshPrimitive.Triangles);
         final MeshPrimitive primitive = (MeshPrimitive) result;
-        assertEquals(30, primitive.getPositions().getLength(), "Expected 2 triangles per face.");
+        assertEquals(30, primitive.getIndex().getLength(), "Expected 2 triangles per face.");
         assertEquals(20, trianglesArea3D(primitive), 1E-9);
     }
 
@@ -304,7 +358,7 @@ public class ToPrimitiveTest {
         assertTrue(result instanceof MeshPrimitive.Triangles);
         final MeshPrimitive primitive = (MeshPrimitive) result;
         assertEquals(crs, primitive.getCoordinateReferenceSystem());
-        assertEquals(36, primitive.getPositions().getLength(), "Expected 2 triangles per face.");
+        assertEquals(36, primitive.getIndex().getLength(), "Expected 2 triangles per face.");
         assertEquals(24, trianglesArea3D(primitive), 1E-9);
     }
 
@@ -316,7 +370,7 @@ public class ToPrimitiveTest {
         final CoordinateReferenceSystem crs = CommonCRS.WGS84.geographic3D();
         final Polyhedron hollow = GeometryFactory.DEFAULT.createPolyhedron(cube(crs, 0,0,0, 4,4,4), List.of(cube(crs, 1,1,1, 3,3,3)));
         final MeshPrimitive primitive = (MeshPrimitive) new GeometryProcessor().toPrimitive(hollow, null, null);
-        assertEquals(72, primitive.getPositions().getLength(), "Expected 2 triangles per face of both shells.");
+        assertEquals(72, primitive.getIndex().getLength(), "Expected 2 triangles per face of both shells.");
         assertEquals(96 + 24, trianglesArea3D(primitive), 1E-9);
     }
 
@@ -349,7 +403,7 @@ public class ToPrimitiveTest {
         assertTrue(result instanceof MeshPrimitive.Triangles);
         final MeshPrimitive primitive = (MeshPrimitive) result;
         assertEquals(3, primitive.getCoordinateReferenceSystem().getCoordinateSystem().getDimension());
-        assertEquals(36, primitive.getPositions().getLength(), "Expected 2 triangles per face.");
+        assertEquals(36, primitive.getIndex().getLength(), "Expected 2 triangles per face.");
         assertEquals(2*4 + 4*6, trianglesArea3D(primitive), 1E-9);
     }
 
@@ -369,7 +423,7 @@ public class ToPrimitiveTest {
         final LineString line = f.createLineString(f.createDataPoints(NDArrays.of(crs, new double[] {0,0, 2,0, 2,1})));
         final Geometry walls = new GeometryProcessor().toPrimitive(f.createPrism(line, range, null), null, null);
         assertTrue(walls instanceof MeshPrimitive.Triangles);
-        assertEquals(12, ((MeshPrimitive) walls).getPositions().getLength(), "Expected 2 triangles per segment.");
+        assertEquals(12, ((MeshPrimitive) walls).getIndex().getLength(), "Expected 2 triangles per segment.");
         assertEquals(2*3 + 1*3, trianglesArea3D((MeshPrimitive) walls), 1E-9);
     }
 
@@ -382,7 +436,7 @@ public class ToPrimitiveTest {
      * Returns the sum of the areas of the triangles of the given non-indexed three-dimensional mesh.
      */
     private static double trianglesArea3D(final MeshPrimitive primitive) {
-        final double[] c = primitive.getPositions().toArrayDouble();
+        final double[] c = triangleCoordinates(primitive);
         double area = 0;
         for (int i = 0; i + 8 < c.length; i += 9) {
             final double ux = c[i+3] - c[i], uy = c[i+4] - c[i+1], uz = c[i+5] - c[i+2];
@@ -402,10 +456,28 @@ public class ToPrimitiveTest {
     }
 
     /**
-     * Returns the sum of the areas of the triangles of the given non-indexed mesh.
+     * Returns the coordinates of the vertices of the triangles of the given mesh, one triangle after the other.
+     * If the mesh is indexed, the coordinates of a vertex are repeated for each triangle using it.
+     */
+    private static double[] triangleCoordinates(final MeshPrimitive primitive) {
+        final double[] c = primitive.getPositions().toArrayDouble();
+        if (primitive.getIndex() == null) {
+            return c;
+        }
+        final int dim = primitive.getPositions().getDimension();
+        final int[] index = primitive.getIndex().toArrayInt();
+        final double[] expanded = new double[index.length * dim];
+        for (int i = 0; i < index.length; i++) {
+            System.arraycopy(c, index[i] * dim, expanded, i * dim, dim);
+        }
+        return expanded;
+    }
+
+    /**
+     * Returns the sum of the areas of the triangles of the given mesh.
      */
     private static double trianglesArea(final MeshPrimitive primitive) {
-        final double[] c = primitive.getPositions().toArrayDouble();
+        final double[] c = triangleCoordinates(primitive);
         double area = 0;
         for (int i = 0; i + 5 < c.length; i += 6) {
             area += Math.abs((c[i+2] - c[i]) * (c[i+5] - c[i+1]) - (c[i+4] - c[i]) * (c[i+3] - c[i+1])) / 2;

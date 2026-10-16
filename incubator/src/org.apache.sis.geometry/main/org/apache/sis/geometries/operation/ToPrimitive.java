@@ -19,8 +19,10 @@ package org.apache.sis.geometries.operation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.measure.Quantity;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
@@ -38,7 +40,6 @@ import org.apache.sis.geometries.surface.Polygon;
 import org.apache.sis.geometries.surface.PolyhedralSurface;
 import org.apache.sis.maths.Array;
 import org.apache.sis.maths.NDArrays;
-import org.apache.sis.maths.Vector;
 
 
 /**
@@ -122,30 +123,56 @@ public final class ToPrimitive {
     }
 
     /**
-     * Triangulates the given polygons into a single mesh of triangles, without index.
+     * Triangulates the given polygons into a single indexed mesh of triangles.
+     * The mesh holds the attributes which are common to all the polygons.
      */
     private static MeshPrimitive.Triangles triangles(final CoordinateReferenceSystem crs, final List<Polygon> faces) {
-        final int dimension = crs.getCoordinateSystem().getDimension();
         final EarClipping triangulator = new EarClipping();
-        final List<double[]> triangles = new ArrayList<>();
+        final List<EarClipping.Triangulation> triangulations = new ArrayList<>(faces.size());
+        final Set<String> names = new LinkedHashSet<>();
+        names.add(DataPointsType.ATT_POSITION);
+        int vertexCount = 0, indexCount = 0;
         for (final Polygon face : faces) {
-            //the returned list is reused by the next call, so the coordinates are copied now.
-            for (final Vector<?>[] triangle : triangulator.triangulate(face)) {
-                final double[] coordinates = new double[3 * dimension];
-                for (int v = 0; v < 3; v++) {
-                    for (int d = 0; d < dimension; d++) {
-                        coordinates[v * dimension + d] = triangle[v].get(d);
-                    }
-                }
-                triangles.add(coordinates);
+            final EarClipping.Triangulation triangulation = triangulator.triangulateIndexed(face);
+            final List<String> faceNames = triangulation.vertices().getType().getAttributeNames();
+            if (triangulations.isEmpty()) {
+                names.addAll(faceNames);
+            } else {
+                names.retainAll(faceNames);
             }
+            triangulations.add(triangulation);
+            vertexCount += triangulation.vertices().size();
+            indexCount  += triangulation.triangles().length;
         }
-        final double[] positions = new double[triangles.size() * 3 * dimension];
-        for (int i = 0; i < triangles.size(); i++) {
-            System.arraycopy(triangles.get(i), 0, positions, i * 3 * dimension, 3 * dimension);
-        }
+        /*
+         * The vertices of all faces are appended in a single array for each attribute,
+         * and the indices of each face are shifted by the number of vertices before it.
+         */
         final MeshPrimitive.Triangles primitive = new MeshPrimitive.Triangles();
-        primitive.setPositions(NDArrays.of(crs, positions));
+        if (triangulations.isEmpty()) {
+            primitive.setPositions(NDArrays.of(crs, new double[0]));
+            return primitive;
+        }
+        final DataPointsType type = triangulations.get(0).vertices().getType();
+        final int[] index = new int[indexCount];
+        for (final String name : names) {
+            final Array array = NDArrays.of(type.getAttributeSystem(name), type.getAttributeType(name), vertexCount);
+            int offset = 0;
+            for (final EarClipping.Triangulation triangulation : triangulations) {
+                final DataPoints vertices = triangulation.vertices();
+                array.set(offset, vertices.getAttributeArray(name), 0, vertices.size());
+                offset += vertices.size();
+            }
+            primitive.setAttribute(name, array);
+        }
+        int vertexOffset = 0, indexOffset = 0;
+        for (final EarClipping.Triangulation triangulation : triangulations) {
+            for (final int i : triangulation.triangles()) {
+                index[indexOffset++] = vertexOffset + i;
+            }
+            vertexOffset += triangulation.vertices().size();
+        }
+        primitive.setIndex(NDArrays.packIntegerDataType(NDArrays.of(1, index)));
         return primitive;
     }
 
