@@ -1278,4 +1278,36 @@ public final class Maths {
                 }
         }
     }
+
+    /**
+     * Remove element at index.
+     * Move elements after index by -1.
+     * Last element is set to null
+     *
+     * @param values original array
+     * @param index removed element index
+     * @return removed object
+     */
+    public static Object removeWithin(Object[] values, int index) {
+        final Object removedValue = values[index];
+        System.arraycopy(values, index+1, values, index, values.length-index-1);
+        values[values.length-1] = null; //remove reference
+        return removedValue;
+    }
+
+    /**
+     * Remove element at index.
+     * Move elements after index by -1.
+     * Last element is set to zero
+     *
+     * @param values original array
+     * @param index removed element index
+     * @return removed value
+     */
+    public static int removeWithin(int[] values, int index) {
+        final int removedValue = values[index];
+        System.arraycopy(values, index+1, values, index, values.length-index-1);
+        values[values.length-1] = 0;
+        return removedValue;
+    }
 }

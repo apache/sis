@@ -68,6 +68,7 @@ public abstract class AbstractVectorTest {
         testToArray(tuple);
         testEquality(tuple);
         testCopyDataType(tuple);
+        testSwizzle(tuple);
 
         switch (tuple.getDataType()) {
             case BYTE :
@@ -262,6 +263,42 @@ public abstract class AbstractVectorTest {
             //the copy is independent of the original tuple
             copy.set(0, 100);
             assertEquals(1, tuple.get(0), TOLERANCE);
+        }
+    }
+
+    /**
+     * Test the creation of a tuple from some axes of another one.
+     */
+    private void testSwizzle(Vector<?> tuple) {
+        final int dim = tuple.getDimension();
+        for (int i = 0; i < dim; i++) {
+            tuple.set(i, i+1);
+        }
+        //reverse order
+        final int[] reverse = new int[dim];
+        final double[] expected = new double[dim];
+        for (int i = 0; i < dim; i++) {
+            reverse[i] = dim - 1 - i;
+            expected[i] = dim - i;
+        }
+        Vector<?> swizzled = tuple.swizzle(reverse);
+        assertEquals(tuple.getDataType(), swizzled.getDataType());
+        assertArrayEquals(expected, swizzled.toArrayDouble(), TOLERANCE);
+
+        //repeated and omitted axes
+        swizzled = tuple.swizzle(dim - 1, 0, dim - 1);
+        assertArrayEquals(new double[] {dim, 1, dim}, swizzled.toArrayDouble(), TOLERANCE);
+
+        //the result is independent of the original tuple
+        swizzled.set(1, 100);
+        assertEquals(1, tuple.get(0), TOLERANCE);
+
+        //test out of range
+        try {
+            tuple.swizzle(dim);
+            fail(UNVALID_INDEX_EXPECTED);
+        } catch (IndexOutOfBoundsException ex) {
+            //ok
         }
     }
 

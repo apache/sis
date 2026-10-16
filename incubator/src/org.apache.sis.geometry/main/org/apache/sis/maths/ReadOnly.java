@@ -347,6 +347,24 @@ public final class ReadOnly {
             }
             return v;
         }
+
+        /**
+         * Create a new tuple with the values of the given axes, in the given order.
+         * Axes can be omitted or repeated, for example {@code swizzle(1, 0)} swaps the
+         * two first values and {@code swizzle(0, 0, 0)} repeats the first one.
+         * Vector CRS will be lost.
+         *
+         * @param axes indices of the values of this tuple to copy, one per dimension of the result
+         * @return Vector of dimension {@code axes.length}
+         * @throws IndexOutOfBoundsException if an axis index is not valid
+         */
+        default org.apache.sis.maths.Vector<?> swizzle(int ... axes) throws IndexOutOfBoundsException {
+            final org.apache.sis.maths.Vector<?> v = Vectors.create(axes.length, getDataType());
+            for (int i = 0; i < axes.length; i++) {
+                v.set(i, get(axes[i]));
+            }
+            return v;
+        }
     }
 
     public static interface Affine<T extends Affine<T>> extends Transform {
