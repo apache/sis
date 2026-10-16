@@ -244,6 +244,12 @@ public abstract class AbstractVectorTest {
             assertFalse(copy.equals(tuple));
             tuple.set(0, Double.NaN);
             assertEquals(copy, tuple);
+
+            //test signed zero equality, which shall give the same hash code
+            copy.set(0, 0.0);
+            tuple.set(0, -0.0);
+            assertEquals(copy, tuple);
+            assertEquals(copy.hashCode(), tuple.hashCode());
         }
 
     }

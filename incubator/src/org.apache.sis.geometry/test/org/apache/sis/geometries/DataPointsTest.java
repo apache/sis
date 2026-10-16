@@ -45,10 +45,59 @@ public class DataPointsTest {
      * The returned instance implements only the abstract methods, in order to test the default methods.
      */
     private static DataPoints createSample() {
+        return GeometryTest.withInterpolations(createArraySample(), Map.of());
+    }
+
+    /**
+     * Creates the points of {@link #createSample()}, stored in the arrays of the default implementation.
+     */
+    protected static DataPoints createArraySample() {
         final Map<String,Array> attributes = new LinkedHashMap<>();
         attributes.put(DataPointsType.ATT_POSITION, NDArrays.of(GeometryTest.CRS_2D, new double[] {0,0, 10,5, 4,20}));
         attributes.put("temperature", NDArrays.of(1, new double[] {10, 30, 20}));
-        return GeometryTest.withInterpolations(GeometryFactory.DEFAULT.createDataPoints(attributes), Map.of());
+        return GeometryFactory.DEFAULT.createDataPoints(attributes);
+    }
+
+    /**
+     * Tests {@link DataPoints#subset(int[])} and {@link DataPoints#subset(int, int)}.
+     */
+    @Test
+    public void testSubset() {
+        assertSubsets(createSample());
+    }
+
+    /**
+     * Verifies the copies of points made by the given {@code DataPoints},
+     * which shall hold the points of {@link #createSample()}.
+     */
+    protected static void assertSubsets(final DataPoints points) {
+        final DataPoints subset = points.subset(new int[] {2, 0, 2});
+        assertEquals(3, subset.size());
+        assertEquals(points.getCoordinateReferenceSystem(), subset.getCoordinateReferenceSystem());
+        assertEquals(Set.copyOf(points.getType().getAttributeNames()), Set.copyOf(subset.getType().getAttributeNames()));
+        assertPositionEquals(4, 20, subset.getPosition(0));
+        assertPositionEquals(0,  0, subset.getPosition(1));
+        assertPositionEquals(4, 20, subset.getPosition(2));
+        assertEquals(20, subset.getAttribute(0, "temperature").get(0));
+        assertEquals(10, subset.getAttribute(1, "temperature").get(0));
+
+        final DataPoints range = points.subset(1, 2);
+        assertEquals(2, range.size());
+        assertPositionEquals(10,  5, range.getPosition(0));
+        assertPositionEquals( 4, 20, range.getPosition(1));
+        assertEquals(30, range.getAttribute(0, "temperature").get(0));
+        assertEquals(0, points.subset(3, 0).size());
+
+        //the copies are independent of the copied points.
+        final Vector<?> value = range.getAttribute(0, "temperature");
+        value.set(0, 99);
+        range.setAttribute(0, "temperature", value);
+        assertEquals(30, points.getAttribute(1, "temperature").get(0));
+
+        assertThrows(IndexOutOfBoundsException.class, () -> points.subset(new int[] {3}));
+        assertThrows(IndexOutOfBoundsException.class, () -> points.subset(new int[] {-1}));
+        assertThrows(IndexOutOfBoundsException.class, () -> points.subset(2, 2));
+        assertThrows(IndexOutOfBoundsException.class, () -> points.subset(-1, 1));
     }
 
     /**

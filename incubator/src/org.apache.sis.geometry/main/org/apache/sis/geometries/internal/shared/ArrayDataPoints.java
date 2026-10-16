@@ -19,8 +19,10 @@ package org.apache.sis.geometries.internal.shared;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometries.DataPoints;
 import org.apache.sis.geometries.Point;
@@ -161,6 +163,39 @@ public final class ArrayDataPoints implements DataPoints, DataPointsType {
     @Override
     public NDRange getAttributeRange(String name) {
         return NDArrays.computeRange(attributes.get(name));
+    }
+
+    /**
+     * Returns a copy of the points at the given indices.
+     * This implementation copies a {@linkplain NDArrays#subset(Array, int...) view} of each attribute array,
+     * without creating a vector for each point.
+     */
+    @Override
+    public DataPoints subset(final int[] indices) {
+        final int size = size();
+        for (final int index : indices) {
+            Objects.checkIndex(index, size);
+        }
+        final Map<String,Array> subset = new LinkedHashMap<>();
+        attributes.forEach((name, array) -> subset.put(name, NDArrays.subset(array, indices).copy()));
+        return new ArrayDataPoints(subset);
+    }
+
+    /**
+     * Returns a copy of the given range of points.
+     * This implementation copies the range of each attribute array at once.
+     */
+    @Override
+    public DataPoints subset(final int start, final int length) {
+        Objects.checkFromIndexSize(start, length, size());
+        final Map<String,Array> subset = new LinkedHashMap<>();
+        for (final Map.Entry<String,Array> entry : attributes.entrySet()) {
+            final Array source = entry.getValue();
+            final Array target = NDArrays.of(source.getSampleSystem(), source.getDataType(), length);
+            target.set(0, source, start, length);
+            subset.put(entry.getKey(), target);
+        }
+        return new ArrayDataPoints(subset);
     }
 
     @Override

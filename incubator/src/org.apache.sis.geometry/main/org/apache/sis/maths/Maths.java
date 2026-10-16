@@ -111,6 +111,33 @@ public final class Maths {
         return res;
     }
 
+    /**
+     * Calculate normal of a polygon with Newell's method. Unlike the normal of a triangle made of three
+     * points of the polygon, this normal is reliable for any ring, including rings with collinear points
+     * and rings which are not exactly planar. The normal follows the right-hand rule: it points toward an
+     * observer who sees the ring counterclockwise. It is not normalized: for a planar ring, its length is
+     * twice the area of the polygon.
+     *
+     * @param positions positions of the ring, closed or not. Only the three first coordinates are used.
+     * @return polygon normal as (x,y,z) components, zero for a degenerate ring
+     * @throws IllegalArgumentException if the positions have less than 3 coordinates
+     */
+    public static double[] calculatePolygonNormal(Array positions){
+        final int dim = positions.getDimension();
+        if (dim < 3) {
+            throw new IllegalArgumentException("Positions shall have at least 3 coordinates, found " + dim + ".");
+        }
+        final double[] c = positions.toArrayDouble();
+        final double[] normal = new double[3];
+        for (int a = 0; a < c.length; a += dim) {
+            final int b = (a + dim) % c.length;
+            normal[0] += (c[a+1] - c[b+1]) * (c[a+2] + c[b+2]);
+            normal[1] += (c[a+2] - c[b+2]) * (c[a]   + c[b]);
+            normal[2] += (c[a]   - c[b])   * (c[a+1] + c[b+1]);
+        }
+        return normal;
+    }
+
     public static double[] subtract(float[] A, float[] B){
         return new double[] {
             A[0] - (double) B[0],
@@ -755,6 +782,34 @@ public final class Maths {
     }
 
     /**
+     * Test if a point is inside given triangle, its edges and corners included. Only X,Y ordinates are used.
+     * Robust variant : the side of the point compared to each edge is computed with
+     * {@link #lineSide(ReadOnly.Vector, ReadOnly.Vector, ReadOnly.Vector)}, without division.
+     * The triangle can be clockwise or counterclockwise. A degenerate triangle, whose three corners
+     * are on a same line, contains the points of that line between its corners.
+     *
+     * @param a first triangle point
+     * @param b second triangle point
+     * @param c third triangle point
+     * @param p point to test
+     * @return true if point is inside triangle
+     */
+    public static boolean inTriangle(ReadOnly.Vector<?> a, ReadOnly.Vector<?> b, ReadOnly.Vector<?> c, ReadOnly.Vector<?> p) {
+        final double d1 = lineSide(a, b, p);
+        final double d2 = lineSide(b, c, p);
+        final double d3 = lineSide(c, a, p);
+        final boolean left  = d1 > 0 || d2 > 0 || d3 > 0;
+        final boolean right = d1 < 0 || d2 < 0 || d3 < 0;
+        if (left || right) {
+            return !(left && right);
+        }
+        //the point is on the lines of the three edges, which happens only if the triangle is degenerate.
+        final double x = p.get(0), y = p.get(1);
+        return x >= Math.min(a.get(0), Math.min(b.get(0), c.get(0))) && x <= Math.max(a.get(0), Math.max(b.get(0), c.get(0)))
+            && y >= Math.min(a.get(1), Math.min(b.get(1), c.get(1))) && y <= Math.max(a.get(1), Math.max(b.get(1), c.get(1)));
+    }
+
+    /**
      * Calculate the barycentric value in triangle for given point.
      *
      * @param a first triangle point
@@ -1277,37 +1332,5 @@ public final class Maths {
                     val[i] = clamp(val[i], min, max);
                 }
         }
-    }
-
-    /**
-     * Remove element at index.
-     * Move elements after index by -1.
-     * Last element is set to null
-     *
-     * @param values original array
-     * @param index removed element index
-     * @return removed object
-     */
-    public static Object removeWithin(Object[] values, int index) {
-        final Object removedValue = values[index];
-        System.arraycopy(values, index+1, values, index, values.length-index-1);
-        values[values.length-1] = null; //remove reference
-        return removedValue;
-    }
-
-    /**
-     * Remove element at index.
-     * Move elements after index by -1.
-     * Last element is set to zero
-     *
-     * @param values original array
-     * @param index removed element index
-     * @return removed value
-     */
-    public static int removeWithin(int[] values, int index) {
-        final int removedValue = values[index];
-        System.arraycopy(values, index+1, values, index, values.length-index-1);
-        values[values.length-1] = 0;
-        return removedValue;
     }
 }

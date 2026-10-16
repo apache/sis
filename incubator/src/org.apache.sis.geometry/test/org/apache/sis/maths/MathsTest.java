@@ -121,6 +121,50 @@ public class MathsTest {
 
     }
 
+    /**
+     * Returns a vector of the given values.
+     */
+    private static Vector<?> vector(final double... values) {
+        return Vectors.createDouble(values.length).set(values);
+    }
+
+    /**
+     * Tests the robust {@link Maths#inTriangle(ReadOnly.Vector, ReadOnly.Vector, ReadOnly.Vector, ReadOnly.Vector)},
+     * which includes the edges and corners of the triangle, whatever its orientation.
+     */
+    @Test
+    public void testInTriangle() {
+        final Vector<?> a = vector(0, 0), b = vector(4, 0), c = vector(0, 4);
+        for (final Vector<?>[] triangle : new Vector<?>[][] {{a, b, c}, {a, c, b}}) {
+            assertTrue (Maths.inTriangle(triangle[0], triangle[1], triangle[2], vector(1, 1)), "Inside");
+            assertTrue (Maths.inTriangle(triangle[0], triangle[1], triangle[2], vector(2, 0)), "On an edge");
+            assertTrue (Maths.inTriangle(triangle[0], triangle[1], triangle[2], vector(4, 0)), "On a corner");
+            assertFalse(Maths.inTriangle(triangle[0], triangle[1], triangle[2], vector(3, 3)), "Outside");
+            assertFalse(Maths.inTriangle(triangle[0], triangle[1], triangle[2], vector(-1, 1)), "Outside");
+        }
+        //a degenerate triangle contains the points of its line between its corners.
+        final Vector<?> d = vector(2, 2), e = vector(4, 4);
+        assertTrue (Maths.inTriangle(a, d, e, vector(1, 1)));
+        assertFalse(Maths.inTriangle(a, d, e, vector(5, 5)));
+        assertFalse(Maths.inTriangle(a, d, e, vector(1, 0)));
+    }
+
+    /**
+     * Tests {@link Maths#calculatePolygonNormal(Array)}, whose length is twice the area of the polygon.
+     */
+    @Test
+    public void testCalculatePolygonNormal() {
+        //a counterclockwise square in the (x,y) plane, closed or not.
+        assertArrayEquals(new double[] {0, 0, 8}, Maths.calculatePolygonNormal(
+                NDArrays.of(3, new double[] {0,0,0, 2,0,0, 2,2,0, 0,2,0, 0,0,0})), EPSILON);
+        assertArrayEquals(new double[] {0, 0, 8}, Maths.calculatePolygonNormal(
+                NDArrays.of(3, new double[] {0,0,0, 2,0,0, 2,2,0, 0,2,0})), EPSILON);
+        //a vertical square in the (x,z) plane, with collinear points.
+        assertArrayEquals(new double[] {0, -8, 0}, Maths.calculatePolygonNormal(
+                NDArrays.of(3, new double[] {0,1,0, 1,1,0, 2,1,0, 2,1,2, 0,1,2, 0,1,0})), EPSILON);
+        assertThrows(IllegalArgumentException.class, () -> Maths.calculatePolygonNormal(NDArrays.of(2, new double[] {0,0, 1,0, 0,1})));
+    }
+
     @Test
     public void testNormalizedByte() {
         assertEquals(-1.0, Maths.normalizedByte(Byte.MIN_VALUE), 0.0);
@@ -228,11 +272,6 @@ public class MathsTest {
         assertEquals(0, Maths.toNormalizedULong(0.0));
         assertEquals(Long.MIN_VALUE, Maths.toNormalizedULong(0.5));
         assertEquals(0xFFFFFFFFFFFFFFFFL, Maths.toNormalizedULong(1.0));
-    }
-
-    @Test
-    public void testInTriangle() {
-
     }
 
     /**

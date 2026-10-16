@@ -53,7 +53,9 @@ abstract class AbstractVector<T extends AbstractVector<T>> implements Vector<T> 
     public int hashCode() {
         int hash = 31;
         for (int i = 0, n = getDimension(); i < n; i++) {
-            hash += 31 * hash + Double.hashCode(get(i));
+            final double value = get(i);
+            //positive and negative zero are equal, so they shall have the same hash code.
+            hash += 31 * hash + Double.hashCode(value == 0 ? 0 : value);
         }
         return hash;
     }

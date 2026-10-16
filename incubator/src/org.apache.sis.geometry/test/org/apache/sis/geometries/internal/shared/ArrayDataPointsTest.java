@@ -16,7 +16,11 @@
  */
 package org.apache.sis.geometries.internal.shared;
 
+import org.apache.sis.geometries.DataPoints;
+
 // Test dependencies
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 import org.apache.sis.geometries.DataPointsTest;
 
 
@@ -26,4 +30,15 @@ import org.apache.sis.geometries.DataPointsTest;
  * @author Johann Sorel (Geomatys)
  */
 public class ArrayDataPointsTest extends DataPointsTest {
+    /**
+     * Tests the copies of points made from the arrays, which do not use the default methods.
+     */
+    @Test
+    public void testSubsetOfArrays() {
+        final DataPoints points = createArraySample();
+        assertInstanceOf(ArrayDataPoints.class, points);
+        assertSubsets(points);
+        assertInstanceOf(ArrayDataPoints.class, points.subset(new int[] {1}));
+        assertInstanceOf(ArrayDataPoints.class, points.subset(0, 1));
+    }
 }

@@ -29,6 +29,7 @@ import org.apache.sis.maths.ReadOnly;
 import org.apache.sis.maths.SampleSystem;
 import org.apache.sis.maths.Vector;
 import org.apache.sis.maths.Vectors;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -296,6 +297,48 @@ public interface DataPoints {
             env.add(getAttribute(i, name));
         }
         return env;
+    }
+
+    /**
+     * Returns a copy of the points at the given indices, with all their attributes. The point at index
+     * <var>i</var> of the returned {@code DataPoints} is a copy of the point at index {@code indices[i]}
+     * of this {@code DataPoints}. An index can be given more than once. The returned {@code DataPoints}
+     * is independent of this one: changing either of them does not change the other one.
+     *
+     * @param  indices  indices of the points to copy, in the order of the returned points.
+     * @return a new {@code DataPoints} of {@code indices.length} points with the attributes of this one.
+     * @throws IndexOutOfBoundsException if an index is negative or not smaller than {@link #size()}.
+     *
+     * @see #subset(int, int)
+     */
+    default DataPoints subset(final int[] indices) {
+        final DataPointsType type = getType();
+        final List<String> names = type.getAttributeNames();
+        final DataPoints subset = GeometryFactory.DEFAULT.createDataPoints(type, indices.length);
+        final int size = size();
+        for (int i = 0; i < indices.length; i++) {
+            final int index = Objects.checkIndex(indices[i], size);
+            for (final String name : names) {
+                subset.setAttribute(i, name, getAttribute(index, name));
+            }
+        }
+        return subset;
+    }
+
+    /**
+     * Returns a copy of the given range of points, with all their attributes. The returned {@code DataPoints}
+     * is independent of this one: changing either of them does not change the other one.
+     *
+     * @param  start   index of the first point to copy.
+     * @param  length  number of points to copy.
+     * @return a new {@code DataPoints} of {@code length} points with the attributes of this one.
+     * @throws IndexOutOfBoundsException if the range is not inside this {@code DataPoints}.
+     *
+     * @see #subset(int[])
+     */
+    default DataPoints subset(final int start, final int length) {
+        Objects.checkFromIndexSize(start, length, size());
+        return subset(ArraysExt.range(start, start + length));
     }
 
     /**
