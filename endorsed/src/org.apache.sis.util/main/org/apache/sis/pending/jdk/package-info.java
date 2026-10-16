@@ -16,7 +16,7 @@
  */
 
 /**
- * Place-holder for classes that do not exist in JDK 11.
+ * Place-holder for classes that do not exist in targeted Java version.
  *
  * <STRONG>Do not use!</STRONG>
  *

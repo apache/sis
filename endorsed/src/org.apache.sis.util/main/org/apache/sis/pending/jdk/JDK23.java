@@ -21,7 +21,7 @@ import java.time.Instant;
 
 
 /**
- * Place holder for some functionalities defined in a JDK more recent than Java 11.
+ * Place holder for some functionalities defined in a JDK more recent than the targeted version.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

@@ -8,7 +8,7 @@ If those dependencies are not provided, Apache SIS [endorsed](../endorsed)
 modules will still work but without Graphical User Interface (GUI).
 
 GDAL is temporarily provided as an optional module despite its permissive license
-because it requires Java 22, while the main Apache SIS modules target Java 11.
+because it requires Java 22, while the main Apache SIS modules target Java 12.
 
 ## Configuration
 
